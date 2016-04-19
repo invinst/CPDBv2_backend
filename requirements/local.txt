@@ -1,0 +1,6 @@
+-r base.txt
+
+# imported REPL
+ipdb==0.9.3
+
+django-extensions==1.6.1

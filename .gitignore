@@ -1,0 +1,8 @@
+# Environment variables 
+.env
+
+# Compiled python files
+*.pyc
+
+# sqlite database
+*.sqlite3 
