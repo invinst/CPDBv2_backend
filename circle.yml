@@ -1,0 +1,23 @@
+machine:
+  python:
+    version: 2.7.11
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.test
+
+dependencies:
+  override:
+    - pip install -r requirements/test.txt
+
+test:
+  override:
+    - flake8
+    - coverage run manage.py test:
+        pwd:
+          cpdb
+  post:
+    - coverage combine:
+        pwd:
+          cpdb
+    - coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py":
+        pwd:
+          cpdb

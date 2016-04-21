@@ -1,0 +1,7 @@
+[report]
+omit =
+  */migrations/*
+  ~/.virtualenvs/*
+  ~/virtualenvs/*
+  manage.py
+  */tests/*

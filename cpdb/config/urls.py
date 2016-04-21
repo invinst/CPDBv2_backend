@@ -16,6 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from example.views import ExampleAPIView
+
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api/hello-world/$', ExampleAPIView.as_view(), name='super-api'),
 ]
