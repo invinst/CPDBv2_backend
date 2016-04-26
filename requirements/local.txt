@@ -7,3 +7,4 @@ django-extensions==1.6.1
 pre-commit==0.8.0
 flake8==2.5.4
 Markdown==2.6.6
+django-nose==1.4.3

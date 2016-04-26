@@ -29,6 +29,7 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'rest_framework',
+    'django_nose',
 )
 
 LOCAL_APPS = (
@@ -57,7 +58,7 @@ DEBUG = env.bool('DJANGO_DEBUG', False)
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = (
-    ("""CPDB""", 'cpdb@eastagile.com'),
+    ('CPDB', 'cpdb@eastagile.com'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
