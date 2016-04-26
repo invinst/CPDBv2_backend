@@ -6,3 +6,7 @@
 
 # sqlite database
 *.sqlite3 
+
+# For pyCharm dev
+.project
+.idea
