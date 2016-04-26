@@ -11,13 +11,7 @@ dependencies:
 test:
   override:
     - flake8
-    - coverage run manage.py test:
-        pwd:
-          cpdb
+    - coverage run cpdb/manage.py test
   post:
-    - coverage combine:
-        pwd:
-          cpdb
-    - coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py":
-        pwd:
-          cpdb
+    - coverage combine
+    - coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py"
