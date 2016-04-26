@@ -1,0 +1,28 @@
+Description
+-- 
+
+- Story and all sub-stories with their links to PT
+- What you did refactor, bugs that you fixed.
+- What package/module you added/removed.
+
+Deploy note
+--
+- What to do before or after deploy
+
+Note 
+--
+- Usage of what you added (like gulp watch_allegation,...)
+- merge this before/after some other PRs
+- Some technical notes
+- Note for reviewers
+
+Relevant issues (Optional)
+--
+- This may be related to the story A, B, C..
+- What you want to do but not yet in this PR
+- Something we should notice to extend/maintain this feature on the future.
+
+How to test
+--
+- Step 1
+- Step 2

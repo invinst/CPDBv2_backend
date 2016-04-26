@@ -1,0 +1,9 @@
+-r base.txt
+
+# imported REPL
+ipdb==0.9.3
+
+django-extensions==1.6.1
+pre-commit==0.8.0
+flake8==2.5.4
+Markdown==2.6.6
