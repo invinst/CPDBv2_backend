@@ -11,7 +11,8 @@ dependencies:
 test:
   override:
     - flake8
-    - coverage run cpdb/manage.py test
+    - coverage run cpdb/manage.py test --noinput --nologcapture
   post:
     - coverage combine
     - coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py"
+    - coveralls

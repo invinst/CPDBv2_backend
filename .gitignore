@@ -10,3 +10,6 @@
 # For pyCharm dev
 .project
 .idea
+
+# Coverage stuff
+.coverage
