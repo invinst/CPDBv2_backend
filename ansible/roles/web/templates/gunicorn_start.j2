@@ -1,10 +1,10 @@
 #!/bin/sh
 
 NAME="{{ application_name }}"
-DJANGODIR="{{ project_path }}/cpdb"
+DJANGODIR="{{ project_path }}"
 SOCKFILE={{ virtualenv_path }}/run/gunicorn.sock
-USER={{ gunicorn_user }}
-GROUP={{ gunicorn_group }}
+USER={{ deploy_user }}
+GROUP={{ deploy_group }}
 NUM_WORKERS={{ gunicorn_num_workers }}
 export DJANGO_SETTINGS_MODULE={{ django_settings_file }}
 # Set this to 0 for unlimited requests. During development, you might want to

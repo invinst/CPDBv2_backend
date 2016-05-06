@@ -1,4 +1,4 @@
----
+# ---
 
 # - name: Setup the Git repo
 #   git: repo={{ git_repo }}
@@ -6,14 +6,6 @@
 #        dest={{ project_path }}
 #        accept_hostkey=yes
 #   when: setup_git_repo is defined and setup_git_repo
-#   tags: git
-#   become: yes
-#   become_user: deploy
-
-# - name: Delete all .pyc files
-#   command: find . -name '*.pyc' -delete
-#   args:
-#     chdir: "{{ project_path }}"
 #   tags: git
 #   become: yes
 #   become_user: deploy

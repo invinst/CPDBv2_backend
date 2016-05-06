@@ -9,7 +9,7 @@
   django_manage:
     command: syncdb
     app_path: "{{ project_path }}"
-    virtualenv: "{{ virtualenv_path }}/cpdb"
+    virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_file }}"
   environment: django_environment
   when: run_django_syncdb is defined and run_django_syncdb
@@ -20,7 +20,7 @@
 - name: Run Django database migrations
   django_manage:
     command: migrate
-    app_path: "{{ project_path }}/cpdb"
+    app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_file }}"
   environment: django_environment
@@ -32,7 +32,7 @@
 - name: Run Django collectstatic
   django_manage:
     command: collectstatic
-    app_path: "{{ project_path }}/cpdb"
+    app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_file }}"
   environment: django_environment

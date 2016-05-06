@@ -1,0 +1,16 @@
+---
+  - name: Ensure psycopg2 module installed
+    apt: name={{ item }} update_cache={{ update_apt_cache }} state=latest
+    with_items:
+      - python-psycopg2
+    tags: packages
+
+  - name: Ensure the database exist
+    postgresql_db: name={{ application_name }}
+    become: true
+    become_user: postgres
+
+  - name: Ensure user has access to database
+    postgresql_user: db={{ application_name }} name={{ application_name }} password={{ application_name }} priv=ALL
+    become: true
+    become_user: postgres

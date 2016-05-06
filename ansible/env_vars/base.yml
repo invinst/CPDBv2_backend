@@ -1,8 +1,5 @@
 ---
-
-# git_repo: git@github.com:jcalazan/ansible-django-stack.git
 git_repo: git@github.com:EastAgile/CPDB.git
-# git_repo: https://github.com/nodesource/ansible-nodejs-role.git
 
 project_name: cpdb
 application_name: cpdb

@@ -6,14 +6,15 @@ pyenv_virtualenv: true
 python_version: "2.7.11"
 pyenv: "{{ pyenv_root }}/bin/pyenv"
 virtualenv_path: "{{ pyenv_root }}/versions/{{ application_name }}"
-project_path: "/webapps/{{ project_name }}"
+project_root_path: "/webapps/{{ project_name }}"
+project_path: "/webapps/{{ project_name }}/{{ application_name }}"
 application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
-requirements_file: "{{ project_path }}/requirements/local.txt"
+requirements_file: "{{ project_root_path }}/requirements/local.txt"
 
 # Gunicorn settings
-gunicorn_user: deploy
-gunicorn_group: deploy
+deploy_user: deploy
+deploy_group: deploy
 
 # Nginx settings
 nginx_http_port: 80
@@ -30,12 +31,4 @@ pyenv_environments:
 # Django Environment variables
 django_environment:
   DJANGO_SETTINGS_MODULE: "{{ django_settings_file }}"
-  DJANGO_SECRET_KEY: "{{ django_secret_key }}"
-  MEDIA_ROOT: "{{ nginx_media_dir }}"
-  STATIC_ROOT: "{{ nginx_static_dir }}"
-  DATABASE_USER: "{{ db_user }}"
-  DATABASE_PASSWORD: "{{ db_password }}"
-  EMAIL_HOST: "{{ email_host|default(omit) }}"
-  EMAIL_HOST_USER: "{{ email_host_user|default(omit) }}"
-  EMAIL_HOST_PASSWORD: "{{ email_host_password|default(omit) }}"
-  BROKER_URL: "{{ broker_url|default(omit) }}"
+
