@@ -1,0 +1,8 @@
+[all:vars]
+env=development
+
+[webservers]
+192.168.33.15
+
+[dbservers]
+192.168.33.15

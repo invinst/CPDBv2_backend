@@ -1,0 +1,31 @@
+---
+- name: Install additional packages
+  apt: name={{ item }} update_cache={{ update_apt_cache }} force=yes state=installed
+  with_items:
+    - libav-tools
+    - binutils
+    - libproj-dev
+    - gdal-bin
+    - libncurses5
+    - libncurses5-dev
+
+- name: Create the application user
+  user: name={{ gunicorn_user }} state=present
+
+# - name: Create the application group
+#   group: name={{ gunicorn_group }} system=yes state=present
+
+# - name: Add the application user to the application group
+#   user: name={{ gunicorn_user }} group={{ gunicorn_group }} state=present
+
+- name: Create the application user
+  user: name=deploy state=present
+
+- name: Create the application group
+  group: name=deploy system=yes state=present
+
+- name: Add the application user to the application group
+  user: name=deploy group=deploy state=present
+
+- name: Creates directory
+  file: path=/webapps state=directory owner=deploy

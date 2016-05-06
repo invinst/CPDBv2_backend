@@ -13,3 +13,8 @@
 
 # Coverage stuff
 .coverage
+
+# Vagrant
+.vagrant
+
+staticfiles/
