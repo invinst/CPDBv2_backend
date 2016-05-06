@@ -18,9 +18,6 @@ echo "Starting $NAME as `whoami`"
 cd $DJANGODIR
 . {{ virtualenv_path }}/bin/activate
 
-# Set additional environment variables.
-# . {{ virtualenv_path }}/bin/postactivate
-
 # Create the run directory if it doesn't exist.
 RUNDIR=$(dirname $SOCKFILE)
 test -d $RUNDIR || mkdir -p $RUNDIR

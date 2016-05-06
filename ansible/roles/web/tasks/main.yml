@@ -1,7 +1,7 @@
-- include: base.yml
+- include: create_user_and_directories.yml
   tags: base
 
-- include: pyenv.yml
+- include: setup_pyenv.yml
   tags: pyenv
 
 - include: setup_virtualenv.yml
