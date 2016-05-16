@@ -1,9 +1,9 @@
 # General
 - API should be RESTful.
-- API should follow strictly to which is described in this documentation. Any changes are welcome with a PR to this documentation, but please consider carefully to any which affect significantly to the current API's results.
+- API should strictly follow rules described in this document. Changes to this document are welcome but put it in a PR to review. Please consider carefully changes that affect current API result significantly.
 - Each URL identifies a resource, which need to follow the format: `/api/<version>/<resource>/{id}.<response_type>` (ex: api/v1/officer/5512.json)
 - Your API should be well-versioned. 
-- For any published API, the changes should be minimized, removing or changing the structure is not welcomed.
+- For any published API, the changes should be minimized, removing or changing the structure is not welcome.
 - You should follow the python/django/django-rest-framework's convention.
 - Any API should be well-logged.
 - For CPDBv2 backend, we support only json format.
