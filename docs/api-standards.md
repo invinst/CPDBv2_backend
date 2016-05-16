@@ -5,7 +5,7 @@
 - Your API should be well-versioned. 
 - For any published API, the changes should be minimized, removing or changing the structure is not welcome.
 - You should follow the python/django/django-rest-framework's convention.
-- Any API should be well-logged.
+- Any API errors should be well-logged.
 - For CPDBv2 backend, we support only json format.
 - URL v. Header (from [1]):
   - If it changes the logic you write to handle the response, put it in the URL.
