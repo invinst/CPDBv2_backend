@@ -2,7 +2,7 @@
 - name: Install specific python version
   script: install-python.sh {{ python_version }}
   become: yes
-  become_user: {{ deploy_user }}
+  become_user: "{{ deploy_user }}"
 
 - name: Install virtualenv
   pip: name=virtualenv
@@ -11,12 +11,12 @@
 - name: Create the virtualenv
   script: create-env.sh {{ pyenv_root }}/versions/{{ python_version }}/bin/python {{ application_name }}
   become: yes
-  become_user: {{ deploy_user }}
+  become_user: "{{ deploy_user }}"
 
 - name: Ensure gunicorn is installed
   pip: virtualenv={{ virtualenv_path }} name=gunicorn
   become: yes
-  become_user: {{ deploy_user }}
+  become_user: "{{ deploy_user }}"
 
 - name: Create the Gunicorn script file
   template: src=gunicorn_start.j2

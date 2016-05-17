@@ -20,3 +20,5 @@ vagrant.retry
 
 staticfiles/
 .python-version
+
+cpdb/static/
