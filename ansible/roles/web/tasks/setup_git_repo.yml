@@ -8,4 +8,4 @@
   when: setup_git_repo is defined and setup_git_repo
   tags: git
   become: yes
-  become_user: deploy
+  become_user: "{{ deploy_user }}"

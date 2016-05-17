@@ -116,7 +116,7 @@ TEMPLATES = [
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(APPS_DIR('static'))
+STATIC_ROOT = str(APPS_DIR('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
