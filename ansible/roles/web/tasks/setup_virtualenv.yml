@@ -35,8 +35,10 @@
         state=directory
 
 - name: Create the application log file
-  command: touch {{ application_log_file }}
-           creates={{ application_log_file }}
+  file: path={{ application_log_file }}
+        state=touch
+        owner={{ deploy_user }}
+        group={{ deploy_group }}
 
 - name: Set permission to the application log file
   file: path={{ application_log_file }}

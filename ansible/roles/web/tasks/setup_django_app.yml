@@ -11,7 +11,7 @@
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_file }}"
-  environment: django_environment
+  environment: "{{ django_environment }}"
   when: run_django_db_migrations is defined and run_django_db_migrations
   tags: django.migrate
   become: yes
@@ -23,7 +23,7 @@
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_file }}"
-  environment: django_environment
+  environment: "{{ django_environment }}"
   when: run_django_collectstatic is defined and run_django_collectstatic
   tags: django.collectstatic
   become: yes
