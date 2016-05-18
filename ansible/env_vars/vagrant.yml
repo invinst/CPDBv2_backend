@@ -16,7 +16,7 @@ gunicorn_max_requests: 0
 gunicorn_timeout_seconds: 300
 
 # Nginx settings.
-nginx_server_name: 192.168.33.15
+nginx_server_name: api.cpdb.me
 ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
