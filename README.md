@@ -42,4 +42,4 @@ bin/deploy_staging
 For any infrastructure changes, please add a new roles in ansible stuff to set it up. With the changes that you want to use it for deployment, let it come with the tags `deploy`.
 
 # Documentation
-- [API standards](docs/api-standards.md]
+- [API standards](docs/api-standards.md)
