@@ -6,16 +6,16 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.network "private_network", ip: "192.168.50.100"
-#  config.vm.synced_folder ".", "/webapps/cpdb", owner: "vagrant", group: "vagrant"
+  config.vm.synced_folder ".", "/webapps/cpdb", owner: "vagrant", group: "vagrant"
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "1024"
   end
 
-#  config.vm.provision "ansible" do |ansible|
-#    ansible.playbook = "ansible/vagrant.yml"
-#    ansible.host_key_checking = false
-#    ansible.ask_vault_pass = true
-#    ansible.verbose = "v"
-#  end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/vagrant.yml"
+    ansible.host_key_checking = false
+    ansible.ask_vault_pass = true
+    ansible.verbose = "v"
+  end
 end
