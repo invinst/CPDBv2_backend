@@ -18,7 +18,6 @@ After registering the box to vagrant
 
 ``` bash
 vagrant add cpdb cpdb.box
-```
 
 then creating the new Vagrantfile:
 
@@ -43,4 +42,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.verbose = "v"
   end
 end
+```
+
+* Setup the infrastructure
+You could use the ansible scripts for deployment. First of all, you need to push your ssh keys to the server:
+
+``` bash
+bin/upload_ssh_keys <your_ssh_key> <remote_user> <server_ip>
+```
+
+Then change needed information in inventory file
+``` bash
+[staging]
+api.cpdb.me
+```
+
+Put your env file to the `roles/web/files/`.
+
+Then run the deploy command
+``` bash
+bin/setup_staging
+```
+
+* Deployment
+
+If you already setup your infrastructure with ansible, you can run deploy everytime by
+
+``` bash
+bin/deploy_staging
 ```

@@ -11,6 +11,6 @@
     become_user: postgres
 
   - name: Ensure user has access to database
-    postgresql_user: db={{ application_name }} name={{ application_name }} password={{ application_name }} priv=ALL
+    postgresql_user: db={{ application_name }} name={{ db_user }} password={{ db_password }} priv=ALL
     become: true
     become_user: postgres

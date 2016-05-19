@@ -11,6 +11,7 @@ project_path: "/webapps/{{ project_name }}/{{ application_name }}"
 application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
 requirements_file: "{{ project_root_path }}/requirements/local.txt"
+staticfiles_dir: "{{ project_path }}/static"
 
 # Gunicorn settings
 deploy_user: vagrant
