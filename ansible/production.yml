@@ -1,0 +1,18 @@
+---
+
+- name: Create a {{ application_name }} virtual machine via vagrant
+  hosts: all
+  become: yes
+  become_user: root
+  remote_user: vagrant
+  vars:
+    - update_apt_cache: yes
+  vars_files:
+    - env_vars/base.yml
+    - env_vars/secrets.yml
+    - env_vars/production.yml
+  roles:
+    - base
+    - { role: azavea.postgresql }
+    - db
+    - web
