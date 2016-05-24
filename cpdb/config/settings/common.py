@@ -31,9 +31,25 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'rest_framework',
     'django_nose',
+
+    'wagtail.wagtailforms',
+    'wagtail.wagtailredirects',
+    'wagtail.wagtailembeds',
+    'wagtail.wagtailsites',
+    'wagtail.wagtailusers',
+    'wagtail.wagtailsnippets',
+    'wagtail.wagtaildocs',
+    'wagtail.wagtailimages',
+    'wagtail.wagtailsearch',
+    'wagtail.wagtailadmin',
+    'wagtail.wagtailcore',
+
+    'modelcluster',
+    'taggit',
 )
 
 LOCAL_APPS = (
+    'story',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -49,6 +65,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'wagtail.wagtailcore.middleware.SiteMiddleware',
+    'wagtail.wagtailredirects.middleware.RedirectMiddleware',
 ]
 
 # DEBUG
@@ -182,3 +200,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+# WAGTAIL SETTINGS
+
+WAGTAIL_SITE_NAME = 'CPDB'
+
+# REST FRAMEWORK SETTINGS
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
+}
