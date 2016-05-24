@@ -14,7 +14,7 @@
 
 - name: Create the Nginx configuration file
   template: src=nginx_site_config.j2
-            dest=/etc/nginx/sites-available/{{ application_name }}
+            dest=/etc/nginx/sites-available/{{ nginx_configuration_name }}
             backup=yes
   notify: reload nginx
 
@@ -24,8 +24,8 @@
   notify: reload nginx
 
 - name: Ensure that the application site is enabled
-  file: src=/etc/nginx/sites-available/{{ application_name }}
-        dest=/etc/nginx/sites-enabled/{{ application_name }}
+  file: src=/etc/nginx/sites-available/{{ nginx_configuration_name }}
+        dest=/etc/nginx/sites-enabled/{{ nginx_configuration_name }}
         state=link
   notify: reload nginx
 

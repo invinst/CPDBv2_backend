@@ -18,6 +18,7 @@ deploy_user: vagrant
 deploy_group: vagrant
 
 # Nginx settings
+nginx_configuration_name: cpdb-backend
 nginx_http_port: 80
 nginx_https_port: 443
 nginx_access_log_file: "{{ application_log_dir }}/nginx_access.log"
