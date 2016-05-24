@@ -13,6 +13,9 @@
     - curl
     - llvm
 
+- name: Creates pyenv directory
+  file: path={{ pyenv_root }} state=directory owner={{ deploy_user }}
+
 - name: Install pyenv
   git: repo=https://github.com/yyuu/pyenv.git dest={{ pyenv_root }}
   become: true

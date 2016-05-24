@@ -1,13 +1,13 @@
 ---
 
 # Application settings.
-pyenv_root: "/webapps/pyenv"
+pyenv_root: "/pyenv"
 pyenv_virtualenv: true
 python_version: "2.7.11"
 pyenv: "{{ pyenv_root }}/bin/pyenv"
 virtualenv_path: "{{ pyenv_root }}/versions/{{ application_name }}"
-project_root_path: "/webapps/{{ project_name }}"
-project_path: "/webapps/{{ project_name }}/{{ application_name }}"
+project_root_path: "/CPDB/{{ project_name }}"
+project_path: "/CPDB/{{ project_name }}/{{ application_name }}"
 application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
 requirements_file: "{{ project_root_path }}/requirements/local.txt"

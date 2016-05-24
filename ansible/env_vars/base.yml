@@ -1,7 +1,7 @@
 ---
 git_repo: 
 
-project_name: cpdb
+project_name: CPDBv2_backend
 application_name: cpdb
 
 ssl_dest_dir: /etc/ssl
