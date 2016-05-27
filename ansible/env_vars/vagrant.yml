@@ -25,3 +25,6 @@ django_settings_file: "config.settings.local"
 
 run_django_db_migrations: yes
 run_django_collectstatic: yes
+
+deploy_user: deploy
+deploy_group: deploy

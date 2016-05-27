@@ -19,4 +19,4 @@
   user: name={{ deploy_user }} group={{ deploy_group }} state=present
 
 - name: Creates directory
-  file: path=/webapps state=directory owner={{ deploy_user }}
+  file: path=/CPDB state=directory owner={{ deploy_user }}
