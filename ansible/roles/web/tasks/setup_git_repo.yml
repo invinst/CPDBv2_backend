@@ -1,0 +1,22 @@
+---
+
+- name: Setup the Git repo
+  git: repo={{ git_repo }}
+       version="{{ git_branch }}"
+       dest={{ project_root_path }}
+       accept_hostkey=yes
+  when: setup_git_repo is defined and setup_git_repo
+  tags: git
+  become: yes
+  become_user: "{{ deploy_user }}"
+
+- name: Create static folder if it is not there
+  file: path={{ staticfiles_dir }}
+        owner={{ deploy_user }}
+        group={{ deploy_group }}
+        state=directory
+
+- name: Setup .env file
+  copy: content="{{ env_file }}" dest={{ project_root_path }}/.env
+  become: yes
+  become_user: "{{ deploy_user }}"

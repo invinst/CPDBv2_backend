@@ -1,0 +1,9 @@
+---
+
+- name: Ensure that the application file permissions are set properly
+  file: path={{ virtualenv_path }}
+        recurse=yes
+        owner={{ deploy_user }}
+        group={{ deploy_group }}
+        state=directory
+  notify: restart application

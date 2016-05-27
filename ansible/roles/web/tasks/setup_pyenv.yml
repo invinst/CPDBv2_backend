@@ -1,0 +1,30 @@
+---
+- name: Install requirements
+  apt: pkg={{ item }} state=present
+  with_items:
+    - make
+    - build-essential
+    - libssl-dev
+    - zlib1g-dev
+    - libbz2-dev
+    - libreadline-dev
+    - libsqlite3-dev
+    - wget
+    - curl
+    - llvm
+
+- name: Creates pyenv directory
+  file: path={{ pyenv_root }} state=directory owner={{ deploy_user }}
+
+- name: Install pyenv
+  git: repo=https://github.com/yyuu/pyenv.git dest={{ pyenv_root }}
+  become: true
+  become_user: "{{ deploy_user }}"
+
+- name: Install pyenv-virtualenv
+  git: repo=https://github.com/yyuu/{{ item }}.git dest={{ pyenv_root }}/plugins/{{ item }}
+  with_items:
+    - pyenv-virtualenv
+  when: pyenv_virtualenv
+  become: true
+  become_user: "{{ deploy_user }}"

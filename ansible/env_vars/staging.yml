@@ -1,0 +1,32 @@
+---
+
+# Git settings.
+setup_git_repo: yes
+git_branch: staging
+
+# Gunicorn settings. For the number of workers, a good rule to follow is
+# 2 x number of CPUs + 1
+gunicorn_num_workers: 3
+
+# Setting this to 1 will restart the Gunicorn process each time
+# you make a request, basically reloading the code. Very handy
+# when developing. Set to 0 for unlimited requests (default).
+gunicorn_max_requests: 0
+
+gunicorn_timeout_seconds: 300
+
+# Nginx settings.
+nginx_server_name: 23.96.180.229
+nginx_template: "nginx_site_config_without_https"
+
+ssl_src_dir: ssl_self_signed
+ssl_dest_dir: /etc/ssl
+
+# Application settings.
+django_settings_file: "config.settings.staging"
+
+run_django_db_migrations: yes
+run_django_collectstatic: yes
+
+deploy_user: ansible
+deploy_group: ansible

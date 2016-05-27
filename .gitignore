@@ -1,11 +1,11 @@
-# Environment variables 
+# Environment variables
 .env
 
 # Compiled python files
 *.pyc
 
 # sqlite database
-*.sqlite3 
+*.sqlite3
 
 # For pyCharm dev
 .project
@@ -13,3 +13,13 @@
 
 # Coverage stuff
 .coverage
+
+# Vagrant
+.vagrant/
+vagrant.retry
+staging.retry
+
+staticfiles/
+.python-version
+
+cpdb/static/

@@ -3,10 +3,11 @@ from __future__ import absolute_import, unicode_literals
 import environ
 
 
-ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
+ROOT_DIR = environ.Path(__file__) - 4  # (/root/cpdb/config/settings/myfile.py - 4 = /)
 APPS_DIR = ROOT_DIR.path('cpdb')
 
 env = environ.Env()
+environ.Env.read_env("{root}/.env".format(root=ROOT_DIR))  # reading .env file
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -14,7 +15,7 @@ env = environ.Env()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -115,7 +116,7 @@ TEMPLATES = [
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+STATIC_ROOT = str(APPS_DIR('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
