@@ -10,11 +10,11 @@ class StoryViewSet(viewsets.GenericViewSet):
     serializer_class = StorySerializer
 
     def list(self, request):
-        serializer = self.get_serializer(self.queryset, many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk):
-        queryset = self.queryset.filter(pk=pk).first()
+        queryset = self.get_queryset().filter(pk=pk).first()
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
 
