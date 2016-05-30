@@ -16,7 +16,9 @@ gunicorn_max_requests: 0
 gunicorn_timeout_seconds: 300
 
 # Nginx settings.
-nginx_server_name: api.cpdb.me
+nginx_server_name: 23.96.180.229
+nginx_template: "nginx_site_config_without_https"
+
 ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
@@ -26,5 +28,5 @@ django_settings_file: "config.settings.staging"
 run_django_db_migrations: yes
 run_django_collectstatic: yes
 
-deploy_user: deploy
-deploy_group: deploy
+deploy_user: ansible
+deploy_group: ansible

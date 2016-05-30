@@ -18,12 +18,14 @@ deploy_user: vagrant
 deploy_group: vagrant
 
 # Nginx settings
+nginx_configuration_name: cpdb-backend
 nginx_http_port: 80
 nginx_https_port: 443
 nginx_access_log_file: "{{ application_log_dir }}/nginx_access.log"
 nginx_error_log_file: "{{ application_log_dir }}/nginx_error.log"
 nginx_static_dir: "{{ project_path }}/staticfiles/"
 nginx_media_dir: "{{ project_path }}/media/"
+nginx_template: "nginx_site_config"
 
 pyenv_environments:
   PYENV_ROOT: "{{ pyenv_root }}"
