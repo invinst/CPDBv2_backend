@@ -65,68 +65,68 @@ class StoryAPITests(APITestCase):
 
         url = reverse('api:story-list')
         response = self.client.get(url)
-        actual_content = json.loads(response.content);
+        actual_content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(actual_content, [
+            {
+                'id': story_page_1.id,
+                'title': 'title a',
+                'canonical_url': 'http://domain.com/title_a',
+                'post_date': '2015-11-03',
+                'newspaper': {
+                    'id': 11,
+                    'name': 'a paper',
+                    'short_name': 'ap'
+                },
+                'image_url': {
+                    '480_320': '/media/images/a-image.min-480x320.png'
+                },
+                'body': [
                     {
-                        'id': story_page_1.id,
-                        'title': 'title a',
-                        'canonical_url': 'http://domain.com/title_a',
-                        'post_date': '2015-11-03',
-                        'newspaper': {
-                            'id': 11,
-                            'name': 'a paper',
-                            'short_name': 'ap'
-                        },
-                        'image_url': {
-                            '480_320': '/media/images/a-image.min-480x320.png'
-                        },
-                        'body': [
-                            {
-                                'type': 'paragraph',
-                                'value': 'a a a a'
-                            }
-                        ]
-                    },
-                    {
-                        'id': story_page_2.id,
-                        'title': 'title b',
-                        'canonical_url': 'http://domain.com/title_b',
-                        'post_date': '2015-11-04',
-                        'newspaper': {
-                            'id': 12,
-                            'name': 'b paper',
-                            'short_name': 'bp'
-                        },
-                        'image_url': {
-                            '480_320': '/media/images/b-image.min-480x320.png'
-                        },
-                        'body': [
-                            {
-                                'type': 'paragraph',
-                                'value': 'b b b b'
-                            }
-                        ]
-                    },
-                    {
-                        'id': story_page_3.id,
-                        'title': 'title c',
-                        'canonical_url': 'http://domain.com/title_c',
-                        'post_date': '2015-11-05',
-                        'newspaper': {
-                            'id': 13,
-                            'name': 'c paper',
-                            'short_name': 'cp'
-                        },
-                        'image_url': {
-                            '480_320': '/media/images/c-image.min-480x320.png'
-                        },
-                        'body': [
-                            {
-                                'type': 'paragraph',
-                                'value': 'c c c c'
-                            }
-                        ]
+                        'type': 'paragraph',
+                        'value': 'a a a a'
                     }
-                ])
+                ]
+            },
+            {
+                'id': story_page_2.id,
+                'title': 'title b',
+                'canonical_url': 'http://domain.com/title_b',
+                'post_date': '2015-11-04',
+                'newspaper': {
+                    'id': 12,
+                    'name': 'b paper',
+                    'short_name': 'bp'
+                },
+                'image_url': {
+                    '480_320': '/media/images/b-image.min-480x320.png'
+                },
+                'body': [
+                    {
+                        'type': 'paragraph',
+                        'value': 'b b b b'
+                    }
+                ]
+            },
+            {
+                'id': story_page_3.id,
+                'title': 'title c',
+                'canonical_url': 'http://domain.com/title_c',
+                'post_date': '2015-11-05',
+                'newspaper': {
+                    'id': 13,
+                    'name': 'c paper',
+                    'short_name': 'cp'
+                },
+                'image_url': {
+                    '480_320': '/media/images/c-image.min-480x320.png'
+                },
+                'body': [
+                    {
+                        'type': 'paragraph',
+                        'value': 'c c c c'
+                    }
+                ]
+            }
+        ])

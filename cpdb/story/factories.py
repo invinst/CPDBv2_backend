@@ -17,8 +17,9 @@ class ImageFactory(DjangoModelFactory):
     class Meta:
         model = 'wagtailimages.Image'
 
-    title=LazyFunction(fake.sentence)
-    file=LazyFunction(get_test_image_file)
+    title = LazyFunction(fake.sentence)
+    file = LazyFunction(get_test_image_file)
+
 
 class NewspaperFactory(DjangoModelFactory):
     class Meta:
