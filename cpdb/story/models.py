@@ -12,7 +12,7 @@ class Newspaper(models.Model):
     short_name = models.CharField(max_length=255, null=True)
 
     def __unicode__(self):
-        return self.title
+        return self.name
 
 
 class StoryPage(Page):

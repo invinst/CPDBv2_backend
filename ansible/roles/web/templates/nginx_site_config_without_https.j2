@@ -9,22 +9,16 @@ upstream {{ application_name }}_wsgi_server {
 server {
     listen      80;
     server_name {{ nginx_server_name }};
-    rewrite     ^ https://$server_name$request_uri? permanent;
-}
-
-server {
-    listen              443;
-    server_name         {{ nginx_server_name }};
-	ssl on;
-	ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
-	ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
-
     client_max_body_size 4G;
 
     access_log {{ nginx_access_log_file }};
     error_log {{ nginx_error_log_file }};
 
     root {{ frontend_static_dir }};
+
+    location = / {
+        index index.html /index.html;
+    }
 
     location /static/ {
         alias   {{ nginx_static_dir }};
@@ -40,7 +34,6 @@ server {
         }
 
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
         proxy_set_header Host $http_host;
         proxy_redirect off;
 

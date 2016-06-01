@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from story.models import StoryPage
-from story.serializers import StorySerializer
+from faq.models import FAQPage
+from faq.serializers import FAQSerializer
 
 
-class StoryViewSet(viewsets.GenericViewSet):
-    queryset = StoryPage.objects.all()
-    serializer_class = StorySerializer
+class FAQViewSet(viewsets.GenericViewSet):
+    queryset = FAQPage.objects.all()
+    serializer_class = FAQSerializer
 
     def list(self, request):
         serializer = self.get_serializer(self.get_queryset(), many=True)
