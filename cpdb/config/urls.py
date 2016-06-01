@@ -13,13 +13,29 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls import url, include
 from django.contrib import admin
 
-from example.views import ExampleAPIView
+from rest_framework import routers
 
+from wagtail.wagtailadmin import urls as wagtailadmin_urls
+from wagtail.wagtailcore import urls as wagtail_urls
+
+from example.views import ExampleAPIView
+from story.views import StoryViewSet
+from faq.views import FAQViewSet
+
+
+router = routers.SimpleRouter()
+router.register(r'stories', StoryViewSet, base_name='story')
+router.register(r'faqs', FAQViewSet, base_name='faq')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^cms/', include(wagtailadmin_urls)),
+    url(r'^wagtail/', include(wagtail_urls)),
     url(r'^api/hello-world/$', ExampleAPIView.as_view(), name='super-api'),
-]
+    url(r'^api/v1/', include(router.urls, namespace='api'))
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

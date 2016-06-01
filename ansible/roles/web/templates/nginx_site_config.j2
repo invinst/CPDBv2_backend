@@ -24,6 +24,8 @@ server {
     access_log {{ nginx_access_log_file }};
     error_log {{ nginx_error_log_file }};
 
+    root {{ frontend_static_dir }};
+
     location /static/ {
         alias   {{ nginx_static_dir }};
     }
