@@ -5,3 +5,5 @@ project_name: CPDBv2_backend
 application_name: cpdb
 
 ssl_dest_dir: /etc/ssl
+
+frontend_static_dir: /www/static/
