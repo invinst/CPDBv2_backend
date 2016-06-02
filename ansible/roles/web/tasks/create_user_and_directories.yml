@@ -20,3 +20,7 @@
 
 - name: Creates directory
   file: path=/CPDB state=directory owner={{ deploy_user }}
+
+- name: Creates media directory
+  file: path={{ backend_media_dir }} state=directory owner={{ deploy_user }}
+  when: backend_media_dir is defined
