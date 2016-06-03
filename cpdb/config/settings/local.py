@@ -12,4 +12,6 @@ CORS_ORIGIN_WHITELIST = (
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
+MEDIA_ROOT = '/www/media/'
+
 DEBUG = True
