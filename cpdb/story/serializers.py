@@ -22,7 +22,7 @@ class StorySerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return {
-            '480_320': obj.image.get_rendition('min-480x320').url
+            '480_320': obj.image and obj.image.get_rendition('min-480x320').url
         }
 
     def get_canonical_url(self, obj):
