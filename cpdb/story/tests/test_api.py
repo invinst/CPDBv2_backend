@@ -99,9 +99,7 @@ class StoryAPITests(APITestCase):
                     'name': 'b paper',
                     'short_name': 'bp'
                 },
-                'image_url': {
-                    '480_320': None
-                },
+                'image_url': {},
                 'body': [
                     {
                         'type': 'paragraph',

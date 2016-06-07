@@ -21,9 +21,12 @@ class StorySerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body')
 
     def get_image_url(self, obj):
-        return {
-            '480_320': obj.image and obj.image.get_rendition('min-480x320').url
-        }
+        if obj.image:
+            return {
+                '480_320': obj.image.get_rendition('min-480x320').url
+            }
+
+        return {}
 
     def get_canonical_url(self, obj):
         return obj.canonical_url

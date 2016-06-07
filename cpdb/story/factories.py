@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from django.contrib.contenttypes.models import ContentType
 
@@ -37,7 +38,7 @@ class StoryPageFactory(DjangoModelFactory):
     newspaper = SubFactory(NewspaperFactory)
     title = LazyFunction(fake.sentence)
     canonical_url = LazyFunction(fake.url)
-    post_date = LazyFunction(fake.date_time_this_month)
+    post_date = LazyFunction(date.today)
     image = ImageFactory()
     body = json.dumps([{
         'type': 'paragraph',
