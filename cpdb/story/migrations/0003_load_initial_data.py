@@ -42,7 +42,7 @@ def load_fixture(apps, schema_editor):
                     'url_path': '{root_url}{slug}/'.format(root_url=root_page.url_path, slug=slug),
                     'content_type': storypage_content_type
                     })
-                StoryPage.objects.create(pk=root_page.numchild + 2, **datum.get('fields', None))
+                StoryPage.objects.create(**datum.get('fields', None))
 
         root_page.save()
     except Exception, e:

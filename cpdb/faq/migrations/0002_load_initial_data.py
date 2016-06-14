@@ -39,7 +39,7 @@ def load_fixture(apps, schema_editor):
                     'url_path': '{root_url}{slug}/'.format(root_url=root_page.url_path, slug=slug),
                     'content_type': faqpage_content_type
                     })
-                FAQPage.objects.create(pk=root_page.numchild + 2, **datum.get('fields', None))
+                FAQPage.objects.create(**datum.get('fields', None))
 
         root_page.save()
     except Exception, e:
