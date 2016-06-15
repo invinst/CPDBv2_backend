@@ -5,5 +5,5 @@ from story.serializers import StorySerializer
 
 
 class StoryViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
-    queryset = StoryPage.objects.all()
+    queryset = StoryPage.objects.live()
     serializer_class = StorySerializer
