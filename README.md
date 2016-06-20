@@ -19,7 +19,7 @@ It will ask you the password for ansible-vault, then you only need to wait for a
 For the development instance, it's better to use all the `vagrant` user to make it less effort dealing with permission. Currently, we have both options for you to choose how to develop the backend:
 - You can use django development server by ssh to your vagrant instance and run `./manage.py runserver` (need to turn off gunicorn for safety)
 - If you like, current gunicorn on vagrant is configured to be reloadable, it will do the reload when your code changes, but you need to read the log yourselves.
-- 
+
 # Setup the production/staging
 
 Our ansible scripts are production-ready. You can use them for automating your server setup steps. You only need to put your ssh keys to the server, we give you the small script name upload_ssh_keys.sh in bin folder which help you to transfer your ssh keys to the server (it will automatically change your filename to `id_rsa` and `id_rsa.pub`).
