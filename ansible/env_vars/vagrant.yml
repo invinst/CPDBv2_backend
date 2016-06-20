@@ -28,5 +28,6 @@ run_django_collectstatic: yes
 
 deploy_user: vagrant
 deploy_group: vagrant
+db_user: vagrant
 
 backend_media_dir: /www/media/
