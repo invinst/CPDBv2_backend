@@ -17,6 +17,7 @@ gunicorn_timeout_seconds: 300
 
 # Nginx settings.
 nginx_server_name: api.cpdb.me
+nginx_template: "nginx_site_config_without_https"
 ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
@@ -31,3 +32,4 @@ deploy_group: vagrant
 db_user: vagrant
 
 backend_media_dir: /www/media/
+gunicorn_extra_params: "--reload"
