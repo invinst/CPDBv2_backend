@@ -32,4 +32,5 @@ exec gunicorn \
     --user $USER --group $GROUP \
     --log-level debug \
     --bind unix:$SOCKFILE \
+    {{ gunicorn_extra_params }} \
     config.wsgi
