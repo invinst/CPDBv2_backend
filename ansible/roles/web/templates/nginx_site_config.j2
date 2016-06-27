@@ -26,6 +26,10 @@ server {
 
     root {{ frontend_static_dir }};
 
+    location = / {
+        index index.html /index.html;
+    }
+
     location /static/ {
         alias   {{ nginx_static_dir }};
     }
