@@ -18,6 +18,7 @@
 .vagrant/
 vagrant.retry
 staging.retry
+production.retry
 
 staticfiles/
 .python-version
