@@ -21,3 +21,6 @@
 
 - include: setup_nginx.yml
   tags: nginx
+
+- include: restart_nginx_and_supervisor.yml
+  tags: deploy
