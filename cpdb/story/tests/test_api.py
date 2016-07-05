@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 
@@ -22,7 +23,10 @@ class StoryAPITests(APITestCase):
         StoryPage.get_tree().all().delete()
 
     def tearDown(self):
-        shutil.rmtree(settings.MEDIA_ROOT)
+        if os.path.exists(settings.MEDIA_ROOT):
+            # TODO: for multiple tests that create default image `test.png` this command causes SourceImageIOError
+            # while serializing story
+            shutil.rmtree(settings.MEDIA_ROOT)
 
     def test_list_stories(self):
         root = StoryPage.add_root(
@@ -147,3 +151,34 @@ class StoryAPITests(APITestCase):
         results = json.loads(response.content)['results']
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['id'], non_featured_story.id)
+
+    def test_order_stories_by_first_published_date(self):
+        root = StoryPage.add_root(
+            instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
+
+        first_story = root.add_child(
+            instance=StoryPageFactory.build(
+                image=None,
+                first_published_at=date(2015, 11, 4),
+                newspaper=NewspaperFactory(id=11)
+            )
+        )
+
+        second_story = root.add_child(
+            instance=StoryPageFactory.build(
+                image=None,
+                first_published_at=date(2015, 11, 5),
+                newspaper=NewspaperFactory(id=12)
+            )
+        )
+
+        url = reverse('api:story-list')
+        response = self.client.get(url, {'ordering': 'first_published_at'})
+        results = json.loads(response.content)['results']
+        self.assertEqual(results[0]['id'], first_story.id)
+        self.assertEqual(results[1]['id'], second_story.id)
+
+        response = self.client.get(url, {'ordering': '-first_published_at'})
+        results = json.loads(response.content)['results']
+        self.assertEqual(results[0]['id'], second_story.id)
+        self.assertEqual(results[1]['id'], first_story.id)

@@ -7,5 +7,6 @@ from story.serializers import StorySerializer
 class StoryViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
     queryset = StoryPage.objects.all()
     serializer_class = StorySerializer
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('is_featured',)
+    ordering_fields = ('first_published_at',)
