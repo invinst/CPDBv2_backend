@@ -3,6 +3,8 @@
     apt: name={{ item }} update_cache={{ update_apt_cache }} state=latest
     with_items:
       - python-psycopg2
+      - postgresql-9.4-postgis-2.2
+      - postgresql-server-dev-9.4
     tags: packages
 
   - name: Ensure the database exist
@@ -10,7 +12,13 @@
     become: true
     become_user: postgres
 
+  - name: setup pg_hba file
+    copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf owner=postgres group=postgres mode=0640
+    notify: reload postgres
+
   - name: Ensure user has access to database
-    postgresql_user: db={{ application_name }} name={{ db_user }} password={{ db_password }} priv=ALL
+    postgresql_user:
+      db={{ application_name }} name={{ db_user }} password={{ db_password }}
+      priv=ALL role_attr_flags=SUPERUSER
     become: true
     become_user: postgres
