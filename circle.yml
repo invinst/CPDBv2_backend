@@ -6,7 +6,7 @@ machine:
 
 database:
   post:
-    - psql -c "CREATE EXTENSION postgis;" -d cpdb
+    - psql -c "CREATE EXTENSION postgis;" -d circle_test
 
 dependencies:
   override:
