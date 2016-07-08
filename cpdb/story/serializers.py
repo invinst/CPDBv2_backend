@@ -15,10 +15,11 @@ class StorySerializer(serializers.ModelSerializer):
     newspaper = NewspaperSerializer(required=False)
     image_url = serializers.SerializerMethodField()
     canonical_url = serializers.SerializerMethodField()
+    is_featured = serializers.BooleanField()
 
     class Meta:
         model = StoryPage
-        fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body')
+        fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body', 'is_featured')
 
     def get_image_url(self, obj):
         if obj.image:

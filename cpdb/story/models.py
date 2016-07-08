@@ -28,9 +28,11 @@ class StoryPage(Page):
     )
     body = StreamField([
         ('paragraph', blocks.TextBlock())])
+    is_featured = models.BooleanField(default=False)
 
     content_panels = Page.content_panels + [
         FieldPanel('newspaper'),
+        FieldPanel('is_featured'),
         FieldPanel('canonical_url'),
         FieldPanel('post_date'),
         ImageChooserPanel('image'),
