@@ -52,8 +52,6 @@ class Command(BaseCommand):
             return True
         elif str == 'False':
             return False
-        else:
-            raise ValueError
 
     def import_model(self, model, file_name, rename):
         with open(file_name, 'rb') as csv_file:
