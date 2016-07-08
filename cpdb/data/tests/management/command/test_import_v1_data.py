@@ -20,7 +20,7 @@ class ImportV1DataTestCase(TestCase):
             key=lambda datum: datum['pk']), expect_data)
 
     def test_import_v1_data(self):
-        management.call_command('import_v1_data', folder='data/tests/management/command/v1_data')
+        management.call_command('import_v1_data', folder='cpdb/data/tests/management/command/v1_data')
         self.assert_data(PoliceUnit, [{
             'pk': 1,
             'unit_name': '014'
