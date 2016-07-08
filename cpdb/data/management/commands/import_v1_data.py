@@ -76,8 +76,8 @@ class Command(BaseCommand):
             # note the many to many fields
             many_to_many = [
                 ind for ind in range(len(field_names))
-                if field_names[ind] != 'pk'
-                and model._meta.get_field(field_names[ind]).many_to_many
+                if field_names[ind] != 'pk' and
+                model._meta.get_field(field_names[ind]).many_to_many
             ]
 
             existing_pks = model.objects.all().values_list('pk', flat=True)
@@ -85,9 +85,9 @@ class Command(BaseCommand):
             for row in reader:
                 # set row value to None for any nullable field
                 row = [
-                    None if field_names[ind] != 'pk'
-                    and model._meta.get_field(field_names[ind]).null
-                    and not row[ind] else row[ind]
+                    None if field_names[ind] != 'pk' and
+                    model._meta.get_field(field_names[ind]).null and not
+                    row[ind] else row[ind]
                     for ind in range(len(field_names))
                 ]
 
@@ -95,8 +95,8 @@ class Command(BaseCommand):
                 row = [
                     iso8601.parse_date(row[ind])
                     .replace(tzinfo=timezone.get_default_timezone()).astimezone(pytz.utc)
-                    if field_names[ind] != 'pk' and row[ind]
-                    and model._meta.get_field(field_names[ind]).get_internal_type()
+                    if field_names[ind] != 'pk' and row[ind] and
+                    model._meta.get_field(field_names[ind]).get_internal_type()
                     in ['DateTimeField']
                     else row[ind]
                     for ind in range(len(field_names))
@@ -105,8 +105,8 @@ class Command(BaseCommand):
                 # set row boolean value
                 row = [
                     self.str_to_bool(row[ind])
-                    if field_names[ind] != 'pk'
-                    and model._meta.get_field(field_names[ind]).get_internal_type() == 'BooleanField'
+                    if field_names[ind] != 'pk' and
+                    model._meta.get_field(field_names[ind]).get_internal_type() == 'BooleanField'
                     else row[ind]
                     for ind in range(len(field_names))
                 ]

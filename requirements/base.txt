@@ -6,3 +6,4 @@ six==1.10.0
 wagtail==1.5rc1
 psycopg2==2.6.1
 django-cors-headers==1.1.0
+iso8601==0.1.11
