@@ -7,14 +7,16 @@
       - postgresql-server-dev-9.4
     tags: packages
 
+  - name: setup pg_hba file
+    copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf owner=postgres group=postgres mode=0640
+
+  - name: reload postgres
+    service: name=postgresql state=reloaded enabled=yes
+
   - name: Ensure the database exist
     postgresql_db: name={{ application_name }}
     become: true
     become_user: postgres
-
-  - name: setup pg_hba file
-    copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf owner=postgres group=postgres mode=0640
-    notify: reload postgres
 
   - name: Ensure user has access to database
     postgresql_user:

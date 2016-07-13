@@ -109,7 +109,7 @@ OUTCOMES = [
     ['700', 'Reinstated by Court Action'],
     ['800', 'Resigned'],
     ['900', 'Penalty Not Served'],
-    [None, 'Unknown'],
+    ['', 'Unknown'],
 ]
 
 FINDINGS = [
