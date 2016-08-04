@@ -20,7 +20,7 @@ class ImportV1DataTestCase(TestCase):
             key=lambda datum: datum['pk']), expect_data)
 
     def test_import_v1_data(self):
-        management.call_command('import_v1_data', folder='cpdb/data/tests/management/command/v1_data')
+        management.call_command('import_v1_data', folder='cpdb/data/tests/management/commands/v1_data')
         self.assert_data(PoliceUnit, [{
             'pk': 1,
             'unit_name': '014'
@@ -89,26 +89,26 @@ class ImportV1DataTestCase(TestCase):
             ' -87.0000000000000000 41.0000000000000000)))'))
         self.assertEqual(areas[0].pk, 1)
         self.assertEqual(areas[0].name, 'Edgewater')
-        self.assertEqual(areas[0].type, 'neighborhoods')
+        self.assertEqual(areas[0].area_type, 'neighborhoods')
         self.assertEqual(areas[1].polygon.__str__(), (
             'SRID=4326;MULTIPOLYGON (((-87.0000000000000000 43.0000000000000000,'
             ' -86.0000000000000000 41.0000000000000000, -85.0000000000000000 42.0000000000000000,'
             ' -87.0000000000000000 43.0000000000000000)))'))
         self.assertEqual(areas[1].pk, 2)
         self.assertEqual(areas[1].name, '2532')
-        self.assertEqual(areas[1].type, 'police-beats')
+        self.assertEqual(areas[1].area_type, 'police-beats')
 
         lineareas = LineArea.objects.all()
         self.assertEqual(lineareas[0].pk, 1)
         self.assertEqual(lineareas[0].name, 'MCPHERSON')
-        self.assertEqual(lineareas[0].type, 'passageway')
+        self.assertEqual(lineareas[0].linearea_type, 'passageway')
         self.assertEqual(lineareas[0].geom.__str__(), (
             'SRID=4326;MULTILINESTRING ((-87.6776441465162861 41.9669399158901868, '
             '-87.6761545193971585 41.9669615171530594, '
             '-87.6762051103621616 41.9687949583315145))'))
         self.assertEqual(lineareas[1].pk, 2)
         self.assertEqual(lineareas[1].name, 'CLARK HS')
-        self.assertEqual(lineareas[1].type, 'passageway')
+        self.assertEqual(lineareas[1].linearea_type, 'passageway')
         self.assertEqual(lineareas[1].geom.__str__(), (
             'SRID=4326;MULTILINESTRING ((-87.7574153386844245 41.8729155545781566, '
             '-87.7548059804398974 41.8729463761624459), (-87.7548059804398974 41.8729463761624459, '
@@ -171,7 +171,7 @@ class ImportV1DataTestCase(TestCase):
 
         self.assert_data(AllegationCategory, [{
             'pk': 1,
-            'cat_id': '029',
+            'category_code': '029',
             'category': 'Operation/Personnel Violations',
             'allegation_name': 'Failure To Identify',
             'on_duty': True,
@@ -179,7 +179,7 @@ class ImportV1DataTestCase(TestCase):
             },
             {
             'pk': 2,
-            'cat_id': '02A',
+            'category_code': '02A',
             'category': 'Drug / Alcohol Abuse',
             'allegation_name': 'Intoxicated On Duty',
             'on_duty': False,
@@ -189,7 +189,7 @@ class ImportV1DataTestCase(TestCase):
         self.assert_data(OfficerAllegation, [{
             'pk': 1,
             'allegation': 1,
-            'cat': 1,
+            'allegation_category': 1,
             'officer': 1,
             'start_date': None,
             'end_date': None,
@@ -203,7 +203,7 @@ class ImportV1DataTestCase(TestCase):
             {
             'pk': 2,
             'allegation': 2,
-            'cat': None,
+            'allegation_category': None,
             'officer': 2,
             'start_date': datetime.date(2001, 1, 1),
             'end_date': datetime.date(2001, 1, 11),

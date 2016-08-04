@@ -40,14 +40,14 @@ class OfficerHistory(models.Model):
 
 class Area(models.Model):
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=30, choices=AREA_CHOICES)
+    area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
 
 
 class LineArea(models.Model):
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=30, choices=LINE_AREA_CHOICES)
+    linearea_type = models.CharField(max_length=30, choices=LINE_AREA_CHOICES)
     geom = models.MultiLineStringField(srid=4326, blank=True)
     objects = models.GeoManager()
 
@@ -80,7 +80,7 @@ class Allegation(models.Model):
 
 
 class AllegationCategory(models.Model):
-    cat_id = models.CharField(max_length=255)
+    category_code = models.CharField(max_length=255)
     category = models.CharField(max_length=255, blank=True)
     allegation_name = models.CharField(max_length=255, blank=True)
     on_duty = models.BooleanField(default=False)
@@ -89,7 +89,7 @@ class AllegationCategory(models.Model):
 
 class OfficerAllegation(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
-    cat = models.ForeignKey(AllegationCategory, to_field='id', null=True)
+    allegation_category = models.ForeignKey(AllegationCategory, to_field='id', null=True)
     officer = models.ForeignKey(Officer, null=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)

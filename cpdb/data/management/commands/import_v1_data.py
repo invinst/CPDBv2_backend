@@ -4,6 +4,7 @@ import os
 
 import iso8601
 import pytz
+from tqdm import tqdm
 
 from django.core.management import BaseCommand
 from django.utils import timezone
@@ -26,12 +27,12 @@ IMPORT_MODELS = (
         }),
     (OfficerBadgeNumber, 'officerbadgenumber.csv', None),
     (OfficerHistory, 'officerhistory.csv', None),
-    (Area, 'area.csv', None),
-    (LineArea, 'linearea.csv', None),
+    (Area, 'area.csv', {'type': 'area_type'}),
+    (LineArea, 'linearea.csv', {'type': 'linearea_type'}),
     (Investigator, 'investigator.csv', None),
     (Allegation, 'allegation.csv', None),
-    (AllegationCategory, 'allegationcategory.csv', None),
-    (OfficerAllegation, 'officerallegation.csv', None),
+    (AllegationCategory, 'allegationcategory.csv', {'cat_id': 'category_code'}),
+    (OfficerAllegation, 'officerallegation.csv', {'cat': 'allegation_category'}),
     (PoliceWitness, 'policewitness.csv', None),
     (Complainant, 'complainant.csv', None),
     (OfficerAlias, 'officeralias.csv', None),
@@ -80,7 +81,7 @@ class Command(BaseCommand):
 
             existing_pks = model.objects.all().values_list('pk', flat=True)
 
-            for row in reader:
+            for row in tqdm(reader, desc='Importing %s' % file_name):
                 # set row value to None for any nullable field
                 row = [
                     None if field_names[ind] != 'pk' and

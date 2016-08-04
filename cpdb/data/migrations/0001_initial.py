@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             name='AllegationCategory',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cat_id', models.CharField(max_length=255)),
+                ('category_code', models.CharField(max_length=255)),
                 ('category', models.CharField(blank=True, max_length=255)),
                 ('allegation_name', models.CharField(blank=True, max_length=255)),
                 ('on_duty', models.BooleanField(default=False)),
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
-                ('type', models.CharField(choices=[[b'beat', b'Beat'], [b'neighborhood', b'Neighborhood'], [b'school-grounds', b'School Grounds'], [b'ward', b'Ward'], [b'police-districts', b'Police District']], max_length=30)),
+                ('area_type', models.CharField(choices=[[b'beat', b'Beat'], [b'neighborhood', b'Neighborhood'], [b'school-grounds', b'School Grounds'], [b'ward', b'Ward'], [b'police-districts', b'Police District']], max_length=30)),
                 ('polygon', django.contrib.gis.db.models.fields.MultiPolygonField(null=True, srid=4326)),
             ],
         ),
@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
-                ('type', models.CharField(choices=[[b'passageway', b'Passageway']], max_length=30)),
+                ('linearea_type', models.CharField(choices=[[b'passageway', b'Passageway']], max_length=30)),
                 ('geom', django.contrib.gis.db.models.fields.MultiLineStringField(blank=True, srid=4326)),
             ],
         ),
@@ -115,7 +115,7 @@ class Migration(migrations.Migration):
                 ('final_outcome', models.CharField(blank=True, choices=[[b'000', b'Violation Noted'], [b'001', b'1 Day Suspension'], [b'002', b'2 Day Suspension'], [b'003', b'3 Day Suspension'], [b'004', b'4 Day Suspension'], [b'005', b'5 Day Suspension'], [b'006', b'6 Day Suspension'], [b'007', b'7 Day Suspension'], [b'008', b'8 Day Suspension'], [b'009', b'9 Day Suspension'], [b'010', b'10 Day Suspension'], [b'011', b'11 Day Suspension'], [b'012', b'12 Day Suspension'], [b'013', b'13 Day Suspension'], [b'014', b'14 Day Suspension'], [b'015', b'15 Day Suspension'], [b'016', b'16 Day Suspension'], [b'017', b'17 Day Suspension'], [b'018', b'18 Day Suspension'], [b'019', b'19 Day Suspension'], [b'020', b'20 Day Suspension'], [b'021', b'21 Day Suspension'], [b'022', b'22 Day Suspension'], [b'023', b'23 Day Suspension'], [b'024', b'24 Day Suspension'], [b'025', b'25 Day Suspension'], [b'026', b'26 Day Suspension'], [b'027', b'27 Day Suspension'], [b'028', b'28 Day Suspension'], [b'029', b'29 Day Suspension'], [b'030', b'30 Day Suspension'], [b'045', b'45 Day Suspension'], [b'060', b'60 Day Suspension'], [b'090', b'90 Day Suspension'], [b'100', b'Reprimand'], [b'120', b'Suspended for 120 Days'], [b'180', b'Suspended for 180 Days'], [b'200', b'Suspended over 30 Days'], [b'300', b'Administrative Termination'], [b'400', b'Separation'], [b'500', b'Reinstated by Police Board'], [b'600', b'No Action Taken'], [b'700', b'Reinstated by Court Action'], [b'800', b'Resigned'], [b'900', b'Penalty Not Served'], [None, b'Unknown']], max_length=3)),
                 ('final_outcome_class', models.CharField(blank=True, max_length=20)),
                 ('allegation', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.Allegation')),
-                ('cat', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.AllegationCategory')),
+                ('allegation_category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.AllegationCategory')),
                 ('officer', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.Officer')),
             ],
         ),
