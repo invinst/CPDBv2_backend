@@ -158,7 +158,6 @@ class StoryAPITests(APITestCase):
 
         first_story = root.add_child(
             instance=StoryPageFactory.build(
-                image=None,
                 first_published_at=date(2015, 11, 4),
                 newspaper=NewspaperFactory(id=11)
             )
@@ -166,7 +165,6 @@ class StoryAPITests(APITestCase):
 
         second_story = root.add_child(
             instance=StoryPageFactory.build(
-                image=None,
                 first_published_at=date(2015, 11, 5),
                 newspaper=NewspaperFactory(id=12)
             )
