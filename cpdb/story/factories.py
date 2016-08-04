@@ -44,3 +44,4 @@ class StoryPageFactory(DjangoModelFactory):
         'type': 'paragraph',
         'value': fake.text()
         }])
+    is_featured = False

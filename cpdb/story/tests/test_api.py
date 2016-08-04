@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 
@@ -22,7 +23,10 @@ class StoryAPITests(APITestCase):
         StoryPage.get_tree().all().delete()
 
     def tearDown(self):
-        shutil.rmtree(settings.MEDIA_ROOT)
+        if os.path.exists(settings.MEDIA_ROOT):
+            # TODO: for multiple tests that create default image `test.png` this command causes SourceImageIOError
+            # while serializing story
+            shutil.rmtree(settings.MEDIA_ROOT)
 
     def test_list_stories(self):
         root = StoryPage.add_root(
@@ -38,7 +42,8 @@ class StoryAPITests(APITestCase):
                     id=11,
                     name='a paper',
                     short_name='ap'),
-                body='[{"type": "paragraph", "value": "a a a a"}]'))
+                body='[{"type": "paragraph", "value": "a a a a"}]',
+                is_featured=False))
 
         story_page_2 = root.add_child(
             instance=StoryPageFactory.build(
@@ -50,7 +55,8 @@ class StoryAPITests(APITestCase):
                     id=12,
                     name='b paper',
                     short_name='bp'),
-                body='[{"type": "paragraph", "value": "b b b b"}]'))
+                body='[{"type": "paragraph", "value": "b b b b"}]',
+                is_featured=False))
 
         root.add_child(
             instance=StoryPageFactory.build(
@@ -62,7 +68,8 @@ class StoryAPITests(APITestCase):
                     id=13,
                     name='c paper',
                     short_name='cp'),
-                body='[{"type": "paragraph", "value": "c c c c"}]'))
+                body='[{"type": "paragraph", "value": "c c c c"}]',
+                is_featured=False))
 
         url = reverse('api:story-list')
         response = self.client.get(url, {'limit': 2})
@@ -87,7 +94,8 @@ class StoryAPITests(APITestCase):
                         'type': 'paragraph',
                         'value': 'a a a a'
                     }
-                ]
+                ],
+                'is_featured': False
             },
             {
                 'id': story_page_2.id,
@@ -105,10 +113,72 @@ class StoryAPITests(APITestCase):
                         'type': 'paragraph',
                         'value': 'b b b b'
                     }
-                ]
+                ],
+                'is_featured': False
             }
         ]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(actual_content.get('results'), expected_results)
         self.assertEqual(actual_content.get('count'), 3)
         self.assertTrue('{url}?limit=2&offset=2'.format(url=str(url)) in actual_content.get('next'))
+
+    def test_list_featured_stories(self):
+        root = StoryPage.add_root(
+            instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
+
+        featured_story = root.add_child(
+            instance=StoryPageFactory.build(
+                is_featured=True,
+                newspaper=NewspaperFactory(id=11)
+            )
+        )
+
+        non_featured_story = root.add_child(
+            instance=StoryPageFactory.build(
+                is_featured=False,
+                newspaper=NewspaperFactory(id=12)
+            )
+        )
+
+        url = reverse('api:story-list')
+
+        response = self.client.get(url, {'is_featured': True})
+        results = json.loads(response.content)['results']
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], featured_story.id)
+
+        response = self.client.get(url, {'is_featured': False})
+        results = json.loads(response.content)['results']
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], non_featured_story.id)
+
+    def test_order_stories_by_first_published_date(self):
+        root = StoryPage.add_root(
+            instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
+
+        first_story = root.add_child(
+            instance=StoryPageFactory.build(
+                image=None,
+                first_published_at=date(2015, 11, 4),
+                newspaper=NewspaperFactory(id=11)
+            )
+        )
+
+        second_story = root.add_child(
+            instance=StoryPageFactory.build(
+                image=None,
+                first_published_at=date(2015, 11, 5),
+                newspaper=NewspaperFactory(id=12)
+            )
+        )
+
+        url = reverse('api:story-list')
+        response = self.client.get(url, {'ordering': 'first_published_at'})
+        results = json.loads(response.content)['results']
+        self.assertEqual(results[0]['id'], first_story.id)
+        self.assertEqual(results[1]['id'], second_story.id)
+
+        response = self.client.get(url, {'ordering': '-first_published_at'})
+        results = json.loads(response.content)['results']
+        self.assertEqual(results[0]['id'], second_story.id)
+        self.assertEqual(results[1]['id'], first_story.id)
