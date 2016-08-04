@@ -4,6 +4,10 @@ machine:
   environment:
     DJANGO_SETTINGS_MODULE: config.settings.test
 
+database:
+  post:
+    - psql -c "CREATE EXTENSION postgis;" -d circle_test
+
 dependencies:
   override:
     - pip install -r requirements/test.txt

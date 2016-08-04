@@ -1,0 +1,3 @@
+---
+  - name: reload postgres
+    service: name=postgresql state=reloaded enabled=yes
