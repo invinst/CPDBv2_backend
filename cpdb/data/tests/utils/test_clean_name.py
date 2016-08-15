@@ -49,6 +49,7 @@ class CleanNameTestCase(SimpleTestCase):
 
     def test_correct_suffix_dot(self):
         self.assertEqual(correct_suffix_dot('Shelton El.'), 'Shelton El')
+        self.assertEqual(correct_suffix_dot('Alex Jr.'), 'Alex Jr.')
         self.assertEqual(correct_suffix_dot('Shelton El'), 'Shelton El')
 
     def test_strip_space(self):

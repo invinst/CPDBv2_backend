@@ -54,7 +54,7 @@ class ImportSwornOfficerDataTestCase(TestCase):
             'pk': 2,
             'officer': 1,
             'unit': 2,
-            'effective_date': date(2012, 1, 1),
+            'effective_date': None,
             'end_date': date(2012, 11, 12)
             }, {
             'pk': 3,
