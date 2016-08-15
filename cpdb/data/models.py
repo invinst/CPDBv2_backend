@@ -24,6 +24,10 @@ class Officer(models.Model):
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
+    @property
+    def relative_url(self):
+        return 'not implemented'
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)

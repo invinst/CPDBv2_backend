@@ -14,5 +14,10 @@
   roles:
     - base
     - { role: azavea.postgresql }
+    - { role: cyverse.elasticsearch, es_instance_name: "vagrant",
+        es_config: { 'network.host': "0.0.0.0", 'http.port': 9200 },
+        ansible_become: yes,
+        ansible_become_user: root
+      }
     - db
     - web

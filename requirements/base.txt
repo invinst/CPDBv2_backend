@@ -8,3 +8,4 @@ psycopg2==2.6.1
 django-cors-headers==1.1.0
 iso8601==0.1.11
 tqdm==4.8.3
+elasticsearch-dsl==2.1.0

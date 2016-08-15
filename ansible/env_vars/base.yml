@@ -7,3 +7,6 @@ application_name: cpdb
 ssl_dest_dir: /etc/ssl
 
 frontend_static_dir: /www/static/
+
+es_major_version: 2.x
+es_version: 2.3.3

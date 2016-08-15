@@ -53,9 +53,11 @@ LOCATION_CHOICES = [
 
 AREA_CHOICES = [
     ['beat', 'Beat'],
-    ['neighborhood', 'Neighborhood'],
-    ['school-grounds', 'School Grounds'],
-    ['ward', 'Ward'],
+    ['neighborhoods', 'Neighborhood'],
+    ['police-beats', 'Police Beat'],
+    ['school-grounds', 'School Ground'],
+    ['wards', 'Ward'],
+    ['Community', 'Community'],
     ['police-districts', 'Police District']
 ]
 
