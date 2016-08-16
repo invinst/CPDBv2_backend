@@ -55,3 +55,7 @@ class CleanNameTestCase(SimpleTestCase):
     def test_strip_space(self):
         self.assertEqual(clean_name('   Abc'), 'Abc')
         self.assertEqual(clean_name('Edg '), 'Edg')
+
+    def test_expand_wm_name(self):
+        self.assertEqual(clean_name('Wm.'), 'William')
+        self.assertEqual(clean_name('Wm Oconnell'), 'William O\'Connell')

@@ -79,9 +79,17 @@ def correct_title(name):
     return re.sub(r'\'\w\b', fix_incorrect_capitalization, name)
 
 
+def expand_abbreviated_name(name):
+    abbr_list = [('wm', 'william')]
+    for abbr, replace in abbr_list:
+        name = re.sub(r'\b%s\.?\b' % abbr, replace, name, flags=re.IGNORECASE)
+    return name
+
+
 def clean_name(name):
     new_name = name.strip(' ')
     new_name = fix_typo_o(new_name)
+    new_name = expand_abbreviated_name(new_name)
     new_name = new_name.title()
     new_name = correct_title(new_name)
     new_name = remove_wrong_spacing(new_name)
