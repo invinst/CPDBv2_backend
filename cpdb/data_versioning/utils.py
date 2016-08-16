@@ -5,18 +5,17 @@ def _get_relation_fields(klass, content, many_to_many=False, pop=False):
     else:
         prop_to_check = 'many_to_one'
     result = dict()
-    for field_name in klass._meta.get_all_field_names():
-        field = klass._meta.get_field(field_name)
+    for field in klass._meta.get_fields():
         if getattr(field, prop_to_check):
             try:
                 if pop:
-                    value = content.pop(field_name)
+                    value = content.pop(field.name)
                 else:
-                    value = content[field_name]
+                    value = content[field.name]
                 if many_to_many:
                     if not isinstance(value, list):
                         value = [value]
-                result[field_name] = value
+                result[field.name] = value
             except KeyError:
                 pass
     return result
