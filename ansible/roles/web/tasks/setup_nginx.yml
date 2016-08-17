@@ -16,6 +16,7 @@
   template: src={{ nginx_template }}.j2
             dest=/etc/nginx/sites-available/{{ nginx_configuration_name }}
             backup=yes
+  tags: deploy
   notify: reload nginx
 
 - name: Ensure that the default site is disabled
