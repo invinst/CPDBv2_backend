@@ -1,9 +1,12 @@
+import random
+
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
 import factory
 from faker import Faker
 
-from data.models import Area, Investigator, LineArea
+from data.models import Area, Investigator, LineArea, Officer
+from data.constants import RANKS, ACTIVE_CHOICES
 
 fake = Faker()
 
@@ -44,3 +47,16 @@ class InvestigatorFactory(factory.django.DjangoModelFactory):
     name = factory.LazyFunction(lambda: fake.name())
     raw_name = factory.LazyAttribute(lambda o: o.name.upper())
     current_rank = factory.LazyFunction(lambda: fake.word())
+
+
+class OfficerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Officer
+
+    full_name = factory.LazyFunction(lambda: fake.name())
+    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
+    race = 'White'
+    appointed_date = factory.LazyFunction(lambda: fake.date_time().date())
+    rank = factory.LazyFunction(lambda: random.choice(RANKS)[0])
+    age_at_march_11_2016 = factory.LazyFunction(lambda: random.randint(20, 99))
+    active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
