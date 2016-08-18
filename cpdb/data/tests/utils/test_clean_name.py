@@ -59,3 +59,6 @@ class CleanNameTestCase(SimpleTestCase):
     def test_expand_wm_name(self):
         self.assertEqual(clean_name('Wm.'), 'William')
         self.assertEqual(clean_name('Wm Oconnell'), 'William O\'Connell')
+
+    def test_correct_abbreviated_name(self):
+        self.assertEqual(clean_name('Cl Clay Jr.'), 'C.L. Clay Jr.')
