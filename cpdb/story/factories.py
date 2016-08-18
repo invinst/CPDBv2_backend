@@ -39,8 +39,8 @@ class StoryPageFactory(DjangoModelFactory):
     title = LazyFunction(fake.sentence)
     canonical_url = LazyFunction(fake.url)
     post_date = LazyFunction(date.today)
-    image = ImageFactory()
     body = json.dumps([{
         'type': 'paragraph',
         'value': fake.text()
         }])
+    is_featured = False

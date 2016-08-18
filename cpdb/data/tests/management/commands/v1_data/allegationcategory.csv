@@ -1,0 +1,3 @@
+pk,cat_id,category,allegation_name,on_duty,citizen_dept
+1,029,Operation/Personnel Violations,Failure To Identify,True,dept
+2,02A,Drug / Alcohol Abuse,Intoxicated On Duty,False,?

@@ -16,6 +16,7 @@ staticfiles_dir: "{{ project_path }}/static"
 # Gunicorn settings
 deploy_user: vagrant
 deploy_group: vagrant
+gunicorn_extra_params: ""
 
 # Nginx settings
 nginx_configuration_name: cpdb-backend

@@ -6,4 +6,3 @@
         owner={{ deploy_user }}
         group={{ deploy_group }}
         state=directory
-  notify: restart application

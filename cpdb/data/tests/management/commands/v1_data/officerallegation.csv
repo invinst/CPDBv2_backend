@@ -1,0 +1,3 @@
+pk,allegation,cat,officer,start_date,end_date,officer_age,recc_finding,recc_outcome,final_finding,final_outcome,final_outcome_class
+1,1,1,1,,,,,,UN,,not-sustained
+2,2,,2,2001-01-01,2001-01-11,,,,NS,600,not-sustained

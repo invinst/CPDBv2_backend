@@ -18,6 +18,9 @@ server {
 	ssl on;
 	ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
 	ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
+    gzip on;
+    gzip_comp_level 5;
+    gzip_types text/html application/javascript application/x-javascript text/javascript text/css ;
 
     client_max_body_size 4G;
 
@@ -25,6 +28,16 @@ server {
     error_log {{ nginx_error_log_file }};
 
     root {{ frontend_static_dir }};
+
+    location = / {
+        index index.html /index.html;
+    }
+
+    # Also serve index.html at certain paths
+    location ~ ^/(collaboration|faq|stories)$ {
+        rewrite ^/.*$ / last;
+        return 403;
+    }
 
     location /static/ {
         alias   {{ nginx_static_dir }};

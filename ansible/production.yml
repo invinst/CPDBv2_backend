@@ -4,7 +4,7 @@
   hosts: all
   become: yes
   become_user: root
-  remote_user: vagrant
+  remote_user: ansible
   vars:
     - update_apt_cache: yes
   vars_files:

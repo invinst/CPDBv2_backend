@@ -1,0 +1,42 @@
+[    
+    {
+        "model": "faq.faqpage",
+        "pk": 1,
+        "fields": {
+            "title": "How accurate is the data?",
+            "body":"[{ \"type\": \"paragraph\", \"value\": \"We believe that truly honest data can support powerful reforms, but we recognize the limits of our data. We publish the city’s records without alteration, except for minor typos and spelling errors. As we identify information needs and develop new sources, we also develop internal protocols for ensuring the integrity of the data we publish. This includes having lawyers and investigative journalists read and validate the data, cross referencing data against other official sources, and filing new requests to correct data we suspect to be outdated or incorrect.\"},{ \"type\": \"paragraph\", \"value\": \"If you believe there is an error or problem with the data, please report it to us. We will verify that the website accurately reflects the data the city provided to us. We will also alert the city’s Freedom of Information officer to the potential mistake and ask them to provide us with an update if necessary.\"},{ \"type\": \"paragraph\", \"value\": \"However, we will not modify the data set to reflect user-submitted corrections. We also cannot guarantee that all the data is accurate or current.\"}]"
+        }
+    },
+    {
+        "model": "faq.faqpage",
+        "pk": 2,
+        "fields": {
+            "title": "How current is the data?",
+            "body":"[{ \"type\": \"paragraph\", \"value\": \"We regularly request updates to our existing dataset from the city of Chicago. We are also collecting contextual documents about police misconduct, including settlements in civil suits and Chicago Police Board findings.\"},{ \"type\": \"paragraph\", \"value\": \"In our data some investigations that we know to have concluded are still ‘open.’\"},{ \"type\": \"paragraph\", \"value\": \"One example is a complaint filed against Officer Robert Drell, who was the subject of a misconduct allegation in May 2009. You can view the data we have under the CRID 1062099. The Category, Finding, and Final Outcome of this allegation are “Unknown.” However, Officer Drell was suspended in October, 2014 and had a hearing in front of the Chicago Police Board in January, 2015. The Board found him not guilty, and Officer Drell was reinstated as an officer, with back-pay, on March 19, 2015.\"},{ \"type\": \"paragraph\", \"value\": \"We discovered this discrepancy by matching CRID numbers from Chicago Police Board documents to allegations we have. We are certain there are other departures as well.\"}]"
+        }
+    },
+    {
+        "model": "faq.faqpage",
+        "pk": 3,
+        "fields": {
+            "title": "What are the “bond” and “moore” datasets, and how do they affect the data?",
+            "body":"[{ \"type\": \"paragraph\", \"value\": \"The Bond data was produced by the city of Chicago in Bond v. Utreas, and includes the names of 662 Chicago police officers with more than ten misconduct complaints between May 2001 and May 2006. It only includes the names of officers, the CRID number, the length of the investigation, the outcome of the investigation, and any punishment served.\" }, { \"type\": \"paragraph\", \"value\": \"The Moore data was produced by the city of Chicago in Moore v. City of Chicago, and includes the names of 185 Chicago police officers with more than five excessive force complaints from May 2002 to December 2008. It only includes the names and badge numbers of officers, the CRID number, the category of alleged misconduct, the outcome of the investigation, and any punishment served.\" }, { \"type\": \"paragraph\", \"value\": \"Because the Bond and Moore data only includes officers who have a certain number of allegations, it slightly skews the related findings. We include the Bond and Moore data because this represents all the available data on police misconduct that the city of Chicago has released.\" }, { \"type\": \"paragraph\", \"value\": \"To see the most controlled version of allegation data — i.e. data from 2011 to present — a means of removing the Bond and Moore datasets has been provided. In the search bar, type and click “FOIA.”\" }, { \"type\": \"paragraph\", \"value\": \"“FOIA” results only include the data we received for our most recent request, which are allegations of misconduct filed from 2011 to present.\" }]"
+        }
+    },
+    {
+        "model": "faq.faqpage",
+        "pk": 4,
+        "fields": {
+            "title": "Can i have access to the raw dataset?",
+            "body":"[{ \"type\": \"paragraph\", \"value\": \"Yes! It is *Rajiv describe the complications,* but we are happy to send you a link. E-mail us your request at info@invisible.institute\" }]"
+        }
+    },
+    {
+        "model": "faq.faqpage",
+        "pk": 5,
+        "fields": {
+            "title": "How do i file a complaint against a chicago police office?",
+            "body":"[{ \"type\": \"paragraph\", \"value\": \"We are independent from the Chicago Police Department and the City of Chicago. We do not intake complaints. We publish and analyze data from the City’s process. Here’s how to file a complaint against a Chicago Police Officer - Opens a new page, hosted on the Invisible Institute website.\" }]"
+        }
+    }
+]
