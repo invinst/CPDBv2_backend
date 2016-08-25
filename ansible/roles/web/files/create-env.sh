@@ -8,4 +8,4 @@ if which pyenv > /dev/null; then
     eval "$(pyenv virtualenv-init -)";
 fi
 
-(pyenv versions | grep "$1") || (test -n $2) || pyenv virtualenv -p $1 $2
+(pyenv versions | grep "$2") || pyenv virtualenv -p $1 $2

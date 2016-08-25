@@ -7,3 +7,4 @@ coveralls==1.1
 factory-boy==2.7.0
 fake-factory==0.5.7
 freezegun==0.3.7
+mock==2.0.0

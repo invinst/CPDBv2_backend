@@ -25,11 +25,13 @@ from wagtail.wagtailcore import urls as wagtail_urls
 
 from story.views import StoryViewSet
 from faq.views import FAQViewSet
+from vftg.views import VFTGViewSet
 
 
 router = routers.SimpleRouter()
 router.register(r'stories', StoryViewSet, base_name='story')
 router.register(r'faqs', FAQViewSet, base_name='faq')
+router.register(r'vftg', VFTGViewSet, base_name='vftg')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
