@@ -14,6 +14,11 @@ class UtilsTestCase(TestCase):
         self.assertEqual(get_many_to_many_fields(Allegation, content, pop=True), {'areas': areas})
         self.assertEqual(content, {'crid': '123456'})
 
+    def test_get_many_to_many_fields_non_list_val(self):
+        area = AreaFactory()
+        content = {'crid': '123456', 'areas': area}
+        self.assertEqual(get_many_to_many_fields(Allegation, content), {'areas': [area]})
+
     def test_get_foreign_key_fields(self):
         area = AreaFactory()
         content = {'crid': '123456', 'beat': area}

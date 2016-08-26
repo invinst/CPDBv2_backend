@@ -22,3 +22,8 @@ class MailchimpServiceTestCase(SimpleTestCase):
 
         self.assertEqual(cm.exception.status_code, 400)
         self.assertEqual(cm.exception.value, 'email is invalid')
+
+
+class MailchimpAPIErrorTestCase(SimpleTestCase):
+    def test_str(self):
+        self.assertEqual(MailchimpAPIError(400, 'test text').__str__(), "'test text'")
