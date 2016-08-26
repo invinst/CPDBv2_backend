@@ -54,6 +54,7 @@ LOCAL_APPS = (
     'story',
     'data',
     'data_versioning',
+    'vftg',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -218,3 +219,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20
 }
+
+MAILCHIMP_API_KEY = env.str('MAILCHIMP_API_KEY', default='')
+MAILCHIMP_USER = env.str('MAILCHIMP_USER', default='')
+VFTG_LIST_ID = 'e38095f8d7'
