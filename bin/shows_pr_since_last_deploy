@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+git checkout master
+CUR_ID="$(git rev-parse HEAD)"
+git checkout -b "master$CUR_ID"
+git merge develop -m "Merge changes from develop"
+echo "----------------- PULL REQUESTS SINCE LAST DEPLOY -----------------"
+git --no-pager log $CUR_ID..HEAD --pretty=oneline --abbrev-commit --grep "Merge pull request"
+echo "-------------------------------------------------------------------"
+git checkout master
+git branch -D "master$CUR_ID"
