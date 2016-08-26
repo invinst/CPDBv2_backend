@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-ansible-playbook ansible/production.yml -i ansible/inventory/production --tags "deploy" --ask-vault-pass --ask-pass
+
+deftags=deploy
+ansible-playbook ansible/production.yml -i ansible/inventory/production --tags "${1:$deftags}" --ask-vault-pass --ask-pass
