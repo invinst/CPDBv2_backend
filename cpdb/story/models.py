@@ -15,6 +15,10 @@ class Newspaper(models.Model):
         return self.name
 
 
+class ReportingPage(Page):
+    subpage_types = ['story.StoryPage']
+
+
 class StoryPage(Page):
     newspaper = models.ForeignKey(Newspaper, on_delete=models.SET_NULL, null=True)
     canonical_url = models.URLField(null=True)

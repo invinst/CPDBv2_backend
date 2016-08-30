@@ -4,6 +4,10 @@ from wagtail.wagtailcore import blocks
 from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 
 
+class FAQsPage(Page):
+    subpage_types = ['faq.FAQPage']
+
+
 class FAQPage(Page):
     body = StreamField([
         ('paragraph', blocks.TextBlock())])
