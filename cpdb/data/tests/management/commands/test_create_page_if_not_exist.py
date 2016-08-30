@@ -4,20 +4,20 @@ from django.test import TestCase
 
 from wagtail.wagtailcore.models import Page
 
-from story.models import ReportingPage
+from landing_page.models import LandingPage
 
 
 class CreatePageIfNotExistTestCase(TestCase):
     def test_create_page(self):
-        ReportingPage.add_root(
-            instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
+        LandingPage.add_root(
+            instance=Page(title='Root', slug='root'))
 
-        management.call_command('create_page_if_not_exist', 'story.ReportingPage', 'Reporting')
-        self.assertEqual(ReportingPage.objects.first().title, 'Reporting')
+        management.call_command('create_page_if_not_exist', 'landing_page.LandingPage', 'Landing Page')
+        self.assertEqual(LandingPage.objects.first().title, 'Landing Page')
 
     def test_not_create_page_when_exist(self):
-        root = ReportingPage.add_root(
+        root = LandingPage.add_root(
             instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
 
-        root.add_child(instance=ReportingPage(title='Reporting'))
-        self.assertEqual(ReportingPage.objects.count(), 1)
+        root.add_child(instance=LandingPage(title='Reporting'))
+        self.assertEqual(LandingPage.objects.count(), 1)

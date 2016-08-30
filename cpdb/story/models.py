@@ -1,25 +1,30 @@
 from django.db import models
 
-from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore import blocks
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.wagtailsnippets.models import register_snippet
+from wagtail.wagtailsnippets.edit_handlers import SnippetChooserPanel
 
 
+@register_snippet
 class Newspaper(models.Model):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255, null=True)
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('short_name'),
+    ]
 
     def __unicode__(self):
         return self.name
 
 
-class ReportingPage(Page):
-    subpage_types = ['story.StoryPage']
-
-
-class StoryPage(Page):
+@register_snippet
+class Story(models.Model):
+    title = models.CharField(max_length=255, blank=True)
     newspaper = models.ForeignKey(Newspaper, on_delete=models.SET_NULL, null=True)
     canonical_url = models.URLField(null=True)
     post_date = models.DateField(null=True)
@@ -31,14 +36,19 @@ class StoryPage(Page):
         related_name='+'
     )
     body = StreamField([
-        ('paragraph', blocks.TextBlock())])
-    is_featured = models.BooleanField(default=False)
+        ('paragraph', blocks.TextBlock())])\
 
-    content_panels = Page.content_panels + [
-        FieldPanel('newspaper'),
-        FieldPanel('is_featured'),
+    panels = [
+        FieldPanel('title'),
+        SnippetChooserPanel('newspaper'),
         FieldPanel('canonical_url'),
         FieldPanel('post_date'),
         ImageChooserPanel('image'),
         StreamFieldPanel('body')
     ]
+
+    class Meta:
+        verbose_name_plural = 'stories'
+
+    def __unicode__(self):
+        return self.title
