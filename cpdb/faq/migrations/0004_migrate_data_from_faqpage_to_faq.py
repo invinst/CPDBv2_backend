@@ -19,7 +19,7 @@ def copy_data_from_faqpage_to_faq(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('faq', '0004_auto_20160829_2232'),
+        ('faq', '0003_add_faq_model'),
     ]
 
     operations = [

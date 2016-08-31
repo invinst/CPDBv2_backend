@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         ('wagtailforms', '0003_capitalizeverbose'),
         ('wagtailcore', '0028_merge'),
         ('wagtailredirects', '0005_capitalizeverbose'),
-        ('faq', '0003_faqspage'),
+        ('faq', '0002_load_initial_data'),
     ]
 
     operations = [
@@ -24,12 +24,5 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(blank=True, max_length=255)),
                 ('body', wagtail.wagtailcore.fields.StreamField([(b'paragraph', wagtail.wagtailcore.blocks.TextBlock())])),
             ],
-        ),
-        migrations.RemoveField(
-            model_name='faqspage',
-            name='page_ptr',
-        ),
-        migrations.DeleteModel(
-            name='FAQsPage',
-        ),
+        )
     ]
