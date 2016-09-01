@@ -20,4 +20,5 @@ class CreatePageIfNotExistTestCase(TestCase):
             instance=Page(title='Root', slug='root', content_type=ContentType.objects.get_for_model(Page)))
 
         root.add_child(instance=LandingPage(title='Reporting'))
+        management.call_command('create_page_if_not_exist', 'landing_page.LandingPage', 'Landing Page')
         self.assertEqual(LandingPage.objects.count(), 1)

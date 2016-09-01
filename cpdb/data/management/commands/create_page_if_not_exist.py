@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     def create_page(self, model_name, title):
         Model = get_model(model_name)
-        if not Model.objects.first():
+        if Model.objects.first() is None:
             root = Page.objects.first()
             page = root.add_child(instance=Model(title=title))
             self.stdout.write('pk just created: %d' % page.pk)
