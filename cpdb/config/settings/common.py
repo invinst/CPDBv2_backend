@@ -55,6 +55,7 @@ LOCAL_APPS = (
     'data',
     'data_versioning',
     'vftg',
+    'landing_page',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
