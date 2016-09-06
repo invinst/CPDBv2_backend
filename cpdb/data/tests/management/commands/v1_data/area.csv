@@ -1,3 +1,0 @@
-pk,name,type,polygon
-1,Edgewater,neighborhoods,"SRID=4326;MULTIPOLYGON (((-87 41, -86 42, -85 43, -87 41)))"
-2,2532,police-beats,"SRID=4326;MULTIPOLYGON (((-87 43, -86 41, -85 42, -87 43)))"

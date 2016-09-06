@@ -78,6 +78,8 @@ class PostgreSQLChangeKeeper(object):
 
         self._create_changelog(klass, content, source, log_type=LOG_TYPE_CREATE, pk=instance.pk)
 
+        return instance
+
     def update(self, instance, content, source):
         klass = instance.__class__
         many_to_many_fields = get_many_to_many_fields(klass, content)
