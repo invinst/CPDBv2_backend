@@ -54,6 +54,8 @@ LOCAL_APPS = (
     'story',
     'data',
     'data_versioning',
+    'es_index',
+    'suggestion',
     'vftg',
     'landing_page',
 )

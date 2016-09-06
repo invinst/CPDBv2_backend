@@ -18,13 +18,16 @@ class Officer(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
-    unit = models.ForeignKey(PoliceUnit, null=True)
     rank = models.CharField(choices=RANKS, max_length=5, blank=True)
     age_at_march_11_2016 = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
     def __str__(self):
         return self.full_name
+
+    @property
+    def relative_url(self):
+        return 'not implemented'
 
 
 class OfficerBadgeNumber(models.Model):

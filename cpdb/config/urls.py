@@ -27,6 +27,7 @@ from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
 from landing_page.views import LandingPageViewSet
+from suggestion.views import SuggestionViewSet
 
 
 router = routers.SimpleRouter()
@@ -34,6 +35,7 @@ router.register(r'stories', StoryViewSet, base_name='story')
 router.register(r'faqs', FAQViewSet, base_name='faq')
 router.register(r'vftg', VFTGViewSet, base_name='vftg')
 router.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
+router.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
