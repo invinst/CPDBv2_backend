@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from wagtail.api.v2 import serializers as wagtail_serializers
 
-from story.models import StoryPage, Newspaper
+from story.models import Story, Newspaper
 
 
 class NewspaperSerializer(serializers.ModelSerializer):
@@ -15,11 +15,10 @@ class StorySerializer(serializers.ModelSerializer):
     newspaper = NewspaperSerializer(required=False)
     image_url = serializers.SerializerMethodField()
     canonical_url = serializers.SerializerMethodField()
-    is_featured = serializers.BooleanField()
 
     class Meta:
-        model = StoryPage
-        fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body', 'is_featured')
+        model = Story
+        fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body')
 
     def get_image_url(self, obj):
         if obj.image:
