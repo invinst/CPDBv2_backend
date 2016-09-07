@@ -13,7 +13,9 @@ class LandingPageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LandingPage
-        fields = ('id', 'reports', 'faqs')
+        fields = (
+            'id', 'reports', 'faqs', 'vftg_header', 'vftg_date', 'vftg_content', 'vftg_link',
+            'hero_complaints_text', 'hero_use_of_force_text', 'page_title', 'description')
 
     def get_reports(self, obj):
         return StorySerializer([obj.report1, obj.report2, obj.report3], many=True).data

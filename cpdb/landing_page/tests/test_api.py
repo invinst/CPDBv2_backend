@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from django.core.urlresolvers import reverse
 
@@ -21,7 +22,15 @@ class LandingPageAPITestCase(APITestCase):
             report3=StoryFactory(),
             faq1=FAQFactory(),
             faq2=FAQFactory(),
-            faq3=FAQFactory()
+            faq3=FAQFactory(),
+            vftg_header='CPDP weekly',
+            vftg_date=date(2016, 9, 23),
+            vftg_content='allegation rarely result in discipline',
+            vftg_link='http://nyt.com/articles/123',
+            hero_complaints_text='complaints',
+            hero_use_of_force_text='use of force',
+            page_title='CPDP',
+            description='Chicago Police Data Project'
             ))
 
     def test_get_landing_page(self):
@@ -30,6 +39,16 @@ class LandingPageAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         actual_content = json.loads(response.content)
+
+        self.assertEqual(actual_content['vftg_header'], 'CPDP weekly')
+        self.assertEqual(actual_content['vftg_date'], '2016-09-23',)
+        self.assertEqual(actual_content['vftg_content'], 'allegation rarely result in discipline',)
+        self.assertEqual(actual_content['vftg_link'], 'http://nyt.com/articles/123',)
+        self.assertEqual(actual_content['hero_complaints_text'], 'complaints',)
+        self.assertEqual(actual_content['hero_use_of_force_text'], 'use of force',)
+        self.assertEqual(actual_content['page_title'], 'CPDP',)
+        self.assertEqual(actual_content['description'], 'Chicago Police Data Project')
+
         reports = actual_content['reports']
         faqs = actual_content['faqs']
 
