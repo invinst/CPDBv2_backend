@@ -4,6 +4,10 @@ from data.constants import (
     RANKS, ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE,
     LOCATION_CHOICES, AREA_CHOICES, LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES,
     FINDINGS)
+from suggestion.autocomplete_types import AutoCompleteType
+
+
+AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
 class PoliceUnit(models.Model):
@@ -11,6 +15,18 @@ class PoliceUnit(models.Model):
 
     def __str__(self):
         return self.unit_name
+
+    @property
+    def index_args(self):
+        return (
+            (self.unit_name, {
+                'type': AutoCompleteType.OFFICER_UNIT,
+                'url': self.v1_url
+                },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 
 class Officer(models.Model):
@@ -26,7 +42,15 @@ class Officer(models.Model):
         return self.full_name
 
     @property
-    def relative_url(self):
+    def index_args(self):
+        return (
+            (self.full_name, {
+                'type': AutoCompleteType.OFFICER_NAME,
+                'url': self.v1_url
+                },),)
+
+    @property
+    def v1_url(self):
         return 'not implemented'
 
 
@@ -37,6 +61,18 @@ class OfficerBadgeNumber(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
+
+    @property
+    def index_args(self):
+        return (
+            (self.star, {
+                'type': AutoCompleteType.OFFICER_BADGE,
+                'url': self.v1_url
+                },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 
 class OfficerHistory(models.Model):
@@ -51,6 +87,18 @@ class Area(models.Model):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
+
+    @property
+    def index_args(self):
+        return (
+            (self.name, {
+                'type': AutoCompleteType.AREA_NAME,
+                'url': self.v1_url
+                },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 
 class LineArea(models.Model):
@@ -85,6 +133,37 @@ class Allegation(models.Model):
     point = models.PointField(srid=4326, null=True)
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
+
+    @property
+    def index_args(self):
+        return (
+            (self.crid, {
+                'type': AutoCompleteType.ALLEGATION_CRID,
+                'url': self.v1_url
+                }),
+            (self.summary, {
+                'type': AutoCompleteType.ALLEGATION_SUMMARY,
+                'url': self.v1_url
+                }),
+            (self.city, {
+                'type': AutoCompleteType.ALLEGATION_CITY,
+                'url': self.v1_url
+                }),
+            (self.zip_code, {
+                'type': AutoCompleteType.ALLEGATION_ZIP_CODE,
+                'url': self.v1_url
+                }),)
+
+    @property
+    def zip_code(self):
+        if self.city is None:
+            return ''
+        zip_code = self.city.split()[-1]
+        return zip_code if zip_code.isdigit() else ''
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 
 class AllegationCategory(models.Model):
