@@ -30,16 +30,23 @@ class PoliceUnit(models.Model):
 
 
 class Officer(models.Model):
-    full_name = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(
+        max_length=255, null=True, db_index=True, blank=True)
+    last_name = models.CharField(
+        max_length=255, null=True, db_index=True, blank=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
     rank = models.CharField(choices=RANKS, max_length=5, blank=True)
-    age_at_march_11_2016 = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
     def __str__(self):
         return self.full_name
+
+    @property
+    def full_name(self):
+        return '%s %s' % (self.first_name, self.last_name,)
 
     @property
     def index_args(self):
@@ -88,18 +95,6 @@ class Area(models.Model):
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
 
-    @property
-    def index_args(self):
-        return (
-            (self.name, {
-                'type': AutoCompleteType.AREA_NAME,
-                'url': self.v1_url
-                },),)
-
-    @property
-    def v1_url(self):
-        return 'not implemented'
-
 
 class LineArea(models.Model):
     name = models.CharField(max_length=100)
@@ -133,37 +128,6 @@ class Allegation(models.Model):
     point = models.PointField(srid=4326, null=True)
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
-
-    @property
-    def index_args(self):
-        return (
-            (self.crid, {
-                'type': AutoCompleteType.ALLEGATION_CRID,
-                'url': self.v1_url
-                }),
-            (self.summary, {
-                'type': AutoCompleteType.ALLEGATION_SUMMARY,
-                'url': self.v1_url
-                }),
-            (self.city, {
-                'type': AutoCompleteType.ALLEGATION_CITY,
-                'url': self.v1_url
-                }),
-            (self.zip_code, {
-                'type': AutoCompleteType.ALLEGATION_ZIP_CODE,
-                'url': self.v1_url
-                }),)
-
-    @property
-    def zip_code(self):
-        if self.city is None:
-            return ''
-        zip_code = self.city.split()[-1]
-        return zip_code if zip_code.isdigit() else ''
-
-    @property
-    def v1_url(self):
-        return 'not implemented'
 
 
 class AllegationCategory(models.Model):

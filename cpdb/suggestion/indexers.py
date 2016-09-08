@@ -4,8 +4,7 @@ from tqdm import tqdm
 
 from suggestion.doc_types import AutoComplete
 from suggestion.indexes import autocompletes
-from suggestion.autocomplete_types import AutoCompleteType
-from data.models import Officer, Area, PoliceUnit, OfficerBadgeNumber
+from data.models import Officer, PoliceUnit, OfficerBadgeNumber
 from data.constants import FINDINGS, AREA_CHOICES
 from es_index import register_indexer
 
@@ -14,7 +13,6 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 AUTOCOMPLETE_MAPPING = (
     (Officer, 'officer names'),
-    (Area, 'area names'),
     (PoliceUnit, 'police units'),
     (OfficerBadgeNumber, 'officer badge numbers')
 )
@@ -51,10 +49,9 @@ class AutoCompleteIndexer(object):
     def _index_datum(self, datum):
         for (name, payload) in datum.index_args:
             doc = AutoComplete(
-                    suggest={
-                        'input': list(self._prefix_tokenize(name)),
-                        'output': name,
-                        'payload': payload
-                    })
+                suggest={
+                    'input': list(self._prefix_tokenize(name)),
+                    'output': name,
+                    'payload': payload
+                })
             doc.save()
-
