@@ -72,7 +72,7 @@ class StoryPage(Page):
     author_name = models.CharField(max_length=255, blank=True)
     canonical_url = models.URLField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
-    post_date = models.DateField(null=True, auto_now_add=True)
+    post_date = models.DateField(null=True)
     publication_date = models.DateField(null=True)
     image = models.ForeignKey(
         'wagtailimages.Image',
@@ -93,6 +93,7 @@ class StoryPage(Page):
         FieldPanel('publication_short_url'),
         FieldPanel('author_name'),
         FieldPanel('canonical_url'),
+        FieldPanel('post_date'),
         FieldPanel('publication_date'),
         ImageChooserPanel('image'),
         StreamFieldPanel('body')
