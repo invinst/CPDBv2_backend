@@ -93,7 +93,6 @@ class StoryPage(Page):
         FieldPanel('publication_short_url'),
         FieldPanel('author_name'),
         FieldPanel('canonical_url'),
-        FieldPanel('post_date'),
         FieldPanel('publication_date'),
         ImageChooserPanel('image'),
         StreamFieldPanel('body')
