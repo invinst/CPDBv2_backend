@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from wagtail.wagtailcore.models import Page
 
-from faq.factories import FAQFactory
-from story.factories import StoryFactory
+from faq.factories import FAQPageFactory, FAQsPageFactory
+from story.factories import StoryPageFactory, CoveragePageFactory
 from landing_page.factories import LandingPageFactory
 
 
@@ -16,13 +16,13 @@ class LandingPageAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.root = Page.add_root(instance=Page(title='Root'))
+        coverage_page = cls.root.add_child(instance=CoveragePageFactory.build())
+        faqs_page = cls.root.add_child(instance=FAQsPageFactory.build())
+        for i in xrange(3):
+            coverage_page.add_child(instance=StoryPageFactory.build())
+            faqs_page.add_child(instance=FAQPageFactory.build())
+
         cls.landing_page = cls.root.add_child(instance=LandingPageFactory.build(
-            report1=StoryFactory(),
-            report2=StoryFactory(),
-            report3=StoryFactory(),
-            faq1=FAQFactory(),
-            faq2=FAQFactory(),
-            faq3=FAQFactory(),
             vftg_header='CPDP weekly',
             vftg_date=date(2016, 9, 23),
             vftg_content='allegation rarely result in discipline',
@@ -55,12 +55,13 @@ class LandingPageAPITestCase(APITestCase):
         self.assertEqual(len(reports), 3)
         self.assertEqual(len(faqs), 3)
 
-        report_ids = [report['id'] for report in reports]
-        faq_ids = [faq['id'] for faq in faqs]
+        for report in reports:
+            self.assertEqual(
+                set(['id', 'title', 'publication_name', 'publication_short_url', 'canonical_url',
+                     'post_date', 'image_url', 'body']),
+                set(report.keys()))
 
-        self.assertListEqual(report_ids, [
-            self.landing_page.report1.pk, self.landing_page.report2.pk, self.landing_page.report3.pk
-            ])
-        self.assertListEqual(faq_ids, [
-            self.landing_page.faq1.pk, self.landing_page.faq2.pk, self.landing_page.faq3.pk
-            ])
+        for faq in faqs:
+            self.assertEqual(
+                set(['id', 'title', 'body']),
+                set(faq.keys()))

@@ -10,3 +10,5 @@ iso8601==0.1.11
 tqdm==4.8.3
 requests==2.11.1
 elasticsearch-dsl==2.1.0
+django-taggit==0.21.2
+pytz==2016.6.1

@@ -1,11 +1,11 @@
 from django.db import models
 
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel, FieldPanel
-from wagtail.wagtailsnippets.edit_handlers import SnippetChooserPanel
 from wagtail.wagtailcore.models import Page
 
-from story.models import Story
-from faq.models import FAQ
+from story.models import Story, StoryPage
+from faq.models import FAQ, FAQPage
+from landing_page.randomizers import RANDOMIZER_STRAT_LAST_N_DAYS, RANDOMIZER_STRAT_LAST_N_ENTRIES, randomize
 
 
 class LandingPage(Page):
@@ -15,6 +15,18 @@ class LandingPage(Page):
     faq1 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page1')
     faq2 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page2')
     faq3 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page3')
+
+    RANDOMIZER_STRAT_CHOICES = (
+        (RANDOMIZER_STRAT_LAST_N_DAYS, 'last n days'),
+        (RANDOMIZER_STRAT_LAST_N_ENTRIES, 'last n entries')
+    )
+    coverage_pool_strategy = models.CharField(
+        max_length=255, choices=RANDOMIZER_STRAT_CHOICES, default=RANDOMIZER_STRAT_LAST_N_ENTRIES)
+    coverage_strat_n = models.IntegerField(default=10)
+    faq_pool_strategy = models.CharField(
+        max_length=255, choices=RANDOMIZER_STRAT_CHOICES, default=RANDOMIZER_STRAT_LAST_N_ENTRIES)
+    faq_strat_n = models.IntegerField(default=10)
+
     vftg_header = models.CharField(max_length=255, blank=True)
     vftg_date = models.DateField(blank=True, null=True)
     vftg_content = models.CharField(max_length=255, blank=True)
@@ -35,18 +47,16 @@ class LandingPage(Page):
             heading='Hero Section'),
         MultiFieldPanel(
             [
-                SnippetChooserPanel('report1'),
-                SnippetChooserPanel('report2'),
-                SnippetChooserPanel('report3'),
+                FieldPanel('coverage_pool_strategy'),
+                FieldPanel('coverage_strat_n'),
             ],
-            heading='Reporting Section'),
+            heading='Coverage Randomizer Section'),
         MultiFieldPanel(
             [
-                SnippetChooserPanel('faq1'),
-                SnippetChooserPanel('faq2'),
-                SnippetChooserPanel('faq3'),
+                FieldPanel('faq_pool_strategy'),
+                FieldPanel('faq_strat_n'),
             ],
-            heading='FAQ Section'),
+            heading='FAQ Randomizer Section'),
         MultiFieldPanel(
             [
                 FieldPanel('vftg_header'),
@@ -61,3 +71,9 @@ class LandingPage(Page):
         FieldPanel('page_title'),
         FieldPanel('description'),
     ]
+
+    def randomized_coverages(self, sample_size=3):
+        return randomize(StoryPage.objects, self.coverage_strat_n, sample_size, self.coverage_pool_strategy)
+
+    def randomized_faqs(self, sample_size=3):
+        return randomize(FAQPage.objects, self.faq_strat_n, sample_size, self.faq_pool_strategy)

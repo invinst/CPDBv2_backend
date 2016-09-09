@@ -4,24 +4,27 @@ from django.core.urlresolvers import reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from wagtail.wagtailcore.models import Page
 
-from faq.factories import FAQFactory
-from faq.models import FAQ
+from data.factories import RootPageFactory
+from faq.factories import FAQPageFactory
+from faq.models import FAQPage
 
 
 class FAQAPITestCase(APITestCase):
     def test_list_faq(self):
-        faq_1 = FAQFactory(
+        root = Page.add_root(instance=RootPageFactory.build())
+        faq_1 = root.add_child(instance=FAQPageFactory.build(
             title='title a',
-            body='[{"type": "paragraph", "value": "a a a a"}]')
+            body='[{"type": "paragraph", "value": "a a a a"}]'))
 
-        faq_2 = FAQFactory(
+        faq_2 = root.add_child(instance=FAQPageFactory.build(
             title='title b',
-            body='[{"type": "paragraph", "value": "b b b b"}]')
+            body='[{"type": "paragraph", "value": "b b b b"}]'))
 
-        FAQFactory(
+        root.add_child(instance=FAQPageFactory.build(
             title='title c',
-            body='[{"type": "paragraph", "value": "c c c c"}]')
+            body='[{"type": "paragraph", "value": "c c c c"}]'))
 
         url = reverse('api:faq-list')
         response = self.client.get(url, {'limit': 2})
@@ -55,13 +58,13 @@ class FAQAPITestCase(APITestCase):
         self.assertTrue('{url}?limit=2&offset=2'.format(url=str(url)) in actual_content.get('next'))
 
     def test_create_faq_success(self):
-        self.assertEqual(FAQ.objects.all().count(), 0)
+        self.assertEqual(FAQPage.objects.all().count(), 0)
 
         url = reverse('api:faq-list')
         response = self.client.post(url, {'title': 'title'})
 
-        new_faq = FAQ.objects.first()
-        self.assertEqual(FAQ.objects.first().title, 'title')
+        new_faq = FAQPage.objects.first()
+        self.assertEqual(FAQPage.objects.first().title, 'title')
 
         actual_content = json.loads(response.content)
         expected_content = {
@@ -71,4 +74,17 @@ class FAQAPITestCase(APITestCase):
         }
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(actual_content, expected_content)
+
+    def test_create_faq_failed(self):
+        Page.add_root(instance=RootPageFactory.build())
+
+        url = reverse('api:faq-list')
+        response = self.client.post(url, {'title': ''})
+
+        expected_content = {
+            'title': ['This field cannot be blank.']
+        }
+        actual_content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(actual_content, expected_content)

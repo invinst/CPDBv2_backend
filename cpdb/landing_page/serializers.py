@@ -3,8 +3,8 @@ from rest_framework import serializers
 # from wagtail.api.v2 import serializers as wagtail_serializers
 
 from landing_page.models import LandingPage
-from faq.serializers import FAQSerializer
-from story.serializers import StorySerializer
+from faq.serializers import FAQPageSerializer
+from story.serializers import StoryPageSerializer
 
 
 class LandingPageSerializer(serializers.ModelSerializer):
@@ -18,7 +18,7 @@ class LandingPageSerializer(serializers.ModelSerializer):
             'hero_complaints_text', 'hero_use_of_force_text', 'page_title', 'description')
 
     def get_reports(self, obj):
-        return StorySerializer([obj.report1, obj.report2, obj.report3], many=True).data
+        return StoryPageSerializer(obj.randomized_coverages(), many=True).data
 
     def get_faqs(self, obj):
-        return FAQSerializer([obj.faq1, obj.faq2, obj.faq3], many=True).data
+        return FAQPageSerializer(obj.randomized_faqs(), many=True).data
