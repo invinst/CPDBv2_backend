@@ -29,20 +29,6 @@ class NewspaperFactory(DjangoModelFactory):
     short_name = LazyFunction(fake.sentence)
 
 
-class StoryFactory(DjangoModelFactory):
-    class Meta:
-        model = 'story.Story'  # Equivalent to ``model = myapp.models.User``
-
-    newspaper = LazyFunction(lambda: NewspaperFactory())
-    title = LazyFunction(fake.sentence)
-    canonical_url = LazyFunction(fake.url)
-    post_date = LazyFunction(date.today)
-    body = json.dumps([{
-        'type': 'paragraph',
-        'value': fake.text()
-        }])
-
-
 class CoveragePageFactory(DjangoModelFactory):
     class Meta:
         model = 'story.CoveragePage'

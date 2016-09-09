@@ -5,13 +5,13 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
 from faq.models import FAQPage
-from faq.serializers import FAQSerializer
+from faq.serializers import FAQPageSerializer
 from faq.utils import get_faq_parent_node
 
 
 class FAQViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin):
     queryset = FAQPage.objects.live()
-    serializer_class = FAQSerializer
+    serializer_class = FAQPageSerializer
 
     def create(self, request, *args, **kwargs):
         parent_page = get_faq_parent_node()

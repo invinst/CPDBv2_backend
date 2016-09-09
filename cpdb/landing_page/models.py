@@ -3,19 +3,12 @@ from django.db import models
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel, FieldPanel
 from wagtail.wagtailcore.models import Page
 
-from story.models import Story, StoryPage
-from faq.models import FAQ, FAQPage
+from story.models import StoryPage
+from faq.models import FAQPage
 from landing_page.randomizers import RANDOMIZER_STRAT_LAST_N_DAYS, RANDOMIZER_STRAT_LAST_N_ENTRIES, randomize
 
 
 class LandingPage(Page):
-    report1 = models.ForeignKey(Story, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page1')
-    report2 = models.ForeignKey(Story, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page2')
-    report3 = models.ForeignKey(Story, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page3')
-    faq1 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page1')
-    faq2 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page2')
-    faq3 = models.ForeignKey(FAQ, null=True, blank=True, on_delete=models.SET_NULL, related_name='landing_page3')
-
     RANDOMIZER_STRAT_CHOICES = (
         (RANDOMIZER_STRAT_LAST_N_DAYS, 'last n days'),
         (RANDOMIZER_STRAT_LAST_N_ENTRIES, 'last n entries')
