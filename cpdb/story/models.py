@@ -88,9 +88,10 @@ class StoryPage(Page):
 
     parent_page_types = ['story.CoveragePage']
 
-    panels = Page.content_panels + [
+    content_panels = Page.content_panels + [
         FieldPanel('publication_name'),
         FieldPanel('publication_short_url'),
+        FieldPanel('author_name'),
         FieldPanel('canonical_url'),
         FieldPanel('post_date'),
         FieldPanel('publication_date'),
