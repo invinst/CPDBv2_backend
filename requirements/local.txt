@@ -10,3 +10,4 @@ Markdown==2.6.6
 django-nose==1.4.3
 factory-boy==2.7.0
 fake-factory==0.5.7
+newrelic==2.68.0.50

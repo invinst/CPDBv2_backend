@@ -1,0 +1,33 @@
+---
+
+- name: create newrelic config file
+  shell: source {{ virtualenv_path }}/bin/activate && newrelic-admin generate-config {{ newrelic_license }} newrelic.ini
+    chdir={{ project_root_path }}
+  args:
+    executable: /bin/bash
+  notify: restart application
+
+- name: config newrelic apt repository
+  become: yes
+  become_user: root
+  shell: echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list
+
+- name: trust newrelic gpg key
+  become: yes
+  become_user: root
+  shell: wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add -
+
+- name: install newrelic-sysmond
+  become: yes
+  become_user: root
+  apt: name=newrelic-sysmond update_cache=yes state=installed
+
+- name: config newrelic license key
+  become: yes
+  become_user: root
+  command: nrsysmond-config --set license_key={{ newrelic_license }}
+
+- name: ensure newrelic-sysmond started
+  become: yes
+  become_user: root
+  command: /etc/init.d/newrelic-sysmond start

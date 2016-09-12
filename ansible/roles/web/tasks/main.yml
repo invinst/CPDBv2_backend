@@ -13,6 +13,9 @@
 - include: setup_django_app.yml
   tags: deploy
 
+- include: setup_newrelic.yml
+  tags: newrelic
+
 - include: setup_supervisor.yml
   tags: supervisor
 
