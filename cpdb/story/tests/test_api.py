@@ -28,7 +28,7 @@ class StoryAPITests(APITestCase):
     def test_list_stories(self):
         root = Page.add_root(instance=RootPageFactory.build())
         coverage_page = root.add_child(instance=CoveragePageFactory.build())
-        with freeze_time('2015-11-03'):
+        with freeze_time('2015-11-03 6:00:00'):
             story_1 = coverage_page.add_child(instance=StoryPageFactory.build(
                 title='title a',
                 image=ImageFactory(file=get_test_image_file(filename='a-image.png')),
@@ -38,7 +38,7 @@ class StoryAPITests(APITestCase):
                 body='[{"type": "paragraph", "value": "a a a a"}]',
                 ))
 
-        with freeze_time('2015-11-04'):
+        with freeze_time('2015-11-04 6:00:00'):
             story_2 = coverage_page.add_child(instance=StoryPageFactory.build(
                 title='title b',
                 image=None,
@@ -48,7 +48,7 @@ class StoryAPITests(APITestCase):
                 body='[{"type": "paragraph", "value": "b b b b"}]',
                 ))
 
-        with freeze_time('2015-11-05'):
+        with freeze_time('2015-11-05 6:00:00'):
             coverage_page.add_child(instance=StoryPageFactory.build(
                 title='title c',
                 image=None,

@@ -21,14 +21,6 @@ class ImageFactory(DjangoModelFactory):
     file = LazyFunction(get_test_image_file)
 
 
-class NewspaperFactory(DjangoModelFactory):
-    class Meta:
-        model = 'story.Newspaper'
-
-    name = LazyFunction(fake.sentence)
-    short_name = LazyFunction(fake.sentence)
-
-
 class CoveragePageFactory(DjangoModelFactory):
     class Meta:
         model = 'story.CoveragePage'

@@ -2,12 +2,7 @@ from rest_framework import serializers
 
 from wagtail.api.v2 import serializers as wagtail_serializers
 
-from story.models import Newspaper, StoryPage
-
-
-class NewspaperSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Newspaper
+from story.models import StoryPage
 
 
 class StoryPageSerializer(serializers.ModelSerializer):
