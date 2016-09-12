@@ -24,3 +24,6 @@
 
 - include: restart_nginx_and_supervisor.yml
   tags: deploy
+
+- include: setup_cron_job.yml
+  tags: cron

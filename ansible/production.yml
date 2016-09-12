@@ -7,6 +7,7 @@
   remote_user: ansible
   vars:
     - update_apt_cache: yes
+    - backup_database_daily: yes
   vars_files:
     - env_vars/base.yml
     - env_vars/secrets.yml
