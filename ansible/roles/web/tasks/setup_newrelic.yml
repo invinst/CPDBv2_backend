@@ -10,12 +10,12 @@
 - name: config newrelic apt repository
   become: yes
   become_user: root
-  shell: echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list
+  apt_repository: repo='deb http://apt.newrelic.com/debian/ newrelic non-free' state=present
 
 - name: trust newrelic gpg key
   become: yes
   become_user: root
-  shell: wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add -
+  apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
 
 - name: install newrelic-sysmond
   become: yes

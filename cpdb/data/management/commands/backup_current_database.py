@@ -12,8 +12,11 @@ from sh import pwd
 class Command(BaseCommand):
     help = 'Dump current database and upload to azure'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--prefix')
+
     def handle(self, *args, **options):
-        os.system('pg_dump cpdb | gzip > cpdb_production_dump_$(date +%Y-%m-%d-%H:%M:%S).sql.gz')
+        os.system('pg_dump cpdb | gzip > %s_dump_$(date +%%Y-%%m-%%d-%%H:%%M:%%S).sql.gz' % options['prefix'])
         path = subprocess.check_output(['find', repr(pwd()).strip(), '-name', 'cpdb_production_dump*.sql.gz'])\
             .strip().split('/')[-1]
         block_blob_service = BlockBlobService(
