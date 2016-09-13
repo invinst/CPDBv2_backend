@@ -25,3 +25,6 @@ staticfiles/
 
 cpdb/static/
 cpdb/media/
+
+# Newrelic config
+newrelic.ini
