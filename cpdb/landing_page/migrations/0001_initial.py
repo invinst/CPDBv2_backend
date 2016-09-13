@@ -8,8 +8,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('landing_page', '0001_initial'), ('landing_page', '0002_auto_20160829_2130'), ('landing_page', '0003_auto_20160829_2132'), ('landing_page', '0004_auto_20160829_2159'), ('landing_page', '0005_auto_20160829_2232')]
-
     initial = True
 
     dependencies = [

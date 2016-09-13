@@ -2,12 +2,12 @@ from rest_framework import serializers
 
 from wagtail.api.v2 import serializers as wagtail_serializers
 
-from faq.models import FAQ
+from faq.models import FAQPage
 
 
-class FAQSerializer(serializers.ModelSerializer):
+class FAQPageSerializer(serializers.ModelSerializer):
     body = wagtail_serializers.StreamField()
 
     class Meta:
-        model = FAQ
+        model = FAQPage
         fields = ('id', 'title', 'body')
