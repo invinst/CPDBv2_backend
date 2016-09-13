@@ -1,10 +1,7 @@
 ---
 
 - name: create newrelic config file
-  shell: source {{ virtualenv_path }}/bin/activate && newrelic-admin generate-config {{ newrelic_license }} newrelic.ini
-    chdir={{ project_root_path }}
-  args:
-    executable: /bin/bash
+  template: src='newrelic.j2' dest={{ project_root_path }}/newrelic.ini
   notify: restart application
 
 - name: config newrelic apt repository

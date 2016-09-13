@@ -35,3 +35,6 @@ pyenv_environments:
 # Django Environment variables
 django_environment:
   DJANGO_SETTINGS_MODULE: "{{ django_settings_file }}"
+
+# Newrelic variables:
+newrelic_app_name: "CPDB v2 production"

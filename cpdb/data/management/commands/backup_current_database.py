@@ -13,11 +13,11 @@ class Command(BaseCommand):
     help = 'Dump current database and upload to azure'
 
     def add_arguments(self, parser):
-        parser.add_argument('--prefix')
+        parser.add_argument('--prefix', default='cpdp_production', help='Prefix of dump file')
 
     def handle(self, *args, **options):
         os.system('pg_dump cpdb | gzip > %s_dump_$(date +%%Y-%%m-%%d-%%H:%%M:%%S).sql.gz' % options['prefix'])
-        path = subprocess.check_output(['find', repr(pwd()).strip(), '-name', 'cpdb_production_dump*.sql.gz'])\
+        path = subprocess.check_output(['find', repr(pwd()).strip(), '-name', '%s_dump*.sql.gz' % options['prefix']])\
             .strip().split('/')[-1]
         block_blob_service = BlockBlobService(
             account_name=settings.AZURE_STORAGE_ACCOUNT_NAME, account_key=settings.AZURE_STORAGE_ACCOUNT_KEY)
