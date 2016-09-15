@@ -30,3 +30,6 @@ run_django_collectstatic: yes
 
 deploy_user: ansible
 deploy_group: ansible
+
+setup_newrelic: yes
+backup_database_daily: yes
