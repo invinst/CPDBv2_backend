@@ -30,7 +30,7 @@ server {
     root {{ frontend_static_dir }};
 
     if ($http_user_agent ~* '(iPhone|iPod|Android|Blackberry|Windows Phone|Opera Mini|WebOS|SymbianOS|IEMobile|Maemo)') {
-        return 301 $scheme://{{ mobile_site_domain }}$request_uri;
+        return 301 $scheme://{{ nginx_mobile_server_name }}$request_uri;
     }
 
     location = / {
