@@ -20,7 +20,7 @@ class StoryPageTag(TaggedItemBase):
 
 class StoryPage(Page):
     publication_name = models.CharField(max_length=255, blank=True)
-    publication_short_url = models.CharField(max_length=255, blank=True)
+    publication_short_name = models.CharField(max_length=255, blank=True)
     author_name = models.CharField(max_length=255, blank=True)
     canonical_url = models.URLField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -42,7 +42,7 @@ class StoryPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel('publication_name'),
-        FieldPanel('publication_short_url'),
+        FieldPanel('publication_short_name'),
         FieldPanel('author_name'),
         FieldPanel('canonical_url'),
         FieldPanel('post_date'),
