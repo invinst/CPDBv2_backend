@@ -17,6 +17,7 @@ gunicorn_timeout_seconds: 300
 
 # Nginx settings.
 nginx_server_name: beta.cpdp.co
+nginx_mobile_server_name: m.cpdp.co
 nginx_template: "nginx_site_config"
 
 ssl_src_dir: ssl_self_signed
