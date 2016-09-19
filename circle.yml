@@ -11,6 +11,7 @@ database:
 dependencies:
   override:
     - pip install -r requirements/test.txt
+    - pip install ansible
 
 test:
   override:
