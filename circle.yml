@@ -20,3 +20,9 @@ test:
     - coverage combine
     - coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py"
     - coveralls
+
+deployment:
+  staging:
+    branch: staging
+    commands:
+      - ./bin/circleci_deploy_staging

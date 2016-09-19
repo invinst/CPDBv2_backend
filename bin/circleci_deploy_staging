@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+echo $ANSIBLE_VAULT_PASSWORD > vault_pass.txt && ansible-playbook ansible/staging.yml -i ansible/inventory/staging --tags "deploy" --vault-password-file ./vault_pass.txt
