@@ -12,7 +12,7 @@ dependencies:
   override:
     - pip install -r requirements/test.txt
     - pip install ansible
-    - ansible-galaxy install azavea.postgresql
+    - sudo ansible-galaxy install azavea.postgresql
 
 test:
   override:
