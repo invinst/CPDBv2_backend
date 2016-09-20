@@ -12,6 +12,7 @@ dependencies:
   override:
     - pip install -r requirements/test.txt
     - pip install ansible
+    - ansible-galaxy install azavea.postgresql
 
 test:
   override:
@@ -26,4 +27,4 @@ deployment:
   staging:
     branch: staging
     commands:
-      - ./bin/circleci_deploy_staging
+      - bin/circle_deploy_staging
