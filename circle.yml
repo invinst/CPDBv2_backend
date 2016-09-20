@@ -11,7 +11,7 @@ database:
 dependencies:
   override:
     - pip install -r requirements/test.txt
-    - pip install ansible
+    - sudo pip install ansible
     - sudo ansible-galaxy install azavea.postgresql
 
 test:
@@ -27,4 +27,5 @@ deployment:
   staging:
     branch: staging
     commands:
+      - sudo chown ubuntu ~/.ansible -R
       - bin/circle_deploy_staging
