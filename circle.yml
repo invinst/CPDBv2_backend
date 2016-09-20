@@ -3,6 +3,8 @@ machine:
     version: 2.7.11
   environment:
     DJANGO_SETTINGS_MODULE: config.settings.test
+  post:
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get install gcc-4.9 g++-4.9
 
 database:
   post:
