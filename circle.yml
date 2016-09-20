@@ -3,8 +3,6 @@ machine:
     version: 2.7.11
   environment:
     DJANGO_SETTINGS_MODULE: config.settings.test
-  post:
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get install gcc-4.9 g++-4.9 python-dev
 
 database:
   post:
@@ -29,5 +27,8 @@ deployment:
   staging:
     branch: staging
     commands:
+      - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get install gcc-4.9 g++-4.9 python-dev
+      - sudo pip install ansible
+      - sudo ansible-galaxy install azavea.postgresql
       - sudo chown ubuntu ~/.ansible -R
       - bin/circleci_deploy_staging
