@@ -30,4 +30,4 @@ deployment:
     branch: staging
     commands:
       - sudo chown ubuntu ~/.ansible -R
-      - bin/circle_deploy_staging
+      - bin/circleci_deploy_staging
