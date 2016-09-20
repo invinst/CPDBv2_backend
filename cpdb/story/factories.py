@@ -36,7 +36,7 @@ class StoryPageFactory(DjangoModelFactory):
 
     content_type = ContentType.objects.get_for_model(StoryPage)
     publication_name = LazyFunction(fake.sentence)
-    publication_short_url = LazyFunction(fake.url)
+    publication_short_name = LazyFunction(fake.url)
     author_name = LazyFunction(fake.name)
     title = LazyFunction(fake.sentence)
     canonical_url = LazyFunction(fake.url)

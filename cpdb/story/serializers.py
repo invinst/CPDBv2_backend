@@ -13,7 +13,7 @@ class StoryPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoryPage
         fields = (
-            'id', 'title', 'publication_name', 'publication_short_url', 'canonical_url',
+            'id', 'title', 'publication_name', 'publication_short_name', 'canonical_url',
             'post_date', 'image_url', 'body')
 
     def get_image_url(self, obj):

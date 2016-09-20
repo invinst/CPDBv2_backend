@@ -30,7 +30,11 @@ class LandingPageAPITestCase(APITestCase):
             hero_complaints_text='complaints',
             hero_use_of_force_text='use of force',
             page_title='CPDP',
-            description='Chicago Police Data Project'
+            description='Chicago Police Data Project',
+            about_header='About',
+            about_content='[{"type": "paragraph", "value": "a a a a"}]',
+            collaborate_header='Collaborate with us',
+            collaborate_content='[{"type": "paragraph", "value": "b b b b"}]'
             ))
 
     def test_get_landing_page(self):
@@ -48,6 +52,16 @@ class LandingPageAPITestCase(APITestCase):
         self.assertEqual(actual_content['hero_use_of_force_text'], 'use of force',)
         self.assertEqual(actual_content['page_title'], 'CPDP',)
         self.assertEqual(actual_content['description'], 'Chicago Police Data Project')
+        self.assertEqual(actual_content['about_header'], 'About')
+        self.assertEqual(actual_content['about_content'], [{
+            'type': 'paragraph',
+            'value': 'a a a a'
+            }])
+        self.assertEqual(actual_content['collaborate_header'], 'Collaborate with us')
+        self.assertEqual(actual_content['collaborate_content'], [{
+            'type': 'paragraph',
+            'value': 'b b b b'
+            }])
 
         reports = actual_content['reports']
         faqs = actual_content['faqs']
@@ -57,7 +71,7 @@ class LandingPageAPITestCase(APITestCase):
 
         for report in reports:
             self.assertEqual(
-                set(['id', 'title', 'publication_name', 'publication_short_url', 'canonical_url',
+                set(['id', 'title', 'publication_name', 'publication_short_name', 'canonical_url',
                      'post_date', 'image_url', 'body']),
                 set(report.keys()))
 

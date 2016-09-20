@@ -34,7 +34,7 @@ class StoryAPITests(APITestCase):
                 image=ImageFactory(file=get_test_image_file(filename='a-image.png')),
                 canonical_url='http://domain.com/title_a',
                 publication_name='a paper',
-                publication_short_url='ap',
+                publication_short_name='ap',
                 body='[{"type": "paragraph", "value": "a a a a"}]',
                 ))
 
@@ -44,7 +44,7 @@ class StoryAPITests(APITestCase):
                 image=None,
                 canonical_url='http://domain.com/title_b',
                 publication_name='b paper',
-                publication_short_url='bp',
+                publication_short_name='bp',
                 body='[{"type": "paragraph", "value": "b b b b"}]',
                 ))
 
@@ -54,7 +54,7 @@ class StoryAPITests(APITestCase):
                 image=None,
                 canonical_url='http://domain.com/title_c',
                 publication_name='c paper',
-                publication_short_url='cp',
+                publication_short_name='cp',
                 body='[{"type": "paragraph", "value": "c c c c"}]',
                 ))
 
@@ -69,7 +69,7 @@ class StoryAPITests(APITestCase):
                 'canonical_url': 'http://domain.com/title_a',
                 'post_date': '2015-11-03',
                 'publication_name': 'a paper',
-                'publication_short_url': 'ap',
+                'publication_short_name': 'ap',
                 'image_url': {
                     '480_320': '/media/images/a-image.min-480x320.png'
                 },
@@ -86,7 +86,7 @@ class StoryAPITests(APITestCase):
                 'canonical_url': 'http://domain.com/title_b',
                 'post_date': '2015-11-04',
                 'publication_name': 'b paper',
-                'publication_short_url': 'bp',
+                'publication_short_name': 'bp',
                 'image_url': {},
                 'body': [
                     {

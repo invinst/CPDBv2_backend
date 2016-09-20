@@ -1,7 +1,9 @@
 from django.db import models
 
-from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel, FieldPanel
+from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel, FieldPanel, StreamFieldPanel
+from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore.models import Page
+from wagtail.wagtailcore import blocks
 
 from story.models import StoryPage
 from faq.models import FAQPage
@@ -26,6 +28,10 @@ class LandingPage(Page):
     vftg_link = models.URLField(blank=True)
     hero_complaints_text = models.CharField(max_length=255, blank=True)
     hero_use_of_force_text = models.CharField(max_length=255, blank=True)
+    about_header = models.CharField(max_length=255, blank=True)
+    about_content = StreamField([('paragraph', blocks.TextBlock())], blank=True)
+    collaborate_header = models.CharField(max_length=255, blank=True)
+    collaborate_content = StreamField([('paragraph', blocks.TextBlock())], blank=True)
 
     # SEO
     page_title = models.CharField(max_length=255, blank=True)
@@ -58,6 +64,18 @@ class LandingPage(Page):
                 FieldPanel('vftg_link'),
             ],
             heading='VFTG'),
+        MultiFieldPanel(
+            [
+                FieldPanel('about_header'),
+                StreamFieldPanel('about_content'),
+            ],
+            heading='About Section'),
+        MultiFieldPanel(
+            [
+                FieldPanel('collaborate_header'),
+                StreamFieldPanel('collaborate_content'),
+            ],
+            heading='Collaborate Section'),
     ]
 
     promote_panels = [
