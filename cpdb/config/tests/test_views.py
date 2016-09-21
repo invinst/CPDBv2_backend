@@ -10,4 +10,4 @@ class ViewsTestCase(TestCase):
         with patch('config.views.render') as mock_render:
             request = RequestFactory()
             index(request)
-            mock_render.assert_called_once_with(request, '/var/www/index.html')
+            mock_render.assert_called_once_with(request, '/www/static/index.html')
