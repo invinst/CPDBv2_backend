@@ -29,16 +29,6 @@ server {
 
     root {{ frontend_static_dir }};
 
-    location = / {
-        index index.html /index.html;
-    }
-
-    # Also serve index.html at certain paths
-    location ~ ^/(collaboration|faq|stories)$ {
-        rewrite ^/.*$ / last;
-        return 403;
-    }
-
     location /static/ {
         alias   {{ nginx_static_dir }};
     }
