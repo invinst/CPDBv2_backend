@@ -110,6 +110,7 @@ TEMPLATES = [
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         'DIRS': [
             str(APPS_DIR.path('templates')),
+            '/www/static/templates/',
         ],
         'OPTIONS': {
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
@@ -135,7 +136,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------

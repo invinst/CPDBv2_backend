@@ -27,6 +27,7 @@ from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
 from landing_page.views import LandingPageViewSet
+from .views import index
 
 
 router = routers.SimpleRouter()
@@ -39,5 +40,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^cms/', include(wagtailadmin_urls)),
     url(r'^wagtail/', include(wagtail_urls)),
-    url(r'^api/v1/', include(router.urls, namespace='api'))
+    url(r'^api/v1/', include(router.urls, namespace='api')),
+    url(r'^(?:(?P<path>collaborate|faq|reporting)/)?$', index, name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
