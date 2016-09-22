@@ -15,7 +15,7 @@ class FAQPageFactory(DjangoModelFactory):
     class Meta:
         model = FAQPage
 
-    content_type = ContentType.objects.get_for_model(FAQPage)
+    content_type = LazyFunction(lambda: ContentType.objects.get_for_model(FAQPage))
     title = LazyFunction(fake.sentence)
     body = json.dumps([{
         'type': 'paragraph',
@@ -27,6 +27,6 @@ class FAQsPageFactory(DjangoModelFactory):
     class Meta:
         model = FAQsPage
 
-    content_type = ContentType.objects.get_for_model(FAQsPage)
+    content_type = LazyFunction(lambda: ContentType.objects.get_for_model(FAQsPage))
     title = 'FAQ'
     slug = 'faq'
