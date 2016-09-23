@@ -29,6 +29,19 @@ server {
 
     root {{ frontend_static_dir }};
 
+    # Serve index.html at base path
+    if ($request_uri ~ 'api') {
+        set $is_api P;
+    }
+
+    if ($http_user_agent ~* '(iPhone|iPod|Android|Blackberry|Windows Phone|Opera Mini|WebOS|SymbianOS|IEMobile|Maemo)') {
+        set $is_redirect "${is_api}C";
+    }
+
+    if ($is_redirect = PC) {
+        return 301 $scheme://m.cpdb.me$request_uri;
+    }
+
     location /static/ {
         alias   {{ nginx_static_dir }};
     }
