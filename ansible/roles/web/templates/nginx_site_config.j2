@@ -38,8 +38,8 @@ server {
         set $is_redirect "${is_api}C";
     }
 
-    if ($is_redirect = PC) {
-        return 301 $scheme://m.cpdb.me$request_uri;
+    if ($is_redirect = C) {
+        return 301 $scheme://{{ nginx_mobile_server_name }}$request_uri;
     }
 
     location /static/ {
