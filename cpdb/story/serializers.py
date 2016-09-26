@@ -2,23 +2,19 @@ from rest_framework import serializers
 
 from wagtail.api.v2 import serializers as wagtail_serializers
 
-from story.models import Story, Newspaper
+from story.models import StoryPage
 
 
-class NewspaperSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Newspaper
-
-
-class StorySerializer(serializers.ModelSerializer):
+class StoryPageSerializer(serializers.ModelSerializer):
     body = wagtail_serializers.StreamField()
-    newspaper = NewspaperSerializer(required=False)
     image_url = serializers.SerializerMethodField()
     canonical_url = serializers.SerializerMethodField()
 
     class Meta:
-        model = Story
-        fields = ('id', 'title', 'canonical_url', 'newspaper', 'post_date', 'image_url', 'body')
+        model = StoryPage
+        fields = (
+            'id', 'title', 'publication_name', 'publication_short_name', 'canonical_url',
+            'publication_date', 'image_url', 'body')
 
     def get_image_url(self, obj):
         if obj.image:

@@ -17,6 +17,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
@@ -27,6 +28,7 @@ from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
 from landing_page.views import LandingPageViewSet
+from .views import index
 from suggestion.views import SuggestionViewSet
 
 
@@ -41,5 +43,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^cms/', include(wagtailadmin_urls)),
     url(r'^wagtail/', include(wagtail_urls)),
-    url(r'^api/v1/', include(router.urls, namespace='api'))
+    url(r'^api/v1/', include(router.urls, namespace='api')),
+    url(r'^(?:(?P<path>collaborate|faq|reporting)/)?$', ensure_csrf_cookie(index), name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

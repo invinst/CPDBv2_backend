@@ -1,7 +1,6 @@
 import os
 import json
 import shutil
-
 from datetime import date
 
 from django.conf import settings
@@ -10,9 +9,11 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtailimages.tests.utils import get_test_image_file
 
-from story.factories import StoryFactory, NewspaperFactory, ImageFactory
+from story.factories import StoryPageFactory, ImageFactory, CoveragePageFactory
+from data.factories import RootPageFactory
 
 
 class StoryAPITests(APITestCase):
@@ -25,41 +26,37 @@ class StoryAPITests(APITestCase):
             shutil.rmtree(settings.MEDIA_ROOT)
 
     def test_list_stories(self):
-        story_1 = StoryFactory(
+        root = Page.add_root(instance=RootPageFactory.build())
+        coverage_page = root.add_child(instance=CoveragePageFactory.build())
+        story_1 = coverage_page.add_child(instance=StoryPageFactory.build(
             title='title a',
             image=ImageFactory(file=get_test_image_file(filename='a-image.png')),
+            publication_date=date(2015, 11, 3),
             canonical_url='http://domain.com/title_a',
-            post_date=date(2015, 11, 3),
-            newspaper=NewspaperFactory(
-                id=11,
-                name='a paper',
-                short_name='ap'),
+            publication_name='a paper',
+            publication_short_name='ap',
             body='[{"type": "paragraph", "value": "a a a a"}]',
-            )
+            ))
 
-        story_2 = StoryFactory(
+        story_2 = coverage_page.add_child(instance=StoryPageFactory.build(
             title='title b',
             image=None,
+            publication_date=date(2015, 11, 4),
             canonical_url='http://domain.com/title_b',
-            post_date=date(2015, 11, 4),
-            newspaper=NewspaperFactory(
-                id=12,
-                name='b paper',
-                short_name='bp'),
+            publication_name='b paper',
+            publication_short_name='bp',
             body='[{"type": "paragraph", "value": "b b b b"}]',
-            )
+            ))
 
-        StoryFactory(
+        coverage_page.add_child(instance=StoryPageFactory.build(
             title='title c',
             image=None,
+            publication_date=date(2015, 11, 5),
             canonical_url='http://domain.com/title_c',
-            post_date=date(2015, 11, 5),
-            newspaper=NewspaperFactory(
-                id=13,
-                name='c paper',
-                short_name='cp'),
+            publication_name='c paper',
+            publication_short_name='cp',
             body='[{"type": "paragraph", "value": "c c c c"}]',
-            )
+            ))
 
         url = reverse('api:story-list')
         response = self.client.get(url, {'limit': 2})
@@ -70,12 +67,9 @@ class StoryAPITests(APITestCase):
                 'id': story_1.id,
                 'title': 'title a',
                 'canonical_url': 'http://domain.com/title_a',
-                'post_date': '2015-11-03',
-                'newspaper': {
-                    'id': 11,
-                    'name': 'a paper',
-                    'short_name': 'ap'
-                },
+                'publication_date': '2015-11-03',
+                'publication_name': 'a paper',
+                'publication_short_name': 'ap',
                 'image_url': {
                     '480_320': '/media/images/a-image.min-480x320.png'
                 },
@@ -90,12 +84,9 @@ class StoryAPITests(APITestCase):
                 'id': story_2.id,
                 'title': 'title b',
                 'canonical_url': 'http://domain.com/title_b',
-                'post_date': '2015-11-04',
-                'newspaper': {
-                    'id': 12,
-                    'name': 'b paper',
-                    'short_name': 'bp'
-                },
+                'publication_date': '2015-11-04',
+                'publication_name': 'b paper',
+                'publication_short_name': 'bp',
                 'image_url': {},
                 'body': [
                     {

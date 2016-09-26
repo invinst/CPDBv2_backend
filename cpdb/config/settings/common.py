@@ -112,6 +112,7 @@ TEMPLATES = [
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         'DIRS': [
             str(APPS_DIR.path('templates')),
+            '/www/static/templates/',
         ],
         'OPTIONS': {
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
@@ -137,7 +138,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -226,3 +226,6 @@ REST_FRAMEWORK = {
 MAILCHIMP_API_KEY = env.str('MAILCHIMP_API_KEY', default='')
 MAILCHIMP_USER = env.str('MAILCHIMP_USER', default='')
 VFTG_LIST_ID = 'e38095f8d7'
+
+AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
+AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
