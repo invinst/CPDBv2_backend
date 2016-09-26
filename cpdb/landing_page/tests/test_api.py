@@ -72,7 +72,7 @@ class LandingPageAPITestCase(APITestCase):
         for report in reports:
             self.assertEqual(
                 set(['id', 'title', 'publication_name', 'publication_short_name', 'canonical_url',
-                     'post_date', 'image_url', 'body']),
+                     'publication_date', 'image_url', 'body']),
                 set(report.keys()))
 
         for faq in faqs:

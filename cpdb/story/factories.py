@@ -25,7 +25,7 @@ class CoveragePageFactory(DjangoModelFactory):
     class Meta:
         model = 'story.CoveragePage'
 
-    content_type = ContentType.objects.get_for_model(CoveragePage)
+    content_type = LazyFunction(lambda: ContentType.objects.get_for_model(CoveragePage))
     title = 'Coverage'
     slug = 'coverage'
 
@@ -34,7 +34,7 @@ class StoryPageFactory(DjangoModelFactory):
     class Meta:
         model = 'story.StoryPage'  # Equivalent to ``model = myapp.models.User``
 
-    content_type = ContentType.objects.get_for_model(StoryPage)
+    content_type = LazyFunction(lambda: ContentType.objects.get_for_model(StoryPage))
     publication_name = LazyFunction(fake.sentence)
     publication_short_name = LazyFunction(fake.url)
     author_name = LazyFunction(fake.name)
