@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from wagtail.api.v2 import serializers as wagtail_serializers
 
-from landing_page.models import LandingPage
+from landing_page.models import LandingPage, LandingPageContent
 from faq.serializers import FAQPageSerializer
 from story.serializers import StoryPageSerializer
 
@@ -25,3 +25,11 @@ class LandingPageSerializer(serializers.ModelSerializer):
 
     def get_faqs(self, obj):
         return FAQPageSerializer(obj.randomized_faqs(), many=True).data
+
+
+class LandingPageContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LandingPageContent
+        fields = (
+            'id', 'collaborate_header', 'collaborate_content'
+            )

@@ -27,22 +27,26 @@ from wagtail.wagtailcore import urls as wagtail_urls
 from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
-from landing_page.views import LandingPageViewSet
+from landing_page.views import LandingPageViewSet, LandingPageContentViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
 
 
-router = routers.SimpleRouter()
-router.register(r'stories', StoryViewSet, base_name='story')
-router.register(r'faqs', FAQViewSet, base_name='faq')
-router.register(r'vftg', VFTGViewSet, base_name='vftg')
-router.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
-router.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
+router_v1 = routers.SimpleRouter()
+router_v1.register(r'stories', StoryViewSet, base_name='story')
+router_v1.register(r'faqs', FAQViewSet, base_name='faq')
+router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
+router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
+router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
+
+router_v2 = routers.SimpleRouter()
+router_v2.register(r'landing-page', LandingPageContentViewSet, base_name='landing-page')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^cms/', include(wagtailadmin_urls)),
     url(r'^wagtail/', include(wagtail_urls)),
-    url(r'^api/v1/', include(router.urls, namespace='api')),
+    url(r'^api/v1/', include(router_v1.urls, namespace='api')),
+    url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>collaborate|faq|reporting)/)?$', ensure_csrf_cookie(index), name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

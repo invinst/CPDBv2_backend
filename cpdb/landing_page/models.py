@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel, FieldPanel, StreamFieldPanel
 from wagtail.wagtailcore.fields import StreamField
@@ -88,3 +89,8 @@ class LandingPage(Page):
 
     def randomized_faqs(self, sample_size=3):
         return randomize(FAQPage.objects, self.faq_strat_n, sample_size, self.faq_pool_strategy)
+
+
+class LandingPageContent(models.Model):
+    collaborate_header = models.CharField(max_length=255, blank=True, null=True)
+    collaborate_content = JSONField(null=True)
