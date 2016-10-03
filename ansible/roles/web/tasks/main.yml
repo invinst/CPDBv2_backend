@@ -15,6 +15,7 @@
 
 - include: setup_newrelic.yml
   tags: newrelic
+  when: setup_newrelic
 
 - include: setup_supervisor.yml
   tags: supervisor
