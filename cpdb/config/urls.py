@@ -48,5 +48,5 @@ urlpatterns = [
     url(r'^wagtail/', include(wagtail_urls)),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
-    url(r'^(?:(?P<path>collaborate|faq|reporting)/)?$', ensure_csrf_cookie(index), name='index'),
+    url(r'^(?:(?P<path>collaborate|faq|reporting|edit)/)?$', ensure_csrf_cookie(index), name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
