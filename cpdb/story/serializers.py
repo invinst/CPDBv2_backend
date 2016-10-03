@@ -14,7 +14,7 @@ class StoryPageSerializer(serializers.ModelSerializer):
         model = StoryPage
         fields = (
             'id', 'title', 'publication_name', 'publication_short_name', 'canonical_url',
-            'post_date', 'image_url', 'body')
+            'publication_date', 'image_url', 'body')
 
     def get_image_url(self, obj):
         if obj.image:
