@@ -30,6 +30,8 @@ from vftg.views import VFTGViewSet
 from landing_page.views import LandingPageViewSet, LandingPageContentViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
+from authentication.views import UserViewSet
+from django.contrib.auth import views as auth_views
 
 
 router_v1 = routers.SimpleRouter()
@@ -41,6 +43,7 @@ router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
 router_v2.register(r'landing-page', LandingPageContentViewSet, base_name='landing-page')
+router_v2.register(r'users', UserViewSet, base_name='user')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -49,4 +52,8 @@ urlpatterns = [
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>collaborate|faq|reporting|edit)/)?$', ensure_csrf_cookie(index), name='index'),
+
+    url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
+        auth_views.password_reset_confirm, name='password_reset_confirm'),
+    url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
