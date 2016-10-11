@@ -69,5 +69,5 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     race = 'White'
     appointed_date = factory.LazyFunction(lambda: fake.date_time().date())
     rank = factory.LazyFunction(lambda: random.choice(RANKS)[0])
-    age_at_march_11_2016 = factory.LazyFunction(lambda: random.randint(20, 99))
+    birth_year = factory.LazyFunction(fake.year)
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
