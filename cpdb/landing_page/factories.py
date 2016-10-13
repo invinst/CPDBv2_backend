@@ -17,4 +17,6 @@ class LandingPageContentFactory(DjangoModelFactory):
     class Meta:
         model = LandingPageContent
 
-    collaborate_header = 'Collaborate with us'
+    collaborate_header = {
+        'blocks': [{'text': 'Collaborate with us'}]
+        }

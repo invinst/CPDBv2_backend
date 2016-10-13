@@ -1,0 +1,236 @@
+FORMAT: 1A
+HOST: http://cpdp.apiblueprint.org/
+
+# CPDP
+
+CPDP is a simple API serving the CPDP website version 2 (not the same as api version) now live at https://beta.cpdp.co. It includes two main portions: CMS and data tool.
+
+## CMS Page [/cms-pages/{page_id}]
+
++ Parameters
+    + page_id (string) - ID of the Page that look like a slug
+
+### Get CMS page content [GET]
+
++ Response 200 (application/json)
+
+        {
+            "fields": [
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "editor_state": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_content",
+                    "type": "multiline_text",
+                    "editor_state": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9s",
+                                "text": "We are collecting and publishing information that sheds light on police misconduct.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+        
+### Partial update CMS page content [PATCH]
+
+This api require an api access token set in `Authorization` header. To get an api access token, use **Sign In** api.
+
++ Request (application/json)
+
+    + Headers
+    
+            Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+        
+    + Body
+    
+            {
+                "fields": [
+                    {
+                        "name": "collaborate_header",
+                        "type": "plain_text",
+                        "editor_state": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "5gia1",
+                                    "text": "Collaborate With Us.",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    }
+                ]
+            }
+        
++ Response 200 (application/json)
+
+        {
+            "fields": [
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "editor_state": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_content",
+                    "type": "multiline_text",
+                    "editor_state": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9s",
+                                "text": "We are collecting and publishing information that sheds light on police misconduct.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+
++ Request (application/json)
+
+        {
+            "fields": [
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "editor_state": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+        
++ Response 401 (application/json)
+
+    + Headers
+        
+            WWW-Authenticate: Token
+        
+## Sign In [/sign-in]
+
+### Sign in and get an api access token [POST]
+
++ Request (application/json)
+
+        {
+            "username": "admin",
+            "password": "admin@123"
+        }
+        
++ Response 200 (application/json)
+
+        {
+            "apiAccessToken": "de7fe3fce439"
+        }
+        
++ Request (application/json)
+
+        {
+            "username": "incorrectname",
+            "password": "password"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Sorry, you’ve entered an incorrect name."
+        }
+
++ Request (application/json)
+
+        {
+            "username": "admin",
+            "password": "incorrect"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "You’ve entered an incorrect password."
+        }
+
+## Forgot password [/forgot-password]
+
+### Forgot password [POST]
+
++ Request (application/json)
+
+        {
+            "email": "admin@domain.com"
+        }
+        
++ Response 200 (application/json)
+
+        {
+            "message": "Please check your email for a password reset link"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "unregistered@email.co"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Sorry, there’s no account registered with this email address."
+        }

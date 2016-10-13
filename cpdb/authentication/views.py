@@ -10,7 +10,7 @@ from authentication.utils import send_forgot_password_email
 User = get_user_model()
 
 
-class UserViewSet(viewsets.GenericViewSet):
+class UserViewSet(viewsets.ViewSet):
     @list_route(methods=['post'], url_path='sign-in')
     def sign_in(self, request):
         username = request.data.get('username')

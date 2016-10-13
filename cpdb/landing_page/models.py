@@ -92,5 +92,4 @@ class LandingPage(Page):
 
 
 class LandingPageContent(models.Model):
-    collaborate_header = models.CharField(max_length=255, blank=True, null=True)
-    collaborate_content = JSONField(null=True)
+    fields = JSONField(null=True)

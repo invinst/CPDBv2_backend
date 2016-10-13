@@ -17,6 +17,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
@@ -27,11 +28,11 @@ from wagtail.wagtailcore import urls as wagtail_urls
 from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
-from landing_page.views import LandingPageViewSet, LandingPageContentViewSet
+from landing_page.views import LandingPageViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
 from authentication.views import UserViewSet
-from django.contrib.auth import views as auth_views
+from cms.views import CMSPageViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -42,7 +43,7 @@ router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page'
 router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
-router_v2.register(r'landing-page', LandingPageContentViewSet, base_name='landing-page')
+router_v2.register(r'cms-page', CMSPageViewSet, base_name='cms-page')
 router_v2.register(r'users', UserViewSet, base_name='user')
 
 urlpatterns = [
