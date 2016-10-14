@@ -92,7 +92,7 @@ def get_descriptor(cms_page):
 def get_all_descriptors():
     results = []
     for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if issubclass(obj, BaseCMSPageDescriptor):
+        if inspect.isclass(obj) and issubclass(obj, BaseCMSPageDescriptor) and obj is not BaseCMSPageDescriptor:
             descriptor = obj()
             results.append(descriptor)
     return results

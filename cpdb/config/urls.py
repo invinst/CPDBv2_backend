@@ -43,7 +43,7 @@ router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page'
 router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
-router_v2.register(r'cms-page', CMSPageViewSet, base_name='cms-page')
+router_v2.register(r'cms-pages', CMSPageViewSet, base_name='cms-page')
 router_v2.register(r'users', UserViewSet, base_name='user')
 
 urlpatterns = [

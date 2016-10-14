@@ -2,7 +2,7 @@ from django.test import SimpleTestCase
 
 from mock import Mock, patch
 
-from cms.cms_page_descriptors import BaseCMSPageDescriptor
+from cms.cms_page_descriptors import BaseCMSPageDescriptor, get_descriptor, get_all_descriptors, LandingPageDescriptor
 from cms.cms_fields import LinkField
 from cms.models import CMSPage
 
@@ -76,3 +76,21 @@ class BaseCMSPageDescriptorTestCase(SimpleTestCase):
                 }
             ]})
         self.assertEqual(self.mock_cms_page.fields['a_value'], 'http://def.xyz')
+
+
+class GetDescriptorTestCase(SimpleTestCase):
+    def test_get_descriptor(self):
+        cms_page = Mock()
+        cms_page.descriptor_class = 'LandingPageDescriptor'
+        instance = get_descriptor(cms_page)
+        self.assertTrue(isinstance(instance, LandingPageDescriptor))
+        self.assertEqual(instance.cms_page, cms_page)
+
+
+class GetAllDescriptorTestCase(SimpleTestCase):
+    def test_get_all_descriptors(self):
+        with patch('cms.cms_page_descriptors.BaseCMSPageDescriptor.__init__', return_value=None) as mock_function:
+            results = get_all_descriptors()
+            self.assertEqual(len(results), 1)
+            self.assertTrue(isinstance(results[0], LandingPageDescriptor))
+            mock_function.assert_called()
