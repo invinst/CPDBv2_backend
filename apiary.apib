@@ -5,12 +5,20 @@ HOST: http://cpdp.apiblueprint.org/
 
 CPDP is a simple API serving the CPDP website version 2 (not the same as api version) now live at https://beta.cpdp.co. It includes two main portions: CMS and data tool.
 
+**Conventions**:
+
+- Property name is in snake case: `field_name` instead of `fieldName`
+
 ## CMS Page [/cms-pages/{page_id}/]
 
 + Parameters
     + page_id (string) - ID of the Page that look like a slug
 
 ### Get CMS page content [GET]
+
+**Properties**:
+
+- `fields` is an array of fields. Each fields has `name`, `type` and `value`. `value` is an opaque object that should be only of interest to whatever module that deal with it directly. As such it's content might violate some of conventions followed elsewhere such as having property name be in snake case.
 
 + Response 200 (application/json)
 
