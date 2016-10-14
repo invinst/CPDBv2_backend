@@ -1,10 +1,12 @@
 from django.core.urlresolvers import reverse
 
 from freezegun import freeze_time
+from mock import patch
 from rest_framework import status
 from rest_framework.test import APITestCase
-from mock import patch
+from rest_framework.authtoken.models import Token
 
+from authentication.factories import AdminUserFactory
 from cms.cms_page_descriptors import LandingPageDescriptor
 
 
@@ -22,7 +24,11 @@ class CMSPageViewSetTestCase(APITestCase):
         self.maxDiff = None
 
     def test_update_landing_page(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
         url = reverse('api-v2:cms-page-detail', kwargs={'pk': 'landing-page'})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = self.client.patch(url, {'fields': [
             {
                 'name': 'collaborate_header',
