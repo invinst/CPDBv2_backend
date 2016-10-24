@@ -15,6 +15,7 @@
 
 - include: setup_newrelic.yml
   tags: newrelic
+  when: enable_new_relic
 
 - include: setup_supervisor.yml
   tags: supervisor
@@ -30,3 +31,4 @@
 
 - include: setup_cron_job.yml
   tags: cron
+  when: enable_cron_job

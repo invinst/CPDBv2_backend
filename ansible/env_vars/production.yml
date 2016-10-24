@@ -30,3 +30,6 @@ run_django_collectstatic: yes
 
 deploy_user: ansible
 deploy_group: ansible
+
+enable_new_relic: yes
+enable_cron_job: yes

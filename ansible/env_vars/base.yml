@@ -10,3 +10,7 @@ frontend_static_dir: /www/static/
 
 es_major_version: 2.x
 es_version: 2.3.3
+postgresql_version: 9.4
+postgresql_package_version: 9.4.*-1.pgdg14.04+1
+enable_new_relic: no
+enable_cron_job: no
