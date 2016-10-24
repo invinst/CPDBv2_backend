@@ -5,7 +5,7 @@ class CMSPageSerializer(serializers.BaseSerializer):
     def to_representation(self, obj):
         return {
             'fields': [
-                field.to_representation()
+                field.to_representation(obj)
                 for field in obj.get_fields()
             ]
         }
@@ -16,3 +16,14 @@ class CMSPageSerializer(serializers.BaseSerializer):
     def update(self, instance, validated_data):
         instance.update(validated_data)
         return instance
+
+
+class ReportPageSerializer(CMSPageSerializer):
+    def to_representation(self, obj):
+        return {
+            'id': obj.get_id(),
+            'fields': [
+                field.to_representation(obj)
+                for field in obj.get_fields()
+            ]
+        }

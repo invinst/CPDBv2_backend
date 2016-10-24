@@ -7,7 +7,8 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
-from cms.cms_page_descriptors import LandingPageDescriptor
+from cms.cms_page_descriptors import LandingPageDescriptor, ReportPageDescriptor
+from cms.models import ReportPage, SlugPage
 
 
 class CMSPageViewSetTestCase(APITestCase):
@@ -44,8 +45,9 @@ class CMSPageViewSetTestCase(APITestCase):
         self.assertEqual(
             response_data['collaborate_header']['value'],
             'Collaborate With Us.')
+
         self.assertEqual(
-            self.landing_page_descriptor.collaborate_header.value,
+            SlugPage.objects.first().fields['collaborate_header_value'],
             'Collaborate With Us.')
 
     def test_get_landing_page(self):
@@ -277,3 +279,63 @@ class CMSPageViewSetTestCase(APITestCase):
                     'entityMap': {}
                 }
             })
+
+
+class ReportPageViewSetTestCase(APITestCase):
+    def setUp(self):
+        with patch('cms.cms_fields.generate_draft_block_key', return_value='abc12'):
+            rp_descriptor = ReportPageDescriptor()
+            rp_descriptor.seed_data()
+        self.maxDiff = None
+
+    def test_list_report_page(self):
+        url = reverse('api-v2:report-list')
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        [report] = ReportPage.objects.all()
+        actual_data = dict(response.data)
+        actual_results = actual_data['results']
+
+        self.assertEqual(actual_data['count'], 1)
+        self.assertEqual(actual_data['next'], None)
+        self.assertEqual(actual_data['previous'], None)
+
+        self.assertDictEqual(actual_results[0], {
+            'fields': [
+                {
+                    'name': field,
+                    'type': report.fields['%s_type' % field],
+                    'value': report.fields['%s_value' % field],
+                }
+                for field in ['author', 'excerpt', 'publication', 'publish_date', 'title']
+            ],
+            'id': report.id
+        })
+
+    def test_update_report_page(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        report_page = ReportPage.objects.first()
+
+        url = reverse('api-v2:report-detail', kwargs={'pk': report_page.id})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'fields': [
+            {
+                'name': 'title',
+                'type': 'plain_text',
+                'value': 'new title'
+            }
+        ]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['fields']), 5)
+        response_data = {
+            field['name']: field for field in response.data['fields']
+        }
+        self.assertEqual(
+            response_data['title']['value'],
+            'new title')
+        report_page.refresh_from_db()
+        self.assertEqual(
+            report_page.fields['title_value'],
+            'new title')

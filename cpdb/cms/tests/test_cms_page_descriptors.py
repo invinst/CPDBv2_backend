@@ -2,16 +2,18 @@ from django.test import SimpleTestCase
 
 from mock import Mock, patch
 
-from cms.cms_page_descriptors import BaseCMSPageDescriptor, get_descriptor, get_all_descriptors, LandingPageDescriptor
+from cms.cms_page_descriptors import (
+    SlugPageDescriptor, get_descriptor, get_all_slug_page_descriptors, LandingPageDescriptor,
+    get_all_id_page_descriptor_classes, ReportPageDescriptor)
 from cms.cms_fields import LinkField
-from cms.models import CMSPage
+from cms.models import SlugPage
 
 
 class BaseCMSPageDescriptorTestCase(SimpleTestCase):
     def setUp(self):
         self.mock_cms_page = Mock()
 
-        class CMSPageDescriptor(BaseCMSPageDescriptor):
+        class CMSPageDescriptor(SlugPageDescriptor):
             slug = 'abc'
             a = LinkField(seed_value='http://abc.xyz')
 
@@ -20,15 +22,15 @@ class BaseCMSPageDescriptorTestCase(SimpleTestCase):
 
     def test_init_object_with_existing_landing_page(self):
         mock_cms_page = Mock()
-        with patch('cms.cms_page_descriptors.CMSPage.objects.get', return_value=mock_cms_page) as mock_function:
+        with patch('cms.cms_page_descriptors.SlugPage.objects.get', return_value=mock_cms_page) as mock_function:
             cms_page_descriptor = self.descriptor_class()
             self.assertEqual(cms_page_descriptor.cms_page, mock_cms_page)
             mock_function.assert_called_with(descriptor_class='CMSPageDescriptor')
 
     def test_init_object_with_non_existing_landing_page(self):
         mock_get = Mock()
-        mock_get.side_effect = CMSPage.DoesNotExist
-        with patch('cms.cms_page_descriptors.CMSPage.objects.get', new_callable=lambda: mock_get):
+        mock_get.side_effect = SlugPage.DoesNotExist
+        with patch('cms.cms_page_descriptors.SlugPage.objects.get', new_callable=lambda: mock_get):
             cms_page_descriptor = self.descriptor_class()
             self.assertTrue(cms_page_descriptor.cms_page is None)
 
@@ -47,9 +49,9 @@ class BaseCMSPageDescriptorTestCase(SimpleTestCase):
 
     def test_seed_data_with_non_existing_cms_page(self):
         mock_get = Mock()
-        mock_get.side_effect = CMSPage.DoesNotExist
-        with patch('cms.cms_page_descriptors.CMSPage.objects.get', new_callable=lambda: mock_get):
-            with patch('cms.cms_page_descriptors.CMSPage.objects.create') as mock_create:
+        mock_get.side_effect = SlugPage.DoesNotExist
+        with patch('cms.cms_page_descriptors.SlugPage.objects.get', new_callable=lambda: mock_get):
+            with patch('cms.cms_page_descriptors.SlugPage.objects.create') as mock_create:
                 cms_page_descriptor = self.descriptor_class()
                 self.assertTrue(cms_page_descriptor.seed_data() is None)
                 mock_create.assert_called_with(slug='abc', fields={
@@ -87,10 +89,17 @@ class GetDescriptorTestCase(SimpleTestCase):
         self.assertEqual(instance.cms_page, cms_page)
 
 
-class GetAllDescriptorTestCase(SimpleTestCase):
-    def test_get_all_descriptors(self):
+class GetAllSlugPageDescriptorTestCase(SimpleTestCase):
+    def test_get_all_slug_page_descriptors(self):
         with patch('cms.cms_page_descriptors.BaseCMSPageDescriptor.__init__', return_value=None) as mock_function:
-            results = get_all_descriptors()
+            results = get_all_slug_page_descriptors()
             self.assertEqual(len(results), 1)
             self.assertTrue(isinstance(results[0], LandingPageDescriptor))
             mock_function.assert_called()
+
+
+class GetAllIdPageDescriptorTestCase(SimpleTestCase):
+    def test_get_all_id_page_descriptor_classes(self):
+        results = get_all_id_page_descriptor_classes()
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0], ReportPageDescriptor)

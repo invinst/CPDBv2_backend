@@ -11,13 +11,13 @@ from cms.randomizers import RANDOMIZER_STRATEGIES
 class LinkFieldTestCase(SimpleTestCase):
     def setUp(self):
         self.link_field = LinkField(seed_value='http://google.com')
-        descriptor = Mock()
-        descriptor.get_field_value_from_model.return_value = 'http://google.com.vn'
-        self.link_field.initialize('vftg_link', descriptor)
+        self.descriptor = Mock()
+        self.descriptor.get_field_value_from_model.return_value = 'http://google.com.vn'
+        self.link_field.initialize('vftg_link')
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.link_field.to_representation(),
+            self.link_field.to_representation(self.descriptor),
             {
                 'name': 'vftg_link',
                 'type': 'link',
@@ -44,13 +44,13 @@ class LinkFieldTestCase(SimpleTestCase):
 class DateFieldTestCase(SimpleTestCase):
     def setUp(self):
         self.date_field = DateField()
-        descriptor = Mock()
-        descriptor.get_field_value_from_model.return_value = '2016-01-01'
-        self.date_field.initialize('vftg_date', descriptor)
+        self.descriptor = Mock()
+        self.descriptor.get_field_value_from_model.return_value = '2016-01-01'
+        self.date_field.initialize('vftg_date')
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.date_field.to_representation(),
+            self.date_field.to_representation(self.descriptor),
             {
                 'name': 'vftg_date',
                 'type': 'date',
@@ -78,13 +78,13 @@ class DateFieldTestCase(SimpleTestCase):
 class PlainTextFieldTestCase(SimpleTestCase):
     def setUp(self):
         self.plain_text_field = PlainTextField(seed_value='About')
-        descriptor = Mock()
-        descriptor.get_field_value_from_model.return_value = {'a': 'b'}
-        self.plain_text_field.initialize('about_header', descriptor)
+        self.descriptor = Mock()
+        self.descriptor.get_field_value_from_model.return_value = {'a': 'b'}
+        self.plain_text_field.initialize('about_header')
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.plain_text_field.to_representation(),
+            self.plain_text_field.to_representation(self.descriptor),
             {
                 'name': 'about_header',
                 'type': 'plain_text',
@@ -127,13 +127,13 @@ class PlainTextFieldTestCase(SimpleTestCase):
 class MultilineTextFieldTestCase(SimpleTestCase):
     def setUp(self):
         self.multiline_text_field = MultilineTextField(seed_value=['abc', 'xyz'])
-        descriptor = Mock()
-        descriptor.get_field_value_from_model.return_value = {'a': 'b'}
-        self.multiline_text_field.initialize('about_content', descriptor)
+        self.descriptor = Mock()
+        self.descriptor.get_field_value_from_model.return_value = {'a': 'b'}
+        self.multiline_text_field.initialize('about_content')
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.multiline_text_field.to_representation(),
+            self.multiline_text_field.to_representation(self.descriptor),
             {
                 'name': 'about_content',
                 'type': 'multiline_text',
@@ -190,13 +190,13 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 return 10
             elif suffix == 'selected_strategy_id':
                 return 1
-        descriptor = Mock()
-        descriptor.get_field_value_from_model = mock_get_field_value
-        self.randomizer_field.initialize('faq_randomizer', descriptor)
+        self.descriptor = Mock()
+        self.descriptor.get_field_value_from_model = mock_get_field_value
+        self.randomizer_field.initialize('faq_randomizer')
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.randomizer_field.to_representation(),
+            self.randomizer_field.to_representation(self.descriptor),
             {
                 'name': 'faq_randomizer',
                 'type': 'randomizer',
@@ -234,19 +234,19 @@ class RandomizedListFieldTestCase(SimpleTestCase):
         FAQ = Mock()
         FAQ.objects = Mock()
         self.faq_objects = FAQ.objects
-        descriptor = Mock()
-        descriptor.faq_randomizer = Mock()
-        descriptor.faq_randomizer.value = {
+        self.descriptor = Mock()
+        self.descriptor.faq_randomizer = Mock()
+        self.descriptor.faq_randomizer.value = {
             'pool_size': 10,
             'selected_strategy_id': 1
         }
         self.randomized_list_field = RandomizedListField(count=3, randomizer_field='faq_randomizer', model=FAQ)
-        self.randomized_list_field.initialize('faqs', descriptor)
+        self.randomized_list_field.initialize('faqs')
 
     def test_to_representation(self):
         with patch('cms.cms_fields.randomize', return_value=['a', 'b', 'c']) as mock_function:
             self.assertDictEqual(
-                self.randomized_list_field.to_representation(),
+                self.randomized_list_field.to_representation(self.descriptor),
                 {
                     'name': 'faqs',
                     'type': 'randomized_list',

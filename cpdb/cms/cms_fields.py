@@ -1,22 +1,24 @@
 from datetime import datetime
+from faker import Faker
 
 from cms.utils import generate_draft_block_key
 from cms.randomizers import randomize, RANDOMIZER_STRATEGIES
+
+fake = Faker()
 
 
 class BaseField(object):
     virtual = False
 
-    def to_representation(self):
+    def to_representation(self, descriptor):
         return {
             'name': self.name,
             'type': self._type,
-            'value': self.value
+            'value': self.value(descriptor)
         }
 
-    def initialize(self, name, descriptor):
+    def initialize(self, name):
         self.name = name
-        self.descriptor = descriptor
 
     def to_internal_value(self, validated_data):
         return {
@@ -24,12 +26,14 @@ class BaseField(object):
             'value': validated_data
         }
 
-    @property
-    def value(self):
-        return self.descriptor.get_field_value_from_model(self.name, 'value')
+    def value(self, descriptor):
+        return descriptor.get_field_value_from_model(self.name, 'value')
 
 
 class DraftEditorField(BaseField):
+    def __init__(self, seed_value=None):
+        self._seed_value = seed_value
+
     def get_key(self):
         return generate_draft_block_key()
 
@@ -46,8 +50,16 @@ class DraftEditorField(BaseField):
 
 
 class StringField(BaseField):
-    def __init__(self, seed_value=''):
-        self.seed_value = seed_value
+    _type = 'string'
+
+    def __init__(self, seed_value=None):
+        self._seed_value = seed_value
+
+    @property
+    def seed_value(self):
+        if self._seed_value is None:
+            return fake.word()
+        return self._seed_value
 
     def seed_data(self):
         return {
@@ -58,6 +70,12 @@ class StringField(BaseField):
 
 class LinkField(StringField):
     _type = 'link'
+
+    @property
+    def seed_value(self):
+        if self._seed_value is None:
+            return fake.url()
+        return self._seed_value
 
 
 class DateField(BaseField):
@@ -73,8 +91,11 @@ class DateField(BaseField):
 class PlainTextField(DraftEditorField):
     _type = 'plain_text'
 
-    def __init__(self, seed_value):
-        self.seed_value = seed_value
+    @property
+    def seed_value(self):
+        if self._seed_value is None:
+            return fake.sentence()
+        return self._seed_value
 
     def seed_data(self):
         return {
@@ -91,8 +112,11 @@ class PlainTextField(DraftEditorField):
 class MultilineTextField(DraftEditorField):
     _type = 'multiline_text'
 
-    def __init__(self, seed_value):
-        self.seed_value = seed_value
+    @property
+    def seed_value(self):
+        if self._seed_value is None:
+            return fake.paragraphs(nb=2)
+        return self._seed_value
 
     def seed_data(self):
         return {
@@ -109,11 +133,10 @@ class MultilineTextField(DraftEditorField):
 class RandomizerField(BaseField):
     _type = 'randomizer'
 
-    @property
-    def value(self):
+    def value(self, descriptor):
         return {
-            'poolSize': self.descriptor.get_field_value_from_model(self.name, 'pool_size'),
-            'selectedStrategyId': self.descriptor.get_field_value_from_model(self.name, 'selected_strategy_id'),
+            'poolSize': descriptor.get_field_value_from_model(self.name, 'pool_size'),
+            'selectedStrategyId': descriptor.get_field_value_from_model(self.name, 'selected_strategy_id'),
             'strategies': RANDOMIZER_STRATEGIES
         }
 
@@ -142,9 +165,8 @@ class RandomizedListField(BaseField):
 
     _type = 'randomized_list'
 
-    @property
-    def value(self):
-        strategy_field = getattr(self.descriptor, self.randomizer_field)
+    def value(self, descriptor):
+        strategy_field = getattr(descriptor, self.randomizer_field)
         randomizer = strategy_field.value
 
         return randomize(

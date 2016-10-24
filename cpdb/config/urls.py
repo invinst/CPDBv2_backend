@@ -32,7 +32,7 @@ from landing_page.views import LandingPageViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
 from authentication.views import UserViewSet
-from cms.views import CMSPageViewSet
+from cms.views import CMSPageViewSet, ReportPageViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -44,6 +44,7 @@ router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
 router_v2.register(r'cms-pages', CMSPageViewSet, base_name='cms-page')
+router_v2.register(r'reports', ReportPageViewSet, base_name='report')
 router_v2.register(r'users', UserViewSet, base_name='user')
 
 urlpatterns = [

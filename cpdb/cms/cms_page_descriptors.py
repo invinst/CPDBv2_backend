@@ -2,9 +2,9 @@ import inspect
 import sys
 
 from cms.cms_fields import (
-    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField, BaseField
+    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField, BaseField, StringField
 )
-from cms.models import CMSPage
+from cms.models import SlugPage, ReportPage
 # from story.models import Report
 # from faq.models import FAQ
 
@@ -12,19 +12,15 @@ from cms.models import CMSPage
 class BaseCMSPageDescriptor(object):
     def __init__(self, cms_page=None):
         self._fields = []
-
         if cms_page is not None:
             self.cms_page = cms_page
         else:
-            try:
-                self.cms_page = CMSPage.objects.get(descriptor_class=self.__class__.__name__)
-            except CMSPage.DoesNotExist:
-                self.cms_page = None
+            self._get_cms_page()
 
         for attr_name in dir(self):
             attribute = getattr(self, attr_name)
             if isinstance(attribute, BaseField):
-                attribute.initialize(attr_name, self)
+                attribute.initialize(attr_name)
                 self._fields.append(attribute)
 
     def get_fields(self):
@@ -44,8 +40,7 @@ class BaseCMSPageDescriptor(object):
                 for key, val in data.iteritems():
                     fields_data['%s_%s' % (field.name, key)] = val
 
-        self.cms_page = CMSPage.objects.create(
-            slug=self.slug, fields=fields_data, descriptor_class=self.__class__.__name__)
+        self._create_cms_page(fields_data)
 
     def update(self, validated_data):
         fields_data = {
@@ -61,7 +56,31 @@ class BaseCMSPageDescriptor(object):
         self.cms_page.save()
 
 
-class LandingPageDescriptor(BaseCMSPageDescriptor):
+class SlugPageDescriptor(BaseCMSPageDescriptor):
+    def _get_cms_page(self):
+        try:
+            self.cms_page = SlugPage.objects.get(descriptor_class=self.__class__.__name__)
+        except SlugPage.DoesNotExist:
+            self.cms_page = None
+
+    def _create_cms_page(self, fields):
+        self.cms_page = SlugPage.objects.create(
+            slug=self.slug, fields=fields, descriptor_class=self.__class__.__name__)
+
+
+class IdPageDescriptor(BaseCMSPageDescriptor):
+    def get_id(self):
+        return self.cms_page and self.cms_page.id or None
+
+    def _get_cms_page(self):
+        self.cms_page = None
+
+    def _create_cms_page(self, fields):
+        self.cms_page = self.model.objects.create(
+            fields=fields, descriptor_class=self.__class__.__name__)
+
+
+class LandingPageDescriptor(SlugPageDescriptor):
     slug = 'landing-page'
     reporting_header = PlainTextField(seed_value='Recent Reports')
     reporting_randomizer = RandomizerField()
@@ -83,16 +102,39 @@ class LandingPageDescriptor(BaseCMSPageDescriptor):
             ' Our aim is to create a new model of accountability between officers and citizens.')])
 
 
+class ReportPageDescriptor(IdPageDescriptor):
+    model = ReportPage
+    title = PlainTextField()
+    excerpt = MultilineTextField()
+    publication = StringField()
+    publish_date = DateField()
+    author = StringField()
+
+
 def get_descriptor(cms_page):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if cms_page.descriptor_class == name:
             return obj(cms_page)
 
 
-def get_all_descriptors():
+def get_descriptors(cms_pages):
+    for name, obj in inspect.getmembers(sys.modules[__name__]):
+        if cms_pages[0].descriptor_class == name:
+            return [obj(instance) for instance in cms_pages]
+
+
+def get_all_slug_page_descriptors():
     results = []
     for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if inspect.isclass(obj) and issubclass(obj, BaseCMSPageDescriptor) and obj is not BaseCMSPageDescriptor:
+        if inspect.isclass(obj) and issubclass(obj, SlugPageDescriptor) and obj is not SlugPageDescriptor:
             descriptor = obj()
             results.append(descriptor)
+    return results
+
+
+def get_all_id_page_descriptor_classes():
+    results = []
+    for name, obj in inspect.getmembers(sys.modules[__name__]):
+        if inspect.isclass(obj) and issubclass(obj, IdPageDescriptor) and obj is not IdPageDescriptor:
+            results.append(obj)
     return results
