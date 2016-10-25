@@ -11,3 +11,4 @@ class SlugPage(models.Model):
 class ReportPage(models.Model):
     descriptor_class = models.CharField(max_length=255)
     fields = JSONField()
+    created = models.DateTimeField(auto_now_add=True)

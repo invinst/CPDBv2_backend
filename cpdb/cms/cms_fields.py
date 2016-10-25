@@ -158,17 +158,22 @@ class RandomizerField(BaseField):
 class RandomizedListField(BaseField):
     virtual = True
 
-    def __init__(self, count, randomizer_field, model):
+    def __init__(self, count, randomizer_field, model, serializer_class, descriptor_class):
         self.count = count
         self.randomizer_field = randomizer_field
         self.model = model
+        self.serializer_class = serializer_class
+        self.descriptor_class = descriptor_class
 
     _type = 'randomized_list'
 
     def value(self, descriptor):
         strategy_field = getattr(descriptor, self.randomizer_field)
-        randomizer = strategy_field.value
+        randomizer = strategy_field.value(descriptor)
 
-        return randomize(
-            self.model.objects, randomizer['pool_size'], self.count,
-            randomizer['selected_strategy_id'])
+        instances = randomize(
+            self.model.objects, randomizer['poolSize'], self.count,
+            randomizer['selectedStrategyId'])
+
+        serializer = self.serializer_class([self.descriptor_class(inst) for inst in instances], many=True)
+        return serializer.data

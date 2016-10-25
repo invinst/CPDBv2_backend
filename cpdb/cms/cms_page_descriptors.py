@@ -2,11 +2,11 @@ import inspect
 import sys
 
 from cms.cms_fields import (
-    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField, BaseField, StringField
+    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField,
+    BaseField, StringField, RandomizedListField
 )
 from cms.models import SlugPage, ReportPage
-# from story.models import Report
-# from faq.models import FAQ
+from cms.serializers import ReportPageSerializer
 
 
 class BaseCMSPageDescriptor(object):
@@ -80,11 +80,22 @@ class IdPageDescriptor(BaseCMSPageDescriptor):
             fields=fields, descriptor_class=self.__class__.__name__)
 
 
+class ReportPageDescriptor(IdPageDescriptor):
+    model = ReportPage
+    title = PlainTextField()
+    excerpt = MultilineTextField()
+    publication = StringField()
+    publish_date = DateField()
+    author = StringField()
+
+
 class LandingPageDescriptor(SlugPageDescriptor):
     slug = 'landing-page'
     reporting_header = PlainTextField(seed_value='Recent Reports')
     reporting_randomizer = RandomizerField()
-    # reports = RandomizedListField(count=3, randomizer_field='reporting_randomizer', model=Report)
+    reports = RandomizedListField(
+        count=3, randomizer_field='reporting_randomizer', model=ReportPage,
+        serializer_class=ReportPageSerializer, descriptor_class=ReportPageDescriptor)
     faq_header = PlainTextField(seed_value='FAQ')
     faq_randomizer = RandomizerField()
     # faqs = RandomizedListField(count=3, randomizer_field='faq_randomizer', model=FAQ)
@@ -100,15 +111,6 @@ class LandingPageDescriptor(SlugPageDescriptor):
         'The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago.',
         ('The information and stories we have collected here are intended as a resource for public oversight.'
             ' Our aim is to create a new model of accountability between officers and citizens.')])
-
-
-class ReportPageDescriptor(IdPageDescriptor):
-    model = ReportPage
-    title = PlainTextField()
-    excerpt = MultilineTextField()
-    publication = StringField()
-    publish_date = DateField()
-    author = StringField()
 
 
 def get_descriptor(cms_page):
