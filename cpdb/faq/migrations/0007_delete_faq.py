@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('faq', '0006_add_faqpage_model'),
-        ('landing_page', '0006_remove_snippets_from_landing_page'),
     ]
 
     operations = [

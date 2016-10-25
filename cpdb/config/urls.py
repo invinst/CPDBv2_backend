@@ -25,10 +25,8 @@ from rest_framework import routers
 from wagtail.wagtailadmin import urls as wagtailadmin_urls
 from wagtail.wagtailcore import urls as wagtail_urls
 
-from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
-from landing_page.views import LandingPageViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
 from authentication.views import UserViewSet
@@ -36,10 +34,8 @@ from cms.views import CMSPageViewSet, ReportPageViewSet
 
 
 router_v1 = routers.SimpleRouter()
-router_v1.register(r'stories', StoryViewSet, base_name='story')
 router_v1.register(r'faqs', FAQViewSet, base_name='faq')
 router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
-router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
 router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()

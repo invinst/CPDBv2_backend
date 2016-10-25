@@ -52,13 +52,11 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'faq',
-    'story',
     'data',
     'data_versioning',
     'es_index',
     'suggestion',
     'vftg',
-    'landing_page',
     'cms',
 )
 
