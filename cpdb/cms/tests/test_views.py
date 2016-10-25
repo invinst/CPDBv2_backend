@@ -38,7 +38,7 @@ class CMSPageViewSetTestCase(APITestCase):
             }
         ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 11)
+        self.assertEqual(len(response.data['fields']), 12)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -55,7 +55,7 @@ class CMSPageViewSetTestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 11)
+        self.assertEqual(len(response.data['fields']), 12)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
