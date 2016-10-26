@@ -7,7 +7,7 @@ from cms.fields import (
     PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField,
     StringField
 )
-from cms.models import ReportPage, SlugPage
+from cms.models import ReportPage, SlugPage, FAQPage
 from cms.randomizers import randomize
 
 
@@ -80,6 +80,14 @@ class ReportPageSerializer(IdPageSerializer):
 
     class Meta:
         model = ReportPage
+
+
+class FAQPageSerializer(IdPageSerializer):
+    question = PlainTextField()
+    answer = MultilineTextField()
+
+    class Meta:
+        model = FAQPage
 
 
 class LandingPageSerializer(SlugPageSerializer):

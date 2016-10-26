@@ -7,8 +7,8 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
-from cms.serializers import LandingPageSerializer, ReportPageSerializer
-from cms.models import ReportPage, SlugPage
+from cms.serializers import LandingPageSerializer, ReportPageSerializer, FAQPageSerializer
+from cms.models import ReportPage, SlugPage, FAQPage
 
 
 class CMSPageViewSetTestCase(APITestCase):
@@ -391,3 +391,101 @@ class ReportPageViewSetTestCase(APITestCase):
         self.assertEqual(
             report_page.fields['title_value'],
             'new title')
+
+
+class FAQPageViewSetTestCase(APITestCase):
+    def setUp(self):
+        with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
+            serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data(
+                question='a', answer=['b', 'c']))
+            serializer.is_valid()
+            serializer.save()
+        self.maxDiff = None
+
+    def test_list(self):
+        url = reverse('api-v2:faq-list')
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        [faq] = FAQPage.objects.all()
+        actual_data = dict(response.data)
+        fields = {
+            field['name']: field for field in actual_data['results'][0]['fields']
+        }
+
+        self.assertEqual(actual_data['count'], 1)
+        self.assertEqual(actual_data['next'], None)
+        self.assertEqual(actual_data['previous'], None)
+        self.assertEqual(actual_data['results'][0]['id'], faq.id)
+        self.assertDictEqual(fields['answer'], {
+            'name': 'answer',
+            'type': 'multiline_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'b',
+                        'type': 'unstyled'
+                    },
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'c',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+        self.assertDictEqual(fields['question'], {
+            'name': 'question',
+            'type': 'plain_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'a',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+
+    def test_update(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        faq_page = FAQPage.objects.first()
+
+        url = reverse('api-v2:faq-detail', kwargs={'pk': faq_page.id})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'fields': [
+            {
+                'name': 'question',
+                'type': 'plain_text',
+                'value': 'abc'
+            }
+        ]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['fields']), 2)
+        response_data = {
+            field['name']: field for field in response.data['fields']
+        }
+        self.assertEqual(
+            response_data['question']['value'],
+            'abc')
+        faq_page.refresh_from_db()
+        self.assertEqual(
+            faq_page.fields['question_value'],
+            'abc')

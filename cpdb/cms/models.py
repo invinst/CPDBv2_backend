@@ -11,3 +11,8 @@ class SlugPage(models.Model):
 class ReportPage(models.Model):
     fields = JSONField()
     created = models.DateTimeField(auto_now_add=True)
+
+
+class FAQPage(models.Model):
+    fields = JSONField()
+    created = models.DateTimeField(auto_now_add=True)

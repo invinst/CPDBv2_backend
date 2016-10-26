@@ -2,8 +2,113 @@ from django.test import SimpleTestCase
 
 from mock import Mock, patch
 
-from cms.serializers import LandingPageSerializer, ReportPageSerializer
+from cms.serializers import (
+    BaseCMSPageSerializer, LandingPageSerializer, ReportPageSerializer,
+    SlugPageSerializer, IdPageSerializer)
+from cms.fields import StringField
 from cms.randomizers import RANDOMIZER_STRATEGIES
+
+
+class BaseCMSPageSerializerTestCase(SimpleTestCase):
+    def setUp(self):
+        self.page_model = Mock()
+        self.page_model.objects = Mock()
+        self.page_model.objects.create = Mock()
+
+        class CMSPageSerializer(BaseCMSPageSerializer):
+            a = StringField()
+
+            class Meta:
+                model = self.page_model
+
+        self.serializer_class = CMSPageSerializer
+
+    def test_serialize(self):
+        page = Mock()
+        page.fields = {
+            'a_value': 'b'
+        }
+        serializer = self.serializer_class(page)
+        self.assertDictEqual(serializer.data['fields'][0], {
+            'name': 'a',
+            'type': 'string',
+            'value': 'b'
+        })
+
+    def test_update(self):
+        page = Mock()
+        page.fields = {
+            'a_value': 'b'
+        }
+        page.save = Mock()
+        serializer = self.serializer_class(page, data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        self.assertDictEqual(serializer.data['fields'][0], {
+            'name': 'a',
+            'type': 'string',
+            'value': 'c'
+        })
+        page.save.assert_called()
+
+    def test_create(self):
+        serializer = self.serializer_class(data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        self.page_model.objects.create.assert_called_with(fields={'a_type': 'string', 'a_value': 'c'})
+
+    def test_fake_data(self):
+        self.assertDictEqual(self.serializer_class().fake_data(a='b'), {'fields': [{
+            'name': 'a',
+            'type': 'string',
+            'value': 'b'
+        }]})
+
+
+class SlugPageSerializerTestCase(SimpleTestCase):
+    def setUp(self):
+        self.page_model = Mock()
+        self.page_model.objects = Mock()
+        self.page_model.objects.create = Mock()
+
+        class PageSerializer(SlugPageSerializer):
+            a = StringField()
+
+            class Meta:
+                model = self.page_model
+                slug = 'page'
+
+        self.serializer_class = PageSerializer
+
+    def test_create(self):
+        serializer = self.serializer_class(data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        self.page_model.objects.create.assert_called_with(
+            fields={'a_type': 'string', 'a_value': 'c'}, slug='page',
+            serializer_class='PageSerializer')
+
+
+class IdPageSerializerTestCase(SimpleTestCase):
+    def setUp(self):
+        class PageSerializer(IdPageSerializer):
+            a = StringField()
+
+        self.serializer_class = PageSerializer
+
+    def test_serialize(self):
+        page = Mock()
+        page.fields = {
+            'a_value': 'b'
+        }
+        page.id = 1
+        serializer = self.serializer_class(page)
+        self.assertEqual(serializer.data['id'], 1)
+        self.assertDictEqual(serializer.data['fields'][0], {
+            'name': 'a',
+            'type': 'string',
+            'value': 'b'
+        })
 
 
 class LandingPageSerializerTestCase(SimpleTestCase):
