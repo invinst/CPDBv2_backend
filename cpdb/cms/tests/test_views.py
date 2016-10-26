@@ -7,21 +7,18 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
-from cms.cms_page_descriptors import LandingPageDescriptor, ReportPageDescriptor
+from cms.serializers import LandingPageSerializer, ReportPageSerializer
 from cms.models import ReportPage, SlugPage
 
 
 class CMSPageViewSetTestCase(APITestCase):
     @freeze_time('2016-10-07')
     def setUp(self):
-        with patch('cms.cms_fields.generate_draft_block_key', return_value='abc12'):
-            self.landing_page_descriptor = LandingPageDescriptor()
-            self.landing_page_descriptor.seed_data()
-        self.landing_page_descriptor.update({'fields': [{
-            'name': 'vftg_link',
-            'type': 'link',
-            'value': 'https://google.com'
-            }]})
+        with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
+            serializer = LandingPageSerializer(data=LandingPageSerializer().fake_data(vftg_link='https://google.com'))
+            serializer.is_valid()
+            serializer.save()
+
         self.maxDiff = None
 
     def test_update_landing_page(self):
@@ -283,9 +280,12 @@ class CMSPageViewSetTestCase(APITestCase):
 
 class ReportPageViewSetTestCase(APITestCase):
     def setUp(self):
-        with patch('cms.cms_fields.generate_draft_block_key', return_value='abc12'):
-            rp_descriptor = ReportPageDescriptor()
-            rp_descriptor.seed_data()
+        with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
+            serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data(
+                title='a', excerpt=['b', 'c'], publication='d',
+                publish_date='2016-10-25', author='e'))
+            serializer.is_valid()
+            serializer.save()
         self.maxDiff = None
 
     def test_list_report_page(self):
@@ -295,22 +295,74 @@ class ReportPageViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         [report] = ReportPage.objects.all()
         actual_data = dict(response.data)
-        actual_results = actual_data['results']
+        fields = {
+            field['name']: field for field in actual_data['results'][0]['fields']
+        }
 
         self.assertEqual(actual_data['count'], 1)
         self.assertEqual(actual_data['next'], None)
         self.assertEqual(actual_data['previous'], None)
+        self.assertEqual(actual_data['results'][0]['id'], report.id)
 
-        self.assertDictEqual(actual_results[0], {
-            'fields': [
-                {
-                    'name': field,
-                    'type': report.fields['%s_type' % field],
-                    'value': report.fields['%s_value' % field],
-                }
-                for field in ['author', 'excerpt', 'publication', 'publish_date', 'title']
-            ],
-            'id': report.id
+        self.assertDictEqual(fields['author'], {
+            'name': 'author',
+            'type': 'string',
+            'value': 'e'
+        })
+        self.assertDictEqual(fields['publication'], {
+            'name': 'publication',
+            'type': 'string',
+            'value': 'd'
+        })
+        self.assertDictEqual(fields['publish_date'], {
+            'name': 'publish_date',
+            'type': 'date',
+            'value': '2016-10-25'
+        })
+        self.assertDictEqual(fields['excerpt'], {
+            'name': 'excerpt',
+            'type': 'multiline_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'b',
+                        'type': 'unstyled'
+                    },
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'c',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+        self.assertDictEqual(fields['title'], {
+            'name': 'title',
+            'type': 'plain_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'a',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
         })
 
     def test_update_report_page(self):

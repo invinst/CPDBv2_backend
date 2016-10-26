@@ -1,0 +1,158 @@
+from datetime import datetime
+
+from rest_framework import serializers
+from faker import Faker
+
+from cms.utils import generate_draft_block_key
+from cms.randomizers import RANDOMIZER_STRATEGIES
+
+
+class BaseField(serializers.Field):
+    def __init__(self, fake_value=None, *args, **kwargs):
+        super(BaseField, self).__init__(*args, **kwargs)
+        self._fake_value = fake_value
+
+    def to_representation(self, fields):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': fields['%s_value' % self.field_name]
+        }
+
+    def to_internal_value(self, data):
+        return {
+            '%s_type' % self.field_name: self._type,
+            '%s_value' % self.field_name: data
+        }
+
+
+class StringField(BaseField):
+    _type = 'string'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            return value
+        if self._fake_value is None:
+            return Faker().word()
+        return self._fake_value
+
+    def fake_data(self, value=None):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': self.fake_value(value)
+        }
+
+
+class LinkField(StringField):
+    _type = 'link'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            return value
+        if self._fake_value is None:
+            return Faker().url()
+        return self._fake_value
+
+
+class DateField(StringField):
+    _type = 'date'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            return value
+        if self._fake_value is None:
+            return datetime.now().strftime('%Y-%m-%d')
+        return self._fake_value
+
+
+class DraftEditorField(BaseField):
+    def fake_block(self, value):
+        return {
+            'data': {},
+            'depth': 0,
+            'entityRanges': [],
+            'inlineStyleRanges': [],
+            'key': generate_draft_block_key(),
+            'text': value,
+            'type': 'unstyled'
+        }
+
+
+class PlainTextField(DraftEditorField):
+    _type = 'plain_text'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            return value
+        if self._fake_value is None:
+            return Faker().sentence()
+        return self._fake_value
+
+    def fake_data(self, value=None):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': {
+                'blocks': [
+                    self.fake_block(self.fake_value(value))
+                ],
+                'entityMap': {}
+            }
+        }
+
+
+class MultilineTextField(DraftEditorField):
+    _type = 'multiline_text'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            return value
+        if self._fake_value is None:
+            return Faker().paragraphs(nb=2)
+        return self._fake_value
+
+    def fake_data(self, value=None):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': {
+                'blocks': [
+                    self.fake_block(val) for val in self.fake_value(value)
+                ],
+                'entityMap': {}
+            }
+        }
+
+
+class RandomizerField(serializers.Field):
+    _type = 'randomizer'
+
+    def to_representation(self, fields):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': {
+                'poolSize': fields['%s_pool_size' % self.field_name],
+                'selectedStrategyId': fields['%s_selected_strategy_id' % self.field_name],
+                'strategies': RANDOMIZER_STRATEGIES
+            }
+        }
+
+    def fake_data(self, value=None):
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': {
+                'poolSize': 10,
+                'selectedStrategyId': 1,
+                'strategies': RANDOMIZER_STRATEGIES
+            }
+        }
+
+    def to_internal_value(self, data):
+        return {
+            '%s_type' % self.field_name: self._type,
+            '%s_pool_size' % self.field_name: data['poolSize'],
+            '%s_selected_strategy_id' % self.field_name: data['selectedStrategyId']
+        }
