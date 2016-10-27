@@ -69,7 +69,7 @@ class FAQPageViewSet(BaseIdPageViewSet):
     pagination_class = LimitOffsetPagination
 
     def create(self, request):
-        serializer = CreateFAQPageSerializer(data=request.data)
+        serializer = CreateFAQPageSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

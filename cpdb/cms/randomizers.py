@@ -10,16 +10,16 @@ RANDOMIZER_STRATEGIES = [{
 }]
 
 
-def last_n_days(objects, n, sample_size):
-    pool = objects.filter(created__gte=date.today() - timedelta(days=n))
+def last_n_days(queryset, n, sample_size):
+    pool = queryset.filter(created__gte=date.today() - timedelta(days=n))
     try:
         return random.sample(pool, sample_size)
     except ValueError:
         return pool
 
 
-def last_n_entries(objects, n, sample_size):
-    pool = objects.order_by('-created')[:n]
+def last_n_entries(queryset, n, sample_size):
+    pool = queryset.order_by('-created')[:n]
     try:
         return random.sample(pool, sample_size)
     except ValueError:
@@ -32,5 +32,5 @@ RANDOMIZER_FUNCS = {
 }
 
 
-def randomize(objects, n, sample_size, strategy):
-    return RANDOMIZER_FUNCS[strategy](objects, n, sample_size)
+def randomize(queryset, n, sample_size, strategy):
+    return RANDOMIZER_FUNCS[strategy](queryset, n, sample_size)

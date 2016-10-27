@@ -99,7 +99,7 @@ class CreateFAQPageSerializer(IdPageSerializer):
         model = FAQPage
 
     def validate(self, data):
-        if 'answer_value' in data['fields']:
+        if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated():
             raise serializers.ValidationError("Unauthorized user cannot add answer.")
         return data
 
@@ -147,7 +147,7 @@ class LandingPageSerializer(SlugPageSerializer):
         randomizer = self.fields['faq_randomizer']
         randomizer_value = randomizer.to_representation(obj)['value']
         faqs = randomize(
-            FAQPage.objects,
+            FAQPage.objects.filter(fields__has_key='answer_value'),
             randomizer_value['poolSize'],
             3,
             randomizer_value['selectedStrategyId'])

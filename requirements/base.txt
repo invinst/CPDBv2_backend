@@ -1,7 +1,7 @@
 Django==1.9.5
 django-environ==0.4.0
 django-filter==0.13.0
-djangorestframework==3.3.3
+djangorestframework==3.5.1
 six==1.10.0
 wagtail==1.5rc1
 psycopg2==2.6.1
