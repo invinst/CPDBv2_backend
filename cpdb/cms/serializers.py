@@ -13,12 +13,13 @@ from cms.randomizers import randomize
 
 class BaseCMSPageSerializer(serializers.Serializer):
     def to_representation(self, obj):
-        return {
-            'fields': [
-                field.to_representation(obj.fields)
-                for field in self.fields.values()
-            ]
-        }
+        fields = []
+        for field in self.fields.values():
+            try:
+                fields.append(field.to_representation(obj.fields))
+            except KeyError:
+                pass
+        return {'fields': fields}
 
     def fake_data(self, **kwargs):
         return {
@@ -90,10 +91,24 @@ class FAQPageSerializer(IdPageSerializer):
         model = FAQPage
 
 
+class CreateFAQPageSerializer(IdPageSerializer):
+    question = PlainTextField()
+    answer = MultilineTextField()
+
+    class Meta:
+        model = FAQPage
+
+    def validate(self, data):
+        if 'answer_value' in data['fields']:
+            raise serializers.ValidationError("Unauthorized user cannot add answer.")
+        return data
+
+
 class LandingPageSerializer(SlugPageSerializer):
     reporting_header = PlainTextField(fake_value='Recent Reports')
     reporting_randomizer = RandomizerField()
     reports = serializers.SerializerMethodField()
+    faqs = serializers.SerializerMethodField()
     faq_header = PlainTextField(fake_value='FAQ')
     faq_randomizer = RandomizerField()
     vftg_date = DateField()
@@ -126,6 +141,21 @@ class LandingPageSerializer(SlugPageSerializer):
             'name': 'reports',
             'type': 'randomized_list',
             'value': ReportPageSerializer(reports, many=True).data
+        }
+
+    def get_faqs(self, obj):
+        randomizer = self.fields['faq_randomizer']
+        randomizer_value = randomizer.to_representation(obj)['value']
+        faqs = randomize(
+            FAQPage.objects,
+            randomizer_value['poolSize'],
+            3,
+            randomizer_value['selectedStrategyId'])
+
+        return {
+            'name': 'faqs',
+            'type': 'randomized_list',
+            'value': FAQPageSerializer(faqs, many=True).data
         }
 
 

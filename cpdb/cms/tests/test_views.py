@@ -35,7 +35,7 @@ class CMSPageViewSetTestCase(APITestCase):
             }
         ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 12)
+        self.assertEqual(len(response.data['fields']), 13)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -52,7 +52,7 @@ class CMSPageViewSetTestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 12)
+        self.assertEqual(len(response.data['fields']), 13)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -489,3 +489,28 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertEqual(
             faq_page.fields['question_value'],
             'abc')
+
+    def test_create(self):
+        url = reverse('api-v2:faq-list')
+        response = self.client.post(url, {
+                'fields': [{
+                    'name': 'question',
+                    'type': 'plain_text',
+                    'value': 'abc'
+                }]
+            }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        created_faq = FAQPage.objects.last()
+        self.assertDictEqual(created_faq.fields, {'question_value': 'abc', 'question_type': 'plain_text'})
+
+    def test_create_with_answer(self):
+        url = reverse('api-v2:faq-list')
+        response = self.client.post(url, {
+                'fields': [{
+                    'name': 'answer',
+                    'type': 'multiline_text',
+                    'value': 'abc'
+                }]
+            }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data['message'], {'non_field_errors': ['Unauthorized user cannot add answer.']})

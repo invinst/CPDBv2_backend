@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.pagination import LimitOffsetPagination
 
 from cms.models import SlugPage, ReportPage, FAQPage
-from cms.serializers import ReportPageSerializer, FAQPageSerializer, get_slug_page_serializer
+from cms.permissions import IsAuthenticatedOrReadOnlyOrCreate
+from cms.serializers import (
+    ReportPageSerializer, FAQPageSerializer, get_slug_page_serializer, CreateFAQPageSerializer)
 
 
 class CMSPageViewSet(viewsets.ViewSet):
@@ -31,7 +33,7 @@ class CMSPageViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response({'message': serializer.errors}, status_code=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BaseIdPageViewSet(viewsets.ViewSet):
@@ -48,7 +50,7 @@ class BaseIdPageViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response({'message': serializer.errors}, status_code=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReportPageViewSet(BaseIdPageViewSet):
@@ -61,7 +63,15 @@ class ReportPageViewSet(BaseIdPageViewSet):
 
 class FAQPageViewSet(BaseIdPageViewSet):
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    queryset = FAQPage.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnlyOrCreate,)
+    queryset = FAQPage.objects.filter(fields__has_key='answer_value')
     serializer_class = FAQPageSerializer
     pagination_class = LimitOffsetPagination
+
+    def create(self, request):
+        serializer = CreateFAQPageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
