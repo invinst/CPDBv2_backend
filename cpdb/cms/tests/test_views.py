@@ -392,6 +392,51 @@ class ReportPageViewSetTestCase(APITestCase):
             report_page.fields['title_value'],
             'new title')
 
+    def test_add_report(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:report-list')
+        response = self.client.post(url, {
+                'fields': [{
+                    'name': 'title',
+                    'type': 'plain_text',
+                    'value': 'aaa'
+                }, {
+                    'name': 'excerpt',
+                    'type': 'multiline_text',
+                    'value': 'bbb'
+                }, {
+                    'name': 'publication',
+                    'type': 'string',
+                    'value': 'ccc'
+                }, {
+                    'name': 'publish_date',
+                    'type': 'date',
+                    'value': '1900-01-01'
+                }, {
+                    'name': 'author',
+                    'type': 'string',
+                    'value': 'ddd'
+                }]
+            }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        created_report = ReportPage.objects.last()
+        self.assertDictEqual(created_report.fields, {
+            'title_value': 'aaa',
+            'title_type': 'plain_text',
+            'excerpt_value': 'bbb',
+            'excerpt_type': 'multiline_text',
+            'publication_value': 'ccc',
+            'publication_type': 'string',
+            'publish_date_value': '1900-01-01',
+            'publish_date_type': 'date',
+            'author_value': 'ddd',
+            'author_type': 'string'
+        })
+
 
 class FAQPageViewSetTestCase(APITestCase):
     def setUp(self):
@@ -514,3 +559,22 @@ class FAQPageViewSetTestCase(APITestCase):
             }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(response.data['message'], {'non_field_errors': ['Unauthorized user cannot add answer.']})
+
+    def test_authorized_create(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:faq-list')
+        response = self.client.post(url, {
+                'fields': [{
+                    'name': 'question',
+                    'type': 'plain_text',
+                    'value': 'abc'
+                }, {
+                    'name': 'answer',
+                    'type': 'multiline_text',
+                    'value': 'abc'
+                }]
+            }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

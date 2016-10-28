@@ -60,6 +60,14 @@ class ReportPageViewSet(BaseIdPageViewSet):
     serializer_class = ReportPageSerializer
     pagination_class = LimitOffsetPagination
 
+    def create(self, request):
+        serializer = ReportPageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FAQPageViewSet(BaseIdPageViewSet):
     authentication_classes = (TokenAuthentication,)
