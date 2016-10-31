@@ -1,9 +1,8 @@
 from django.contrib.gis.db import models
 
 from data.constants import (
-    RANKS, ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE,
-    LOCATION_CHOICES, AREA_CHOICES, LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES,
-    FINDINGS)
+    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
 from suggestion.autocomplete_types import AutoCompleteType
 
 
@@ -37,7 +36,7 @@ class Officer(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
-    rank = models.CharField(choices=RANKS, max_length=5, blank=True)
+    rank = models.CharField(max_length=50, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 

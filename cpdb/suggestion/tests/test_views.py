@@ -13,9 +13,9 @@ class SuggestionViewSetTestCase(APITestCase):
         self.maxDiff = None
 
     def test_query_suggestion(self):
-        OfficerFactory(full_name='Bb Aa')
-        OfficerFactory(full_name='Tt Bb')
-        OfficerFactory(full_name='Cc Dd')
+        OfficerFactory(first_name='Bb', last_name='Aa')
+        OfficerFactory(first_name='Tt', last_name='Bb')
+        OfficerFactory(first_name='Cc', last_name='Dd')
         AutoCompleteIndexer().reindex()
         es_client.indices.refresh(index="test_autocompletes")
 
