@@ -106,6 +106,7 @@ class Area(models.Model):
     def v1_url(self):
         return 'not implemented'
 
+
 class LineArea(models.Model):
     name = models.CharField(max_length=100)
     linearea_type = models.CharField(max_length=30, choices=LINE_AREA_CHOICES)
