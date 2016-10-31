@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from suggestion.doc_types import AutoComplete
 from suggestion.indexes import autocompletes
-from data.models import Officer, PoliceUnit, OfficerBadgeNumber
+from data.models import Officer, PoliceUnit, OfficerBadgeNumber, Area
 from data.constants import FINDINGS, AREA_CHOICES
 from es_index import register_indexer
 
@@ -14,7 +14,8 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 AUTOCOMPLETE_MAPPING = (
     (Officer, 'officer names'),
     (PoliceUnit, 'police units'),
-    (OfficerBadgeNumber, 'officer badge numbers')
+    (OfficerBadgeNumber, 'officer badge numbers'),
+    (Area, 'areas')
 )
 
 

@@ -28,5 +28,6 @@ deployment:
       - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get install gcc-4.9 g++-4.9 python-dev
       - sudo pip install ansible
       - sudo ansible-galaxy install azavea.postgresql
+      - sudo ansible-galaxy install gpstathis.elasticsearch
       - sudo chown ubuntu ~/.ansible -R
       - bin/circleci_deploy_staging

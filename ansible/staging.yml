@@ -14,5 +14,10 @@
   roles:
     - base
     - { role: azavea.postgresql }
+    - { role: gpstathis.elasticsearch, es_instance_name: "staging",
+        ansible_become: yes,
+        ansible_become_user: root,
+        tags: elastic
+      }
     - db
     - web

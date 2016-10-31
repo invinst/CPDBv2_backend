@@ -94,6 +94,17 @@ class Area(models.Model):
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
 
+    @property
+    def index_args(self):
+        return (
+            (self.name, {
+                'type': AutoCompleteType.AREA,
+                'url': self.v1_url
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 class LineArea(models.Model):
     name = models.CharField(max_length=100)
