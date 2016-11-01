@@ -16,11 +16,7 @@
   roles:
     - base
     - { role: azavea.postgresql }
-    - { role: gpstathis.elasticsearch, es_instance_name: "vagrant",
-        es_config: { 'network.host': "0.0.0.0", 'http.port': 9200 },
-        ansible_become: yes,
-        ansible_become_user: root,
-        tags: elastic
-      }
+    - java
+    - elasticsearch
     - db
     - web
