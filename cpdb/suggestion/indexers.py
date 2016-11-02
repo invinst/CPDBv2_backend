@@ -48,11 +48,12 @@ class AutoCompleteIndexer(object):
             self._index_datum(datum)
 
     def _index_datum(self, datum):
-        for (name, payload) in datum.index_args:
+        for (name, payload, context) in datum.index_args:
             doc = AutoComplete(
                 suggest={
                     'input': list(self._prefix_tokenize(name)),
                     'output': name,
-                    'payload': payload
+                    'payload': payload,
+                    'context': context
                 })
             doc.save()

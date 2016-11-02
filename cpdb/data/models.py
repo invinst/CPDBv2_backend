@@ -21,7 +21,9 @@ class PoliceUnit(models.Model):
             (self.unit_name, {
                 'type': AutoCompleteType.OFFICER_UNIT,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': ['officer_unit']
+            },),)
 
     @property
     def v1_url(self):
@@ -53,7 +55,9 @@ class Officer(models.Model):
             (self.full_name, {
                 'type': AutoCompleteType.OFFICER_NAME,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': ['officer_name']
+            },),)
 
     @property
     def v1_url(self):
@@ -74,7 +78,9 @@ class OfficerBadgeNumber(models.Model):
             (self.star, {
                 'type': AutoCompleteType.OFFICER_BADGE,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': 'officer_badge'
+            },),)
 
     @property
     def v1_url(self):
@@ -100,6 +106,8 @@ class Area(models.Model):
             (self.name, {
                 'type': AutoCompleteType.AREA,
                 'url': self.v1_url
+            }, {
+                'content_type': [self.area_type]
             },),)
 
     @property

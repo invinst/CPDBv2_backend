@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, AreaFactory
 from suggestion.indexers import AutoCompleteIndexer
 from es_index import es_client
 
@@ -16,6 +16,7 @@ class SuggestionViewSetTestCase(APITestCase):
         OfficerFactory(first_name='Bb', last_name='Aa')
         OfficerFactory(first_name='Tt', last_name='Bb')
         OfficerFactory(first_name='Cc', last_name='Dd')
+        AreaFactory(area_type='neighborhoods', name='Bb')
         AutoCompleteIndexer().reindex()
         es_client.indices.refresh(index="test_autocompletes")
 
@@ -24,7 +25,7 @@ class SuggestionViewSetTestCase(APITestCase):
             'text': 'Bb'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertDictEqual(response.data, {
+        self.assertDictEqual(response.data['officer_name'][0], {
             'text': 'Bb',
             'length': 2,
             'options': [
@@ -47,13 +48,40 @@ class SuggestionViewSetTestCase(APITestCase):
             ],
             'offset': 0
         })
+        self.assertDictEqual(response.data['neighborhoods'][0], {
+            'text': 'Bb',
+            'length': 2,
+            'options': [
+                {
+                    'text': 'Bb',
+                    'score': 1.0,
+                    'payload': {
+                        'url': 'not implemented',
+                        'type': 'AREA'
+                    }
+                }
+            ],
+            'offset': 0
+        })
 
         response = self.client.get(url, {
             'text': 'No result term'
             })
-        self.assertDictEqual(response.data, {
-            'text': 'No result term',
+        self.assertDictEqual(response.data['neighborhoods'][0], {
             'length': 14,
+            'offset': 0,
             'options': [],
-            'offset': 0
+            'text': 'No result term'
+        })
+        self.assertDictEqual(response.data['officer_name'][0], {
+            'length': 14,
+            'offset': 0,
+            'options': [],
+            'text': 'No result term'
+        })
+        self.assertDictEqual(response.data['officer_badge_number'][0], {
+            'length': 14,
+            'offset': 0,
+            'options': [],
+            'text': 'No result term'
         })
