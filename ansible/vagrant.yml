@@ -16,7 +16,7 @@
   roles:
     - base
     - { role: azavea.postgresql }
-    - java
-    - elasticsearch
+    - { role: java, tags: "elasticsearch" }
+    - { role: elasticsearch, tags: "elasticsearch" }
     - db
     - web

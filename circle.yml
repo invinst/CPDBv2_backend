@@ -12,10 +12,10 @@ dependencies:
   override:
     - pip install -r requirements/test.txt
   cache_directories:
-    - "elasticsearch-1.7.1"
+    - "elasticsearch-2.3.5"
   post:
-    - if [[ ! -e elasticsearch-1.7.1 ]]; then wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.1.tar.gz && tar -xvf elasticsearch-1.7.1.tar.gz; fi
-    - elasticsearch-1.7.1/bin/elasticsearch: {background: true}
+    - if [[ ! -e elasticsearch-2.3.5 ]]; then wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.3.5.tar.gz && tar -xvf elasticsearch-2.3.5.tar.gz; fi
+    - elasticsearch-2.3.5/bin/elasticsearch: {background: true}
 
 test:
   override:
@@ -33,6 +33,5 @@ deployment:
       - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get install gcc-4.9 g++-4.9 python-dev
       - sudo pip install ansible
       - sudo ansible-galaxy install azavea.postgresql
-      - sudo ansible-galaxy install gpstathis.elasticsearch
       - sudo chown ubuntu ~/.ansible -R
       - bin/circleci_deploy_staging
