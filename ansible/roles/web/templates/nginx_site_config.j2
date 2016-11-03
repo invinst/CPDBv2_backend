@@ -20,7 +20,7 @@ server {
 	ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
     gzip on;
     gzip_comp_level 5;
-    gzip_types text/html application/javascript application/x-javascript text/javascript text/css ;
+    gzip_types text/html application/javascript application/x-javascript text/javascript text/css application/font-woff2 application/font-woff application/font-otf;
 
     client_max_body_size 4G;
 
