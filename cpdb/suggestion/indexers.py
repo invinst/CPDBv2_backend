@@ -14,7 +14,6 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 AUTOCOMPLETE_MAPPING = (
     (Officer, 'officer names'),
     (PoliceUnit, 'police units'),
-    (OfficerBadgeNumber, 'officer badge numbers'),
     (Area, 'areas')
 )
 

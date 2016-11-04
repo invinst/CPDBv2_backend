@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.core.exceptions import MultipleObjectsReturned
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -17,13 +18,18 @@ class PoliceUnit(models.Model):
 
     @property
     def index_args(self):
-        return (
-            (self.unit_name, {
-                'type': AutoCompleteType.OFFICER_UNIT,
-                'url': self.v1_url
-                }, {
-                'content_type': ['officer_unit']
-            },),)
+        return [
+            (
+                self.unit_name,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.unit_name
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER_UNIT
+                }
+            )
+        ]
 
     @property
     def v1_url(self):
@@ -50,14 +56,38 @@ class Officer(models.Model):
         return '%s %s' % (self.first_name, self.last_name,)
 
     @property
+    def current_badge(self):
+        try:
+            return self.officerbadgenumber_set.get(current=True).star
+        except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
+            return ''
+
+    @property
     def index_args(self):
-        return (
-            (self.full_name, {
-                'type': AutoCompleteType.OFFICER_NAME,
-                'url': self.v1_url
-                }, {
-                'content_type': ['officer_name']
-            },),)
+        return [
+            (
+                self.full_name,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.full_name,
+                    'result_extra_information': self.current_badge
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER
+                }
+            ),
+            (
+                self.current_badge,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.full_name,
+                    'result_extra_information': self.current_badge
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER
+                }
+            )
+        ]
 
     @property
     def v1_url(self):
@@ -71,20 +101,6 @@ class OfficerBadgeNumber(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
-
-    @property
-    def index_args(self):
-        return (
-            (self.star, {
-                'type': AutoCompleteType.OFFICER_BADGE,
-                'url': self.v1_url
-                }, {
-                'content_type': 'officer_badge'
-            },),)
-
-    @property
-    def v1_url(self):
-        return 'not implemented'
 
 
 class OfficerHistory(models.Model):
@@ -102,13 +118,21 @@ class Area(models.Model):
 
     @property
     def index_args(self):
-        return (
-            (self.name, {
-                'type': AutoCompleteType.AREA,
-                'url': self.v1_url
-            }, {
-                'content_type': [self.area_type]
-            },),)
+        if self.area_type == 'neighborhoods':
+            return [
+                (
+                    self.name,
+                    {
+                        'url': self.v1_url,
+                        'result_text': self.name,
+                    },
+                    {
+                        'content_type': AutoCompleteType.NEIGHBORHOODS
+                    }
+                )
+            ]
+
+        return []
 
     @property
     def v1_url(self):
@@ -195,4 +219,4 @@ class OfficerAlias(models.Model):
     new_officer = models.ForeignKey(Officer)
 
     class Meta:
-        unique_together = (('old_officer_id', 'new_officer'))
+        unique_together = ('old_officer_id', 'new_officer')

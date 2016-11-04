@@ -1,10 +1,10 @@
 from .common import *  # NOQA
 
 
-INSTALLED_APPS += ('corsheaders',)
-MIDDLEWARE_CLASSES += (
+INSTALLED_APPS += ('corsheaders', 'django_extensions')  # NOQA
+MIDDLEWARE_CLASSES += (  # NOQA
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware')
+    'django.middleware.common.CommonMiddleware',)
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:9966',

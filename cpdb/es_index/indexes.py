@@ -9,4 +9,4 @@ class Index(BaseIndex):
             super(Index, self).__init__('test_%s' % index_name, *args, **kwargs)
             self.settings(number_of_shards=1, number_of_replicas=0)
         else:
-            super(Index, self).__init__(index_name, *args, **kwargs)
+            super(Index, self).__init__(index_name, *args, **kwargs)  # pragma: no cover
