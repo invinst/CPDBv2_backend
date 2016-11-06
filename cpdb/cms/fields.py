@@ -125,6 +125,19 @@ class MultilineTextField(DraftEditorField):
         }
 
 
+class RichTextField(MultilineTextField):
+    _type = 'rich_text'
+
+    def fake_value(self, value=None):
+        if value is not None:
+            if isinstance(value, basestring):
+                value = [value]
+            return value
+        if self._fake_value is None:
+            return [Faker().sentence()]
+        return self._fake_value
+
+
 class RandomizerField(serializers.Field):
     _type = 'randomizer'
 

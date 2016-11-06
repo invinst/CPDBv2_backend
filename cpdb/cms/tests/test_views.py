@@ -283,7 +283,7 @@ class ReportPageViewSetTestCase(APITestCase):
         with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
             serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data(
                 title='a', excerpt=['b', 'c'], publication='d',
-                publish_date='2016-10-25', author='e'))
+                publish_date='2016-10-25', author='e', article_link='f'))
             serializer.is_valid()
             serializer.save()
         self.maxDiff = None
@@ -299,6 +299,7 @@ class ReportPageViewSetTestCase(APITestCase):
             field['name']: field for field in actual_data['results'][0]['fields']
         }
 
+        self.assertEqual(len(fields.keys()), 6)
         self.assertEqual(actual_data['count'], 1)
         self.assertEqual(actual_data['next'], None)
         self.assertEqual(actual_data['previous'], None)
@@ -364,6 +365,24 @@ class ReportPageViewSetTestCase(APITestCase):
                 'entityMap': {}
             }
         })
+        self.assertDictEqual(fields['article_link'], {
+            'name': 'article_link',
+            'type': 'rich_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'f',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
 
     def test_update_report_page(self):
         admin_user = AdminUserFactory()
@@ -380,7 +399,7 @@ class ReportPageViewSetTestCase(APITestCase):
             }
         ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 5)
+        self.assertEqual(len(response.data['fields']), 6)
         response_data = {
             field['name']: field for field in response.data['fields']
         }

@@ -4,7 +4,8 @@ from mock import patch
 from freezegun import freeze_time
 
 from cms.fields import (
-    LinkField, DateField, PlainTextField, MultilineTextField, RandomizerField, StringField)
+    LinkField, DateField, PlainTextField, MultilineTextField, RandomizerField,
+    StringField, RichTextField)
 from cms.randomizers import RANDOMIZER_STRATEGIES
 
 
@@ -164,20 +165,22 @@ class PlainTextFieldTestCase(SimpleTestCase):
 
 
 class MultilineTextFieldTestCase(SimpleTestCase):
+    _type = 'multiline_text'
+
     def setUp(self):
-        self.multiline_text_field = MultilineTextField(fake_value=['abc', 'xyz'])
-        self.multiline_text_field.field_name = 'about_content'
+        self.field = MultilineTextField(fake_value=['abc', 'xyz'])
+        self.field.field_name = 'about_content'
 
     def test_to_representation(self):
         self.assertDictEqual(
-            self.multiline_text_field.to_representation({
+            self.field.to_representation({
                 'about_content_value': {
                     'a': 'b'
                 }
             }),
             {
                 'name': 'about_content',
-                'type': 'multiline_text',
+                'type': self._type,
                 'value': {
                     'a': 'b'
                 }
@@ -186,10 +189,10 @@ class MultilineTextFieldTestCase(SimpleTestCase):
     def test_fake_data(self):
         with patch('cms.fields.generate_draft_block_key', return_value='1'):
             self.assertDictEqual(
-                self.multiline_text_field.fake_data(),
+                self.field.fake_data(),
                 {
                     'name': 'about_content',
-                    'type': 'multiline_text',
+                    'type': self._type,
                     'value': {
                         'blocks': [{
                             'data': {},
@@ -214,13 +217,21 @@ class MultilineTextFieldTestCase(SimpleTestCase):
 
     def test_to_internal_value(self):
         self.assertDictEqual(
-            self.multiline_text_field.to_internal_value({'c': 'd'}),
+            self.field.to_internal_value({'c': 'd'}),
             {
-                'about_content_type': 'multiline_text',
+                'about_content_type': self._type,
                 'about_content_value': {
                     'c': 'd'
                 }
             })
+
+
+class RichTestFieldTestCase(MultilineTextFieldTestCase):
+    _type = 'rich_text'
+
+    def setUp(self):
+        self.field = RichTextField(fake_value=['abc', 'xyz'])
+        self.field.field_name = 'about_content'
 
 
 class RandomizerFieldTestCase(SimpleTestCase):

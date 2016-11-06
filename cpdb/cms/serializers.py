@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from cms.fields import (
     PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField,
-    StringField
+    StringField, RichTextField
 )
 from cms.models import ReportPage, SlugPage, FAQPage
 from cms.randomizers import randomize
@@ -78,6 +78,7 @@ class ReportPageSerializer(IdPageSerializer):
     publication = StringField()
     publish_date = DateField()
     author = StringField()
+    article_link = RichTextField()
 
     class Meta:
         model = ReportPage

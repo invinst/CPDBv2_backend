@@ -3,10 +3,12 @@
 
 # Development
 
-Please make sure that you have `vagrant` and `ansible` on your machine, we use them as isolated development environment and automation tools. After having both of these tools in your machine, you could start installing the ansible dependencies:
+Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your machine, we use them as isolated development environment and automation tools. After having both of these tools in your machine, you could start installing the ansible dependencies:
 
 ``` bash
 ansible-galaxy install azavea.postgresql
+git clone git@github.com:CyVerse-Ansible/ansible-elasticsearch-1.git
+sudo mv -r ansible-elasticsearch-1 /etc/ansible/roles/cyverse.elasticsearch
 ```
 
 Then up your vagrant box

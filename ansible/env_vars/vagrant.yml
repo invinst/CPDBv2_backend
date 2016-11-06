@@ -29,7 +29,8 @@ run_django_collectstatic: yes
 
 deploy_user: vagrant
 deploy_group: vagrant
-db_user: vagrant
+db_user: cpdb
+db_password: password
 
 backend_media_dir: /www/media/
 gunicorn_extra_params: "--reload"
