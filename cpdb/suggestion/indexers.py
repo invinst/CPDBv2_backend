@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from suggestion.doc_types import AutoComplete
 from suggestion.indexes import autocompletes
-from data.models import Officer, PoliceUnit, OfficerBadgeNumber, Area
+from data.models import Officer, PoliceUnit, Area
 from data.constants import FINDINGS, AREA_CHOICES
 from es_index import register_indexer
 
