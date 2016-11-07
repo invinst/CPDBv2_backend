@@ -11,6 +11,11 @@ database:
 dependencies:
   override:
     - pip install -r requirements/test.txt
+  cache_directories:
+    - "elasticsearch-2.3.5"
+  post:
+    - if [[ ! -e elasticsearch-2.3.5 ]]; then wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.3.5.tar.gz && tar -xvf elasticsearch-2.3.5.tar.gz; fi
+    - elasticsearch-2.3.5/bin/elasticsearch: {background: true}
 
 test:
   override:

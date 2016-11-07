@@ -5,4 +5,4 @@ from data.models import Officer
 
 class OfficerTestCase(SimpleTestCase):
     def test_str(self):
-        self.assertEqual(str(Officer(full_name='Daniel Abate')), 'Daniel Abate')
+        self.assertEqual(str(Officer(first_name='Daniel', last_name='Abate')), 'Daniel Abate')

@@ -6,4 +6,11 @@ application_name: cpdb
 
 ssl_dest_dir: /etc/ssl
 
+# django stuff
+run_rebuild_index: yes
+run_django_db_migrations: yes
+run_django_collectstatic: yes
+
 frontend_static_dir: /www/static/
+postgresql_version: 9.4
+postgresql_package_version: 9.4.*-1.pgdg14.04+1
