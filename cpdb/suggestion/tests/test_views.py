@@ -34,7 +34,7 @@ class SuggestionViewSetTestCase(APITestCase):
                 'payload': {
                     'url': 'not implemented',
                     'result_text': 'Bb Aa',
-                    'result_extra_information': '1111'
+                    'result_extra_information': 'Badge 1111'
                 }
             },
             {
