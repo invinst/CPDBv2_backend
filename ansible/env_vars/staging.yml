@@ -17,6 +17,7 @@ gunicorn_timeout_seconds: 300
 
 # Nginx settings.
 nginx_server_name: staging.cpdp.co
+nginx_mobile_server_name: ms.cpdp.co
 nginx_template: "nginx_site_config_without_https"
 
 ssl_src_dir: ssl_self_signed
@@ -25,8 +26,8 @@ ssl_dest_dir: /etc/ssl
 # Application settings.
 django_settings_file: "config.settings.staging"
 
-run_django_db_migrations: yes
-run_django_collectstatic: yes
-
 deploy_user: ansible
 deploy_group: ansible
+
+setup_newrelic: yes
+backup_database_daily: yes

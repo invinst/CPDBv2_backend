@@ -17,15 +17,13 @@ gunicorn_timeout_seconds: 300
 
 # Nginx settings.
 nginx_server_name: api.cpdb.me
+nginx_mobile_server_name: m.cpdp.me
 nginx_template: "nginx_site_config_without_https"
 ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
 # Application settings.
 django_settings_file: "config.settings.local"
-
-run_django_db_migrations: yes
-run_django_collectstatic: yes
 
 deploy_user: vagrant
 deploy_group: vagrant
@@ -34,3 +32,6 @@ db_password: password
 
 backend_media_dir: /www/media/
 gunicorn_extra_params: "--reload"
+
+setup_newrelic: no
+backup_database_daily: no

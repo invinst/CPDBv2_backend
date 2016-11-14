@@ -1,0 +1,4 @@
+---
+java_apt_repos:
+  - 'ppa:webupd8team/java'
+apt_java_package: oracle-java7-installer

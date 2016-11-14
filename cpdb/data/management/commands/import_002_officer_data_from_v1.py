@@ -10,7 +10,7 @@ from django.core.management import BaseCommand
 from django.utils import timezone
 
 from data.models import (
-    PoliceUnit, Officer, OfficerBadgeNumber, OfficerHistory)
+    PoliceUnit, Officer, OfficerBadgeNumber, OfficerHistory, Area)
 
 
 csv.field_size_limit(sys.maxsize)
@@ -25,6 +25,9 @@ IMPORT_MODELS = (
         }),
     (OfficerBadgeNumber, 'officerbadgenumber.csv', None),
     (OfficerHistory, 'officerhistory.csv', None),
+    (Area, 'area.csv', {
+        'type': 'area_type'
+    }),
 )
 
 

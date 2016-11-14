@@ -8,7 +8,7 @@ from faker import Faker
 from wagtail.wagtailcore.models import Page
 
 from data.models import Area, Investigator, LineArea, Officer
-from data.constants import RANKS, ACTIVE_CHOICES
+from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
 
@@ -64,10 +64,11 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Officer
 
-    full_name = factory.LazyFunction(lambda: fake.name())
+    first_name = factory.LazyFunction(lambda: fake.first_name())
+    last_name = factory.LazyFunction(lambda: fake.last_name())
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'White'
     appointed_date = factory.LazyFunction(lambda: fake.date_time().date())
-    rank = factory.LazyFunction(lambda: random.choice(RANKS)[0])
-    birth_year = factory.LazyFunction(fake.year)
+    rank = factory.LazyFunction(lambda: fake.word())
+    birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])

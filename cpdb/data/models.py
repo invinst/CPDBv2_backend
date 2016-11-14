@@ -1,9 +1,8 @@
 from django.contrib.gis.db import models
 
 from data.constants import (
-    RANKS, ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE,
-    LOCATION_CHOICES, AREA_CHOICES, LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES,
-    FINDINGS)
+    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
 from suggestion.autocomplete_types import AutoCompleteType
 
 
@@ -22,7 +21,9 @@ class PoliceUnit(models.Model):
             (self.unit_name, {
                 'type': AutoCompleteType.OFFICER_UNIT,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': ['officer_unit']
+            },),)
 
     @property
     def v1_url(self):
@@ -37,7 +38,7 @@ class Officer(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
-    rank = models.CharField(choices=RANKS, max_length=5, blank=True)
+    rank = models.CharField(max_length=50, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
@@ -54,7 +55,9 @@ class Officer(models.Model):
             (self.full_name, {
                 'type': AutoCompleteType.OFFICER_NAME,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': ['officer_name']
+            },),)
 
     @property
     def v1_url(self):
@@ -75,7 +78,9 @@ class OfficerBadgeNumber(models.Model):
             (self.star, {
                 'type': AutoCompleteType.OFFICER_BADGE,
                 'url': self.v1_url
-                },),)
+                }, {
+                'content_type': 'officer_badge'
+            },),)
 
     @property
     def v1_url(self):
@@ -94,6 +99,20 @@ class Area(models.Model):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
+
+    @property
+    def index_args(self):
+        return (
+            (self.name, {
+                'type': AutoCompleteType.AREA,
+                'url': self.v1_url
+            }, {
+                'content_type': [self.area_type]
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'
 
 
 class LineArea(models.Model):

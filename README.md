@@ -53,3 +53,10 @@ Regarding to the nginx changes, please update both of the files, https one and h
 
 # Documentation
 - [API standards](docs/api-standards.md)
+
+# Import data from v1
+- Export v2 data:
+    + Run `./manage.py export_all_data_for_v2` on v1 repository (**Note:** Base on new v2 model you may need to modify this script).
+    + Data from v1 will be exported into csv files in root folder after run above command.
+- Import v2 data: Run `cpdb/manage.py import_002_officer_data_from_v1 --folder [FOLDER]` on v2 repository.
+- After importing run: `cpdb/manage.py rebuild_index` to rebuild indexes for elasticsearch.
