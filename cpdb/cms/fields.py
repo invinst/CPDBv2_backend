@@ -125,7 +125,7 @@ class MultilineTextField(DraftEditorField):
         }
 
 
-class RichTextField(MultilineTextField):
+class RichTextField(DraftEditorField):
     _type = 'rich_text'
 
     def fake_value(self, value=None):
@@ -136,6 +136,40 @@ class RichTextField(MultilineTextField):
         if self._fake_value is None:
             return [Faker().sentence()]
         return self._fake_value
+
+    def fake_data(self, value=None):
+        if not value or 'blocks' not in value:
+            blocks = [
+                self.fake_block(val) for val in self.fake_value(value)
+            ]
+        else:
+            blocks = [
+                self.fake_block(text) for text in value['blocks']
+            ]
+
+        entitiesMap = dict()
+        if value and 'entities' in value:
+            for ind, entity in enumerate(value['entities']):
+                entitiesMap[ind] = {
+                    'data': entity.data,
+                    'type': entity.type,
+                    'mutability': entity.mutability
+                }
+                block = blocks[entity.block_index]
+                block['entityRanges'].append({
+                    'length': entity.length,
+                    'key': ind,
+                    'offset': entity.offset
+                })
+
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': {
+                'blocks': blocks,
+                'entityMap': entitiesMap
+            }
+        }
 
 
 class RandomizerField(serializers.Field):

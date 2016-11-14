@@ -51,7 +51,6 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-    'faq',
     'data',
     'data_versioning',
     'es_index',

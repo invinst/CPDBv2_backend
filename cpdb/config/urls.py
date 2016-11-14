@@ -25,7 +25,6 @@ from rest_framework import routers
 from wagtail.wagtailadmin import urls as wagtailadmin_urls
 from wagtail.wagtailcore import urls as wagtail_urls
 
-from faq.views import FAQViewSet
 from vftg.views import VFTGViewSet
 from .views import index
 from suggestion.views import SuggestionViewSet
@@ -34,7 +33,6 @@ from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 
 
 router_v1 = routers.SimpleRouter()
-router_v1.register(r'faqs', FAQViewSet, base_name='faq')
 router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
 router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
 

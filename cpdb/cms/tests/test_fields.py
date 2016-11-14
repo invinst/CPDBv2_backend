@@ -3,6 +3,7 @@ from django.test import SimpleTestCase
 from mock import patch
 from freezegun import freeze_time
 
+from cms.factories import LinkEntityFactory
 from cms.fields import (
     LinkField, DateField, PlainTextField, MultilineTextField, RandomizerField,
     StringField, RichTextField)
@@ -232,6 +233,49 @@ class RichTestFieldTestCase(MultilineTextFieldTestCase):
     def setUp(self):
         self.field = RichTextField(fake_value=['abc', 'xyz'])
         self.field.field_name = 'about_content'
+        self.maxDiff = None
+
+    def test_fake_data_with_value_object(self):
+        value = {
+            'blocks': ['abc'],
+            'entities': [
+                LinkEntityFactory(
+                    url='url',
+                    length=1,
+                    offset=0,
+                    block_index=0
+                )
+            ]
+        }
+        with patch('cms.fields.generate_draft_block_key', return_value='1'):
+            self.assertDictEqual(
+                self.field.fake_data(value),
+                {
+                    'name': 'about_content',
+                    'type': self._type,
+                    'value': {
+                        'blocks': [{
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [{
+                                'length': 1,
+                                'key': 0,
+                                'offset': 0
+                            }],
+                            'inlineStyleRanges': [],
+                            'key': '1',
+                            'text': 'abc',
+                            'type': 'unstyled'
+                        }],
+                        'entityMap': {
+                            0: {
+                                'data': {'url': 'url'},
+                                'type': 'LINK',
+                                'mutability': 'MUTABLE'
+                            }
+                        }
+                    }
+                })
 
 
 class RandomizerFieldTestCase(SimpleTestCase):
