@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from mock import patch
+from rest_framework import serializers
 from freezegun import freeze_time
 
 from cms.factories import LinkEntityFactory
@@ -43,6 +44,12 @@ class StringFieldTestCase(SimpleTestCase):
                 'vftg_title_value': 'abc'
             })
 
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.string_field.to_internal_value(None)
+
+        self.assertEqual(context_manager.exception.detail, {'vftg_title': 'Value is not string'})
+
 
 class LinkFieldTestCase(SimpleTestCase):
     def setUp(self):
@@ -77,6 +84,12 @@ class LinkFieldTestCase(SimpleTestCase):
                 'vftg_link_value': 'http://abc.com'
             })
 
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.link_field.to_internal_value(None)
+
+        self.assertEqual(context_manager.exception.detail, {'vftg_link': 'Value is not string'})
+
 
 class DateFieldTestCase(SimpleTestCase):
     def setUp(self):
@@ -110,6 +123,25 @@ class DateFieldTestCase(SimpleTestCase):
             {
                 'vftg_date_type': 'date',
                 'vftg_date_value': '2016-06-06'
+            })
+
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.date_field.to_internal_value('abc')
+
+        self.assertEqual(context_manager.exception.detail, {
+            'vftg_date': 'Value must be in valid date format: YYYY-MM-DD'
+        })
+
+    def test_fake_data_with_fake_value(self):
+        self.date_field = DateField(fake_value='2016-11-09')
+        self.date_field.field_name = 'vftg_date'
+        self.assertDictEqual(
+            self.date_field.fake_data(),
+            {
+                'name': 'vftg_date',
+                'type': 'date',
+                'value': '2016-11-09'
             })
 
 
@@ -156,13 +188,25 @@ class PlainTextFieldTestCase(SimpleTestCase):
 
     def test_to_internal_value(self):
         self.assertDictEqual(
-            self.plain_text_field.to_internal_value({'c': 'd'}),
+            self.plain_text_field.to_internal_value({
+                'blocks': 'c',
+                'entityMap': 'd'
+            }),
             {
                 'about_header_type': 'plain_text',
                 'about_header_value': {
-                    'c': 'd'
+                    'blocks': 'c',
+                    'entityMap': 'd'
                 }
             })
+
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.plain_text_field.to_internal_value('abc')
+
+        self.assertEqual(context_manager.exception.detail, {
+            'about_header': 'Value must be in raw content state format'
+        })
 
 
 class MultilineTextFieldTestCase(SimpleTestCase):
@@ -218,13 +262,25 @@ class MultilineTextFieldTestCase(SimpleTestCase):
 
     def test_to_internal_value(self):
         self.assertDictEqual(
-            self.field.to_internal_value({'c': 'd'}),
+            self.field.to_internal_value({
+                'blocks': 'c',
+                'entityMap': 'd'
+            }),
             {
                 'about_content_type': self._type,
                 'about_content_value': {
-                    'c': 'd'
+                    'blocks': 'c',
+                    'entityMap': 'd'
                 }
             })
+
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.field.to_internal_value('abc')
+
+        self.assertEqual(context_manager.exception.detail, {
+            'about_content': 'Value must be in raw content state format'
+        })
 
 
 class RichTestFieldTestCase(MultilineTextFieldTestCase):
@@ -323,3 +379,11 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 'faq_randomizer_pool_size': 12,
                 'faq_randomizer_selected_strategy_id': 2
             })
+
+    def test_raise_validation_error(self):
+        with self.assertRaises(serializers.ValidationError) as context_manager:
+            self.randomizer_field.to_internal_value({})
+
+        self.assertEqual(context_manager.exception.detail, {
+            'faq_randomizer': 'Value must contain both "poolSize" key and "selectedStrategyId" key.'
+        })

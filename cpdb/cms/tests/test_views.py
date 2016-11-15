@@ -21,7 +21,7 @@ class CMSPageViewSetTestCase(APITestCase):
 
         self.maxDiff = None
 
-    def test_update_landing_page(self):
+    def test_update_landing_page_bad_request(self):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -34,18 +34,38 @@ class CMSPageViewSetTestCase(APITestCase):
                 'value': 'Collaborate With Us.'
             }
         ]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, {
+            'message': {
+                'collaborate_header': 'Value must be in raw content state format'
+            }
+        })
+
+    def test_update_landing_page(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        url = reverse('api-v2:cms-page-detail', kwargs={'pk': 'landing-page'})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'fields': [
+            {
+                'name': 'vftg_date',
+                'type': 'date',
+                'value': '2016-11-05'
+            }
+        ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['fields']), 13)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
         self.assertEqual(
-            response_data['collaborate_header']['value'],
-            'Collaborate With Us.')
+            response_data['vftg_date']['value'],
+            '2016-11-05')
 
         self.assertEqual(
-            SlugPage.objects.first().fields['collaborate_header_value'],
-            'Collaborate With Us.')
+            SlugPage.objects.first().fields['vftg_date_value'],
+            '2016-11-05')
 
     def test_get_landing_page(self):
         url = reverse('api-v2:cms-page-detail', kwargs={'pk': 'landing-page'})
@@ -384,7 +404,7 @@ class ReportPageViewSetTestCase(APITestCase):
             }
         })
 
-    def test_update_report_page(self):
+    def test_update_report_page_bad_request(self):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
         report_page = ReportPage.objects.first()
@@ -398,18 +418,79 @@ class ReportPageViewSetTestCase(APITestCase):
                 'value': 'new title'
             }
         ]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, {
+            'message': {
+                'title': 'Value must be in raw content state format'
+            }
+        })
+
+    def test_update_report_page(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        report_page = ReportPage.objects.first()
+
+        url = reverse('api-v2:report-detail', kwargs={'pk': report_page.id})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'fields': [
+            {
+                'name': 'publication',
+                'type': 'string',
+                'value': 'new york times'
+            }
+        ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['fields']), 6)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
         self.assertEqual(
-            response_data['title']['value'],
-            'new title')
+            response_data['publication']['value'],
+            'new york times')
         report_page.refresh_from_db()
         self.assertEqual(
-            report_page.fields['title_value'],
-            'new title')
+            report_page.fields['publication_value'],
+            'new york times')
+
+    def test_add_report_bad_request(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:report-list')
+        response = self.client.post(url, {
+            'fields': [{
+                'name': 'title',
+                'type': 'plain_text',
+                'value': 'a'
+            }, {
+                'name': 'excerpt',
+                'type': 'multiline_text',
+                'value': {
+                    'blocks': 'c',
+                    'entityMap': 'd'
+                }
+            }, {
+                'name': 'publication',
+                'type': 'string',
+                'value': 'ccc'
+            }, {
+                'name': 'publish_date',
+                'type': 'date',
+                'value': '1900-01-01'
+            }, {
+                'name': 'author',
+                'type': 'string',
+                'value': 'ddd'
+            }]
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, {
+            'message': {
+                'title': 'Value must be in raw content state format'
+            }
+        })
 
     def test_add_report(self):
         admin_user = AdminUserFactory()
@@ -419,34 +500,46 @@ class ReportPageViewSetTestCase(APITestCase):
 
         url = reverse('api-v2:report-list')
         response = self.client.post(url, {
-                'fields': [{
-                    'name': 'title',
-                    'type': 'plain_text',
-                    'value': 'aaa'
-                }, {
-                    'name': 'excerpt',
-                    'type': 'multiline_text',
-                    'value': 'bbb'
-                }, {
-                    'name': 'publication',
-                    'type': 'string',
-                    'value': 'ccc'
-                }, {
-                    'name': 'publish_date',
-                    'type': 'date',
-                    'value': '1900-01-01'
-                }, {
-                    'name': 'author',
-                    'type': 'string',
-                    'value': 'ddd'
-                }]
-            }, format='json')
+            'fields': [{
+                'name': 'title',
+                'type': 'plain_text',
+                'value': {
+                    'blocks': 'a',
+                    'entityMap': 'b'
+                }
+            }, {
+                'name': 'excerpt',
+                'type': 'multiline_text',
+                'value': {
+                    'blocks': 'c',
+                    'entityMap': 'd'
+                }
+            }, {
+                'name': 'publication',
+                'type': 'string',
+                'value': 'ccc'
+            }, {
+                'name': 'publish_date',
+                'type': 'date',
+                'value': '1900-01-01'
+            }, {
+                'name': 'author',
+                'type': 'string',
+                'value': 'ddd'
+            }]
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         created_report = ReportPage.objects.last()
         self.assertDictEqual(created_report.fields, {
-            'title_value': 'aaa',
+            'title_value': {
+                'blocks': 'a',
+                'entityMap': 'b'
+            },
             'title_type': 'plain_text',
-            'excerpt_value': 'bbb',
+            'excerpt_value': {
+                'blocks': 'c',
+                'entityMap': 'd'
+            },
             'excerpt_type': 'multiline_text',
             'publication_value': 'ccc',
             'publication_type': 'string',
@@ -527,7 +620,7 @@ class FAQPageViewSetTestCase(APITestCase):
             }
         })
 
-    def test_update(self):
+    def test_update_bad_request(self):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
         faq_page = FAQPage.objects.first()
@@ -541,6 +634,30 @@ class FAQPageViewSetTestCase(APITestCase):
                 'value': 'abc'
             }
         ]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, {
+            'message': {
+                'question': 'Value must be in raw content state format'
+            }
+        })
+
+    def test_update(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        faq_page = FAQPage.objects.first()
+
+        url = reverse('api-v2:faq-detail', kwargs={'pk': faq_page.id})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'fields': [
+            {
+                'name': 'question',
+                'type': 'plain_text',
+                'value': {
+                    'blocks': 'a',
+                    'entityMap': 'b'
+                }
+            }
+        ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['fields']), 2)
         response_data = {
@@ -548,34 +665,52 @@ class FAQPageViewSetTestCase(APITestCase):
         }
         self.assertEqual(
             response_data['question']['value'],
-            'abc')
+            {
+                'blocks': 'a',
+                'entityMap': 'b'
+            })
         faq_page.refresh_from_db()
         self.assertEqual(
             faq_page.fields['question_value'],
-            'abc')
+            {
+                'blocks': 'a',
+                'entityMap': 'b'
+            })
 
     def test_create(self):
         url = reverse('api-v2:faq-list')
         response = self.client.post(url, {
-                'fields': [{
-                    'name': 'question',
-                    'type': 'plain_text',
-                    'value': 'abc'
-                }]
-            }, format='json')
+            'fields': [{
+                'name': 'question',
+                'type': 'plain_text',
+                'value': {
+                    'blocks': 'a',
+                    'entityMap': 'b'
+                }
+            }]
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         created_faq = FAQPage.objects.last()
-        self.assertDictEqual(created_faq.fields, {'question_value': 'abc', 'question_type': 'plain_text'})
+        self.assertDictEqual(created_faq.fields, {
+            'question_value': {
+                'blocks': 'a',
+                'entityMap': 'b'
+            },
+            'question_type': 'plain_text'
+        })
 
     def test_create_with_answer(self):
         url = reverse('api-v2:faq-list')
         response = self.client.post(url, {
-                'fields': [{
-                    'name': 'answer',
-                    'type': 'multiline_text',
-                    'value': 'abc'
-                }]
-            }, format='json')
+            'fields': [{
+                'name': 'answer',
+                'type': 'multiline_text',
+                'value': {
+                    'blocks': 'a',
+                    'entityMap': 'b'
+                }
+            }]
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(response.data['message'], {'non_field_errors': ['Unauthorized user cannot add answer.']})
 
@@ -586,14 +721,20 @@ class FAQPageViewSetTestCase(APITestCase):
 
         url = reverse('api-v2:faq-list')
         response = self.client.post(url, {
-                'fields': [{
-                    'name': 'question',
-                    'type': 'plain_text',
-                    'value': 'abc'
-                }, {
-                    'name': 'answer',
-                    'type': 'multiline_text',
-                    'value': 'abc'
-                }]
-            }, format='json')
+            'fields': [{
+                'name': 'question',
+                'type': 'plain_text',
+                'value': {
+                    'blocks': 'a',
+                    'entityMap': 'b'
+                }
+            }, {
+                'name': 'answer',
+                'type': 'multiline_text',
+                'value': {
+                    'blocks': 'c',
+                    'entityMap': 'd'
+                }
+            }]
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
