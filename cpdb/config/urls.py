@@ -48,7 +48,10 @@ urlpatterns = [
     url(r'^wagtail/', include(wagtail_urls)),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
-    url(r'^(?:(?P<path>collaborate|faq|reporting)/)?$', ensure_csrf_cookie(index), name='index'),
+    url(r'^(?:(?P<path>'
+        r'collaborate|faq|reporting|search|'
+        r'edit(?:/reporting|/faq)?'
+        r')/)?$', ensure_csrf_cookie(index), name='index'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
