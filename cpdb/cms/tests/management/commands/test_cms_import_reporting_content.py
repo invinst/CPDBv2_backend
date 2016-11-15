@@ -6,6 +6,7 @@ from cms.models import ReportPage
 
 class CMSImportReportingContentCommandTestCase(TestCase):
     def test_call_command(self):
+        self.assertEqual(ReportPage.objects.all().count(), 0)
         call_command('cms_import_reporting_content', 'cpdb/cms/tests/files/reporting.csv')
         self.assertEqual(ReportPage.objects.all().count(), 1)
         report_page = ReportPage.objects.first()
