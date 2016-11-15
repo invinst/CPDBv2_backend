@@ -20,6 +20,7 @@ class BaseField(serializers.Field):
         }
 
     def to_internal_value(self, data):
+        self.validate_value(data)
         return {
             '%s_type' % self.field_name: self._type,
             '%s_value' % self.field_name: data
@@ -43,6 +44,10 @@ class StringField(BaseField):
             'value': self.fake_value(value)
         }
 
+    def validate_value(self, value):
+        if not isinstance(value, basestring):
+            raise serializers.ValidationError({self.field_name: 'Value is not string'})
+
 
 class LinkField(StringField):
     _type = 'link'
@@ -65,6 +70,12 @@ class DateField(StringField):
             return datetime.now().strftime('%Y-%m-%d')
         return self._fake_value
 
+    def validate_value(self, value):
+        try:
+            datetime.strptime(value, '%Y-%m-%d')
+        except ValueError:
+            raise serializers.ValidationError({self.field_name: 'Value must be in valid date format: YYYY-MM-DD'})
+
 
 class DraftEditorField(BaseField):
     def fake_block(self, value):
@@ -77,6 +88,10 @@ class DraftEditorField(BaseField):
             'text': value,
             'type': 'unstyled'
         }
+
+    def validate_value(self, value):
+        if not ('blocks' in value and 'entityMap' in value):
+            raise serializers.ValidationError({self.field_name: 'Value must be in raw content state format'})
 
 
 class PlainTextField(DraftEditorField):
@@ -164,8 +179,13 @@ class RandomizerField(serializers.Field):
         }
 
     def to_internal_value(self, data):
-        return {
-            '%s_type' % self.field_name: self._type,
-            '%s_pool_size' % self.field_name: data['poolSize'],
-            '%s_selected_strategy_id' % self.field_name: data['selectedStrategyId']
-        }
+        try:
+            return {
+                '%s_type' % self.field_name: self._type,
+                '%s_pool_size' % self.field_name: data['poolSize'],
+                '%s_selected_strategy_id' % self.field_name: data['selectedStrategyId']
+            }
+        except KeyError:
+            raise serializers.ValidationError({
+                self.field_name: 'Value must contain both "poolSize" key and "selectedStrategyId" key.'
+            })

@@ -27,7 +27,7 @@ class PoliceUnit(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class Officer(models.Model):
@@ -61,7 +61,7 @@ class Officer(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class OfficerBadgeNumber(models.Model):
@@ -84,7 +84,7 @@ class OfficerBadgeNumber(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class OfficerHistory(models.Model):
@@ -112,7 +112,7 @@ class Area(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class LineArea(models.Model):
