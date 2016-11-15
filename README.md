@@ -3,10 +3,12 @@
 
 # Development
 
-Please make sure that you have `vagrant` and `ansible` on your machine, we use them as isolated development environment and automation tools. After having both of these tools in your machine, you could start installing the ansible dependencies:
+Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your machine, we use them as isolated development environment and automation tools. After having both of these tools in your machine, you could start installing the ansible dependencies:
 
 ``` bash
 ansible-galaxy install azavea.postgresql
+git clone git@github.com:CyVerse-Ansible/ansible-elasticsearch-1.git
+sudo mv -r ansible-elasticsearch-1 /etc/ansible/roles/cyverse.elasticsearch
 ```
 
 Then up your vagrant box
@@ -51,3 +53,10 @@ Regarding to the nginx changes, please update both of the files, https one and h
 
 # Documentation
 - [API standards](docs/api-standards.md)
+
+# Import data from v1
+- Export v2 data:
+    + Run `./manage.py export_all_data_for_v2` on v1 repository (**Note:** Base on new v2 model you may need to modify this script).
+    + Data from v1 will be exported into csv files in root folder after run above command.
+- Import v2 data: Run `cpdb/manage.py import_002_officer_data_from_v1 --folder [FOLDER]` on v2 repository.
+- After importing run: `cpdb/manage.py rebuild_index` to rebuild indexes for elasticsearch.

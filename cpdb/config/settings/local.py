@@ -1,8 +1,8 @@
 from .common import *  # NOQA
 
 
-INSTALLED_APPS += ('corsheaders',)
-MIDDLEWARE_CLASSES += (
+INSTALLED_APPS += ('corsheaders',)  # NOQA
+MIDDLEWARE_CLASSES += (  # NOQA
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware')
 
@@ -15,3 +15,5 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 MEDIA_ROOT = '/www/media/'
 
 DEBUG = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

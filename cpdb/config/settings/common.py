@@ -31,6 +31,7 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'rest_framework',
+    'rest_framework.authtoken',
     'django_nose',
 
     'wagtail.wagtailforms',
@@ -50,12 +51,15 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-    'faq',
-    'story',
     'data',
     'data_versioning',
-    'vftg',
+    'es_index',
+    'suggestion',
     'landing_page',
+    'story',
+    'faq',
+    'vftg',
+    'cms',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

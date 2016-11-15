@@ -25,12 +25,10 @@ ssl_dest_dir: /etc/ssl
 # Application settings.
 django_settings_file: "config.settings.local"
 
-run_django_db_migrations: yes
-run_django_collectstatic: yes
-
 deploy_user: vagrant
 deploy_group: vagrant
-db_user: vagrant
+db_user: cpdb
+db_password: password
 
 backend_media_dir: /www/media/
 gunicorn_extra_params: "--reload"

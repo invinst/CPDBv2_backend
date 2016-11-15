@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 from django.contrib.contenttypes.models import ContentType
 
@@ -5,7 +7,8 @@ import factory
 from faker import Faker
 from wagtail.wagtailcore.models import Page
 
-from data.models import Area, Investigator, LineArea
+from data.models import Area, Investigator, LineArea, Officer
+from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
 
@@ -55,3 +58,17 @@ class RootPageFactory(factory.django.DjangoModelFactory):
     title = 'Root'
     slug = 'root'
     content_type = ContentType.objects.get_for_model(Page)
+
+
+class OfficerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Officer
+
+    first_name = factory.LazyFunction(lambda: fake.first_name())
+    last_name = factory.LazyFunction(lambda: fake.last_name())
+    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
+    race = 'White'
+    appointed_date = factory.LazyFunction(lambda: fake.date_time().date())
+    rank = factory.LazyFunction(lambda: fake.word())
+    birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
+    active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])

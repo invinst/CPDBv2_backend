@@ -26,9 +26,6 @@ ssl_dest_dir: /etc/ssl
 # Application settings.
 django_settings_file: "config.settings.staging"
 
-run_django_db_migrations: yes
-run_django_collectstatic: yes
-
 deploy_user: ansible
 deploy_group: ansible
 

@@ -28,9 +28,8 @@ django_settings_file: "config.settings.production"
 
 run_django_db_migrations: yes
 run_django_collectstatic: yes
-
 deploy_user: ansible
 deploy_group: ansible
-
 setup_newrelic: yes
 backup_database_daily: yes
+enable_cron_job: yes

@@ -1,0 +1,5 @@
+class AutoCompleteType:
+    OFFICER_NAME = 'OFFICER_NAME'
+    OFFICER_BADGE = 'OFFICER_BADGE'
+    OFFICER_UNIT = 'OFFICER_UNIT'
+    AREA = 'AREA'

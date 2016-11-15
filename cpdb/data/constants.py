@@ -1,16 +1,3 @@
-RANKS = [
-    ['FTO', 'Field Training Officer'],
-    ['LT', 'Lieutenant'],
-    ['ET', 'Evidence Technician'],
-    ['DET', 'Detective'],
-    ['PO', 'Police Officer'],
-    ['Cpt', 'Captain'],
-    ['SGT', 'Sergeant'],
-    ['CMDR', 'Commander'],
-    ['Agent', 'Police Agent'],
-    ['Chief', 'Chief']
-]
-
 ACTIVE_YES_CHOICE = 'Yes'
 ACTIVE_NO_CHOICE = 'No'
 ACTIVE_UNKNOWN_CHOICE = 'Unknown'
@@ -53,9 +40,11 @@ LOCATION_CHOICES = [
 
 AREA_CHOICES = [
     ['beat', 'Beat'],
-    ['neighborhood', 'Neighborhood'],
-    ['school-grounds', 'School Grounds'],
-    ['ward', 'Ward'],
+    ['neighborhoods', 'Neighborhood'],
+    ['police-beats', 'Police Beat'],
+    ['school-grounds', 'School Ground'],
+    ['wards', 'Ward'],
+    ['Community', 'Community'],
     ['police-districts', 'Police District']
 ]
 

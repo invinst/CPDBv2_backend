@@ -1,9 +1,12 @@
 from django.contrib.gis.db import models
 
 from data.constants import (
-    RANKS, ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE,
-    LOCATION_CHOICES, AREA_CHOICES, LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES,
-    FINDINGS)
+    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
+from suggestion.autocomplete_types import AutoCompleteType
+
+
+AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
 class PoliceUnit(models.Model):
@@ -12,19 +15,53 @@ class PoliceUnit(models.Model):
     def __str__(self):
         return self.unit_name
 
+    @property
+    def index_args(self):
+        return (
+            (self.unit_name, {
+                'type': AutoCompleteType.OFFICER_UNIT,
+                'url': self.v1_url
+                }, {
+                'content_type': ['officer_unit']
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'  # pragma: no cover
+
 
 class Officer(models.Model):
-    full_name = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(
+        max_length=255, null=True, db_index=True, blank=True)
+    last_name = models.CharField(
+        max_length=255, null=True, db_index=True, blank=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
-    unit = models.ForeignKey(PoliceUnit, null=True)
-    rank = models.CharField(choices=RANKS, max_length=5, blank=True)
-    age_at_march_11_2016 = models.IntegerField(null=True)
+    rank = models.CharField(max_length=50, blank=True)
+    birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
     def __str__(self):
         return self.full_name
+
+    @property
+    def full_name(self):
+        return '%s %s' % (self.first_name, self.last_name,)
+
+    @property
+    def index_args(self):
+        return (
+            (self.full_name, {
+                'type': AutoCompleteType.OFFICER_NAME,
+                'url': self.v1_url
+                }, {
+                'content_type': ['officer_name']
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'  # pragma: no cover
 
 
 class OfficerBadgeNumber(models.Model):
@@ -34,6 +71,20 @@ class OfficerBadgeNumber(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
+
+    @property
+    def index_args(self):
+        return (
+            (self.star, {
+                'type': AutoCompleteType.OFFICER_BADGE,
+                'url': self.v1_url
+                }, {
+                'content_type': 'officer_badge'
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'  # pragma: no cover
 
 
 class OfficerHistory(models.Model):
@@ -48,6 +99,20 @@ class Area(models.Model):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
+
+    @property
+    def index_args(self):
+        return (
+            (self.name, {
+                'type': AutoCompleteType.AREA,
+                'url': self.v1_url
+            }, {
+                'content_type': [self.area_type]
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'  # pragma: no cover
 
 
 class LineArea(models.Model):
