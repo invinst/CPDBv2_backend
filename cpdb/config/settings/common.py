@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = (
 
     'modelcluster',
     'taggit',
+    'anymail'
 )
 
 LOCAL_APPS = (
