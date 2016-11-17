@@ -109,20 +109,20 @@ class CreateFAQPageSerializer(IdPageSerializer):
 
 
 class LandingPageSerializer(SlugPageSerializer):
-    reporting_header = RichTextField(fake_value='Recent Reports')
+    reporting_header = RichTextField(fake_value=['Recent Reports'])
     reporting_randomizer = RandomizerField()
     reports = serializers.SerializerMethodField()
     faqs = serializers.SerializerMethodField()
-    faq_header = RichTextField(fake_value='FAQ')
+    faq_header = RichTextField(fake_value=['FAQ'])
     faq_randomizer = RandomizerField()
     vftg_date = DateField()
     vftg_link = LinkField()
-    vftg_content = RichTextField(fake_value='Real Independence for Police Oversight Agencies')
-    collaborate_header = RichTextField(fake_value='Collaborate')
+    vftg_content = RichTextField(fake_value=['Real Independence for Police Oversight Agencies'])
+    collaborate_header = RichTextField(fake_value=['Collaborate'])
     collaborate_content = RichTextField(fake_value=[
         'We are collecting and publishing information that sheds light on police misconduct.',
         'If you have documents or datasets you would like to publish, please email us, or learn more.'])
-    about_header = RichTextField(fake_value='About')
+    about_header = RichTextField(fake_value=['About'])
     about_content = RichTextField(fake_value=[
         'The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago.',
         'The information and stories we have collected here are intended as a resource for public oversight.'

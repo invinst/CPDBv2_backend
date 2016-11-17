@@ -11,7 +11,7 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         report_page_serializer.is_valid()
         report_page_serializer.save()
         report = ReportPage.objects.first()
-        report.fields['title_type'] = 'plain_text'
+        report.fields['title_type'] = 'rich_text'
         report.save()
         call_command('cms_correct_type_in_database')
         report = ReportPage.objects.first()

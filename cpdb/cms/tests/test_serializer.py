@@ -138,7 +138,7 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['reporting_header'], {
             'name': 'reporting_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'a'
         })
 
@@ -154,7 +154,7 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['faq_header'], {
             'name': 'faq_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'b'
         })
 
@@ -182,31 +182,31 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['vftg_content'], {
             'name': 'vftg_content',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'e'
         })
 
         self.assertDictEqual(fields['collaborate_header'], {
             'name': 'collaborate_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'f'
         })
 
         self.assertDictEqual(fields['collaborate_content'], {
             'name': 'collaborate_content',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'g'
         })
 
         self.assertDictEqual(fields['about_header'], {
             'name': 'about_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'h'
         })
 
         self.assertDictEqual(fields['about_content'], {
             'name': 'about_content',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'i'
         })
 
@@ -278,13 +278,13 @@ class ReportPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['title'], {
             'name': 'title',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'a'
         })
 
         self.assertDictEqual(fields['excerpt'], {
             'name': 'excerpt',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'b'
         })
 
