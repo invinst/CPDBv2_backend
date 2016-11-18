@@ -10,4 +10,5 @@ elasticsearch_apt_dependencies:
   - ntp
   - unzip
 elasticsearch_home_dir: /usr/share/elasticsearch
+elasticsearch_data_dir: /mnt/elasticsearch-data
 elasticsearch_work_dir: /tmp/elasticsearch
