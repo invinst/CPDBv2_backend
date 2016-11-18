@@ -32,7 +32,7 @@ class SuggestionViewSetTestCase(APITestCase):
                 'text': 'Bb Aa',
                 'score': 1.0,
                 'payload': {
-                    'url': 'not implemented',
+                    'url': 'https://cpdb.co/officer/bb-aa/%s' % officer_1.pk,
                     'result_text': 'Bb Aa',
                     'result_extra_information': 'Badge 1111'
                 }
@@ -41,7 +41,7 @@ class SuggestionViewSetTestCase(APITestCase):
                 'text': 'Tt Bb',
                 'score': 1.0,
                 'payload': {
-                    'url': 'not implemented',
+                    'url': 'https://cpdb.co/officer/tt-bb/%s' % officer_2.pk,
                     'result_text': 'Tt Bb',
                     'result_extra_information': ''
                 }
