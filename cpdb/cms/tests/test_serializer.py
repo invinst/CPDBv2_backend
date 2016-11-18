@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from mock import Mock, patch
+from rest_framework import serializers
 
 from cms.serializers import (
     BaseCMSPageSerializer, LandingPageSerializer, ReportPageSerializer,
@@ -63,6 +64,21 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
             'type': 'string',
             'value': 'b'
         }]})
+
+    def test_unimplemented_to_internal_value(self):
+        class CMSPageSerializer(BaseCMSPageSerializer):
+            a = StringField()
+            b = serializers.SerializerMethodField()
+
+            class Meta:
+                model = self.page_model
+
+            def get_b(self, obj):
+                return []
+
+        serializer = CMSPageSerializer(data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
+        self.assertTrue(serializer.is_valid())
+        serializer.save()  # does not raise error therefore unimplemented to_internal_value cause no problem
 
 
 class SlugPageSerializerTestCase(SimpleTestCase):
