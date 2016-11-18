@@ -29,6 +29,13 @@
     group={{ elasticsearch_group }}
     recurse=yes
 
+- name: elastic-install | Ensure data directories exists
+  file:
+    path="{{ elasticsearch_data_dir }}"
+    state=directory
+    owner={{ elasticsearch_user }}
+    group={{ elasticsearch_group }}
+    recurse=yes
 
 - name: elastic-install | Check if we have elastic with same version installed
   stat:

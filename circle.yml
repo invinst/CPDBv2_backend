@@ -34,4 +34,5 @@ deployment:
       - sudo pip install ansible
       - sudo ansible-galaxy install azavea.postgresql
       - sudo chown ubuntu ~/.ansible -R
-      - bin/circleci_deploy_staging
+      - bin/circleci_deploy_staging:
+          timeout: 1800

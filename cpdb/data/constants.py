@@ -111,3 +111,5 @@ FINDINGS = [
     ['DS', 'Discharged'],  # means final_outcome_class = not-sustained
     ['ZZ', 'Unknown']  # means final_outcome_class = open-investigation
 ]
+
+CPDB_V1_OFFICER_PATH = 'https://cpdb.co/officer'
