@@ -1,0 +1,862 @@
+FORMAT: 1A
+HOST: http://cpdp.apiblueprint.org/
+
+# CPDP
+
+CPDP is a simple API serving the CPDP website version 2 (not the same as api version) now live at https://beta.cpdp.co. It includes two main portions: CMS and data tool.
+
+**Conventions**:
+
+- Property name is in snake case: `field_name` instead of `fieldName`
+
+## CMS Page [/cms-pages/{page_id}/]
+
++ Parameters
+    + page_id (string) - ID of the Page that look like a slug
+
+### Get CMS page content [GET]
+
+**Properties**:
+
+- `fields` is an array of fields. Each fields has `name`, `type` and `value`. `value` is an opaque object that should be only of interest to whatever module that deal with it directly. As such it's content might violate some of conventions followed elsewhere such as having property name be in snake case.
+
++ Response 200 (application/json)
+
+        {
+            "fields": [
+                {
+                    "name": "reports",
+                    "type": "randomized_list",
+                    "value": [
+                        {
+                            "id": 1,
+                            "fields": [
+                                {
+                                    "name": "title",
+                                    "type": "plain_text",
+                                    "value": {
+                                        "blocks": [
+                                            {
+                                                "data": {},
+                                                "depth": 0,
+                                                "entityRanges": [],
+                                                "inlineStyleRanges": [],
+                                                "key": "5gia1",
+                                                "text": "Commentary: Chicago's police crisis",
+                                                "type": "unstyled"
+                                            }
+                                        ],
+                                        "entityMap": {}
+                                    }
+                                },
+                                {
+                                    "name": "excerpt",
+                                    "type": "multiline_text",
+                                    "value": {
+                                        "blocks": [
+                                            {
+                                                "data": {},
+                                                "depth": 0,
+                                                "entityRanges": [],
+                                                "inlineStyleRanges": [],
+                                                "key": "a4b9s",
+                                                "text": "The “few bad apples” theory of police violence posits that a small portion of the police force is ill-intentioned or inclined to misconduct or violence, while the majority of officers are good cops. Until recently, this theory was difficult for civilians to investigate, but department data on complaints against officers obtained through a legal challenge shows that police misconduct in Chicago is overwhelmingly the product of a small fraction of officers and that it may be possible to identify those officers and reduce misconduct.",
+                                                "type": "unstyled"
+                                            },
+                                            {
+                                                "data": {},
+                                                "depth": 0,
+                                                "entityRanges": [],
+                                                "inlineStyleRanges": [],
+                                                "key": "a4b9z",
+                                                "text": "This far-reaching data set, a product of the nonprofit Invisible Institute’s Citizens Police Data Project, comprehensively covers nearly five years of complaints against Chicago police officers. Each of the 28,588 records in the database offers a detailed account of the incident, including information on the accused officer, the complainant, the type of alleged misconduct, and whether the complaint was found legitimate by an internal investigation.",
+                                                "type": "unstyled"
+                                            }
+                                        ],
+                                        "entityMap": {}
+                                    }
+                                },
+                                {
+                                    "name": "publication",
+                                    "type": "string",
+                                    "value": "New York Times"
+                                },
+                                {
+                                    "name": "publish_date",
+                                    "type": "date",
+                                    "value": "2016-09-23"
+                                },
+                                {
+                                    "name": "author",
+                                    "type": "string",
+                                    "value": "Edgar Sterling"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "reporting_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5kif1",
+                                "text": "Recent Reports",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "reporting_randomizer",
+                    "type": "randomizer",
+                    "value": {
+                        "poolSize": "10",
+                        "selectedStrategyId": "1",
+                        "strategies": [
+                            {
+                                "id": "1",
+                                "name": "Last entries"
+                            },
+                            {
+                                "id": "2",
+                                "name": "Last days"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "faq_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5kia1",
+                                "text": "FAQ",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "faq_randomizer",
+                    "type": "randomizer",
+                    "value": {
+                        "poolSize": "10",
+                        "selectedStrategyId": "1",
+                        "strategies": [
+                            {
+                                "id": "1",
+                                "name": "Last entries"
+                            },
+                            {
+                                "id": "2",
+                                "name": "Last days"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "vftg_date",
+                    "type": "date",
+                    "value": "2016-10-07"
+                },
+                {
+                    "name": "vftg_link",
+                    "type": "link",
+                    "value": "https://google.com"
+                },
+                {
+                    "name": "vftg_content",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Real Independence for Police Oversight Agencies",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_content",
+                    "type": "multiline_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9s",
+                                "text": "We are collecting and publishing information that sheds light on police misconduct.",
+                                "type": "unstyled"
+                            },
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9z",
+                                "text": "If you have documents or datasets you would like to publish, please email us, or learn more.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "about_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a89s0",
+                                "text": "About",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "about_content",
+                    "type": "multiline_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a9sn8",
+                                "text": "The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago..",
+                                "type": "unstyled"
+                            },
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a9sn5",
+                                "text": "The information and stories we have collected here are intended as a resource for public oversight. Our aim is to create a new model of accountability between officers and citizens.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+
+### Partial update CMS page content [PATCH]
+
+This api require an api access token set in `Authorization` header. To get an api access token, use **Sign In** api.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+
+    + Body
+
+            {
+                "fields": [
+                    {
+                        "name": "collaborate_header",
+                        "type": "plain_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "5gia1",
+                                    "text": "Collaborate With Us.",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    },
+                    {
+                        "name": "collaborate_content",
+                        "type": "multiline_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9s",
+                                    "text": "We are collecting and publishing information that sheds light on police misconduct.",
+                                    "type": "unstyled"
+                                },
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9z",
+                                    "text": "If you have documents or datasets you would like to publish, please email us, or learn more.",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    }
+                ]
+            }
+
++ Response 200 (application/json)
+
+            {
+                "fields": [
+                {
+                    "name": "reporting_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5kif1",
+                                "text": "Recent Reports",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "reporting_randomizer",
+                    "type": "randomizer",
+                    "value": {
+                        "poolSize": "10",
+                        "selectedStrategyId": "1",
+                        "strategies": [
+                            {
+                                "id": "1",
+                                "name": "Last entries"
+                            },
+                            {
+                                "id": "2",
+                                "name": "Last days"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "faq_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5kia1",
+                                "text": "FAQ",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "faq_randomizer",
+                    "type": "randomizer",
+                    "value": {
+                        "poolSize": "10",
+                        "selectedStrategyId": "1",
+                        "strategies": [
+                            {
+                                "id": "1",
+                                "name": "Last entries"
+                            },
+                            {
+                                "id": "2",
+                                "name": "Last days"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "vftg_date",
+                    "type": "date",
+                    "value": "2016-10-07"
+                },
+                {
+                    "name": "vftg_link",
+                    "type": "link",
+                    "value": "https://google.com"
+                },
+                {
+                    "name": "vftg_content",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Real Independence for Police Oversight Agencies",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "collaborate_content",
+                    "type": "multiline_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9s",
+                                "text": "We are collecting and publishing information that sheds light on police misconduct.",
+                                "type": "unstyled"
+                            },
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a4b9z",
+                                "text": "If you have documents or datasets you would like to publish, please email us, or learn more.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "about_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a89s0",
+                                "text": "About",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                },
+                {
+                    "name": "about_content",
+                    "type": "multiline_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a9sn8",
+                                "text": "The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago..",
+                                "type": "unstyled"
+                            },
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "a9sn5",
+                                "text": "The information and stories we have collected here are intended as a resource for public oversight. Our aim is to create a new model of accountability between officers and citizens.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+
++ Request (application/json)
+
+        {
+            "fields": [
+                {
+                    "name": "collaborate_header",
+                    "type": "plain_text",
+                    "value": {
+                        "blocks": [
+                            {
+                                "data": {},
+                                "depth": 0,
+                                "entityRanges": [],
+                                "inlineStyleRanges": [],
+                                "key": "5gia1",
+                                "text": "Collaborate With Us.",
+                                "type": "unstyled"
+                            }
+                        ],
+                        "entityMap": {}
+                    }
+                }
+            ]
+        }
+
++ Response 401 (application/json)
+
+    + Headers
+
+            WWW-Authenticate: Token
+
+## Sign In [/users/sign-in/]
+
+### Sign in and get an api access token [POST]
+
++ Request (application/json)
+
+        {
+            "username": "admin",
+            "password": "admin@123"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "apiAccessToken": "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+        }
+
++ Request (application/json)
+
+        {
+            "username": "incorrectname",
+            "password": "password"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Sorry, you’ve entered an incorrect name."
+        }
+
++ Request (application/json)
+
+        {
+            "username": "admin",
+            "password": "incorrect"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "You’ve entered an incorrect password."
+        }
+
+## Forgot password [/users/forgot-password/]
+
+### Forgot password [POST]
+
++ Request (application/json)
+
+        {
+            "email": "admin@domain.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "message": "Please check your email for a password reset link."
+        }
+
++ Request (application/json)
+
+        {
+            "email": "unregistered@email.co"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Sorry, there’s no account registered with this email address."
+        }
+
+## Reports list [/reports/]
+
+### Get reports [GET]
+
++ Response 200 (application/json)
+
+        {
+            "results": [
+                {
+                    "id": 1,
+                    "fields": [
+                        {
+                            "name": "title",
+                            "type": "plain_text",
+                            "value": {
+                                "blocks": [
+                                    {
+                                        "data": {},
+                                        "depth": 0,
+                                        "entityRanges": [],
+                                        "inlineStyleRanges": [],
+                                        "key": "5gia1",
+                                        "text": "Commentary: Chicago's police crisis fall on all of us",
+                                        "type": "unstyled"
+                                    }
+                                ],
+                                "entityMap": {}
+                            }
+                        },
+                        {
+                            "name": "excerpt",
+                            "type": "multiline_text",
+                            "value": {
+                                "blocks": [
+                                    {
+                                        "data": {},
+                                        "depth": 0,
+                                        "entityRanges": [],
+                                        "inlineStyleRanges": [],
+                                        "key": "a4b9s",
+                                        "text": "The “few bad apples” theory of police violence posits that a small portion of the police force is ill-intentioned or inclined to misconduct or violence, while the majority of officers are good cops. Until recently, this theory was difficult for civilians to investigate, but department data on complaints against officers obtained through a legal challenge shows that police misconduct in Chicago is overwhelmingly the product of a small fraction of officers and that it may be possible to identify those officers and reduce misconduct.",
+                                        "type": "unstyled"
+                                    },
+                                    {
+                                        "data": {},
+                                        "depth": 0,
+                                        "entityRanges": [],
+                                        "inlineStyleRanges": [],
+                                        "key": "a4b9z",
+                                        "text": "This far-reaching data set, a product of the nonprofit Invisible Institute’s Citizens Police Data Project, comprehensively covers nearly five years of complaints against Chicago police officers. Each of the 28,588 records in the database offers a detailed account of the incident, including information on the accused officer, the complainant, the type of alleged misconduct, and whether the complaint was found legitimate by an internal investigation.",
+                                        "type": "unstyled"
+                                    }
+                                ],
+                                "entityMap": {}
+                            }
+                        },
+                        {
+                            "name": "publication",
+                            "type": "string",
+                            "value": "New York Times"
+                        },
+                        {
+                            "name": "publish_date",
+                            "type": "date",
+                            "value": "2016-09-23"
+                        },
+                        {
+                            "name": "author",
+                            "type": "string",
+                            "value": "Edgar Sterling"
+                        }
+                    ]
+                }
+            ]
+        }
+
+## Report Detail [/reports/{report_id}/]
+
++ Parameters
+    + report_id (number) - number ID of the report
+
+### Partial Update report [PATCH]
+
+This api require an api access token set in `Authorization` header. To get an api access token, use **Sign In** api.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+
+    + Body
+
+            {
+                "fields": [
+                    {
+                        "name": "title",
+                        "type": "plain_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "5gia1",
+                                    "text": "Commentary: Chicago's police crisis fall on all of us",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    },
+                    {
+                        "name": "excerpt",
+                        "type": "multiline_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9s",
+                                    "text": "The “few bad apples” theory of police violence posits that a small portion of the police force is ill-intentioned or inclined to misconduct or violence, while the majority of officers are good cops. Until recently, this theory was difficult for civilians to investigate, but department data on complaints against officers obtained through a legal challenge shows that police misconduct in Chicago is overwhelmingly the product of a small fraction of officers and that it may be possible to identify those officers and reduce misconduct.",
+                                    "type": "unstyled"
+                                },
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9z",
+                                    "text": "This far-reaching data set, a product of the nonprofit Invisible Institute’s Citizens Police Data Project, comprehensively covers nearly five years of complaints against Chicago police officers. Each of the 28,588 records in the database offers a detailed account of the incident, including information on the accused officer, the complainant, the type of alleged misconduct, and whether the complaint was found legitimate by an internal investigation.",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    }
+                ]
+            }
+
++ Response 200 (application/json)
+
+            {
+                "id": 1,
+                "fields": [
+                    {
+                        "name": "title",
+                        "type": "plain_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "5gia1",
+                                    "text": "Commentary: Chicago's police crisis",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    },
+                    {
+                        "name": "excerpt",
+                        "type": "multiline_text",
+                        "value": {
+                            "blocks": [
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9s",
+                                    "text": "The “few bad apples” theory of police violence posits that a small portion of the police force is ill-intentioned or inclined to misconduct or violence, while the majority of officers are good cops. Until recently, this theory was difficult for civilians to investigate, but department data on complaints against officers obtained through a legal challenge shows that police misconduct in Chicago is overwhelmingly the product of a small fraction of officers and that it may be possible to identify those officers and reduce misconduct.",
+                                    "type": "unstyled"
+                                },
+                                {
+                                    "data": {},
+                                    "depth": 0,
+                                    "entityRanges": [],
+                                    "inlineStyleRanges": [],
+                                    "key": "a4b9z",
+                                    "text": "This far-reaching data set, a product of the nonprofit Invisible Institute’s Citizens Police Data Project, comprehensively covers nearly five years of complaints against Chicago police officers. Each of the 28,588 records in the database offers a detailed account of the incident, including information on the accused officer, the complainant, the type of alleged misconduct, and whether the complaint was found legitimate by an internal investigation.",
+                                    "type": "unstyled"
+                                }
+                            ],
+                            "entityMap": {}
+                        }
+                    },
+                    {
+                        "name": "publication",
+                        "type": "string",
+                        "value": "New York Times"
+                    },
+                    {
+                        "name": "publish_date",
+                        "type": "date",
+                        "value": "2016-09-23"
+                    },
+                    {
+                        "name": "author",
+                        "type": "string",
+                        "value": "Edgar Sterling"
+                    }
+                ]
+
+        }

@@ -34,7 +34,7 @@ class PoliceUnit(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class Officer(models.Model):
@@ -105,6 +105,20 @@ class OfficerBadgeNumber(models.Model):
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
 
+    @property
+    def index_args(self):
+        return (
+            (self.star, {
+                'type': AutoCompleteType.OFFICER_BADGE,
+                'url': self.v1_url
+                }, {
+                'content_type': 'officer_badge'
+            },),)
+
+    @property
+    def v1_url(self):
+        return 'not implemented'  # pragma: no cover
+
 
 class OfficerHistory(models.Model):
     officer = models.ForeignKey(Officer, null=True)
@@ -139,7 +153,7 @@ class Area(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class LineArea(models.Model):

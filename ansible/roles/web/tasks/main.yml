@@ -31,3 +31,4 @@
 
 - include: setup_cron_job.yml
   tags: cron
+  when: enable_cron_job
