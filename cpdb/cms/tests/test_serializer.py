@@ -76,7 +76,10 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
             def get_b(self, obj):
                 return []
 
-        serializer = CMSPageSerializer(data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
+        serializer = CMSPageSerializer(data={'fields': [
+            {'name': 'a', 'type': 'string', 'value': 'c'},
+            {'name': 'b', 'type': 'string', 'value': 'd'}
+        ]})
         self.assertTrue(serializer.is_valid())
         serializer.save()  # does not raise error therefore unimplemented to_internal_value cause no problem
 
