@@ -1,8 +1,10 @@
 from django.contrib.gis.db import models
+from django.core.exceptions import MultipleObjectsReturned
+from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, CPDB_V1_OFFICER_PATH)
 from suggestion.autocomplete_types import AutoCompleteType
 
 
@@ -17,17 +19,22 @@ class PoliceUnit(models.Model):
 
     @property
     def index_args(self):
-        return (
-            (self.unit_name, {
-                'type': AutoCompleteType.OFFICER_UNIT,
-                'url': self.v1_url
-                }, {
-                'content_type': ['officer_unit']
-            },),)
+        return [
+            (
+                self.unit_name,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.unit_name
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER_UNIT
+                }
+            )
+        ]
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class Officer(models.Model):
@@ -50,18 +57,44 @@ class Officer(models.Model):
         return '%s %s' % (self.first_name, self.last_name,)
 
     @property
+    def current_badge(self):
+        try:
+            return self.officerbadgenumber_set.get(current=True).star
+        except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
+            return ''
+
+    @property
     def index_args(self):
-        return (
-            (self.full_name, {
-                'type': AutoCompleteType.OFFICER_NAME,
-                'url': self.v1_url
-                }, {
-                'content_type': ['officer_name']
-            },),)
+        return [
+            (
+                self.full_name,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.full_name,
+                    'result_extra_information':
+                        self.current_badge and 'Badge {badge}'.format(badge=self.current_badge)
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER
+                }
+            ),
+            (
+                self.current_badge,
+                {
+                    'url': self.v1_url,
+                    'result_text': self.full_name,
+                    'result_extra_information':
+                        self.current_badge and 'Badge {badge}'.format(badge=self.current_badge)
+                },
+                {
+                    'content_type': AutoCompleteType.OFFICER
+                }
+            )
+        ]
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return '{url}/{slug}/{pk}'.format(url=CPDB_V1_OFFICER_PATH, slug=slugify(self.full_name), pk=self.pk)
 
 
 class OfficerBadgeNumber(models.Model):
@@ -84,7 +117,7 @@ class OfficerBadgeNumber(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class OfficerHistory(models.Model):
@@ -102,17 +135,25 @@ class Area(models.Model):
 
     @property
     def index_args(self):
-        return (
-            (self.name, {
-                'type': AutoCompleteType.AREA,
-                'url': self.v1_url
-            }, {
-                'content_type': [self.area_type]
-            },),)
+        if self.area_type == 'neighborhoods':
+            return [
+                (
+                    self.name,
+                    {
+                        'url': self.v1_url,
+                        'result_text': self.name,
+                    },
+                    {
+                        'content_type': AutoCompleteType.NEIGHBORHOODS
+                    }
+                )
+            ]
+
+        return []
 
     @property
     def v1_url(self):
-        return 'not implemented'
+        return 'not implemented'  # pragma: no cover
 
 
 class LineArea(models.Model):
@@ -195,4 +236,4 @@ class OfficerAlias(models.Model):
     new_officer = models.ForeignKey(Officer)
 
     class Meta:
-        unique_together = (('old_officer_id', 'new_officer'))
+        unique_together = ('old_officer_id', 'new_officer')
