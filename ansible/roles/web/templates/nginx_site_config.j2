@@ -13,6 +13,12 @@ server {
 }
 
 server {
+    listen      443;
+    server_name cpdp.co;
+    return 301 https://cpdb.co$request_uri;
+}
+
+server {
     listen              443;
     server_name         {{ nginx_server_name }};
 	ssl on;
