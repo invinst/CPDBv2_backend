@@ -6,8 +6,7 @@ from freezegun import freeze_time
 
 from cms.factories import LinkEntityFactory
 from cms.fields import (
-    LinkField, DateField, PlainTextField, MultilineTextField, RandomizerField,
-    StringField, RichTextField)
+    LinkField, DateField, RichTextField, RandomizerField, StringField)
 from cms.randomizers import RANDOMIZER_STRATEGIES
 
 
@@ -145,76 +144,13 @@ class DateFieldTestCase(SimpleTestCase):
             })
 
 
-class PlainTextFieldTestCase(SimpleTestCase):
-    def setUp(self):
-        self.plain_text_field = PlainTextField(fake_value='About')
-        self.plain_text_field.field_name = 'about_header'
-
-    def test_to_representation(self):
-        self.assertDictEqual(
-            self.plain_text_field.to_representation({
-                'about_header_value': {
-                    'a': 'b'
-                }
-            }),
-            {
-                'name': 'about_header',
-                'type': 'plain_text',
-                'value': {
-                    'a': 'b'
-                }
-            })
-
-    def test_fake_data(self):
-        with patch('cms.fields.generate_draft_block_key', return_value='1'):
-            self.assertDictEqual(
-                self.plain_text_field.fake_data(),
-                {
-                    'name': 'about_header',
-                    'type': 'plain_text',
-                    'value': {
-                        'blocks': [{
-                            'data': {},
-                            'depth': 0,
-                            'entityRanges': [],
-                            'inlineStyleRanges': [],
-                            'key': '1',
-                            'text': 'About',
-                            'type': 'unstyled'
-                        }],
-                        'entityMap': {}
-                    }
-                })
-
-    def test_to_internal_value(self):
-        self.assertDictEqual(
-            self.plain_text_field.to_internal_value({
-                'blocks': 'c',
-                'entityMap': 'd'
-            }),
-            {
-                'about_header_type': 'plain_text',
-                'about_header_value': {
-                    'blocks': 'c',
-                    'entityMap': 'd'
-                }
-            })
-
-    def test_raise_validation_error(self):
-        with self.assertRaises(serializers.ValidationError) as context_manager:
-            self.plain_text_field.to_internal_value('abc')
-
-        self.assertEqual(context_manager.exception.detail, {
-            'about_header': 'Value must be in raw content state format'
-        })
-
-
-class MultilineTextFieldTestCase(SimpleTestCase):
-    _type = 'multiline_text'
+class RichTestFieldTestCase(SimpleTestCase):
+    _type = 'rich_text'
 
     def setUp(self):
-        self.field = MultilineTextField(fake_value=['abc', 'xyz'])
+        self.field = RichTextField(fake_value=['abc', 'xyz'])
         self.field.field_name = 'about_content'
+        self.maxDiff = None
 
     def test_to_representation(self):
         self.assertDictEqual(
@@ -281,15 +217,6 @@ class MultilineTextFieldTestCase(SimpleTestCase):
         self.assertEqual(context_manager.exception.detail, {
             'about_content': 'Value must be in raw content state format'
         })
-
-
-class RichTestFieldTestCase(MultilineTextFieldTestCase):
-    _type = 'rich_text'
-
-    def setUp(self):
-        self.field = RichTextField(fake_value=['abc', 'xyz'])
-        self.field.field_name = 'about_content'
-        self.maxDiff = None
 
     def test_fake_data_with_value_object(self):
         value = {
