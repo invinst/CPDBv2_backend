@@ -4,7 +4,7 @@ import sys
 from rest_framework import serializers
 
 from cms.fields import (
-    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField,
+    RandomizerField, DateField, LinkField,
     StringField, RichTextField
 )
 from cms.models import ReportPage, SlugPage, FAQPage
@@ -39,7 +39,10 @@ class BaseCMSPageSerializer(serializers.Serializer):
                     if obj['name'] == field_name][0]
             except IndexError:
                 continue
-            result.update(field.to_internal_value(field_data))
+            try:
+                result.update(field.to_internal_value(field_data))
+            except NotImplementedError:
+                continue
         return {
             'fields': result
         }
@@ -73,8 +76,8 @@ class IdPageSerializer(BaseCMSPageSerializer):
 
 
 class ReportPageSerializer(IdPageSerializer):
-    title = PlainTextField()
-    excerpt = MultilineTextField()
+    title = RichTextField()
+    excerpt = RichTextField()
     publication = StringField()
     publish_date = DateField()
     author = StringField()
@@ -85,16 +88,16 @@ class ReportPageSerializer(IdPageSerializer):
 
 
 class FAQPageSerializer(IdPageSerializer):
-    question = PlainTextField()
-    answer = MultilineTextField()
+    question = RichTextField()
+    answer = RichTextField()
 
     class Meta:
         model = FAQPage
 
 
 class CreateFAQPageSerializer(IdPageSerializer):
-    question = PlainTextField()
-    answer = MultilineTextField()
+    question = RichTextField()
+    answer = RichTextField()
 
     class Meta:
         model = FAQPage
@@ -106,21 +109,21 @@ class CreateFAQPageSerializer(IdPageSerializer):
 
 
 class LandingPageSerializer(SlugPageSerializer):
-    reporting_header = PlainTextField(fake_value='Recent Reports')
+    reporting_header = RichTextField(fake_value=['Recent Reports'])
     reporting_randomizer = RandomizerField()
     reports = serializers.SerializerMethodField()
     faqs = serializers.SerializerMethodField()
-    faq_header = PlainTextField(fake_value='FAQ')
+    faq_header = RichTextField(fake_value=['FAQ'])
     faq_randomizer = RandomizerField()
     vftg_date = DateField()
     vftg_link = LinkField()
-    vftg_content = PlainTextField(fake_value='Real Independence for Police Oversight Agencies')
-    collaborate_header = PlainTextField(fake_value='Collaborate')
-    collaborate_content = MultilineTextField(fake_value=[
+    vftg_content = RichTextField(fake_value=['Real Independence for Police Oversight Agencies'])
+    collaborate_header = RichTextField(fake_value=['Collaborate'])
+    collaborate_content = RichTextField(fake_value=[
         'We are collecting and publishing information that sheds light on police misconduct.',
         'If you have documents or datasets you would like to publish, please email us, or learn more.'])
-    about_header = PlainTextField(fake_value='About')
-    about_content = MultilineTextField(fake_value=[
+    about_header = RichTextField(fake_value=['About'])
+    about_content = RichTextField(fake_value=[
         'The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago.',
         'The information and stories we have collected here are intended as a resource for public oversight.'
         ' Our aim is to create a new model of accountability between officers and citizens.'])

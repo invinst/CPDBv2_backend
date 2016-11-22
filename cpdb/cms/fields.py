@@ -94,52 +94,6 @@ class DraftEditorField(BaseField):
             raise serializers.ValidationError({self.field_name: 'Value must be in raw content state format'})
 
 
-class PlainTextField(DraftEditorField):
-    _type = 'plain_text'
-
-    def fake_value(self, value=None):
-        if value is not None:
-            return value
-        if self._fake_value is None:
-            return Faker().sentence()
-        return self._fake_value
-
-    def fake_data(self, value=None):
-        return {
-            'name': self.field_name,
-            'type': self._type,
-            'value': {
-                'blocks': [
-                    self.fake_block(self.fake_value(value))
-                ],
-                'entityMap': {}
-            }
-        }
-
-
-class MultilineTextField(DraftEditorField):
-    _type = 'multiline_text'
-
-    def fake_value(self, value=None):
-        if value is not None:
-            return value
-        if self._fake_value is None:
-            return Faker().paragraphs(nb=2)
-        return self._fake_value
-
-    def fake_data(self, value=None):
-        return {
-            'name': self.field_name,
-            'type': self._type,
-            'value': {
-                'blocks': [
-                    self.fake_block(val) for val in self.fake_value(value)
-                ],
-                'entityMap': {}
-            }
-        }
-
-
 class RichTextField(DraftEditorField):
     _type = 'rich_text'
 

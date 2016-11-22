@@ -30,7 +30,7 @@ class CMSPageViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'fields': [
             {
                 'name': 'collaborate_header',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': 'Collaborate With Us.'
             }
         ]}, format='json')
@@ -80,7 +80,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['reporting_header'],
             {
                 'name': 'reporting_header',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -120,7 +120,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['faq_header'],
             {
                 'name': 'faq_header',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -174,7 +174,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['vftg_content'],
             {
                 'name': 'vftg_content',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -194,7 +194,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['collaborate_header'],
             {
                 'name': 'collaborate_header',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -214,7 +214,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['collaborate_content'],
             {
                 'name': 'collaborate_content',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -246,7 +246,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['about_header'],
             {
                 'name': 'about_header',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -266,7 +266,7 @@ class CMSPageViewSetTestCase(APITestCase):
             response_data['about_content'],
             {
                 'name': 'about_content',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': [
                         {
@@ -342,7 +342,7 @@ class ReportPageViewSetTestCase(APITestCase):
         })
         self.assertDictEqual(fields['excerpt'], {
             'name': 'excerpt',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': {
                 'blocks': [
                     {
@@ -369,7 +369,7 @@ class ReportPageViewSetTestCase(APITestCase):
         })
         self.assertDictEqual(fields['title'], {
             'name': 'title',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': {
                 'blocks': [
                     {
@@ -414,7 +414,7 @@ class ReportPageViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'fields': [
             {
                 'name': 'title',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': 'new title'
             }
         ]}, format='json')
@@ -462,11 +462,11 @@ class ReportPageViewSetTestCase(APITestCase):
         response = self.client.post(url, {
             'fields': [{
                 'name': 'title',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': 'a'
             }, {
                 'name': 'excerpt',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'c',
                     'entityMap': 'd'
@@ -502,14 +502,14 @@ class ReportPageViewSetTestCase(APITestCase):
         response = self.client.post(url, {
             'fields': [{
                 'name': 'title',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'a',
                     'entityMap': 'b'
                 }
             }, {
                 'name': 'excerpt',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'c',
                     'entityMap': 'd'
@@ -535,12 +535,12 @@ class ReportPageViewSetTestCase(APITestCase):
                 'blocks': 'a',
                 'entityMap': 'b'
             },
-            'title_type': 'plain_text',
+            'title_type': 'rich_text',
             'excerpt_value': {
                 'blocks': 'c',
                 'entityMap': 'd'
             },
-            'excerpt_type': 'multiline_text',
+            'excerpt_type': 'rich_text',
             'publication_value': 'ccc',
             'publication_type': 'string',
             'publish_date_value': '1900-01-01',
@@ -576,7 +576,7 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertEqual(actual_data['results'][0]['id'], faq.id)
         self.assertDictEqual(fields['answer'], {
             'name': 'answer',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': {
                 'blocks': [
                     {
@@ -603,7 +603,7 @@ class FAQPageViewSetTestCase(APITestCase):
         })
         self.assertDictEqual(fields['question'], {
             'name': 'question',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': {
                 'blocks': [
                     {
@@ -630,7 +630,7 @@ class FAQPageViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'fields': [
             {
                 'name': 'question',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': 'abc'
             }
         ]}, format='json')
@@ -651,7 +651,7 @@ class FAQPageViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'fields': [
             {
                 'name': 'question',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'a',
                     'entityMap': 'b'
@@ -682,7 +682,7 @@ class FAQPageViewSetTestCase(APITestCase):
         response = self.client.post(url, {
             'fields': [{
                 'name': 'question',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'a',
                     'entityMap': 'b'
@@ -696,7 +696,7 @@ class FAQPageViewSetTestCase(APITestCase):
                 'blocks': 'a',
                 'entityMap': 'b'
             },
-            'question_type': 'plain_text'
+            'question_type': 'rich_text'
         })
 
     def test_create_with_answer(self):
@@ -704,7 +704,7 @@ class FAQPageViewSetTestCase(APITestCase):
         response = self.client.post(url, {
             'fields': [{
                 'name': 'answer',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'a',
                     'entityMap': 'b'
@@ -723,14 +723,14 @@ class FAQPageViewSetTestCase(APITestCase):
         response = self.client.post(url, {
             'fields': [{
                 'name': 'question',
-                'type': 'plain_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'a',
                     'entityMap': 'b'
                 }
             }, {
                 'name': 'answer',
-                'type': 'multiline_text',
+                'type': 'rich_text',
                 'value': {
                     'blocks': 'c',
                     'entityMap': 'd'
