@@ -308,6 +308,95 @@ class ReportPageViewSetTestCase(APITestCase):
             serializer.save()
         self.maxDiff = None
 
+    def test_retrieve_report_page(self):
+        [report] = ReportPage.objects.all()
+        url = reverse('api-v2:report-detail', kwargs={'pk': report.id})
+
+        response = self.client.get(url)
+        actual_data = dict(response.data)
+        fields = {
+            field['name']: field for field in actual_data['fields']
+        }
+        self.assertEqual(actual_data['id'], report.id)
+        self.assertDictEqual(fields['author'], {
+            'name': 'author',
+            'type': 'string',
+            'value': 'e'
+        })
+        self.assertDictEqual(fields['publication'], {
+            'name': 'publication',
+            'type': 'string',
+            'value': 'd'
+        })
+        self.assertDictEqual(fields['publish_date'], {
+            'name': 'publish_date',
+            'type': 'date',
+            'value': '2016-10-25'
+        })
+        self.assertDictEqual(fields['excerpt'], {
+            'name': 'excerpt',
+            'type': 'rich_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'b',
+                        'type': 'unstyled'
+                    },
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'c',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+        self.assertDictEqual(fields['title'], {
+            'name': 'title',
+            'type': 'rich_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'a',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+        self.assertDictEqual(fields['article_link'], {
+            'name': 'article_link',
+            'type': 'rich_text',
+            'value': {
+                'blocks': [
+                    {
+                        'data': {},
+                        'depth': 0,
+                        'entityRanges': [],
+                        'inlineStyleRanges': [],
+                        'key': 'abc12',
+                        'text': 'f',
+                        'type': 'unstyled'
+                    }
+                ],
+                'entityMap': {}
+            }
+        })
+
     def test_list_report_page(self):
         url = reverse('api-v2:report-list')
 

@@ -37,6 +37,12 @@ class CMSPageViewSet(viewsets.ViewSet):
 
 
 class BaseIdPageViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk=None):
+        queryset = ReportPage.objects.all()
+        report_page = get_object_or_404(queryset, pk=pk)
+        serializer = ReportPageSerializer(report_page)
+        return Response(serializer.data)
+
     def list(self, request):
         paginator = self.pagination_class()
         paginated_queryset = paginator.paginate_queryset(self.queryset, request, view=self)
