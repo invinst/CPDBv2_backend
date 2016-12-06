@@ -38,9 +38,8 @@ class CMSPageViewSet(viewsets.ViewSet):
 
 class BaseIdPageViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
-        queryset = ReportPage.objects.all()
-        report_page = get_object_or_404(queryset, pk=pk)
-        serializer = ReportPageSerializer(report_page)
+        cms_page = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.serializer_class(cms_page)
         return Response(serializer.data)
 
     def list(self, request):
