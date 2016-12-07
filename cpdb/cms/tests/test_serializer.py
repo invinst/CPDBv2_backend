@@ -83,6 +83,23 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
         self.assertTrue(serializer.is_valid())
         serializer.save()  # does not raise error therefore unimplemented to_internal_value cause no problem
 
+    def test_to_full_representation(self):
+        class CMSPageSerializer(BaseCMSPageSerializer):
+            a = StringField()
+            b = StringField(fake_value='c')
+
+            class Meta:
+                model = self.page_model
+
+        page = Mock()
+        page.fields = {
+            'a_value': 'b'
+        }
+
+        serializer_data = CMSPageSerializer().to_full_representation(page)
+        b_field = serializer_data['fields'][1]
+        self.assertEqual(b_field['value'], 'c')
+
 
 class SlugPageSerializerTestCase(SimpleTestCase):
     def setUp(self):
