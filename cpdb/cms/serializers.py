@@ -124,6 +124,10 @@ class LandingPageSerializer(SlugPageSerializer):
     faqs = serializers.SerializerMethodField()
     faq_header = RichTextField(fake_value=['FAQ'])
     faq_randomizer = RandomizerField()
+    hero_title = RichTextField(fake_value=[
+        'The Citizens Police Data Project collects and publishes information about police accountability in Chicago.'])
+    hero_complaint_text = RichTextField(fake_value=['Explore Complaints against police officers'])
+    hero_use_of_force_text = RichTextField(fake_value=['View Use of Force incidents by police officers'])
     vftg_header = RichTextField(fake_value=['CPDP WEEKLY'])
     vftg_date = DateField()
     vftg_link = LinkField()
