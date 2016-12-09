@@ -2,27 +2,33 @@ from suggestion.doc_types import AutoComplete
 from suggestion.autocomplete_types import AutoCompleteType
 
 
-LIMIT_BY_TYPE = 10
-CONTEXT_TYPES = [AutoCompleteType.OFFICER, AutoCompleteType.OFFICER_UNIT, AutoCompleteType.NEIGHBORHOODS]
+CONTENT_TYPES = [AutoCompleteType.OFFICER, AutoCompleteType.OFFICER_UNIT, AutoCompleteType.NEIGHBORHOODS]
 
 
 class SuggestionService(object):
-    def suggest(self, term, context_types=None):
-        search = AutoComplete.search()
-        context_types = context_types or CONTEXT_TYPES
+    def _build_completion(self, content_type, limit=None):
+        completion = {
+            'field': 'suggest',
+            'context': {
+                'content_type': content_type
+            }
+        }
 
-        for context in context_types:
-            search = search.suggest(context, term, completion={
-                'field': 'suggest',
-                'size': LIMIT_BY_TYPE,
-                'context': {
-                    'content_type': context
-                }
-            })
+        if limit:
+            completion['size'] = limit
+
+        return completion
+
+    def suggest(self, term, suggest_content_type=None, limit=None):
+        search = AutoComplete.search()
+        content_types = suggest_content_type and [suggest_content_type] or CONTENT_TYPES
+
+        for content_type in content_types:
+            search = search.suggest(content_type, term, completion=self._build_completion(content_type, limit))
 
         suggestion = search.execute_suggest()
         return {
             key: val[0]['options']
             for key, val in suggestion.to_dict().items()
-            if key in CONTEXT_TYPES
+            if key in CONTENT_TYPES
         }
