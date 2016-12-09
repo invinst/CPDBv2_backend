@@ -14,7 +14,7 @@ class SuggestionViewSet(viewsets.ViewSet):
 
     @property
     def _limit(self):
-        return self.request.query_params.get('limit', None)
+        return self.request.query_params.get('limit', 10000)
 
     @property
     def _content_type(self):
