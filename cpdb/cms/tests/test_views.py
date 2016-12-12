@@ -19,6 +19,15 @@ class CMSPageViewSetTestCase(APITestCase):
             serializer.is_valid()
             serializer.save()
 
+            for _ in range(10):
+                report_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
+                report_serializer.is_valid()
+                report_serializer.save()
+
+                faq_serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
+                faq_serializer.is_valid()
+                faq_serializer.save()
+
         self.maxDiff = None
 
     def test_update_landing_page_bad_request(self):
@@ -76,6 +85,8 @@ class CMSPageViewSetTestCase(APITestCase):
         response_data = {
             field['name']: field for field in response.data['fields']
         }
+        self.assertEqual(len(response_data['reports']['value']), 8)
+        self.assertEqual(len(response_data['faqs']['value']), 5)
         self.assertEqual(
             response_data['reporting_header'],
             {

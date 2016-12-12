@@ -152,7 +152,7 @@ class LandingPageSerializer(SlugPageSerializer):
         reports = randomize(
             ReportPage.objects,
             randomizer_value['poolSize'],
-            3,
+            8,
             randomizer_value['selectedStrategyId'])
 
         return {
@@ -167,7 +167,7 @@ class LandingPageSerializer(SlugPageSerializer):
         faqs = randomize(
             FAQPage.objects.filter(fields__has_key='answer_value'),
             randomizer_value['poolSize'],
-            3,
+            5,
             randomizer_value['selectedStrategyId'])
 
         return {
