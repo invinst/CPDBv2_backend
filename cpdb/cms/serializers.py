@@ -21,6 +21,15 @@ class BaseCMSPageSerializer(serializers.Serializer):
                 pass
         return {'fields': fields}
 
+    def to_full_representation(self, obj):
+        fields = []
+        for field in self.fields.values():
+            try:
+                fields.append(field.to_representation(obj.fields))
+            except KeyError:
+                fields.append(field.fake_data())
+        return {'fields': fields}
+
     def fake_data(self, **kwargs):
         return {
             'fields': [
@@ -115,6 +124,7 @@ class LandingPageSerializer(SlugPageSerializer):
     faqs = serializers.SerializerMethodField()
     faq_header = RichTextField(fake_value=['FAQ'])
     faq_randomizer = RandomizerField()
+    vftg_header = RichTextField(fake_value=['CPDP WEEKLY'])
     vftg_date = DateField()
     vftg_link = LinkField()
     vftg_content = RichTextField(fake_value=['Real Independence for Police Oversight Agencies'])

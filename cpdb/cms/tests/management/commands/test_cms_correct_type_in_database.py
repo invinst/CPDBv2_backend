@@ -12,6 +12,7 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         faq_page_serializer.save()
         faq = FAQPage.objects.first()
         faq.fields['question_type'] = 'plain_text'
+        faq.fields.pop('answer_type')
         faq.save()
 
         landing_page_serializer = LandingPageSerializer(data=LandingPageSerializer().fake_data())
@@ -19,6 +20,8 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         landing_page_serializer.save()
         landing_page = SlugPage.objects.first()
         landing_page.fields['faq_header_type'] = 'plain_text'
+        landing_page.fields.pop('vftg_content_type')
+        landing_page.fields.pop('vftg_content_value')
         landing_page.save()
 
         report_page_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
@@ -26,6 +29,7 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         report_page_serializer.save()
         report = ReportPage.objects.first()
         report.fields['title_type'] = 'plain_text'
+        report.fields.pop('excerpt_type')
         report.save()
 
         call_command('cms_correct_type_in_database')
@@ -33,5 +37,9 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         faq.refresh_from_db()
         landing_page.refresh_from_db()
         self.assertEqual(report.fields['title_type'], 'rich_text')
+        self.assertTrue('excerpt_type' in report.fields)
         self.assertEqual(landing_page.fields['faq_header_type'], 'rich_text')
+        self.assertTrue('vftg_content_type' in landing_page.fields)
+        self.assertTrue('vftg_content_value' in landing_page.fields)
         self.assertEqual(faq.fields['question_type'], 'rich_text')
+        self.assertTrue('answer_type' in faq.fields)
