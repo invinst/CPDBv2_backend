@@ -19,6 +19,15 @@ class CMSPageViewSetTestCase(APITestCase):
             serializer.is_valid()
             serializer.save()
 
+            for _ in range(10):
+                report_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
+                report_serializer.is_valid()
+                report_serializer.save()
+
+                faq_serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
+                faq_serializer.is_valid()
+                faq_serializer.save()
+
         self.maxDiff = None
 
     def test_update_landing_page_bad_request(self):
@@ -55,7 +64,7 @@ class CMSPageViewSetTestCase(APITestCase):
             }
         ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 14)
+        self.assertEqual(len(response.data['fields']), 17)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -72,10 +81,12 @@ class CMSPageViewSetTestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 14)
+        self.assertEqual(len(response.data['fields']), 17)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
+        self.assertEqual(len(response_data['reports']['value']), 8)
+        self.assertEqual(len(response_data['faqs']['value']), 5)
         self.assertEqual(
             response_data['reporting_header'],
             {
@@ -204,6 +215,68 @@ class CMSPageViewSetTestCase(APITestCase):
                             'inlineStyleRanges': [],
                             'key': 'abc12',
                             'text': 'Real Independence for Police Oversight Agencies',
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_title'],
+            {
+                'name': 'hero_title',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': (
+                                'The Citizens Police Data Project collects and publishes '
+                                'information about police accountability in Chicago.'),
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_complaint_text'],
+            {
+                'name': 'hero_complaint_text',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': 'Explore Complaints against police officers',
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_use_of_force_text'],
+            {
+                'name': 'hero_use_of_force_text',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': 'View Use of Force incidents by police officers',
                             'type': 'unstyled'
                         }
                     ],

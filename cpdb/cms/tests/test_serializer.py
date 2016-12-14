@@ -163,7 +163,10 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'collaborate_header_value': 'f',
             'collaborate_content_value': 'g',
             'about_header_value': 'h',
-            'about_content_value': 'i'
+            'about_content_value': 'i',
+            'hero_title_value': 'j',
+            'hero_complaint_text_value': 'k',
+            'hero_use_of_force_text_value': 'l'
         }
         with patch('cms.serializers.randomize', return_value=[]):
             serializer = LandingPageSerializer(landing_page)
@@ -192,6 +195,24 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'name': 'faq_header',
             'type': 'rich_text',
             'value': 'b'
+        })
+
+        self.assertDictEqual(fields['hero_title'], {
+            'name': 'hero_title',
+            'type': 'rich_text',
+            'value': 'j'
+        })
+
+        self.assertDictEqual(fields['hero_complaint_text'], {
+            'name': 'hero_complaint_text',
+            'type': 'rich_text',
+            'value': 'k'
+        })
+
+        self.assertDictEqual(fields['hero_use_of_force_text'], {
+            'name': 'hero_use_of_force_text',
+            'type': 'rich_text',
+            'value': 'l'
         })
 
         self.assertDictEqual(fields['faq_randomizer'], {
