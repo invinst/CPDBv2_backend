@@ -18,10 +18,14 @@ class ReportPageViewSetTestCase(APITestCase):
                 publish_date='2016-10-25', author='e', article_link='f'))
             serializer.is_valid()
             serializer.save()
+
+            serializer2 = ReportPageSerializer(data=ReportPageSerializer().fake_data())
+            serializer2.is_valid()
+            serializer2.save()
         self.maxDiff = None
 
     def test_retrieve_report_page(self):
-        [report] = ReportPage.objects.all()
+        report = ReportPage.objects.first()
         url = reverse('api-v2:report-detail', kwargs={'pk': report.id})
 
         response = self.client.get(url)
@@ -114,17 +118,19 @@ class ReportPageViewSetTestCase(APITestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        [report] = ReportPage.objects.all()
+        [report1, report2] = ReportPage.objects.all().order_by('created')
         actual_data = dict(response.data)
+
+        self.assertEqual(actual_data['results'][0]['id'], report2.id)
+        self.assertEqual(actual_data['results'][1]['id'], report1.id)
         fields = {
-            field['name']: field for field in actual_data['results'][0]['fields']
+            field['name']: field for field in actual_data['results'][1]['fields']
         }
 
         self.assertEqual(len(fields.keys()), 6)
-        self.assertEqual(actual_data['count'], 1)
+        self.assertEqual(actual_data['count'], 2)
         self.assertEqual(actual_data['next'], None)
         self.assertEqual(actual_data['previous'], None)
-        self.assertEqual(actual_data['results'][0]['id'], report.id)
 
         self.assertDictEqual(fields['author'], {
             'name': 'author',

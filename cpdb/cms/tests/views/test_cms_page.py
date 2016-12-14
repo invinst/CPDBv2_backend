@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
-from cms.serializers import LandingPageSerializer
+from cms.serializers import LandingPageSerializer, ReportPageSerializer, FAQPageSerializer
 from cms.models import SlugPage
 
 
@@ -18,6 +18,15 @@ class CMSPageViewSetTestCase(APITestCase):
             serializer = LandingPageSerializer(data=LandingPageSerializer().fake_data(vftg_link='https://google.com'))
             serializer.is_valid()
             serializer.save()
+
+            for _ in range(10):
+                report_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
+                report_serializer.is_valid()
+                report_serializer.save()
+
+                faq_serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
+                faq_serializer.is_valid()
+                faq_serializer.save()
 
         self.maxDiff = None
 
@@ -55,7 +64,7 @@ class CMSPageViewSetTestCase(APITestCase):
             }
         ]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 13)
+        self.assertEqual(len(response.data['fields']), 17)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -72,10 +81,12 @@ class CMSPageViewSetTestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 13)
+        self.assertEqual(len(response.data['fields']), 17)
         response_data = {
             field['name']: field for field in response.data['fields']
         }
+        self.assertEqual(len(response_data['reports']['value']), 8)
+        self.assertEqual(len(response_data['faqs']['value']), 5)
         self.assertEqual(
             response_data['reporting_header'],
             {
@@ -157,6 +168,26 @@ class CMSPageViewSetTestCase(APITestCase):
                 }
             })
         self.assertEqual(
+            response_data['vftg_header'],
+            {
+                'name': 'vftg_header',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': 'CPDP WEEKLY',
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
             response_data['vftg_date'],
             {
                 'name': 'vftg_date',
@@ -184,6 +215,68 @@ class CMSPageViewSetTestCase(APITestCase):
                             'inlineStyleRanges': [],
                             'key': 'abc12',
                             'text': 'Real Independence for Police Oversight Agencies',
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_title'],
+            {
+                'name': 'hero_title',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': (
+                                'The Citizens Police Data Project collects and publishes '
+                                'information about police accountability in Chicago.'),
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_complaint_text'],
+            {
+                'name': 'hero_complaint_text',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': 'Explore Complaints against police officers',
+                            'type': 'unstyled'
+                        }
+                    ],
+                    'entityMap': {}
+                }
+            })
+        self.assertEqual(
+            response_data['hero_use_of_force_text'],
+            {
+                'name': 'hero_use_of_force_text',
+                'type': 'rich_text',
+                'value': {
+                    'blocks': [
+                        {
+                            'data': {},
+                            'depth': 0,
+                            'entityRanges': [],
+                            'inlineStyleRanges': [],
+                            'key': 'abc12',
+                            'text': 'View Use of Force incidents by police officers',
                             'type': 'unstyled'
                         }
                     ],

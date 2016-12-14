@@ -61,7 +61,7 @@ class BaseIdPageViewSet(viewsets.ViewSet):
 class ReportPageViewSet(BaseIdPageViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    queryset = ReportPage.objects.all()
+    queryset = ReportPage.objects.order_by('-created')
     serializer_class = ReportPageSerializer
     pagination_class = LimitOffsetPagination
 
