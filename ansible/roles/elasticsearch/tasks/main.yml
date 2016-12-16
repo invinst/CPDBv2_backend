@@ -65,7 +65,7 @@
 - name: elastic-install | Install Elasticsearch deb
   shell: dpkg -i -E --force-confnew /tmp/elasticsearch-{{ elasticsearch_version }}.deb
   when: not installed_version.stat.exists
-  notify: Restart Elasticsearch
+  notify: restart Elasticsearch
 
 - name: Configure Elasticsearch.
   template:
