@@ -41,3 +41,5 @@ LOGGING = {
         },
     },
 }
+
+V1_URL = 'https://staging.cpdb.co'

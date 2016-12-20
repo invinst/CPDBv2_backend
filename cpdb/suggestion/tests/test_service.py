@@ -27,7 +27,7 @@ class SuggestionServiceTestCase(TestCase):
                 'text': 'Bb Aa',
                 'score': 1.0,
                 'payload': {
-                    'url': 'https://cpdb.co/officer/bb-aa/%s' % officer_1.pk,
+                    'url': 'https://beta.cpdb.co/officer/bb-aa/%s' % officer_1.pk,
                     'result_text': 'Bb Aa',
                     'result_extra_information': 'Badge 1111'
                 }
@@ -36,7 +36,7 @@ class SuggestionServiceTestCase(TestCase):
                 'text': 'Tt Bb',
                 'score': 1.0,
                 'payload': {
-                    'url': 'https://cpdb.co/officer/tt-bb/%s' % officer_2.pk,
+                    'url': 'https://beta.cpdb.co/officer/tt-bb/%s' % officer_2.pk,
                     'result_text': 'Tt Bb',
                     'result_extra_information': ''
                 }
@@ -53,7 +53,7 @@ class SuggestionServiceTestCase(TestCase):
             'text': 'Aa',
             'score': 1.0,
             'payload': {
-                'url': 'not implemented',
+                'url': 'https://beta.cpdb.co/url-mediator/session-builder?neighborhood=Aa',
                 'result_text': 'Aa'
             }
         })
@@ -67,7 +67,7 @@ class SuggestionServiceTestCase(TestCase):
             'text': 'Aa',
             'score': 1.0,
             'payload': {
-                'url': 'not implemented',
+                'url': 'https://beta.cpdb.co/url-mediator/session-builder?unit=Aa',
                 'result_text': 'Aa'
             }
         })

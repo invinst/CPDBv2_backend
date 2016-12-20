@@ -1,10 +1,11 @@
 from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
+from django.conf import settings
 from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, CPDB_V1_OFFICER_PATH)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
 from suggestion.autocomplete_types import AutoCompleteType
 
 
@@ -34,7 +35,8 @@ class PoliceUnit(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'  # pragma: no cover
+        return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(domain=settings.V1_URL,
+                                                                               unit_name=self.unit_name)
 
 
 class Officer(models.Model):
@@ -94,7 +96,7 @@ class Officer(models.Model):
 
     @property
     def v1_url(self):
-        return '{url}/{slug}/{pk}'.format(url=CPDB_V1_OFFICER_PATH, slug=slugify(self.full_name), pk=self.pk)
+        return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
 
 class OfficerBadgeNumber(models.Model):
@@ -153,7 +155,11 @@ class Area(models.Model):
 
     @property
     def v1_url(self):
-        return 'not implemented'  # pragma: no cover
+        if self.area_type == 'neighborhoods':
+            return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
+                                                                                      name=self.name)
+
+        return settings.V1_URL
 
 
 class LineArea(models.Model):
