@@ -4,7 +4,7 @@ import sys
 from rest_framework import serializers
 
 from cms.fields import (
-    PlainTextField, RandomizerField, DateField, LinkField, MultilineTextField,
+    RandomizerField, DateField, LinkField,
     StringField, RichTextField
 )
 from cms.models import ReportPage, SlugPage, FAQPage
@@ -19,6 +19,15 @@ class BaseCMSPageSerializer(serializers.Serializer):
                 fields.append(field.to_representation(obj.fields))
             except KeyError:
                 pass
+        return {'fields': fields}
+
+    def to_full_representation(self, obj):
+        fields = []
+        for field in self.fields.values():
+            try:
+                fields.append(field.to_representation(obj.fields))
+            except KeyError:
+                fields.append(field.fake_data())
         return {'fields': fields}
 
     def fake_data(self, **kwargs):
@@ -39,7 +48,10 @@ class BaseCMSPageSerializer(serializers.Serializer):
                     if obj['name'] == field_name][0]
             except IndexError:
                 continue
-            result.update(field.to_internal_value(field_data))
+            try:
+                result.update(field.to_internal_value(field_data))
+            except NotImplementedError:
+                continue
         return {
             'fields': result
         }
@@ -73,8 +85,8 @@ class IdPageSerializer(BaseCMSPageSerializer):
 
 
 class ReportPageSerializer(IdPageSerializer):
-    title = PlainTextField()
-    excerpt = MultilineTextField()
+    title = RichTextField()
+    excerpt = RichTextField()
     publication = StringField()
     publish_date = DateField()
     author = StringField()
@@ -85,16 +97,16 @@ class ReportPageSerializer(IdPageSerializer):
 
 
 class FAQPageSerializer(IdPageSerializer):
-    question = PlainTextField()
-    answer = MultilineTextField()
+    question = RichTextField()
+    answer = RichTextField()
 
     class Meta:
         model = FAQPage
 
 
 class CreateFAQPageSerializer(IdPageSerializer):
-    question = PlainTextField()
-    answer = MultilineTextField()
+    question = RichTextField()
+    answer = RichTextField()
 
     class Meta:
         model = FAQPage
@@ -106,21 +118,26 @@ class CreateFAQPageSerializer(IdPageSerializer):
 
 
 class LandingPageSerializer(SlugPageSerializer):
-    reporting_header = PlainTextField(fake_value='Recent Reports')
+    reporting_header = RichTextField(fake_value=['Recent Reports'])
     reporting_randomizer = RandomizerField()
     reports = serializers.SerializerMethodField()
     faqs = serializers.SerializerMethodField()
-    faq_header = PlainTextField(fake_value='FAQ')
+    faq_header = RichTextField(fake_value=['FAQ'])
     faq_randomizer = RandomizerField()
+    hero_title = RichTextField(fake_value=[
+        'The Citizens Police Data Project collects and publishes information about police accountability in Chicago.'])
+    hero_complaint_text = RichTextField(fake_value=['Explore Complaints against police officers'])
+    hero_use_of_force_text = RichTextField(fake_value=['View Use of Force incidents by police officers'])
+    vftg_header = RichTextField(fake_value=['CPDP WEEKLY'])
     vftg_date = DateField()
     vftg_link = LinkField()
-    vftg_content = PlainTextField(fake_value='Real Independence for Police Oversight Agencies')
-    collaborate_header = PlainTextField(fake_value='Collaborate')
-    collaborate_content = MultilineTextField(fake_value=[
+    vftg_content = RichTextField(fake_value=['Real Independence for Police Oversight Agencies'])
+    collaborate_header = RichTextField(fake_value=['Collaborate'])
+    collaborate_content = RichTextField(fake_value=[
         'We are collecting and publishing information that sheds light on police misconduct.',
         'If you have documents or datasets you would like to publish, please email us, or learn more.'])
-    about_header = PlainTextField(fake_value='About')
-    about_content = MultilineTextField(fake_value=[
+    about_header = RichTextField(fake_value=['About'])
+    about_content = RichTextField(fake_value=[
         'The Citizens Police Data Project houses police disciplinary information obtained from the City of Chicago.',
         'The information and stories we have collected here are intended as a resource for public oversight.'
         ' Our aim is to create a new model of accountability between officers and citizens.'])
@@ -135,7 +152,7 @@ class LandingPageSerializer(SlugPageSerializer):
         reports = randomize(
             ReportPage.objects,
             randomizer_value['poolSize'],
-            3,
+            8,
             randomizer_value['selectedStrategyId'])
 
         return {
@@ -150,7 +167,7 @@ class LandingPageSerializer(SlugPageSerializer):
         faqs = randomize(
             FAQPage.objects.filter(fields__has_key='answer_value'),
             randomizer_value['poolSize'],
-            3,
+            5,
             randomizer_value['selectedStrategyId'])
 
         return {

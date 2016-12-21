@@ -7,7 +7,7 @@ import factory
 from faker import Faker
 from wagtail.wagtailcore.models import Page
 
-from data.models import Area, Investigator, LineArea, Officer
+from data.models import Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -72,3 +72,19 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     rank = factory.LazyFunction(lambda: fake.word())
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
+
+
+class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerBadgeNumber
+
+    officer = factory.SubFactory(OfficerFactory)
+    star = factory.LazyFunction(lambda: str(fake.number(5)))
+    current = factory.LazyFunction(lambda: fake.boolean())
+
+
+class PoliceUnitFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PoliceUnit
+
+    unit_name = factory.LazyFunction(lambda: fake.word())

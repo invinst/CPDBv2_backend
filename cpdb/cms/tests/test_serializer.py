@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from mock import Mock, patch
+from rest_framework import serializers
 
 from cms.serializers import (
     BaseCMSPageSerializer, LandingPageSerializer, ReportPageSerializer,
@@ -63,6 +64,41 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
             'type': 'string',
             'value': 'b'
         }]})
+
+    def test_unimplemented_to_internal_value(self):
+        class CMSPageSerializer(BaseCMSPageSerializer):
+            a = StringField()
+            b = serializers.SerializerMethodField()
+
+            class Meta:
+                model = self.page_model
+
+            def get_b(self, obj):
+                return []
+
+        serializer = CMSPageSerializer(data={'fields': [
+            {'name': 'a', 'type': 'string', 'value': 'c'},
+            {'name': 'b', 'type': 'string', 'value': 'd'}
+        ]})
+        self.assertTrue(serializer.is_valid())
+        serializer.save()  # does not raise error therefore unimplemented to_internal_value cause no problem
+
+    def test_to_full_representation(self):
+        class CMSPageSerializer(BaseCMSPageSerializer):
+            a = StringField()
+            b = StringField(fake_value='c')
+
+            class Meta:
+                model = self.page_model
+
+        page = Mock()
+        page.fields = {
+            'a_value': 'b'
+        }
+
+        serializer_data = CMSPageSerializer().to_full_representation(page)
+        b_field = serializer_data['fields'][1]
+        self.assertEqual(b_field['value'], 'c')
 
 
 class SlugPageSerializerTestCase(SimpleTestCase):
@@ -127,7 +163,10 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'collaborate_header_value': 'f',
             'collaborate_content_value': 'g',
             'about_header_value': 'h',
-            'about_content_value': 'i'
+            'about_content_value': 'i',
+            'hero_title_value': 'j',
+            'hero_complaint_text_value': 'k',
+            'hero_use_of_force_text_value': 'l'
         }
         with patch('cms.serializers.randomize', return_value=[]):
             serializer = LandingPageSerializer(landing_page)
@@ -138,7 +177,7 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['reporting_header'], {
             'name': 'reporting_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'a'
         })
 
@@ -154,8 +193,26 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['faq_header'], {
             'name': 'faq_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'b'
+        })
+
+        self.assertDictEqual(fields['hero_title'], {
+            'name': 'hero_title',
+            'type': 'rich_text',
+            'value': 'j'
+        })
+
+        self.assertDictEqual(fields['hero_complaint_text'], {
+            'name': 'hero_complaint_text',
+            'type': 'rich_text',
+            'value': 'k'
+        })
+
+        self.assertDictEqual(fields['hero_use_of_force_text'], {
+            'name': 'hero_use_of_force_text',
+            'type': 'rich_text',
+            'value': 'l'
         })
 
         self.assertDictEqual(fields['faq_randomizer'], {
@@ -182,31 +239,31 @@ class LandingPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['vftg_content'], {
             'name': 'vftg_content',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'e'
         })
 
         self.assertDictEqual(fields['collaborate_header'], {
             'name': 'collaborate_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'f'
         })
 
         self.assertDictEqual(fields['collaborate_content'], {
             'name': 'collaborate_content',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'g'
         })
 
         self.assertDictEqual(fields['about_header'], {
             'name': 'about_header',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'h'
         })
 
         self.assertDictEqual(fields['about_content'], {
             'name': 'about_content',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'i'
         })
 
@@ -278,13 +335,13 @@ class ReportPageSerializerTestCase(SimpleTestCase):
 
         self.assertDictEqual(fields['title'], {
             'name': 'title',
-            'type': 'plain_text',
+            'type': 'rich_text',
             'value': 'a'
         })
 
         self.assertDictEqual(fields['excerpt'], {
             'name': 'excerpt',
-            'type': 'multiline_text',
+            'type': 'rich_text',
             'value': 'b'
         })
 

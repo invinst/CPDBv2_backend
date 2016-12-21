@@ -29,6 +29,13 @@
     group={{ elasticsearch_group }}
     recurse=yes
 
+- name: elastic-install | Ensure data directories exists
+  file:
+    path="{{ elasticsearch_data_dir }}"
+    state=directory
+    owner={{ elasticsearch_user }}
+    group={{ elasticsearch_group }}
+    recurse=yes
 
 - name: elastic-install | Check if we have elastic with same version installed
   stat:
@@ -58,7 +65,7 @@
 - name: elastic-install | Install Elasticsearch deb
   shell: dpkg -i -E --force-confnew /tmp/elasticsearch-{{ elasticsearch_version }}.deb
   when: not installed_version.stat.exists
-  notify: Restart Elasticsearch
+  notify: restart Elasticsearch
 
 - name: Configure Elasticsearch.
   template:
