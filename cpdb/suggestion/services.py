@@ -2,7 +2,8 @@ from suggestion.doc_types import AutoComplete
 from suggestion.autocomplete_types import AutoCompleteType
 
 
-CONTENT_TYPES = [AutoCompleteType.OFFICER, AutoCompleteType.OFFICER_UNIT, AutoCompleteType.NEIGHBORHOOD]
+CONTENT_TYPES = [AutoCompleteType.OFFICER, AutoCompleteType.OFFICER_UNIT, AutoCompleteType.NEIGHBORHOOD,
+                 AutoCompleteType.COMMUNITY]
 
 
 class SuggestionService(object):

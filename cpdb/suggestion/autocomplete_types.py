@@ -2,3 +2,4 @@ class AutoCompleteType:
     OFFICER = 'OFFICER'
     OFFICER_UNIT = 'UNIT'
     NEIGHBORHOOD = 'NEIGHBORHOOD'
+    COMMUNITY = 'COMMUNITY'

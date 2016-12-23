@@ -151,6 +151,20 @@ class Area(models.Model):
                 )
             ]
 
+        if self.area_type == 'community':
+            return [
+                (
+                    self.name,
+                    {
+                        'url': self.v1_url,
+                        'result_text': self.name,
+                    },
+                    {
+                        'content_type': AutoCompleteType.COMMUNITY
+                    }
+                )
+            ]
+
         return []
 
     @property
@@ -158,6 +172,10 @@ class Area(models.Model):
         if self.area_type == 'neighborhoods':
             return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
                                                                                       name=self.name)
+
+        if self.area_type == 'community':
+            return '{domain}/url-mediator/session-builder?community={name}'.format(domain=settings.V1_URL,
+                                                                                   name=self.name)
 
         return settings.V1_URL
 

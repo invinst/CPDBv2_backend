@@ -72,6 +72,22 @@ class SuggestionServiceTestCase(TestCase):
             }
         })
 
+    def test_suggest_community_area(self):
+        AreaFactory(area_type='other_type', name='Aa')
+        AreaFactory(area_type='community', name='Aa')
+
+        self.reindex()
+
+        results = self.suggestion_service.suggest('Aa')
+        self.assertDictEqual(results[AutoCompleteType.COMMUNITY][0], {
+            'text': 'Aa',
+            'score': 1.0,
+            'payload': {
+                'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=Aa',
+                'result_text': 'Aa'
+            }
+        })
+
     def test_suggest_single_type(self):
         OfficerFactory(first_name='Lorem')
         AreaFactory(area_type='neighborhoods', name='Lorem')
