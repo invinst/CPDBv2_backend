@@ -5,4 +5,7 @@ from data.models import Area
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        Area.objects.filter(area_type='Community').update(area_type='community')
+        for area in Area.objects.filter(area_type='Community'):
+            area.area_type = 'community'
+            area.name = area.name.title()
+            area.save()
