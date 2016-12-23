@@ -146,7 +146,7 @@ class Area(models.Model):
                         'result_text': self.name,
                     },
                     {
-                        'content_type': AutoCompleteType.NEIGHBORHOODS
+                        'content_type': AutoCompleteType.NEIGHBORHOOD
                     }
                 )
             ]

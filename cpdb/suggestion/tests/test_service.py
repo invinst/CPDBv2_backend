@@ -29,7 +29,7 @@ class SuggestionServiceTestCase(TestCase):
                 'payload': {
                     'url': 'https://beta.cpdb.co/officer/bb-aa/%s' % officer_1.pk,
                     'result_text': 'Bb Aa',
-                    'result_extra_information': 'Badge 1111'
+                    'result_extra_information': 'Badge #1111'
                 }
             },
             {
@@ -49,7 +49,7 @@ class SuggestionServiceTestCase(TestCase):
         self.reindex()
 
         results = self.suggestion_service.suggest('Aa')
-        self.assertDictEqual(results[AutoCompleteType.NEIGHBORHOODS][0], {
+        self.assertDictEqual(results[AutoCompleteType.NEIGHBORHOOD][0], {
             'text': 'Aa',
             'score': 1.0,
             'payload': {
