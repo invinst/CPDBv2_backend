@@ -14,3 +14,4 @@ azure==2.0.0rc6
 django-taggit==0.21.2
 pytz==2016.6.1
 newrelic==2.68.0.50
+django-anymail==0.6.1
