@@ -29,7 +29,7 @@ class SuggestionServiceTestCase(TestCase):
                 'payload': {
                     'url': 'https://beta.cpdb.co/officer/bb-aa/%s' % officer_1.pk,
                     'result_text': 'Bb Aa',
-                    'result_extra_information': 'Badge #1111'
+                    'result_extra_information': 'Badge # 1111'
                 }
             },
             {
