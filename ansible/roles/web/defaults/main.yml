@@ -38,3 +38,5 @@ django_environment:
 
 # Newrelic variables:
 newrelic_app_name: "CPDB v2 production"
+
+force_rewrite_env_file: yes
