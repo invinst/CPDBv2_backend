@@ -86,7 +86,7 @@ class Officer(models.Model):
                     'url': self.v1_url,
                     'result_text': self.full_name,
                     'result_extra_information':
-                        self.current_badge and 'Badge {badge}'.format(badge=self.current_badge)
+                        self.current_badge and 'Badge # {badge}'.format(badge=self.current_badge)
                 },
                 {
                     'content_type': AutoCompleteType.OFFICER
