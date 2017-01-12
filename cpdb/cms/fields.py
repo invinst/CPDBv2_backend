@@ -7,17 +7,20 @@ from cms.utils import generate_draft_block_key
 from cms.randomizers import RANDOMIZER_STRATEGIES
 
 
-class BaseField(serializers.Field):
+class BaseCMSField(serializers.Field):
     def __init__(self, fake_value=None, *args, **kwargs):
-        super(BaseField, self).__init__(*args, **kwargs)
+        super(BaseCMSField, self).__init__(*args, **kwargs)
         self._fake_value = fake_value
 
     def to_representation(self, fields):
-        return {
-            'name': self.field_name,
-            'type': self._type,
-            'value': fields['%s_value' % self.field_name]
-        }
+        try:
+            return {
+                'name': self.field_name,
+                'type': self._type,
+                'value': fields['%s_value' % self.field_name]
+            }
+        except KeyError:
+            return None
 
     def to_internal_value(self, data):
         self.validate_value(data)
@@ -27,7 +30,7 @@ class BaseField(serializers.Field):
         }
 
 
-class StringField(BaseField):
+class StringField(BaseCMSField):
     _type = 'string'
 
     def fake_value(self, value=None):
@@ -77,7 +80,7 @@ class DateField(StringField):
             raise serializers.ValidationError({self.field_name: 'Value must be in valid date format: YYYY-MM-DD'})
 
 
-class DraftEditorField(BaseField):
+class DraftEditorField(BaseCMSField):
     def fake_block(self, value):
         return {
             'data': {},
@@ -141,19 +144,22 @@ class RichTextField(DraftEditorField):
         }
 
 
-class RandomizerField(serializers.Field):
+class RandomizerField(BaseCMSField):
     _type = 'randomizer'
 
     def to_representation(self, fields):
-        return {
-            'name': self.field_name,
-            'type': self._type,
-            'value': {
-                'poolSize': fields['%s_pool_size' % self.field_name],
-                'selectedStrategyId': fields['%s_selected_strategy_id' % self.field_name],
-                'strategies': RANDOMIZER_STRATEGIES
+        try:
+            return {
+                'name': self.field_name,
+                'type': self._type,
+                'value': {
+                    'poolSize': fields['%s_pool_size' % self.field_name],
+                    'selectedStrategyId': fields['%s_selected_strategy_id' % self.field_name],
+                    'strategies': RANDOMIZER_STRATEGIES
+                }
             }
-        }
+        except KeyError:
+            return None
 
     def fake_data(self, value=None):
         return {

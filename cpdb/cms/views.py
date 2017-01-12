@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.pagination import LimitOffsetPagination
@@ -36,20 +36,20 @@ class CMSPageViewSet(viewsets.ViewSet):
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BaseIdPageViewSet(viewsets.ViewSet):
+class BaseIdPageViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):
-        cms_page = get_object_or_404(self.queryset, pk=pk)
+        cms_page = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.serializer_class(cms_page)
         return Response(serializer.data)
 
     def list(self, request):
         paginator = self.pagination_class()
-        paginated_queryset = paginator.paginate_queryset(self.queryset, request, view=self)
+        paginated_queryset = paginator.paginate_queryset(self.get_queryset(), request, view=self)
         serializer = self.serializer_class(paginated_queryset, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     def partial_update(self, request, pk=None):
-        cms_page = get_object_or_404(self.queryset, pk=pk)
+        cms_page = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.serializer_class(cms_page, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -77,7 +77,7 @@ class ReportPageViewSet(BaseIdPageViewSet):
 class FAQPageViewSet(BaseIdPageViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticatedOrReadOnlyOrCreate,)
-    queryset = FAQPage.objects.filter(fields__has_key='answer_value')
+    queryset = FAQPage.objects.filter(fields__has_key='answer_value').order_by('-order')
     serializer_class = FAQPageSerializer
     pagination_class = LimitOffsetPagination
 
@@ -86,5 +86,14 @@ class FAQPageViewSet(BaseIdPageViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    @list_route(methods=['patch'])
+    def bulk_update(self, request):
+        serializer = self.serializer_class(self.get_queryset(), many=True, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         else:
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

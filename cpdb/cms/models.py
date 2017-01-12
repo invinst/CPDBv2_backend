@@ -16,3 +16,4 @@ class ReportPage(models.Model):
 class FAQPage(models.Model):
     fields = JSONField()
     created = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveIntegerField(default=0)
