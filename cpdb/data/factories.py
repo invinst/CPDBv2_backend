@@ -87,4 +87,4 @@ class PoliceUnitFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PoliceUnit
 
-    unit_name = factory.LazyFunction(lambda: fake.word())
+    unit_name = factory.LazyFunction(lambda: fake.numerify(text="###"))
