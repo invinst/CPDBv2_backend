@@ -8,7 +8,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "private_network", ip: "192.168.50.100"
   config.vm.network "forwarded_port", guest: 8000, host: 8000
   config.vm.network "forwarded_port", guest: 9200, host: 9200
-  config.vm.synced_folder "..", "/CPDB", owner: "vagrant", group: "vagrant"
+  config.vm.synced_folder ".", "/CPDB/CPDBv2_backend", owner: "vagrant", group: "vagrant"
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
