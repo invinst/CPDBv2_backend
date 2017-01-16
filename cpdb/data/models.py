@@ -82,7 +82,7 @@ class Area(models.Model):
             return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
                                                                                       name=self.name)
 
-        if self.area_type == 'Community':
+        if self.area_type == 'community':
             return '{domain}/url-mediator/session-builder?community={name}'.format(domain=settings.V1_URL,
                                                                                    name=self.name)
 

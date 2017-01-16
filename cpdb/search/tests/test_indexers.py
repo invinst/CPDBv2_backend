@@ -128,7 +128,7 @@ class AreaTypeIndexerTestCase(TestCase):
 class NeighborhoodsIndexerTestCase(TestCase):
     def test_get_queryset(self):
         AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='Community')
+        AreaFactory(area_type='community')
 
         expect(NeighborhoodsIndexer().get_queryset()).to.have.length(1)
         expect(NeighborhoodsIndexer().get_queryset().first().area_type).to.be.eq('neighborhoods')
@@ -137,10 +137,10 @@ class NeighborhoodsIndexerTestCase(TestCase):
 class CommunityIndexerTestCase(TestCase):
     def test_get_queryset(self):
         AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='Community')
+        AreaFactory(area_type='community')
 
         expect(CommunityIndexer().get_queryset()).to.have.length(1)
-        expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('Community')
+        expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
 
 
 class IndexerManagerTestCase(SimpleTestCase):

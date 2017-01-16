@@ -113,7 +113,7 @@ class NeighborhoodsIndexer(AreaTypeIndexer):
 
 class CommunityIndexer(AreaTypeIndexer):
     doc_type_klass = CommunityDocType
-    area_type = 'Community'
+    area_type = 'community'
 
 
 class IndexerManager(object):

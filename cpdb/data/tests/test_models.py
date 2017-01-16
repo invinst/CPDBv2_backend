@@ -51,7 +51,7 @@ class PoliceUnitTestCase(SimpleTestCase):
 class AreaTestCase(SimpleTestCase):
     @override_settings(V1_URL='domain')
     def test_v1_url_for_community_area(self):
-        area = AreaFactory.build(area_type='Community', name='abc')
+        area = AreaFactory.build(area_type='community', name='abc')
         url = 'domain/url-mediator/session-builder?community=abc'
         expect(area.v1_url).to.eq(url)
 
