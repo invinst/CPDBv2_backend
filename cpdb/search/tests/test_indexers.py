@@ -40,6 +40,11 @@ class BaseIndexerTestCase(SimpleTestCase):
 
 
 class FAQIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(FAQIndexer().get_queryset().count()).to.eq(0)
+        FAQPageFactory()
+        expect(FAQIndexer().get_queryset().count()).to.eq(1)
+
     def test_extract_datum(self):
         datum = FAQPageFactory(question='question', answer=['answer1', 'answer2'])
 
@@ -51,7 +56,12 @@ class FAQIndexerTestCase(TestCase):
         })
 
 
-class ReporttIndexerTestCase(TestCase):
+class ReportIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(ReportIndexer().get_queryset().count()).to.eq(0)
+        ReportPageFactory()
+        expect(ReportIndexer().get_queryset().count()).to.eq(1)
+
     def test_extract_datum(self):
         datum = ReportPageFactory(
             publication='publication', author='author',
@@ -68,6 +78,11 @@ class ReporttIndexerTestCase(TestCase):
 
 
 class OfficerIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(OfficerIndexer().get_queryset().count()).to.eq(0)
+        OfficerFactory()
+        expect(OfficerIndexer().get_queryset().count()).to.eq(1)
+
     def test_extract_datum(self):
         datum = OfficerFactory(first_name='first', last_name='last')
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
@@ -82,6 +97,11 @@ class OfficerIndexerTestCase(TestCase):
 
 
 class UnitIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(UnitIndexer().get_queryset().count()).to.eq(0)
+        PoliceUnitFactory()
+        expect(UnitIndexer().get_queryset().count()).to.eq(1)
+
     def test_extract_datum(self):
         datum = PoliceUnitFactory(unit_name='unit')
 

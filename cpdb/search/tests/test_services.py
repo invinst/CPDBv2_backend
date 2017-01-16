@@ -8,6 +8,13 @@ from search.tests.utils import IndexMixin
 
 
 class SearchManagerTestCase(IndexMixin, TestCase):
+    def test_search_with_content_type(self):
+        response = SearchManager().search('fu na', content_type='UNIT')
+
+        expect(response).to.eq({
+            'UNIT': [],
+        })
+
     def test_search(self):
         doc = OfficerDocType(full_name='full name', badge='123', url='url')
         doc.save()

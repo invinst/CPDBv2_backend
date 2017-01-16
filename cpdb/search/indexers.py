@@ -116,7 +116,6 @@ class CommunityIndexer(AreaTypeIndexer):
     area_type = 'Community'
 
 
-# INDEXERS = [FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, NeighborhoodsIndexer, CommunityIndexer]
 class IndexerManager(object):
     def __init__(self, indexers=None):
         self.indexers = indexers or []

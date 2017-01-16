@@ -62,10 +62,6 @@ class OfficerBadgeNumber(models.Model):
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
 
-    @property
-    def v1_url(self):
-        return 'not implemented'  # pragma: no cover
-
 
 class OfficerHistory(models.Model):
     officer = models.ForeignKey(Officer, null=True)

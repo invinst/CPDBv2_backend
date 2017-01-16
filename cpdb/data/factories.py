@@ -79,7 +79,7 @@ class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
         model = OfficerBadgeNumber
 
     officer = factory.SubFactory(OfficerFactory)
-    star = factory.LazyFunction(lambda: str(fake.number(5)))
+    star = factory.LazyFunction(lambda: str(random.randint(10000, 99999)))
     current = factory.LazyFunction(lambda: fake.boolean())
 
 
