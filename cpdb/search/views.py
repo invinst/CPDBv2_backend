@@ -5,14 +5,17 @@ from .services import SearchManager
 from .formatters import (
     OfficerFormatter, NameFormatter, OfficerV2Formatter, NameV2Formatter,
     FAQFormatter, ReportFormatter)
+from .workers import (
+    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker)
 
 
 class SearchViewSet(viewsets.ViewSet):
     lookup_field = 'text'
     formatters = {}
+    workers = {}
 
     def retrieve(self, request, text):
-        results = SearchManager(formatters=self.formatters).search(
+        results = SearchManager(formatters=self.formatters, workers=self.workers).search(
             text, content_type=self._content_type)
         return Response(results)
 
@@ -29,6 +32,12 @@ class SearchV1ViewSet(SearchViewSet):
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter
     }
+    workers = {
+        'OFFICER': OfficerWorker(),
+        'UNIT': UnitWorker(),
+        'COMMUNITY': CommunityWorker(),
+        'NEIGHBORHOOD': NeighborhoodsWorker()
+    }
 
 
 class SearchV2ViewSet(SearchViewSet):
@@ -40,4 +49,12 @@ class SearchV2ViewSet(SearchViewSet):
         'COMMUNITY': NameV2Formatter,
         'FAQ': FAQFormatter,
         'REPORT': ReportFormatter
+    }
+    workers = {
+        'OFFICER': OfficerWorker(),
+        'UNIT': UnitWorker(),
+        'COMMUNITY': CommunityWorker(),
+        'NEIGHBORHOOD': NeighborhoodsWorker(),
+        'FAQ': FAQWorker(),
+        'REPORT': ReportWorker()
     }

@@ -12,17 +12,18 @@ SEARCH_WORKERS = {
 
 
 class SearchManager(object):
-    def __init__(self, formatters={}):
-        self.formatters = formatters
+    def __init__(self, formatters=None, workers=None):
+        self.formatters = formatters or {}
+        self.workers = workers or {}
 
     def search(self, term, content_type=None, limit=10000):
         response = {}
 
         if content_type:
-            search_results = SEARCH_WORKERS[content_type].search(term, size=limit)
+            search_results = self.workers[content_type].search(term, size=limit)
             response[content_type] = self._formatter_for(content_type)().format(search_results)
         else:
-            for content_type, worker in SEARCH_WORKERS.items():
+            for content_type, worker in self.workers.items():
                 search_results = worker.search(term)
                 response[content_type] = self._formatter_for(content_type)().format(search_results)
 
