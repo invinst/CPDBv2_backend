@@ -3,7 +3,7 @@ from .workers import (
 from .formatters import SimpleFormatter
 
 
-SEARCH_WORKERS = {
+DEFAULT_SEARCH_WORKERS = {
     'OFFICER': OfficerWorker(),
     'UNIT': UnitWorker(),
     'COMMUNITY': CommunityWorker(),
@@ -14,7 +14,7 @@ SEARCH_WORKERS = {
 class SearchManager(object):
     def __init__(self, formatters=None, workers=None):
         self.formatters = formatters or {}
-        self.workers = workers or {}
+        self.workers = workers or DEFAULT_SEARCH_WORKERS
 
     def search(self, term, content_type=None, limit=10000):
         response = {}
