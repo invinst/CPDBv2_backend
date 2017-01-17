@@ -8,4 +8,4 @@ autocomplete = analyzer(
         'autocomplete', 'edge_ngram',
         min_gram=2, max_gram=10, token_chars=['letter', 'digit']))
 
-autocomplete_search = analyzer('autocomplete_search', tokenizer='lowercase')
+autocomplete_search = analyzer('autocomplete_search', filter=['lowercase'], tokenizer='whitespace')
