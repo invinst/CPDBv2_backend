@@ -85,33 +85,3 @@ class FAQPageSerializerTestCase(SimpleTestCase):
                 'answer_type': 'rich_text',
                 'answer_value': {'blocks': '', 'entityMap': ''}},
                 order=1)
-
-    def test_bulk_update(self):
-        object1 = Mock()
-        object1.id = 1
-        object1.order = 1
-        object1.fields = dict()
-        object2 = Mock()
-        object2.id = 2
-        object2.order = 2
-        object2.fields = dict()
-        object3 = Mock()
-        object3.id = 3
-        object3.order = 3
-        object3.fields = dict()
-        objects = [object1, object2, object3]
-        data = [{
-            'id': 1,
-            'meta': {'order': 2}
-        }, {
-            'id': 2,
-            'meta': {'order': 1}
-        }]
-
-        serializer = FAQPageSerializer(objects, many=True, data=data)
-        self.assertTrue(serializer.is_valid())
-        serializer.save()
-        self.assertEqual(serializer.data[0]['id'], 1)
-        self.assertDictEqual(serializer.data[0]['meta'], {'order': 2})
-        self.assertEqual(serializer.data[1]['id'], 2)
-        self.assertDictEqual(serializer.data[1]['meta'], {'order': 1})

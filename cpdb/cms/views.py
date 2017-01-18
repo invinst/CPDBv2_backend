@@ -89,7 +89,7 @@ class FAQPageViewSet(BaseIdPageViewSet):
         else:
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    @list_route(methods=['patch'])
+    @list_route(methods=['patch'], url_path='bulk-update')
     def bulk_update(self, request):
         serializer = self.serializer_class(self.get_queryset(), many=True, data=request.data)
         if serializer.is_valid():
