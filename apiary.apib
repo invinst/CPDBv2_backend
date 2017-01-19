@@ -863,6 +863,104 @@ This api require an api access token set in `Authorization` header. To get an ap
 
 ## FAQ list [/faqs/]
 
+### Create faq [POST]
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+
+    + Body
+
+            {
+                "fields": [
+                    {
+                        "name": "question",
+                        "type": "plain_text",
+                        "value": {
+                            "entityMap": {},
+                            "blocks": [
+                                {
+                                    "key": "6490e",
+                                    "text": "Question A",
+                                    "type": "unstyled",
+                                    "depth": 0,
+                                    "inlineStyleRanges": [],
+                                    "entityRanges": [],
+                                    "data": {}
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "answer",
+                        "type": "multiline_text",
+                        "value": {
+                            "entityMap": {},
+                            "blocks": [
+                                {
+                                    "key": "eog14",
+                                    "text": "Answer A",
+                                    "type": "unstyled",
+                                    "depth": 0,
+                                    "inlineStyleRanges": [],
+                                    "entityRanges": [],
+                                    "data": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
++ Response 201 (application/json)
+
+        {
+            "fields": [
+                {
+                    "type": "rich_text",
+                    "name": "question",
+                    "value": {
+                        "entityMap": {},
+                        "blocks": [
+                            {
+                                "text": "Question A",
+                                "entityRanges": [],
+                                "depth": 0,
+                                "data": {},
+                                "key": "6490e",
+                                "inlineStyleRanges": [],
+                                "type": "unstyled"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "rich_text",
+                    "name": "answer",
+                    "value": {
+                        "entityMap": {},
+                        "blocks": [
+                            {
+                                "text": "Answer A",
+                                "entityRanges": [],
+                                "depth": 0,
+                                "data": {},
+                                "key": "eog14",
+                                "inlineStyleRanges": [],
+                                "type": "unstyled"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "meta": {
+                "order": 1,
+                "starred": false
+            }
+            "id": 32
+        }
+
 ### Get faqs [GET]
 
 + Response 200 (application/json)
@@ -919,7 +1017,8 @@ This api require an api access token set in `Authorization` header. To get an ap
                         }
                     ],
                     "meta": {
-                        "order": 1
+                        "order": 1,
+                        "starred": true
                     }
                 }
             ]
@@ -1006,10 +1105,12 @@ This api require an api access token set in `Authorization` header. To get an ap
                     }
                 ],
                 "meta": {
-                    "order": 1
+                    "order": 1,
+                    "starred": false
                 }
             }
         ]
+
 
 ## FAQ detail [/faqs/{faq_id}/]
 
@@ -1070,7 +1171,8 @@ This api require an api access token set in `Authorization` header. To get an ap
                 }
             ],
             "meta": {
-                "order": 1
+                "order": 1,
+                "starred": false
             }
         }
 
@@ -1135,7 +1237,8 @@ This api require an api access token set in `Authorization` header. To get an ap
                     }
                 ],
                 "meta": {
-                    "order": 1
+                    "order": 1,
+                    "starred": false
                 }
             }
 
@@ -1191,6 +1294,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 }
             ],
             "meta": {
-                "order": 1
+                "order": 1,
+                "starred": false
             }
         }

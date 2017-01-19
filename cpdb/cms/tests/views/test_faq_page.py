@@ -31,7 +31,7 @@ class FAQPageViewSetTestCase(APITestCase):
         fields = {
             field['name']: field for field in actual_data['fields']
         }
-        self.assertDictEqual(actual_data['meta'], {'order': 0})
+        self.assertDictEqual(actual_data['meta'], {'order': 0, 'starred': False})
         self.assertDictEqual(fields['answer'], {
             'name': 'answer',
             'type': 'rich_text',
@@ -93,7 +93,7 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertEqual(actual_data['next'], None)
         self.assertEqual(actual_data['previous'], None)
         self.assertEqual(actual_data['results'][0]['id'], faq.id)
-        self.assertDictEqual(actual_data['results'][0]['meta'], {'order': 0})
+        self.assertDictEqual(actual_data['results'][0]['meta'], {'order': 0, 'starred': False})
         self.assertDictEqual(fields['answer'], {
             'name': 'answer',
             'type': 'rich_text',
@@ -168,19 +168,24 @@ class FAQPageViewSetTestCase(APITestCase):
 
         url = reverse('api-v2:faq-detail', kwargs={'pk': faq_page.id})
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = self.client.patch(url, {'fields': [
-            {
-                'name': 'question',
-                'type': 'rich_text',
-                'value': {
-                    'blocks': 'a',
-                    'entityMap': 'b'
+        response = self.client.patch(url, {
+            'fields': [
+                {
+                    'name': 'question',
+                    'type': 'rich_text',
+                    'value': {
+                        'blocks': 'a',
+                        'entityMap': 'b'
+                    }
                 }
+            ],
+            'meta': {
+                'starred': True
             }
-        ]}, format='json')
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['fields']), 2)
-        self.assertDictEqual(response.data['meta'], {'order': 0})
+        self.assertDictEqual(response.data['meta'], {'order': 0, 'starred': True})
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -197,6 +202,7 @@ class FAQPageViewSetTestCase(APITestCase):
                 'blocks': 'a',
                 'entityMap': 'b'
             })
+        self.assertTrue(faq_page.starred)
 
     def test_create(self):
         url = reverse('api-v2:faq-list')
@@ -309,6 +315,6 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0]['id'], serializer2.instance.id)
-        self.assertDictEqual(response.data[0]['meta'], {'order': 1})
+        self.assertDictEqual(response.data[0]['meta'], {'order': 1, 'starred': False})
         self.assertEqual(response.data[1]['id'], serializer1.instance.id)
-        self.assertDictEqual(response.data[1]['meta'], {'order': 2})
+        self.assertDictEqual(response.data[1]['meta'], {'order': 2, 'starred': False})

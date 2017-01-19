@@ -177,11 +177,12 @@ class FAQPageSerializer(IdPageSerializer):
     question = RichTextField(source='fields')
     answer = RichTextField(source='fields')
     order = serializers.IntegerField()
+    starred = serializers.BooleanField()
 
     class Meta:
         model = FAQPage
         fields = ('question', 'answer')
-        meta_fields = ('order',)
+        meta_fields = ('order', 'starred')
         list_serializer_class = FAQPageListSerializer
 
 
@@ -189,11 +190,12 @@ class CreateFAQPageSerializer(IdPageSerializer):
     question = RichTextField(source='fields')
     answer = RichTextField(source='fields')
     order = serializers.IntegerField(default=lambda: FAQPage.objects.count())
+    starred = serializers.BooleanField()
 
     class Meta:
         model = FAQPage
         fields = ('question', 'answer')
-        meta_fields = ('order',)
+        meta_fields = ('order', 'starred')
 
     def validate(self, data):
         if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated():
