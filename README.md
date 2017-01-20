@@ -11,31 +11,7 @@ git clone git@github.com:CyVerse-Ansible/ansible-elasticsearch-1.git
 sudo mv -r ansible-elasticsearch-1 /etc/ansible/roles/cyverse.elasticsearch
 ```
 
-Also make sure you've put `CPDBv2_frontend` and `CPDBv2_backend` in the same directory:
-
-```
-CPDB
-├── CPDBv2_backend
-└── CPDBv2_frontend
-```
-
-`CPDB` will be synced as `/CPDB` in the vagrant VM.
-
-We're **reusing the same frontend vagrant VM for this**, so **go to CPDBv2_frontend** to up your vagrant box:
-
-``` bash
-vagrant up --no-provision
-```
-
-(You can omit the `--no-provision` part if you want to provision for frontend too)
-
-Now `cd` back to `CPDBv2_backend` and run (from host):
-
-```bash
-./bin/setup_vagrant.sh
-```
-
-It will ask you the password for ansible-vault, then you only need to wait for a while until ansible do all the needed stuff. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` which you can use it for more convenient on development.
+Then just `vagrant up`, it will ask you the password for ansible-vault, then you only need to wait for a while until ansible do all the needed stuff. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` which you can use it for more convenient on development.
 
 When ansible is done, remember to generate initial data (run this inside VM):
 
@@ -47,7 +23,7 @@ For the development instance, it's better to use all the `vagrant` user to make 
 - You can use django development server by ssh to your vagrant instance and run `./manage.py runserver` (need to turn off gunicorn for safety)
 - If you like, current gunicorn on vagrant is configured to be reloadable, it will do the reload when your code changes, but you need to read the log yourselves.
 
-To ensure the code is synced between host (your actual PC) and client (the VM), run `vagrant rsync-auto` every time after you `vagrant up`.
+No need to run `vagrant rsync-auto` anymore since we're using default synced folder strategy.
 
 # Setup the production/staging
 
