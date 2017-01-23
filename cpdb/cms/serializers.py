@@ -15,7 +15,7 @@ from cms.randomizers import randomize
 class BaseCMSPageSerializer(serializers.Serializer):
     def to_representation(self, obj, use_fake=False):
         fields = []
-        for field in self._presentable_fields:
+        for field in self._non_meta_fields:
             if field.write_only:
                 continue
             attribute = field.get_attribute(obj)
@@ -39,7 +39,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
         return {'fields': fields, 'meta': meta_fields}
 
     @property
-    def _presentable_fields(self):
+    def _non_meta_fields(self):
         return [
             field for field in self.fields.values()
             if not hasattr(self.Meta, 'fields') or field.field_name in self.Meta.fields]
@@ -52,7 +52,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
 
     def fake_data(self, **kwargs):
         fields = []
-        for field in self._presentable_fields:
+        for field in self._non_meta_fields:
             if field.read_only:
                 continue
             if hasattr(field, 'fake_data'):
@@ -74,7 +74,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         result = dict()
         field_values = []
-        for field in self._presentable_fields:
+        for field in self._non_meta_fields:
             if 'fields' not in data:
                 break
             if field.read_only:

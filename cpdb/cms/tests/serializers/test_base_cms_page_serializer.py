@@ -21,12 +21,14 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
 
         class SerializerB(BaseCMSPageSerializer):
             a = serializers.IntegerField()
-            b = StringField(source='fields')
+            b = serializers.IntegerField(write_only=True)
+            c = StringField(source='fields')
+            d = serializers.IntegerField()
 
             class Meta:
                 model = self.page_model
-                fields = ('b',)
-                meta_fields = ('a',)
+                meta_fields = ('a', 'b')
+                fields = ('c', 'd')
 
         self.serializer_class_a = SerializerA
         self.serializer_class_b = SerializerB
@@ -46,16 +48,19 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
     def test_serialize_meta_fields(self):
         page = Mock()
         page.fields = {
-            'b_value': 'c'
+            'c_value': 'd'
         }
         page.a = 3
+        page.b = 1
+        page.d = 1
         serializer = self.serializer_class_b(page)
-        self.assertEqual(len(serializer.data['fields']), 1)
+        self.assertEqual(len(serializer.data['fields']), 2)
         self.assertDictEqual(serializer.data['fields'][0], {
-            'name': 'b',
+            'name': 'c',
             'type': 'string',
-            'value': 'c'
+            'value': 'd'
         })
+        self.assertEqual(serializer.data['fields'][1], 1)
         self.assertEqual(serializer.data['meta'], {'a': 3})
 
     def test_update(self):
@@ -78,23 +83,24 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
     def test_update_meta_fields(self):
         page = Mock()
         page.fields = {
-            'b_value': 'c'
+            'c_value': 'd'
         }
         page.a = 3
+        page.d = 1
         page.save = Mock()
         serializer = self.serializer_class_b(page, data={
-            'fields': [{'name': 'b', 'type': 'string', 'value': 'd'}],
+            'fields': [{'name': 'c', 'type': 'string', 'value': 'd'}],
             'meta': {'a': 4}
         })
         self.assertTrue(serializer.is_valid())
         serializer.save()
         self.assertDictEqual(serializer.data['fields'][0], {
-            'name': 'b',
+            'name': 'c',
             'type': 'string',
             'value': 'd'
         })
         page.save.assert_called()
-        self.assertEqual(page.fields['b_value'], 'd')
+        self.assertEqual(page.fields['c_value'], 'd')
         self.assertEqual(page.a, 4)
 
     def test_create(self):
@@ -105,18 +111,20 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
 
     def test_create_meta_fields(self):
         serializer = self.serializer_class_b(data={
-            'fields': [{'name': 'b', 'type': 'string', 'value': 'f'}],
+            'fields': [{'name': 'c', 'type': 'string', 'value': 'f'}],
             'meta': {'a': 10}})
         self.assertTrue(serializer.is_valid())
         serializer.save()
         self.page_model.objects.create.assert_called_with(
-            fields={'b_type': 'string', 'b_value': 'f'},
+            fields={'c_type': 'string', 'c_value': 'f'},
             a=10)
 
     def test_fake_data(self):
-        self.assertDictEqual(self.serializer_class_b().fake_data(b='d', a=4), {
-            'fields': [{'name': 'b', 'type': 'string', 'value': 'd'}],
-            'meta': {'a': 4}})
+        fake_data = self.serializer_class_b().fake_data(c='d', d=1, a=4)
+        self.assertEqual(len(fake_data['fields']), 2)
+        self.assertDictEqual(fake_data['fields'][0], {'name': 'c', 'type': 'string', 'value': 'd'})
+        self.assertEqual(fake_data['fields'][1], 1)
+        self.assertDictEqual(fake_data['meta'], {'a': 4})
 
     def test_deserializing_read_only_field(self):
         class CMSPageSerializer(BaseCMSPageSerializer):
@@ -156,13 +164,15 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
             'value': 'b'
         })
 
-    def test_to_full_representation(self):
+    def test_to_representation_use_fake(self):
         class CMSPageSerializer(BaseCMSPageSerializer):
             a = StringField(source='fields')
             b = StringField(fake_value='c', source='fields')
 
             class Meta:
                 model = self.page_model
+                fields = ('a',)
+                meta_fields = ('b',)
 
         page = Mock()
         page.fields = {
@@ -170,5 +180,13 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
         }
 
         serializer_data = CMSPageSerializer().to_representation(page, use_fake=True)
-        b_field = serializer_data['fields'][1]
-        self.assertEqual(b_field['value'], 'c')
+        self.assertDictEqual(serializer_data['fields'][0], {
+            'name': 'a',
+            'type': 'string',
+            'value': 'b'
+        })
+        self.assertDictEqual(serializer_data['meta']['b'], {
+            'name': 'b',
+            'type': 'string',
+            'value': 'c'
+        })
