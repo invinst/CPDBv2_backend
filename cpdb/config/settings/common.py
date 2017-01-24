@@ -54,9 +54,8 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'data',
     'data_versioning',
-    'es_index',
-    'suggestion',
     'landing_page',
+    'search',
     'story',
     'faq',
     'vftg',

@@ -6,7 +6,6 @@ from django.utils.text import slugify
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
-from suggestion.autocomplete_types import AutoCompleteType
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -17,21 +16,6 @@ class PoliceUnit(models.Model):
 
     def __str__(self):
         return self.unit_name
-
-    @property
-    def index_args(self):
-        return [
-            (
-                self.unit_name,
-                {
-                    'url': self.v1_url,
-                    'result_text': self.unit_name
-                },
-                {
-                    'content_type': AutoCompleteType.OFFICER_UNIT
-                }
-            )
-        ]
 
     @property
     def v1_url(self):
@@ -66,35 +50,6 @@ class Officer(models.Model):
             return ''
 
     @property
-    def index_args(self):
-        return [
-            (
-                self.full_name,
-                {
-                    'url': self.v1_url,
-                    'result_text': self.full_name,
-                    'result_extra_information':
-                        self.current_badge and 'Badge # {badge}'.format(badge=self.current_badge)
-                },
-                {
-                    'content_type': AutoCompleteType.OFFICER
-                }
-            ),
-            (
-                self.current_badge,
-                {
-                    'url': self.v1_url,
-                    'result_text': self.full_name,
-                    'result_extra_information':
-                        self.current_badge and 'Badge # {badge}'.format(badge=self.current_badge)
-                },
-                {
-                    'content_type': AutoCompleteType.OFFICER
-                }
-            )
-        ]
-
-    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
@@ -106,20 +61,6 @@ class OfficerBadgeNumber(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
-
-    @property
-    def index_args(self):
-        return (
-            (self.star, {
-                'type': AutoCompleteType.OFFICER_BADGE,
-                'url': self.v1_url
-                }, {
-                'content_type': 'officer_badge'
-            },),)
-
-    @property
-    def v1_url(self):
-        return 'not implemented'  # pragma: no cover
 
 
 class OfficerHistory(models.Model):
@@ -134,38 +75,6 @@ class Area(models.Model):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     objects = models.GeoManager()
-
-    @property
-    def index_args(self):
-        if self.area_type == 'neighborhoods':
-            return [
-                (
-                    self.name,
-                    {
-                        'url': self.v1_url,
-                        'result_text': self.name,
-                    },
-                    {
-                        'content_type': AutoCompleteType.NEIGHBORHOOD
-                    }
-                )
-            ]
-
-        if self.area_type == 'community':
-            return [
-                (
-                    self.name,
-                    {
-                        'url': self.v1_url,
-                        'result_text': self.name,
-                    },
-                    {
-                        'content_type': AutoCompleteType.COMMUNITY
-                    }
-                )
-            ]
-
-        return []
 
     @property
     def v1_url(self):
