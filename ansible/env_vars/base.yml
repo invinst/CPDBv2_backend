@@ -16,3 +16,7 @@ frontend_static_dir: /www/static/
 postgresql_version: 9.4
 postgresql_package_version: 9.4.*-1.pgdg14.04+1
 enable_cron_job: no
+
+elasticsearch_download_url: https://artifacts.elastic.co/downloads/elasticsearch
+elasticsearch_version: 5.1.1
+apt_java_package: oracle-java8-installer

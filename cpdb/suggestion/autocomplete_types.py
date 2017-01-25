@@ -1,4 +1,0 @@
-class AutoCompleteType:
-    OFFICER = 'OFFICER'
-    OFFICER_UNIT = 'UNIT'
-    NEIGHBORHOODS = 'NEIGHBORHOODS'
