@@ -30,7 +30,7 @@ from .views import index
 from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from landing_page.views import LandingPageViewSet
-from suggestion.views import SuggestionViewSet
+from search.views import SearchV2ViewSet, SearchV1ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from analytics.views import EventViewSet
@@ -41,7 +41,7 @@ router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
 router_v1.register(r'stories', StoryViewSet, base_name='story')
 router_v1.register(r'faqs', FAQViewSet, base_name='faq')
 router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
-router_v1.register(r'suggestion', SuggestionViewSet, base_name='suggestion')
+router_v1.register(r'suggestion', SearchV1ViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
 router_v2.register(r'cms-pages', CMSPageViewSet, base_name='cms-page')
@@ -49,6 +49,7 @@ router_v2.register(r'reports', ReportPageViewSet, base_name='report')
 router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
+router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

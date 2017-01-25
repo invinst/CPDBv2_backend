@@ -54,9 +54,8 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'data',
     'data_versioning',
-    'es_index',
-    'suggestion',
     'landing_page',
+    'search',
     'story',
     'faq',
     'vftg',
@@ -233,3 +232,5 @@ VFTG_LIST_ID = 'e38095f8d7'
 
 AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
+
+V1_URL = 'https://beta.cpdb.co'
