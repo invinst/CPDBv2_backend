@@ -18,6 +18,8 @@
         state=directory
 
 - name: Setup .env file
-  copy: content="{{ env_file }}" dest={{ project_root_path }}/.env
+  copy: content="{{ env_file }}"
+        dest={{ project_root_path }}/.env
+        force={{ force_rewrite_env_file }}
   become: yes
   become_user: "{{ deploy_user }}"
