@@ -307,6 +307,9 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 'faq_randomizer_selected_strategy_id': 2
             })
 
+    def test_to_representation_return_none_when_data_is_invalid(self):
+        self.assertIsNone(self.randomizer_field.to_representation({}))
+
     def test_raise_validation_error(self):
         with self.assertRaises(serializers.ValidationError) as context_manager:
             self.randomizer_field.to_internal_value({})
