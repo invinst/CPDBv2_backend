@@ -30,8 +30,19 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
                 meta_fields = ('a', 'b')
                 fields = ('c', 'd')
 
+        class SerializerC(BaseCMSPageSerializer):
+            a = serializers.IntegerField()
+            b = serializers.IntegerField(write_only=True)
+            c = serializers.IntegerField(read_only=True)
+            d = StringField(fake_value='d')
+
+            class Meta:
+                model = self.page_model
+                meta_fields = ('a', 'b', 'c', 'd')
+
         self.serializer_class_a = SerializerA
         self.serializer_class_b = SerializerB
+        self.serializer_class_c = SerializerC
 
     def test_serialize(self):
         page = Mock()
@@ -126,21 +137,29 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
         self.assertEqual(fake_data['fields'][1], 1)
         self.assertDictEqual(fake_data['meta'], {'a': 4})
 
+        fake_data = self.serializer_class_c().fake_data(a=1, b=2, c=3)
+        self.assertEqual(len(fake_data['meta']), 3)
+        self.assertEqual(fake_data['meta']['a'], 1)
+        self.assertEqual(fake_data['meta']['b'], 2)
+        self.assertDictEqual(fake_data['meta']['d'], {'name': 'd', 'type': 'string', 'value': 'd'})
+
     def test_deserializing_read_only_field(self):
         class CMSPageSerializer(BaseCMSPageSerializer):
             a = StringField()
             b = serializers.SerializerMethodField()
+            c = serializers.IntegerField(read_only=True)
 
             class Meta:
                 model = self.page_model
+                meta_fields = ('c',)
 
             def get_b(self, obj):
                 return []
 
         serializer = CMSPageSerializer(data={'fields': [
             {'name': 'a', 'type': 'string', 'value': 'c'},
-            {'name': 'b', 'type': 'string', 'value': 'd'}
-        ]})
+            {'name': 'b', 'type': 'string', 'value': 'd'},
+        ], 'meta': {'c': 1}})
         self.assertTrue(serializer.is_valid())
         serializer.save()  # does not raise error therefore it did not try to deserialize 'b'
 

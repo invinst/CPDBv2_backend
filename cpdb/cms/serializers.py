@@ -14,27 +14,24 @@ from cms.randomizers import randomize
 
 class BaseCMSPageSerializer(serializers.Serializer):
     def to_representation(self, obj, use_fake=False):
+        def _transform_field_value(_fields):
+            for field in _fields:
+                if field.write_only:
+                    continue
+                attribute = field.get_attribute(obj)
+                value = field.to_representation(attribute)
+                if value is not None:
+                    yield (value, field)
+                elif use_fake:
+                    yield (field.fake_data(), field)
+
         fields = []
-        for field in self._non_meta_fields:
-            if field.write_only:
-                continue
-            attribute = field.get_attribute(obj)
-            value = field.to_representation(attribute)
-            if value is not None:
-                fields.append(value)
-            elif use_fake:
-                fields.append(field.fake_data())
+        for value, _ in _transform_field_value(self._non_meta_fields):
+            fields.append(value)
 
         meta_fields = dict()
-        for field in self._meta_fields:
-            if field.write_only:
-                continue
-            attribute = field.get_attribute(obj)
-            value = field.to_representation(attribute)
-            if value is not None:
-                meta_fields[field.field_name] = value
-            elif use_fake:
-                meta_fields[field.field_name] = field.fake_data()
+        for value, field in _transform_field_value(self._meta_fields):
+            meta_fields[field.field_name] = value
 
         return {'fields': fields, 'meta': meta_fields}
 
