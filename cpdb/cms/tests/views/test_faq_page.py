@@ -312,3 +312,25 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertDictEqual(response.data[0]['meta'], {'order': 1})
         self.assertEqual(response.data[1]['id'], serializer1.instance.id)
         self.assertDictEqual(response.data[1]['meta'], {'order': 2})
+
+    def test_bad_request_bulk_update(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:faq-bulk-update')
+
+        serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
+        serializer.is_valid()
+        serializer.save()
+
+        response = self.client.patch(url, [{
+            'id': serializer.instance.id,
+            'fields': [
+                {
+                    'name': 'question',
+                    'value': 'this should fail'
+                }
+            ]
+        }], format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
