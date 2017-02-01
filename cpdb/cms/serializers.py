@@ -9,7 +9,7 @@ from cms.fields import (
     StringField, RichTextField, BaseCMSField
 )
 from cms.models import ReportPage, SlugPage, FAQPage
-from cms.randomizers import randomize
+from cms.randomizers import randomize, STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY
 
 
 class BaseCMSPageSerializer(serializers.Serializer):
@@ -202,11 +202,13 @@ class CreateFAQPageSerializer(IdPageSerializer):
 
 class LandingPageSerializer(SlugPageSerializer):
     reporting_header = RichTextField(fake_value=['Recent Reports'], source='fields')
-    reporting_randomizer = RandomizerField(source='fields')
+    reporting_randomizer = RandomizerField(
+        source='fields', strategies=(STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS))
     reports = serializers.SerializerMethodField(source='fields')
     faqs = serializers.SerializerMethodField(source='fields')
     faq_header = RichTextField(fake_value=['FAQ'], source='fields')
-    faq_randomizer = RandomizerField(source='fields')
+    faq_randomizer = RandomizerField(
+        source='fields', strategies=(STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY))
     hero_title = RichTextField(fake_value=[
         'The Citizens Police Data Project collects and publishes information about police accountability in Chicago.'],
         source='fields')

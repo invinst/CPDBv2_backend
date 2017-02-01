@@ -4,7 +4,6 @@ from rest_framework import serializers
 from faker import Faker
 
 from cms.utils import generate_draft_block_key
-from cms.randomizers import RANDOMIZER_STRATEGIES
 
 
 class BaseCMSField(serializers.Field):
@@ -147,6 +146,10 @@ class RichTextField(DraftEditorField):
 class RandomizerField(BaseCMSField):
     _type = 'randomizer'
 
+    def __init__(self, strategies, *args, **kwargs):
+        super(RandomizerField, self).__init__(*args, **kwargs)
+        self._strategies = list(strategies)
+
     def to_representation(self, fields):
         try:
             return {
@@ -155,7 +158,7 @@ class RandomizerField(BaseCMSField):
                 'value': {
                     'poolSize': fields['%s_pool_size' % self.field_name],
                     'selectedStrategyId': fields['%s_selected_strategy_id' % self.field_name],
-                    'strategies': RANDOMIZER_STRATEGIES
+                    'strategies': self._strategies
                 }
             }
         except KeyError:
@@ -168,7 +171,7 @@ class RandomizerField(BaseCMSField):
             'value': {
                 'poolSize': 10,
                 'selectedStrategyId': 1,
-                'strategies': RANDOMIZER_STRATEGIES
+                'strategies': self._strategies
             }
         }
 
