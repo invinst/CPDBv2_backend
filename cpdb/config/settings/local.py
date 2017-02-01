@@ -9,6 +9,7 @@ MIDDLEWARE_CLASSES += (  # NOQA
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:9966',
+    'localhost:9967',
     )
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
