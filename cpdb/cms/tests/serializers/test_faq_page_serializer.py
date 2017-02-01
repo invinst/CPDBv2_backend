@@ -13,6 +13,7 @@ class FAQPageSerializerTestCase(SimpleTestCase):
             'answer_value': 'b',
         }
         faq_page.order = 1
+        faq_page.starred = False
 
         serializer = FAQPageSerializer(faq_page)
         fields = {
@@ -20,7 +21,7 @@ class FAQPageSerializerTestCase(SimpleTestCase):
             for field in serializer.data['fields']
         }
 
-        self.assertDictEqual(serializer.data['meta'], {'order': 1})
+        self.assertDictEqual(serializer.data['meta'], {'order': 1, 'starred': False})
         self.assertDictEqual(fields['question'], {
             'name': 'question',
             'type': 'rich_text',
@@ -41,7 +42,8 @@ class FAQPageSerializerTestCase(SimpleTestCase):
                 'value': {'blocks': '', 'entityMap': ''}
             }],
             'meta': {
-                'order': 1
+                'order': 1,
+                'starred': True
             }
         }
         faq_page = Mock()
@@ -58,6 +60,7 @@ class FAQPageSerializerTestCase(SimpleTestCase):
             'question_value': {'blocks': '', 'entityMap': ''}
         })
         self.assertEqual(faq_page.order, 1)
+        self.assertTrue(faq_page.starred)
 
     def test_create(self):
         data = {

@@ -26,7 +26,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
                     yield (field.fake_data(), field)
 
         fields = []
-        for value, _ in _transform_field_value(self._presentable_fields):
+        for value, _ in _transform_field_value(self._non_meta_fields):
             fields.append(value)
 
         meta_fields = dict()
@@ -36,7 +36,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
         return {'fields': fields, 'meta': meta_fields}
 
     @property
-    def _presentable_fields(self):
+    def _non_meta_fields(self):
         return [
             field for field in self.fields.values()
             if not hasattr(self.Meta, 'fields') or field.field_name in self.Meta.fields]
@@ -49,7 +49,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
 
     def fake_data(self, **kwargs):
         fields = []
-        for field in self._presentable_fields:
+        for field in self._non_meta_fields:
             if field.read_only:
                 continue
             if hasattr(field, 'fake_data'):
@@ -71,7 +71,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         result = dict()
         field_values = []
-        for field in self._presentable_fields:
+        for field in self._non_meta_fields:
             if 'fields' not in data:
                 break
             if field.read_only:
@@ -174,11 +174,12 @@ class FAQPageSerializer(IdPageSerializer):
     question = RichTextField(source='fields')
     answer = RichTextField(source='fields')
     order = serializers.IntegerField()
+    starred = serializers.BooleanField()
 
     class Meta:
         model = FAQPage
         fields = ('question', 'answer')
-        meta_fields = ('order',)
+        meta_fields = ('order', 'starred')
         list_serializer_class = FAQPageListSerializer
 
 
@@ -186,11 +187,12 @@ class CreateFAQPageSerializer(IdPageSerializer):
     question = RichTextField(source='fields')
     answer = RichTextField(source='fields')
     order = serializers.IntegerField(default=lambda: FAQPage.objects.count())
+    starred = serializers.BooleanField()
 
     class Meta:
         model = FAQPage
         fields = ('question', 'answer')
-        meta_fields = ('order',)
+        meta_fields = ('order', 'starred')
 
     def validate(self, data):
         if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated():
