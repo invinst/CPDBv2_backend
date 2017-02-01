@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 from mock import Mock, patch
 
 from cms.serializers import LandingPageSerializer
-from cms.randomizers import RANDOMIZER_STRATEGIES
+from cms.randomizers import STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY
 
 
 class LandingPageSerializerTestCase(SimpleTestCase):
@@ -46,7 +46,7 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'value': {
                 'poolSize': 10,
                 'selectedStrategyId': 1,
-                'strategies': RANDOMIZER_STRATEGIES
+                'strategies': [STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS]
             }
         })
 
@@ -80,7 +80,7 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'value': {
                 'poolSize': 10,
                 'selectedStrategyId': 1,
-                'strategies': RANDOMIZER_STRATEGIES
+                'strategies': [STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY]
             }
         })
 
