@@ -14,7 +14,7 @@ class FAQPageViewSetTestCase(APITestCase):
     def setUp(self):
         with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
             serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data(
-                question='a', answer=['b', 'c']))
+                question='a', answer=['b', 'c'], order=0))
             serializer.is_valid()
             serializer.save()
         self.maxDiff = None
@@ -31,6 +31,7 @@ class FAQPageViewSetTestCase(APITestCase):
         fields = {
             field['name']: field for field in actual_data['fields']
         }
+        self.assertDictEqual(actual_data['meta'], {'order': 0, 'starred': False})
         self.assertDictEqual(fields['answer'], {
             'name': 'answer',
             'type': 'rich_text',
@@ -92,6 +93,7 @@ class FAQPageViewSetTestCase(APITestCase):
         self.assertEqual(actual_data['next'], None)
         self.assertEqual(actual_data['previous'], None)
         self.assertEqual(actual_data['results'][0]['id'], faq.id)
+        self.assertDictEqual(actual_data['results'][0]['meta'], {'order': 0, 'starred': False})
         self.assertDictEqual(fields['answer'], {
             'name': 'answer',
             'type': 'rich_text',
@@ -166,18 +168,24 @@ class FAQPageViewSetTestCase(APITestCase):
 
         url = reverse('api-v2:faq-detail', kwargs={'pk': faq_page.id})
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = self.client.patch(url, {'fields': [
-            {
-                'name': 'question',
-                'type': 'rich_text',
-                'value': {
-                    'blocks': 'a',
-                    'entityMap': 'b'
+        response = self.client.patch(url, {
+            'fields': [
+                {
+                    'name': 'question',
+                    'type': 'rich_text',
+                    'value': {
+                        'blocks': 'a',
+                        'entityMap': 'b'
+                    }
                 }
+            ],
+            'meta': {
+                'starred': True
             }
-        ]}, format='json')
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['fields']), 2)
+        self.assertDictEqual(response.data['meta'], {'order': 0, 'starred': True})
         response_data = {
             field['name']: field for field in response.data['fields']
         }
@@ -194,6 +202,7 @@ class FAQPageViewSetTestCase(APITestCase):
                 'blocks': 'a',
                 'entityMap': 'b'
             })
+        self.assertTrue(faq_page.starred)
 
     def test_create(self):
         url = reverse('api-v2:faq-list')
@@ -209,6 +218,7 @@ class FAQPageViewSetTestCase(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         created_faq = FAQPage.objects.last()
+        self.assertEqual(created_faq.order, 1)
         self.assertDictEqual(created_faq.fields, {
             'question_value': {
                 'blocks': 'a',
@@ -256,3 +266,77 @@ class FAQPageViewSetTestCase(APITestCase):
             }]
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_unauthorized_bulk_update(self):
+        url = reverse('api-v2:faq-bulk-update')
+        response = self.client.patch(url, [{
+            'id': 1,
+            'meta': {
+                'order': 1
+            }
+        }, {
+            'id': 2,
+            'meta': {
+                'order': 2
+            }
+        }], format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authorized_bulk_update(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:faq-bulk-update')
+
+        with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
+            serializer1 = FAQPageSerializer(data=FAQPageSerializer().fake_data(
+                question='a', answer=['b', 'c'], order=1))
+            serializer1.is_valid()
+            serializer1.save()
+            serializer2 = FAQPageSerializer(data=FAQPageSerializer().fake_data(
+                question='a', answer=['b', 'c'], order=2))
+            serializer2.is_valid()
+            serializer2.save()
+
+        response = self.client.patch(url, [{
+            'id': serializer1.instance.id,
+            'meta': {
+                'order': 2
+            }
+        }, {
+            'id': serializer2.instance.id,
+            'meta': {
+                'order': 1
+            }
+        }], format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['id'], serializer2.instance.id)
+        self.assertDictEqual(response.data[0]['meta'], {'order': 1, 'starred': False})
+        self.assertEqual(response.data[1]['id'], serializer1.instance.id)
+        self.assertDictEqual(response.data[1]['meta'], {'order': 2, 'starred': False})
+
+    def test_bad_request_bulk_update(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        url = reverse('api-v2:faq-bulk-update')
+
+        serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
+        serializer.is_valid()
+        serializer.save()
+
+        response = self.client.patch(url, [{
+            'id': serializer.instance.id,
+            'fields': [
+                {
+                    'name': 'question',
+                    'value': 'this should fail'
+                }
+            ]
+        }], format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

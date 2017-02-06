@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from cms.factories import LinkEntityFactory
 from cms.fields import (
     LinkField, DateField, RichTextField, RandomizerField, StringField)
-from cms.randomizers import RANDOMIZER_STRATEGIES
+from cms.randomizers import STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS
 
 
 class StringFieldTestCase(SimpleTestCase):
@@ -263,7 +263,7 @@ class RichTestFieldTestCase(SimpleTestCase):
 
 class RandomizerFieldTestCase(SimpleTestCase):
     def setUp(self):
-        self.randomizer_field = RandomizerField()
+        self.randomizer_field = RandomizerField(strategies=(STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS,))
         self.randomizer_field.field_name = 'faq_randomizer'
 
     def test_to_representation(self):
@@ -278,7 +278,7 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 'value': {
                     'poolSize': 10,
                     'selectedStrategyId': 1,
-                    'strategies': RANDOMIZER_STRATEGIES
+                    'strategies': [STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS]
                 }
             })
 
@@ -291,7 +291,7 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 'value': {
                     'poolSize': 10,
                     'selectedStrategyId': 1,
-                    'strategies': RANDOMIZER_STRATEGIES
+                    'strategies': [STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS]
                 }
             })
 
@@ -306,6 +306,9 @@ class RandomizerFieldTestCase(SimpleTestCase):
                 'faq_randomizer_pool_size': 12,
                 'faq_randomizer_selected_strategy_id': 2
             })
+
+    def test_to_representation_return_none_when_data_is_invalid(self):
+        self.assertIsNone(self.randomizer_field.to_representation({}))
 
     def test_raise_validation_error(self):
         with self.assertRaises(serializers.ValidationError) as context_manager:
