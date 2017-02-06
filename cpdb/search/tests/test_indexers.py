@@ -3,8 +3,9 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from ..indexers import (BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-                        NeighborhoodsIndexer, CommunityIndexer, IndexerManager)
+from ..search_indexers import (
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
+    NeighborhoodsIndexer, CommunityIndexer, IndexerManager)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory
 
@@ -144,7 +145,7 @@ class CommunityIndexerTestCase(TestCase):
 
 
 class IndexerManagerTestCase(SimpleTestCase):
-    @patch('cpdb.search.indexers.autocompletes')
+    @patch('cpdb.search.search_indexers.autocompletes')
     def test_rebuild_index(self, autocompletes):
         indexer_obj = Mock()
         indexer = Mock(return_value=indexer_obj)

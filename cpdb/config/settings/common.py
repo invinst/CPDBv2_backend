@@ -60,6 +60,7 @@ LOCAL_APPS = (
     'faq',
     'vftg',
     'cms',
+    'es_index',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
