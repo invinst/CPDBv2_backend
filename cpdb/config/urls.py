@@ -33,6 +33,7 @@ from landing_page.views import LandingPageViewSet
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
+from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -48,6 +49,10 @@ router_v2.register(r'reports', ReportPageViewSet, base_name='report')
 router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
+router_v2.register(
+    r'report-bottomsheet-officer-search',
+    ReportBottomSheetOfficerSearchViewSet,
+    base_name='report-bottomsheet-officer-search')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

@@ -50,6 +50,10 @@ class Officer(models.Model):
             return ''
 
     @property
+    def allegation_count(self):
+        return self.officerallegation_set.all().distinct().count()
+
+    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
