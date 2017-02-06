@@ -1,6 +1,6 @@
 from .doc_types import (
     OfficerDocType, UnitDocType, FAQDocType, ReportDocType,
-    NeighborhoodsDocType, CommunityDocType)
+    NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
 
 
 class Worker(object):
@@ -49,3 +49,8 @@ class NeighborhoodsWorker(Worker):
 class CommunityWorker(Worker):
     doc_type_klass = CommunityDocType
     fields = ['name']
+
+
+class CoAccusedOfficerWorker(Worker):
+    doc_type_klass = CoAccusedOfficerDocType
+    fields = ['full_name', 'badge']

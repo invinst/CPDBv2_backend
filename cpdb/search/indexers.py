@@ -1,10 +1,11 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area
+from data.models import Officer, PoliceUnit, Area, OfficerAllegation
 from search.doc_types import (
         FAQDocType, ReportDocType, OfficerDocType,
-        UnitDocType, NeighborhoodsDocType, CommunityDocType)
+        UnitDocType, NeighborhoodsDocType, CommunityDocType,
+        CoAccusedOfficerDocType)
 from .indices import autocompletes
 
 
@@ -62,6 +63,27 @@ class ReportIndexer(BaseIndexer):
             'author': fields['author_value'],
             'excerpt': extract_text_from_value(fields['excerpt_value']),
             'title': extract_text_from_value(fields['title_value'])
+        }
+
+
+class CoAccusedOfficerIndexer(BaseIndexer):
+    doc_type_klass = CoAccusedOfficerDocType
+
+    def get_queryset(self):
+        return Officer.objects.all()
+
+    def extract_datum(self, datum):
+        pks = datum.officerallegation_set.values_list('allegation__pk', flat=True)
+        involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
+            .values_list('officer__pk', flat=True)
+        officers = [
+            {'full_name': officer.full_name, 'badge': officer.current_badge}
+            for officer in Officer.objects.filter(pk__in=involved_pks)]
+
+        return {
+            'full_name': datum.full_name,
+            'badge': datum.current_badge,
+            'co_accused_officer': officers
         }
 
 

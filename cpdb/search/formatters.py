@@ -1,4 +1,9 @@
-class SimpleFormatter(object):
+class Formatter(object):
+    def format(self):
+        raise NotImplementedError
+
+
+class SimpleFormatter(Formatter):
     def doc_format(self, doc):
         return doc.to_dict()
 
@@ -62,3 +67,21 @@ class ReportFormatter(SimpleFormatter):
             'title': doc.title,
             'excerpt': doc.excerpt
         }
+
+
+class CoAccusedOfficerFormatter(Formatter):
+    def doc_format(self, doc):
+        return {
+            'text': doc['full_name'],
+            'payload': {
+                'result_text': doc['full_name'],
+                'result_extra_information': doc['badge']
+            }
+        }
+
+    def format(self, response):
+        docs = []
+        for hit in response.hits:
+            docs += hit.co_accused_officer
+
+        return [self.doc_format(doc) for doc in docs]
