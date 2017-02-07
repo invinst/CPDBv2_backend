@@ -120,12 +120,14 @@ class ReportFormatterTestCase(SimpleTestCase):
 class CoAccusedOfficerFormatterTestCase(SimpleTestCase):
     doc = Mock(co_accused_officer=[{
         'full_name': 'Kevin Osborn',
-        'badge': '123'
+        'badge': '123',
+        'url': 'url'
         }])
     response = Mock(hits=[doc])
     expect(CoAccusedOfficerFormatter().format(response)).to.eq([{
         'text': 'Kevin Osborn',
         'payload': {
             'result_text': 'Kevin Osborn',
-            'result_extra_information': '123'
+            'result_extra_information': 'Badge # 123',
+            'url': 'url'
         }}])
