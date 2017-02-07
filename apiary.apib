@@ -1298,3 +1298,22 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "starred": false
             }
         }
+
+## Analytic events [/events/]
+
+### Create Event [POST]
+
++ Request (application/json)
+
+    + Body
+
+            {
+                "name": "faq-click",
+                "data": {
+                    "id": 12,
+                    "title": "How accurate is the data?",
+                    "timestamp": "2017-01-23T03:11:53Z"
+                }
+            }
+
++ Response 201
