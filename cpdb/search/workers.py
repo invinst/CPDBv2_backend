@@ -12,8 +12,8 @@ class Worker(object):
     def _searcher(self):
         return self.doc_type_klass().search()
 
-    def _limit(self, search_results, size, begin):
-        return search_results[size:begin]
+    def _limit(self, search_results, begin, size):
+        return search_results[begin:size]
 
     def search(self, term, size=10, begin=0):
         search_results = self._searcher.query('multi_match', query=term,
@@ -54,3 +54,8 @@ class CommunityWorker(Worker):
 class CoAccusedOfficerWorker(Worker):
     doc_type_klass = CoAccusedOfficerDocType
     fields = ['full_name', 'badge']
+
+    def search(self, term, size=5, begin=0):
+        search_results = self._searcher.query('multi_match', query=term,
+                                              operator='and', fields=self.fields)
+        return self._limit(search_results, begin, size).execute()

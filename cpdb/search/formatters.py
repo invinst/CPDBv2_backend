@@ -74,8 +74,9 @@ class CoAccusedOfficerFormatter(Formatter):
         return {
             'text': doc['full_name'],
             'payload': {
+                'url': doc['url'],
                 'result_text': doc['full_name'],
-                'result_extra_information': doc['badge']
+                'result_extra_information': doc['badge'] and 'Badge # {badge}'.format(badge=doc['badge']) or ''
             }
         }
 

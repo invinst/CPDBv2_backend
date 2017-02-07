@@ -77,7 +77,7 @@ class CoAccusedOfficerIndexer(BaseIndexer):
         involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
             .values_list('officer__pk', flat=True)
         officers = [
-            {'full_name': officer.full_name, 'badge': officer.current_badge}
+            {'full_name': officer.full_name, 'badge': officer.current_badge, 'url': officer.v1_url}
             for officer in Officer.objects.filter(pk__in=involved_pks)]
 
         return {

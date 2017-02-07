@@ -162,6 +162,7 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
             'badge': '',
             'co_accused_officer': [{
                 'badge': '',
+                'url': self.officer_1.v1_url,
                 'full_name': 'Cristiano Ronaldo'
                 }]
             })
