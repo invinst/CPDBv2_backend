@@ -85,4 +85,4 @@ class CoAccusedOfficerFormatter(Formatter):
         for hit in response.hits:
             docs += hit.co_accused_officer
 
-        return [self.doc_format(doc) for doc in docs]
+        return [self.doc_format(doc) for doc in docs[:10]]
