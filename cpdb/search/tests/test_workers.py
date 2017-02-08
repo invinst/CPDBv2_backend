@@ -3,10 +3,10 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from search.workers import (
-        FAQWorker, ReportWorker, OfficerWorker, UnitWorker,
+        FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
         NeighborhoodsWorker, CommunityWorker, CoAccusedOfficerWorker)
 from search.doc_types import (
-        FAQDocType, ReportDocType, OfficerDocType, UnitDocType,
+        FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType,
         NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
 from search.tests.utils import IndexMixin
 
@@ -91,8 +91,25 @@ class CoAccusedOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
 
         self.refresh_index()
 
-        response = CoAccusedOfficerWorker().search('Kevin')
+        response = CoAccusedOfficerWorker().search('Cris')
         expect(response.hits.total).to.be.equal(1)
         co_accused_doc = response.hits[0]
         expect(co_accused_doc.full_name).to.eq('Kevin Osborn')
         expect(co_accused_doc.co_accused_officer[0]['full_name']).to.eq('Cristiano Ronaldo')
+
+
+class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Osborn', allegation_count=1)
+        doc.save()
+        doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Cascone', allegation_count=0)
+        doc.save()
+        doc = UnitOfficerDocType(unit_name='002', full_name='Cristiano Cascone', allegation_count=0)
+        doc.save()
+
+        self.refresh_index()
+
+        response = UnitOfficerWorker().search('001')
+        expect(response.hits.total).to.be.equal(2)
+        expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')
+        expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')

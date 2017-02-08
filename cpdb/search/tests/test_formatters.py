@@ -6,8 +6,7 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter,
-    CoAccusedOfficerFormatter)
+    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -115,19 +114,3 @@ class ReportFormatterTestCase(SimpleTestCase):
             'title': 'title',
             'excerpt': 'excerpt'
         })
-
-
-class CoAccusedOfficerFormatterTestCase(SimpleTestCase):
-    doc = Mock(co_accused_officer=[{
-        'full_name': 'Kevin Osborn',
-        'badge': '123',
-        'url': 'url'
-        }])
-    response = Mock(hits=[doc])
-    expect(CoAccusedOfficerFormatter().format(response)).to.eq([{
-        'text': 'Kevin Osborn',
-        'payload': {
-            'result_text': 'Kevin Osborn',
-            'result_extra_information': 'Badge # 123',
-            'url': 'url'
-        }}])

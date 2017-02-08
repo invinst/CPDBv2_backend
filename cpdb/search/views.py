@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from .services import SearchManager
 from .formatters import (
     OfficerFormatter, NameFormatter, OfficerV2Formatter, NameV2Formatter,
-    FAQFormatter, ReportFormatter, CoAccusedOfficerFormatter)
+    FAQFormatter, ReportFormatter)
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
-    CoAccusedOfficerWorker)
+    CoAccusedOfficerWorker, UnitOfficerWorker)
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -32,14 +32,16 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': NameFormatter,
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter,
-        'CO-ACCUSED': CoAccusedOfficerFormatter
+        'CO-ACCUSED': OfficerFormatter,
+        'UNIT-OFFICER': OfficerFormatter
     }
     workers = {
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
-        'CO-ACCUSED': CoAccusedOfficerWorker()
+        'CO-ACCUSED': CoAccusedOfficerWorker(),
+        'UNIT-OFFICER': UnitOfficerWorker()
     }
 
 

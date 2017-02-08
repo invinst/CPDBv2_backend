@@ -3,12 +3,14 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from ..indexers import (BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-                        NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager)
+from ..indexers import (
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
+    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager,
+    UnitOfficerIndexer)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
         AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-        AllegationFactory, OfficerAllegationFactory)
+        AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -157,15 +159,34 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
         expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
 
     def test_extract_datum(self):
-        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq({
+        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq([{
+            'full_name': 'Cristiano Ronaldo',
+            'badge': '',
+            'url': self.officer_2.v1_url,
+            'co_accused_officer': {
+                'badge': '',
+                'full_name': 'Kevin Osborn'
+            }
+        }])
+
+
+class UnitOfficerIndexerTestCase(TestCase):
+    def setUp(self):
+        unit = PoliceUnitFactory(unit_name='001')
+        officer = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.history = OfficerHistoryFactory(unit=unit, officer=officer)
+
+    def test_get_queryset(self):
+        expect(UnitOfficerIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        expect(UnitOfficerIndexer().extract_datum(self.history)).to.eq({
             'full_name': 'Kevin Osborn',
             'badge': '',
-            'co_accused_officer': [{
-                'badge': '',
-                'url': self.officer_2.v1_url,
-                'full_name': 'Cristiano Ronaldo'
-                }]
-            })
+            'url': self.history.officer.v1_url,
+            'allegation_count': 0,
+            'unit_name': '001'
+        })
 
 
 class IndexerManagerTestCase(SimpleTestCase):

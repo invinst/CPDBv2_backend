@@ -67,22 +67,3 @@ class ReportFormatter(SimpleFormatter):
             'title': doc.title,
             'excerpt': doc.excerpt
         }
-
-
-class CoAccusedOfficerFormatter(Formatter):
-    def doc_format(self, doc):
-        return {
-            'text': doc['full_name'],
-            'payload': {
-                'url': doc['url'],
-                'result_text': doc['full_name'],
-                'result_extra_information': doc['badge'] and 'Badge # {badge}'.format(badge=doc['badge']) or ''
-            }
-        }
-
-    def format(self, response):
-        docs = []
-        for hit in response.hits:
-            docs += hit.co_accused_officer
-
-        return [self.doc_format(doc) for doc in docs[:10]]

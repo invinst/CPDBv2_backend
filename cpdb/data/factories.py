@@ -7,8 +7,9 @@ import factory
 from faker import Faker
 from wagtail.wagtailcore.models import Page
 
-from data.models import (Area, Allegation, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit,
-                         OfficerAllegation)
+from data.models import (
+    Area, Allegation, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit,
+    OfficerAllegation, OfficerHistory)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -103,3 +104,11 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
         model = OfficerAllegation
 
     officer = factory.SubFactory(OfficerFactory)
+
+
+class OfficerHistoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerHistory
+
+    officer = factory.SubFactory(OfficerFactory)
+    unit = factory.SubFactory(PoliceUnitFactory)
