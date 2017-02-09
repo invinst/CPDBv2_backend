@@ -20,11 +20,23 @@ class BaseIndexerTestCase(SimpleTestCase):
     def test_extract_datum(self):
         expect(lambda: BaseIndexer().extract_datum('anything')).to.throw(NotImplementedError)
 
-    def test_index_datum(self):
+    def test_index_datum_dict(self):
         indexer = BaseIndexer()
         doc_type = Mock()
         indexer.doc_type_klass = Mock(return_value=doc_type)
         indexer.extract_datum = Mock(return_value={'key': 'something'})
+        indexer.get_queryset = Mock(return_value=['something'])
+
+        indexer.index_datum('anything')
+
+        indexer.doc_type_klass.assert_called_once_with(key='something')
+        expect(doc_type.save.called).to.be.true()
+
+    def test_index_datum_list(self):
+        indexer = BaseIndexer()
+        doc_type = Mock()
+        indexer.doc_type_klass = Mock(return_value=doc_type)
+        indexer.extract_datum = Mock(return_value=[{'key': 'something'}])
         indexer.get_queryset = Mock(return_value=['something'])
 
         indexer.index_datum('anything')
