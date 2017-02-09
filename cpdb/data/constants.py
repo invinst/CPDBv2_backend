@@ -113,3 +113,11 @@ FINDINGS = [
 ]
 
 CPDB_V1_OFFICER_PATH = 'https://cpdb.co/officer'
+
+GENDER = [
+    ['M', 'Male'],
+    ['F', 'Female'],
+    ['X', 'X']
+]
+
+GENDER_DICT = dict(GENDER)

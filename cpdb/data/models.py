@@ -5,7 +5,7 @@ from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT)
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -48,6 +48,13 @@ class Officer(models.Model):
             return self.officerbadgenumber_set.get(current=True).star
         except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
             return ''
+
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
 
     @property
     def allegation_count(self):

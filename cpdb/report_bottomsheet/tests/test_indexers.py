@@ -19,10 +19,14 @@ class OfficerIndexerTestCase(SimpleTestCase):
         officer.allegation_count = 23
         officer.full_name = 'Alex Mack'
         officer.v1_url = 'http://cpdb.co/officer/alex/123'
+        officer.gender_display = 'Female'
+        officer.race = 'White'
 
         expect(OfficerIndexer().extract_datum(officer)).to.eq({
             'id': 123,
             'allegation_count': 23,
             'full_name': 'Alex Mack',
-            'v1_url': 'http://cpdb.co/officer/alex/123'
+            'v1_url': 'http://cpdb.co/officer/alex/123',
+            'gender': 'Female',
+            'race': 'White'
         })
