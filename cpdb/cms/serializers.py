@@ -1,9 +1,12 @@
 import inspect
 import sys
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import serializers
 from rest_framework.fields import SkipField
 
+from data.models import Officer
 from cms.fields import (
     RandomizerField, DateField, LinkField,
     StringField, RichTextField, BaseCMSField
@@ -79,7 +82,8 @@ class BaseCMSPageSerializer(serializers.Serializer):
             try:
                 field_data = [
                     obj['value'] for obj in data['fields']
-                    if obj['name'] == field.field_name][0]
+                    if obj['name'] == field.field_name
+                ][0]
                 internal_value = field.to_internal_value(field_data)
             except (IndexError, NotImplementedError):
                 continue
@@ -128,7 +132,20 @@ class BaseCMSPageSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         validated_data.pop('id', None)
+
+        relation_fields = []
+        for field in self.fields.values():
+            if hasattr(field, 'child') and isinstance(field.child, serializers.ModelSerializer):
+                value = validated_data.pop(field.source, None)
+                if value is not None:
+                    relation_fields.append((field.source, value))
+
         instance = self.Meta.model.objects.create(**validated_data)
+
+        for key, value in relation_fields:
+            attr = getattr(instance, key)
+            attr.add(*value)
+
         return instance
 
 
@@ -147,6 +164,41 @@ class IdPageSerializer(BaseCMSPageSerializer):
         return representation
 
 
+class OfficerListSerializer(serializers.ListSerializer):
+    _type = 'officers_list'
+
+    def to_representation(self, obj):
+        value = super(OfficerListSerializer, self).to_representation(obj)
+        return {
+            'name': self.field_name,
+            'type': self._type,
+            'value': value
+        }
+
+    def to_internal_value(self, data):
+        try:
+            return super(OfficerListSerializer, self).to_internal_value(data)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError({self.field_name: 'Officer does not exist'})
+        except (TypeError, ValueError):
+            raise serializers.ValidationError({self.field_name: 'Incorrect type. Expected officer pk'})
+
+
+class OfficerSerializer(serializers.ModelSerializer):
+    gender = serializers.CharField(source='gender_display')
+
+    class Meta:
+        model = Officer
+        fields = ('id', 'allegation_count', 'full_name', 'v1_url', 'race', 'gender')
+        list_serializer_class = OfficerListSerializer
+
+    def get_queryset(self):
+        return Officer.objects.all()
+
+    def to_internal_value(self, data):
+        return self.get_queryset().get(pk=data['id'])
+
+
 class ReportPageSerializer(IdPageSerializer):
     title = RichTextField(source='fields')
     excerpt = RichTextField(source='fields')
@@ -154,6 +206,7 @@ class ReportPageSerializer(IdPageSerializer):
     publish_date = DateField(source='fields')
     author = StringField(source='fields')
     article_link = RichTextField(source='fields')
+    officers = OfficerSerializer(many=True)
 
     class Meta:
         model = ReportPage

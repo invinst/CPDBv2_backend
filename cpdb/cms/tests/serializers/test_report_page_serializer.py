@@ -15,7 +15,16 @@ class ReportPageSerializerTestCase(SimpleTestCase):
             'publish_date_value': '2016-10-25',
             'author_value': 'd'
         }
+        report_page.officers = [{
+            'id': 1,
+            'allegation_count': 1,
+            'full_name': 'Mr. Foo',
+            'v1_url': 'v1_url',
+            'race': 'race',
+            'gender_display': 'Male'
+        }]
         serializer = ReportPageSerializer(report_page)
+
         fields = {
             field['name']: field
             for field in serializer.data['fields']
@@ -49,6 +58,19 @@ class ReportPageSerializerTestCase(SimpleTestCase):
             'name': 'author',
             'type': 'string',
             'value': 'd'
+        })
+
+        self.assertDictEqual(fields['officers'], {
+            'name': 'officers',
+            'type': 'officers_list',
+            'value': [{
+                'id': 1,
+                'allegation_count': 1,
+                'full_name': 'Mr. Foo',
+                'v1_url': 'v1_url',
+                'race': 'race',
+                'gender': 'Male'
+            }]
         })
 
     def test_update(self):
