@@ -108,7 +108,9 @@ class OfficerIndexerTestCase(TestCase):
         ).to.be.eq({
             'full_name': 'first last',
             'badge': '123',
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': [],
+            'meta': {'id': datum.pk}
         })
 
 

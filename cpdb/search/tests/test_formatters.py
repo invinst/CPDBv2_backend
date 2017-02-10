@@ -34,7 +34,12 @@ class SimpleFormatterTestCase(SimpleTestCase):
 
 class OfficerFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(full_name='name', badge='123', url='url')
+        doc = Mock(to_dict=Mock(return_value={
+            'full_name': 'name',
+            'badge': '123',
+            'url': 'url',
+            'tags': ['tag']
+        }))
 
         expect(
             OfficerFormatter().doc_format(doc)
@@ -43,7 +48,8 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'payload': {
                 'result_text': 'name',
                 'result_extra_information': 'Badge # 123',
-                'url': 'url'
+                'url': 'url',
+                'tags': ['tag']
             }
         })
 

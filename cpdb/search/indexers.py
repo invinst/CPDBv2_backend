@@ -84,7 +84,8 @@ class CoAccusedOfficerIndexer(BaseIndexer):
         involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
             .values_list('officer__pk', flat=True)
         officers = Officer.objects.filter(pk__in=involved_pks)
-
+        # TODO: This piece of code is quite confusing between officer and co-accused officer, we left this
+        # `todo` here to re-write it a bit later to make it clearer later.
         return [{
             'full_name': officer.full_name,
             'badge': officer.current_badge,
@@ -106,7 +107,11 @@ class OfficerIndexer(BaseIndexer):
         return {
             'full_name': datum.full_name,
             'badge': datum.current_badge,
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': datum.tags,
+            'meta': {
+                'id': datum.pk
+            }
         }
 
 
@@ -119,7 +124,7 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
-            'url': datum.v1_url
+            'url': datum.v1_url,
         }
 
 
