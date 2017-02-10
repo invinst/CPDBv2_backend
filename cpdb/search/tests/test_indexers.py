@@ -4,9 +4,11 @@ from robber import expect
 from django.test import SimpleTestCase, TestCase
 
 from ..indexers import (BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-                        NeighborhoodsIndexer, CommunityIndexer, IndexerManager)
+                        NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager)
 from cms.factories import FAQPageFactory, ReportPageFactory
-from data.factories import AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory
+from data.factories import (
+        AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+        AllegationFactory, OfficerAllegationFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -141,6 +143,29 @@ class CommunityIndexerTestCase(TestCase):
 
         expect(CommunityIndexer().get_queryset()).to.have.length(1)
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
+
+
+class CoAccusedOfficerIndexerTestCase(TestCase):
+    def setUp(self):
+        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=self.officer_2)
+
+    def test_get_queryset(self):
+        expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
+
+    def test_extract_datum(self):
+        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq({
+            'full_name': 'Kevin Osborn',
+            'badge': '',
+            'co_accused_officer': [{
+                'badge': '',
+                'url': self.officer_2.v1_url,
+                'full_name': 'Cristiano Ronaldo'
+                }]
+            })
 
 
 class IndexerManagerTestCase(SimpleTestCase):
