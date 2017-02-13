@@ -6,7 +6,13 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter)
+    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter,
+    CoAccusedOfficerFormatter)
+
+
+class FormatterTestCase(SimpleTestCase):
+    def test_format(self):
+        expect(Formatter().format).to.throw(NotImplementedError)
 
 
 class SimpleFormatterTestCase(SimpleTestCase):
@@ -86,24 +92,42 @@ class NameV2FormatterTestCase(SimpleTestCase):
 
 
 class FAQFormatterTestCase(SimpleTestCase):
-    doc = Mock(question='question', answer='answer')
+    def test_doc_format(self):
+        doc = Mock(question='question', answer='answer')
 
-    expect(
-        FAQFormatter().doc_format(doc)
-    ).to.be.eq({
-        'question': 'question',
-        'answer': 'answer'
-    })
+        expect(
+            FAQFormatter().doc_format(doc)
+        ).to.be.eq({
+            'question': 'question',
+            'answer': 'answer'
+        })
 
 
 class ReportFormatterTestCase(SimpleTestCase):
-    doc = Mock(publication='publication', author='author', title='title', excerpt='excerpt')
+    def test_doc_format(self):
+        doc = Mock(publication='publication', author='author', title='title', excerpt='excerpt')
 
-    expect(
-        ReportFormatter().doc_format(doc)
-    ).to.be.eq({
-        'publication': 'publication',
-        'author': 'author',
-        'title': 'title',
-        'excerpt': 'excerpt'
-    })
+        expect(
+            ReportFormatter().doc_format(doc)
+        ).to.be.eq({
+            'publication': 'publication',
+            'author': 'author',
+            'title': 'title',
+            'excerpt': 'excerpt'
+        })
+
+
+class CoAccusedOfficerFormatterTestCase(SimpleTestCase):
+    doc = Mock(co_accused_officer=[{
+        'full_name': 'Kevin Osborn',
+        'badge': '123',
+        'url': 'url'
+        }])
+    response = Mock(hits=[doc])
+    expect(CoAccusedOfficerFormatter().format(response)).to.eq([{
+        'text': 'Kevin Osborn',
+        'payload': {
+            'result_text': 'Kevin Osborn',
+            'result_extra_information': 'Badge # 123',
+            'url': 'url'
+        }}])
