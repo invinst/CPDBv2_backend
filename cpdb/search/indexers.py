@@ -35,10 +35,10 @@ class BaseIndexer(object):
 
     def index_data(self):
         for datum in tqdm(
-                self.get_queryset(),
-                desc='Indexing {doc_type_name}'.format(
-                    doc_type_name=self.doc_type_klass._doc_type.name)):
-                self.index_datum(datum)
+            self.get_queryset(),
+            desc='Indexing {doc_type_name}'.format(
+                doc_type_name=self.doc_type_klass._doc_type.name)):
+            self.index_datum(datum)
 
 
 class FAQIndexer(BaseIndexer):

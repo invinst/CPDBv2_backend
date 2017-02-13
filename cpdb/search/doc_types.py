@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, InnerObjectWrapper, Nested
+from elasticsearch_dsl import DocType, Text, InnerObjectWrapper, Nested, Long
 
 from .indices import autocompletes
 
@@ -71,6 +71,7 @@ class CoAccusedOfficerDocType(DocType):
 
 @autocompletes.doc_type
 class UnitOfficerDocType(DocType):
+    allegation_count = Long()
     unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
