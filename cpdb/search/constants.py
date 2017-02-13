@@ -1,4 +1,4 @@
-from search.indexers import (
+from search.search_indexers import (
         OfficerIndexer, UnitIndexer, NeighborhoodsIndexer,
         CoAccusedOfficerIndexer, UnitOfficerIndexer,
         CommunityIndexer, FAQIndexer, ReportIndexer)
