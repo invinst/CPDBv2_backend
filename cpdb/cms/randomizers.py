@@ -12,7 +12,7 @@ STRATEGY_LAST_N_DAYS = {
 }
 STRATEGY_STARRED_ONLY = {
     'id': 3,
-    'name': 'Starred only'
+    'name': 'Last starred entries only'
 }
 
 
