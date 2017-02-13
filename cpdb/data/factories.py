@@ -104,3 +104,17 @@ class PoliceUnitFactory(factory.django.DjangoModelFactory):
         model = PoliceUnit
 
     unit_name = factory.LazyFunction(lambda: fake.numerify(text="###"))
+
+
+class AllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Allegation
+
+    crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+
+
+class OfficerAllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerAllegation
+
+    officer = factory.SubFactory(OfficerFactory)
