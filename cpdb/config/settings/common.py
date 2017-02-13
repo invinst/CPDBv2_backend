@@ -60,6 +60,8 @@ LOCAL_APPS = (
     'faq',
     'vftg',
     'cms',
+    'es_index',
+    'analytics',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -233,3 +235,5 @@ AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
 
 V1_URL = 'https://beta.cpdb.co'
+
+ELASTICSEARCH_HOSTS = ['localhost:9200']

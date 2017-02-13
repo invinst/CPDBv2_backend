@@ -163,6 +163,10 @@ class CMSPageViewSetTestCase(APITestCase):
                         {
                             'id': 2,
                             'name': 'Last days'
+                        },
+                        {
+                            'id': 3,
+                            'name': 'Last starred entries only'
                         }
                     ]
                 }

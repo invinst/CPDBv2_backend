@@ -29,6 +29,18 @@
   become: yes
   become_user: "{{ deploy_user }}"
 
+- name: Run rebuild_search_index for ES
+  django_manage:
+    command: rebuild_search_index
+    app_path: "{{ project_path }}"
+    virtualenv: "{{ virtualenv_path }}"
+    settings: "{{ django_settings_file }}"
+  environment: "{{ django_environment }}"
+  when: run_rebuild_index is defined and run_rebuild_index
+  tags: django.rebuild_index
+  become: yes
+  become_user: "{{ deploy_user }}"
+
 - name: Run Django collectstatic
   django_manage:
     command: collectstatic

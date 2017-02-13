@@ -3,10 +3,13 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from ..indexers import (BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-                        NeighborhoodsIndexer, CommunityIndexer, IndexerManager)
+from ..search_indexers import (
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
+    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager)
 from cms.factories import FAQPageFactory, ReportPageFactory
-from data.factories import AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory
+from data.factories import (
+        AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+        AllegationFactory, OfficerAllegationFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -143,8 +146,31 @@ class CommunityIndexerTestCase(TestCase):
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
 
 
+class CoAccusedOfficerIndexerTestCase(TestCase):
+    def setUp(self):
+        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=self.officer_2)
+
+    def test_get_queryset(self):
+        expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
+
+    def test_extract_datum(self):
+        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq({
+            'full_name': 'Kevin Osborn',
+            'badge': '',
+            'co_accused_officer': [{
+                'badge': '',
+                'url': self.officer_2.v1_url,
+                'full_name': 'Cristiano Ronaldo'
+                }]
+            })
+
+
 class IndexerManagerTestCase(SimpleTestCase):
-    @patch('cpdb.search.indexers.autocompletes')
+    @patch('cpdb.search.search_indexers.autocompletes')
     def test_rebuild_index(self, autocompletes):
         indexer_obj = Mock()
         indexer = Mock(return_value=indexer_obj)
