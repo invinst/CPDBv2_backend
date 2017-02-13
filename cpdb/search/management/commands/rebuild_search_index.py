@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from search.indexers import IndexerManager
+from search.search_indexers import IndexerManager
 from search.constants import DEFAULT_INDEXERS
 
 

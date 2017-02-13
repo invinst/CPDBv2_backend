@@ -166,7 +166,7 @@ class CMSPageViewSetTestCase(APITestCase):
                         },
                         {
                             'id': 3,
-                            'name': 'Starred only'
+                            'name': 'Last starred entries only'
                         }
                     ]
                 }

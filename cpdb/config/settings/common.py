@@ -60,6 +60,7 @@ LOCAL_APPS = (
     'faq',
     'vftg',
     'cms',
+    'es_index',
     'analytics',
 )
 
@@ -234,3 +235,5 @@ AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
 
 V1_URL = 'https://beta.cpdb.co'
+
+ELASTICSEARCH_HOSTS = ['localhost:9200']
