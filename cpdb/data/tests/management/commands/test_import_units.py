@@ -48,6 +48,9 @@ class DescriptionMatcherTestCase(TestCase):
             'Status': 'Y'
         }]).perform('001')).to.be.eq('first')
 
+    def test_no_candidates(self):
+        expect(DescriptionMatcher(context=[]).perform('001')).to.be.eq('')
+
 
 class CommandTestCase(TestCase):
     def test_handle(self):

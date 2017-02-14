@@ -18,7 +18,10 @@ class DescriptionMatcher(object):
         if len(active_candidates) >= 1:
             return active_candidates[0]['Unit Description']
 
-        return candidates[0]['Unit Description']
+        if len(candidates) >= 1:
+            return candidates[0]['Unit Description']
+
+        return ''
 
 
 class Command(BaseCommand):
