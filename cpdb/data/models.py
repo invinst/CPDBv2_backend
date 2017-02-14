@@ -13,6 +13,7 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 class PoliceUnit(models.Model):
     unit_name = models.CharField(max_length=5)
+    description = models.CharField(max_length=255, default='')
 
     def __str__(self):
         return self.unit_name
