@@ -7,7 +7,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
     NameV2Formatter, FAQFormatter, ReportFormatter, Formatter,
-    CoAccusedOfficerFormatter)
+    CoAccusedOfficerFormatter, UnitFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -44,6 +44,23 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'payload': {
                 'result_text': 'name',
                 'result_extra_information': 'Badge # 123',
+                'url': 'url'
+            }
+        })
+
+
+class UnitFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(description='123', url='url')
+        doc.name = 'name'
+
+        expect(
+            UnitFormatter().doc_format(doc)
+        ).to.be.eq({
+            'text': 'name',
+            'payload': {
+                'result_text': 'name',
+                'result_extra_information': '123',
                 'url': 'url'
             }
         })

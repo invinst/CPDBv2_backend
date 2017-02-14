@@ -37,6 +37,7 @@ class OfficerDocType(DocType):
 @autocompletes.doc_type
 class UnitDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'unit'
