@@ -18,7 +18,27 @@ class OfficerFormatter(SimpleFormatter):
         return {
             'text': serialized_doc['full_name'],
             'payload': {
-                'tags': serialized_doc.get('tags', None),
+                'result_reason': ', '.join(serialized_doc.get('tags', [])),
+                'result_text': serialized_doc['full_name'],
+                'result_extra_information':
+                    serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
+                'to': serialized_doc['to']
+            }
+        }
+
+
+class CoAccusedOfficerFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        reason = 'coaccused with {name} ({badge})'.format(
+            name=serialized_doc['co_accused_officer']['full_name'],
+            badge=serialized_doc['co_accused_officer']['badge']
+        )
+
+        return {
+            'text': serialized_doc['full_name'],
+            'payload': {
+                'result_reason': reason,
                 'result_text': serialized_doc['full_name'],
                 'result_extra_information':
                     serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
