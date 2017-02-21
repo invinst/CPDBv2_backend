@@ -111,10 +111,3 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
-
-
-class OfficerAllegationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = OfficerAllegation
-
-    officer = factory.SubFactory(OfficerFactory)
