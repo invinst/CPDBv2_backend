@@ -13,7 +13,7 @@ from .mixins import ReportBottomSheetTestCaseMixin
 class ReportBottomSheetOfficerSearchViewTestCase(ReportBottomSheetTestCaseMixin, APITestCase):
     @override_settings(V1_URL='http://cpdb.co')
     def test_retrieve(self):
-        officer = OfficerFactory(first_name='Kevin', last_name='Kerl', id=123)
+        officer = OfficerFactory(first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M')
         OfficerAllegationFactory(officer=officer)
         self.refresh_index()
 
@@ -25,5 +25,7 @@ class ReportBottomSheetOfficerSearchViewTestCase(ReportBottomSheetTestCaseMixin,
             'id': 123,
             'full_name': 'Kevin Kerl',
             'v1_url': 'http://cpdb.co/officer/kevin-kerl/123',
-            'allegation_count': 1
+            'allegation_count': 1,
+            'gender': 'Male',
+            'race': 'White'
             }])

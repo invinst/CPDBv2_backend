@@ -10,6 +10,8 @@ class OfficerDocType(DocType):
     allegation_count = Integer(index=False, store=True)
     id = Integer(index=False, store=True)
     v1_url = Text(index=False, store=True)
+    race = Text(index=False, store=True)
+    gender = Text(index=False, store=True)
 
     class Meta:
         doc_type = 'officer'

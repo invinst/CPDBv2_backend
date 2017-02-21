@@ -1,11 +1,14 @@
 from django.core.urlresolvers import reverse
 
 from mock import patch
+from robber import expect
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
+from data.factories import OfficerFactory
 from cms.serializers import ReportPageSerializer
 from cms.models import ReportPage
 
@@ -13,43 +16,51 @@ from cms.models import ReportPage
 class ReportPageViewSetTestCase(APITestCase):
     def setUp(self):
         with patch('cms.fields.generate_draft_block_key', return_value='abc12'):
+            self.officer_1 = OfficerFactory(gender='M')
+            self.officer_2 = OfficerFactory()
+
             serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data(
                 title='a', excerpt=['b', 'c'], publication='d',
                 publish_date='2016-10-25', author='e', article_link='f'))
             serializer.is_valid()
             serializer.save()
+            serializer.instance.officers.add(self.officer_1)
 
             serializer2 = ReportPageSerializer(data=ReportPageSerializer().fake_data())
             serializer2.is_valid()
             serializer2.save()
         self.maxDiff = None
 
+    def fields_list_to_dict(self, fields):
+        return {
+            field['name']: field
+            for field in fields
+        }
+
     def test_retrieve_report_page(self):
         report = ReportPage.objects.first()
         url = reverse('api-v2:report-detail', kwargs={'pk': report.id})
 
         response = self.client.get(url)
-        actual_data = dict(response.data)
-        fields = {
-            field['name']: field for field in actual_data['fields']
-        }
-        self.assertEqual(actual_data['id'], report.id)
-        self.assertDictEqual(fields['author'], {
+        fields = self.fields_list_to_dict(response.data['fields'])
+
+        expect(response.data['id']).to.eq(report.id)
+        expect(fields['author']).to.eq({
             'name': 'author',
             'type': 'string',
             'value': 'e'
         })
-        self.assertDictEqual(fields['publication'], {
+        expect(fields['publication']).to.eq({
             'name': 'publication',
             'type': 'string',
             'value': 'd'
         })
-        self.assertDictEqual(fields['publish_date'], {
+        expect(fields['publish_date']).to.eq({
             'name': 'publish_date',
             'type': 'date',
             'value': '2016-10-25'
         })
-        self.assertDictEqual(fields['excerpt'], {
+        expect(fields['excerpt']).to.eq({
             'name': 'excerpt',
             'type': 'rich_text',
             'value': {
@@ -76,7 +87,7 @@ class ReportPageViewSetTestCase(APITestCase):
                 'entityMap': {}
             }
         })
-        self.assertDictEqual(fields['title'], {
+        expect(fields['title']).to.eq({
             'name': 'title',
             'type': 'rich_text',
             'value': {
@@ -94,7 +105,7 @@ class ReportPageViewSetTestCase(APITestCase):
                 'entityMap': {}
             }
         })
-        self.assertDictEqual(fields['article_link'], {
+        expect(fields['article_link']).to.eq({
             'name': 'article_link',
             'type': 'rich_text',
             'value': {
@@ -113,41 +124,53 @@ class ReportPageViewSetTestCase(APITestCase):
             }
         })
 
+        expect(len(fields['officers']['value'])).to.eq(1)
+        expect(fields['officers']).to.eq({
+            'name': 'officers',
+            'type': 'officers_list',
+            'value': [{
+                'id': self.officer_1.id,
+                'allegation_count': self.officer_1.allegation_count,
+                'full_name': self.officer_1.full_name,
+                'v1_url': self.officer_1.v1_url,
+                'race': self.officer_1.race,
+                'gender': 'Male'
+            }]
+        })
+
     def test_list_report_page(self):
         url = reverse('api-v2:report-list')
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
         [report1, report2] = ReportPage.objects.all().order_by('created')
         actual_data = dict(response.data)
 
-        self.assertEqual(actual_data['results'][0]['id'], report2.id)
-        self.assertEqual(actual_data['results'][1]['id'], report1.id)
-        fields = {
-            field['name']: field for field in actual_data['results'][1]['fields']
-        }
+        expect(actual_data['results'][0]['id']).to.eq(report2.id)
+        expect(actual_data['results'][1]['id']).to.eq(report1.id)
+        fields = self.fields_list_to_dict(actual_data['results'][1]['fields'])
 
-        self.assertEqual(len(fields.keys()), 6)
-        self.assertEqual(actual_data['count'], 2)
-        self.assertEqual(actual_data['next'], None)
-        self.assertEqual(actual_data['previous'], None)
+        expect(len(fields.keys())).to.eq(7)
+        expect(actual_data['count']).to.eq(2)
+        expect(actual_data['next']).to.eq(None)
+        expect(actual_data['previous']).to.eq(None)
 
-        self.assertDictEqual(fields['author'], {
+        expect(fields['author']).to.eq({
             'name': 'author',
             'type': 'string',
             'value': 'e'
         })
-        self.assertDictEqual(fields['publication'], {
+        expect(fields['publication']).to.eq({
             'name': 'publication',
             'type': 'string',
             'value': 'd'
         })
-        self.assertDictEqual(fields['publish_date'], {
+        expect(fields['publish_date']).to.eq({
             'name': 'publish_date',
             'type': 'date',
             'value': '2016-10-25'
         })
-        self.assertDictEqual(fields['excerpt'], {
+        expect(fields['excerpt']).to.eq({
             'name': 'excerpt',
             'type': 'rich_text',
             'value': {
@@ -174,7 +197,7 @@ class ReportPageViewSetTestCase(APITestCase):
                 'entityMap': {}
             }
         })
-        self.assertDictEqual(fields['title'], {
+        expect(fields['title']).to.eq({
             'name': 'title',
             'type': 'rich_text',
             'value': {
@@ -192,7 +215,7 @@ class ReportPageViewSetTestCase(APITestCase):
                 'entityMap': {}
             }
         })
-        self.assertDictEqual(fields['article_link'], {
+        expect(fields['article_link']).to.eq({
             'name': 'article_link',
             'type': 'rich_text',
             'value': {
@@ -225,8 +248,8 @@ class ReportPageViewSetTestCase(APITestCase):
                 'value': 'new title'
             }
         ]}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertDictEqual(response.data, {
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
             'message': {
                 'title': 'Value must be in raw content state format'
             }
@@ -246,18 +269,71 @@ class ReportPageViewSetTestCase(APITestCase):
                 'value': 'new york times'
             }
         ]}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['fields']), 6)
-        response_data = {
-            field['name']: field for field in response.data['fields']
-        }
-        self.assertEqual(
-            response_data['publication']['value'],
-            'new york times')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(len(response.data['fields'])).to.eq(7)
+        response_data = self.fields_list_to_dict(response.data['fields'])
+        expect(response_data['publication']['value']).to.eq('new york times')
         report_page.refresh_from_db()
-        self.assertEqual(
-            report_page.fields['publication_value'],
-            'new york times')
+        expect(report_page.fields['publication_value']).to.eq('new york times')
+
+    def patch_first_report(self, data):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        report_page = ReportPage.objects.first()
+
+        url = reverse('api-v2:report-detail', kwargs={'pk': report_page.id})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        return report_page, self.client.patch(url, data, format='json')
+
+    def test_update_report_page_with_officer(self):
+        report_page, response = self.patch_first_report({'fields': [
+            {
+                'name': 'officers',
+                'type': 'officers_list',
+                'value': [{
+                    'id': self.officer_2.pk
+                }]
+            }
+        ]})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        response_data = self.fields_list_to_dict(response.data['fields'])
+        expect(response_data['officers']['value'][0]['id']).to.eq(self.officer_2.pk)
+
+        report_page.refresh_from_db()
+        expect(report_page.officers.count()).to.eq(1)
+        expect(report_page.officers.all().values_list('id', flat=True)[0]).to.eq(self.officer_2.pk)
+
+    def test_update_report_page_with_non_existant_officer(self):
+        _, response = self.patch_first_report({'fields': [
+            {
+                'name': 'officers',
+                'type': 'officers_list',
+                'value': [{
+                    'id': 456
+                }]
+            }
+        ]})
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'message': {
+                'officers': 'Officer does not exist'
+            }
+        })
+
+    def test_update_report_page_with_incorrect_officers_format(self):
+        _, response = self.patch_first_report({'fields': [
+            {
+                'name': 'officers',
+                'type': 'officers_list',
+                'value': [123]
+            }
+        ]})
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'message': {
+                'officers': 'Incorrect type. Expected officer pk'
+            }
+        })
 
     def test_add_report_bad_request(self):
         admin_user = AdminUserFactory()
@@ -292,8 +368,8 @@ class ReportPageViewSetTestCase(APITestCase):
                 'value': 'ddd'
             }]
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertDictEqual(response.data, {
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
             'message': {
                 'title': 'Value must be in raw content state format'
             }
@@ -333,11 +409,14 @@ class ReportPageViewSetTestCase(APITestCase):
                 'name': 'author',
                 'type': 'string',
                 'value': 'ddd'
+            }, {
+                'name': 'officers',
+                'value': [{'id': self.officer_1.id}]
             }]
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        expect(response.status_code).to.eq(status.HTTP_201_CREATED)
         created_report = ReportPage.objects.last()
-        self.assertDictEqual(created_report.fields, {
+        expect(created_report.fields).to.eq({
             'title_value': {
                 'blocks': 'a',
                 'entityMap': 'b'
@@ -355,3 +434,5 @@ class ReportPageViewSetTestCase(APITestCase):
             'author_value': 'ddd',
             'author_type': 'string'
         })
+        expect(created_report.officers.count()).to.eq(1)
+        expect(created_report.officers.all()[0].id).to.eq(self.officer_1.id)
