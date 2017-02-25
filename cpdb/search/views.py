@@ -33,7 +33,7 @@ class SearchV1ViewSet(SearchViewSet):
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter,
         'CO-ACCUSED': OfficerFormatter,
-        'UNIT-OFFICER': OfficerFormatter
+        'UNIT > OFFICERS': OfficerFormatter
     }
     workers = {
         'OFFICER': OfficerWorker(),
@@ -41,7 +41,7 @@ class SearchV1ViewSet(SearchViewSet):
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
         'CO-ACCUSED': CoAccusedOfficerWorker(),
-        'UNIT-OFFICER': UnitOfficerWorker()
+        'UNIT > OFFICERS': UnitOfficerWorker()
     }
 
 
