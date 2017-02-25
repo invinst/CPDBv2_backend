@@ -37,7 +37,7 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge']
+    fields = ['full_name', 'badge', 'tags']
 
 
 class UnitWorker(Worker):

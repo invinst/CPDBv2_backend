@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 from django.utils.text import slugify
@@ -34,6 +35,7 @@ class Officer(models.Model):
     rank = models.CharField(max_length=50, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
+    tags = ArrayField(models.CharField(blank=True, max_length=20), default=[])
 
     def __str__(self):
         return self.full_name

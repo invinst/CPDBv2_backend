@@ -13,12 +13,16 @@ class SimpleFormatter(Formatter):
 
 class OfficerFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+
         return {
-            'text': doc.full_name,
+            'text': serialized_doc['full_name'],
             'payload': {
-                'result_text': doc.full_name,
-                'result_extra_information': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-                'url': doc.url
+                'tags': serialized_doc.get('tags', None),
+                'result_text': serialized_doc['full_name'],
+                'result_extra_information':
+                    serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
+                'url': serialized_doc['url']
             }
         }
 
