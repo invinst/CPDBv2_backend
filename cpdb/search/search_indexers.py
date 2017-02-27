@@ -1,11 +1,11 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area, OfficerAllegation
+from data.models import Officer, PoliceUnit, Area, OfficerAllegation, OfficerHistory
 from search.doc_types import (
         FAQDocType, ReportDocType, OfficerDocType,
         UnitDocType, NeighborhoodsDocType, CommunityDocType,
-        CoAccusedOfficerDocType)
+        CoAccusedOfficerDocType, UnitOfficerDocType)
 from .indices import autocompletes
 
 
@@ -22,15 +22,22 @@ class BaseIndexer(object):
     def extract_datum(self, datum):
         raise NotImplementedError
 
-    def index_datum(self, datum):
-        doc = self.doc_type_klass(**self.extract_datum(datum))
+    def save_doc(self, extracted_data):
+        doc = self.doc_type_klass(**extracted_data)
         doc.save()
+
+    def index_datum(self, datum):
+        extracted_data = self.extract_datum(datum)
+        if isinstance(extracted_data, list):
+            [self.save_doc(entry) for entry in extracted_data]
+        else:
+            self.save_doc(extracted_data)
 
     def index_data(self):
         for datum in tqdm(
-                self.get_queryset(),
-                desc='Indexing {doc_type_name}'.format(
-                    doc_type_name=self.doc_type_klass._doc_type.name)):
+            self.get_queryset(),
+            desc='Indexing {doc_type_name}'.format(
+                doc_type_name=self.doc_type_klass._doc_type.name)):
             self.index_datum(datum)
 
 
@@ -76,15 +83,18 @@ class CoAccusedOfficerIndexer(BaseIndexer):
         pks = datum.officerallegation_set.values_list('allegation__pk', flat=True)
         involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
             .values_list('officer__pk', flat=True)
-        officers = [
-            {'full_name': officer.full_name, 'badge': officer.current_badge, 'url': officer.v1_url}
-            for officer in Officer.objects.filter(pk__in=involved_pks)]
-
-        return {
-            'full_name': datum.full_name,
-            'badge': datum.current_badge,
-            'co_accused_officer': officers
-        }
+        officers = Officer.objects.filter(pk__in=involved_pks)
+        # TODO: This piece of code is quite confusing between officer and co-accused officer, we left this
+        # `todo` here to re-write it a bit later to make it clearer later.
+        return [{
+            'full_name': officer.full_name,
+            'badge': officer.current_badge,
+            'url': officer.v1_url,
+            'co_accused_officer': {
+                'full_name': datum.full_name,
+                'badge': datum.current_badge
+            }
+        } for officer in officers]
 
 
 class OfficerIndexer(BaseIndexer):
@@ -97,7 +107,11 @@ class OfficerIndexer(BaseIndexer):
         return {
             'full_name': datum.full_name,
             'badge': datum.current_badge,
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': datum.tags,
+            'meta': {
+                'id': datum.pk
+            }
         }
 
 
@@ -112,6 +126,22 @@ class UnitIndexer(BaseIndexer):
             'name': datum.unit_name,
             'description': datum.description,
             'url': datum.v1_url
+        }
+
+
+class UnitOfficerIndexer(BaseIndexer):
+    doc_type_klass = UnitOfficerDocType
+
+    def get_queryset(self):
+        return OfficerHistory.objects.all()
+
+    def extract_datum(self, datum):
+        return {
+            'full_name': datum.officer.full_name,
+            'badge': datum.officer.current_badge,
+            'url': datum.officer.v1_url,
+            'allegation_count': datum.officer.officerallegation_set.count(),
+            'unit_name': datum.unit.unit_name
         }
 
 

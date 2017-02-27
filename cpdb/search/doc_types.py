@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, InnerObjectWrapper, Nested
+from elasticsearch_dsl import DocType, Text, InnerObjectWrapper, Nested, Long
 
 from .indices import autocompletes
 
@@ -29,6 +29,7 @@ class ReportDocType(DocType):
 class OfficerDocType(DocType):
     full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     badge = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'officer'
@@ -61,12 +62,19 @@ class CommunityDocType(DocType):
 
 @autocompletes.doc_type
 class CoAccusedOfficerDocType(DocType):
-    full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    badge = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     co_accused_officer = Nested(doc_class=InnerObjectWrapper, properties={
-        'full_name': Text(),
-        'badge': Text()
-        })
+        'full_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    })
 
     class Meta:
         doc_type = 'coaccusedofficer'
+
+
+@autocompletes.doc_type
+class UnitOfficerDocType(DocType):
+    allegation_count = Long()
+    unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'unitofficer'

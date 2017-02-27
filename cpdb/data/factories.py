@@ -8,7 +8,8 @@ from faker import Faker
 from wagtail.wagtailcore.models import Page
 
 from data.models import (
-    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation)
+    Area, Allegation, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit,
+    OfficerAllegation, OfficerHistory)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -111,3 +112,18 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+
+
+class OfficerAllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerAllegation
+
+    officer = factory.SubFactory(OfficerFactory)
+
+
+class OfficerHistoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerHistory
+
+    officer = factory.SubFactory(OfficerFactory)
+    unit = factory.SubFactory(PoliceUnitFactory)
