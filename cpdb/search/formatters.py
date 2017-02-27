@@ -27,6 +27,18 @@ class OfficerFormatter(SimpleFormatter):
         }
 
 
+class UnitFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        return {
+            'text': doc.name,
+            'payload': {
+                'result_text': doc.name,
+                'result_extra_information': doc.description,
+                'url': doc.url
+            }
+        }
+
+
 class NameFormatter(SimpleFormatter):
     def doc_format(self, doc):
         return {

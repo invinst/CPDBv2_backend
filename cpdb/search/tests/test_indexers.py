@@ -120,12 +120,13 @@ class UnitIndexerTestCase(TestCase):
         expect(UnitIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = PoliceUnitFactory(unit_name='unit')
+        datum = PoliceUnitFactory(unit_name='unit', description='description')
 
         expect(
             UnitIndexer().extract_datum(datum)
         ).to.be.eq({
             'name': 'unit',
+            'description': 'description',
             'url': datum.v1_url
         })
 

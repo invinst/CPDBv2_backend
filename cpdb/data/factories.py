@@ -76,6 +76,21 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
 
 
+class AllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Allegation
+
+    crid = factory.LazyFunction(lambda: fake.word())
+
+
+class OfficerAllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerAllegation
+
+    allegation = factory.SubFactory(AllegationFactory)
+    officer = factory.SubFactory(OfficerFactory)
+
+
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = OfficerBadgeNumber
@@ -97,13 +112,6 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
-
-
-class OfficerAllegationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = OfficerAllegation
-
-    officer = factory.SubFactory(OfficerFactory)
 
 
 class OfficerHistoryFactory(factory.django.DjangoModelFactory):

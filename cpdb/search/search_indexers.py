@@ -124,7 +124,8 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
-            'url': datum.v1_url,
+            'description': datum.description,
+            'url': datum.v1_url
         }
 
 

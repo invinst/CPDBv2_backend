@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
+from data.models import Officer
+
 
 class SlugPage(models.Model):
     slug = models.CharField(max_length=255, primary_key=True)
@@ -11,6 +13,7 @@ class SlugPage(models.Model):
 class ReportPage(models.Model):
     fields = JSONField()
     created = models.DateTimeField(auto_now_add=True)
+    officers = models.ManyToManyField(Officer)
 
 
 class FAQPage(models.Model):

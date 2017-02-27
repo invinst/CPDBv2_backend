@@ -42,7 +42,7 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name']
+    fields = ['name', 'description']
 
 
 class NeighborhoodsWorker(Worker):
