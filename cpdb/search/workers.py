@@ -24,6 +24,9 @@ class Worker(object):
     def search(self, term, size=10, begin=0):
         return self._limit(self.query(term), begin, size).execute()
 
+    def get_random(self):
+        return self._limit(self._searcher.query('function_score', random_score={}), 0, 1).execute()
+
 
 class FAQWorker(Worker):
     doc_type_klass = FAQDocType

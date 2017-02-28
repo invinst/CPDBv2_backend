@@ -22,10 +22,23 @@ class SearchManager(object):
         if content_type:
             search_results = self.workers[content_type].search(term, size=limit)
             response[content_type] = self._formatter_for(content_type)().format(search_results)
+
         else:
             for content_type, worker in self.workers.items():
                 search_results = worker.search(term)
                 response[content_type] = self._formatter_for(content_type)().format(search_results)
+
+        return response
+
+    def suggest_random(self):
+        '''
+        Return 1 random item for each content type.
+        '''
+        response = {}
+
+        for content_type, worker in self.workers.items():
+            search_results = worker.get_random()
+            response[content_type] = self._formatter_for(content_type)().format(search_results)
 
         return response
 
