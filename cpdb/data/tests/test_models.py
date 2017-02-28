@@ -134,3 +134,46 @@ class AreaTestCase(SimpleTestCase):
     def test_v1_url_default(self):
         area = AreaFactory.build(area_type='whatever', name='abc')
         expect(area.v1_url).to.eq('domain')
+
+
+class OfficerAllegationTestCase(TestCase):
+    def test_crid(self):
+        allegation = AllegationFactory(crid='123456')
+        officer_allegation = OfficerAllegationFactory(allegation=allegation)
+        expect(officer_allegation.crid).to.eq('123456')
+
+    def test_category(self):
+        officer_allegation = OfficerAllegationFactory()
+        expect(officer_allegation.category).to.eq(None)
+
+        allegation_category = AllegationCategoryFactory(category='category')
+        officer_allegation = OfficerAllegationFactory(allegation_category=allegation_category)
+        expect(officer_allegation.category).to.eq('category')
+
+    def test_subcategory(self):
+        officer_allegation = OfficerAllegationFactory()
+        expect(officer_allegation.subcategory).to.eq(None)
+
+        allegation_category = AllegationCategoryFactory(allegation_name='subcategory')
+        officer_allegation = OfficerAllegationFactory(allegation_category=allegation_category)
+        expect(officer_allegation.subcategory).to.eq('subcategory')
+
+    def test_coaccused_count(self):
+        allegation = AllegationFactory()
+        officer_allegation = OfficerAllegationFactory(allegation=allegation)
+        OfficerAllegationFactory.create_batch(5, allegation=allegation)
+
+        expect(officer_allegation.coaccused_count).to.eq(6)
+
+    def test_finding(self):
+        officer_allegation = OfficerAllegationFactory()
+        expect(officer_allegation.finding).to.eq('Unknown')
+
+        officer_allegation = OfficerAllegationFactory(final_finding='UN')
+        expect(officer_allegation.finding).to.eq('Unfounded')
+
+
+class OfficerHistoryTestCase(TestCase):
+    def test_unit_name(self):
+        history = OfficerHistoryFactory(unit=PoliceUnitFactory(unit_name='abc'))
+        expect(history.unit_name).to.eq('abc')

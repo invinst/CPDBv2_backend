@@ -6,7 +6,7 @@ from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT)
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -128,6 +128,10 @@ class OfficerHistory(models.Model):
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
 
+    @property
+    def unit_name(self):
+        return self.unit.unit_name
+
 
 class Area(models.Model):
     name = models.CharField(max_length=100)
@@ -207,6 +211,35 @@ class OfficerAllegation(models.Model):
     final_outcome = models.CharField(
         choices=OUTCOMES, max_length=3, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
+
+    @property
+    def crid(self):
+        return self.allegation.crid
+
+    @property
+    def category(self):
+        try:
+            return self.allegation_category.category
+        except AttributeError:
+            return None
+
+    @property
+    def subcategory(self):
+        try:
+            return self.allegation_category.allegation_name
+        except AttributeError:
+            return None
+
+    @property
+    def coaccused_count(self):
+        return OfficerAllegation.objects.filter(allegation=self.allegation).distinct().count()
+
+    @property
+    def finding(self):
+        try:
+            return FINDINGS_DICT[self.final_finding]
+        except KeyError:
+            return 'Unknown'
 
 
 class PoliceWitness(models.Model):
