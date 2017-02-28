@@ -61,13 +61,18 @@ class FAQIndexerTestCase(TestCase):
         expect(FAQIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = FAQPageFactory(question='question', answer=['answer1', 'answer2'])
+        datum = FAQPageFactory(
+            question='question',
+            answer=['answer1', 'answer2'],
+            pk=1,
+        )
 
         expect(
             FAQIndexer().extract_datum(datum)
         ).to.be.eq({
             'question': 'question',
-            'answer': 'answer1\nanswer2'
+            'answer': 'answer1\nanswer2',
+            'meta': {'id': 1},
         })
 
 
@@ -80,7 +85,10 @@ class ReportIndexerTestCase(TestCase):
     def test_extract_datum(self):
         datum = ReportPageFactory(
             publication='publication', author='author',
-            title='title', excerpt=['excerpt1', 'excerpt2'])
+            title='title', excerpt=['excerpt1', 'excerpt2'],
+            publish_date='2017-12-20',
+            pk=11
+        )
 
         expect(
             ReportIndexer().extract_datum(datum)
@@ -88,7 +96,9 @@ class ReportIndexerTestCase(TestCase):
             'publication': 'publication',
             'author': 'author',
             'excerpt': 'excerpt1\nexcerpt2',
-            'title': 'title'
+            'title': 'title',
+            'publish_date': '2017-12-20',
+            'meta': {'id': 11},
         })
 
 
