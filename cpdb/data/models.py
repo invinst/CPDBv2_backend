@@ -87,8 +87,12 @@ class Officer(models.Model):
     def complainant_race_aggregation(self):
         aggregation = self.officerallegation_set.values('allegation__complainant__race')\
             .annotate(count=models.Count('allegation__complainant__race'))
+
         return [
-            {'name': obj['allegation__complainant__race'], 'count': obj['count']}
+            {
+                'name': obj['allegation__complainant__race'] if obj['allegation__complainant__race'] else None,
+                'count': obj['count']
+            }
             for obj in aggregation if obj['count'] > 0
         ]
 
@@ -107,8 +111,12 @@ class Officer(models.Model):
             None,
             self.officerallegation_set.values('allegation__complainant__gender')
             .annotate(count=models.Count('allegation__complainant__gender')))
+
         return [
-            {'name': GENDER_DICT[obj['allegation__complainant__gender']], 'count': obj['count']}
+            {
+                'name': GENDER_DICT.get(obj['allegation__complainant__gender'], None),
+                'count': obj['count']
+            }
             for obj in aggregation if obj['count'] > 0
         ]
 

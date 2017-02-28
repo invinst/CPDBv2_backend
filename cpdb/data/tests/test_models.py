@@ -63,13 +63,22 @@ class OfficerTestCase(TestCase):
         allegation = AllegationFactory()
         OfficerAllegationFactory(officer=officer, allegation=allegation)
         ComplainantFactory(allegation=allegation, race='White')
+        ComplainantFactory(allegation=allegation, race='')
 
         expect(officer.complainant_race_aggregation).to.eq([
             {
                 'name': 'White',
                 'count': 1
+            },
+            {
+                'name': None,
+                'count': 1
             }
         ])
+
+    def test_complainant_race_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_race_aggregation).to.eq([])
 
     def test_complainant_age_aggregation(self):
         officer = OfficerFactory()
@@ -84,18 +93,34 @@ class OfficerTestCase(TestCase):
             }
         ])
 
+    def test_complainant_age_aggregation_age_null(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        ComplainantFactory(allegation=allegation, age=None)
+        expect(officer.complainant_age_aggregation).to.eq([])
+
     def test_complainant_gender_aggregation(self):
         officer = OfficerFactory()
         allegation = AllegationFactory()
         OfficerAllegationFactory(officer=officer, allegation=allegation)
         ComplainantFactory(allegation=allegation, gender='F')
+        ComplainantFactory(allegation=allegation, gender='')
 
         expect(officer.complainant_gender_aggregation).to.eq([
             {
                 'name': 'Female',
                 'count': 1
+            },
+            {
+                'name': None,
+                'count': 1
             }
         ])
+
+    def test_complainant_gender_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_gender_aggregation).to.eq([])
 
 
 class OfficerBadgeNumberTestCase(SimpleTestCase):
