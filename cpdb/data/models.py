@@ -80,7 +80,7 @@ class Officer(models.Model):
             .annotate(count=models.Count('allegation_category'))
         return [
             {'name': obj['allegation_category__category'], 'count': obj['count']}
-            for obj in aggregation
+            for obj in aggregation if obj['count'] > 0
         ]
 
     @property
@@ -89,7 +89,7 @@ class Officer(models.Model):
             .annotate(count=models.Count('allegation__complainant__race'))
         return [
             {'name': obj['allegation__complainant__race'], 'count': obj['count']}
-            for obj in aggregation
+            for obj in aggregation if obj['count'] > 0
         ]
 
     @property
@@ -98,16 +98,18 @@ class Officer(models.Model):
             .annotate(count=models.Count('allegation__complainant__age'))
         return [
             {'value': obj['allegation__complainant__age'], 'count': obj['count']}
-            for obj in aggregation
+            for obj in aggregation if obj['count'] > 0
         ]
 
     @property
     def complainant_gender_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__gender')\
-            .annotate(count=models.Count('allegation__complainant__gender'))
+        aggregation = filter(
+            None,
+            self.officerallegation_set.values('allegation__complainant__gender')
+            .annotate(count=models.Count('allegation__complainant__gender')))
         return [
             {'name': GENDER_DICT[obj['allegation__complainant__gender']], 'count': obj['count']}
-            for obj in aggregation
+            for obj in aggregation if obj['count'] > 0
         ]
 
 
