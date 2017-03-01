@@ -73,6 +73,7 @@ class FAQIndexerTestCase(TestCase):
             'question': 'question',
             'answer': 'answer1\nanswer2',
             'meta': {'id': 1},
+            'tags': [],
         })
 
 
@@ -99,6 +100,7 @@ class ReportIndexerTestCase(TestCase):
             'title': 'title',
             'publish_date': '2017-12-20',
             'meta': {'id': 11},
+            'tags': [],
         })
 
 

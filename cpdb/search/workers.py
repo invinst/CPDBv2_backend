@@ -24,8 +24,15 @@ class Worker(object):
     def search(self, term, size=10, begin=0):
         return self._limit(self.query(term), begin, size).execute()
 
-    def get_random(self):
-        return self._limit(self._searcher.query('function_score', random_score={}), 0, 1).execute()
+    def get_sample(self):
+        query = self._searcher.query(
+            'function_score',
+            random_score={}
+        ).query(
+            'exists',
+            field='tags'
+        )
+        return self._limit(query, 0, 1).execute()
 
 
 class FAQWorker(Worker):

@@ -9,6 +9,7 @@ from search.analyzers import autocomplete, autocomplete_search
 class FAQDocType(DocType):
     question = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     answer = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'faq'
@@ -20,6 +21,7 @@ class ReportDocType(DocType):
     author = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     title = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     excerpt = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'report'

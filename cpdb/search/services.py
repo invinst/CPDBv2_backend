@@ -30,14 +30,14 @@ class SearchManager(object):
 
         return response
 
-    def suggest_random(self):
+    def suggest_sample(self):
         '''
-        Return 1 random item for each content type.
+        Return 1 random item that has tags from each content type.
         '''
         response = {}
 
         for content_type, worker in self.workers.items():
-            search_results = worker.get_random()
+            search_results = worker.get_sample()
             response[content_type] = self._formatter_for(content_type)().format(search_results)
 
         return response

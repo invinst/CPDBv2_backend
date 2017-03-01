@@ -29,7 +29,7 @@ class SearchViewSet(viewsets.ViewSet):
         results = SearchManager(
             formatters=self.formatters,
             workers=self.workers
-        ).suggest_random()
+        ).suggest_sample()
 
         return Response(results)
 
