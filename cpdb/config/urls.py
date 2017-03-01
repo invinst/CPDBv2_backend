@@ -34,6 +34,7 @@ from search.views import SearchV2ViewSet, SearchV1ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
+from officers.views import OfficersViewSet
 from analytics.views import EventViewSet
 
 
@@ -55,6 +56,7 @@ router_v2.register(
     r'report-bottomsheet-officer-search',
     ReportBottomSheetOfficerSearchViewSet,
     base_name='report-bottomsheet-officer-search')
+router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

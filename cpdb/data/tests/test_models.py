@@ -3,7 +3,10 @@ from django.test.testcases import TestCase, SimpleTestCase, override_settings
 from robber.expect import expect
 
 from data.models import Officer, OfficerBadgeNumber, PoliceUnit
-from data.factories import OfficerFactory, OfficerBadgeNumberFactory, AreaFactory
+from data.factories import (
+    OfficerFactory, OfficerBadgeNumberFactory, AreaFactory, OfficerHistoryFactory, PoliceUnitFactory,
+    AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory
+)
 
 
 class OfficerTestCase(TestCase):
@@ -35,6 +38,89 @@ class OfficerTestCase(TestCase):
 
     def test_gender_display_keyerror(self):
         expect(OfficerFactory(gender='').gender_display).to.equal('')
+
+    def test_last_unit(self):
+        officer = OfficerFactory()
+        expect(officer.last_unit).to.equal(None)
+        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
+        expect(officer.last_unit).to.eq('CAND')
+
+    def test_complaint_category_aggregation(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(officer=officer, allegation=allegation, allegation_category=allegation_category)
+
+        expect(officer.complaint_category_aggregation).to.eq([
+            {
+                'name': 'Use of Force',
+                'count': 1
+            }
+        ])
+
+    def test_complainant_race_aggregation(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        ComplainantFactory(allegation=allegation, race='White')
+        ComplainantFactory(allegation=allegation, race='')
+
+        expect(officer.complainant_race_aggregation).to.eq([
+            {
+                'name': 'White',
+                'count': 1
+            },
+            {
+                'name': None,
+                'count': 1
+            }
+        ])
+
+    def test_complainant_race_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_race_aggregation).to.eq([])
+
+    def test_complainant_age_aggregation(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        ComplainantFactory(allegation=allegation, age=18)
+
+        expect(officer.complainant_age_aggregation).to.eq([
+            {
+                'value': 18,
+                'count': 1
+            }
+        ])
+
+    def test_complainant_age_aggregation_age_null(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        ComplainantFactory(allegation=allegation, age=None)
+        expect(officer.complainant_age_aggregation).to.eq([])
+
+    def test_complainant_gender_aggregation(self):
+        officer = OfficerFactory()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        ComplainantFactory(allegation=allegation, gender='F')
+        ComplainantFactory(allegation=allegation, gender='')
+
+        expect(officer.complainant_gender_aggregation).to.eq([
+            {
+                'name': 'Female',
+                'count': 1
+            },
+            {
+                'name': None,
+                'count': 1
+            }
+        ])
+
+    def test_complainant_gender_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_gender_aggregation).to.eq([])
 
 
 class OfficerBadgeNumberTestCase(SimpleTestCase):

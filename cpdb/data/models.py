@@ -14,7 +14,7 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 class PoliceUnit(models.Model):
     unit_name = models.CharField(max_length=5)
-    description = models.CharField(max_length=255, default='')
+    description = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.unit_name
@@ -33,10 +33,10 @@ class Officer(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
-    rank = models.CharField(max_length=50, blank=True)
+    rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
-    tags = ArrayField(models.CharField(blank=True, max_length=20), default=[])
+    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
 
     def __str__(self):
         return self.full_name
@@ -66,6 +66,59 @@ class Officer(models.Model):
     @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
+
+    @property
+    def last_unit(self):
+        try:
+            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit.unit_name
+        except IndexError:
+            return None
+
+    @property
+    def complaint_category_aggregation(self):
+        aggregation = self.officerallegation_set.values('allegation_category__category')\
+            .annotate(count=models.Count('allegation_category'))
+        return [
+            {'name': obj['allegation_category__category'], 'count': obj['count']}
+            for obj in aggregation if obj['count'] > 0
+        ]
+
+    @property
+    def complainant_race_aggregation(self):
+        aggregation = self.officerallegation_set.values('allegation__complainant__race')\
+            .annotate(count=models.Count('allegation__complainant__race'))
+
+        return [
+            {
+                'name': obj['allegation__complainant__race'] if obj['allegation__complainant__race'] else None,
+                'count': obj['count']
+            }
+            for obj in aggregation if obj['count'] > 0
+        ]
+
+    @property
+    def complainant_age_aggregation(self):
+        aggregation = self.officerallegation_set.values('allegation__complainant__age')\
+            .annotate(count=models.Count('allegation__complainant__age'))
+        return [
+            {'value': obj['allegation__complainant__age'], 'count': obj['count']}
+            for obj in aggregation if obj['count'] > 0
+        ]
+
+    @property
+    def complainant_gender_aggregation(self):
+        aggregation = filter(
+            None,
+            self.officerallegation_set.values('allegation__complainant__gender')
+            .annotate(count=models.Count('allegation__complainant__gender')))
+
+        return [
+            {
+                'name': GENDER_DICT.get(obj['allegation__complainant__gender'], None),
+                'count': obj['count']
+            }
+            for obj in aggregation if obj['count'] > 0
+        ]
 
 
 class OfficerBadgeNumber(models.Model):

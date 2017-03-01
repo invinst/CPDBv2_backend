@@ -63,6 +63,7 @@ LOCAL_APPS = (
     'es_index',
     'report_bottomsheet',
     'analytics',
+    'officers',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

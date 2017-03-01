@@ -1416,3 +1416,112 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
 
 + Response 201
+
+## Officer summary [/officers/{officer_id}/summary]
+
+### Get Officer Summary [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "id": 1,
+            "unit": "003",
+            "date_of_appt": "2015-09-23",
+            "rank": "NA",
+            "race": "White",
+            "badge": "12345",
+            "gender": "Male",
+            "latest_salary": {
+                "value": 70000,
+                "year": 2016
+            },
+            "complaint_records": {
+                "count": 27,
+                "categories": [
+                    {
+                        "name": "Illegal Search",
+                        "count": 20
+                    },
+                    {
+                        "name": "Use of Force",
+                        "count": 7
+                    }
+                ],
+                "races": [
+                    {
+                        "name": "White",
+                        "count": 7
+                    },
+                    {
+                        "name": null,
+                        "count": 20
+                    }
+                ],
+                "ages": [
+                    {
+                        "name": 18,
+                        "count": 20
+                    },
+                    {
+                        "name": 20,
+                        "count": 7
+                    }
+                ],
+                "genders": [
+                    {
+                        "name": "Famale",
+                        "count": 20
+                    },
+                    {
+                        "name": null,
+                        "count": 7
+                    }
+                ]
+            },
+            "tactical_response_reports": {
+                "count": 7,
+                "categories": [
+                    {
+                        "name": "Taser",
+                        "count": 5
+                    },
+                    {
+                        "name": "Firearm",
+                        "count": 2
+                    }
+                ],
+                "races": [
+                    {
+                        "name": "White",
+                        "count": 2
+                    },
+                    {
+                        "name": null,
+                        "count": 5
+                    }
+                ],
+                "genders": [
+                    {
+                        "name": "Famale",
+                        "count": 5
+                    },
+                    {
+                        "name": null,
+                        "count": 2
+                    }
+                ]
+            },
+            "awards": [
+                {
+                    "name": "Honorable Mention",
+                    "count": 2
+                },
+                {
+                    "name": "Employee of The Year",
+                    "count": 1
+                }
+            ]
+        }
