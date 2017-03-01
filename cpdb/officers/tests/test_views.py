@@ -92,6 +92,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'previous': None,
             'results': [
                 {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                },
+                {
                     'kind': 'CR',
                     'date': '2016-08-23',
                     'crid': '123456',
@@ -99,11 +104,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'subcategory': 'sub category',
                     'finding': 'Unfounded',
                     'coaccused': 4
-                },
-                {
-                    'kind': 'UNIT_CHANGE',
-                    'date': '2017-02-27',
-                    'unit_name': 'A'
                 }
             ]
         })

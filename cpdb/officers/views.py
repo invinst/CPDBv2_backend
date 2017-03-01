@@ -22,7 +22,7 @@ class OfficersViewSet(viewsets.ViewSet):
     @detail_route(methods=['get'])
     def timeline(self, request, pk):
         if Officer.objects.filter(pk=pk).exists():
-            query = OfficerTimelineEventDocType().search().sort('date_sort').query('term', officer_id=pk)
+            query = OfficerTimelineEventDocType().search().sort('-date_sort').query('term', officer_id=pk)
             paginator = ESQueryPagination()
             paginated_query = paginator.paginate_es_query(query, request)
             serializer = TimelineSerializer(paginated_query, many=True)
