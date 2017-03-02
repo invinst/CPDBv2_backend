@@ -62,28 +62,22 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_appt': '2017-02-27',
             'complaint_records': {
                 'count': 1,
-                'categories': [
+                'facets': [
                     {
-                        'name': 'Illegal Search',
-                        'count': 1
-                    }
-                ],
-                'races': [
+                        'name': 'categories',
+                        'entries': [{'name': 'Illegal Search', 'count': 1}]
+                    },
                     {
-                        'name': 'White',
-                        'count': 1
-                    }
-                ],
-                'ages': [
+                        'name': 'races',
+                        'entries': [{'name': 'White', 'count': 1}]
+                    },
                     {
-                        'value': 18,
-                        'count': 1
-                    }
-                ],
-                'genders': [
+                        'name': 'ages',
+                        'entries': [{'value': 18, 'count': 1}]
+                    },
                     {
-                        'name': 'Male',
-                        'count': 1
+                        'name': 'genders',
+                        'entries': [{'name': 'Male', 'count': 1}]
                     }
                 ]
             }

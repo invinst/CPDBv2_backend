@@ -43,28 +43,22 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Male',
             'complaint_records': {
                 'count': 1,
-                'categories': [
+                'facets': [
                     {
-                        'name': 'Use of Force',
-                        'count': 1
-                    }
-                ],
-                'races': [
+                        'name': 'categories',
+                        'entries': [{'name': 'Use of Force', 'count': 1}]
+                    },
                     {
-                        'name': 'White',
-                        'count': 1
-                    }
-                ],
-                'ages': [
+                        'name': 'races',
+                        'entries': [{'name': 'White', 'count': 1}]
+                    },
                     {
-                        'value': 18,
-                        'count': 1
-                    }
-                ],
-                'genders': [
+                        'name': 'ages',
+                        'entries': [{'value': 18, 'count': 1}]
+                    },
                     {
-                        'name': 'Female',
-                        'count': 1
+                        'name': 'genders',
+                        'entries': [{'name': 'Female', 'count': 1}]
                     }
                 ]
             }
