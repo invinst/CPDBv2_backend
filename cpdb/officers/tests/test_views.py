@@ -45,19 +45,19 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'count': 1,
                 'facets': [
                     {
-                        'name': 'categories',
+                        'name': 'category',
                         'entries': [{'name': 'Use of Force', 'count': 1}]
                     },
                     {
-                        'name': 'races',
+                        'name': 'race',
                         'entries': [{'name': 'White', 'count': 1}]
                     },
                     {
-                        'name': 'ages',
-                        'entries': [{'value': 18, 'count': 1}]
+                        'name': 'age',
+                        'entries': [{'name': '18', 'count': 1}]
                     },
                     {
-                        'name': 'genders',
+                        'name': 'gender',
                         'entries': [{'name': 'Female', 'count': 1}]
                     }
                 ]

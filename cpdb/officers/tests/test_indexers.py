@@ -40,7 +40,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
         ]
         officer.complainant_age_aggregation = [
             {
-                'value': 18,
+                'name': '18',
                 'count': 1
             }
         ]
@@ -64,19 +64,19 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 'count': 1,
                 'facets': [
                     {
-                        'name': 'categories',
+                        'name': 'category',
                         'entries': [{'name': 'Illegal Search', 'count': 1}]
                     },
                     {
-                        'name': 'races',
+                        'name': 'race',
                         'entries': [{'name': 'White', 'count': 1}]
                     },
                     {
-                        'name': 'ages',
-                        'entries': [{'value': 18, 'count': 1}]
+                        'name': 'age',
+                        'entries': [{'name': '18', 'count': 1}]
                     },
                     {
-                        'name': 'genders',
+                        'name': 'gender',
                         'entries': [{'name': 'Male', 'count': 1}]
                     }
                 ]

@@ -16,9 +16,9 @@ class OfficerSummarySerializer(serializers.Serializer):
         return {
             'count': obj.allegation_count,
             'facets': [
-                {'name': 'categories', 'entries': obj.complaint_category_aggregation},
-                {'name': 'races', 'entries': obj.complainant_race_aggregation},
-                {'name': 'ages', 'entries': obj.complainant_age_aggregation},
-                {'name': 'genders', 'entries': obj.complainant_gender_aggregation},
+                {'name': 'category', 'entries': obj.complaint_category_aggregation},
+                {'name': 'race', 'entries': obj.complainant_race_aggregation},
+                {'name': 'age', 'entries': obj.complainant_age_aggregation},
+                {'name': 'gender', 'entries': obj.complainant_gender_aggregation},
             ]
         }

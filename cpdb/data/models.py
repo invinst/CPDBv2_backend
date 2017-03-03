@@ -101,7 +101,7 @@ class Officer(models.Model):
         aggregation = self.officerallegation_set.values('allegation__complainant__age')\
             .annotate(count=models.Count('allegation__complainant__age'))
         return [
-            {'value': obj['allegation__complainant__age'], 'count': obj['count']}
+            {'name': str(obj['allegation__complainant__age']), 'count': obj['count']}
             for obj in aggregation if obj['count'] > 0
         ]
 
