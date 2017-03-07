@@ -88,7 +88,8 @@ class ReportPageFactory(factory.django.DjangoModelFactory):
             'title_type': 'plain_text',
             'title_value': RichTextFieldFactory(texts=[self.title]),
             'excerpt_type': 'multiline_text',
-            'excerpt_value': RichTextFieldFactory(texts=self.excerpt)
+            'excerpt_value': RichTextFieldFactory(texts=self.excerpt),
+            'publish_date_value': self.publish_date,
         }
 
     class Params:
@@ -96,3 +97,4 @@ class ReportPageFactory(factory.django.DjangoModelFactory):
         author = factory.LazyFunction(lambda: fake.name())
         title = factory.LazyFunction(lambda: fake.sentence())
         excerpt = factory.LazyFunction(lambda: fake.sentences())
+        publish_date = factory.LazyFunction(lambda: fake.date(pattern='%Y-%m-%d'))
