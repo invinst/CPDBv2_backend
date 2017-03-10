@@ -15,10 +15,12 @@ class OfficerSummarySerializer(serializers.Serializer):
     def get_complaint_records(self, obj):
         return {
             'count': obj.allegation_count,
-            'categories': obj.complaint_category_aggregation,
-            'races': obj.complainant_race_aggregation,
-            'ages': obj.complainant_age_aggregation,
-            'genders': obj.complainant_gender_aggregation
+            'facets': [
+                {'name': 'category', 'entries': obj.complaint_category_aggregation},
+                {'name': 'race', 'entries': obj.complainant_race_aggregation},
+                {'name': 'age', 'entries': obj.complainant_age_aggregation},
+                {'name': 'gender', 'entries': obj.complainant_gender_aggregation},
+            ]
         }
 
 

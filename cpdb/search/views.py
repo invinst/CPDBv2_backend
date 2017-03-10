@@ -16,8 +16,21 @@ class SearchViewSet(viewsets.ViewSet):
     workers = {}
 
     def retrieve(self, request, text):
-        results = SearchManager(formatters=self.formatters, workers=self.workers).search(
-            text, content_type=self._content_type)
+        results = SearchManager(
+            formatters=self.formatters,
+            workers=self.workers
+        ).search(
+            text,
+            content_type=self._content_type
+        )
+        return Response(results)
+
+    def list(self, request):
+        results = SearchManager(
+            formatters=self.formatters,
+            workers=self.workers
+        ).suggest_sample()
+
         return Response(results)
 
     @property
