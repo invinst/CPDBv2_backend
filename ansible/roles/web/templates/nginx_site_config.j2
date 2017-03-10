@@ -65,6 +65,10 @@ server {
         alias   {{ nginx_media_dir }};
     }
 
+    location ~* ^/officers/(.+)$ {
+        rewrite ^/officers/(.+)$ /officer/$1 permanent;
+    }
+
     location / {
         if (-f {{ virtualenv_path }}/maintenance_on.html) {
             return 503;

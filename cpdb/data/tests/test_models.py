@@ -88,7 +88,7 @@ class OfficerTestCase(TestCase):
 
         expect(officer.complainant_age_aggregation).to.eq([
             {
-                'value': 18,
+                'name': '18',
                 'count': 1
             }
         ])
