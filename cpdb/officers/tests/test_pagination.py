@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
 
-from officers.pagination import ESQueryPagination
+from officers.pagination import ESQueryPagination, TimelinePagination
 
 
 class ESQueryPaginationTestCase(SimpleTestCase):
@@ -42,3 +42,23 @@ class ESQueryPaginationTestCase(SimpleTestCase):
         paginated_query = pagination.paginate_es_query(query, request)
 
         expect(paginated_query).to.eq([])
+
+
+class TimelinePaginationTestCase(SimpleTestCase):
+
+    def test_get_paginated_response_includes_id(self):
+        data = ['dummy']
+
+        paginator = TimelinePagination(99)
+        paginator.limit = 10
+        paginator.offset = 0
+        paginator.count = 1
+        paginated_timeline = paginator.get_paginated_response(data)
+
+        expect(paginated_timeline.data).to.eq({
+            'id': 99,
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': ['dummy']
+        })
