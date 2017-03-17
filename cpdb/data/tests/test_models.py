@@ -20,6 +20,9 @@ class OfficerTestCase(TestCase):
         url = 'domain/officer/first-last/1'
         expect(Officer(first_name=first, last_name=last, pk=1).v1_url).to.eq(url)
 
+    def test_v2_to(self):
+        expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
+
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
         expect(officer.current_badge).to.equal('')

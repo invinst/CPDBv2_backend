@@ -146,6 +146,10 @@ class Officer(models.Model):
             for obj in aggregation if obj['count'] > 0
         ]
 
+    @property
+    def v2_to(self):
+        return '/officer/%d/' % self.pk
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
