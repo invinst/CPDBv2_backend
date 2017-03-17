@@ -22,7 +22,7 @@ class OfficerFormatter(SimpleFormatter):
                 'result_text': serialized_doc['full_name'],
                 'result_extra_information':
                     serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
-                'url': serialized_doc['url']
+                'to': serialized_doc['to']
             }
         }
 
