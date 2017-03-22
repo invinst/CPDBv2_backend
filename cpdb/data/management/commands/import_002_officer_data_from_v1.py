@@ -12,7 +12,7 @@ from django.utils import timezone
 from data.models import (
     PoliceUnit, Officer, OfficerBadgeNumber, OfficerHistory, Area, Complainant,
     Allegation, OfficerAllegation, LineArea, Investigator, AllegationCategory,
-    PoliceWitness)
+    PoliceWitness, Involvement, AttachmentFile)
 
 
 csv.field_size_limit(sys.maxsize)
@@ -42,7 +42,9 @@ IMPORT_MODELS = (
         'cat': 'allegation_category'
     }),
     (PoliceWitness, 'policewitness.csv', None),
-    (Complainant, 'complainant.csv', None)
+    (Complainant, 'complainant.csv', None),
+    (Involvement, 'involvement.csv', None),
+    (AttachmentFile, 'attachmentfile.csv', None),
 )
 
 

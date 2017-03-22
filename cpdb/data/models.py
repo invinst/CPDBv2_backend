@@ -1,12 +1,13 @@
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -124,6 +125,10 @@ class Officer(models.Model):
     def v2_to(self):
         return '/officer/%d/' % self.pk
 
+    @property
+    def abbr_name(self):
+        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
@@ -183,7 +188,6 @@ class Investigator(models.Model):
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
-
     location = models.CharField(
         max_length=20, blank=True, choices=LOCATION_CHOICES)
     add1 = models.IntegerField(null=True)
@@ -196,6 +200,30 @@ class Allegation(models.Model):
     point = models.PointField(srid=4326, null=True)
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
+
+    @property
+    def address(self):
+        return '%s %s, %s' % (self.add1, self.add2, self.city)
+
+    @property
+    def officer_allegations(self):
+        return self.officerallegation_set.all()
+
+    @property
+    def complainants(self):
+        return self.complainant_set.all()
+
+    @property
+    def videos(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_VIDEO)
+
+    @property
+    def audios(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_AUDIO)
+
+    @property
+    def documents(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
 
 class AllegationCategory(models.Model):
@@ -247,9 +275,30 @@ class OfficerAllegation(models.Model):
         return OfficerAllegation.objects.filter(allegation=self.allegation).distinct().count()
 
     @property
-    def finding(self):
+    def final_finding_display(self):
         try:
             return FINDINGS_DICT[self.final_finding]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def recc_finding_display(self):
+        try:
+            return FINDINGS_DICT[self.recc_finding]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def final_outcome_display(self):
+        try:
+            return OUTCOMES_DICT[self.final_outcome]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def recc_outcome_display(self):
+        try:
+            return OUTCOMES_DICT[self.recc_outcome]
         except KeyError:
             return 'Unknown'
 
@@ -267,6 +316,13 @@ class Complainant(models.Model):
     race = models.CharField(max_length=50, blank=True)
     age = models.IntegerField(null=True)
 
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
+
 
 class OfficerAlias(models.Model):
     old_officer_id = models.IntegerField()
@@ -274,3 +330,33 @@ class OfficerAlias(models.Model):
 
     class Meta:
         unique_together = ('old_officer_id', 'new_officer')
+
+
+class Involvement(models.Model):
+    allegation = models.ForeignKey(Allegation)
+    officer = models.ForeignKey(Officer, null=True)
+    full_name = models.CharField(max_length=50)
+    involved_type = models.CharField(max_length=25)
+    gender = models.CharField(max_length=1, null=True)
+    race = models.CharField(max_length=50, null=True)
+    age = models.IntegerField(null=True)
+
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
+
+
+class AttachmentFile(models.Model):
+    file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    url = models.CharField(max_length=255, db_index=True)
+    additional_info = JSONField()
+    tag = models.CharField(max_length=50)
+    original_url = models.CharField(max_length=255, db_index=True)
+    allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+
+    class Meta:
+        unique_together = (('allegation', 'original_url'),)

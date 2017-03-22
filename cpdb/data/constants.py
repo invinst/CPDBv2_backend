@@ -101,6 +101,8 @@ OUTCOMES = [
     ['', 'Unknown'],
 ]
 
+OUTCOMES_DICT = dict(OUTCOMES)
+
 FINDINGS = [
     ['UN', 'Unfounded'],  # means final_outcome_class = not-sustained
     ['EX', 'Exonerated'],  # means final_outcome_class = not-sustained
@@ -123,3 +125,13 @@ GENDER = [
 ]
 
 GENDER_DICT = dict(GENDER)
+
+MEDIA_TYPE_VIDEO = 'video'
+MEDIA_TYPE_AUDIO = 'audio'
+MEDIA_TYPE_DOCUMENT = 'document'
+
+MEDIA_TYPE_CHOICES = [
+    [MEDIA_TYPE_VIDEO, 'Video'],
+    [MEDIA_TYPE_AUDIO, 'Audio'],
+    [MEDIA_TYPE_DOCUMENT, 'Document']
+]
