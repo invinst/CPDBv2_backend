@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from .services import SearchManager
 from .formatters import (
     OfficerFormatter, NameFormatter, OfficerV2Formatter, NameV2Formatter,
-    FAQFormatter, ReportFormatter, CoAccusedOfficerFormatter)
+    FAQFormatter, ReportFormatter)
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
-    CoAccusedOfficerWorker)
+    CoAccusedOfficerWorker, UnitOfficerWorker)
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -16,8 +16,21 @@ class SearchViewSet(viewsets.ViewSet):
     workers = {}
 
     def retrieve(self, request, text):
-        results = SearchManager(formatters=self.formatters, workers=self.workers).search(
-            text, content_type=self._content_type)
+        results = SearchManager(
+            formatters=self.formatters,
+            workers=self.workers
+        ).search(
+            text,
+            content_type=self._content_type
+        )
+        return Response(results)
+
+    def list(self, request):
+        results = SearchManager(
+            formatters=self.formatters,
+            workers=self.workers
+        ).suggest_sample()
+
         return Response(results)
 
     @property
@@ -32,14 +45,16 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': NameFormatter,
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter,
-        'CO-ACCUSED': CoAccusedOfficerFormatter
+        'CO-ACCUSED': OfficerFormatter,
+        'UNIT > OFFICERS': OfficerFormatter
     }
     workers = {
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
-        'CO-ACCUSED': CoAccusedOfficerWorker()
+        'CO-ACCUSED': CoAccusedOfficerWorker(),
+        'UNIT > OFFICERS': UnitOfficerWorker()
     }
 
 

@@ -7,8 +7,9 @@ import factory
 from faker import Faker
 from wagtail.wagtailcore.models import Page
 
-from data.models import (Area, Allegation, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit,
-                         OfficerAllegation)
+from data.models import (
+    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
+    Complainant, OfficerHistory, AllegationCategory)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -75,6 +76,21 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
 
 
+class AllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Allegation
+
+    crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+
+
+class OfficerAllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerAllegation
+
+    allegation = factory.SubFactory(AllegationFactory)
+    officer = factory.SubFactory(OfficerFactory)
+
+
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = OfficerBadgeNumber
@@ -91,15 +107,22 @@ class PoliceUnitFactory(factory.django.DjangoModelFactory):
     unit_name = factory.LazyFunction(lambda: fake.numerify(text="###"))
 
 
-class AllegationFactory(factory.django.DjangoModelFactory):
+class ComplainantFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Allegation
+        model = Complainant
 
-    crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+    allegation = factory.SubFactory(Allegation)
 
 
-class OfficerAllegationFactory(factory.django.DjangoModelFactory):
+class AllegationCategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = OfficerAllegation
+        model = AllegationCategory
+
+
+class OfficerHistoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerHistory
 
     officer = factory.SubFactory(OfficerFactory)
+    unit = factory.SubFactory(PoliceUnitFactory)
+    effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade())

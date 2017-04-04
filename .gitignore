@@ -6,6 +6,7 @@
 
 # sqlite database
 *.sqlite3
+*.sql
 
 # For pyCharm dev
 .project
@@ -25,6 +26,8 @@ staticfiles/
 
 cpdb/static/
 cpdb/media/
+
+.DS_Store
 
 # Newrelic config
 newrelic.ini

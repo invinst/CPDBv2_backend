@@ -5,11 +5,11 @@ from django.test import SimpleTestCase, TestCase
 
 from ..search_indexers import (
     BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager)
+    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager, UnitOfficerIndexer)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
         AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-        AllegationFactory, OfficerAllegationFactory)
+        AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -19,11 +19,23 @@ class BaseIndexerTestCase(SimpleTestCase):
     def test_extract_datum(self):
         expect(lambda: BaseIndexer().extract_datum('anything')).to.throw(NotImplementedError)
 
-    def test_index_datum(self):
+    def test_index_datum_dict(self):
         indexer = BaseIndexer()
         doc_type = Mock()
         indexer.doc_type_klass = Mock(return_value=doc_type)
         indexer.extract_datum = Mock(return_value={'key': 'something'})
+        indexer.get_queryset = Mock(return_value=['something'])
+
+        indexer.index_datum('anything')
+
+        indexer.doc_type_klass.assert_called_once_with(key='something')
+        expect(doc_type.save.called).to.be.true()
+
+    def test_index_datum_list(self):
+        indexer = BaseIndexer()
+        doc_type = Mock()
+        indexer.doc_type_klass = Mock(return_value=doc_type)
+        indexer.extract_datum = Mock(return_value=[{'key': 'something'}])
         indexer.get_queryset = Mock(return_value=['something'])
 
         indexer.index_datum('anything')
@@ -49,13 +61,19 @@ class FAQIndexerTestCase(TestCase):
         expect(FAQIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = FAQPageFactory(question='question', answer=['answer1', 'answer2'])
+        datum = FAQPageFactory(
+            question='question',
+            answer=['answer1', 'answer2'],
+            pk=1,
+        )
 
         expect(
             FAQIndexer().extract_datum(datum)
         ).to.be.eq({
             'question': 'question',
-            'answer': 'answer1\nanswer2'
+            'answer': 'answer1\nanswer2',
+            'meta': {'id': 1},
+            'tags': [],
         })
 
 
@@ -68,7 +86,10 @@ class ReportIndexerTestCase(TestCase):
     def test_extract_datum(self):
         datum = ReportPageFactory(
             publication='publication', author='author',
-            title='title', excerpt=['excerpt1', 'excerpt2'])
+            title='title', excerpt=['excerpt1', 'excerpt2'],
+            publish_date='2017-12-20',
+            pk=11
+        )
 
         expect(
             ReportIndexer().extract_datum(datum)
@@ -76,7 +97,10 @@ class ReportIndexerTestCase(TestCase):
             'publication': 'publication',
             'author': 'author',
             'excerpt': 'excerpt1\nexcerpt2',
-            'title': 'title'
+            'title': 'title',
+            'publish_date': '2017-12-20',
+            'meta': {'id': 11},
+            'tags': [],
         })
 
 
@@ -95,7 +119,9 @@ class OfficerIndexerTestCase(TestCase):
         ).to.be.eq({
             'full_name': 'first last',
             'badge': '123',
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': [],
+            'meta': {'id': datum.pk}
         })
 
 
@@ -106,12 +132,13 @@ class UnitIndexerTestCase(TestCase):
         expect(UnitIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = PoliceUnitFactory(unit_name='unit')
+        datum = PoliceUnitFactory(unit_name='unit', description='description')
 
         expect(
             UnitIndexer().extract_datum(datum)
         ).to.be.eq({
             'name': 'unit',
+            'description': 'description',
             'url': datum.v1_url
         })
 
@@ -158,15 +185,34 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
         expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
 
     def test_extract_datum(self):
-        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq({
+        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq([{
+            'full_name': 'Cristiano Ronaldo',
+            'badge': '',
+            'url': self.officer_2.v1_url,
+            'co_accused_officer': {
+                'badge': '',
+                'full_name': 'Kevin Osborn'
+            }
+        }])
+
+
+class UnitOfficerIndexerTestCase(TestCase):
+    def setUp(self):
+        unit = PoliceUnitFactory(unit_name='001')
+        officer = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.history = OfficerHistoryFactory(unit=unit, officer=officer)
+
+    def test_get_queryset(self):
+        expect(UnitOfficerIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        expect(UnitOfficerIndexer().extract_datum(self.history)).to.eq({
             'full_name': 'Kevin Osborn',
             'badge': '',
-            'co_accused_officer': [{
-                'badge': '',
-                'url': self.officer_2.v1_url,
-                'full_name': 'Cristiano Ronaldo'
-                }]
-            })
+            'url': self.history.officer.v1_url,
+            'allegation_count': 0,
+            'unit_name': '001'
+        })
 
 
 class IndexerManagerTestCase(SimpleTestCase):

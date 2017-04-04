@@ -31,8 +31,11 @@ from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from landing_page.views import LandingPageViewSet
 from search.views import SearchV2ViewSet, SearchV1ViewSet
+from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
+from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
+from officers.views import OfficersViewSet
 from analytics.views import EventViewSet
 
 
@@ -50,6 +53,12 @@ router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
+router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
+router_v2.register(
+    r'report-bottomsheet-officer-search',
+    ReportBottomSheetOfficerSearchViewSet,
+    base_name='report-bottomsheet-officer-search')
+router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -59,6 +68,7 @@ urlpatterns = [
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
+        r'officer/\d+(?:/timeline)?|'
         r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',

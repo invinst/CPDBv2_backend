@@ -1,5 +1,7 @@
+from elasticsearch_dsl import Q
+
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType,
+    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType,
     NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
 
 
@@ -15,10 +17,22 @@ class Worker(object):
     def _limit(self, search_results, begin, size):
         return search_results[begin:size]
 
+    def query(self, term):
+        return self._searcher.query('multi_match', query=term,
+                                    operator='and', fields=self.fields)
+
     def search(self, term, size=10, begin=0):
-        search_results = self._searcher.query('multi_match', query=term,
-                                              operator='and', fields=self.fields)
-        return self._limit(search_results, begin, size).execute()
+        return self._limit(self.query(term), begin, size).execute()
+
+    def get_sample(self):
+        query = self._searcher.query(
+            'function_score',
+            random_score={}
+        ).query(
+            'exists',
+            field='tags'
+        )
+        return self._limit(query, 0, 1).execute()
 
 
 class FAQWorker(Worker):
@@ -33,12 +47,12 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge']
+    fields = ['full_name', 'badge', 'tags']
 
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name']
+    fields = ['name', 'description']
 
 
 class NeighborhoodsWorker(Worker):
@@ -53,9 +67,19 @@ class CommunityWorker(Worker):
 
 class CoAccusedOfficerWorker(Worker):
     doc_type_klass = CoAccusedOfficerDocType
-    fields = ['full_name', 'badge']
+    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge']
 
-    def search(self, term, size=5, begin=0):
-        search_results = self._searcher.query('multi_match', query=term,
-                                              operator='and', fields=self.fields)
-        return self._limit(search_results, begin, size).execute()
+    def query(self, term):
+        return self._searcher.query(
+            'nested',
+            path='co_accused_officer',
+            query=Q('multi_match', query=term, operator='and', fields=self.fields)
+        )
+
+
+class UnitOfficerWorker(Worker):
+    doc_type_klass = UnitOfficerDocType
+    fields = ['unit_name']
+
+    def query(self, term):
+        return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
