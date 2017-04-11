@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT)
+from data.utils.aggregation import get_num_range_case
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -64,6 +65,10 @@ class Officer(models.Model):
         return self.officerallegation_set.all().distinct().count()
 
     @property
+    def sustained_count(self):
+        return self.officerallegation_set.filter(final_finding='SU').distinct().count()
+
+    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
@@ -76,45 +81,66 @@ class Officer(models.Model):
 
     @property
     def complaint_category_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation_category__category')\
-            .annotate(count=models.Count('allegation_category'))
-        return [
-            {'name': obj['allegation_category__category'], 'count': obj['count']}
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(
+                    name=models.Case(
+                        models.When(allegation_category__category__isnull=True, then=models.Value('Unknown')),
+                        default='allegation_category__category',
+                        output_field=models.CharField()))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_race_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__race')\
-            .annotate(count=models.Count('allegation__complainant__race'))
-
-        return [
-            {
-                'name': obj['allegation__complainant__race'] if obj['allegation__complainant__race'] else None,
-                'count': obj['count']
-            }
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(name=models.Case(
+                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                    models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                    default='allegation__complainant__race',
+                    output_field=models.CharField()))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_age_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__age')\
-            .annotate(count=models.Count('allegation__complainant__age'))
-        return [
-            {'name': str(obj['allegation__complainant__age']), 'count': obj['count']}
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_gender_aggregation(self):
-        aggregation = filter(
-            None,
-            self.officerallegation_set.values('allegation__complainant__gender')
-            .annotate(count=models.Count('allegation__complainant__gender')))
+        aggregation = self.officerallegation_set.values('allegation__complainant__gender') \
+            .annotate(complainant_gender=models.Case(
+                    models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
+                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                    default='allegation__complainant__gender',
+                    output_field=models.CharField()
+                )) \
+            .values('complainant_gender') \
+            .annotate(count=models.Count('complainant_gender'), sustained_count=models.Sum(models.Case(
+                    models.When(final_finding='SU', then=1), default=models.Value(0),
+                    output_field=models.IntegerField())))
 
         return [
             {
-                'name': GENDER_DICT.get(obj['allegation__complainant__gender'], None),
+                'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
+                'sustained_count': obj['sustained_count'],
                 'count': obj['count']
             }
             for obj in aggregation if obj['count'] > 0

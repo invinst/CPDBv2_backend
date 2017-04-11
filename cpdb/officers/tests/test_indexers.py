@@ -9,6 +9,9 @@ from officers.indexers import OfficersIndexer
 
 
 class OfficersIndexerTestCase(SimpleTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
     def test_get_queryset(self):
         officer = Mock()
 
@@ -26,32 +29,37 @@ class OfficersIndexerTestCase(SimpleTestCase):
         officer.gender_display = 'Male'
         officer.appointed_date = date(2017, 2, 27)
         officer.allegation_count = 1
+        officer.sustained_count = 0
         officer.complaint_category_aggregation = [
             {
                 'name': 'Illegal Search',
-                'count': 1
+                'count': 1,
+                'sustained_count': 0
             }
         ]
         officer.complainant_race_aggregation = [
             {
                 'name': 'White',
-                'count': 1
+                'count': 1,
+                'sustained_count': 0
             }
         ]
         officer.complainant_age_aggregation = [
             {
-                'name': '18',
-                'count': 1
+                'name': '<20',
+                'count': 1,
+                'sustained_count': 0
             }
         ]
         officer.complainant_gender_aggregation = [
             {
                 'name': 'Male',
-                'count': 1
+                'count': 1,
+                'sustained_count': 0
             }
         ]
 
-        expect(OfficersIndexer().extract_datum(officer)).to.eq({
+        self.assertDictEqual(OfficersIndexer().extract_datum(officer), {
             'id': 123,
             'full_name': 'Alex Mack',
             'unit': '4',
@@ -62,22 +70,23 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_appt': '2017-02-27',
             'complaint_records': {
                 'count': 1,
+                'sustained_count': 0,
                 'facets': [
                     {
                         'name': 'category',
-                        'entries': [{'name': 'Illegal Search', 'count': 1}]
+                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}]
                     },
                     {
-                        'name': 'race',
-                        'entries': [{'name': 'White', 'count': 1}]
+                        'name': 'complainant race',
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0}]
                     },
                     {
-                        'name': 'age',
-                        'entries': [{'name': '18', 'count': 1}]
+                        'name': 'complainant age',
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0}]
                     },
                     {
-                        'name': 'gender',
-                        'entries': [{'name': 'Male', 'count': 1}]
+                        'name': 'complainant gender',
+                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0}]
                     }
                 ]
             }

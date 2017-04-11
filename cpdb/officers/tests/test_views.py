@@ -25,7 +25,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
         ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
-        OfficerAllegationFactory(officer=officer, allegation=allegation, allegation_category=allegation_category)
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU'
+        )
         self.refresh_index()
 
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={
@@ -43,22 +45,23 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Male',
             'complaint_records': {
                 'count': 1,
+                'sustained_count': 1,
                 'facets': [
                     {
                         'name': 'category',
-                        'entries': [{'name': 'Use of Force', 'count': 1}]
+                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1}]
                     },
                     {
-                        'name': 'race',
-                        'entries': [{'name': 'White', 'count': 1}]
+                        'name': 'complainant race',
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1}]
                     },
                     {
-                        'name': 'age',
-                        'entries': [{'name': '18', 'count': 1}]
+                        'name': 'complainant age',
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1}]
                     },
                     {
-                        'name': 'gender',
-                        'entries': [{'name': 'Female', 'count': 1}]
+                        'name': 'complainant gender',
+                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1}]
                     }
                 ]
             }

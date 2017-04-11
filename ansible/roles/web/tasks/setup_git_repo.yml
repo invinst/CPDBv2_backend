@@ -11,6 +11,14 @@
   become: yes
   become_user: "{{ deploy_user }}"
 
+- name: Remove all .pyc files
+  command: find . -name \*.pyc -delete
+  args:
+    chdir: "{{ project_root_path }}"
+  tags: debug
+  become: yes
+  become_user: "{{ deploy_user }}"
+
 - name: Create static folder if it is not there
   file: path={{ staticfiles_dir }}
         owner={{ deploy_user }}

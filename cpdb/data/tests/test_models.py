@@ -54,25 +54,30 @@ class OfficerTestCase(TestCase):
         expect(officer.complaint_category_aggregation).to.eq([
             {
                 'name': 'Use of Force',
-                'count': 1
+                'count': 1,
+                'sustained_count': 0
             }
         ])
 
     def test_complainant_race_aggregation(self):
         officer = OfficerFactory()
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation)
-        ComplainantFactory(allegation=allegation, race='White')
-        ComplainantFactory(allegation=allegation, race='')
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        ComplainantFactory(allegation=allegation1, race='White')
+        ComplainantFactory(allegation=allegation2, race='')
 
         expect(officer.complainant_race_aggregation).to.eq([
             {
                 'name': 'White',
-                'count': 1
+                'count': 1,
+                'sustained_count': 1
             },
             {
-                'name': None,
-                'count': 1
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0
             }
         ])
 
@@ -82,39 +87,45 @@ class OfficerTestCase(TestCase):
 
     def test_complainant_age_aggregation(self):
         officer = OfficerFactory()
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation)
-        ComplainantFactory(allegation=allegation, age=18)
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        ComplainantFactory(allegation=allegation1, age=23)
+        ComplainantFactory(allegation=allegation2, age=None)
 
         expect(officer.complainant_age_aggregation).to.eq([
             {
-                'name': '18',
-                'count': 1
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0
+            },
+            {
+                'name': '21-30',
+                'count': 1,
+                'sustained_count': 1
             }
         ])
 
-    def test_complainant_age_aggregation_age_null(self):
-        officer = OfficerFactory()
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation)
-        ComplainantFactory(allegation=allegation, age=None)
-        expect(officer.complainant_age_aggregation).to.eq([])
-
     def test_complainant_gender_aggregation(self):
         officer = OfficerFactory()
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation)
-        ComplainantFactory(allegation=allegation, gender='F')
-        ComplainantFactory(allegation=allegation, gender='')
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        ComplainantFactory(allegation=allegation1, gender='F')
+        ComplainantFactory(allegation=allegation2, gender='')
 
         expect(officer.complainant_gender_aggregation).to.eq([
             {
                 'name': 'Female',
-                'count': 1
+                'count': 1,
+                'sustained_count': 1
             },
             {
-                'name': None,
-                'count': 1
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0
             }
         ])
 
