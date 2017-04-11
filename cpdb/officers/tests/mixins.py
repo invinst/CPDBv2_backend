@@ -1,6 +1,6 @@
 from es_index import es_client
 from officers.indices import officers_index
-from officers.indexers import OfficersIndexer
+from officers.indexers import OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer
 
 
 class OfficerSummaryTestCaseMixin(object):
@@ -10,4 +10,6 @@ class OfficerSummaryTestCaseMixin(object):
 
     def refresh_index(self):
         OfficersIndexer().reindex()
-        es_client.indices.refresh(index="test_officers")
+        CRTimelineEventIndexer().reindex()
+        UnitChangeTimelineEventIndexer().reindex()
+        es_client.indices.refresh(index='test_officers')

@@ -23,3 +23,37 @@ class OfficerSummarySerializer(serializers.Serializer):
                 {'name': 'complainant gender', 'entries': obj.complainant_gender_aggregation},
             ]
         }
+
+
+class CRTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='start_date', format=None)
+    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    crid = serializers.CharField()
+    category = serializers.CharField()
+    subcategory = serializers.CharField()
+    finding = serializers.CharField()
+    coaccused = serializers.IntegerField(source='coaccused_count')
+
+    def get_kind(self, obj):
+        return 'CR'
+
+
+class UnitChangeTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='effective_date', format=None)
+    date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    unit_name = serializers.CharField()
+
+    def get_kind(self, obj):
+        return 'UNIT_CHANGE'
+
+
+class TimelineSerializer(serializers.Serializer):
+    def to_representation(self, obj):
+        result = obj.to_dict()
+        result.pop('officer_id')
+        result.pop('date_sort')
+        return result

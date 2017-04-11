@@ -31,6 +31,7 @@ from story.views import StoryViewSet
 from faq.views import FAQViewSet
 from landing_page.views import LandingPageViewSet
 from search.views import SearchV2ViewSet, SearchV1ViewSet
+from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
@@ -52,6 +53,7 @@ router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
+router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(
     r'report-bottomsheet-officer-search',
     ReportBottomSheetOfficerSearchViewSet,

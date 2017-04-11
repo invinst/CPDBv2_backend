@@ -52,7 +52,11 @@ class FAQIndexer(BaseIndexer):
 
         return {
             'question': extract_text_from_value(fields['question_value']),
-            'answer': extract_text_from_value(fields['answer_value'])
+            'answer': extract_text_from_value(fields['answer_value']),
+            'tags': datum.tags,
+            'meta': {
+              'id': datum.pk,
+            }
         }
 
 
@@ -69,7 +73,12 @@ class ReportIndexer(BaseIndexer):
             'publication': fields['publication_value'],
             'author': fields['author_value'],
             'excerpt': extract_text_from_value(fields['excerpt_value']),
-            'title': extract_text_from_value(fields['title_value'])
+            'title': extract_text_from_value(fields['title_value']),
+            'publish_date': fields['publish_date_value'],
+            'tags': datum.tags,
+            'meta': {
+              'id': datum.pk,
+            }
         }
 
 
