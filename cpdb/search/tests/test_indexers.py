@@ -119,7 +119,7 @@ class OfficerIndexerTestCase(TestCase):
         ).to.be.eq({
             'full_name': 'first last',
             'badge': '123',
-            'url': datum.v1_url,
+            'to': datum.v2_to,
             'tags': [],
             'meta': {'id': datum.pk}
         })
@@ -188,7 +188,7 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
         expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq([{
             'full_name': 'Cristiano Ronaldo',
             'badge': '',
-            'url': self.officer_2.v1_url,
+            'to': self.officer_2.v2_to,
             'co_accused_officer': {
                 'badge': '',
                 'full_name': 'Kevin Osborn'
@@ -209,7 +209,7 @@ class UnitOfficerIndexerTestCase(TestCase):
         expect(UnitOfficerIndexer().extract_datum(self.history)).to.eq({
             'full_name': 'Kevin Osborn',
             'badge': '',
-            'url': self.history.officer.v1_url,
+            'to': self.history.officer.v2_to,
             'allegation_count': 0,
             'unit_name': '001'
         })

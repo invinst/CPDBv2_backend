@@ -98,7 +98,7 @@ class CoAccusedOfficerIndexer(BaseIndexer):
         return [{
             'full_name': officer.full_name,
             'badge': officer.current_badge,
-            'url': officer.v1_url,
+            'to': officer.v2_to,
             'co_accused_officer': {
                 'full_name': datum.full_name,
                 'badge': datum.current_badge
@@ -116,7 +116,7 @@ class OfficerIndexer(BaseIndexer):
         return {
             'full_name': datum.full_name,
             'badge': datum.current_badge,
-            'url': datum.v1_url,
+            'to': datum.v2_to,
             'tags': datum.tags,
             'meta': {
                 'id': datum.pk
@@ -148,7 +148,7 @@ class UnitOfficerIndexer(BaseIndexer):
         return {
             'full_name': datum.officer.full_name,
             'badge': datum.officer.current_badge,
-            'url': datum.officer.v1_url,
+            'to': datum.officer.v2_to,
             'allegation_count': datum.officer.officerallegation_set.count(),
             'unit_name': datum.unit.unit_name
         }
