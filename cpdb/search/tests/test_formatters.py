@@ -37,7 +37,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
         doc = Mock(to_dict=Mock(return_value={
             'full_name': 'name',
             'badge': '123',
-            'url': 'url',
+            'to': 'to',
             'tags': ['tag']
         }))
 
@@ -48,7 +48,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'payload': {
                 'result_text': 'name',
                 'result_extra_information': 'Badge # 123',
-                'url': 'url',
+                'to': 'to',
                 'tags': ['tag']
             }
         })
