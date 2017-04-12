@@ -14,7 +14,7 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
         doc = Mock(
             full_name='name',
             badge='123',
-            url='url',
+            to='url',
             meta=Mock(id='333'),
         )
 
