@@ -1515,3 +1515,65 @@ This api require an api access token set in `Authorization` header. To get an ap
                 }
             ]
         }
+
+## Officer timeline minimap [/officers/{officer_id}/timeline-minimap]
+
+### Get Officer timeline minimap [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        [
+            {
+                "kind": "cr",
+                "year": 2016
+            },
+            {
+                "kind": "trr",
+                "year": 2015
+            }
+        ]
+
+## Officer timeline items list [/officers/{officer_id}/timeline-items]
+
+### Get Officer timeline items list [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "count": 20,
+            "previous": null,
+            "next": "http://cpdp.co/officers/123/timeline-items/?offset=20"
+            "results": [
+                {
+                    "kind": "year",
+                    "crs": 2,
+                    "year": 2016,
+                    "trrs": 0,
+                    "salary": 46492.96
+                },
+                {
+                    "kind": "cr",
+                    "crid": "307965",
+                    "category": "Illegal Search",
+                    "subcategory": "Search of premise/vehicle without warrant",
+                    "finding": "Unfounded",
+                    "coaccused": 4,
+                    "date": "2016-08-24"
+                },
+                {
+                    "kind": "unit",
+                    "unit_name": "003",
+                    "date": "2016-08-24"
+                },
+                {
+                    "kind": "joined",
+                    "date": "2012-08-24"
+                }
+            ]
+        }

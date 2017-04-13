@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from data.models import Officer
-from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
+from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerTimelineMinimapDocType
 from .serializers import TimelineSerializer
 from .pagination import TimelinePagination
 
@@ -20,12 +20,23 @@ class OfficersViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @detail_route(methods=['get'])
-    def timeline(self, request, pk):
+    def timeline_items(self, request, pk):
         if Officer.objects.filter(pk=pk).exists():
-            query = OfficerTimelineEventDocType().search().sort('-date_sort').query('term', officer_id=pk)
+            query = OfficerTimelineEventDocType().search().sort(
+                '-year_sort', '-year_priority', '-date_sort'
+            ).query('term', officer_id=pk)
             paginator = TimelinePagination(int(pk))
             paginated_query = paginator.paginate_es_query(query, request)
             serializer = TimelineSerializer(paginated_query, many=True)
             return paginator.get_paginated_response(serializer.data)
         else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @detail_route(methods=['get'])
+    def timeline_minimap(self, request, pk):
+        query = OfficerTimelineMinimapDocType().search().query('term', officer_id=pk)
+        search_result = query.execute()
+        try:
+            return Response(search_result[0].to_dict()['items'])
+        except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)

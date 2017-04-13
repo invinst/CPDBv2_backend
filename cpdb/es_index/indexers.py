@@ -1,3 +1,5 @@
+import types
+
 from tqdm import tqdm
 
 
@@ -11,8 +13,14 @@ class BaseIndexer(object):
         raise NotImplementedError
 
     def index_datum(self, datum):
-        doc = self.doc_type_klass(**self.extract_datum(datum))
-        doc.save()
+        result = self.extract_datum(datum)
+        if isinstance(result, types.GeneratorType):
+            for obj in result:
+                doc = self.doc_type_klass(**obj)
+                doc.save()
+        else:
+            doc = self.doc_type_klass(**result)
+            doc.save()
 
     def reindex(self):
         for datum in tqdm(

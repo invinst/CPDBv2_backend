@@ -15,6 +15,8 @@ class TimelineSerializerTestCase(SimpleTestCase):
             'a': 'b',
             'c': 'd',
             'date_sort': datetime.now(),
+            'year_sort': 2000,
+            'year_priority': 0,
             'officer_id': 123
         })
         expect(TimelineSerializer(obj).data).to.eq({
@@ -27,12 +29,16 @@ class TimelineSerializerTestCase(SimpleTestCase):
         obj1.to_dict = Mock(return_value={
             'a': 'b',
             'date_sort': datetime.now(),
+            'year_sort': 2000,
+            'year_priority': 0,
             'officer_id': 123
         })
         obj2 = Mock()
         obj2.to_dict = Mock(return_value={
             'c': 'd',
             'date_sort': datetime.now(),
+            'year_sort': 2000,
+            'year_priority': 0,
             'officer_id': 456
         })
         expect(TimelineSerializer([
