@@ -9,7 +9,8 @@ from rest_framework import status
 from robber import expect
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory,
+    AllegationCategoryFactory
 )
 from .mixins import CRTestCaseMixin
 
@@ -20,7 +21,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         self.maxDiff = None
 
     def test_retrieve(self):
-        area = AreaFactory(id=1)
+        area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(id=123, first_name='Mr', last_name='Foo', gender='M', race='White')
         officer2 = OfficerFactory(id=456, first_name='Mrs', last_name='Bar', gender='F', race='Black')
         allegation = AllegationFactory(
@@ -31,11 +32,17 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='F', race='White', age='20')
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', recc_outcome='100',
-            final_outcome='400', start_date=date(2003, 2, 28), end_date=date(2004, 2, 28)
+            final_outcome='400', start_date=date(2003, 2, 28), end_date=date(2004, 2, 28),
+            allegation_category=AllegationCategoryFactory(
+                category='Operation/Personnel Violations',
+                allegation_name='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY')
         )
         OfficerAllegationFactory(
             officer=officer2, allegation=allegation, final_finding='UN', recc_outcome='400',
-            final_outcome='800', start_date=date(2005, 2, 28), end_date=date(2006, 2, 28)
+            final_outcome='800', start_date=date(2005, 2, 28), end_date=date(2006, 2, 28),
+            allegation_category=AllegationCategoryFactory(
+                category='Use of Force',
+                allegation_name='UNNECESSARY PHYSICAL CONTACT - ON DUTY')
         )
         involvedOfficer1 = OfficerFactory(id=1, first_name='Lee', last_name='Skol', gender='F', race='White')
         involvedOfficer2 = OfficerFactory(id=2, first_name='Richard', last_name='Piwinicki', gender='M', race='White')
@@ -63,6 +70,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'final_finding': 'Sustained',
                     'recc_outcome': 'Reprimand',
                     'final_outcome': 'Separation',
+                    'category': 'Operation/Personnel Violations',
+                    'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
                     'start_date': '2003-02-28',
                     'end_date': '2004-02-28'
                 },
@@ -74,6 +83,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'final_finding': 'Unfounded',
                     'recc_outcome': 'Separation',
                     'final_outcome': 'Resigned',
+                    'category': 'Use of Force',
+                    'subcategory': 'UNNECESSARY PHYSICAL CONTACT - ON DUTY',
                     'start_date': '2005-02-28',
                     'end_date': '2006-02-28'
                 }
@@ -97,7 +108,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             'incident_date': '2002-02-28',
             'address': '3510 Michigan Ave, Chicago',
             'location': 'Police Building',
-            'beat': 1,
+            'beat': {'name': 'Lincoln Square'},
             'involvements': [
                 {
                     'involved_type': 'investigator',

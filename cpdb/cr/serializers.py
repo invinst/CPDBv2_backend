@@ -9,6 +9,8 @@ class CoaccusedSerializer(serializers.Serializer):
     final_finding = serializers.CharField(source='final_finding_display')
     recc_outcome = serializers.CharField(source='recc_outcome_display')
     final_outcome = serializers.CharField(source='final_outcome_display')
+    category = serializers.CharField()
+    subcategory = serializers.CharField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
 
@@ -28,6 +30,10 @@ class InvolvementOfficerSerializer(serializers.Serializer):
         return ('%s, %s' % (obj.gender_display, obj.race)).lower()
 
 
+class BeatSerializer(serializers.Serializer):
+    name = serializers.CharField()
+
+
 class CRSerializer(serializers.Serializer):
     crid = serializers.CharField()
     coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
@@ -36,11 +42,8 @@ class CRSerializer(serializers.Serializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     address = serializers.CharField()
     location = serializers.CharField()
-    beat = serializers.SerializerMethodField()
+    beat = BeatSerializer()
     involvements = serializers.SerializerMethodField()
-
-    def get_beat(self, obj):
-        return obj.beat.id if obj.beat is not None else 'Unknown'
 
     def get_point(self, obj):
         if obj.point is not None:

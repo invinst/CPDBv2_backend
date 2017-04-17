@@ -22,12 +22,12 @@ class CRSerializerTestCase(TestCase):
         obj.officer_allegations = []
         obj.complainants = []
         result = CRSerializer(obj).data
-        expect(result['beat']).to.eq('Unknown')
+        expect(result['beat']).to.eq(None)
 
         obj.beat = Mock()
-        obj.beat.id = 1
+        obj.beat.name = '12'
         result = CRSerializer(obj).data
-        expect(result['beat']).to.eq(1)
+        expect(result['beat']).to.eq({'name': '12'})
 
     def test_get_point(self):
         obj = Mock()

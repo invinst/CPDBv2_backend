@@ -27,7 +27,8 @@ class CRIndexerTestCase(SimpleTestCase):
             Mock(
                 officer=Mock(id=1, full_name='Mr. Foo', gender_display='Male', race='White'),
                 final_finding_display='Sustained', recc_outcome_display='Reprimand', final_outcome_display='Reprimand',
-                start_date='2002-02-28', end_date='2003-02-28'
+                start_date='2002-02-28', end_date='2003-02-28', category='Operation/Personnel Violations',
+                subcategory='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
             )
         ]
         allegation.complainants = [Mock(gender_display='Male', race='White', age=30)]
@@ -36,7 +37,7 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.address = '3510 Michigan Ave, Chicago, IL 60653'
         allegation.location = 'Police Building'
         allegation.beat = Mock()
-        allegation.beat.id = 1
+        allegation.beat.name = '23'
         allegation.involvement_set = Mock()
         allegation.involvement_set.filter = Mock(return_value=[Mock(
             involved_type='investigator', officer=Mock(id=1, abbr_name='L. Skol', gender_display='Male', race='White')
@@ -54,6 +55,8 @@ class CRIndexerTestCase(SimpleTestCase):
                     'final_finding': 'Sustained',
                     'recc_outcome': 'Reprimand',
                     'final_outcome': 'Reprimand',
+                    'category': 'Operation/Personnel Violations',
+                    'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
                     'start_date': '2002-02-28',
                     'end_date': '2003-02-28',
                 }
@@ -63,7 +66,7 @@ class CRIndexerTestCase(SimpleTestCase):
             'incident_date': '2017-03-21',
             'address': '3510 Michigan Ave, Chicago, IL 60653',
             'location': 'Police Building',
-            'beat': 1,
+            'beat': {'name': '23'},
             'involvements': [
                 {
                     'involved_type': 'investigator',
