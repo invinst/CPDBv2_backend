@@ -117,7 +117,7 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             'date_sort': date(2012, 1, 1),
             'date': '2012-01-01',
             'year_sort': 2012,
-            'kind': 'cr',
+            'kind': 'CR',
             'crid': '123456',
             'category': 'Illegal Search',
             'subcategory': 'Search of premise/vehicle without warrant',
@@ -142,7 +142,7 @@ class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
             'officer_id': 123,
             'date_sort': date(2010, 3, 4),
             'date': '2010-03-04',
-            'kind': 'unit',
+            'kind': 'UNIT_CHANGE',
             'unit_name': '003',
             'year_sort': 2010,
         })
@@ -175,7 +175,7 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                 )).to.eq([
                     {
                         'officer_id': 123,
-                        'kind': 'year',
+                        'kind': 'YEAR',
                         'year': 2012,
                         'date_sort': date(2012, 12, 31),
                         'year_sort': 2012,
@@ -183,7 +183,7 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                     },
                     {
                         'officer_id': 123,
-                        'kind': 'year',
+                        'kind': 'YEAR',
                         'year': 2015,
                         'date_sort': date(2015, 12, 31),
                         'year_sort': 2015,
@@ -205,7 +205,7 @@ class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
         expect(JoinedTimelineEventIndexer().extract_datum(officer)).to.eq({
             'officer_id': 123,
             'date_sort': date(2012, 1, 1),
-            'kind': 'joined',
+            'kind': 'JOINED',
             'date': '2012-01-01',
             'year_sort': 2012,
         })

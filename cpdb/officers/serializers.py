@@ -38,7 +38,7 @@ class CRTimelineSerializer(serializers.Serializer):
     coaccused = serializers.IntegerField(source='coaccused_count')
 
     def get_kind(self, obj):
-        return 'cr'
+        return 'CR'
 
 
 class UnitChangeTimelineSerializer(serializers.Serializer):
@@ -50,7 +50,7 @@ class UnitChangeTimelineSerializer(serializers.Serializer):
     unit_name = serializers.CharField()
 
     def get_kind(self, obj):
-        return 'unit'
+        return 'UNIT_CHANGE'
 
 
 class JoinedTimelineSerializer(serializers.Serializer):
@@ -61,7 +61,7 @@ class JoinedTimelineSerializer(serializers.Serializer):
     kind = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
-        return 'joined'
+        return 'JOINED'
 
 
 class TimelineSerializer(serializers.Serializer):

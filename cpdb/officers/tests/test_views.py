@@ -90,22 +90,22 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'previous': None,
             'results': [
                 {
-                    'kind': 'year',
+                    'kind': 'YEAR',
                     'year': 2017,
                     'crs': 0
                 },
                 {
-                    'kind': 'unit',
+                    'kind': 'UNIT_CHANGE',
                     'date': '2017-02-27',
                     'unit_name': 'A'
                 },
                 {
-                    'kind': 'year',
+                    'kind': 'YEAR',
                     'year': 2016,
                     'crs': 1
                 },
                 {
-                    'kind': 'cr',
+                    'kind': 'CR',
                     'date': '2016-08-23',
                     'crid': '123456',
                     'category': 'category',
@@ -114,12 +114,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'coaccused': 4
                 },
                 {
-                    'kind': 'year',
+                    'kind': 'YEAR',
                     'year': 2000,
                     'crs': 0
                 },
                 {
-                    'kind': 'joined',
+                    'kind': 'JOINED',
                     'date': '2000-01-01'
                 }
             ]

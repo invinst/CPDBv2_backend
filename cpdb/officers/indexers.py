@@ -67,7 +67,7 @@ class YearTimelineEventIndexer(BaseIndexer):
         for key, val in results.iteritems():
             val.update(
                 {
-                    'kind': 'year',
+                    'kind': 'YEAR',
                     'officer_id': officer.pk,
                     'year': key,
                     'date_sort': date(key, 12, 31),
