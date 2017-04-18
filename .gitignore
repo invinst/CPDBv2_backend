@@ -32,3 +32,4 @@ cpdb/media/
 # Newrelic config
 newrelic.ini
 csv/*.csv
+ansible/external-roles
