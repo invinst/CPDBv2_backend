@@ -156,15 +156,15 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
-                'kind': 'unit',
+                'kind': 'Unit',
                 'year': 2017
             },
             {
-                'kind': 'cr',
+                'kind': 'CR',
                 'year': 2016
             },
             {
-                'kind': 'joined',
+                'kind': 'Joined',
                 'year': 2000
             }
         ])

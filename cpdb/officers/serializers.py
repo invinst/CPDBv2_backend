@@ -30,7 +30,6 @@ class CRTimelineSerializer(serializers.Serializer):
     date_sort = serializers.DateField(source='start_date', format=None)
     date = serializers.DateField(source='start_date', format='%Y-%m-%d')
     year_sort = serializers.IntegerField(source='start_date.year')
-    year_priority = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.CharField()
@@ -41,24 +40,17 @@ class CRTimelineSerializer(serializers.Serializer):
     def get_kind(self, obj):
         return 'cr'
 
-    def get_year_priority(self, obj):
-        return 0
-
 
 class UnitChangeTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='effective_date', format=None)
     date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
     year_sort = serializers.IntegerField(source='effective_date.year')
-    year_priority = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
     unit_name = serializers.CharField()
 
     def get_kind(self, obj):
         return 'unit'
-
-    def get_year_priority(self, obj):
-        return 0
 
 
 class JoinedTimelineSerializer(serializers.Serializer):
@@ -66,14 +58,10 @@ class JoinedTimelineSerializer(serializers.Serializer):
     date_sort = serializers.DateField(source='appointed_date', format=None)
     date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     year_sort = serializers.IntegerField(source='appointed_date.year')
-    year_priority = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'joined'
-
-    def get_year_priority(self, obj):
-        return 0
 
 
 class TimelineSerializer(serializers.Serializer):
@@ -82,5 +70,4 @@ class TimelineSerializer(serializers.Serializer):
         result.pop('officer_id')
         result.pop('date_sort')
         result.pop('year_sort')
-        result.pop('year_priority')
         return result

@@ -117,7 +117,6 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             'date_sort': date(2012, 1, 1),
             'date': '2012-01-01',
             'year_sort': 2012,
-            'year_priority': 0,
             'kind': 'cr',
             'crid': '123456',
             'category': 'Illegal Search',
@@ -146,7 +145,6 @@ class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'unit',
             'unit_name': '003',
             'year_sort': 2010,
-            'year_priority': 0
         })
 
 
@@ -181,7 +179,6 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                         'year': 2012,
                         'date_sort': date(2012, 12, 31),
                         'year_sort': 2012,
-                        'year_priority': 1,
                         'crs': 1
                     },
                     {
@@ -190,7 +187,6 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                         'year': 2015,
                         'date_sort': date(2015, 12, 31),
                         'year_sort': 2015,
-                        'year_priority': 1,
                         'crs': 2
                     }
                 ])
@@ -212,7 +208,6 @@ class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'joined',
             'date': '2012-01-01',
             'year_sort': 2012,
-            'year_priority': 0
         })
 
 
@@ -236,15 +231,15 @@ class TimelineMinimapIndexerTestCase(SimpleTestCase):
                     'officer_id': 123,
                     'items': [
                         {
-                            'kind': 'cr',
+                            'kind': 'CR',
                             'year': 2012
                         },
                         {
-                            'kind': 'unit',
+                            'kind': 'Unit',
                             'year': 2001
                         },
                         {
-                            'kind': 'joined',
+                            'kind': 'Joined',
                             'year': 2000
                         }
                     ]

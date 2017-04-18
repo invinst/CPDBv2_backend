@@ -19,11 +19,11 @@ class OfficersViewSet(viewsets.ViewSet):
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], url_path='timeline-items')
     def timeline_items(self, request, pk):
         if Officer.objects.filter(pk=pk).exists():
             query = OfficerTimelineEventDocType().search().sort(
-                '-year_sort', '-year_priority', '-date_sort'
+                '-year_sort', '-date_sort'
             ).query('term', officer_id=pk)
             paginator = TimelinePagination(int(pk))
             paginated_query = paginator.paginate_es_query(query, request)
@@ -32,7 +32,7 @@ class OfficersViewSet(viewsets.ViewSet):
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], url_path='timeline-minimap')
     def timeline_minimap(self, request, pk):
         query = OfficerTimelineMinimapDocType().search().query('term', officer_id=pk)
         search_result = query.execute()

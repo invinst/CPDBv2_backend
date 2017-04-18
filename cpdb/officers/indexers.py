@@ -71,7 +71,6 @@ class YearTimelineEventIndexer(BaseIndexer):
                     'officer_id': officer.pk,
                     'year': key,
                     'date_sort': date(key, 12, 31),
-                    'year_priority': 1,
                     'year_sort': key
                 }
             )
@@ -99,13 +98,13 @@ class TimelineMinimapIndexer(BaseIndexer):
     def extract_datum(self, officer):
         items = []
         for oa in OfficerAllegation.objects.filter(start_date__isnull=False, officer=officer):
-            items.append({'kind': 'cr', 'year': oa.start_date.year, 'date': oa.start_date})
+            items.append({'kind': 'CR', 'year': oa.start_date.year, 'date': oa.start_date})
 
         for oh in OfficerHistory.objects.filter(effective_date__isnull=False, officer=officer):
-            items.append({'kind': 'unit', 'year': oh.effective_date.year, 'date': oh.effective_date})
+            items.append({'kind': 'Unit', 'year': oh.effective_date.year, 'date': oh.effective_date})
 
         if officer.appointed_date is not None:
-            items.append({'kind': 'joined', 'year': officer.appointed_date.year, 'date': officer.appointed_date})
+            items.append({'kind': 'Joined', 'year': officer.appointed_date.year, 'date': officer.appointed_date})
 
         items = sorted(items, key=lambda item: item['date'], reverse=True)
         for item in items:
