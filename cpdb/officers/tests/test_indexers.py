@@ -117,6 +117,7 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             'date_sort': date(2012, 1, 1),
             'date': '2012-01-01',
             'year_sort': 2012,
+            'priority_sort': 40,
             'kind': 'CR',
             'crid': '123456',
             'category': 'Illegal Search',
@@ -145,6 +146,7 @@ class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'UNIT_CHANGE',
             'unit_name': '003',
             'year_sort': 2010,
+            'priority_sort': 30,
         })
 
 
@@ -179,6 +181,7 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                         'year': 2012,
                         'date_sort': date(2012, 12, 31),
                         'year_sort': 2012,
+                        'priority_sort': 20,
                         'crs': 1
                     },
                     {
@@ -187,6 +190,7 @@ class YearTimelineEventIndexerTestCase(SimpleTestCase):
                         'year': 2015,
                         'date_sort': date(2015, 12, 31),
                         'year_sort': 2015,
+                        'priority_sort': 20,
                         'crs': 2
                     }
                 ])
@@ -208,6 +212,7 @@ class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'JOINED',
             'date': '2012-01-01',
             'year_sort': 2012,
+            'priority_sort': 10,
         })
 
 

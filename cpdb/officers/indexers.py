@@ -70,6 +70,7 @@ class YearTimelineEventIndexer(BaseIndexer):
                     'kind': 'YEAR',
                     'officer_id': officer.pk,
                     'year': key,
+                    'priority_sort': 20,
                     'date_sort': date(key, 12, 31),
                     'year_sort': key
                 }

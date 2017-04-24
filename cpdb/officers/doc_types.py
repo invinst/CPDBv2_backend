@@ -12,7 +12,7 @@ class OfficerSummaryDocType(DocType):
 class OfficerTimelineEventDocType(DocType):
     date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
     year_sort = Integer()
-    year_priority = Integer()
+    priority_sort = Integer()
     kind = Keyword()
     officer_id = Integer()
 

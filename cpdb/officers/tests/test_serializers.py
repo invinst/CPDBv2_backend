@@ -16,6 +16,7 @@ class TimelineSerializerTestCase(SimpleTestCase):
             'c': 'd',
             'date_sort': datetime.now(),
             'year_sort': 2000,
+            'priority_sort': 40,
             'officer_id': 123
         })
         expect(TimelineSerializer(obj).data).to.eq({
@@ -29,6 +30,7 @@ class TimelineSerializerTestCase(SimpleTestCase):
             'a': 'b',
             'date_sort': datetime.now(),
             'year_sort': 2000,
+            'priority_sort': 40,
             'officer_id': 123
         })
         obj2 = Mock()
@@ -36,6 +38,7 @@ class TimelineSerializerTestCase(SimpleTestCase):
             'c': 'd',
             'date_sort': datetime.now(),
             'year_sort': 2000,
+            'priority_sort': 40,
             'officer_id': 456
         })
         expect(TimelineSerializer([

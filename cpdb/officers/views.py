@@ -22,9 +22,11 @@ class OfficersViewSet(viewsets.ViewSet):
     @detail_route(methods=['get'], url_path='timeline-items')
     def timeline_items(self, request, pk):
         if Officer.objects.filter(pk=pk).exists():
-            query = OfficerTimelineEventDocType().search().sort(
-                '-year_sort', '-date_sort'
-            ).query('term', officer_id=pk)
+            if request.GET.get('sort') == 'asc':
+                sort_order = ['year_sort', 'date_sort', 'priority_sort']
+            else:
+                sort_order = ['-year_sort', '-date_sort', '-priority_sort']
+            query = OfficerTimelineEventDocType().search().sort(*sort_order).query('term', officer_id=pk)
             paginator = TimelinePagination(int(pk))
             paginated_query = paginator.paginate_es_query(query, request)
             serializer = TimelineSerializer(paginated_query, many=True)
