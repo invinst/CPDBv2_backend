@@ -26,7 +26,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         officer2 = OfficerFactory(id=456, first_name='Mrs', last_name='Bar', gender='F', race='Black')
         allegation = AllegationFactory(
             crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28), add1=3510,
-            add2='Michigan Ave', city='Chicago', location='Police Building', beat=area
+            add2='Michigan Ave', city='Chicago', location='09', beat=area
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         ComplainantFactory(allegation=allegation, gender='F', race='White', age='20')
@@ -107,7 +107,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             },
             'incident_date': '2002-02-28',
             'address': '3510 Michigan Ave, Chicago',
-            'location': 'Police Building',
+            'location': 'Police Communications System',
             'beat': {'name': 'Lincoln Square'},
             'involvements': [
                 {

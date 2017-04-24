@@ -35,7 +35,7 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.point = Point(12, 21)
         allegation.incident_date = date(2017, 3, 21)
         allegation.address = '3510 Michigan Ave, Chicago, IL 60653'
-        allegation.location = 'Police Building'
+        allegation.get_location_display = Mock(return_value='Police Building')
         allegation.beat = Mock()
         allegation.beat.name = '23'
         allegation.involvement_set = Mock()

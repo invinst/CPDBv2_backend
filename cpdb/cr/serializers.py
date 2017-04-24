@@ -41,7 +41,7 @@ class CRSerializer(serializers.Serializer):
     point = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     address = serializers.CharField()
-    location = serializers.CharField()
+    location = serializers.SerializerMethodField()
     beat = BeatSerializer()
     involvements = serializers.SerializerMethodField()
 
@@ -50,6 +50,9 @@ class CRSerializer(serializers.Serializer):
             return {'long': obj.point.x, 'lat': obj.point.y}
         else:
             return None
+
+    def get_location(self, obj):
+        return obj.get_location_display()
 
     def get_involvements(self, obj):
         results = dict()
