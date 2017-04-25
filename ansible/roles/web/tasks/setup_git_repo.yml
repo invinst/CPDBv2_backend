@@ -15,7 +15,6 @@
   command: find . -name \*.pyc -delete
   args:
     chdir: "{{ project_root_path }}"
-  tags: debug
   become: yes
   become_user: "{{ deploy_user }}"
 
