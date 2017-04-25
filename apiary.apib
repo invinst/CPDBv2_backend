@@ -1440,77 +1440,67 @@ This api require an api access token set in `Authorization` header. To get an ap
             },
             "complaint_records": {
                 "count": 27,
-                "category": [
+                "sustained_count": 0,
+                "facets": [
                     {
-                        "name": "Illegal Search",
-                        "count": 20
+                        "name": "category",
+                        "entries": [
+                            {
+                                "name": "Illegal Search",
+                                "count": 20,
+                                "sustained_count": 0
+                            },
+                            {
+                                "name": "Use of Force",
+                                "count": 7,
+                                "sustained_count": 0
+                            }
+                        ]
                     },
                     {
-                        "name": "Use of Force",
-                        "count": 7
-                    }
-                ],
-                "race": [
-                    {
-                        "name": "White",
-                        "count": 7
+                        "name": "race"
+                        "entries": [
+                            {
+                                "name": "White",
+                                "count": 7,
+                                "sustained_count": 0
+                            },
+                            {
+                                "name": null,
+                                "count": 20,
+                                "sustained_count": 0
+                            }
+                        ]
                     },
                     {
-                        "name": null,
-                        "count": 20
-                    }
-                ],
-                "age": [
-                    {
-                        "name": "18",
-                        "count": 20
+                        "name": "age",
+                        "entries": [
+                            {
+                                "name": "18",
+                                "count": 20,
+                                "sustained_count": 0
+                            },
+                            {
+                                "name": "20",
+                                "count": 7,
+                                "sustained_count": 0
+                            }
+                        ]
                     },
                     {
-                        "name": "20",
-                        "count": 7
-                    }
-                ],
-                "gender": [
-                    {
-                        "name": "Famale",
-                        "count": 20
-                    },
-                    {
-                        "name": null,
-                        "count": 7
-                    }
-                ]
-            },
-            "tactical_response_reports": {
-                "count": 7,
-                "category": [
-                    {
-                        "name": "Taser",
-                        "count": 5
-                    },
-                    {
-                        "name": "Firearm",
-                        "count": 2
-                    }
-                ],
-                "race": [
-                    {
-                        "name": "White",
-                        "count": 2
-                    },
-                    {
-                        "name": null,
-                        "count": 5
-                    }
-                ],
-                "gender": [
-                    {
-                        "name": "Famale",
-                        "count": 5
-                    },
-                    {
-                        "name": null,
-                        "count": 2
+                        "name": "gender",
+                        "entries": [
+                            {
+                                "name": "Famale",
+                                "count": 20,
+                                "sustained_count": 0
+                            },
+                            {
+                                "name": null,
+                                "count": 7,
+                                "sustained_count": 0
+                            }
+                        ]
                     }
                 ]
             },
