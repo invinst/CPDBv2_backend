@@ -35,7 +35,7 @@ class CRTimelineSerializer(serializers.Serializer):
     crid = serializers.CharField()
     category = serializers.CharField()
     subcategory = serializers.CharField()
-    finding = serializers.CharField()
+    finding = serializers.CharField(source='final_finding_display')
     coaccused = serializers.IntegerField(source='coaccused_count')
 
     def get_kind(self, obj):

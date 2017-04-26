@@ -4,9 +4,10 @@ from robber.expect import expect
 
 from data.models import Officer, OfficerBadgeNumber, PoliceUnit
 from data.factories import (
-    OfficerFactory, OfficerBadgeNumberFactory, AreaFactory, OfficerHistoryFactory, PoliceUnitFactory,
-    AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory
+    OfficerFactory, OfficerBadgeNumberFactory, AreaFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory,
+    OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory, AttachmentFileFactory, InvolvementFactory
 )
+from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
 
 
 class OfficerTestCase(TestCase):
@@ -136,6 +137,10 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         expect(officer.complainant_gender_aggregation).to.eq([])
 
+    def test_abbr_name(self):
+        officer = OfficerFactory(first_name='Michel', last_name='Foo')
+        expect(officer.abbr_name).to.eq('M. Foo')
+
 
 class OfficerBadgeNumberTestCase(SimpleTestCase):
     def test_str(self):
@@ -204,15 +209,88 @@ class OfficerAllegationTestCase(TestCase):
 
         expect(officer_allegation.coaccused_count).to.eq(6)
 
-    def test_finding(self):
-        officer_allegation = OfficerAllegationFactory()
-        expect(officer_allegation.finding).to.eq('Unknown')
+    def test_final_finding_display(self):
+        officer_allegation = OfficerAllegationFactory(final_finding='?')
+        expect(officer_allegation.final_finding_display).to.eq('Unknown')
 
         officer_allegation = OfficerAllegationFactory(final_finding='UN')
-        expect(officer_allegation.finding).to.eq('Unfounded')
+        expect(officer_allegation.final_finding_display).to.eq('Unfounded')
+
+    def test_recc_finding_display(self):
+        officer_allegation = OfficerAllegationFactory(recc_finding='?')
+        expect(officer_allegation.recc_finding_display).to.eq('Unknown')
+
+        officer_allegation = OfficerAllegationFactory(recc_finding='UN')
+        expect(officer_allegation.recc_finding_display).to.eq('Unfounded')
+
+    def test_final_outcome_display(self):
+        officer_allegation = OfficerAllegationFactory(final_outcome='?')
+        expect(officer_allegation.final_outcome_display).to.eq('Unknown')
+
+        officer_allegation = OfficerAllegationFactory(final_outcome='100')
+        expect(officer_allegation.final_outcome_display).to.eq('Reprimand')
+
+    def test_recc_outcome_display(self):
+        officer_allegation = OfficerAllegationFactory(recc_outcome='?')
+        expect(officer_allegation.recc_outcome_display).to.eq('Unknown')
+
+        officer_allegation = OfficerAllegationFactory(recc_outcome='100')
+        expect(officer_allegation.recc_outcome_display).to.eq('Reprimand')
 
 
 class OfficerHistoryTestCase(TestCase):
     def test_unit_name(self):
         history = OfficerHistoryFactory(unit=PoliceUnitFactory(unit_name='abc'))
         expect(history.unit_name).to.eq('abc')
+
+
+class AllegationTestCase(TestCase):
+    def test_address(self):
+        allegation = AllegationFactory(add1=3000, add2='Michigan Ave', city='Chicago IL')
+        expect(allegation.address).to.eq('3000 Michigan Ave, Chicago IL')
+
+    def test_officer_allegations(self):
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(id=1, allegation=allegation, officer=OfficerFactory())
+        expect(allegation.officer_allegations.count()).to.eq(1)
+        expect(allegation.officer_allegations[0].id).to.eq(1)
+
+    def test_complainants(self):
+        allegation = AllegationFactory()
+        ComplainantFactory(id=1, allegation=allegation)
+        expect(allegation.complainants.count()).to.eq(1)
+        expect(allegation.complainants[0].id).to.eq(1)
+
+    def test_videos(self):
+        allegation = AllegationFactory()
+        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_VIDEO)
+        expect(allegation.videos.count()).to.eq(1)
+        expect(allegation.videos[0].id).to.eq(1)
+
+    def test_audios(self):
+        allegation = AllegationFactory()
+        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_AUDIO)
+        expect(allegation.audios.count()).to.eq(1)
+        expect(allegation.audios[0].id).to.eq(1)
+
+    def test_documents(self):
+        allegation = AllegationFactory()
+        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        expect(allegation.documents.count()).to.eq(1)
+        expect(allegation.documents[0].id).to.eq(1)
+
+
+class ComplainantTestCase(TestCase):
+    def test_gender_display(self):
+        expect(ComplainantFactory(gender='M').gender_display).to.equal('Male')
+        expect(ComplainantFactory(gender='F').gender_display).to.equal('Female')
+        expect(ComplainantFactory(gender='X').gender_display).to.equal('X')
+        expect(ComplainantFactory(gender='?').gender_display).to.equal('?')
+
+
+class InvolvementTestCase(TestCase):
+    def test_gender_display(self):
+        expect(InvolvementFactory(gender='M').gender_display).to.equal('Male')
+        expect(InvolvementFactory(gender='F').gender_display).to.equal('Female')
+        expect(InvolvementFactory(gender='X').gender_display).to.equal('X')
+        expect(InvolvementFactory(gender='?').gender_display).to.equal('?')
