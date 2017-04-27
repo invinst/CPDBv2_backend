@@ -110,7 +110,7 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
         officer_allegation.crid = '123456'
         officer_allegation.category = 'Illegal Search'
         officer_allegation.subcategory = 'Search of premise/vehicle without warrant'
-        officer_allegation.finding = 'Unfounded'
+        officer_allegation.final_finding_display = 'Unfounded'
         officer_allegation.coaccused_count = 4
         expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
