@@ -5,7 +5,10 @@ from .doc_types import OfficerDocType
 from .serializers import OfficerSerializer
 
 
-@register_indexer
+app_name = __name__.split('.')[0]
+
+
+@register_indexer(app_name)
 class OfficerIndexer(BaseIndexer):
     doc_type_klass = OfficerDocType
 

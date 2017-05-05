@@ -9,7 +9,10 @@ from .serializers import (
 )
 
 
-@register_indexer
+app_name = __name__.split('.')[0]
+
+
+@register_indexer(app_name)
 class OfficersIndexer(BaseIndexer):
     doc_type_klass = OfficerSummaryDocType
 
@@ -20,7 +23,7 @@ class OfficersIndexer(BaseIndexer):
         return OfficerSummarySerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class CRTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
 
@@ -31,7 +34,7 @@ class CRTimelineEventIndexer(BaseIndexer):
         return CRTimelineSerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class UnitChangeTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
 
@@ -42,7 +45,7 @@ class UnitChangeTimelineEventIndexer(BaseIndexer):
         return UnitChangeTimelineSerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class YearTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
 
@@ -78,7 +81,7 @@ class YearTimelineEventIndexer(BaseIndexer):
             yield val
 
 
-@register_indexer
+@register_indexer(app_name)
 class JoinedTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
 
@@ -89,7 +92,7 @@ class JoinedTimelineEventIndexer(BaseIndexer):
         return JoinedTimelineSerializer(officer).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class TimelineMinimapIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineMinimapDocType
 
