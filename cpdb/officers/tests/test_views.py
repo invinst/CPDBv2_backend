@@ -85,7 +85,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             'count': 6,
-            'id': 123,
             'next': None,
             'previous': None,
             'results': [
