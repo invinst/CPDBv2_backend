@@ -9,15 +9,6 @@
     - libncurses5
     - libncurses5-dev
 
-- name: Create the application user
-  user: name={{ deploy_user }} state=present
-
-- name: Create the application group
-  group: name={{ deploy_group }} system=yes state=present
-
-- name: Add the application user to the application group
-  user: name={{ deploy_user }} group={{ deploy_group }} state=present
-
 - name: Creates directory
   file: path=/CPDB state=directory owner={{ deploy_user }}
 

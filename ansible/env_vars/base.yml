@@ -20,3 +20,7 @@ enable_cron_job: no
 elasticsearch_download_url: https://artifacts.elastic.co/downloads/elasticsearch
 elasticsearch_version: 5.1.1
 apt_java_package: oracle-java8-installer
+
+# If turned on, only users with pubkey included in `authorized_keys` will be allowed ssh access
+manage_authorized_keys: yes
+authorized_keys: ''  # override this per environment
