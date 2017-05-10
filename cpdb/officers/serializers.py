@@ -29,6 +29,8 @@ class CRTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='start_date', format=None)
     date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='start_date.year')
+    priority_sort = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.CharField()
@@ -39,16 +41,39 @@ class CRTimelineSerializer(serializers.Serializer):
     def get_kind(self, obj):
         return 'CR'
 
+    def get_priority_sort(self, obj):
+        return 40
+
 
 class UnitChangeTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='effective_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
     date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='effective_date.year')
     kind = serializers.SerializerMethodField()
     unit_name = serializers.CharField()
 
     def get_kind(self, obj):
         return 'UNIT_CHANGE'
+
+    def get_priority_sort(self, obj):
+        return 30
+
+
+class JoinedTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField(source='id')
+    date_sort = serializers.DateField(source='appointed_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='appointed_date.year')
+    kind = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'JOINED'
+
+    def get_priority_sort(self, obj):
+        return 10
 
 
 class TimelineSerializer(serializers.Serializer):
@@ -56,4 +81,6 @@ class TimelineSerializer(serializers.Serializer):
         result = obj.to_dict()
         result.pop('officer_id')
         result.pop('date_sort')
+        result.pop('year_sort')
+        result.pop('priority_sort')
         return result

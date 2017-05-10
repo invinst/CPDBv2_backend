@@ -69,8 +69,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_timeline(self):
-        officer = OfficerFactory(id=123)
+    def test_timeline_items(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
         allegation = AllegationFactory(crid='123456')
         OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
         OfficerAllegationFactory(
@@ -80,18 +80,28 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
         self.refresh_index()
 
-        response = self.client.get(reverse('api-v2:officers-timeline', kwargs={'pk': 123}))
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'count': 2,
+            'count': 6,
             'next': None,
             'previous': None,
             'results': [
                 {
+                    'kind': 'YEAR',
+                    'year': 2017,
+                    'crs': 0
+                },
+                {
                     'kind': 'UNIT_CHANGE',
                     'date': '2017-02-27',
                     'unit_name': 'A'
+                },
+                {
+                    'kind': 'YEAR',
+                    'year': 2016,
+                    'crs': 1
                 },
                 {
                     'kind': 'CR',
@@ -101,22 +111,114 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'subcategory': 'sub category',
                     'finding': 'Unfounded',
                     'coaccused': 4
+                },
+                {
+                    'kind': 'YEAR',
+                    'year': 2000,
+                    'crs': 0
+                },
+                {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
                 }
             ]
         })
 
     def test_timeline_no_data(self):
-        response = self.client.get(reverse('api-v2:officers-timeline', kwargs={'pk': 456}))
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_timeline_next_request_url(self):
-        officer = OfficerFactory(id=123)
-        OfficerHistoryFactory.create_batch(40, officer=officer)
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        OfficerHistoryFactory.create_batch(40, officer=officer, effective_date=date(2017, 1, 1))
         self.refresh_index()
 
-        response = self.client.get(reverse('api-v2:officers-timeline', kwargs={'pk': 123}), {'offset': 10})
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'offset': 10})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data['count']).to.eq(40)
+        expect(response.data['count']).to.eq(43)
         expect(response.data['next']).to.match(r'.+\?limit=20\&offset=30$')
         expect(response.data['previous']).to.match(r'.+\?limit=20$')
         expect(len(response.data['results'])).to.eq(20)
+
+    def test_timeline_minimap_no_data(self):
+        response = self.client.get(reverse('api-v2:officers-timeline-minimap', kwargs={'pk': 456}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_timeline_minimap(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory()
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27))
+        OfficerAllegationFactory(officer=officer, start_date=date(2016, 8, 23), allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-minimap', kwargs={'pk': 123}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'kind': 'Unit',
+                'year': 2017
+            },
+            {
+                'kind': 'CR',
+                'year': 2016
+            },
+            {
+                'kind': 'Joined',
+                'year': 2000
+            }
+        ])
+
+    def test_timeline_items_sort_asc(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory(crid='123456')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'sort': 'asc'})
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 6,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
+                },
+                {
+                    'kind': 'YEAR',
+                    'year': 2000,
+                    'crs': 0
+                },
+                {
+                    'kind': 'CR',
+                    'date': '2016-08-23',
+                    'crid': '123456',
+                    'category': 'category',
+                    'subcategory': 'sub category',
+                    'finding': 'Unfounded',
+                    'coaccused': 4
+                },
+                {
+                    'kind': 'YEAR',
+                    'year': 2016,
+                    'crs': 1
+                },
+                {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                },
+                {
+                    'kind': 'YEAR',
+                    'year': 2017,
+                    'crs': 0
+                }
+            ]
+        })
