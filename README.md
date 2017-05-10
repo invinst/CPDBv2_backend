@@ -11,7 +11,9 @@ git clone git@github.com:CyVerse-Ansible/ansible-elasticsearch-1.git
 sudo mv -r ansible-elasticsearch-1 /etc/ansible/roles/cyverse.elasticsearch
 ```
 
-Then just `vagrant up`, it will ask you the password for ansible-vault, then you only need to wait for a while until ansible do all the needed stuff. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` which you can use it for more convenient on development.
+Ask the team for the ansible vault password, then put it in a text file at `../vault_pass.txt` (parent dir of this repo).
+
+Then just `vagrant up --provision` and wait for ansible to do its things. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` which you can use it for more convenient on development.
 
 When ansible is done, remember to generate initial data (run this inside VM):
 
