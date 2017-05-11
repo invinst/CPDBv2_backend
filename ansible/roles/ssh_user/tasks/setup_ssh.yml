@@ -18,3 +18,8 @@
     destfile: /etc/ssh/sshd_config
     regexp: '^PubkeyAuthentication '
     line: 'PubkeyAuthentication yes'
+
+- name: Reload SSH config
+  service:
+    name: ssh
+    state: reloaded
