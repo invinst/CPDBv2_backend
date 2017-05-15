@@ -9,7 +9,6 @@
     - update_apt_cache: yes
     - postgresql_version: "9.4"
     - postgresql_package_version: "9.4.*-1.pgdg14.04+1"
-
   vars_files:
     - env_vars/base.yml
     - env_vars/secrets.yml
@@ -20,4 +19,5 @@
     - { role: java, tags: "elasticsearch" }
     - { role: elasticsearch, tags: "elasticsearch" }
     - db
+    - ssh_user
     - web
