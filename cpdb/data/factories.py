@@ -9,7 +9,7 @@ from wagtail.wagtailcore.models import Page
 
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
-    Complainant, OfficerHistory, AllegationCategory)
+    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -111,7 +111,7 @@ class ComplainantFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Complainant
 
-    allegation = factory.SubFactory(Allegation)
+    allegation = factory.SubFactory(AllegationFactory)
 
 
 class AllegationCategoryFactory(factory.django.DjangoModelFactory):
@@ -126,3 +126,19 @@ class OfficerHistoryFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     unit = factory.SubFactory(PoliceUnitFactory)
     effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+
+
+class InvolvementFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Involvement
+
+    allegation = factory.SubFactory(AllegationFactory)
+    officer = factory.SubFactory(OfficerFactory)
+
+
+class AttachmentFileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AttachmentFile
+
+    allegation = factory.SubFactory(AllegationFactory)
+    additional_info = factory.LazyFunction(lambda: {'info': fake.word()})

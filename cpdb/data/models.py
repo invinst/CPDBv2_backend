@@ -1,12 +1,14 @@
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT)
+    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
+from data.utils.aggregation import get_num_range_case
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -64,6 +66,10 @@ class Officer(models.Model):
         return self.officerallegation_set.all().distinct().count()
 
     @property
+    def sustained_count(self):
+        return self.officerallegation_set.filter(final_finding='SU').distinct().count()
+
+    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
@@ -76,49 +82,78 @@ class Officer(models.Model):
 
     @property
     def complaint_category_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation_category__category')\
-            .annotate(count=models.Count('allegation_category'))
-        return [
-            {'name': obj['allegation_category__category'], 'count': obj['count']}
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(
+                    name=models.Case(
+                        models.When(allegation_category__category__isnull=True, then=models.Value('Unknown')),
+                        default='allegation_category__category',
+                        output_field=models.CharField()))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_race_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__race')\
-            .annotate(count=models.Count('allegation__complainant__race'))
-
-        return [
-            {
-                'name': obj['allegation__complainant__race'] if obj['allegation__complainant__race'] else None,
-                'count': obj['count']
-            }
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(name=models.Case(
+                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                    models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                    default='allegation__complainant__race',
+                    output_field=models.CharField()))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_age_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__age')\
-            .annotate(count=models.Count('allegation__complainant__age'))
-        return [
-            {'name': str(obj['allegation__complainant__age']), 'count': obj['count']}
-            for obj in aggregation if obj['count'] > 0
-        ]
+        return list(
+            self.officerallegation_set
+                .annotate(name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]))
+                .values('name')
+                .annotate(
+                    count=models.Count('name'),
+                    sustained_count=models.Sum(models.Case(
+                        models.When(final_finding='SU', then=1), default=models.Value(0),
+                        output_field=models.IntegerField()))))
 
     @property
     def complainant_gender_aggregation(self):
-        aggregation = filter(
-            None,
-            self.officerallegation_set.values('allegation__complainant__gender')
-            .annotate(count=models.Count('allegation__complainant__gender')))
+        aggregation = self.officerallegation_set.values('allegation__complainant__gender') \
+            .annotate(complainant_gender=models.Case(
+                    models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
+                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                    default='allegation__complainant__gender',
+                    output_field=models.CharField()
+                )) \
+            .values('complainant_gender') \
+            .annotate(count=models.Count('complainant_gender'), sustained_count=models.Sum(models.Case(
+                    models.When(final_finding='SU', then=1), default=models.Value(0),
+                    output_field=models.IntegerField())))
 
         return [
             {
-                'name': GENDER_DICT.get(obj['allegation__complainant__gender'], None),
+                'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
+                'sustained_count': obj['sustained_count'],
                 'count': obj['count']
             }
             for obj in aggregation if obj['count'] > 0
         ]
+
+    @property
+    def v2_to(self):
+        return '/officer/%d/' % self.pk
+
+    @property
+    def abbr_name(self):
+        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
 
 
 class OfficerBadgeNumber(models.Model):
@@ -179,7 +214,6 @@ class Investigator(models.Model):
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
-
     location = models.CharField(
         max_length=20, blank=True, choices=LOCATION_CHOICES)
     add1 = models.IntegerField(null=True)
@@ -192,6 +226,30 @@ class Allegation(models.Model):
     point = models.PointField(srid=4326, null=True)
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
+
+    @property
+    def address(self):
+        return '%s %s, %s' % (self.add1, self.add2, self.city)
+
+    @property
+    def officer_allegations(self):
+        return self.officerallegation_set.all()
+
+    @property
+    def complainants(self):
+        return self.complainant_set.all()
+
+    @property
+    def videos(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_VIDEO)
+
+    @property
+    def audios(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_AUDIO)
+
+    @property
+    def documents(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
 
 class AllegationCategory(models.Model):
@@ -243,9 +301,30 @@ class OfficerAllegation(models.Model):
         return OfficerAllegation.objects.filter(allegation=self.allegation).distinct().count()
 
     @property
-    def finding(self):
+    def final_finding_display(self):
         try:
             return FINDINGS_DICT[self.final_finding]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def recc_finding_display(self):
+        try:
+            return FINDINGS_DICT[self.recc_finding]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def final_outcome_display(self):
+        try:
+            return OUTCOMES_DICT[self.final_outcome]
+        except KeyError:
+            return 'Unknown'
+
+    @property
+    def recc_outcome_display(self):
+        try:
+            return OUTCOMES_DICT[self.recc_outcome]
         except KeyError:
             return 'Unknown'
 
@@ -263,6 +342,13 @@ class Complainant(models.Model):
     race = models.CharField(max_length=50, blank=True)
     age = models.IntegerField(null=True)
 
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
+
 
 class OfficerAlias(models.Model):
     old_officer_id = models.IntegerField()
@@ -270,3 +356,33 @@ class OfficerAlias(models.Model):
 
     class Meta:
         unique_together = ('old_officer_id', 'new_officer')
+
+
+class Involvement(models.Model):
+    allegation = models.ForeignKey(Allegation)
+    officer = models.ForeignKey(Officer, null=True)
+    full_name = models.CharField(max_length=50)
+    involved_type = models.CharField(max_length=25)
+    gender = models.CharField(max_length=1, null=True)
+    race = models.CharField(max_length=50, null=True)
+    age = models.IntegerField(null=True)
+
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
+
+
+class AttachmentFile(models.Model):
+    file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    url = models.CharField(max_length=255, db_index=True)
+    additional_info = JSONField()
+    tag = models.CharField(max_length=50)
+    original_url = models.CharField(max_length=255, db_index=True)
+    allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+
+    class Meta:
+        unique_together = (('allegation', 'original_url'),)

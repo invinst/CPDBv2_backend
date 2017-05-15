@@ -7,7 +7,7 @@ class OfficerV2Formatter(SimpleFormatter):
             'id': int(doc.meta.id),
             'name': doc.full_name,
             'extra_info': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-            'url': doc.url
+            'url': doc.to
         }
 
 
