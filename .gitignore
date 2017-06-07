@@ -33,3 +33,6 @@ cpdb/media/
 newrelic.ini
 csv/*.csv
 ansible/external-roles
+
+# Just to be extra careful:
+*vault_pass*

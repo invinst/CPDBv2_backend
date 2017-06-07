@@ -13,7 +13,7 @@ MIDDLEWARE_CLASSES += (  # NOQA
     'django.middleware.common.CommonMiddleware')
 
 CORS_ORIGIN_WHITELIST = (
-    'ms.cpdp.co',
+    'mb.cpdp.co',
     )
 
 LOGGING = {

@@ -21,6 +21,9 @@ class CRSerializerTestCase(TestCase):
         obj.involvement_set.filter = Mock(return_value=[])
         obj.officer_allegations = []
         obj.complainants = []
+        obj.documents = []
+        obj.videos = []
+        obj.audios = []
         result = CRSerializer(obj).data
         expect(result['beat']).to.eq(None)
 
@@ -36,6 +39,9 @@ class CRSerializerTestCase(TestCase):
         obj.involvement_set.filter = Mock(return_value=[])
         obj.officer_allegations = []
         obj.complainants = []
+        obj.documents = []
+        obj.videos = []
+        obj.audios = []
         result = CRSerializer(obj).data
         expect(result['point']).to.eq(None)
 
@@ -50,6 +56,9 @@ class CRSerializerTestCase(TestCase):
         obj = Mock()
         obj.officer_allegations = []
         obj.complainants = []
+        obj.documents = []
+        obj.videos = []
+        obj.audios = []
         obj.involvement_set = Mock()
 
         officer1 = Mock(id=1, abbr_name='M. Foo', gender_display='Male', race='White')

@@ -5,7 +5,7 @@ from rest_framework.decorators import detail_route
 from data.models import Officer
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerTimelineMinimapDocType
 from .serializers import TimelineSerializer
-from .pagination import TimelinePagination
+from .pagination import ESQueryPagination
 
 
 class OfficersViewSet(viewsets.ViewSet):
@@ -27,7 +27,7 @@ class OfficersViewSet(viewsets.ViewSet):
             else:
                 sort_order = ['-year_sort', '-date_sort', '-priority_sort']
             query = OfficerTimelineEventDocType().search().sort(*sort_order).query('term', officer_id=pk)
-            paginator = TimelinePagination(int(pk))
+            paginator = ESQueryPagination()
             paginated_query = paginator.paginate_es_query(query, request)
             serializer = TimelineSerializer(paginated_query, many=True)
             return paginator.get_paginated_response(serializer.data)

@@ -34,6 +34,11 @@ class BeatSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class AttachmentFileSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+
+
 class CRSerializer(serializers.Serializer):
     crid = serializers.CharField()
     coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
@@ -44,6 +49,9 @@ class CRSerializer(serializers.Serializer):
     location = serializers.SerializerMethodField()
     beat = BeatSerializer()
     involvements = serializers.SerializerMethodField()
+    audios = AttachmentFileSerializer(many=True)
+    videos = AttachmentFileSerializer(many=True)
+    documents = AttachmentFileSerializer(many=True)
 
     def get_point(self, obj):
         if obj.point is not None:
