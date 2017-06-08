@@ -1,8 +1,8 @@
 from elasticsearch_dsl import DocType, Keyword
 
-from .indices import cr_index
+from .index_aliases import cr_index_alias
 
 
-@cr_index.doc_type
+@cr_index_alias.doc_type
 class CRDocType(DocType):
     crid = Keyword()
