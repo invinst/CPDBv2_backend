@@ -43,6 +43,10 @@ class CRIndexerTestCase(SimpleTestCase):
             involved_type='investigator', officer=Mock(id=1, abbr_name='L. Skol', gender_display='Male', race='White')
         )])
 
+        allegation.audios = [Mock(title='CR audio', url='http://foo.com/')]
+        allegation.videos = [Mock(title='CR video', url='http://foo.com/')]
+        allegation.documents = [Mock(title='CR document', url='http://foo.com/')]
+
         result = CRIndexer().extract_datum(allegation)
         self.assertEqual(result, {
             'crid': '12345',
@@ -71,6 +75,24 @@ class CRIndexerTestCase(SimpleTestCase):
                 {
                     'involved_type': 'investigator',
                     'officers': [{'id': 1, 'abbr_name': 'L. Skol', 'extra_info': 'male, white'}]
+                }
+            ],
+            'audios': [
+                {
+                    'title': 'CR audio',
+                    'url': 'http://foo.com/'
+                }
+            ],
+            'videos': [
+                {
+                    'title': 'CR video',
+                    'url': 'http://foo.com/'
+                }
+            ],
+            'documents': [
+                {
+                    'title': 'CR document',
+                    'url': 'http://foo.com/'
                 }
             ]
         })

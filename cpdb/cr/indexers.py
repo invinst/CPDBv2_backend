@@ -5,7 +5,10 @@ from .doc_types import CRDocType
 from .serializers import CRSerializer
 
 
-@register_indexer
+app_name = __name__.split('.')[0]
+
+
+@register_indexer(app_name)
 class CRIndexer(BaseIndexer):
     doc_type_klass = CRDocType
 

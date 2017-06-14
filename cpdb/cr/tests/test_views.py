@@ -10,8 +10,9 @@ from robber import expect
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory,
-    AllegationCategoryFactory
+    AllegationCategoryFactory, AttachmentFileFactory
 )
+from data.constants import (MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
 from .mixins import CRTestCaseMixin
 
 
@@ -54,6 +55,18 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation, involved_type='police witnesses', officer=involvedOfficer2)
         InvolvementFactory(
             allegation=allegation, involved_type='police witnesses', officer=involvedOfficer3)
+
+        AttachmentFileFactory(
+            allegation=allegation, title='CR audio', url='http://cr-audio.com/', file_type=MEDIA_TYPE_AUDIO
+        )
+
+        AttachmentFileFactory(
+            allegation=allegation, title='CR video', url='http://cr-video.com/', file_type=MEDIA_TYPE_VIDEO
+        )
+
+        AttachmentFileFactory(
+            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+        )
 
         self.refresh_index()
 
@@ -134,6 +147,24 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                             'extra_info': 'male, white'
                         }
                     ]
+                }
+            ],
+            'audios': [
+                {
+                    'title': 'CR audio',
+                    'url': 'http://cr-audio.com/'
+                }
+            ],
+            'videos': [
+                {
+                    'title': 'CR video',
+                    'url': 'http://cr-video.com/'
+                }
+            ],
+            'documents': [
+                {
+                    'title': 'CR document',
+                    'url': 'http://cr-document.com/'
                 }
             ]
         })

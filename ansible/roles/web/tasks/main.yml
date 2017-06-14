@@ -1,4 +1,4 @@
-- include: create_user_and_directories.yml
+- include: create_directories.yml
   tags: base
 
 - include: setup_pyenv.yml

@@ -1,0 +1,25 @@
+---
+- name: Update authorized keys
+  authorized_key:
+    user: '{{ deploy_user }}'
+    key: '{{ authorized_keys }}'
+    state: present
+    exclusive: yes
+  when: '{{ manage_authorized_keys }}'
+
+- name: Disable password based authentication
+  lineinfile:
+    destfile: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication '
+    line: 'PasswordAuthentication no'
+
+- name: Enable key based authentication
+  lineinfile:
+    destfile: /etc/ssh/sshd_config
+    regexp: '^PubkeyAuthentication '
+    line: 'PubkeyAuthentication yes'
+
+- name: Reload SSH config
+  service:
+    name: ssh
+    state: reloaded
