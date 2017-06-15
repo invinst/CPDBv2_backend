@@ -229,7 +229,14 @@ class Allegation(models.Model):
 
     @property
     def address(self):
-        return '%s %s, %s' % (self.add1, self.add2, self.city)
+        result = ''
+        if self.add1 is not None:
+            result = str(self.add1)
+        if self.add2 != '':
+            result = ' '.join(filter(None, [result, self.add2]))
+        if self.city:
+            result = ', '.join(filter(None, [result, self.city]))
+        return result
 
     @property
     def officer_allegations(self):
