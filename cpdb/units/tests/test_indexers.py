@@ -45,21 +45,21 @@ class UnitIndexerTestCase(SimpleTestCase):
                 'sustained_count': 0
             }
         ]
-        unit.complaint_race_aggregation = [
+        unit.complainant_race_aggregation = [
             {
                 'name': 'White',
                 'count': 1,
                 'sustained_count': 0
             }
         ]
-        unit.complaint_age_aggregation = [
+        unit.complainant_age_aggregation = [
             {
                 'name': '21-30',
                 'count': 1,
                 'sustained_count': 0
             }
         ]
-        unit.complaint_gender_aggregation = [
+        unit.complainant_gender_aggregation = [
             {
                 'name': 'Female',
                 'count': 1,
