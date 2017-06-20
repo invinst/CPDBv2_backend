@@ -1,13 +1,13 @@
-from es_index import es_client
-from cr.indices import cr_index
+from cr.index_aliases import cr_index_alias
 from cr.indexers import CRIndexer
 
 
 class CRTestCaseMixin(object):
     def setUp(self):
-        cr_index.delete(ignore=404)
-        cr_index.create()
+        cr_index_alias._write_index.delete(ignore=404)
+        cr_index_alias._read_index.create(ignore=400)
 
     def refresh_index(self):
-        CRIndexer().reindex()
-        es_client.indices.refresh(index='test_cr')
+        with cr_index_alias.indexing():
+            CRIndexer().reindex()
+        cr_index_alias._write_index.refresh()

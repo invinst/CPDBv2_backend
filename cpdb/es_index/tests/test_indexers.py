@@ -19,6 +19,7 @@ class IndexersTestCase(SimpleTestCase):
         indexer.doc_type_klass = Mock(return_value=doc_type)
         indexer.extract_datum = Mock(return_value={'key': 'something'})
         indexer.get_queryset = Mock(return_value=['something'])
+        indexer.index_alias = Mock()
 
         indexer.index_datum('anything')
 
