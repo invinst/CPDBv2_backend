@@ -23,8 +23,8 @@ class UnitSummarySerializer(serializers.Serializer):
             'sustained_count': obj.sustained_count,
             'facets': [
                 {'name': 'category', 'entries': obj.complaint_category_aggregation},
-                {'name': 'race', 'entries': obj.complaint_race_aggregation},
-                {'name': 'age', 'entries': obj.complaint_age_aggregation},
-                {'name': 'gender', 'entries': obj.complaint_gender_aggregation}
+                {'name': 'race', 'entries': obj.complainant_race_aggregation},
+                {'name': 'age', 'entries': obj.complainant_age_aggregation},
+                {'name': 'gender', 'entries': obj.complainant_gender_aggregation}
             ]
         }
