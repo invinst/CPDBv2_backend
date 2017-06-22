@@ -23,13 +23,19 @@ class SimpleFormatterTestCase(SimpleTestCase):
         ).to.be.equal('a')
 
     def test_format(self):
-        doc1 = Mock(to_dict=Mock(return_value='a'))
-        doc2 = Mock(to_dict=Mock(return_value='b'))
+        doc1 = Mock(
+            to_dict=Mock(return_value={'a': 'a'}),
+            _id='a_id'
+        )
+        doc2 = Mock(
+            to_dict=Mock(return_value={'b': 'b'}),
+            _id='b_id'
+        )
         response = Mock(hits=[doc1, doc2])
 
         expect(
             SimpleFormatter().format(response)
-        ).to.be.eq(['a', 'b'])
+        ).to.be.eq([{'a': 'a', 'doc_id': 'a_id'}, {'b': 'b', 'doc_id': 'b_id'}])
 
 
 class OfficerFormatterTestCase(SimpleTestCase):

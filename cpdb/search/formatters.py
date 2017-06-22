@@ -8,7 +8,11 @@ class SimpleFormatter(Formatter):
         return doc.to_dict()
 
     def format(self, response):
-        return [self.doc_format(doc) for doc in response.hits]
+        def process_doc(doc):
+            result = self.doc_format(doc)
+            result['doc_id'] = doc._id
+            return result
+        return [process_doc(doc) for doc in response.hits]
 
 
 class OfficerFormatter(SimpleFormatter):
