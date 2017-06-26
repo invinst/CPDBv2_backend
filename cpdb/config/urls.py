@@ -38,6 +38,7 @@ from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
 from analytics.views import EventViewSet
 from cr.views import CRViewSet
+from tracking.views import SearchTrackingViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -61,6 +62,7 @@ router_v2.register(
     base_name='report-bottomsheet-officer-search')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
