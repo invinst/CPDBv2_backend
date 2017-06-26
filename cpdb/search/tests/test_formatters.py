@@ -114,14 +114,14 @@ class NameFormatterTestCase(SimpleTestCase):
 
 class OfficerV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(full_name='name', badge='123', url='url')
+        doc = Mock(full_name='name', badge='123', to='to')
 
         expect(
             OfficerV2Formatter().doc_format(doc)
         ).to.be.eq({
             'result_text': 'name',
             'result_extra_information': 'Badge # 123',
-            'url': 'url'
+            'to': 'to'
         })
 
 

@@ -75,7 +75,7 @@ class OfficerV2Formatter(SimpleFormatter):
         return {
             'result_text': doc.full_name,
             'result_extra_information': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-            'url': doc.url
+            'to': doc.to
         }
 
 
