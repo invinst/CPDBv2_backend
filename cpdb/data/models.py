@@ -50,7 +50,7 @@ class PoliceUnit(models.Model):
                 output_field=models.CharField()
             )
         ).values('name').annotate(
-            count=models.Count('name')
+            count=models.Count('id', distinct=True)
         )
 
         return list(query_set)
@@ -66,7 +66,7 @@ class PoliceUnit(models.Model):
         ).annotate(
             name=get_num_range_case('member_age', [0, 20, 30, 40, 50])
         ).values('name').annotate(
-            count=models.Count('name')
+            count=models.Count('id', distinct=True)
         )
 
         return list(query_set)
@@ -81,7 +81,7 @@ class PoliceUnit(models.Model):
                 output_field=models.CharField()
             )
         ).values('member_gender').annotate(
-            count=models.Count('member_gender')
+            count=models.Count('id', distinct=True)
         )
 
         return [
