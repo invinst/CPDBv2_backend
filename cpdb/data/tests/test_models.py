@@ -201,6 +201,27 @@ class PoliceUnitTestCase(TestCase):
             }
         ])
 
+    def test_member_race_aggregation_in_case_officer_left_and_rejoin(self):
+        unit1 = PoliceUnitFactory()
+        unit2 = PoliceUnitFactory()
+        officer = OfficerFactory(race='White')
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=officer, unit=unit2)
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(race='White'), unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(race=''), unit=unit1)
+
+        expect(unit1.member_race_aggregation).to.eq([
+            {
+                'name': 'Unknown',
+                'count': 1
+            },
+            {
+                'name': 'White',
+                'count': 2
+            }
+        ])
+
     def test_member_age_aggregation(self):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(birth_year='1980'))
@@ -216,6 +237,27 @@ class PoliceUnitTestCase(TestCase):
             }
         ])
 
+    def test_member_age_aggregation_in_case_officer_left_and_rejoin(self):
+        unit1 = PoliceUnitFactory()
+        unit2 = PoliceUnitFactory()
+        officer = OfficerFactory(birth_year='1980')
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=officer, unit=unit2)
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(birth_year='1985'), unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(birth_year=None), unit=unit1)
+
+        expect(unit1.member_age_aggregation).to.eq([
+            {
+                'name': '31-40',
+                'count': 2
+            },
+            {
+                'name': 'Unknown',
+                'count': 1
+            }
+        ])
+
     def test_member_gender_aggregation(self):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(gender='F'))
@@ -224,6 +266,27 @@ class PoliceUnitTestCase(TestCase):
             {
                 'name': 'Female',
                 'count': 1
+            },
+            {
+                'name': 'Unknown',
+                'count': 1
+            }
+        ])
+
+    def test_member_gender_aggregation_in_case_officer_left_and_rejoin(self):
+        unit1 = PoliceUnitFactory()
+        unit2 = PoliceUnitFactory()
+        officer = OfficerFactory(gender='F')
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=officer, unit=unit2)
+        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(gender='F'), unit=unit1)
+        OfficerHistoryFactory(officer=OfficerFactory(gender=''), unit=unit1)
+
+        expect(unit1.member_gender_aggregation).to.eq([
+            {
+                'name': 'Female',
+                'count': 2
             },
             {
                 'name': 'Unknown',
