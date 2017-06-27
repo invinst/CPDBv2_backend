@@ -25,9 +25,9 @@ class SearchManager(object):
             response[content_type] = self._formatter_for(content_type)().format(search_results)
 
         else:
-            for content_type, worker in self.workers.items():
+            for _content_type, worker in self.workers.items():
                 search_results = worker.search(term)
-                response[content_type] = self._formatter_for(content_type)().format(search_results)
+                response[_content_type] = self._formatter_for(_content_type)().format(search_results)
 
         for hook in self.hooks:
             hook.execute(term, content_type, response)
