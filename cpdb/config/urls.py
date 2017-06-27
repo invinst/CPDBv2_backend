@@ -72,6 +72,7 @@ urlpatterns = [
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
+        r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'officer/\d+(?:/timeline)?|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
