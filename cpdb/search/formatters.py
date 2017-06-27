@@ -10,7 +10,7 @@ class SimpleFormatter(Formatter):
     def format(self, response):
         def process_doc(doc):
             result = self.doc_format(doc)
-            result['doc_id'] = doc._id
+            result['id'] = doc._id
             return result
         return [process_doc(doc) for doc in response.hits]
 
@@ -18,15 +18,17 @@ class SimpleFormatter(Formatter):
 class OfficerFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
 
         return {
             'text': serialized_doc['full_name'],
             'payload': {
-                'result_reason': ', '.join(serialized_doc.get('tags', [])),
+                'result_reason': ', '.join(tags),
                 'result_text': serialized_doc['full_name'],
                 'result_extra_information':
                     serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
-                'to': serialized_doc['to']
+                'to': serialized_doc['to'],
+                'tags': tags
             }
         }
 
@@ -68,6 +70,7 @@ class NameFormatter(SimpleFormatter):
         return {
             'text': doc.name,
             'payload': {
+                'tags': getattr(doc, 'tags', []),
                 'result_text': doc.name,
                 'url': doc.url
             }
@@ -79,13 +82,15 @@ class OfficerV2Formatter(SimpleFormatter):
         return {
             'result_text': doc.full_name,
             'result_extra_information': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-            'to': doc.to
+            'to': doc.to,
+            'tags': getattr(doc, 'tags', [])
         }
 
 
 class NameV2Formatter(SimpleFormatter):
     def doc_format(self, doc):
         return {
+            'tags': getattr(doc, 'tags', []),
             'result_text': doc.name,
             'url': doc.url
         }
@@ -95,7 +100,8 @@ class FAQFormatter(SimpleFormatter):
     def doc_format(self, doc):
         return {
             'question': doc.question,
-            'answer': doc.answer
+            'answer': doc.answer,
+            'tags': getattr(doc, 'tags', []),
         }
 
 
@@ -105,5 +111,6 @@ class ReportFormatter(SimpleFormatter):
             'publication': doc.publication,
             'author': doc.author,
             'title': doc.title,
-            'excerpt': doc.excerpt
+            'excerpt': doc.excerpt,
+            'tags': getattr(doc, 'tags', []),
         }

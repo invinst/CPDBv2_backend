@@ -35,7 +35,7 @@ class SimpleFormatterTestCase(SimpleTestCase):
 
         expect(
             SimpleFormatter().format(response)
-        ).to.be.eq([{'a': 'a', 'doc_id': 'a_id'}, {'b': 'b', 'doc_id': 'b_id'}])
+        ).to.be.eq([{'a': 'a', 'id': 'a_id'}, {'b': 'b', 'id': 'b_id'}])
 
 
 class OfficerFormatterTestCase(SimpleTestCase):
@@ -55,7 +55,8 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'result_text': 'name',
                 'result_extra_information': 'Badge # 123',
                 'to': 'to',
-                'result_reason': 'tag1, tag2'
+                'result_reason': 'tag1, tag2',
+                'tags': ['tag1', 'tag2']
             }
         })
 
@@ -104,7 +105,7 @@ class UnitFormatterTestCase(SimpleTestCase):
 
 class NameFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(url='url')
+        doc = Mock(url='url', tags=['t1', 't2'])
         doc.name = 'name'
 
         expect(
@@ -113,52 +114,62 @@ class NameFormatterTestCase(SimpleTestCase):
             'text': 'name',
             'payload': {
                 'result_text': 'name',
-                'url': 'url'
-            }
+                'url': 'url',
+                'tags': ['t1', 't2']
+            },
         })
 
 
 class OfficerV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(full_name='name', badge='123', to='to')
+        doc = Mock(full_name='name', tags=['t1', 't2'], badge='123', to='to')
 
         expect(
             OfficerV2Formatter().doc_format(doc)
         ).to.be.eq({
             'result_text': 'name',
             'result_extra_information': 'Badge # 123',
-            'to': 'to'
+            'to': 'to',
+            'tags': ['t1', 't2']
         })
 
 
 class NameV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(url='url')
+        doc = Mock(url='url', tags=['t1', 't2'])
         doc.name = 'name'
 
         expect(
             NameV2Formatter().doc_format(doc)
         ).to.be.eq({
             'result_text': 'name',
-            'url': 'url'
+            'url': 'url',
+            'tags': ['t1', 't2']
         })
 
 
 class FAQFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(question='question', answer='answer')
+        doc = Mock(question='question', answer='answer', tags=['t1', 't2'])
 
         expect(
             FAQFormatter().doc_format(doc)
         ).to.be.eq({
             'question': 'question',
-            'answer': 'answer'
+            'answer': 'answer',
+            'tags': ['t1', 't2']
         })
 
 
 class ReportFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(publication='publication', author='author', title='title', excerpt='excerpt')
+        doc = Mock(
+            publication='publication',
+            author='author',
+            title='title',
+            excerpt='excerpt',
+            tags=['t1', 't2']
+        )
 
         expect(
             ReportFormatter().doc_format(doc)
@@ -166,5 +177,6 @@ class ReportFormatterTestCase(SimpleTestCase):
             'publication': 'publication',
             'author': 'author',
             'title': 'title',
-            'excerpt': 'excerpt'
+            'excerpt': 'excerpt',
+            'tags': ['t1', 't2']
         })

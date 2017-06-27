@@ -22,12 +22,21 @@ class BaseIndexer(object):
     def extract_datum(self, datum):
         raise NotImplementedError
 
+    def extract_datum_with_id(self, datum):
+        extracted_data = self.extract_datum(datum)
+        if isinstance(extracted_data, list):
+            for entry in extracted_data:
+                entry['meta'] = {'id': datum.pk}
+        else:
+            extracted_data['meta'] = {'id': datum.pk}
+        return extracted_data
+
     def save_doc(self, extracted_data):
         doc = self.doc_type_klass(**extracted_data)
         doc.save()
 
     def index_datum(self, datum):
-        extracted_data = self.extract_datum(datum)
+        extracted_data = self.extract_datum_with_id(datum)
         if isinstance(extracted_data, list):
             [self.save_doc(entry) for entry in extracted_data]
         else:
@@ -39,6 +48,18 @@ class BaseIndexer(object):
             desc='Indexing {doc_type_name}'.format(
                 doc_type_name=self.doc_type_klass._doc_type.name)):
             self.index_datum(datum)
+
+    @classmethod
+    def set_aliases(cls, pk, aliases):
+        document = cls.doc_type_klass.get(pk)
+        record = cls().get_queryset().get(pk=pk)
+
+        # set db record
+        record.tags = aliases
+        record.save()
+
+        # update record's index
+        document.update(tags=aliases)
 
 
 class FAQIndexer(BaseIndexer):
@@ -53,10 +74,7 @@ class FAQIndexer(BaseIndexer):
         return {
             'question': extract_text_from_value(fields['question_value']),
             'answer': extract_text_from_value(fields['answer_value']),
-            'tags': datum.tags,
-            'meta': {
-              'id': datum.pk,
-            }
+            'tags': datum.tags
         }
 
 
@@ -75,10 +93,7 @@ class ReportIndexer(BaseIndexer):
             'excerpt': extract_text_from_value(fields['excerpt_value']),
             'title': extract_text_from_value(fields['title_value']),
             'publish_date': fields['publish_date_value'],
-            'tags': datum.tags,
-            'meta': {
-              'id': datum.pk,
-            }
+            'tags': datum.tags
         }
 
 
@@ -117,10 +132,7 @@ class OfficerIndexer(BaseIndexer):
             'full_name': datum.full_name,
             'badge': datum.current_badge,
             'to': datum.v2_to,
-            'tags': datum.tags,
-            'meta': {
-                'id': datum.pk
-            }
+            'tags': datum.tags
         }
 
 
@@ -164,7 +176,8 @@ class AreaTypeIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.name,
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': datum.tags
         }
 
 

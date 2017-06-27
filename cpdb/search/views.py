@@ -33,10 +33,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         return Response(results)
 
-    def update(self, request, text):
-        print('>>>>>>>>>>>>>>>> pk is', text)
-        return Response({'text': text})
-
     @property
     def _content_type(self):
         return self.request.query_params.get('contentType', None)
