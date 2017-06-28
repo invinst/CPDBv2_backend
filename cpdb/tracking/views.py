@@ -1,5 +1,6 @@
 from rest_framework import viewsets, filters, mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SearchTracking
 from .serializers import SearchTrackingSerializer
@@ -7,7 +8,9 @@ from .serializers import SearchTrackingSerializer
 
 class SearchTrackingViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = SearchTrackingSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = SearchTracking.objects.all()
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter, DjangoFilterBackend, filters.SearchFilter)
     ordering = ('-query',)
+    filter_fields = ('query_type', )
+    search_fields = ('query',)
