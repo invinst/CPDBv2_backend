@@ -4,14 +4,8 @@ from models import SearchTracking
 class QueryTrackingService(object):
     @staticmethod
     def _count_result(results):
-        if results is None:
-            return 0
-
-        count = 0
-        for _, value in results.iteritems():
-            count = count + len(value)
-
-        return count
+        results = results or {}
+        return sum(len(value) for _, value in results.iteritems())
 
     @staticmethod
     def execute(term, content_type=None, results={}):
