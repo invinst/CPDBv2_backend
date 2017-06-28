@@ -95,9 +95,28 @@ class SearchTrackingViewTestCase(APITestCase):
 
     def test_filter_by_query_type(self):
         url = reverse('api-v2:search-tracking-list')
-        response = self.client.get(url, {'query_type': 'no_interaction'})
+        response = self.client.get(url, {'query_types': 'no_interaction'})
         expect(response.data['results']).to.eq(
             [{
+                'id': 2,
+                'query': 'qu',
+                'usages': 2,
+                'results': 2,
+                'query_type': 'no_interaction',
+                'last_entered': '2017-01-14T12:00:01Z'
+            }]
+        )
+
+        response = self.client.get(url, {'query_types': 'no_interaction,free_text'})
+        expect(response.data['results']).to.eq(
+            [{
+                'id': 1,
+                'query': 'query',
+                'usages': 1,
+                'results': 1,
+                'query_type': 'free_text',
+                'last_entered': '2017-01-14T12:00:01Z'
+            }, {
                 'id': 2,
                 'query': 'qu',
                 'usages': 2,

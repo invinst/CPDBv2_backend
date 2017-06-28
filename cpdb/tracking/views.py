@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SearchTracking
 from .serializers import SearchTrackingSerializer
+from .filters import SearchTrackingFilterSet
 
 
 class SearchTrackingViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -12,5 +13,5 @@ class SearchTrackingViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = SearchTracking.objects.all()
     filter_backends = (filters.OrderingFilter, DjangoFilterBackend, filters.SearchFilter)
     ordering = ('-query',)
-    filter_fields = ('query_type', )
     search_fields = ('query',)
+    filter_class = SearchTrackingFilterSet
