@@ -110,7 +110,7 @@ class PoliceUnit(models.Model):
                 default='allegation_category__category',
                 output_field=models.CharField()
             )).values('name').annotate(
-                count=models.Count('name'),
+                count=models.Count('id', distinct=True),
                 sustained_count=models.Sum(
                     models.Case(
                         models.When(final_finding='SU', then=1),
@@ -132,7 +132,7 @@ class PoliceUnit(models.Model):
                 output_field=models.CharField()
             )
         ).values('name').annotate(
-            count=models.Count('name'),
+            count=models.Count('id', distinct=True),
             sustained_count=models.Sum(
                 models.Case(
                     models.When(final_finding='SU', then=1),
@@ -149,7 +149,7 @@ class PoliceUnit(models.Model):
         query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
             name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50])
         ).values('name').annotate(
-            count=models.Count('name'),
+            count=models.Count('id', distinct=True),
             sustained_count=models.Sum(
                 models.Case(
                     models.When(final_finding='SU', then=1),
@@ -171,7 +171,7 @@ class PoliceUnit(models.Model):
                 output_field=models.CharField()
             )
         ).values('complainant_gender').annotate(
-            count=models.Count('complainant_gender'),
+            count=models.Count('id', distinct=True),
             sustained_count=models.Sum(
                 models.Case(
                     models.When(final_finding='SU', then=1),
