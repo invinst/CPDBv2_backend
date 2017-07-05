@@ -19,5 +19,5 @@
     - { role: java, tags: "elasticsearch" }
     - { role: elasticsearch, tags: "elasticsearch" }
     - db
-    - ssh_user
+    - { role: ssh_user, tags: "ssh_user" }
     - web
