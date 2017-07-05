@@ -14,58 +14,16 @@ class UnitIndexerTestCase(SimpleTestCase):
             expect(UnitIndexer().get_queryset()).to.eq([unit])
 
     def test_extract_datum(self):
-        unit = Mock()
-        unit.unit_name = '001'
-        unit.member_count = 2
-        unit.active_member_count = 1
-        unit.complaint_count = 1
-        unit.sustained_count = 0
-        unit.member_race_aggregation = [
-            {
-                'name': 'White',
-                'count': 1
-            }
-        ]
-        unit.member_age_aggregation = [
-            {
-                'name': '21-30',
-                'count': 1
-            }
-        ]
-        unit.member_gender_aggregation = [
-            {
-                'name': 'Female',
-                'count': 1
-            }
-        ]
-        unit.complaint_category_aggregation = [
-            {
-                'name': 'Illegal Search',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ]
-        unit.complainant_race_aggregation = [
-            {
-                'name': 'White',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ]
-        unit.complainant_age_aggregation = [
-            {
-                'name': '21-30',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ]
-        unit.complainant_gender_aggregation = [
-            {
-                'name': 'Female',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ]
+        unit = Mock(
+            unit_name='001', member_count=2, active_member_count=1, complaint_count=1, sustained_count=0,
+            member_race_aggregation=[{'name': 'White', 'count': 1}],
+            member_age_aggregation=[{'name': '21-30', 'count': 1}],
+            member_gender_aggregation=[{'name': 'Female', 'count': 1}],
+            complaint_category_aggregation=[{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}],
+            complainant_race_aggregation=[{'name': 'White', 'count': 1, 'sustained_count': 0}],
+            complainant_age_aggregation=[{'name': '21-30', 'count': 1, 'sustained_count': 0}],
+            complainant_gender_aggregation=[{'name': 'Female', 'count': 1, 'sustained_count': 0}]
+        )
 
         expect(UnitIndexer().extract_datum(unit)).to.eq({
             'unit_name': '001',
