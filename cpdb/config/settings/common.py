@@ -65,6 +65,7 @@ LOCAL_APPS = (
     'analytics',
     'officers',
     'cr',
+    'units'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
