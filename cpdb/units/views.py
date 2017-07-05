@@ -11,7 +11,8 @@ class UnitsViewSet(viewsets.ViewSet):
     def summary(self, request, pk):
         query = UnitDocType().search().query('term', unit_name=pk)
         search_result = query.execute()
-        try:
+
+        if len(search_result):
             return Response(search_result[0].to_dict())
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_404_NOT_FOUND)
