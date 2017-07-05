@@ -73,7 +73,7 @@ urlpatterns = [
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
         r'officer/\d+(?:/timeline)?|'
-        r'unit/\d+'
+        r'unit/\d+|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),
