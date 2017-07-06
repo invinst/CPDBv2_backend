@@ -305,12 +305,36 @@ class PoliceUnitTestCase(TestCase):
         expect(unit1.complaint_count).to.eq(1)
         expect(unit2.complaint_count).to.eq(0)
 
+    def test_complaint_count_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        OfficerHistoryFactory(unit=unit, officer=officer1)
+        OfficerHistoryFactory(unit=unit, officer=officer2)
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer1, allegation=allegation)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation)
+
+        expect(unit.complaint_count).to.eq(1)
+
     def test_sustained_count(self):
         unit = PoliceUnitFactory()
         officer = OfficerFactory()
         OfficerHistoryFactory(unit=unit, officer=officer)
         OfficerAllegationFactory(officer=officer, final_finding='SU')
         OfficerAllegationFactory(officer=officer, final_finding='UN')
+        expect(unit.sustained_count).to.eq(1)
+
+    def test_sustained_count_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        OfficerHistoryFactory(unit=unit, officer=officer1)
+        OfficerHistoryFactory(unit=unit, officer=officer2)
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(officer=officer1, allegation=allegation, final_finding='SU')
+        OfficerAllegationFactory(officer=officer2, allegation=allegation, final_finding='SU')
+
         expect(unit.sustained_count).to.eq(1)
 
     def test_complaint_category_aggregation(self):
@@ -327,18 +351,17 @@ class PoliceUnitTestCase(TestCase):
             'sustained_count': 0
         }])
 
-    def test_complaint_category_aggregation_in_case_officer_left_and_rejoin(self):
-        unit1 = PoliceUnitFactory()
-        unit2 = PoliceUnitFactory()
-        officer = OfficerFactory()
-        OfficerHistoryFactory(officer=officer, unit=unit1)
-        OfficerHistoryFactory(officer=officer, unit=unit2)
-        OfficerHistoryFactory(officer=officer, unit=unit1)
-        OfficerAllegationFactory(
-            officer=officer,
-            allegation_category=AllegationCategoryFactory(category='Use of Force')
-        )
-        expect(unit1.complaint_category_aggregation).to.eq([{
+    def test_complaint_category_aggregation_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        allegation = AllegationFactory()
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        OfficerHistoryFactory(officer=officer1, unit=unit)
+        OfficerHistoryFactory(officer=officer2, unit=unit)
+        OfficerAllegationFactory(officer=officer1, allegation=allegation, allegation_category=allegation_category)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation, allegation_category=allegation_category)
+        expect(unit.complaint_category_aggregation).to.eq([{
             'name': 'Use of Force',
             'count': 1,
             'sustained_count': 0
@@ -357,21 +380,24 @@ class PoliceUnitTestCase(TestCase):
             'sustained_count': 0
         }])
 
-    def test_complainant_race_aggregation_in_case_officer_left_and_rejoin(self):
-        unit1 = PoliceUnitFactory()
-        unit2 = PoliceUnitFactory()
+    def test_complainant_race_aggregation_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
         officer = OfficerFactory()
         allegation = AllegationFactory()
-        OfficerHistoryFactory(officer=officer, unit=unit1)
-        OfficerHistoryFactory(officer=officer, unit=unit2)
-        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=officer, unit=unit)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
         ComplainantFactory(allegation=allegation, race='White')
-        expect(unit1.complainant_race_aggregation).to.eq([{
+        ComplainantFactory(allegation=allegation, race='Black')
+        expect(unit.complainant_race_aggregation).to.eq([{
+            'name': 'Black',
+            'count': 1,
+            'sustained_count': 0
+        }, {
             'name': 'White',
             'count': 1,
             'sustained_count': 0
-        }])
+        }
+        ])
 
     def test_complainant_age_aggregation(self):
         unit = PoliceUnitFactory()
@@ -383,36 +409,33 @@ class PoliceUnitTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, allegation=allegation2, final_finding='UN')
         ComplainantFactory(allegation=allegation1, age=25)
         ComplainantFactory(allegation=allegation2, age=None)
-        expect(unit.complainant_age_aggregation).to.eq([
-            {
-                'name': 'Unknown',
-                'count': 1,
-                'sustained_count': 0
-            },
-            {
-                'name': '21-30',
-                'count': 1,
-                'sustained_count': 1
-            }
-        ])
+        expect(unit.complainant_age_aggregation).to.eq([{
+            'name': 'Unknown',
+            'count': 1,
+            'sustained_count': 0
+        }, {
+            'name': '21-30',
+            'count': 1,
+            'sustained_count': 1
+        }])
 
-    def test_complainant_age_aggregation_in_case_officer_left_and_rejoin(self):
-        unit1 = PoliceUnitFactory()
-        unit2 = PoliceUnitFactory()
+    def test_complainant_age_aggregation_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
         officer = OfficerFactory()
-        OfficerHistoryFactory(officer=officer, unit=unit1)
-        OfficerHistoryFactory(officer=officer, unit=unit2)
-        OfficerHistoryFactory(officer=officer, unit=unit1)
         allegation = AllegationFactory()
+        OfficerHistoryFactory(officer=officer, unit=unit)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
         ComplainantFactory(allegation=allegation, age=25)
-        expect(unit1.complainant_age_aggregation).to.eq([
-            {
-                'name': '21-30',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ])
+        ComplainantFactory(allegation=allegation, age=35)
+        expect(unit.complainant_age_aggregation).to.eq([{
+            'name': '31-40',
+            'count': 1,
+            'sustained_count': 0
+        }, {
+            'name': '21-30',
+            'count': 1,
+            'sustained_count': 0
+        }])
 
     def test_complainant_gender_aggregation(self):
         unit = PoliceUnitFactory()
@@ -437,23 +460,19 @@ class PoliceUnitTestCase(TestCase):
             }
         ])
 
-    def test_complainant_gender_aggregation_in_case_officer_left_and_rejoin(self):
-        unit1 = PoliceUnitFactory()
-        unit2 = PoliceUnitFactory()
+    def test_complainant_gender_aggregation_with_duplicated_allegation(self):
+        unit = PoliceUnitFactory()
         officer = OfficerFactory()
         allegation = AllegationFactory()
-        OfficerHistoryFactory(officer=officer, unit=unit1)
-        OfficerHistoryFactory(officer=officer, unit=unit2)
-        OfficerHistoryFactory(officer=officer, unit=unit1)
+        OfficerHistoryFactory(officer=officer, unit=unit)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
         ComplainantFactory(allegation=allegation, gender='F')
-        expect(unit1.complainant_gender_aggregation).to.eq([
-            {
-                'name': 'Female',
-                'count': 1,
-                'sustained_count': 0
-            }
-        ])
+        ComplainantFactory(allegation=allegation, gender='F')
+        expect(unit.complainant_gender_aggregation).to.eq([{
+            'name': 'Female',
+            'count': 2,
+            'sustained_count': 0
+        }])
 
 
 class AreaTestCase(SimpleTestCase):
