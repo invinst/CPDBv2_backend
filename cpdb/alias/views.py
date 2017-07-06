@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .serializers import AliasSerializer
 from .constants import INDEXER_MAPPINGS
+from .utils import set_aliases
 
 
 class AliasViewSet(viewsets.ViewSet):
@@ -24,7 +25,7 @@ class AliasViewSet(viewsets.ViewSet):
 
         validated_aliases = aliases.validated_data['aliases']
         try:
-            indexer_class.set_aliases(pk, validated_aliases)
+            set_aliases(indexer_class, pk, validated_aliases)
         except NotFoundError:
             raise NotFound(
                 'Cannot find any "{alias_type}" record with pk={pk}'.format(

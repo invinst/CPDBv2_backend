@@ -49,18 +49,6 @@ class BaseIndexer(object):
                 doc_type_name=self.doc_type_klass._doc_type.name)):
             self.index_datum(datum)
 
-    @classmethod
-    def set_aliases(cls, pk, aliases):
-        document = cls.doc_type_klass.get(pk)
-        record = cls().get_queryset().get(pk=pk)
-
-        # set db record
-        record.tags = aliases
-        record.save()
-
-        # update record's index
-        document.update(tags=aliases)
-
 
 class FAQIndexer(BaseIndexer):
     doc_type_klass = FAQDocType
