@@ -36,9 +36,9 @@ from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
-from analytics.views import EventViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
-from analytics.views import SearchTrackingViewSet
+from units.views import UnitsViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -63,6 +63,7 @@ router_v2.register(
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
+router_v2.register(r'units', UnitsViewSet, base_name='units')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -74,6 +75,7 @@ urlpatterns = [
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'officer/\d+(?:/timeline)?|'
+        r'unit/\d+|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),
