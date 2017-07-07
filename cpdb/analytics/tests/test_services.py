@@ -2,9 +2,9 @@ from django.test import TestCase
 
 from robber import expect
 
-from tracking.services import QueryTrackingService
-from tracking.models import SearchTracking
-from tracking.factories import SearchTrackingFactory
+from analytics.services import QueryTrackingService
+from analytics.models import SearchTracking
+from analytics.factories import SearchTrackingFactory
 
 
 class QueryTrackingServiceTestCase(TestCase):

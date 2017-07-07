@@ -8,7 +8,7 @@ from .formatters import (
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
     CoAccusedOfficerWorker, UnitOfficerWorker)
-from tracking.services import QueryTrackingService
+from analytics.services import QueryTrackingService
 
 
 class SearchViewSet(viewsets.ViewSet):

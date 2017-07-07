@@ -38,7 +38,7 @@ from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
 from analytics.views import EventViewSet
 from cr.views import CRViewSet
-from tracking.views import SearchTrackingViewSet
+from analytics.views import SearchTrackingViewSet
 
 
 router_v1 = routers.SimpleRouter()
