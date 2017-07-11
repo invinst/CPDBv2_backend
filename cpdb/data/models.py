@@ -126,68 +126,114 @@ class PoliceUnit(models.Model):
 
     @property
     def complainant_race_aggregation(self):
-        query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
             name=models.Case(
-                models.When(allegation__complainant__race__isnull=True, then=models.Value('Unknown')),
-                models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
-                default='allegation__complainant__race',
+                models.When(race__isnull=True, then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
                 output_field=models.CharField()
             )
         ).values('name').annotate(
-            count=models.Count('allegation__complainant__id', distinct=True),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=0,
-                    output_field=models.IntegerField()
-                )
-            )
+            count=models.Count('id', distinct=True)
         )
 
-        return list(query_set)
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            name=models.Case(
+                models.When(race__isnull=True, then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()
+            )
+        ).values('name').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['name']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
+
+        return [
+            {
+                'name': obj['name'],
+                'count': obj['count'],
+                'sustained_count': sustained_count_results.get(obj['name'], 0)
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
 
     @property
     def complainant_age_aggregation(self):
-        query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
-            name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50])
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
+            name=get_num_range_case('age', [0, 20, 30, 40, 50])
         ).values('name').annotate(
-            count=models.Count('allegation__complainant__id', distinct=True),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=0,
-                    output_field=models.IntegerField()
-                )
-            )
+            count=models.Count('id', distinct=True)
         )
 
-        return list(query_set)
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            name=get_num_range_case('age', [0, 20, 30, 40, 50])
+        ).values('name').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['name']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
+
+        return [
+            {
+                'name': obj['name'],
+                'count': obj['count'],
+                'sustained_count': sustained_count_results.get(obj['name'], 0)
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
 
     @property
     def complainant_gender_aggregation(self):
-        query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
             complainant_gender=models.Case(
-                models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
-                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                default='allegation__complainant__gender',
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
                 output_field=models.CharField()
             )
         ).values('complainant_gender').annotate(
-            count=models.Count('allegation__complainant__id', distinct=True),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=0,
-                    output_field=models.IntegerField()
-                )
-            )
+            count=models.Count('id', distinct=True)
         )
+
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            complainant_gender=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()
+            )
+        ).values('complainant_gender').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['complainant_gender']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
 
         return [
             {
                 'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
                 'count': obj['count'],
-                'sustained_count': obj['sustained_count']
+                'sustained_count': sustained_count_results.get(obj['complainant_gender'], 0)
             }
             for obj in query_set if obj['count'] > 0
         ]

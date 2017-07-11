@@ -410,13 +410,13 @@ class PoliceUnitTestCase(TestCase):
         ComplainantFactory(allegation=allegation1, age=25)
         ComplainantFactory(allegation=allegation2, age=None)
         expect(unit.complainant_age_aggregation).to.eq([{
-            'name': 'Unknown',
-            'count': 1,
-            'sustained_count': 0
-        }, {
             'name': '21-30',
             'count': 1,
             'sustained_count': 1
+        }, {
+            'name': 'Unknown',
+            'count': 1,
+            'sustained_count': 0
         }])
 
     def test_complainant_age_aggregation_with_duplicated_allegation(self):
@@ -428,11 +428,11 @@ class PoliceUnitTestCase(TestCase):
         ComplainantFactory(allegation=allegation, age=25)
         ComplainantFactory(allegation=allegation, age=35)
         expect(unit.complainant_age_aggregation).to.eq([{
-            'name': '31-40',
+            'name': '21-30',
             'count': 1,
             'sustained_count': 0
         }, {
-            'name': '21-30',
+            'name': '31-40',
             'count': 1,
             'sustained_count': 0
         }])
@@ -447,17 +447,15 @@ class PoliceUnitTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, allegation=allegation2, final_finding='UN')
         ComplainantFactory(allegation=allegation1, gender='F')
         ComplainantFactory(allegation=allegation2, gender='')
-        expect(unit.complainant_gender_aggregation).to.eq([
-            {
-                'name': 'Unknown',
-                'count': 1,
-                'sustained_count': 0
-            },
-            {
-                'name': 'Female',
-                'count': 1,
-                'sustained_count': 1
-            }
+        expect(unit.complainant_gender_aggregation).to.eq([{
+            'name': 'Female',
+            'count': 1,
+            'sustained_count': 1
+        }, {
+            'name': 'Unknown',
+            'count': 1,
+            'sustained_count': 0
+        }
         ])
 
     def test_complainant_gender_aggregation_with_duplicated_allegation(self):
