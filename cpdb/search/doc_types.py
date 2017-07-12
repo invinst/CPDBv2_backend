@@ -49,6 +49,7 @@ class UnitDocType(DocType):
 @autocompletes.doc_type
 class NeighborhoodsDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'neighborhood'
@@ -57,6 +58,7 @@ class NeighborhoodsDocType(DocType):
 @autocompletes.doc_type
 class CommunityDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'community'
@@ -77,6 +79,7 @@ class CoAccusedOfficerDocType(DocType):
 class UnitOfficerDocType(DocType):
     allegation_count = Long()
     unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'unitofficer'
