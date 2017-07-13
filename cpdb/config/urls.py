@@ -39,6 +39,7 @@ from officers.views import OfficersViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
 from units.views import UnitsViewSet
+from alias.views import AliasViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -55,6 +56,7 @@ router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
+router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(
     r'report-bottomsheet-officer-search',
