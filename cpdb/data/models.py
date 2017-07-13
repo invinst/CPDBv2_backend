@@ -17,7 +17,14 @@ from data.utils.aggregation import get_num_range_case
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
-class PoliceUnit(models.Model):
+class TaggableModel(models.Model):
+    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
+
+    class Meta:
+        abstract = True
+
+
+class PoliceUnit(TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
 
@@ -239,7 +246,7 @@ class PoliceUnit(models.Model):
         ]
 
 
-class Officer(models.Model):
+class Officer(TaggableModel):
     first_name = models.CharField(
         max_length=255, null=True, db_index=True, blank=True)
     last_name = models.CharField(
@@ -250,7 +257,6 @@ class Officer(models.Model):
     rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
-    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
 
     def __str__(self):
         return self.full_name
@@ -388,7 +394,7 @@ class OfficerHistory(models.Model):
         return self.unit.unit_name
 
 
-class Area(models.Model):
+class Area(TaggableModel):
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
