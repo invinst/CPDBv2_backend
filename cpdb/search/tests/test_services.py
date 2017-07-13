@@ -17,7 +17,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         })
 
     def test_search(self):
-        doc = OfficerDocType(full_name='full name', badge='123', url='url')
+        doc = OfficerDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
         doc.save()
         self.refresh_index()
 
@@ -27,15 +27,16 @@ class SearchManagerTestCase(IndexMixin, TestCase):
             'UNIT': [],
             'NEIGHBORHOOD': [],
             'OFFICER': [{
+                'id': '1',
                 'url': 'url',
-                'badge':
-                '123',
+                'badge': '123',
                 'full_name': u'full name'
             }],
             'COMMUNITY': []})
 
     def test_suggest_sample(self):
         taglessOfficerDoc = OfficerDocType(
+            meta={'id': '1'},
             full_name='this should not be returned',
             badge='123',
             url='url'
@@ -43,6 +44,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         taglessOfficerDoc.save()
 
         officerDoc = OfficerDocType(
+            meta={'id': '2'},
             full_name='full name',
             badge='123',
             url='url',
@@ -51,6 +53,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         officerDoc.save()
 
         faqDoc = FAQDocType(
+            meta={'id': '11'},
             question='I dont care',
             answer='-eh-eh-eh-eh-eh',
             tags=['sample']
@@ -58,6 +61,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         faqDoc.save()
 
         taglessFaqDoc = FAQDocType(
+            meta={'id': '22'},
             question='this should not be returned',
             answer='nope'
         )
@@ -74,11 +78,13 @@ class SearchManagerTestCase(IndexMixin, TestCase):
 
         expect(response).to.eq({
             'FAQ': [{
+                'id': '11',
                 'question': 'I dont care',
                 'answer': '-eh-eh-eh-eh-eh',
                 'tags': ['sample']
             }],
             'OFFICER': [{
+                'id': '2',
                 'url': 'url',
                 'badge':
                 '123',
