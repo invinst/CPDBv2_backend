@@ -8,7 +8,7 @@ from .formatters import (
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
     CoAccusedOfficerWorker, UnitOfficerWorker)
-from analytics.services import QueryTrackingService
+from analytics.search_hooks import QueryTrackingSearchHook
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -16,7 +16,7 @@ class SearchViewSet(viewsets.ViewSet):
     formatters = {}
     workers = {}
     hooks = [
-        QueryTrackingService
+        QueryTrackingSearchHook
     ]
 
     def retrieve(self, request, text):

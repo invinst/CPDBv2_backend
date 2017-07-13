@@ -2,20 +2,20 @@ from django.test import TestCase
 
 from robber import expect
 
-from analytics.services import QueryTrackingService
+from analytics.search_hooks import QueryTrackingSearchHook
 from analytics.models import SearchTracking
 from analytics.factories import SearchTrackingFactory
 
 
-class QueryTrackingServiceTestCase(TestCase):
+class QueryTrackingSearchHookTestCase(TestCase):
     def test_execute_create(self):
-        QueryTrackingService.execute(term='query', results={})
+        QueryTrackingSearchHook.execute(term='query', results={})
         expect(SearchTracking.objects.count()).to.be.eq(1)
         expect(SearchTracking.objects.first().query).to.be.eq('query')
 
     def test_execute_update(self):
         SearchTrackingFactory(query='query', results=10, usages=5)
-        QueryTrackingService.execute(term='query', results={'officer': [{}, {}], 'coaccused': [{}, {}]})
+        QueryTrackingSearchHook.execute(term='query', results={'officer': [{}, {}], 'coaccused': [{}, {}]})
         expect(SearchTracking.objects.count()).to.be.eq(1)
         search_tracking = SearchTracking.objects.first()
         expect(search_tracking.query).to.be.eq('query')
