@@ -1,3 +1,5 @@
+from mock import Mock, patch
+
 from django.test import TestCase
 
 from robber import expect
@@ -92,3 +94,11 @@ class SearchManagerTestCase(IndexMixin, TestCase):
                 'tags': ['sample']
             }]
         })
+
+    @patch('search.services.SimpleFormatter.format', return_value='formatter_results')
+    def test_hooks(self, _):
+        mock_hook = Mock()
+        mock_worker = Mock()
+        term = 'whatever'
+        SearchManager(hooks=[mock_hook], workers={'mock': mock_worker}).search(term)
+        mock_hook.execute.assert_called_with(term, None, {'mock': 'formatter_results'})
