@@ -1,6 +1,6 @@
 Django==1.9.5
 django-environ==0.4.0
-django-filter==0.13.0
+django-filter==1.0.4
 djangorestframework==3.3.0
 six==1.10.0
 wagtail==1.5rc1

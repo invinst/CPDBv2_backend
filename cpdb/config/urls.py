@@ -36,7 +36,7 @@ from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
-from analytics.views import EventViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
@@ -64,6 +64,7 @@ router_v2.register(
     base_name='report-bottomsheet-officer-search')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 
 urlpatterns = [
@@ -74,6 +75,7 @@ urlpatterns = [
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
+        r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'officer/\d+(?:/timeline)?|'
         r'unit/\d+|'
         r'complaint/\d+/\d+|'
