@@ -7,8 +7,6 @@ Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your mac
 
 ``` bash
 ansible-galaxy install azavea.postgresql
-git clone git@github.com:CyVerse-Ansible/ansible-elasticsearch-1.git
-sudo mv -r ansible-elasticsearch-1 /etc/ansible/roles/cyverse.elasticsearch
 ```
 
 Ask the team for the ansible vault password, then put it in a text file at `../vault_pass.txt` (parent dir of this repo). This file is used to decrypt ansible variables contained in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files.
