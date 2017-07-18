@@ -33,6 +33,7 @@ deploy_group: ansible
 setup_newrelic: yes
 backup_database_daily: yes
 enable_cron_job: yes
+github_ssh_key: /home/ansible/.ssh/khoi_github
 
 authorized_keys: |
   ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCcIdSs2Ibm7zsZQyW9nIeWiNlv1slKuslhRlY7LL1VFYHP/DP0DvOTXPFdjnE9DTQmoxa6tiXeP2bvvTvKNflUG41M5Tf1V9FZFGEEYU7cK8BdJTMek6LKmax7EoY4q/2ACYt5WThUc8rU/mBPRXOE4qTUNB7qSMFVRgDbU8zXSWPU0cGwaBv+0QUgDXuSfK4zaYbVr3hFxuS+V9nB5tICi6hfK7LnlLh8vsXvBMqNcRvp5w+QtNGIeJ/OcFrUTQwwTam7eOE2/xnz3ZE1s0iOmMNNVhujq3eMIUCE6+u/3EQ+nmmQmWvtOUnskg6ass13gfW+wlIqNDWvaRLeeiWR deploykey_prod@circleci

@@ -5,7 +5,7 @@
        version="{{ git_branch }}"
        dest={{ project_root_path }}
        accept_hostkey=yes
-       key_file=/home/ansible/.ssh/khoi_github
+       key_file={{ github_ssh_key }}
   when: setup_git_repo is defined and setup_git_repo
   tags: git
   become: yes
