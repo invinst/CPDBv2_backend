@@ -36,3 +36,6 @@ ansible/external-roles
 
 # Just to be extra careful:
 *vault_pass*
+
+data_source
+.ipynb_checkpoints
