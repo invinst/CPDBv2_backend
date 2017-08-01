@@ -129,7 +129,7 @@ class OfficerIndexerTestCase(TestCase):
         expect(OfficerIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = OfficerFactory(first_name='first', last_name='last')
+        datum = OfficerFactory(first_name='first', last_name='last', tags=['tag1', 'tag2'])
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
 
         expect(
@@ -138,7 +138,7 @@ class OfficerIndexerTestCase(TestCase):
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
-            'tags': []
+            'tags': ['tag1', 'tag2']
         })
 
 
@@ -193,7 +193,7 @@ class CommunityIndexerTestCase(TestCase):
 
 class CoAccusedOfficerIndexerTestCase(TestCase):
     def setUp(self):
-        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn', tags=['tag1', 'tag2'])
         self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
         allegation = AllegationFactory()
         OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
@@ -209,8 +209,9 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
             'to': self.officer_2.v2_to,
             'co_accused_officer': {
                 'badge': '',
-                'full_name': 'Kevin Osborn'
-            }
+                'full_name': 'Kevin Osborn',
+                'tags': ['tag1', 'tag2']
+            },
         }])
 
 

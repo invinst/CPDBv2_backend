@@ -104,7 +104,8 @@ class CoAccusedOfficerIndexer(BaseIndexer):
             'to': officer.v2_to,
             'co_accused_officer': {
                 'full_name': datum.full_name,
-                'badge': datum.current_badge
+                'badge': datum.current_badge,
+                'tags': datum.tags
             }
         } for officer in officers]
 
