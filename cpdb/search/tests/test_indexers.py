@@ -34,12 +34,7 @@ class BaseIndexerTestCase(SimpleTestCase):
         datum = Mock(pk='11')
         indexer = BaseIndexer()
         indexer.extract_datum = Mock(return_value=[{'foo': 'bar'}])
-        expect(indexer.extract_datum_with_id(datum)).to.eq([{
-            'foo': 'bar',
-            'meta': {
-                'id': '11'
-            }
-        }])
+        expect(indexer.extract_datum_with_id(datum)).to.eq([{'foo': 'bar'}])
 
     def test_index_datum_dict(self):
         indexer = BaseIndexer()
@@ -208,6 +203,7 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
             'badge': '',
             'to': self.officer_2.v2_to,
             'co_accused_officer': {
+                'id': self.officer_1.pk,
                 'badge': '',
                 'full_name': 'Kevin Osborn',
                 'tags': ['tag1', 'tag2']

@@ -23,11 +23,13 @@ class BaseIndexer(object):
         raise NotImplementedError
 
     def extract_datum_with_id(self, datum):
+        '''
+        Ensure that the indexed document has the same ID as its corresponding database record.
+        We can't do this to indexer classes where extract_datum() returns a list (e.g. CoAccusedOfficerIndexer) because
+        multiple documents cannot share the same ID.
+        '''
         extracted_data = self.extract_datum(datum)
-        if isinstance(extracted_data, list):
-            for entry in extracted_data:
-                entry['meta'] = {'id': datum.pk}
-        else:
+        if not isinstance(extracted_data, list):
             extracted_data['meta'] = {'id': datum.pk}
         return extracted_data
 
@@ -105,7 +107,8 @@ class CoAccusedOfficerIndexer(BaseIndexer):
             'co_accused_officer': {
                 'full_name': datum.full_name,
                 'badge': datum.current_badge,
-                'tags': datum.tags
+                'tags': datum.tags,
+                'id': datum.pk
             }
         } for officer in officers]
 
