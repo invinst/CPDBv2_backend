@@ -62,4 +62,6 @@ not
   - Ordering: should be specified as comma separated list under `ordering` query param. Put an `-` before a field to reverse order Ex: `api/v1/officers/?ordering=name,-birth_year`
 
 # References:
+- [WhiteHouse's api standards](https://github.com/WhiteHouse/api-standards)
 - [Django rest framework](http://www.django-rest-framework.org/)
+- [Apigee api design ebook](https://pages.apigee.com/rs/apigee/images/api-design-ebook-2012-03.pdf)
