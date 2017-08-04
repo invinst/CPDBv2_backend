@@ -23,7 +23,7 @@ class BaseResponseBuilderTestCase(TestCase):
         builder = self.builder_class()
 
         with patch('twitterbot.response_builders.random.choice', return_value=Mock(syntax='a is {{number}}')):
-            expect(list(builder.build(extra_variables={'number': 18}))).to.eq(['a is 18'])
+            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([((), 'a is 18', '')])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
         builder = self.builder_class()
@@ -33,7 +33,7 @@ class BaseResponseBuilderTestCase(TestCase):
 
         context = dict()
 
-        expect(list(builder.build(context=context))).to.eq(['b'])
+        expect(list(builder.build(context=context))).to.eq([((), 'b', '')])
 
         expect(context['responses_count']).to.eq(1)
 
@@ -50,12 +50,14 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
             syntax='@{{user_name}} {{officer.full_name}} has {{officer.complaints}} complaints {{url}}')
 
         builder = SingleOfficerResponseBuilder()
-        officers = [officer1, officer2]
+        officers = [('source1', officer1), ('source2', officer2)]
 
         with self.settings(DOMAIN='http://foo.co'):
             expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([
-                '@abc Jerome Finnigan has 3 complaints http://foo.co/officer/1/',
-                '@abc Raymond Piwnicki has 0 complaints http://foo.co/officer/2/'
+                (('source1',), '@abc Jerome Finnigan has 3 complaints http://foo.co/officer/1/',
+                    'http://foo.co/officer/1/'),
+                (('source2',), '@abc Raymond Piwnicki has 0 complaints http://foo.co/officer/2/',
+                    'http://foo.co/officer/2/')
             ])
 
 
@@ -81,8 +83,11 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
 
         builder = CoaccusedPairResponseBuilder()
 
-        expect(list(builder.build([officer1, officer2, officer3], {'user_name': 'abc'}))).to.eq([
-            '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case'
+        expect(list(builder.build(
+            [('source1', officer1), ('source2', officer2), ('source3', officer3)],
+            {'user_name': 'abc'}))
+        ).to.eq([
+            (('source1', 'source2'), '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case', '')
         ])
 
 
@@ -95,7 +100,7 @@ class NotFoundResponseBuilderTestCase(TestCase):
     def test_build_with_0_response(self):
         builder = NotFoundResponseBuilder()
         expect(list(builder.build(extra_variables={'user_name': 'abc'}, context={'responses_count': 0}))).to.eq([
-            'Sorry, @abc, the bot find nothing'
+            ((), 'Sorry, @abc, the bot find nothing', '')
         ])
 
     def test_build_with_response(self):

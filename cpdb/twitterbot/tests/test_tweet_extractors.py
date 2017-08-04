@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from robber import expect
+from mock import Mock, patch
 
 from twitterbot.tweet_extractors import RelatedTweetExtractor
 from twitterbot.factories import TweetFactory, MockClientFactory
@@ -63,3 +64,20 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
         context = {'client': client}
         extractor.extract(tweet, context=context)
         expect(context['first_non_retweet'].id).to.eq(retweeted_tweet.id)
+
+    def test_populate_original_tweet(self):
+        extractor = RelatedTweetExtractor()
+        client = MockClientFactory()
+        retweeted_tweet = TweetFactory(client=client)
+        client.register(retweeted_tweet)
+        tweet = TweetFactory(retweeted_tweet=retweeted_tweet, client=client)
+        context = {'client': client}
+        extractor.extract(tweet, context=context)
+        expect(context['original_tweet'].id).to.eq(retweeted_tweet.id)
+
+    @patch.object(RelatedTweetExtractor, 'get_tweets', return_value=[])
+    def test_populate_original_tweet_got_none(self, extractor):
+        tweet = Mock()
+        context = {}
+        extractor.extract(tweet, context=context)
+        expect(context.get('original_tweet', None)).to.be.none()

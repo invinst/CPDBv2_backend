@@ -18,32 +18,36 @@ class BaseResponseBuilder:
             if context is not None:
                 context.setdefault('responses_count', 0)
                 context['responses_count'] += 1
-            yield Template(response_template.syntax).render(Context(variables_set))
+            source = variables_set.get('source', ())
+            url = variables_set.get('url', '')
+            yield (source, Template(response_template.syntax).render(Context(variables_set)), url)
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
     response_type = 'single_officer'
 
-    def get_variables_sets(self, officers, context):
-        for officer in officers:
+    def get_variables_sets(self, entities, context):
+        for (source, officer) in entities:
             yield {
                 'officer': officer,
-                'url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url())
+                'url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
+                'source': (source, )
             }
 
 
 class CoaccusedPairResponseBuilder(BaseResponseBuilder):
     response_type = 'coaccused_pair'
 
-    def get_variables_sets(self, officers, context):
-        for officer1, officer2 in itertools.combinations(officers, 2):
+    def get_variables_sets(self, entities, context):
+        for (source1, officer1), (source2, officer2) in itertools.combinations(entities, 2):
             coaccused = Allegation.objects.filter(officerallegation__officer=officer1)\
                 .filter(officerallegation__officer=officer2).distinct().count()
             if coaccused > 0:
                 yield {
                     'officer1': officer1,
                     'officer2': officer2,
-                    'coaccused': coaccused
+                    'coaccused': coaccused,
+                    'source': (source1, source2)
                 }
 
 
