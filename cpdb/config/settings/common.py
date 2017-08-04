@@ -50,7 +50,8 @@ LOCAL_APPS = (
     'officers',
     'cr',
     'units',
-    'alias'
+    'alias',
+    'twitterbot'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -218,7 +219,13 @@ VFTG_LIST_ID = 'e38095f8d7'
 
 AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
+TWITTER_CONSUMER_KEY = env.str('TWITTER_CONSUMER_KEY', default='')
+TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
+TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
+TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
 V1_URL = 'https://beta.cpdb.co'
 
 ELASTICSEARCH_HOSTS = ['localhost:9200']
+
+ROSETTE_API_KEY = env.str('ROSETTE_API_KEY', default='')

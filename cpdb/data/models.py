@@ -369,6 +369,9 @@ class Officer(TaggableModel):
     def v2_to(self):
         return '/officer/%d/' % self.pk
 
+    def get_absolute_url(self):
+        return '/officer/%d/' % self.pk
+
     @property
     def abbr_name(self):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)

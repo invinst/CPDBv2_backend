@@ -41,6 +41,7 @@ LOGGING = {
 }
 
 V1_URL = 'https://staging.cpdb.co'
+DOMAIN = 'https://staging.cpdp.co'
 
 ANYMAIL = {
     'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY'),
