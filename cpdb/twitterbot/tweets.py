@@ -73,3 +73,11 @@ class Tweet:
     @property
     def is_retweet(self):
         return getattr(self._original_tweet, 'retweeted_tweet', None) is not None
+
+    @property
+    def url(self):
+        return 'https://twitter.com/%s/status/%s/' % (self.screen_name, self.id)
+
+    @property
+    def created_at(self):
+        return self._original_tweet.created_at

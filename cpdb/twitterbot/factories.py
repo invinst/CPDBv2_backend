@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import factory
 from mock import Mock
 from faker import Faker
@@ -9,22 +11,20 @@ fake = Faker()
 
 
 class MockClientFactory:
-    def __init__(self, screen_name='ScreenName'):
+    def __init__(self, id=111, screen_name='ScreenName'):
         self.tweets = dict()
         self.screen_name = screen_name
+        self.id = id
         self.config = {'user_stream': True}
 
     def register(self, tweet):
         self.tweets[tweet._original_tweet.id] = tweet._original_tweet
 
     def get_tweet(self, id):
-        try:
-            return self.tweets[id]
-        except KeyError:
-            return None
+        return self.tweets[id]
 
     def get_current_user(self):
-        return Mock(id=111, screen_name=self.screen_name)
+        return Mock(id=self.id, screen_name=self.screen_name)
 
 
 class TweetFactory(factory.Factory):
@@ -39,6 +39,7 @@ class TweetFactory(factory.Factory):
         quoted_tweet_id=o.quoted_tweet._original_tweet.id if o.quoted_tweet is not None else None,
         quoted_tweet=o.quoted_tweet._original_tweet if o.quoted_tweet is not None else None,
         user=Mock(id=o.user_id, screen_name=o.author_screen_name),
+        created_at=o.created_at,
         entities={
             'urls': [{'expanded_url': url} for url in o.urls],
             'hashtags': [{'text': text} for text in o.hashtags],
@@ -57,6 +58,7 @@ class TweetFactory(factory.Factory):
         id = factory.Faker('random_number', digits=17)
         author_screen_name = None
         mentioned_screen_names = []
+        created_at = factory.LazyFunction(lambda: datetime.utcnow())
 
 
 class ResponseTemplateFactory(factory.django.DjangoModelFactory):

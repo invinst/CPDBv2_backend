@@ -9,10 +9,11 @@ class RosettePersonNameParser:
         self.type = 'PERSON'
 
     def parse(self, content):
+        source, text = content
         params = DocumentParameters()
-        params['content'] = content
+        params['content'] = text
         try:
             entities = self.api.entities(params)
         except RosetteException:
             return []
-        return [e['mention'] for e in entities['entities'] if e['type'] == self.type]
+        return [(source, e['mention']) for e in entities['entities'] if e['type'] == self.type]
