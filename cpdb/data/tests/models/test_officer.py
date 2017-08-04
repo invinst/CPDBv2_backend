@@ -23,6 +23,9 @@ class OfficerTestCase(TestCase):
     def test_v2_to(self):
         expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
 
+    def test_get_absolute_url(self):
+        expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
+
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
         expect(officer.current_badge).to.equal('')
