@@ -57,6 +57,11 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
 
+    def test_tweet_got_exception(self):
+        self.client.tweet = Mock(side_effect=Exception())
+        self.handler.on_tweet(self.tweet)
+        expect(TwitterBotResponseLog.objects.count()).to.eq(0)
+
     @rosette_return([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     def test_tweet_officer_in_tweet_text(self):

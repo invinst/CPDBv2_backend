@@ -37,6 +37,13 @@ class BaseResponseBuilderTestCase(TestCase):
 
         expect(context['responses_count']).to.eq(1)
 
+    def test_build_with_truncating_user_name_if_tweet_content_longer_than_140_characters(self):
+        builder = self.builder_class()
+        ResponseTemplateFactory(response_type='dumb', syntax='@{{user_name}} anything else')
+        with patch('twitterbot.response_builders.len', return_value=150):
+            _, tweet_content, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
+            expect(tweet_content).to.eq('anything else')
+
 
 class SingleOfficerResponseBuilderTestCase(TestCase):
     def test_build(self):

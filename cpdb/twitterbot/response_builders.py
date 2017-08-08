@@ -20,7 +20,10 @@ class BaseResponseBuilder:
                 context['responses_count'] += 1
             source = variables_set.get('source', ())
             url = variables_set.get('url', '')
-            yield (source, Template(response_template.syntax).render(Context(variables_set)), url)
+            tweet_content = Template(response_template.syntax).render(Context(variables_set))
+            if len(tweet_content) > 140:
+                tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
+            yield (source, tweet_content, url)
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
