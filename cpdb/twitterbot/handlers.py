@@ -34,6 +34,9 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
                 results.append((source, officer))
         return results
 
+    def is_tweet_from_other_bots(self, tweet):
+        return tweet.user_id in [30582622, 4880788160, 4923697764]
+
     def tweet(self, response):
         _, tweet_content, _ = response
         try:
@@ -63,6 +66,9 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
     def on_tweet(self, tweet):
         self.incoming_tweet = Tweet(tweet, client=self.client)
+        if self.is_tweet_from_other_bots(self.incoming_tweet):
+            return
+
         tweets = self.tweet_extractor.extract(self.incoming_tweet, self._context)
 
         texts = []

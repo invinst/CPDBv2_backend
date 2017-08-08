@@ -62,6 +62,12 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.handler.on_tweet(self.tweet)
         expect(TwitterBotResponseLog.objects.count()).to.eq(0)
 
+    def test_ignore_tweet_from_other_bots(self):
+        tweets = [Mock(user=Mock(id=bot)) for bot in [30582622, 4880788160, 4923697764]]
+        for tweet in tweets:
+            self.handler.on_tweet(tweet)
+        self.client.tweet.assert_not_called()
+
     @rosette_return([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     def test_tweet_officer_in_tweet_text(self):
