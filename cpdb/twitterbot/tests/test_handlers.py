@@ -57,12 +57,6 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
 
-    def test_ignore_tweet_from_other_bots(self):
-        tweets = [Mock(user=Mock(id=bot)) for bot in [30582622, 4880788160, 4923697764]]
-        for tweet in tweets:
-            self.handler.on_tweet(tweet)
-        self.client.tweet.assert_not_called()
-
     @rosette_return([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     def test_tweet_officer_in_tweet_text(self):
@@ -207,6 +201,17 @@ class OfficerTweetHandlerTestCase(TestCase):
             call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1),
             call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1)
         ])
+
+    def test_filter_tweets_from_other_bots(self):
+        tweets = [Mock(user=Mock(id=bot)) for bot in [30582622, 4880788160, 4923697764]]
+        for tweet in tweets:
+            self.handler.on_tweet(tweet)
+        self.client.tweet.assert_not_called()
+
+    def test_filter_unfollow_tweets(self):
+        self.tweet.text = '@ScreenName STOP'
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_not_called()
 
 
 class CPDBEventHandlerTestCase(SimpleTestCase):

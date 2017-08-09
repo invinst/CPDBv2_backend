@@ -14,7 +14,7 @@ from .response_builders import (
 from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from .tweet_extractors import RelatedTweetExtractor
 from .tweets import Tweet
-from .models import TwitterBotResponseLog
+from .response_loggers import DatabaseResponseLogger
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
@@ -34,36 +34,16 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
                 results.append((source, officer))
         return results
 
-    def is_tweet_from_other_bots(self, tweet):
-        return tweet.user_id in [30582622, 4880788160, 4923697764]
-
     def tweet(self, response):
         _, tweet_content, _ = response
         outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
-        self.save_tweet_response(response, outgoing_tweet)
-
-    def save_tweet_response(self, response, outgoing_tweet):
-        sources, tweet_content, entity_url = response
-        response_log = TwitterBotResponseLog(
-            sources=' '.join(sources),
-            entity_url=entity_url,
-            tweet_content=tweet_content,
-            tweet_url=Tweet(outgoing_tweet).url,
-            incoming_tweet_username=self.incoming_tweet.screen_name,
-            incoming_tweet_url=self.incoming_tweet.url,
-            incoming_tweet_content=self.incoming_tweet.text)
-        original_tweet = self._context.get('original_tweet', None)
-        if original_tweet:
-            response_log.original_tweet_username = original_tweet.screen_name
-            response_log.original_tweet_url = original_tweet.url
-            response_log.original_tweet_content = original_tweet.text
-
-        response_log.save()
+        for res_logger in self.response_loggers:
+            res_logger.log_response(response, outgoing_tweet, self._context)
 
     def on_tweet(self, tweet):
         self.incoming_tweet = Tweet(tweet, client=self.client)
         self._context['incoming_tweet'] = self.incoming_tweet
-        if self.is_tweet_from_other_bots(self.incoming_tweet):
+        if not all([func(self.incoming_tweet) for func in self.incoming_tweet_filters]):
             return
 
         tweets = self.tweet_extractor.extract(self.incoming_tweet, self._context)
@@ -94,6 +74,11 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 class OfficerTweetHandler(BaseOfficerTweetHandler):
     text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
     tweet_extractor = RelatedTweetExtractor()
+    incoming_tweet_filters = [
+        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
+        lambda tweet: not tweet.is_unfollow_tweet
+    ]
+    response_loggers = [DatabaseResponseLogger()]
     name_parser = RosettePersonNameParser()
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
@@ -112,5 +97,6 @@ class CPDBUnfollowHandler(BaseTweetHandler):
         return TweetFilter(track=['{bot} stop'.format(bot=self.client.get_current_user().screen_name)])
 
     def on_tweet(self, tweet):
-        if tweet.text == '@{bot} STOP'.format(bot=self.client.get_current_user().screen_name):
+        incoming_tweet = Tweet(original_tweet=tweet, client=self.client)
+        if incoming_tweet.is_unfollow_tweet:
             self.client.unfollow(tweet.user.id)
