@@ -81,3 +81,16 @@ class Tweet:
     @property
     def created_at(self):
         return self._original_tweet.created_at
+
+    @property
+    def is_tweet_from_followed_accounts(self):
+        _, target = self._client.tweepy_api.show_friendship(self._client.get_current_user().id, self.user_id)
+        return target.followed_by
+
+    @property
+    def is_retweet_of_twitterbot(self):
+        return self.retweeted_tweet is not None and self.retweeted_tweet.user_id == self._client.get_current_user().id
+
+    @property
+    def is_quoted_tweet_of_twitterbot(self):
+        return self.quoted_tweet is not None and self.quoted_tweet.user_id == self._client.get_current_user().id

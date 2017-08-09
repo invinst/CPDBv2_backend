@@ -11,11 +11,12 @@ fake = Faker()
 
 
 class MockClientFactory:
-    def __init__(self, id=111, screen_name='ScreenName'):
+    def __init__(self, id=111, screen_name='ScreenName', followed_by=False):
         self.tweets = dict()
         self.screen_name = screen_name
         self.id = id
         self.config = {'user_stream': True}
+        self.tweepy_api = Mock(show_friendship=Mock(return_value=(Mock(), Mock(followed_by=followed_by))))
 
     def register(self, tweet):
         self.tweets[tweet._original_tweet.id] = tweet._original_tweet

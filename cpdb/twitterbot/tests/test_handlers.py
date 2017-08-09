@@ -57,11 +57,6 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
 
-    def test_tweet_got_exception(self):
-        self.client.tweet = Mock(side_effect=Exception())
-        self.handler.on_tweet(self.tweet)
-        expect(TwitterBotResponseLog.objects.count()).to.eq(0)
-
     def test_ignore_tweet_from_other_bots(self):
         tweets = [Mock(user=Mock(id=bot)) for bot in [30582622, 4880788160, 4923697764]]
         for tweet in tweets:
