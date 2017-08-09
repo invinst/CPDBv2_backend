@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware'
 ]
 
 # DEBUG
@@ -229,3 +230,42 @@ V1_URL = 'https://beta.cpdb.co'
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
 ROSETTE_API_KEY = env.str('ROSETTE_API_KEY', default='')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'error-file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/pyenv/versions/cpdb/logs/django-error.log',
+            'maxBytes': 1024*1024*10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'standard',
+        },
+        'twitterbot': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/pyenv/versions/cpdb/logs/twitterbot.log',
+            'maxBytes': 1024*1024*100,  # 100MB
+            'backupCount': 10,
+            'formatter': 'standard'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['error-file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'twitterbot': {
+            'handlers': ['twitterbot'],
+            'level': 'INFO'
+        }
+    },
+}

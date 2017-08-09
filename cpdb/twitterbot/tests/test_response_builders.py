@@ -54,16 +54,16 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
 
         ResponseTemplateFactory(
             response_type='single_officer',
-            syntax='@{{user_name}} {{officer.full_name}} has {{officer.complaints}} complaints {{url}}')
+            syntax='@{{user_name}} {{officer.full_name}} has {{officer.complaints}} complaints')
 
         builder = SingleOfficerResponseBuilder()
         officers = [('source1', officer1), ('source2', officer2)]
 
         with self.settings(DOMAIN='http://foo.co'):
             expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([
-                (('source1',), '@abc Jerome Finnigan has 3 complaints http://foo.co/officer/1/',
+                (('source1',), '@abc Jerome Finnigan has 3 complaints',
                     'http://foo.co/officer/1/'),
-                (('source2',), '@abc Raymond Piwnicki has 0 complaints http://foo.co/officer/2/',
+                (('source2',), '@abc Raymond Piwnicki has 0 complaints',
                     'http://foo.co/officer/2/')
             ])
 

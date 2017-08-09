@@ -16,3 +16,27 @@ DOMAIN = 'http://localhost:9966'
 DEBUG = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'stream': 'sys.stdout',
+            'formatter': 'standard'
+        }
+    },
+    'loggers': {
+        'twitterbot': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    },
+}

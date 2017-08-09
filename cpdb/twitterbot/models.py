@@ -14,14 +14,22 @@ class ResponseTemplate(models.Model):
 
 
 class TwitterBotResponseLog(models.Model):
+    PENDING = 'PENDING'
+    SENT = 'SENT'
+    status_choices = (
+        (PENDING, 'Pending'),
+        (SENT, 'Sent')
+    )
+
     sources = models.TextField()
-    entity_url = models.URLField()
+    entity_url = models.URLField(blank=True)
     tweet_content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    tweet_url = models.URLField()
+    tweet_url = models.URLField(blank=True)
     incoming_tweet_username = models.CharField(max_length=15)
     incoming_tweet_url = models.URLField()
     incoming_tweet_content = models.TextField()
-    original_tweet_username = models.CharField(max_length=15, blank=True)
-    original_tweet_url = models.URLField(blank=True)
-    original_tweet_content = models.TextField(blank=True)
+    original_tweet_username = models.CharField(max_length=15)
+    original_tweet_url = models.URLField()
+    original_tweet_content = models.TextField()
+    status = models.CharField(max_length=10, choices=status_choices, default=PENDING)

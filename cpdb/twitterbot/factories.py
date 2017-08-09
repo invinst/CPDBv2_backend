@@ -5,7 +5,7 @@ from mock import Mock
 from faker import Faker
 
 from twitterbot.tweets import Tweet
-from twitterbot.models import ResponseTemplate, TYPE_CHOICES
+from twitterbot.models import ResponseTemplate, TYPE_CHOICES, TwitterBotResponseLog
 
 fake = Faker()
 
@@ -67,3 +67,11 @@ class ResponseTemplateFactory(factory.django.DjangoModelFactory):
         model = ResponseTemplate
 
     response_type = factory.Faker('random_element', elements=TYPE_CHOICES)
+
+
+class TwitterBotResponseLogFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TwitterBotResponseLog
+
+    sources = factory.Faker('word')
+    tweet_content = factory.Faker('text', max_nb_chars=200)

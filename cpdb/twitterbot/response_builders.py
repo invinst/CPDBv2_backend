@@ -19,7 +19,7 @@ class BaseResponseBuilder:
                 context.setdefault('responses_count', 0)
                 context['responses_count'] += 1
             source = variables_set.get('source', ())
-            url = variables_set.get('url', '')
+            url = variables_set.get('_url', '')
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
@@ -33,7 +33,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
         for (source, officer) in entities:
             yield {
                 'officer': officer,
-                'url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
+                '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
                 'source': (source, )
             }
 

@@ -34,7 +34,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         OfficerAllegationFactory(officer=self.officer, allegation=self.allegation)
         ResponseTemplateFactory(
             response_type='single_officer',
-            syntax='@{{user_name}} {{officer.full_name}} has {{officer.allegation_count}} complaints {{url}}')
+            syntax='@{{user_name}} {{officer.full_name}} has {{officer.allegation_count}} complaints')
         ResponseTemplateFactory(
             response_type='coaccused_pair',
             syntax=('@{{user_name}} {{officer1.full_name}} and {{officer2.full_name}} '
@@ -59,62 +59,45 @@ class OfficerTweetHandlerTestCase(TestCase):
 
     @rosette_return([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
-    def test_tweet_officer_in_tweet_text(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
+    def test_tweet_officer_in_tweet_text(self, _):
         self.tweet.text = '@CPDPbot Jerome Finnigan'
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
-            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/',
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
             in_reply_to=1
         )
 
-        response_log = TwitterBotResponseLog.objects.all().first()
-        expect(response_log.sources).to.eq('text')
-        expect(response_log.entity_url).to.eq('http://foo.com/officer/1/')
-        expect(response_log.tweet_content).to.eq('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/')
-        expect(response_log.created_at).to.eq(datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
-        expect(response_log.tweet_url).to.eq('https://twitter.com/ScreenName/status/10/')
-        expect(response_log.incoming_tweet_username).to.eq('abc')
-        expect(response_log.incoming_tweet_url).to.eq('https://twitter.com/abc/status/1/')
-        expect(response_log.incoming_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
-        expect(response_log.original_tweet_username).to.eq('abc')
-        expect(response_log.original_tweet_url).to.eq('https://twitter.com/abc/status/1/')
-        expect(response_log.original_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
-
     @rosette_return([('#jeromeFinnigan', 'Jerome Finnigan')])
-    def test_tweet_officer_in_tweet_hashtags(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
+    def test_tweet_officer_in_tweet_hashtags(self, _):
         self.tweet.entities['hashtags'] = [{'text': 'jeromeFinnigan'}]
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
-            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/',
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
             in_reply_to=1
         )
 
-        response_log = TwitterBotResponseLog.objects.all().first()
-        expect(response_log.sources).to.eq('#jeromeFinnigan')
-
     @rosette_return([('http://fakeurl.com', 'Jerome Finnigan')])
-    def test_tweet_officer_in_tweet_link_content(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
+    def test_tweet_officer_in_tweet_link_content(self, _):
         self.tweet.entities['urls'] = [{'expanded_url': 'http://fakeurl.com'}]
         with patch('twitterbot.utils.web_parsing.parse', return_value='Chicago Police Jerome Finnigan'):
             self.handler.on_tweet(self.tweet)
             self.client.tweet.assert_called_with(
-                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/',
+                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
                 in_reply_to=1
             )
 
-        response_log = TwitterBotResponseLog.objects.all().first()
-        expect(response_log.sources).to.eq('http://fakeurl.com')
-
     @rosette_return([('text', 'Jerome Finnigan')])
-    def test_tweet_mention_recipients(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
+    def test_tweet_mention_recipients(self, _):
         self.tweet.entities['user_mentions'] = [{'screen_name': 'def'}]
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1)
+            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
+            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
         ])
-        response_log = TwitterBotResponseLog.objects.all().first()
-        expect(response_log.sources).to.eq('text')
 
     @rosette_return([('text', 'Jerome Finnigan'), ('text', 'Raymond Piwnicki')])
     def test_tweet_coaccused_pair(self):
@@ -137,7 +120,8 @@ class OfficerTweetHandlerTestCase(TestCase):
         )
 
     @rosette_return([('text', 'Jerome Finnigan')])
-    def test_tweet_officer_in_replied_tweet(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
+    def test_tweet_officer_in_replied_tweet(self, _):
         replied_tweet = Mock(
             id=2,
             user=Mock(id=456, screen_name='def'),
@@ -151,12 +135,13 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.register(Tweet(original_tweet=replied_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1)
+            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
+            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
         ])
 
     @rosette_return([('text', 'Jerome Finnigan')])
-    def test_tweet_officer_in_retweet_tweet(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
+    def test_tweet_officer_in_retweet_tweet(self, _):
         retweeted_tweet = Mock(
             id=2,
             user=Mock(id=456, screen_name='def'),
@@ -170,12 +155,15 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.register(Tweet(original_tweet=retweeted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=2),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=2)
+            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=2),
+            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=2)
         ])
 
     @rosette_return([('text', 'Jerome Finnigan')])
-    def test_tweet_officer_in_quoted_tweet(self):
+    @patch(
+        'twitterbot.models.TwitterBotResponseLog.objects.create',
+        side_effect=[Mock(id=10), Mock(id=20), Mock(id=30), Mock(id=40)])
+    def test_tweet_officer_in_quoted_tweet(self, _):
         quoted_tweet = Mock(
             id=2,
             user=Mock(id=456, screen_name='def'),
@@ -189,17 +177,18 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1)
+            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
+            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
         ])
 
+        self.client.tweet.reset_mock()
         self.tweet.quoted_tweet = None
         self.tweet.quoted_tweet_id = 2
         self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/', in_reply_to=1)
+            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=30', in_reply_to=1),
+            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=40', in_reply_to=1)
         ])
 
     def test_filter_tweets_from_other_bots(self):
@@ -212,6 +201,28 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.tweet.text = '@ScreenName STOP'
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
+
+    @rosette_return([('text', 'Jerome Finnigan')])
+    @freeze_time('2017-08-03 12:00:01', tz_offset=0)
+    def test_save_log(self):
+        self.tweet.text = '@CPDPbot Jerome Finnigan'
+        self.handler.on_tweet(self.tweet)
+
+        response_log = TwitterBotResponseLog.objects.all().first()
+        entity_url = 'http://foo.com/officer/1/?twitterbot_log_id=%d' % (response_log.id)
+        expect(response_log.sources).to.eq('text')
+        expect(response_log.entity_url).to.eq(entity_url)
+        expect(response_log.tweet_content).to.eq(
+            '@abc Jerome Finnigan has 1 complaints %s' % (entity_url))
+        expect(response_log.created_at).to.eq(datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
+        expect(response_log.tweet_url).to.eq('https://twitter.com/ScreenName/status/10/')
+        expect(response_log.incoming_tweet_username).to.eq('abc')
+        expect(response_log.incoming_tweet_url).to.eq('https://twitter.com/abc/status/1/')
+        expect(response_log.incoming_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
+        expect(response_log.original_tweet_username).to.eq('abc')
+        expect(response_log.original_tweet_url).to.eq('https://twitter.com/abc/status/1/')
+        expect(response_log.original_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
+        expect(response_log.status).to.eq(TwitterBotResponseLog.SENT)
 
 
 class CPDBEventHandlerTestCase(SimpleTestCase):
