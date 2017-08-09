@@ -94,3 +94,7 @@ class Tweet:
     @property
     def is_quoted_tweet_of_twitterbot(self):
         return self.quoted_tweet is not None and self.quoted_tweet.user_id == self._client.get_current_user().id
+
+    @property
+    def is_unfollow_tweet(self):
+        return self.text == '@{bot} STOP'.format(bot=self._client.get_current_user().screen_name)

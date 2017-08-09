@@ -141,3 +141,11 @@ class TweetTestCase(SimpleTestCase):
         client = MockClientFactory(followed_by=False)
         tweet = Tweet(original_tweet=Mock(), client=client)
         expect(tweet.is_tweet_from_followed_accounts).to.be.false()
+
+    def test_is_unfollow_tweet(self):
+        client = MockClientFactory(screen_name='abc')
+        tweet = Tweet(original_tweet=Mock(text='@abc STOP'), client=client)
+        expect(tweet.is_unfollow_tweet).to.be.true()
+
+        tweet = Tweet(original_tweet=Mock(text='anything else'), client=client)
+        expect(tweet.is_unfollow_tweet).to.be.false()
