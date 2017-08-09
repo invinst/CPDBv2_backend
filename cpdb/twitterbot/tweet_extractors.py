@@ -24,4 +24,4 @@ class RelatedTweetExtractor:
         return tweets
 
     def get_original_tweet(self, tweets):
-        return min(tweets, key=lambda tweet: tweet.created_at) if tweets else None
+        return min(tweets, key=lambda tweet: tweet.created_at)

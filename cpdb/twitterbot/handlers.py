@@ -39,12 +39,8 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
     def tweet(self, response):
         _, tweet_content, _ = response
-        try:
-            outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
-        except:
-            pass
-        else:
-            self.save_tweet_response(response, outgoing_tweet)
+        outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
+        self.save_tweet_response(response, outgoing_tweet)
 
     def save_tweet_response(self, response, outgoing_tweet):
         sources, tweet_content, entity_url = response
@@ -66,6 +62,7 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
     def on_tweet(self, tweet):
         self.incoming_tweet = Tweet(tweet, client=self.client)
+        self._context['incoming_tweet'] = self.incoming_tweet
         if self.is_tweet_from_other_bots(self.incoming_tweet):
             return
 

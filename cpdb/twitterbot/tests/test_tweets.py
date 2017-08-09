@@ -112,3 +112,32 @@ class TweetTestCase(SimpleTestCase):
         created_at = datetime(2017, 8, 4, 14, 30, 00)
         tweet = Tweet(original_tweet=Mock(created_at=created_at))
         expect(tweet.created_at).to.eq(created_at)
+
+    def test_is_retweet_of_twitterbot(self):
+        original_tweet = Mock(retweeted_tweet=Mock(user=Mock(id=456)))
+        client = MockClientFactory(id=456)
+        tweet = Tweet(original_tweet=original_tweet, client=client)
+        expect(tweet.is_retweet_of_twitterbot).to.be.true()
+
+        client = MockClientFactory(id=123)
+        tweet = Tweet(original_tweet=original_tweet, client=client)
+        expect(tweet.is_retweet_of_twitterbot).to.be.false()
+
+    def test_is_quoted_tweet_of_twitterbot(self):
+        original_tweet = Mock(quoted_tweet=Mock(user=Mock(id=123)))
+        client = MockClientFactory(id=123)
+        tweet = Tweet(original_tweet=original_tweet, client=client)
+        expect(tweet.is_quoted_tweet_of_twitterbot).to.be.true()
+
+        client = MockClientFactory(id=456)
+        tweet = Tweet(original_tweet=original_tweet, client=client)
+        expect(tweet.is_quoted_tweet_of_twitterbot).to.be.false()
+
+    def test_is_tweet_from_followed_accounts(self):
+        client = MockClientFactory(followed_by=True)
+        tweet = Tweet(original_tweet=Mock(), client=client)
+        expect(tweet.is_tweet_from_followed_accounts).to.be.true()
+
+        client = MockClientFactory(followed_by=False)
+        tweet = Tweet(original_tweet=Mock(), client=client)
+        expect(tweet.is_tweet_from_followed_accounts).to.be.false()
