@@ -12,6 +12,7 @@
   vars_files:
     - env_vars/base.yml
     - env_vars/secrets.yml
+    - env_vars/staging-secrets.yml
     - env_vars/staging.yml
   roles:
     - base
