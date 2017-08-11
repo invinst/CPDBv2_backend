@@ -22,9 +22,6 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
-from wagtail.wagtailadmin import urls as wagtailadmin_urls
-from wagtail.wagtailcore import urls as wagtail_urls
-
 from vftg.views import VFTGViewSet
 from .views import index
 from search.views import SearchV2ViewSet, SearchV1ViewSet
@@ -63,8 +60,6 @@ router_v2.register(r'units', UnitsViewSet, base_name='units')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^cms/', include(wagtailadmin_urls)),
-    url(r'^wagtail/', include(wagtail_urls)),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'

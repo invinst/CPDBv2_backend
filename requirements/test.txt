@@ -2,7 +2,7 @@
 
 flake8==2.5.4
 coverage==4.0.3
-django-nose==1.4.3
+django-nose==1.4.4
 coveralls==1.1
 factory-boy==2.7.0
 fake-factory==0.5.7
