@@ -67,32 +67,41 @@ class UnitFormatter(SimpleFormatter):
 
 class NameFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
         return {
-            'text': doc.name,
+            'text': serialized_doc['name'],
             'payload': {
-                'tags': getattr(doc, 'tags', []),
-                'result_text': doc.name,
-                'url': doc.url
+                'tags': tags,
+                'result_text': serialized_doc['name'],
+                'url': serialized_doc['url']
             }
         }
 
 
 class OfficerV2Formatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
+        badge = serialized_doc['badge']
+
         return {
-            'result_text': doc.full_name,
-            'result_extra_information': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-            'to': doc.to,
-            'tags': getattr(doc, 'tags', [])
+            'result_text': serialized_doc['full_name'],
+            'result_extra_information': badge and 'Badge # {badge}'.format(badge=badge) or '',
+            'to': serialized_doc['to'],
+            'tags': tags
         }
 
 
 class NameV2Formatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
+
         return {
-            'tags': getattr(doc, 'tags', []),
-            'result_text': doc.name,
-            'url': doc.url
+            'tags': tags,
+            'result_text': serialized_doc['name'],
+            'url': serialized_doc['url'],
         }
 
 

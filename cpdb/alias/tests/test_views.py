@@ -4,18 +4,24 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from robber import expect
 
+from search.tests.utils import IndexMixin
 from authentication.factories import AdminUserFactory
 from data.factories import OfficerFactory
-from data.models import Officer
-from search.doc_types import OfficerDocType
+from search.doc_types import OfficerDocType, CoAccusedOfficerDocType
 
 
-class AliasViewSetTestCase(APITestCase):
-
+class AliasViewSetTestCase(IndexMixin, APITestCase):
     def setUp(self):
+        super(AliasViewSetTestCase, self).setUp()
         self.officer = OfficerFactory(id=1)
         self.officer_doc = OfficerDocType(meta={'id': '1'})
         self.officer_doc.save()
+        self.coaccused_doc = CoAccusedOfficerDocType(
+            meta={'id': '11'},
+            co_accused_officer={'id': '1'}
+        )
+        self.coaccused_doc.save()
+        self.refresh_index()
 
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
@@ -33,8 +39,6 @@ class AliasViewSetTestCase(APITestCase):
         expect(response.data).to.eq({
             'aliases': ['foo', 'bar']
         })
-        expect(OfficerDocType.get('1').tags).to.eq(['foo', 'bar'])
-        expect(Officer.objects.get(pk=1).tags).to.eq(['foo', 'bar'])
 
     def test_update_aliases_with_wrong_type(self):
 

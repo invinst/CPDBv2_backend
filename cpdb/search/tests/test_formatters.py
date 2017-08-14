@@ -105,8 +105,11 @@ class UnitFormatterTestCase(SimpleTestCase):
 
 class NameFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(url='url', tags=['t1', 't2'])
-        doc.name = 'name'
+        doc = Mock(to_dict=Mock(return_value={
+            'url': 'url',
+            'tags': ['t1', 't2'],
+            'name': 'name'
+        }))
 
         expect(
             NameFormatter().doc_format(doc)
@@ -122,7 +125,12 @@ class NameFormatterTestCase(SimpleTestCase):
 
 class OfficerV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(full_name='name', tags=['t1', 't2'], badge='123', to='to')
+        doc = Mock(to_dict=Mock(return_value={
+            'full_name': 'name',
+            'tags': ['t1', 't2'],
+            'badge': '123',
+            'to': 'to'
+        }))
 
         expect(
             OfficerV2Formatter().doc_format(doc)
@@ -136,8 +144,11 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
 
 class NameV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(url='url', tags=['t1', 't2'])
-        doc.name = 'name'
+        doc = Mock(to_dict=Mock(return_value={
+            'url': 'url',
+            'tags': ['t1', 't2'],
+            'name': 'name'
+        }))
 
         expect(
             NameV2Formatter().doc_format(doc)
