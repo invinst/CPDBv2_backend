@@ -4,14 +4,19 @@ from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerTimelineMinimapDocType
+from .index_aliases import officers_index_alias
 from .serializers import (
     OfficerSummarySerializer, CRTimelineSerializer, UnitChangeTimelineSerializer, JoinedTimelineSerializer
 )
 
 
-@register_indexer
+app_name = __name__.split('.')[0]
+
+
+@register_indexer(app_name)
 class OfficersIndexer(BaseIndexer):
     doc_type_klass = OfficerSummaryDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return Officer.objects.all()
@@ -20,9 +25,10 @@ class OfficersIndexer(BaseIndexer):
         return OfficerSummarySerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class CRTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return OfficerAllegation.objects.filter(start_date__isnull=False)
@@ -31,9 +37,10 @@ class CRTimelineEventIndexer(BaseIndexer):
         return CRTimelineSerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class UnitChangeTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return OfficerHistory.objects.filter(effective_date__isnull=False)
@@ -42,9 +49,10 @@ class UnitChangeTimelineEventIndexer(BaseIndexer):
         return UnitChangeTimelineSerializer(datum).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class YearTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return Officer.objects.all()
@@ -78,9 +86,10 @@ class YearTimelineEventIndexer(BaseIndexer):
             yield val
 
 
-@register_indexer
+@register_indexer(app_name)
 class JoinedTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return Officer.objects.filter(appointed_date__isnull=False)
@@ -89,9 +98,10 @@ class JoinedTimelineEventIndexer(BaseIndexer):
         return JoinedTimelineSerializer(officer).data
 
 
-@register_indexer
+@register_indexer(app_name)
 class TimelineMinimapIndexer(BaseIndexer):
     doc_type_klass = OfficerTimelineMinimapDocType
+    index_alias = officers_index_alias
 
     def get_queryset(self):
         return Officer.objects.all()

@@ -4,25 +4,31 @@ from rest_framework.response import Response
 from .services import SearchManager
 from .formatters import (
     OfficerFormatter, NameFormatter, OfficerV2Formatter, NameV2Formatter,
-    FAQFormatter, ReportFormatter)
+    FAQFormatter, ReportFormatter, CoAccusedOfficerFormatter)
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
     CoAccusedOfficerWorker, UnitOfficerWorker)
+from analytics.search_hooks import QueryTrackingSearchHook
 
 
 class SearchViewSet(viewsets.ViewSet):
     lookup_field = 'text'
     formatters = {}
     workers = {}
+    hooks = [
+        QueryTrackingSearchHook
+    ]
 
     def retrieve(self, request, text):
         results = SearchManager(
             formatters=self.formatters,
-            workers=self.workers
+            workers=self.workers,
+            hooks=self.hooks
         ).search(
             text,
             content_type=self._content_type
         )
+
         return Response(results)
 
     def list(self, request):
@@ -45,7 +51,7 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': NameFormatter,
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter,
-        'CO-ACCUSED': OfficerFormatter,
+        'CO-ACCUSED': CoAccusedOfficerFormatter,
         'UNIT > OFFICERS': OfficerFormatter
     }
     workers = {

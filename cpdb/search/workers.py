@@ -37,12 +37,12 @@ class Worker(object):
 
 class FAQWorker(Worker):
     doc_type_klass = FAQDocType
-    fields = ['question', 'answer']
+    fields = ['question', 'answer', 'tags']
 
 
 class ReportWorker(Worker):
     doc_type_klass = ReportDocType
-    fields = ['excerpt', 'title', 'publication', 'author']
+    fields = ['excerpt', 'title', 'publication', 'author', 'tags']
 
 
 class OfficerWorker(Worker):
@@ -52,22 +52,22 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name', 'description']
+    fields = ['name', 'description', 'tags']
 
 
 class NeighborhoodsWorker(Worker):
     doc_type_klass = NeighborhoodsDocType
-    fields = ['name']
+    fields = ['name', 'tags']
 
 
 class CommunityWorker(Worker):
     doc_type_klass = CommunityDocType
-    fields = ['name']
+    fields = ['name', 'tags']
 
 
 class CoAccusedOfficerWorker(Worker):
     doc_type_klass = CoAccusedOfficerDocType
-    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge']
+    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge', 'co_accused_officer.tags']
 
     def query(self, term):
         return self._searcher.query(

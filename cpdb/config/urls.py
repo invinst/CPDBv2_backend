@@ -27,24 +27,20 @@ from wagtail.wagtailcore import urls as wagtail_urls
 
 from vftg.views import VFTGViewSet
 from .views import index
-from story.views import StoryViewSet
-from faq.views import FAQViewSet
-from landing_page.views import LandingPageViewSet
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
-from analytics.views import EventViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
+from units.views import UnitsViewSet
+from alias.views import AliasViewSet
 
 
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
-router_v1.register(r'stories', StoryViewSet, base_name='story')
-router_v1.register(r'faqs', FAQViewSet, base_name='faq')
-router_v1.register(r'landing-page', LandingPageViewSet, base_name='landing-page')
 router_v1.register(r'suggestion', SearchV1ViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
@@ -54,6 +50,7 @@ router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
+router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(
     r'report-bottomsheet-officer-search',
@@ -61,6 +58,8 @@ router_v2.register(
     base_name='report-bottomsheet-officer-search')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
+router_v2.register(r'units', UnitsViewSet, base_name='units')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -70,7 +69,9 @@ urlpatterns = [
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
+        r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'officer/\d+(?:/timeline)?|'
+        r'unit/\d+|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),

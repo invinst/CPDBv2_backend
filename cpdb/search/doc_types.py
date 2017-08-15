@@ -49,6 +49,7 @@ class UnitDocType(DocType):
 @autocompletes.doc_type
 class NeighborhoodsDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'neighborhood'
@@ -57,6 +58,7 @@ class NeighborhoodsDocType(DocType):
 @autocompletes.doc_type
 class CommunityDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'community'
@@ -66,7 +68,8 @@ class CommunityDocType(DocType):
 class CoAccusedOfficerDocType(DocType):
     co_accused_officer = Nested(doc_class=InnerObjectWrapper, properties={
         'full_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'tags': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     })
 
     class Meta:
@@ -77,6 +80,7 @@ class CoAccusedOfficerDocType(DocType):
 class UnitOfficerDocType(DocType):
     allegation_count = Long()
     unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'unitofficer'

@@ -74,6 +74,7 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     rank = factory.LazyFunction(lambda: fake.word())
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
+    tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
 
 
 class AllegationFactory(factory.django.DjangoModelFactory):
@@ -142,3 +143,4 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
 
     allegation = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
+    original_url = factory.LazyFunction(lambda: fake.url())

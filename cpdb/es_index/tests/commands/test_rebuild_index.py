@@ -3,28 +3,65 @@ from django.core.management import call_command
 
 from mock import Mock, patch
 
-from es_index import indexer_klasses, index_klasses
+from es_index import indexer_klasses, indexer_klasses_map
 
 
 class RebuildIndexCommandTestCase(SimpleTestCase):
     def test_handle(self):
-        index_klass = Mock()
-        index_klass.delete = Mock()
-        index_klass.create = Mock()
-
         class Indexer:
-            pass
+            index_alias = Mock()
         Indexer.reindex = Mock()
+        Indexer.index_alias.indexing.return_value.__exit__ = Mock()
+        Indexer.index_alias.indexing.return_value.__enter__ = Mock()
 
         indexer_klasses.clear()
         indexer_klasses.add(Indexer)
 
-        index_klasses.clear()
-        index_klasses.add(index_klass)
+        with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
+            call_command('rebuild_index')
+
+        Indexer.reindex.assert_called_once()
+        Indexer.index_alias.indexing.return_value.__exit__.assert_called_once()
+        Indexer.index_alias.indexing.return_value.__enter__.assert_called_once()
+
+    def test_call_with_app_specified(self):
+        class Indexer:
+            index_alias = Mock()
+        Indexer.reindex = Mock()
+        Indexer.index_alias.indexing.return_value.__exit__ = Mock()
+        Indexer.index_alias.indexing.return_value.__enter__ = Mock()
+
+        indexer_klasses_map.setdefault('test', set()).clear()
+        indexer_klasses_map['test'].add(Indexer)
+
+        with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
+            call_command('rebuild_index', 'test')
+
+        Indexer.reindex.assert_called_once()
+        Indexer.index_alias.indexing.return_value.__exit__.assert_called_once()
+        Indexer.index_alias.indexing.return_value.__enter__.assert_called_once()
+
+    def test_call_alias_indexing_only_once_for_multiple_indexers(self):
+        alias = Mock()
+        alias.indexing.return_value.__exit__ = Mock()
+        alias.indexing.return_value.__enter__ = Mock()
+
+        class Indexer1:
+            index_alias = alias
+        Indexer1.reindex = Mock()
+
+        class Indexer2:
+            index_alias = alias
+        Indexer2.reindex = Mock()
+
+        indexer_klasses.clear()
+        indexer_klasses.add(Indexer1)
+        indexer_klasses.add(Indexer2)
 
         with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
             call_command('rebuild_index')
 
-        index_klass.create.assert_called_once()
-        index_klass.delete.assert_called_once_with(ignore=404)
-        Indexer.reindex.assert_called_once()
+        Indexer1.reindex.assert_called_once()
+        Indexer2.reindex.assert_called_once()
+        alias.indexing.return_value.__exit__.assert_called_once()
+        alias.indexing.return_value.__enter__.assert_called_once()

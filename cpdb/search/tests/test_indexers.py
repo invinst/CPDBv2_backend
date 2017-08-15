@@ -19,11 +19,28 @@ class BaseIndexerTestCase(SimpleTestCase):
     def test_extract_datum(self):
         expect(lambda: BaseIndexer().extract_datum('anything')).to.throw(NotImplementedError)
 
+    def test_extract_datum_with_id_datum_dict(self):
+        datum = Mock(pk='11')
+        indexer = BaseIndexer()
+        indexer.extract_datum = Mock(return_value={'foo': 'bar'})
+        expect(indexer.extract_datum_with_id(datum)).to.eq({
+            'foo': 'bar',
+            'meta': {
+                'id': '11'
+            }
+        })
+
+    def test_extract_datum_with_id_datum_list(self):
+        datum = Mock(pk='11')
+        indexer = BaseIndexer()
+        indexer.extract_datum = Mock(return_value=[{'foo': 'bar'}])
+        expect(indexer.extract_datum_with_id(datum)).to.eq([{'foo': 'bar'}])
+
     def test_index_datum_dict(self):
         indexer = BaseIndexer()
         doc_type = Mock()
         indexer.doc_type_klass = Mock(return_value=doc_type)
-        indexer.extract_datum = Mock(return_value={'key': 'something'})
+        indexer.extract_datum_with_id = Mock(return_value={'key': 'something'})
         indexer.get_queryset = Mock(return_value=['something'])
 
         indexer.index_datum('anything')
@@ -35,7 +52,7 @@ class BaseIndexerTestCase(SimpleTestCase):
         indexer = BaseIndexer()
         doc_type = Mock()
         indexer.doc_type_klass = Mock(return_value=doc_type)
-        indexer.extract_datum = Mock(return_value=[{'key': 'something'}])
+        indexer.extract_datum_with_id = Mock(return_value=[{'key': 'something'}])
         indexer.get_queryset = Mock(return_value=['something'])
 
         indexer.index_datum('anything')
@@ -63,8 +80,7 @@ class FAQIndexerTestCase(TestCase):
     def test_extract_datum(self):
         datum = FAQPageFactory(
             question='question',
-            answer=['answer1', 'answer2'],
-            pk=1,
+            answer=['answer1', 'answer2']
         )
 
         expect(
@@ -72,8 +88,7 @@ class FAQIndexerTestCase(TestCase):
         ).to.be.eq({
             'question': 'question',
             'answer': 'answer1\nanswer2',
-            'meta': {'id': 1},
-            'tags': [],
+            'tags': []
         })
 
 
@@ -87,8 +102,7 @@ class ReportIndexerTestCase(TestCase):
         datum = ReportPageFactory(
             publication='publication', author='author',
             title='title', excerpt=['excerpt1', 'excerpt2'],
-            publish_date='2017-12-20',
-            pk=11
+            publish_date='2017-12-20'
         )
 
         expect(
@@ -99,7 +113,6 @@ class ReportIndexerTestCase(TestCase):
             'excerpt': 'excerpt1\nexcerpt2',
             'title': 'title',
             'publish_date': '2017-12-20',
-            'meta': {'id': 11},
             'tags': [],
         })
 
@@ -111,7 +124,7 @@ class OfficerIndexerTestCase(TestCase):
         expect(OfficerIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = OfficerFactory(first_name='first', last_name='last')
+        datum = OfficerFactory(first_name='first', last_name='last', tags=['tag1', 'tag2'])
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
 
         expect(
@@ -120,8 +133,7 @@ class OfficerIndexerTestCase(TestCase):
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
-            'tags': [],
-            'meta': {'id': datum.pk}
+            'tags': ['tag1', 'tag2']
         })
 
 
@@ -145,13 +157,14 @@ class UnitIndexerTestCase(TestCase):
 
 class AreaTypeIndexerTestCase(TestCase):
     def test_extract_datum(self):
-        datum = AreaFactory(name='name')
+        datum = AreaFactory(name='name', tags=['tag'])
 
         expect(
             AreaTypeIndexer().extract_datum(datum)
         ).to.be.eq({
             'name': 'name',
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'tags': ['tag']
         })
 
 
@@ -175,7 +188,7 @@ class CommunityIndexerTestCase(TestCase):
 
 class CoAccusedOfficerIndexerTestCase(TestCase):
     def setUp(self):
-        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn', tags=['tag1', 'tag2'])
         self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
         allegation = AllegationFactory()
         OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
@@ -190,9 +203,11 @@ class CoAccusedOfficerIndexerTestCase(TestCase):
             'badge': '',
             'to': self.officer_2.v2_to,
             'co_accused_officer': {
+                'id': self.officer_1.pk,
                 'badge': '',
-                'full_name': 'Kevin Osborn'
-            }
+                'full_name': 'Kevin Osborn',
+                'tags': ['tag1', 'tag2']
+            },
         }])
 
 

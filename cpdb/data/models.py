@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 from django.utils.text import slugify
+from django.db.models import F
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -14,7 +17,14 @@ from data.utils.aggregation import get_num_range_case
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
-class PoliceUnit(models.Model):
+class TaggableModel(models.Model):
+    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
+
+    class Meta:
+        abstract = True
+
+
+class PoliceUnit(TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
 
@@ -23,11 +33,220 @@ class PoliceUnit(models.Model):
 
     @property
     def v1_url(self):
-        return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(domain=settings.V1_URL,
-                                                                               unit_name=self.unit_name)
+        return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(
+            domain=settings.V1_URL, unit_name=self.unit_name
+        )
+
+    @property
+    def member_count(self):
+        return Officer.objects.filter(officerhistory__unit=self).distinct().count()
+
+    @property
+    def active_member_count(self):
+        return Officer.objects.filter(
+            officerhistory__unit=self, officerhistory__end_date__isnull=True
+        ).distinct().count()
+
+    @property
+    def member_race_aggregation(self):
+        query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
+            name=models.Case(
+                models.When(race__isnull=True, then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()
+            )
+        ).values('name').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        return list(query_set)
+
+    @property
+    def member_age_aggregation(self):
+        query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
+            member_age=models.Case(
+                models.When(birth_year__isnull=True, then=None),
+                default=datetime.now().year - F('birth_year'),
+                output_field=models.IntegerField()
+            )
+        ).annotate(
+            name=get_num_range_case('member_age', [0, 20, 30, 40, 50])
+        ).values('name').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        return list(query_set)
+
+    @property
+    def member_gender_aggregation(self):
+        query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
+            member_gender=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                models.When(gender__isnull=True, then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()
+            )
+        ).values('member_gender').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        return [
+            {
+                'name': GENDER_DICT.get(obj['member_gender'], 'Unknown'),
+                'count': obj['count']
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
+
+    @property
+    def complaint_count(self):
+        return OfficerAllegation.objects.filter(
+            officer__officerhistory__unit=self
+        ).order_by('allegation').distinct('allegation').count()
+
+    @property
+    def sustained_count(self):
+        return OfficerAllegation.objects.filter(
+            officer__officerhistory__unit=self, final_finding='SU'
+        ).order_by('allegation').distinct('allegation').count()
+
+    @property
+    def complaint_category_aggregation(self):
+        query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
+            name=models.Case(
+                models.When(allegation_category__category__isnull=True, then=models.Value('Unknown')),
+                default='allegation_category__category',
+                output_field=models.CharField()
+            )).values('name').annotate(
+                count=models.Count('allegation__id', distinct=True),
+                sustained_count=models.Sum(
+                    models.Case(
+                        models.When(final_finding='SU', then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
+                )
+            )
+
+        return list(query_set)
+
+    @property
+    def complainant_race_aggregation(self):
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
+            name=models.Case(
+                models.When(race__isnull=True, then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()
+            )
+        ).values('name').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            name=models.Case(
+                models.When(race__isnull=True, then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()
+            )
+        ).values('name').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['name']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
+
+        return [
+            {
+                'name': obj['name'],
+                'count': obj['count'],
+                'sustained_count': sustained_count_results.get(obj['name'], 0)
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
+
+    @property
+    def complainant_age_aggregation(self):
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
+            name=get_num_range_case('age', [0, 20, 30, 40, 50])
+        ).values('name').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            name=get_num_range_case('age', [0, 20, 30, 40, 50])
+        ).values('name').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['name']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
+
+        return [
+            {
+                'name': obj['name'],
+                'count': obj['count'],
+                'sustained_count': sustained_count_results.get(obj['name'], 0)
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
+
+    @property
+    def complainant_gender_aggregation(self):
+        query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self
+        ).distinct().annotate(
+            complainant_gender=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()
+            )
+        ).values('complainant_gender').annotate(
+            count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_query_set = Complainant.objects.filter(
+            allegation__officerallegation__officer__officerhistory__unit=self,
+            allegation__officerallegation__final_finding='SU'
+        ).distinct().annotate(
+            complainant_gender=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()
+            )
+        ).values('complainant_gender').annotate(
+            sustained_count=models.Count('id', distinct=True)
+        )
+
+        sustained_count_results = {
+            obj['complainant_gender']: obj['sustained_count'] for obj in sustained_count_query_set
+        }
+
+        return [
+            {
+                'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
+                'count': obj['count'],
+                'sustained_count': sustained_count_results.get(obj['complainant_gender'], 0)
+            }
+            for obj in query_set if obj['count'] > 0
+        ]
 
 
-class Officer(models.Model):
+class Officer(TaggableModel):
     first_name = models.CharField(
         max_length=255, null=True, db_index=True, blank=True)
     last_name = models.CharField(
@@ -38,7 +257,6 @@ class Officer(models.Model):
     rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
-    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
 
     def __str__(self):
         return self.full_name
@@ -176,7 +394,7 @@ class OfficerHistory(models.Model):
         return self.unit.unit_name
 
 
-class Area(models.Model):
+class Area(TaggableModel):
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
@@ -229,7 +447,14 @@ class Allegation(models.Model):
 
     @property
     def address(self):
-        return '%s %s, %s' % (self.add1, self.add2, self.city)
+        result = ''
+        if self.add1 is not None:
+            result = str(self.add1)
+        if self.add2 != '':
+            result = ' '.join(filter(None, [result, self.add2]))
+        if self.city:
+            result = ', '.join(filter(None, [result, self.city]))
+        return result
 
     @property
     def officer_allegations(self):

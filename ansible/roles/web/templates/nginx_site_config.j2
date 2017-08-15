@@ -14,23 +14,16 @@ server {
 
 server {
     listen      80;
+    listen      443 ssl;
     server_name cpdp.co;
-    return 301 https://cpdb.co$request_uri;
-}
-
-server {
-    listen      443;
-    server_name cpdp.co;
-    ssl on;
     ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
     ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
     return 301 https://cpdb.co$request_uri;
 }
 
 server {
-    listen              443;
+    listen              443 ssl;
     server_name         {{ nginx_server_name }};
-	ssl on;
 	ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
 	ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
     gzip on;

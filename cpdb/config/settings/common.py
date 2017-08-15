@@ -65,6 +65,8 @@ LOCAL_APPS = (
     'analytics',
     'officers',
     'cr',
+    'units',
+    'alias'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -227,7 +229,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 20,
+    'ORDERING_PARAM': 'sort'
 }
 
 MAILCHIMP_API_KEY = env.str('MAILCHIMP_API_KEY', default='')

@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 class BaseIndexer(object):
     doc_type_klass = None
+    index_alias = None
 
     def get_queryset(self):
         raise NotImplementedError
@@ -17,10 +18,10 @@ class BaseIndexer(object):
         if isinstance(result, types.GeneratorType):
             for obj in result:
                 doc = self.doc_type_klass(**obj)
-                doc.save()
+                doc.save(index=self.index_alias.new_index_name)
         else:
             doc = self.doc_type_klass(**result)
-            doc.save()
+            doc.save(index=self.index_alias.new_index_name)
 
     def reindex(self):
         for datum in tqdm(
