@@ -62,6 +62,10 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 bin/deploy_staging
 ```
 
+# Removed apps
+
+The following apps are removed: `landing_page`, `faq`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `faq_` or `story_`, it should be safe to remove them.
+
 # Infrastructure changes
 
 For any infrastructure changes, please add a new Ansible role to set it up. Changes that are needed to run every deployment, please put the tag `deploy`.

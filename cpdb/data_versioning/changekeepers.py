@@ -108,6 +108,7 @@ class PostgreSQLChangeKeeper(object):
         class klassSerializer(serializers.ModelSerializer):
             class Meta:
                 model = klass
+                fields = '__all__'
 
         self._create_changelog(klass, klassSerializer(instance).data, source, log_type=LOG_TYPE_DELETE, pk=instance.pk)
         instance.delete()

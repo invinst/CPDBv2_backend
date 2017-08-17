@@ -4,6 +4,7 @@ from search import es_client
 
 class IndexMixin(object):
     def setUp(self):
+        super(IndexMixin, self).setUp()
         autocompletes.delete(ignore=404)
         autocompletes.create()
 
