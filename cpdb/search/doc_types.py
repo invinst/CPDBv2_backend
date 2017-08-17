@@ -68,7 +68,8 @@ class CommunityDocType(DocType):
 class CoAccusedOfficerDocType(DocType):
     co_accused_officer = Nested(doc_class=InnerObjectWrapper, properties={
         'full_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'tags': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     })
 
     class Meta:
