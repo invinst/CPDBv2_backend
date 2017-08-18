@@ -3,7 +3,7 @@ from .common import *  # NOQA
 
 INSTALLED_APPS += ('corsheaders', 'django_extensions')  # NOQA
 
-MIDDLEWARE_CLASSES += (  # NOQA
+MIDDLEWARE += (  # NOQA
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',)
 
