@@ -8,7 +8,7 @@ DEBUG = False
 
 
 INSTALLED_APPS += ('corsheaders',)  # NOQA
-MIDDLEWARE_CLASSES += (  # NOQA
+MIDDLEWARE += (  # NOQA
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware')
 
