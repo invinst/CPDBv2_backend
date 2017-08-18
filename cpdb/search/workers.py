@@ -67,7 +67,7 @@ class CommunityWorker(Worker):
 
 class CoAccusedOfficerWorker(Worker):
     doc_type_klass = CoAccusedOfficerDocType
-    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge', 'tags']
+    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge', 'co_accused_officer.tags']
 
     def query(self, term):
         return self._searcher.query(

@@ -34,18 +34,6 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'django_nose',
 
-    'wagtail.wagtailforms',
-    'wagtail.wagtailredirects',
-    'wagtail.wagtailembeds',
-    'wagtail.wagtailsites',
-    'wagtail.wagtailusers',
-    'wagtail.wagtailsnippets',
-    'wagtail.wagtaildocs',
-    'wagtail.wagtailimages',
-    'wagtail.wagtailsearch',
-    'wagtail.wagtailadmin',
-    'wagtail.wagtailcore',
-
     'modelcluster',
     'taggit',
     'anymail'
@@ -54,10 +42,7 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'data',
     'data_versioning',
-    'landing_page',
     'search',
-    'story',
-    'faq',
     'vftg',
     'cms',
     'es_index',
@@ -217,10 +202,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-# WAGTAIL SETTINGS
-
-WAGTAIL_SITE_NAME = 'CPDB'
 
 # REST FRAMEWORK SETTINGS
 
