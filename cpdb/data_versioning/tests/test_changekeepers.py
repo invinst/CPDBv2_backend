@@ -93,7 +93,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             crid='123456',
             incident_date=None,
             beat=areas[1])
-        allegation.areas = [areas[0]]
+        allegation.areas.set([areas[0]])
         allegation.save()
 
         change_obj = {

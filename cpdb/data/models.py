@@ -398,7 +398,6 @@ class Area(TaggableModel):
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
-    objects = models.GeoManager()
 
     @property
     def v1_url(self):
@@ -417,7 +416,6 @@ class LineArea(models.Model):
     name = models.CharField(max_length=100)
     linearea_type = models.CharField(max_length=30, choices=LINE_AREA_CHOICES)
     geom = models.MultiLineStringField(srid=4326, blank=True)
-    objects = models.GeoManager()
 
 
 class Investigator(models.Model):

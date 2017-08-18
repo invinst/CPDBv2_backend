@@ -2,6 +2,7 @@ import inspect
 import sys
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
 
 from rest_framework import serializers
 from rest_framework.fields import SkipField
@@ -125,6 +126,8 @@ class BaseCMSPageSerializer(serializers.Serializer):
         for key, val in validated_data.iteritems():
             if isinstance(val, dict):
                 getattr(instance, key).update(val)
+            elif isinstance(instance._meta.get_field(key), models.ManyToManyField):
+                getattr(instance, key).set(val)
             else:
                 setattr(instance, key, val)
         instance.save()
@@ -248,7 +251,7 @@ class CreateFAQPageSerializer(IdPageSerializer):
         meta_fields = ('order', 'starred')
 
     def validate(self, data):
-        if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated():
+        if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated:
             raise serializers.ValidationError("Unauthorized user cannot add answer.")
         return data
 
