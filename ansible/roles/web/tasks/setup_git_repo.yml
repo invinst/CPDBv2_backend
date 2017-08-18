@@ -25,7 +25,7 @@
         state=directory
 
 - name: Setup .env file
-  copy: content="{{ env_file }}"
+  template: src=env.j2
         dest={{ project_root_path }}/.env
         force={{ force_rewrite_env_file }}
   become: yes
