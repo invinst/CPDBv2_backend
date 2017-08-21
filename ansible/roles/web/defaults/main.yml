@@ -10,7 +10,7 @@ project_root_path: "/CPDB/{{ project_name }}"
 project_path: "/CPDB/{{ project_name }}/{{ application_name }}"
 application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
-requirements_file: "{{ project_root_path }}/requirements/local.txt"
+requirements_file: "{{ project_root_path }}/requirements/base.txt"
 staticfiles_dir: "{{ project_path }}/static"
 newrelic_admin_path: "{{ virtualenv_path }}/bin/newrelic-admin"
 
@@ -35,7 +35,7 @@ pyenv_environments:
 
 # Django Environment variables
 django_environment:
-  DJANGO_SETTINGS_MODULE: "{{ django_settings_file }}"
+  DJANGO_SETTINGS_MODULE: "{{ django_settings_module }}"
 
 # Newrelic variables:
 newrelic_app_name: "CPDB v2 production"

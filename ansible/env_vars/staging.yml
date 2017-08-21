@@ -24,7 +24,8 @@ ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
 # Application settings.
-django_settings_file: "config.settings.staging"
+django_settings_module: "config.settings.staging"
+django_debug: false
 
 deploy_user: ansible
 deploy_group: ansible

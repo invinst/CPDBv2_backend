@@ -10,7 +10,7 @@
     command: migrate
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_file }}"
+    settings: "{{ django_settings_module }}"
   environment: "{{ django_environment }}"
   when: run_django_db_migrations is defined and run_django_db_migrations
   tags: django.migrate
@@ -22,7 +22,7 @@
     command: rebuild_index
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_file }}"
+    settings: "{{ django_settings_module }}"
   environment: "{{ django_environment }}"
   when: run_rebuild_index is defined and run_rebuild_index
   tags: django.rebuild_index
@@ -34,7 +34,7 @@
     command: rebuild_search_index
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_file }}"
+    settings: "{{ django_settings_module }}"
   environment: "{{ django_environment }}"
   when: run_rebuild_index is defined and run_rebuild_index
   tags: django.rebuild_index
@@ -46,7 +46,7 @@
     command: collectstatic
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_file }}"
+    settings: "{{ django_settings_module }}"
   environment: "{{ django_environment }}"
   when: run_django_collectstatic is defined and run_django_collectstatic
   tags: django.collectstatic
