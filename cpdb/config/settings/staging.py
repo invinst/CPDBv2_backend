@@ -3,13 +3,8 @@ from .common import *  # NOQA
 import environ
 
 env = environ.Env()
+
 DEBUG = False
-
-
-INSTALLED_APPS += ('corsheaders',)  # NOQA
-MIDDLEWARE += (  # NOQA
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware')
 
 CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
