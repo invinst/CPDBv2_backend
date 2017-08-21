@@ -5,5 +5,5 @@ stdout_logfile = {{ application_log_file }}
 redirect_stderr = true
 
 [program:twitterbot]
-command = NEW_RELIC_CONFIG_FILE={{ project_root_path }}/newrelic.ini newrelic-admin run-python manage.py start_twitterbot
+command = {{ virtualenv_path }}/bin/twitterbot_start
 user = {{ deploy_user }}
