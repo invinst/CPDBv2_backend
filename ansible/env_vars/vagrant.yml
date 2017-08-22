@@ -30,6 +30,12 @@ mailchimp_api_key: ""
 mailchimp_user: ""
 azure_storage_account_name: ""
 azure_storage_account_key: ""
+rosette_api_key: ""
+twitter_consumer_key: ""
+twitter_consumer_secret: ""
+twitter_app_token_key: ""
+twitter_app_token_secret: ""
+mailgun_api_key: ""
 
 deploy_user: vagrant
 deploy_group: vagrant
