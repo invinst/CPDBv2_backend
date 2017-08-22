@@ -22,9 +22,22 @@ from .utils.web_parsing import add_params
 logger = logging.getLogger(__name__)
 
 
-class BaseOfficerTweetHandler(BaseTweetHandler):
+class OfficerTweetHandler(BaseTweetHandler):
+    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
+    tweet_extractor = RelatedTweetExtractor()
+    incoming_tweet_filters = [
+        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
+        lambda tweet: not tweet.is_unfollow_tweet
+    ]
+    response_loggers = [DatabaseResponseLogger()]
+    name_parser = RosettePersonNameParser()
+    recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
+    response_builders = (
+        SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
+        )
+
     def __init__(self, *args, **kwargs):
-        super(BaseOfficerTweetHandler, self).__init__(*args, **kwargs)
+        super(OfficerTweetHandler, self).__init__(*args, **kwargs)
         self._context = {'client': self.client}
         self.incoming_tweet = None
 
@@ -101,21 +114,6 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             responses = builder.build(officers, {'user_name': recipient}, self._context)
             for response in responses:
                 self.tweet(response)
-
-
-class OfficerTweetHandler(BaseOfficerTweetHandler):
-    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
-    tweet_extractor = RelatedTweetExtractor()
-    incoming_tweet_filters = [
-        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
-        lambda tweet: not tweet.is_unfollow_tweet
-    ]
-    response_loggers = [DatabaseResponseLogger()]
-    name_parser = RosettePersonNameParser()
-    recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
-    response_builders = (
-        SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
-        )
 
 
 class CPDBEventHandler(BaseEventHandler):
