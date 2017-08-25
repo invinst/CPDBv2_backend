@@ -65,6 +65,14 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
         extractor.extract(tweet, context=context)
         expect(context['first_non_retweet'].id).to.eq(retweeted_tweet.id)
 
+    def test_populate_first_non_retweet_got_none(self):
+        extractor = RelatedTweetExtractor()
+        tweet = Mock()
+        context = {}
+        with patch('twitterbot.tweet_extractors.RelatedTweetExtractor.get_tweets', return_value=[]):
+            extractor.extract(tweet, context=context)
+            expect(context.get('first_non_retweet', None)).to.be.none()
+
     def test_populate_original_tweet(self):
         extractor = RelatedTweetExtractor()
         client = MockClientFactory()

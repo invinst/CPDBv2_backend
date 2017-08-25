@@ -10,7 +10,7 @@ from django.db.models import F
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, DISCIPLINE_CODES)
 from data.utils.aggregation import get_num_range_case
 
 
@@ -375,6 +375,10 @@ class Officer(TaggableModel):
     @property
     def abbr_name(self):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+
+    @property
+    def discipline_count(self):
+        return self.officerallegation_set.filter(final_outcome__in=DISCIPLINE_CODES).count()
 
 
 class OfficerBadgeNumber(models.Model):

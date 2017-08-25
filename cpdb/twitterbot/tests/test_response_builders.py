@@ -6,11 +6,14 @@ from mock import patch, Mock
 from twitterbot.response_builders import (
     SingleOfficerResponseBuilder, CoaccusedPairResponseBuilder, BaseResponseBuilder, NotFoundResponseBuilder)
 from twitterbot.factories import ResponseTemplateFactory
+from twitterbot.models import ResponseTemplate
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 
 
 class BaseResponseBuilderTestCase(TestCase):
     def setUp(self):
+        ResponseTemplate.objects.all().delete()
+
         class DumbResponseBuilder(BaseResponseBuilder):
             response_type = 'dumb'
 
@@ -46,6 +49,9 @@ class BaseResponseBuilderTestCase(TestCase):
 
 
 class SingleOfficerResponseBuilderTestCase(TestCase):
+    def setUp(self):
+        ResponseTemplate.objects.all().delete()
+
     def test_build(self):
         officer1 = Mock(full_name='Jerome Finnigan', complaints=3)
         officer1.get_absolute_url = Mock(return_value='/officer/1/')
@@ -69,6 +75,9 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
 
 
 class CoaccusedPairResponseBuilderTestCase(TestCase):
+    def setUp(self):
+        ResponseTemplate.objects.all().delete()
+
     def test_build(self):
         officer1 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
         allegation = AllegationFactory()
@@ -100,6 +109,7 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
 
 class NotFoundResponseBuilderTestCase(TestCase):
     def setUp(self):
+        ResponseTemplate.objects.all().delete()
         ResponseTemplateFactory(
             response_type='not_found',
             syntax='Sorry, @{{user_name}}, the bot find nothing')

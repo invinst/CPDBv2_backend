@@ -84,7 +84,8 @@ class Tweet:
 
     @property
     def is_tweet_from_followed_accounts(self):
-        _, target = self._client.tweepy_api.show_friendship(self._client.get_current_user().id, self.user_id)
+        _, target = self._client.tweepy_api.show_friendship(
+            source_id=self._client.get_current_user().id, target_id=self.user_id)
         return target.followed_by
 
     @property

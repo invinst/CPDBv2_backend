@@ -142,3 +142,10 @@ class OfficerTestCase(TestCase):
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
+
+    def test_discipline_count(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory(officer=officer, final_outcome='100')
+        OfficerAllegationFactory(officer=officer, final_outcome='600')
+        OfficerAllegationFactory(officer=officer, final_outcome='')
+        expect(officer.discipline_count).to.eq(1)
