@@ -25,18 +25,4 @@ LOGGING = {
             'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'stream': 'sys.stdout',
-            'formatter': 'standard'
-        }
-    },
-    'loggers': {
-        'twitterbot': {
-            'handlers': ['console'],
-            'level': 'INFO'
-        }
-    },
 }

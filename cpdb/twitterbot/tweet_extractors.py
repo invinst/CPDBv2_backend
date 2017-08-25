@@ -1,7 +1,10 @@
 class RelatedTweetExtractor:
     def extract(self, tweet, context):
         tweets = self.get_tweets(tweet, context)
-        context['first_non_retweet'] = [t for t in tweets if not t.is_retweet][0]
+        try:
+            context['first_non_retweet'] = [t for t in tweets if not t.is_retweet][0]
+        except IndexError:
+            context['first_non_retweet'] = None
         context['original_tweet'] = self.get_original_tweet(tweets)
         return tweets
 
@@ -24,4 +27,5 @@ class RelatedTweetExtractor:
         return tweets
 
     def get_original_tweet(self, tweets):
-        return min(tweets, key=lambda tweet: tweet.created_at)
+        if len(tweets) > 0:
+            return min(tweets, key=lambda tweet: tweet.created_at)

@@ -1,9 +1,10 @@
 import itertools
 import logging
 
-from responsebot.handlers.base import BaseTweetHandler, BaseEventHandler
+from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
 from nameparser.parser import HumanName
+from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
 
 from data.models import Officer
 
@@ -22,22 +23,9 @@ from .utils.web_parsing import add_params
 logger = logging.getLogger(__name__)
 
 
-class OfficerTweetHandler(BaseTweetHandler):
-    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
-    tweet_extractor = RelatedTweetExtractor()
-    incoming_tweet_filters = [
-        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
-        lambda tweet: not tweet.is_unfollow_tweet
-    ]
-    response_loggers = [DatabaseResponseLogger()]
-    name_parser = RosettePersonNameParser()
-    recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
-    response_builders = (
-        SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
-        )
-
+class BaseOfficerTweetHandler(BaseTweetHandler):
     def __init__(self, *args, **kwargs):
-        super(OfficerTweetHandler, self).__init__(*args, **kwargs)
+        super(BaseOfficerTweetHandler, self).__init__(*args, **kwargs)
         self._context = {'client': self.client}
         self.incoming_tweet = None
 
@@ -71,7 +59,15 @@ class OfficerTweetHandler(BaseTweetHandler):
             entity_url = add_params(entity_url, {'twitterbot_log_id': response_log.id})
             tweet_content = '%s %s' % (tweet_content, entity_url)
 
-        outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
+        try:
+            outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
+        except CharacterLimitError:
+            logger.error('Tweet is too long - %s' % tweet_content)
+            return
+        except StatusDuplicateError:
+            logger.error('Tweet already sent recently - tweet: %s' % tweet_content)
+            return
+
         outgoing_tweet = Tweet(outgoing_tweet)
 
         response_log.tweet_url = outgoing_tweet.url
@@ -123,6 +119,24 @@ class CPDBEventHandler(BaseEventHandler):
             self.client.follow(event.source.id)
 
 
+@register_handler
+class OfficerTweetHandler(BaseOfficerTweetHandler):
+    event_handler_class = CPDBEventHandler
+    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
+    tweet_extractor = RelatedTweetExtractor()
+    incoming_tweet_filters = [
+        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
+        lambda tweet: not tweet.is_unfollow_tweet
+    ]
+    response_loggers = [DatabaseResponseLogger()]
+    name_parser = RosettePersonNameParser()
+    recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
+    response_builders = (
+        SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
+        )
+
+
+@register_handler
 class CPDBUnfollowHandler(BaseTweetHandler):
     def get_filter(self):
         return TweetFilter(track=['{bot} stop'.format(bot=self.client.get_current_user().screen_name)])

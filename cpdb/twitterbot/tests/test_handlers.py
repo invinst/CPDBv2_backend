@@ -7,12 +7,14 @@ import pytz
 from mock import Mock, patch, call
 from robber import expect
 from freezegun import freeze_time
+from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
 
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 
 from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler
 from twitterbot.factories import ResponseTemplateFactory, MockClientFactory
 from twitterbot.tweets import Tweet
+from twitterbot.models import ResponseTemplate
 from twitterbot.models import TwitterBotResponseLog
 
 
@@ -29,6 +31,7 @@ def rosette_return(value):
 @override_settings(DOMAIN='http://foo.com')
 class OfficerTweetHandlerTestCase(TestCase):
     def setUp(self):
+        ResponseTemplate.objects.all().delete()
         self.officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         self.allegation = AllegationFactory()
         OfficerAllegationFactory(officer=self.officer, allegation=self.allegation)
@@ -223,6 +226,26 @@ class OfficerTweetHandlerTestCase(TestCase):
         expect(response_log.original_tweet_url).to.eq('https://twitter.com/abc/status/1/')
         expect(response_log.original_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
         expect(response_log.status).to.eq(TwitterBotResponseLog.SENT)
+
+    @rosette_return([('text', 'Jerome Finnigan')])
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=1))
+    def test_character_limit_error(self, _):
+        self.client.tweet = Mock(side_effect=CharacterLimitError)
+        with patch('twitterbot.handlers.logger.error') as mock_error:
+            self.handler.on_tweet(self.tweet)
+            mock_error.assert_called_with(
+                'Tweet is too long - '
+                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=1')
+
+    @rosette_return([('text', 'Jerome Finnigan')])
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=1))
+    def test_status_duplicate_error(self, _):
+        self.client.tweet = Mock(side_effect=StatusDuplicateError)
+        with patch('twitterbot.handlers.logger.error') as mock_error:
+            self.handler.on_tweet(self.tweet)
+            mock_error.assert_called_with(
+                'Tweet already sent recently - tweet: '
+                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=1')
 
 
 class CPDBEventHandlerTestCase(SimpleTestCase):
