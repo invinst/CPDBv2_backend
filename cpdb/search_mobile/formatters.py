@@ -27,3 +27,14 @@ class ReportFormatter(SimpleFormatter):
             'title': doc.title,
             'publish_date': doc.publish_date
         }
+
+
+class UnitFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        return {
+            'id': int(doc.meta.id),
+            'text': doc.name,
+            'url': doc.url,
+            'active_member_count': doc.active_member_count,
+            'member_count': doc.member_count
+        }
