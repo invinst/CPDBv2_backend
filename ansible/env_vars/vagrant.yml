@@ -27,7 +27,7 @@ django_settings_module: "config.settings.local"
 django_debug: true
 db_name: "{{ application_name }}"
 db_password: password
-database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ application_name }}"
+database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ db_name }}"
 django_secret_key: "django secret key"
 mailchimp_api_key: ""
 mailchimp_user: ""
