@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 class CoaccusedSerializer(serializers.Serializer):
     id = serializers.IntegerField(source='officer.id')
+    badge = serializers.CharField(source='officer.current_badge')
     full_name = serializers.CharField(source='officer.full_name')
     gender = serializers.CharField(source='officer.gender_display')
     race = serializers.CharField(source='officer.race')
