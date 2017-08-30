@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
 NEW_RELIC_CONFIG_FILE="{{ project_root_path }}/newrelic.ini"
-DJANGO_SETTINGS_MODULE="{{django_settings_module}}"
 
 echo "Starting Twitterbot as `whoami`"
 
 cd {{ project_path }}
 . {{ virtualenv_path }}/bin/activate
 
-exec {{ newrelic_admin_path }} run-python {{ project_root_path }}/cpdb/manage.py start_twitterbot
+exec {{ newrelic_admin_path }} run-python {{ project_root_path }}/cpdb/manage.py start_twitterbot --settings={{django_settings_module}}
