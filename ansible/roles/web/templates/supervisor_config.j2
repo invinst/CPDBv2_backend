@@ -7,3 +7,4 @@ redirect_stderr = true
 [program:twitterbot]
 command = {{ virtualenv_path }}/bin/twitterbot_start
 user = {{ deploy_user }}
+autorestart = true
