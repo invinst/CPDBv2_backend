@@ -62,8 +62,8 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 bin/deploy_staging
 ```
 
-In fact, our CircleCI is currently set up to automatically deploy the `staging` branch. In cases where the feature being merged into staging doesn't require rebuilding the index,
-you can tell automatic deploy script to skip this step by including `[skip rebuild_index]` in the merge commit's message:
+In fact, our CircleCI is currently set up to automatically deploy the `staging` branch. In cases where the feature being merged into staging requires rebuilding the
+Elasticsearch index, you must tell the deploy script to do so by including `[rebuild_index]` in the merge commit's message:
 
 ```bash
 # Do work on feature branch, commit & push as usual:
@@ -71,7 +71,7 @@ git commit
 git push
 # Checkout staging and merge said branch:
 git checkout staging && git pull
-git merge feature/my-feature-branch  # merge commit message editor opens - include `[skip rebuild_index]` here
+git merge feature/my-feature-branch  # merge commit message editor opens - include `[rebuild_index]` here
 git push  # remember to test locally before pushing of course!
 ```
 

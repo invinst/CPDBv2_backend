@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
+# Only run rebuild_index and rebuild_search_index if the latest commit message
+# has the text `[rebuild_index]` in it.
+
 GIT_COMMIT_MSG=`git log --format=%B -n 1 $CIRCLE_SHA1`
 
-if [[ $GIT_COMMIT_MSG == *"[skip rebuild_index]"* ]]; then
-  REBUILD_INDEX="false"
-else
+if [[ $GIT_COMMIT_MSG == *"[rebuild_index]"* ]]; then
   REBUILD_INDEX="true"
+else
+  REBUILD_INDEX="false"
 fi
 
 echo $ANSIBLE_VAULT_PASSWORD > vault_pass.txt
