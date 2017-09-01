@@ -222,3 +222,5 @@ AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
 V1_URL = 'https://beta.cpdb.co'
 
 ELASTICSEARCH_HOSTS = ['localhost:9200']
+
+VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = '/visual_token_media'
