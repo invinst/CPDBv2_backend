@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from robber import expect
+import pytz
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory,
@@ -28,7 +29,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         officer2 = OfficerFactory(id=456, first_name='Mrs', last_name='Bar', gender='F', race='Black')
         OfficerBadgeNumberFactory(officer=officer2, star='45678', current=True)
         allegation = AllegationFactory(
-            crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28), add1=3510,
+            crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
             add2='Michigan Ave', city='Chicago', location='09', beat=area
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')

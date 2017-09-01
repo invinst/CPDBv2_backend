@@ -24,3 +24,8 @@ apt_java_package: oracle-java8-installer
 # If turned on, only users with pubkey included in `authorized_keys` will be allowed ssh access
 manage_authorized_keys: yes
 authorized_keys: ''  # override this per environment
+
+db_user: cpdb
+db_name: "{{ application_name }}"
+db_password: password
+database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ db_name }}"

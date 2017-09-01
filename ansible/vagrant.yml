@@ -9,6 +9,7 @@
     - update_apt_cache: yes
     - postgresql_version: "9.4"
     - postgresql_package_version: "9.4.*-1.pgdg14.04+1"
+    - requirements_file: "{{ project_root_path }}/requirements/local.txt"
   vars_files:
     - env_vars/base.yml
     - env_vars/vagrant-secrets.yml

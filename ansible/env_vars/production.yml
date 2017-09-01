@@ -24,7 +24,8 @@ ssl_src_dir: ssl_self_signed
 ssl_dest_dir: /etc/ssl
 
 # Application settings.
-django_settings_file: "config.settings.production"
+django_settings_module: "config.settings.production"
+django_debug: false
 
 run_django_db_migrations: yes
 run_django_collectstatic: yes

@@ -1,6 +1,6 @@
 ---
 
-- name: Create a {{ application_name }} virtual machine via vagrant
+- name: Create {{ application_name }} staging
   hosts: all
   become: yes
   become_user: root
