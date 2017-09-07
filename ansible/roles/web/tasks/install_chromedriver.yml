@@ -7,5 +7,5 @@
 - name: Download and extract chromedriver
   unarchive:
     src: https://chromedriver.storage.googleapis.com/2.32/chromedriver_linux64.zip
-    dest: /usr/local/bin
+    dest: "{{ pyenv_root }}/bin"
     remote_src: True

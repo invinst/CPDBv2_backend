@@ -50,7 +50,8 @@ LOCAL_APPS = (
     'officers',
     'cr',
     'units',
-    'alias'
+    'alias',
+    'visual_token'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -224,3 +225,5 @@ V1_URL = 'https://beta.cpdb.co'
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
 VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = '/visual_token_media'
+
+RUNNING_PORT = '80'

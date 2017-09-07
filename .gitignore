@@ -39,3 +39,9 @@ ansible/external-roles
 
 data_source
 .ipynb_checkpoints
+
+# Npm
+node_modules/
+.tmp/
+
+generated_images/

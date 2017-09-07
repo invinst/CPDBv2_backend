@@ -5,7 +5,7 @@ from data.models import Officer, OfficerAllegation
 
 
 class OfficerSocialGraphVisualTokenRenderer:
-    script_path = 'js/renderers/officer_social_graph_visual_token_renderer.js'
+    script_path = 'officer_social_graph_visual_token_renderer.js'
 
     def coaccusals_between_two_officers(self, officer1, officer2):
         return OfficerAllegation.objects.filter(officer=officer1).filter(
@@ -15,6 +15,8 @@ class OfficerSocialGraphVisualTokenRenderer:
         coaccused = Officer.objects.filter(
             officerallegation__allegation__officerallegation__officer=officer
         ).distinct()
+        if not coaccused:
+            coaccused = [officer]
 
         coaccusals = [
             {
@@ -39,8 +41,5 @@ class OfficerSocialGraphVisualTokenRenderer:
             'links': coaccusals
         })
 
-    def facebook_share_filename(self, officer):
-        return 'officer_%s_facebook_share.png' % officer.id
-
-    def twitter_share_filename(self, officer):
-        return 'officer_%s_twitter_share.png' % officer.id
+    def blob_name(self, officer):
+        return 'officer_%s' % officer.id

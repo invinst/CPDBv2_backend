@@ -35,3 +35,11 @@
 - include: setup_cron_job.yml
   tags: cron
   when: enable_cron_job
+
+- stat:
+    path: "/home/{{ansible_remote_user}}/.yarn"
+  register: yarn_dir
+
+- include: install_node_yarn.yml
+  tags: debug
+  # when: yarn_dir.stat.isdir is not defined

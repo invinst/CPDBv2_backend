@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-import tqdm
+from tqdm import tqdm
 
 from data.models import Officer
 from visual_token.engine import open_engine

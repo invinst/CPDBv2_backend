@@ -1,0 +1,67 @@
+---
+- name: Install dependencies
+  apt: pkg={{ item }} update_cache=yes cache_valid_time=3600
+  become: yes
+  become_user: root
+  with_items:
+    - build-essential
+    - libssl-dev
+
+- name: Make sure .bashrc file exists
+  file:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    state: touch
+
+- name: Get install script
+  get_url:
+    url: https://raw.githubusercontent.com/creationix/nvm/{{ nvm_version }}/install.sh
+    dest: /tmp/install_nvm.sh
+    mode: u+x
+
+- name: Install nvm
+  command: bash /tmp/install_nvm.sh
+
+- name: Install Node {{ nvm_node_version }}
+  shell: source {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ nvm_node_version }}
+  args:
+    executable: /bin/bash
+
+- name: Update npm
+  npm: name=npm version="{{npm_version}}" global=yes
+  become: yes
+  become_user: root
+  environment:
+    PATH: "{{ node_path }}:{{ ansible_env.PATH }}"
+  tags: setup
+
+- name: Get install script
+  get_url:
+    url: https://yarnpkg.com/install.sh
+    dest: /tmp/install_yarn.sh
+    mode: u+x
+  become: yes
+  become_user: "{{ansible_remote_user}}"
+
+- name: Install Yarn
+  shell: /tmp/install_yarn.sh --version {{ yarn_version }}
+  environment:
+    PATH: "{{ node_path }}:{{ ansible_env.PATH }}"
+  args:
+    executable: /bin/bash
+  become: yes
+  become_user: "{{ansible_remote_user}}"
+
+- name: Create pam_environment file
+  file:
+    path: "/home/{{ansible_remote_user}}/.pam_environment"
+    state: touch
+  tags: debug
+
+- name: Put yarn in PATH
+  lineinfile:
+   dest: "/home/{{ansible_remote_user}}/.pam_environment"
+   state: present
+   line: 'PATH DEFAULT=${PATH}:/home/{{ansible_remote_user}}/.yarn/bin'
+  tags: debug
+  become: yes
+  become_user: "{{ansible_remote_user}}"

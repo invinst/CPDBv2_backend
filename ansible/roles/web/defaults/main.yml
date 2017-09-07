@@ -40,3 +40,10 @@ django_environment:
 newrelic_app_name: "CPDB v2 production"
 
 force_rewrite_env_file: yes
+
+yarn_version: "0.23.4"
+nvm_version: "v0.33.2"
+npm_version: "3.10.10"
+nvm_node_version: "6.10.3"
+nvm_dir: "{{ ansible_env.HOME }}/.nvm"
+node_path: "{{ nvm_dir }}/versions/node/v{{ nvm_node_version }}/bin"
