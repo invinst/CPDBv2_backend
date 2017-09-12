@@ -15,17 +15,20 @@ class Engine:
     def set_renderer(self, renderer):
         self.renderer = renderer
 
+    def server_base_path(self):
+        return 'http://localhost:%s' % settings.RUNNING_PORT
+
     def start(self):
         service.start()
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument('--headless')
         capabilities = chrome_options.to_capabilities()
 
         self.driver = webdriver.Remote(service.service_url, desired_capabilities=capabilities)
         self.driver.get(
-            'http://localhost:%s%s' % (
-                settings.RUNNING_PORT, reverse('visual_token', args=[self.renderer.script_path])))
+            '%s%s' % (
+                self.server_base_path(), reverse('visual_token', args=[self.renderer.script_path])))
 
         self.driver.execute_async_script('''
             var done = arguments[0];
@@ -57,12 +60,13 @@ class Engine:
             '%s/%s_facebook_share.png' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data)))
 
     def snap_twitter_picture(self, data):
-        self.driver.set_window_size(1200, 600)
+        self.driver.set_window_size(width=1200, height=600)
         self.driver.get_screenshot_as_file(
             '%s/%s_twitter_share.png' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data)))
 
     def close_all_windows(self):
-        self.driver.quit()
+        if hasattr(self, 'driver'):
+            self.driver.quit()
 
 
 engine = Engine()
@@ -79,4 +83,7 @@ def open_engine(renderer):
 @atexit.register
 def cleanup_child_processes():
     engine.close_all_windows()
-    service.stop()
+    try:
+        service.stop()
+    except AttributeError:
+        pass

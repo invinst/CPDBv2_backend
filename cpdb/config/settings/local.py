@@ -16,6 +16,4 @@ DEBUG = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = '/CPDB/CPDBv2_backend/generated_images'
-
 RUNNING_PORT = '8000'
