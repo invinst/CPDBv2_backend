@@ -96,3 +96,7 @@ Regarding to the nginx changes, please update both files: with and without https
     + Data from v1 will be exported into csv files in root folder after run above command.
 - Import v2 data: Run `cpdb/manage.py import_002_officer_data_from_v1 --folder [FOLDER]` on v2 repository.
 - After importing run: `cpdb/manage.py rebuild_index` to rebuild indexes for elasticsearch.
+
+# Miscelaneous
+
+- [Snapshot test](docs/snapshot-test.md)
