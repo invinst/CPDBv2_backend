@@ -20,6 +20,10 @@ class EngineTestCase(TestCase):
         self.engine.set_renderer(renderer)
         expect(self.engine.renderer).to.eq(renderer)
 
+    @override_settings(RUNNING_PORT='1080')
+    def test_server_base_path(self):
+        expect(self.engine.server_base_path).to.eq('http://localhost:1080')
+
     def generate_visual_token(self):
         self.engine.driver.execute_script.return_value = ['some_color', 'some_svg_str']
         self.engine.generate_visual_token('some_data')

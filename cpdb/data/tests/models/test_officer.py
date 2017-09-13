@@ -139,3 +139,23 @@ class OfficerTestCase(TestCase):
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
+
+
+class VisualTokenBackgroundColorTestCase(TestCase):
+    def test_visual_token_background_color_with_less_than_6_crs(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory(officer=officer)
+
+        expect(officer.visual_token_background_color).to.eq('#f5f4f4')
+
+    def test_visual_token_background_color_with_cr_between_6_and_25(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory.create_batch(10, officer=officer)
+
+        expect(officer.visual_token_background_color).to.eq('#f9efe3')
+
+    def test_visual_token_background_color_with_more_than_30_crs(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory.create_batch(30, officer=officer)
+
+        expect(officer.visual_token_background_color).to.eq('#f8c8bf')

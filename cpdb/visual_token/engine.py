@@ -15,6 +15,7 @@ class Engine:
     def set_renderer(self, renderer):
         self.renderer = renderer
 
+    @property
     def server_base_path(self):
         return 'http://localhost:%s' % settings.RUNNING_PORT
 
@@ -28,7 +29,7 @@ class Engine:
         self.driver = webdriver.Remote(service.service_url, desired_capabilities=capabilities)
         self.driver.get(
             '%s%s' % (
-                self.server_base_path(), reverse('visual_token', args=[self.renderer.script_path])))
+                self.server_base_path, reverse('visual_token', args=[self.renderer.script_path])))
 
         self.driver.execute_async_script('''
             var done = arguments[0];
@@ -40,7 +41,7 @@ class Engine:
             }, 500);''')
 
     def generate_visual_token(self, data):
-        [bg_color, svg_str] = self.driver.execute_script('''
+        svg_str = self.driver.execute_script('''
             var data = arguments[0];
             return window.render(data);
             ''', self.renderer.serialize(data))

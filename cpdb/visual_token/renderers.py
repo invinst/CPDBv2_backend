@@ -15,6 +15,7 @@ class OfficerSocialGraphVisualTokenRenderer:
         coaccused = Officer.objects.filter(
             officerallegation__allegation__officerallegation__officer=officer
         ).distinct()
+        coaccused = sorted(coaccused, key=lambda obj: obj.id)
         if not coaccused:
             coaccused = [officer]
 

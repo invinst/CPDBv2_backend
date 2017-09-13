@@ -220,5 +220,5 @@ window.render = function (jsonString) {
       return d.y;
     });
 
-  return [state.backgroundColor, getSVGString(nodes)];
+  return getSVGString(nodes);
 };
