@@ -44,4 +44,5 @@ data_source
 node_modules/
 .tmp/
 
-generated_images/
+test_visual_token_media
+visual_token_media

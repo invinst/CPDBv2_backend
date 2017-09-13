@@ -5,7 +5,7 @@ from snapshot_test.test import SnapshotTestMixin
 
 from data.factories import OfficerFactory
 from visual_token.renderers import OfficerSocialGraphVisualTokenRenderer
-from .test import RendererSnapshotTestCase
+from .base import RendererSnapshotTestCase
 
 
 def token_path(path):
