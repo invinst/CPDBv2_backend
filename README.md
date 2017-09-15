@@ -100,3 +100,4 @@ Regarding to the nginx changes, please update both files: with and without https
 # Miscelaneous
 
 - [Snapshot test](docs/snapshot-test.md)
+- [Visual tokens](docs/visual-tokens.md)
