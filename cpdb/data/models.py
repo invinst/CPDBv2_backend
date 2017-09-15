@@ -250,10 +250,10 @@ class PoliceUnit(TaggableModel):
 
 
 class Officer(TaggableModel):
-    first_name = models.CharField(
-        max_length=255, null=True, db_index=True, blank=True)
-    last_name = models.CharField(
-        max_length=255, null=True, db_index=True, blank=True)
+    first_name = models.CharField(max_length=255, db_index=True)
+    last_name = models.CharField(max_length=255, db_index=True)
+    middle_initial = models.CharField(max_length=5, null=True)
+    suffix_name = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
