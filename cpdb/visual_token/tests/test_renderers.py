@@ -30,14 +30,12 @@ class OfficerSocialGraphVisualTokenRendererTestCase(TestCase):
 
         expect(result['focusedId']).to.eq(1)
         expect(result['nodes']).to.contain({
-                'salary': 0,
                 'crs': 1,
                 'id': 1,
                 'name': 'Steve Jobs',
                 'trrs': 0
             })
         expect(result['nodes']).to.contain({
-                'salary': 0,
                 'crs': 1,
                 'id': 2,
                 'name': 'Bill Gates',

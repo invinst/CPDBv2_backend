@@ -34,7 +34,6 @@ class OfficerSocialGraphVisualTokenRenderer:
                 {
                     'crs': o.allegation_count,
                     'trrs': 0,
-                    'salary': 0,
                     'id': o.id,
                     'name': o.full_name
                 }

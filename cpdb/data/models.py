@@ -376,11 +376,11 @@ class Officer(TaggableModel):
 
     @property
     def visual_token_background_color(self):
-        cr_scale = ScaleThreshold(domain=[6, 25], target_range=[0, 1, 2])
+        cr_scale = ScaleThreshold(domain=[1, 5, 10, 25, 40], target_range=range(6))
 
         cr_threshold = cr_scale.interpolate(self.allegation_count)
 
-        return BACKGROUND_COLOR_SCHEME['{cr_threshold}00'.format(
+        return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
             cr_threshold=cr_threshold
         )]
 

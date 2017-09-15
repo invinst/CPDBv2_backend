@@ -1,43 +1,50 @@
 const backgroundColorScheme = {
-  '000': '#f5f4f4',
-  '001': '#cbd4db',
-  '010': '#e7eee3',
-  '100': '#f9efe3',
-  '002': '#c3d7ed',
-  '011': '#d3f3eb',
-  '020': '#bae5b6',
-  '101': '#e4dde6',
-  '110': '#faf6c7',
-  '200': '#f8c8bf',
-  '012': '#78b8d3',
-  '021': '#61b29d',
-  '102': '#8a7c96',
-  '111': '#8f8f8f',
-  '120': '#9c9b84',
-  '201': '#df7575',
-  '210': '#f4765d',
-  '022': '#308182',
-  '112': '#485787',
-  '121': '#4b704d',
-  '202': '#6c4c83',
-  '211': '#e44747',
-  '220': '#ae4c12',
-  '122': '#104045',
-  '212': '#38314a',
-  '221': '#472610',
-  '222': '#231f20'
+    '00': '#f5f4f4',
+    '10': '#edf0fa',
+    '01': '#f8eded',
+    '20': '#d4e2f4',
+    '11': '#ecdeef',
+    '02': '#efdede',
+    '30': '#c6d4ec',
+    '21': '#d9d1ee',
+    '12': '#eacbe0',
+    '03': '#ebcfcf',
+    '40': '#aec9e8',
+    '31': '#c0c3e1',
+    '22': '#cdbddd',
+    '13': '#e4b8cf',
+    '04': '#f0b8b8',
+    '50': '#90b1f5',
+    '41': '#aaace3',
+    '32': '#b6a5de',
+    '23': '#c99edc',
+    '14': '#e498b6',
+    '05': '#f89090',
+    '51': '#748be4',
+    '42': '#8e84e0',
+    '33': '#af7fbd',
+    '24': '#c873a2',
+    '15': '#e1718a',
+    '52': '#6660ae',
+    '43': '#8458aa',
+    '34': '#a34e99',
+    '25': '#b5496a',
+    '53': '#4c3d8f',
+    '44': '#6b2e7e',
+    '35': '#792f55',
+    '54': '#391c6a',
+    '45': '#520051',
+    '55': '#131313',
 };
-const crScale = d3.scaleThreshold().domain([6, 25]).range([0, 1, 2]);
-const trrScale = d3.scaleThreshold().domain([6, 25]).range([0, 1, 2]);
-const salaryScale = d3.scaleThreshold().domain([60000, 90000]).range([0, 1, 2]);
+const crScale = d3.scaleThreshold().domain([1, 5, 10, 25, 40]).range([0, 1, 2, 3, 4, 5, 6]);
+const trrScale = d3.scaleThreshold().domain([1, 5, 10, 25, 40]).range([0, 1, 2, 3, 4, 5, 6]);
 const state = {};
 
 function calculateBackgroundColor(officer) {
   const crThres = crScale(officer.crs);
   const trrThres = trrScale(officer.trrs);
-  const salaryThres = salaryScale(officer.salary);
   return backgroundColorScheme[
-    String(trrThres) + String(salaryThres) + String(crThres)
+    String(crThres) + String(trrThres)
   ];
 }
 
@@ -55,7 +62,7 @@ function calculateEdgeColor(color) {
 
 function calculateFillColor(d) {
   if (d.id === state.focusedOfficer.id) {
-    return '#001733';
+    return '#231f20';
   }
   return calculateBackgroundColor(d);
 }

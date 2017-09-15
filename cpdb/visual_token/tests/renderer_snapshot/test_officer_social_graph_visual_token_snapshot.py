@@ -24,7 +24,7 @@ class OfficerSocialGraphVisualTokenSnapshotTestCase(SnapshotTestMixin, RendererS
         self.assert_snapshot_match(token_path('officer_1_twitter_share.png'), 'officer_1_twitter_share.png')
 
     def test_each_background_color(self):
-        crs = [5, 10, 30]
+        crs = [0, 3, 7, 20, 30, 45]
 
         for ind, cr in enumerate(crs):
             id = int('2%d' % ind)
