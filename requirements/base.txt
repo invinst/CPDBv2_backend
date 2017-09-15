@@ -16,4 +16,3 @@ newrelic==2.68.0.50
 django-anymail==0.6.1
 django-nose==1.4.4
 selenium==3.5.0
-blobxfer==0.12.1
