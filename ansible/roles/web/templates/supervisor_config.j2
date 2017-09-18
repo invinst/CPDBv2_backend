@@ -8,3 +8,5 @@ redirect_stderr = true
 command = {{ virtualenv_path }}/bin/twitterbot_start
 user = {{ deploy_user }}
 autorestart = true
+stdout_logfile = {{ application_log_dir }}/twitterbot_out.log
+stderr_logfile = {{ application_log_dir }}/twitterbot_err.log
