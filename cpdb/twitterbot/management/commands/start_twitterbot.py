@@ -1,7 +1,12 @@
+import newrelic.agent
 from django.conf import settings
-from django.core.management.base import BaseCommand
 
-from responsebot.responsebot import ResponseBot
+if not settings.TEST:
+    newrelic.agent.initialize(str(settings.TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH))
+
+from django.core.management.base import BaseCommand  # noqa E402
+
+from responsebot.responsebot import ResponseBot  # noqa E402
 
 
 class Command(BaseCommand):

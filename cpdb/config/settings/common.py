@@ -269,3 +269,7 @@ LOGGING = {
         }
     },
 }
+
+TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH = ROOT_DIR.path('twitterbot_newrelic.ini')
+
+TEST = False
