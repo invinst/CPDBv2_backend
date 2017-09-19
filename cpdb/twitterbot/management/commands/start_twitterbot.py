@@ -1,8 +1,4 @@
-import newrelic.agent
 from django.conf import settings
-
-if not settings.TEST:
-    newrelic.agent.initialize(str(settings.TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH))
 
 from django.core.management.base import BaseCommand  # noqa E402
 
