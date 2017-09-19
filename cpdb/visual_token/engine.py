@@ -47,23 +47,17 @@ class Engine:
             ''', self.renderer.serialize(data))
 
         self.save_svg(data, svg_str)
-        self.snap_facebook_picture(data)
-        self.snap_twitter_picture(data)
+        self.snap_png(data)
 
     def save_svg(self, data, svg_str):
         filename = '%s/%s.svg' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data))
         with open(filename, 'w') as file:
             file.write(svg_str)
 
-    def snap_facebook_picture(self, data):
+    def snap_png(self, data):
         self.driver.set_window_size(width=1200, height=627)
         self.driver.get_screenshot_as_file(
-            '%s/%s_facebook_share.png' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data)))
-
-    def snap_twitter_picture(self, data):
-        self.driver.set_window_size(width=1200, height=600)
-        self.driver.get_screenshot_as_file(
-            '%s/%s_twitter_share.png' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data)))
+            '%s/%s.png' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, self.renderer.blob_name(data)))
 
     def close_all_windows(self):
         if hasattr(self, 'driver'):

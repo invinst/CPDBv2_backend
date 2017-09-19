@@ -28,8 +28,7 @@ class EngineTestCase(TestCase):
         self.engine.driver.execute_script.return_value = ['some_color', 'some_svg_str']
         self.engine.generate_visual_token('some_data')
         self.engine.save_svg = Mock()
-        self.engine.snap_facebook_picture = Mock()
-        self.engine.snap_twitter_picture = Mock()
+        self.engine.snap_png = Mock()
 
         expect(self.engine.renderer).to.be.called_once_with('some_data')
         expect(self.engine.driver.execute_script).to.be.called_once_with('''
@@ -37,8 +36,7 @@ class EngineTestCase(TestCase):
             return window.render(data);
             ''', 'some_serialized_data')
         expect(self.engine.save_svg).to.be.called_once_with('some_data', 'some_svg_str')
-        expect(self.engine.snap_facebook_picture).to.be.called_once_with('some_data')
-        expect(self.engine.snap_twitter_picture).to.be.called_once_with('some_data')
+        expect(self.engine.snap_png).to.be.called_once_with('some_data')
 
     @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='somefolder')
     def test_save_svg(self):
@@ -50,23 +48,13 @@ class EngineTestCase(TestCase):
             expect(_mock_open().write).to.be.called_once_with('some_svg_string')
 
     @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='somefolder')
-    def test_snap_facebook_picture(self):
-        self.engine.snap_facebook_picture('some_data')
+    def test_snap_png(self):
+        self.engine.snap_png('some_data')
 
         expect(self.engine.renderer.blob_name).to.be.called_once_with('some_data')
         expect(self.engine.driver.set_window_size).to.be.called_once_with(width=1200, height=627)
         expect(self.engine.driver.get_screenshot_as_file).to.be.called_once_with(
-            'somefolder/some_blob_facebook_share.png'
-        )
-
-    @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='somefolder')
-    def test_twitter_picture(self):
-        self.engine.snap_twitter_picture('some_data')
-
-        expect(self.engine.renderer.blob_name).to.be.called_once_with('some_data')
-        expect(self.engine.driver.set_window_size).to.be.called_once_with(width=1200, height=600)
-        expect(self.engine.driver.get_screenshot_as_file).to.be.called_once_with(
-            'somefolder/some_blob_twitter_share.png'
+            'somefolder/some_blob.png'
         )
 
     def test_close_all_windows(self):

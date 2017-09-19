@@ -20,14 +20,13 @@ There are 3 things the command above does:
 
 After the process finishes, you can find the images at:
 
-- PNG: https://[azure-account].blob.core.windows.net/visual-token/officer_[id]_[social-platform]_share.png
-- SVG: https://[azure-account].blob.core.windows.net/visual-token/officer_[id].svg
+https://[azure-account].blob.core.windows.net/visual-token/officer_[id].[extension]
 
 With:
 
 - azure-account: cpdbdev, cpdbvisualtokenstaging, cpdbvisualtoken for development, staging and production
 - id: the id of the officer that you want to get the visual token
-- social-platform: facebook or twitter
+- extension: png or svg
 
 The background color for each token is included in the officer object.
 
