@@ -21,3 +21,5 @@ nameparser==0.5.3
 responsebot==0.6.0
 selenium==3.5.0
 google-cloud-language==0.29.0
+pandas==0.20.3
+jellyfish==0.5.6

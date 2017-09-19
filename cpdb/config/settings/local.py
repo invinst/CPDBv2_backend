@@ -27,3 +27,9 @@ LOGGING = {
     },
 }
 RUNNING_PORT = '8000'
+
+NOTEBOOK_ARGUMENTS = [
+    '--ip=0.0.0.0',
+    '--port=8888',
+    '--no-browser',
+]
