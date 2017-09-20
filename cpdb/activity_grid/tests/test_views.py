@@ -6,6 +6,7 @@ from robber import expect
 
 from data.factories import OfficerFactory, OfficerAllegationFactory
 from activity_grid.factories import OfficerActivityCardFactory
+from data.models import Officer
 
 
 class ActivityGridViewSetTestCase(APITestCase):
@@ -32,3 +33,16 @@ class ActivityGridViewSetTestCase(APITestCase):
                     'visual_token_background_color': '#d4e2f4'
                 }
             ])
+
+    def test_list_important_cards(self):
+        OfficerActivityCardFactory.create_batch(3, important=True)
+        OfficerActivityCardFactory.create_batch(50)
+        url = reverse('api-v2:activity-grid-list')
+        response = self.client.get(url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.have.length(40)
+
+        for item in response.data[:3]:
+            is_important = Officer.objects.get(pk=item['id']).activity_card.important
+            expect(is_important).to.be.true()

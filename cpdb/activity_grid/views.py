@@ -7,7 +7,7 @@ from activity_grid.serializers import ActivityCardSerializer
 
 class ActivityGridViewSet(viewsets.ViewSet):
     def list(self, request):
-        queryset = ActivityCard.objects.all()[:40]
+        queryset = ActivityCard.objects.all().order_by('-important')[:40]
         serializer = ActivityCardSerializer(queryset, many=True)
 
         return Response(serializer.data)
