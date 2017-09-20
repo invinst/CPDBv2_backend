@@ -51,7 +51,8 @@ LOCAL_APPS = (
     'cr',
     'units',
     'alias',
-    'visual_token'
+    'visual_token',
+    'activity_grid'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
