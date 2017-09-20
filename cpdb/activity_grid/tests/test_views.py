@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from django.core.urlresolvers import reverse
 
+import pytz
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
@@ -34,9 +37,11 @@ class ActivityGridViewSetTestCase(APITestCase):
                 }
             ])
 
-    def test_list_important_cards(self):
+    def test_list_order(self):
         OfficerActivityCardFactory.create_batch(3, important=True)
-        OfficerActivityCardFactory.create_batch(50)
+        OfficerActivityCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
+        OfficerActivityCardFactory.create_batch(10)
+        OfficerActivityCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
         url = reverse('api-v2:activity-grid-list')
         response = self.client.get(url)
 
@@ -46,3 +51,11 @@ class ActivityGridViewSetTestCase(APITestCase):
         for item in response.data[:3]:
             is_important = Officer.objects.get(pk=item['id']).activity_card.important
             expect(is_important).to.be.true()
+
+        for item in response.data[3:20]:
+            activity_card = Officer.objects.get(pk=item['id']).activity_card
+            expect(activity_card.last_activity).to.eq(datetime(2017, 7, 20, tzinfo=pytz.utc))
+
+        for item in response.data[20:30]:
+            activity_card = Officer.objects.get(pk=item['id']).activity_card
+            expect(activity_card.last_activity).to.eq(datetime(2017, 5, 20, tzinfo=pytz.utc))
