@@ -116,6 +116,7 @@ class OfficerHistoryFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     unit = factory.SubFactory(PoliceUnitFactory)
     effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
 
 
 class InvolvementFactory(factory.django.DjangoModelFactory):

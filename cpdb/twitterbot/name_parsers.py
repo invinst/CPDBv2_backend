@@ -1,5 +1,9 @@
+import logging
+
 from django.conf import settings
 from rosette.api import API, DocumentParameters, RosetteException
+
+logger = logging.getLogger(__name__)
 
 
 class RosettePersonNameParser:
@@ -14,6 +18,7 @@ class RosettePersonNameParser:
         params['content'] = text
         try:
             entities = self.api.entities(params)
-        except RosetteException:
+        except RosetteException, exception:
+            logger.error('Error while parsing "%s": %s' % (text, str(exception)))
             return []
         return [(source, e['mention']) for e in entities['entities'] if e['type'] == self.type]

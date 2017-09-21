@@ -145,13 +145,19 @@ class UnitIndexerTestCase(TestCase):
 
     def test_extract_datum(self):
         datum = PoliceUnitFactory(unit_name='unit', description='description')
+        officer = OfficerFactory()
+        officer2 = OfficerFactory()
+        OfficerHistoryFactory(officer=officer, unit=datum, end_date=None)
+        OfficerHistoryFactory(officer=officer2, unit=datum)
 
         expect(
             UnitIndexer().extract_datum(datum)
         ).to.be.eq({
             'name': 'unit',
             'description': 'description',
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'active_member_count': 1,
+            'member_count': 2
         })
 
 

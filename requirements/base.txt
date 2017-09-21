@@ -14,6 +14,7 @@ django-taggit==0.21.2
 pytz==2016.6.1
 newrelic==2.68.0.50
 django-anymail==0.6.1
+django-nose==1.4.4
 beautifulsoup4==4.6.0
 rosette_api==1.7.0
 nameparser==0.5.3

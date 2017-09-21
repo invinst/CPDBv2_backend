@@ -18,8 +18,12 @@ class RosettePersonNameParserTestCase(SimpleTestCase):
             parser = RosettePersonNameParser()
             expect(parser.parse(('source', 'some content'))).to.eq([('source', 'Tony Willem')])
 
-    def test_parse_error(self):
-        mock_api = Mock(return_value=Mock(entities=Mock(side_effect=RosetteException('', '', ''))))
+    @patch('twitterbot.name_parsers.logger.error')
+    def test_parse_error(self, error):
+        mock_api = Mock(return_value=Mock(
+            entities=Mock(side_effect=RosetteException('status', 'message', 'response_message'))))
         with patch('twitterbot.name_parsers.API', mock_api):
             parser = RosettePersonNameParser()
             expect(parser.parse(('source', 'some content'))).to.eq([])
+            expect(error).to.be.called_once_with(
+                'Error while parsing "some content": status: message:\n  response_message')
