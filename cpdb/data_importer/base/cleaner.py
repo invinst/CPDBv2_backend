@@ -114,6 +114,13 @@ def to_int(value):
     return int(float(value))
 
 
+def lower(value):
+    if pd.isnull(value):
+        return value
+
+    return str.lower(str(value))
+
+
 capitalise_generation_suffix = ignore_null(capitalise_generation_suffix)
 
 
