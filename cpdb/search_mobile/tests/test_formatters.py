@@ -5,7 +5,7 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from search_mobile.formatters import (
-    OfficerV2Formatter, FAQFormatter, ReportFormatter
+    OfficerV2Formatter, FAQFormatter, ReportFormatter, UnitFormatter
 )
 
 
@@ -57,4 +57,25 @@ class ReportFormatterTestCase(SimpleTestCase):
             'publication': 'publication',
             'title': 'title',
             'publish_date': '2017-01-21',
+        })
+
+
+class UnitFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(
+            meta=Mock(id='11'),
+            url='https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            active_member_count=2,
+            member_count=20
+        )
+        doc.name = '011'
+
+        expect(
+            UnitFormatter().doc_format(doc)
+        ).to.be.eq({
+            'id': 11,
+            'text': '011',
+            'url': 'https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            'active_member_count': 2,
+            'member_count': 20
         })

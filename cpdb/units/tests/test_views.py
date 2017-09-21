@@ -19,7 +19,7 @@ class UnitsViewSetTestCase(UnitSummaryTestCaseMixin, APITestCase):
     def test_summary(self):
         unit = PoliceUnitFactory(unit_name='123')
         officer = OfficerFactory(race='White', gender='F', birth_year='1980')
-        OfficerHistoryFactory(unit=unit, officer=officer)
+        OfficerHistoryFactory(unit=unit, officer=officer, end_date=None)
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerAllegationFactory(

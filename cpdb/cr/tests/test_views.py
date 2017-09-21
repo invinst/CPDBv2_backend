@@ -11,7 +11,7 @@ import pytz
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory,
-    AllegationCategoryFactory, AttachmentFileFactory
+    AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory
 )
 from data.constants import (MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
 from .mixins import CRTestCaseMixin
@@ -25,7 +25,9 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(id=123, first_name='Mr', last_name='Foo', gender='M', race='White')
+        OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         officer2 = OfficerFactory(id=456, first_name='Mrs', last_name='Bar', gender='F', race='Black')
+        OfficerBadgeNumberFactory(officer=officer2, star='45678', current=True)
         allegation = AllegationFactory(
             crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
             add2='Michigan Ave', city='Chicago', location='09', beat=area
@@ -87,7 +89,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
                     'start_date': '2003-02-28',
-                    'end_date': '2004-02-28'
+                    'end_date': '2004-02-28',
+                    'badge': '12345',
                 },
                 {
                     'id': 456,
@@ -100,7 +103,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'category': 'Use of Force',
                     'subcategory': 'UNNECESSARY PHYSICAL CONTACT - ON DUTY',
                     'start_date': '2005-02-28',
-                    'end_date': '2006-02-28'
+                    'end_date': '2006-02-28',
+                    'badge': '45678',
                 }
             ],
             'complainants': [

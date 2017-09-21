@@ -39,7 +39,7 @@ def parse(url):
 
 def add_params(url, params):
     url_parts = list(urlparse.urlparse(url))
-    query = dict(urlparse.parse_qsl(url_parts[4]))
+    query = urlparse.parse_qs(url_parts[4])
     query.update(params)
-    url_parts[4] = urlencode(query)
+    url_parts[4] = urlencode(query, True)
     return urlparse.urlunparse(url_parts)

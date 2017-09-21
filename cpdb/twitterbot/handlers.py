@@ -19,6 +19,7 @@ from .tweets import Tweet
 from .response_loggers import DatabaseResponseLogger
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
+from .constants import IDS_OF_OTHER_BOTS
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
     text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
     tweet_extractor = RelatedTweetExtractor()
     incoming_tweet_filters = [
-        lambda tweet: tweet.user_id not in [30582622, 4880788160, 4923697764],
+        lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,
         lambda tweet: not tweet.is_unfollow_tweet
     ]
     response_loggers = [DatabaseResponseLogger()]

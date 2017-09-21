@@ -25,9 +25,6 @@ ssl_dest_dir: /etc/ssl
 # Application settings.
 django_settings_module: "config.settings.local"
 django_debug: true
-db_name: "{{ application_name }}"
-db_password: password
-database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ application_name }}"
 django_secret_key: "django secret key"
 mailchimp_api_key: ""
 mailchimp_user: ""
@@ -42,8 +39,6 @@ mailgun_api_key: ""
 
 deploy_user: vagrant
 deploy_group: vagrant
-db_user: cpdb
-db_password: password
 
 backend_media_dir: /www/media/
 gunicorn_extra_params: "--reload"
