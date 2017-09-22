@@ -123,6 +123,12 @@ class OfficerTweetHandlerTestCase(TestCase):
             in_reply_to=1
         )
 
+    @rosette_return([('text', 'Raymond Piwnicki')])
+    def test_tweet_context_is_reset(self):
+        self.handler['responses_count'] = 1
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_called_once()
+
     @rosette_return([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_officer_in_replied_tweet(self, _):

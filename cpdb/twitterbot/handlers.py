@@ -25,11 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
-    def __init__(self, *args, **kwargs):
-        super(BaseOfficerTweetHandler, self).__init__(*args, **kwargs)
-        self._context = {'client': self.client}
-        self.incoming_tweet = None
-
     def get_officers(self, names):
         results = []
         for (source, name) in names:
@@ -40,6 +35,9 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             if officer is not None and officer not in results:
                 results.append((source, officer))
         return results
+
+    def reset_context(self):
+        self._context = {'client': self.client}
 
     def tweet(self, response):
         sources, tweet_content, entity_url = response
@@ -81,6 +79,7 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
     def on_tweet(self, tweet):
         self.incoming_tweet = Tweet(tweet, client=self.client)
+        self.reset_context()
         logger.info('%s - received tweet: "%s" from %s %s' % (
             self.__class__.__name__, self.incoming_tweet.text, self.incoming_tweet.screen_name, self.incoming_tweet.url
         ))
