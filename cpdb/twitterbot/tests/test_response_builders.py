@@ -14,35 +14,38 @@ class BaseResponseBuilderTestCase(TestCase):
     def setUp(self):
         ResponseTemplate.objects.all().delete()
 
-        class DumbResponseBuilder(BaseResponseBuilder):
-            response_type = 'dumb'
+        class DummyResponseBuilder(BaseResponseBuilder):
+            response_type = 'single_officer'
 
             def get_variables_sets(self, entities, context):
                 yield dict()
 
-        self.builder_class = DumbResponseBuilder
+        self.builder_class = DummyResponseBuilder
 
-    def test_build_with_randomized_syntax(self):
+    def test_build_with_round_robined_syntax(self):
         builder = self.builder_class()
-
-        with patch('twitterbot.response_builders.random.choice', return_value=Mock(syntax='a is {{number}}')):
-            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([((), 'a is 18', '')])
+        ResponseTemplateFactory(id=20, response_type='single_officer', syntax='temp1')
+        ResponseTemplateFactory(id=21, response_type='single_officer', syntax='temp2')
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([((), 'temp1', '')])
+        expect(list(builder.build(extra_variables={'user_name': 'def'}))).to.eq([((), 'temp1', '')])
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([((), 'temp2', '')])
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([((), 'temp1', '')])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
         builder = self.builder_class()
 
-        ResponseTemplateFactory(response_type='dumb', syntax='b')
+        ResponseTemplateFactory(response_type='single_officer', syntax='b')
         ResponseTemplateFactory(response_type='test', syntax='c')
 
         context = dict()
 
-        expect(list(builder.build(context=context))).to.eq([((), 'b', '')])
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([((), 'b', '')])
 
         expect(context['responses_count']).to.eq(1)
 
     def test_build_with_truncating_user_name_if_tweet_content_longer_than_140_characters(self):
         builder = self.builder_class()
-        ResponseTemplateFactory(response_type='dumb', syntax='@{{user_name}} anything else')
+        ResponseTemplateFactory(response_type='single_officer', syntax='@{{user_name}} anything else')
         with patch('twitterbot.response_builders.len', return_value=150):
             _, tweet_content, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
             expect(tweet_content).to.eq('anything else')
