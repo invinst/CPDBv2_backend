@@ -117,6 +117,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     @rosette_return([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_not_found(self, _):
+        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
             'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
@@ -124,10 +125,34 @@ class OfficerTweetHandlerTestCase(TestCase):
         )
 
     @rosette_return([('text', 'Raymond Piwnicki')])
-    def test_tweet_context_is_reset(self):
-        self.handler['responses_count'] = 1
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
+    def test_tweet_context_is_reset(self, _):
+        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_called_once()
+        self.client.tweet.assert_called_with(
+            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
+            in_reply_to=1
+        )
+        self.client.tweet.reset_mock()
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_called_with(
+            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
+            in_reply_to=1
+        )
+
+    @rosette_return([('text', 'Raymond Piwnicki')])
+    def test_retweet_mentioning_twitterbot(self):
+        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
+        self.tweet.retweeted_tweet = Mock(user=Mock(id=111))
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_not_called()
+
+    @rosette_return([('text', 'Raymond Piwnicki')])
+    def test_quoted_tweet_mentioning_twitterbot(self):
+        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
+        self.tweet.quoted_tweet = Mock(user=Mock(id=111))
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_not_called()
 
     @rosette_return([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])

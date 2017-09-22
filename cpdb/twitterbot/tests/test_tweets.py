@@ -149,3 +149,12 @@ class TweetTestCase(SimpleTestCase):
 
         tweet = Tweet(original_tweet=Mock(text='anything else'), client=client)
         expect(tweet.is_unfollow_tweet).to.be.false()
+
+    def test_is_mentioning_twitterbot(self):
+        client = MockClientFactory(screen_name='abc')
+
+        tweet = TweetFactory(text='something', mentioned_screen_names=['abc'], client=client)
+        expect(tweet.is_mentioning_twitterbot).to.be.true()
+
+        tweet = TweetFactory(text='something', client=client)
+        expect(tweet.is_mentioning_twitterbot).to.be.false()

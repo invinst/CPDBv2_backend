@@ -58,9 +58,17 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
 
     def get_variables_sets(self, entities, context):
         tweet = context.get('incoming_tweet', None)
-        if context is not None and context.get('responses_count', 0) == 0 and tweet is not None and not (
-                tweet.is_tweet_from_followed_accounts or tweet.is_retweet_of_twitterbot or
-                tweet.is_quoted_tweet_of_twitterbot):
-            yield {
-                '_url': settings.DOMAIN
-            }
+        try:
+            if context.get('responses_count', 0) > 0:
+                raise StopIteration()
+            if tweet.is_retweet_of_twitterbot:
+                raise StopIteration()
+            if tweet.is_quoted_tweet_of_twitterbot:
+                raise StopIteration()
+            if not tweet.is_mentioning_twitterbot:
+                raise StopIteration()
+        except AttributeError:
+            raise StopIteration()
+        yield {
+            '_url': settings.DOMAIN
+        }
