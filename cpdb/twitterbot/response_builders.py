@@ -61,4 +61,6 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
         if context is not None and context.get('responses_count', 0) == 0 and tweet is not None and not (
                 tweet.is_tweet_from_followed_accounts or tweet.is_retweet_of_twitterbot or
                 tweet.is_quoted_tweet_of_twitterbot):
-            yield {}
+            yield {
+                '_url': settings.DOMAIN
+            }

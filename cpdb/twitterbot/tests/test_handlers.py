@@ -115,10 +115,11 @@ class OfficerTweetHandlerTestCase(TestCase):
         )
 
     @rosette_return([('text', 'Raymond Piwnicki')])
-    def test_tweet_not_found(self):
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
+    def test_tweet_not_found(self, _):
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
-            'Sorry, @abc, the bot find nothing',
+            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
             in_reply_to=1
         )
 

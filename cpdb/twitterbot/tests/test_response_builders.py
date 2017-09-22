@@ -127,9 +127,10 @@ class NotFoundResponseBuilderTestCase(TestCase):
             'response_count': 0,
             'incoming_tweet': tweet
         }
-        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([
-            ((), 'Sorry, @abc, the bot find nothing', '')
-        ])
+        with self.settings(DOMAIN='http://foo.co'):
+            expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([
+                ((), 'Sorry, @abc, the bot find nothing', 'http://foo.co')
+            ])
 
     def test_build_with_response(self):
         builder = NotFoundResponseBuilder()
