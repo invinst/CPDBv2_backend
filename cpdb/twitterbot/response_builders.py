@@ -57,8 +57,8 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
     response_type = 'not_found'
 
     def get_variables_sets(self, entities, context):
-        tweet = context.get('incoming_tweet', None)
         try:
+            tweet = context.get('incoming_tweet', None)
             if context.get('responses_count', 0) > 0:
                 raise StopIteration()
             if tweet.is_retweet_of_twitterbot:

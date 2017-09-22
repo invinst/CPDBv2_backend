@@ -237,6 +237,10 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
+    def test_tweet_not_mentioning_twitterbot(self):
+        self.handler.on_tweet(self.tweet)
+        self.client.tweet.assert_not_called()
+
     @rosette_return([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     def test_save_log(self):

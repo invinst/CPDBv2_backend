@@ -136,15 +136,6 @@ class NotFoundResponseBuilderTestCase(TestCase):
         builder = NotFoundResponseBuilder()
         expect(list(builder.build(extra_variables={'user_name': 'abc'}, context={'responses_count': 1}))).to.eq([])
 
-    def test_do_nothing_if_tweet_from_followed_accounts(self):
-        builder = NotFoundResponseBuilder()
-        tweet = Mock(is_tweet_from_followed_accounts=True)
-        context = {
-            'responses_count': 0,
-            'incoming_tweet': tweet
-        }
-        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([])
-
     def test_do_nothing_if_retweet_of_twitterbot(self):
         builder = NotFoundResponseBuilder()
         tweet = Mock(is_retweet_of_twitterbot=True)
@@ -162,3 +153,15 @@ class NotFoundResponseBuilderTestCase(TestCase):
             'incoming_tweet': tweet
         }
         expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([])
+
+    def test_do_nothing_if_there_is_no_incoming_tweet(self):
+        builder = NotFoundResponseBuilder()
+        context = {
+            'responses_count': 0,
+            'incoming_tweet': None
+        }
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([])
+
+    def test_do_nothing_if_there_is_no_context(self):
+        builder = NotFoundResponseBuilder()
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=None))).to.eq([])
