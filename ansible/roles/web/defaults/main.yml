@@ -49,3 +49,5 @@ nvm_dir: "{{ ansible_env.HOME }}/.nvm"
 node_path: "{{ nvm_dir }}/versions/node/v{{ nvm_node_version }}/bin"
 
 visual_token_media_path: "{{ project_path }}/visual_token_media/"
+
+mailgun_api_key: ''

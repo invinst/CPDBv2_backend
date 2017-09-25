@@ -12,9 +12,13 @@ As we use Javascript to render the visual tokens, this task take a lot of time t
 
 There are 3 things the command above does:
 
-- Generate the visual_token and save them in visual_token_media_path (which you can find in ansible/roles/web/defaults/main.yml)
+- Generate the visual_token and save them in `visual_token_media_path` (which you can find in ansible/roles/web/defaults/main.yml)
 - Optimize the images created to make them shrink in size.
 - Upload them to Azure storage
+
+# Setup
+
+If you want to setup before trying to generate visual token, run Ansible playbook with `visual_token` tag. However it is recommended that you re-run Ansible with no tag (mean running everything) when deploy this to production the first time.
 
 # Urls
 

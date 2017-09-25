@@ -2,7 +2,7 @@
   tags: base
 
 - include: install_chromedriver.yml
-  tags: chrome
+  tags: visual_token
 
 - include: setup_pyenv.yml
   tags: pyenv
