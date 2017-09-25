@@ -41,3 +41,6 @@ django_environment:
 newrelic_app_name: "CPDB v2 production"
 
 force_rewrite_env_file: yes
+
+twitterbot_newrelic_environment: development
+twitterbot_newrelic_app_name: Twitterbot
