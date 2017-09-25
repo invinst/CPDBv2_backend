@@ -9,7 +9,7 @@ from freezegun import freeze_time
 from django.test import SimpleTestCase
 
 from data_importer.base.cleaner import DataCleaner, ToBool, ToNaN, ToDateTime, ToDate, ZFill, Just, strip, \
-    capitalise_generation_suffix, clean_name, titleize, to_int, ignore_null
+    capitalise_generation_suffix, clean_name, titleize, to_int, ignore_null, lower
 
 
 class DataCleanerTestCase(SimpleTestCase):
@@ -132,3 +132,9 @@ class IgnoreNullTestCase(SimpleTestCase):
 
         expect(ignore_null(foo)(None)).to.be.eq(None)
         expect(ignore_null(foo)(2)).to.be.eq(1)
+
+
+class LowerTestCase(SimpleTestCase):
+    def test_call(self):
+        expect(lower(None)).to.be.none()
+        expect(lower('Foo')).to.be.eq('foo')
