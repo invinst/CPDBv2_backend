@@ -39,3 +39,5 @@ ansible/external-roles
 
 data_source
 .ipynb_checkpoints
+
+twitterbot-nl-api.json
