@@ -4,7 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from tqdm import tqdm, tqdm_notebook
 
 from data.utils.clean_name import fix_typo_o, correct_title, remove_wrong_spacing, correct_irish_name, \
     correct_suffix_dot, correct_suffix_jr_sr, correct_initial, capitalise_generation_suffix
@@ -149,9 +149,14 @@ class DataCleaner(object):
     def __init__(self, schema):
         self.schema = schema or {}
 
+    def _clean(self, target, cleans):
+        for clean in cleans:
+            target = clean(target)
+        return target
+
     def perform(self, df):
-        for key, cleans in tqdm(self.schema.items()):
-            for clean in cleans:
-                df[key] = df.apply(lambda x: clean(x.get(key, np.NaN)), axis=1)
+        tqdm.pandas(tqdm_notebook(), desc='Clean data')
+        for key, cleans in self.schema.items():
+            df[key] = df[key].progress_apply(lambda x: self._clean(x, cleans))
 
         return df
