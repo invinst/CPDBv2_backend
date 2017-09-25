@@ -642,3 +642,17 @@ class AttachmentFile(models.Model):
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)
+
+
+class Award(models.Model):
+    officer = models.ForeignKey(Officer)
+    type = models.CharField(max_length=255)
+    incident_start_date = models.DateField(null=True)
+    incident_end_date = models.DateField(null=True)
+    current_status = models.CharField(max_length=20)
+    request_date = models.DateField()
+    rank = models.CharField(max_length=100, blank=True)
+    last_promotion_date = models.DateField(null=True)
+    requester_full_name = models.CharField(max_length=255, null=True)
+    ceremony_date = models.DateField(null=True)
+    tracking_no = models.BigIntegerField(null=True)
