@@ -247,14 +247,6 @@ LOGGING = {
             'maxBytes': 1024*1024*10,  # 10MB
             'backupCount': 10,
             'formatter': 'standard',
-        },
-        'twitterbot': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/pyenv/versions/cpdb/logs/twitterbot.log',
-            'maxBytes': 1024*1024*100,  # 100MB
-            'backupCount': 10,
-            'formatter': 'standard'
         }
     },
     'loggers': {
@@ -262,10 +254,6 @@ LOGGING = {
             'handlers': ['error-file'],
             'level': 'ERROR',
             'propagate': True,
-        },
-        'twitterbot': {
-            'handlers': ['twitterbot'],
-            'level': 'INFO'
         }
     },
 }
