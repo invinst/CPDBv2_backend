@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import groupby
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -6,6 +7,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 from django.utils.text import slugify
 from django.db.models import F
+from django.db.models.functions import ExtractYear
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -128,7 +130,6 @@ class PoliceUnit(TaggableModel):
                     )
                 )
             )
-
         return list(query_set)
 
     @property
@@ -281,11 +282,13 @@ class Officer(TaggableModel):
 
     @property
     def allegation_count(self):
-        return self.officerallegation_set.all().distinct().count()
+        # return self.officerallegation_set.all().distinct().count()
+        return self.officerallegation_set.filter(start_date__isnull=False).distinct().count()
 
     @property
     def sustained_count(self):
-        return self.officerallegation_set.filter(final_finding='SU').distinct().count()
+        # return self.officerallegation_set.filter(final_finding='SU').distinct().count()
+        return self.officerallegation_set.filter(start_date__isnull=False, final_finding='SU').distinct().count()
 
     @property
     def v1_url(self):
@@ -298,72 +301,153 @@ class Officer(TaggableModel):
         except IndexError:
             return None
 
+    @staticmethod
+    def _group_and_sort_aggregations(data, key_name='name'):
+        """
+        Helper to group by name, aggregate count & sustained_counts.
+        Also makes sure 'Unknown' group is always the last item.
+        """
+        groups = []
+        unknown_group = None
+        for k, g in groupby(data, lambda x: x[key_name]):
+            group = {'name': k, 'count': 0, 'sustained_count': 0, 'items': []}
+            for item in g:
+                group['items'].append(item)
+                group['count'] += item['count']
+                item['count'] = group['count']
+                group['sustained_count'] += item['sustained_count']
+                item['sustained_count'] = group['sustained_count']
+            if k != 'Unknown':
+                groups.append(group)
+            else:
+                unknown_group = group
+
+        if unknown_group is not None:
+            groups.append(unknown_group)
+
+        return groups
+
     @property
     def complaint_category_aggregation(self):
-        return list(
-            self.officerallegation_set
-                .annotate(
-                    name=models.Case(
-                        models.When(allegation_category__category__isnull=True, then=models.Value('Unknown')),
-                        default='allegation_category__category',
-                        output_field=models.CharField()))
-                .values('name')
-                .annotate(
-                    count=models.Count('name'),
-                    sustained_count=models.Sum(models.Case(
-                        models.When(final_finding='SU', then=1), default=models.Value(0),
-                        output_field=models.IntegerField()))))
+        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = query.annotate(
+            name=models.Case(
+                models.When(
+                    allegation_category__category__isnull=True, then=models.Value('Unknown')),
+                default='allegation_category__category',
+                output_field=models.CharField()),
+            year=ExtractYear('start_date'))
+        query = query.values('name', 'year').order_by('name', 'year').annotate(
+            count=models.Count('name'),
+            sustained_count=models.Sum(models.Case(
+                models.When(final_finding='SU', then=1), default=models.Value(0),
+                output_field=models.IntegerField())))
+
+        return Officer._group_and_sort_aggregations(list(query))
 
     @property
     def complainant_race_aggregation(self):
-        return list(
-            self.officerallegation_set
-                .annotate(name=models.Case(
-                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                    models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
-                    default='allegation__complainant__race',
-                    output_field=models.CharField()))
-                .values('name')
-                .annotate(
-                    count=models.Count('name'),
-                    sustained_count=models.Sum(models.Case(
-                        models.When(final_finding='SU', then=1), default=models.Value(0),
-                        output_field=models.IntegerField()))))
+        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = query.annotate(
+            name=models.Case(
+                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='allegation__complainant__race',
+                output_field=models.CharField()
+            ),
+            year=ExtractYear('start_date'),
+        )
+        query = query.values('name', 'year').order_by('name', 'year').annotate(
+            count=models.Count('name'),
+            sustained_count=models.Sum(
+                models.Case(
+                    models.When(final_finding='SU', then=1),
+                    default=models.Value(0),
+                    output_field=models.IntegerField()
+                )
+            )
+        )
+        return Officer._group_and_sort_aggregations(list(query))
 
     @property
     def complainant_age_aggregation(self):
-        return list(
-            self.officerallegation_set
-                .annotate(name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]))
-                .values('name')
-                .annotate(
-                    count=models.Count('name'),
-                    sustained_count=models.Sum(models.Case(
-                        models.When(final_finding='SU', then=1), default=models.Value(0),
-                        output_field=models.IntegerField()))))
+        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = query.annotate(
+            name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]),
+            year=ExtractYear('start_date')
+        )
+        query = query.values('name', 'year').order_by('name', 'year').annotate(
+            count=models.Count('name'),
+            sustained_count=models.Sum(
+                models.Case(
+                    models.When(final_finding='SU', then=1),
+                    default=models.Value(0),
+                    output_field=models.IntegerField()
+                )
+            )
+        )
+        return Officer._group_and_sort_aggregations(list(query))
 
     @property
     def complainant_gender_aggregation(self):
-        aggregation = self.officerallegation_set.values('allegation__complainant__gender') \
-            .annotate(complainant_gender=models.Case(
-                    models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
-                    models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                    default='allegation__complainant__gender',
-                    output_field=models.CharField()
-                )) \
-            .values('complainant_gender') \
-            .annotate(count=models.Count('complainant_gender'), sustained_count=models.Sum(models.Case(
-                    models.When(final_finding='SU', then=1), default=models.Value(0),
-                    output_field=models.IntegerField())))
 
-        return [
+        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = query.values('allegation__complainant__gender').annotate(
+            complainant_gender=models.Case(
+                models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
+                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                default='allegation__complainant__gender',
+                output_field=models.CharField()
+            ),
+            year=ExtractYear('start_date')
+        )
+        query = query.values('complainant_gender', 'year').order_by('complainant_gender', 'year').annotate(
+            count=models.Count('complainant_gender'),
+            sustained_count=models.Sum(
+                models.Case(
+                    models.When(final_finding='SU', then=1),
+                    default=models.Value(0),
+                    output_field=models.IntegerField()
+                )
+            )
+        )
+
+        data = [
             {
                 'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
                 'sustained_count': obj['sustained_count'],
-                'count': obj['count']
+                'count': obj['count'],
+                'year': obj['year']
             }
-            for obj in aggregation if obj['count'] > 0
+            for obj in query if obj['count'] > 0
         ]
+        return Officer._group_and_sort_aggregations(data)
+
+    @property
+    def total_complaints_aggregation(self):
+        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = query.annotate(year=ExtractYear('start_date'))
+        query = query.values('year').order_by('year').annotate(
+            count=models.Count('year'),
+            sustained_count=models.Sum(
+                models.Case(
+                    models.When(final_finding='SU', then=1),
+                    default=models.Value(0),
+                    output_field=models.IntegerField()
+                )
+            )
+        )
+
+        count = 0
+        sustained_count = 0
+        results = list(query)
+        for year in results:
+            count += year['count']
+            year['count'] = count
+            sustained_count += year['sustained_count']
+            year['sustained_count'] = sustained_count
+
+        return results
 
     @property
     def v2_to(self):

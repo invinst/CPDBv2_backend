@@ -33,32 +33,45 @@ class OfficersIndexerTestCase(SimpleTestCase):
         officer.appointed_date = date(2017, 2, 27)
         officer.allegation_count = 1
         officer.sustained_count = 0
+        officer.total_complaints_aggregation = [{'year': 2000, 'count': 1, 'sustained_count': 0}]
         officer.complaint_category_aggregation = [
             {
                 'name': 'Illegal Search',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_race_aggregation = [
             {
                 'name': 'White',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_age_aggregation = [
             {
                 'name': '<20',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_gender_aggregation = [
             {
                 'name': 'Male',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
 
@@ -74,22 +87,31 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 0,
+                'items': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
                 'facets': [
                     {
                         'name': 'category',
-                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant gender',
-                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     }
                 ]
             }
