@@ -18,11 +18,11 @@ from twitterbot.models import ResponseTemplate
 from twitterbot.models import TwitterBotResponseLog
 
 
-def rosette_return(value):
+def namepaser_returns(value):
     def _decorator(func):
         @wraps(func)
         def func_wrapper(*args, **kwargs):
-            with patch('twitterbot.name_parsers.RosettePersonNameParser.parse', return_value=value):
+            with patch('twitterbot.name_parsers.GoogleNaturalLanguageNameParser.parse', return_value=value):
                 return func(*args, **kwargs)
         return func_wrapper
     return _decorator
@@ -60,7 +60,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
     def test_tweet_officer_in_tweet_text(self, _):
@@ -71,7 +71,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             in_reply_to=1
         )
 
-    @rosette_return([('#jeromeFinnigan', 'Jerome Finnigan')])
+    @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
     def test_tweet_officer_in_tweet_hashtags(self, _):
         self.tweet.entities['hashtags'] = [{'text': 'jeromeFinnigan'}]
@@ -81,7 +81,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             in_reply_to=1
         )
 
-    @rosette_return([('http://fakeurl.com', 'Jerome Finnigan')])
+    @namepaser_returns([('http://fakeurl.com', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
     def test_tweet_officer_in_tweet_link_content(self, _):
         self.tweet.entities['urls'] = [{'expanded_url': 'http://fakeurl.com'}]
@@ -92,7 +92,7 @@ class OfficerTweetHandlerTestCase(TestCase):
                 in_reply_to=1
             )
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_mention_recipients(self, _):
         self.tweet.entities['user_mentions'] = [{'screen_name': 'def'}]
@@ -102,7 +102,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
         ])
 
-    @rosette_return([('text', 'Jerome Finnigan'), ('text', 'Raymond Piwnicki')])
+    @namepaser_returns([('text', 'Jerome Finnigan'), ('text', 'Raymond Piwnicki')])
     def test_tweet_coaccused_pair(self):
         OfficerAllegationFactory(
             officer=OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki'),
@@ -114,7 +114,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             in_reply_to=1
         )
 
-    @rosette_return([('text', 'Raymond Piwnicki')])
+    @namepaser_returns([('text', 'Raymond Piwnicki')])
     def test_tweet_not_found(self):
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
@@ -122,7 +122,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             in_reply_to=1
         )
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_officer_in_replied_tweet(self, _):
         replied_tweet = Mock(
@@ -142,7 +142,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
         ])
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_officer_in_retweet_tweet(self, _):
         retweeted_tweet = Mock(
@@ -162,7 +162,7 @@ class OfficerTweetHandlerTestCase(TestCase):
             call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=2)
         ])
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch(
         'twitterbot.models.TwitterBotResponseLog.objects.create',
         side_effect=[Mock(id=10), Mock(id=20), Mock(id=30), Mock(id=40)])
@@ -205,7 +205,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     def test_save_log(self):
         self.tweet.text = '@CPDPbot Jerome Finnigan'
@@ -227,7 +227,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         expect(response_log.original_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
         expect(response_log.status).to.eq(TwitterBotResponseLog.SENT)
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=1))
     def test_character_limit_error(self, _):
         self.client.tweet = Mock(side_effect=CharacterLimitError)
@@ -237,7 +237,7 @@ class OfficerTweetHandlerTestCase(TestCase):
                 'Tweet is too long - '
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=1')
 
-    @rosette_return([('text', 'Jerome Finnigan')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=1))
     def test_status_duplicate_error(self, _):
         self.client.tweet = Mock(side_effect=StatusDuplicateError)
