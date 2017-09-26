@@ -4,7 +4,7 @@ import datetime
 from django.test import SimpleTestCase, TestCase, override_settings
 
 import pytz
-from mock import Mock, patch, call
+from mock import Mock, patch
 from robber import expect
 from freezegun import freeze_time
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
@@ -14,6 +14,7 @@ from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationF
 from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler
 from twitterbot.factories import ResponseTemplateFactory, MockClientFactory
 from twitterbot.tweets import Tweet
+from twitterbot import handlers as twitterbot_handlers
 from twitterbot.models import ResponseTemplate
 from twitterbot.models import TwitterBotResponseLog
 
@@ -60,15 +61,26 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
 
+        self._old_requests = twitterbot_handlers.requests
+        twitterbot_handlers.requests = Mock()
+        self._old_NamedTemporaryFile = twitterbot_handlers.NamedTemporaryFile
+        twitterbot_handlers.NamedTemporaryFile = Mock()
+
+    def tearDown(self):
+        twitterbot_handlers.requests = self._old_requests
+        twitterbot_handlers.NamedTemporaryFile = self._old_NamedTemporaryFile
+
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
     def test_tweet_officer_in_tweet_text(self, _):
         self.tweet.text = '@CPDPbot Jerome Finnigan'
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_called_with(
+        expect(self.client.tweet).to.be.called_with(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-            in_reply_to=1
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
         )
 
     @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
@@ -76,9 +88,11 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_tweet_officer_in_tweet_hashtags(self, _):
         self.tweet.entities['hashtags'] = [{'text': 'jeromeFinnigan'}]
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_called_with(
+        expect(self.client.tweet).to.be.called_with(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-            in_reply_to=1
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
         )
 
     @namepaser_returns([('http://fakeurl.com', 'Jerome Finnigan')])
@@ -87,9 +101,11 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.tweet.entities['urls'] = [{'expanded_url': 'http://fakeurl.com'}]
         with patch('twitterbot.utils.web_parsing.parse', return_value='Chicago Police Jerome Finnigan'):
             self.handler.on_tweet(self.tweet)
-            self.client.tweet.assert_called_with(
+            expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=twitterbot_handlers.NamedTemporaryFile()
             )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
@@ -97,10 +113,18 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_tweet_mention_recipients(self, _):
         self.tweet.entities['user_mentions'] = [{'screen_name': 'def'}]
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
-        ])
+        expect(self.client.tweet).to.be.any_call(
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
+        expect(self.client.tweet).to.be.any_call(
+            '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
 
     @namepaser_returns([('text', 'Jerome Finnigan'), ('text', 'Raymond Piwnicki')])
     def test_tweet_coaccused_pair(self):
@@ -109,9 +133,9 @@ class OfficerTweetHandlerTestCase(TestCase):
             allegation=self.allegation
         )
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_called_with(
+        expect(self.client.tweet).to.be.called_with(
             '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
-            in_reply_to=1
+            in_reply_to=1,
         )
 
     @namepaser_returns([('text', 'Raymond Piwnicki')])
@@ -137,10 +161,18 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.tweet.in_reply_to_tweet_id = 2
         self.client.register(Tweet(original_tweet=replied_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
-        ])
+        expect(self.client.tweet).to.be.any_call(
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
+        expect(self.client.tweet).to.be.any_call(
+            '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
@@ -157,10 +189,18 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.tweet.retweeted_tweet = retweeted_tweet
         self.client.register(Tweet(original_tweet=retweeted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=2),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=2)
-        ])
+        expect(self.client.tweet).to.be.any_call(
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+            in_reply_to=2,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
+        expect(self.client.tweet).to.be.any_call(
+            '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
+            in_reply_to=2,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch(
@@ -179,20 +219,36 @@ class OfficerTweetHandlerTestCase(TestCase):
         self.tweet.quoted_tweet = quoted_tweet
         self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20', in_reply_to=1)
-        ])
+        expect(self.client.tweet).to.be.any_call(
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
+        expect(self.client.tweet).to.be.any_call(
+            '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
 
         self.client.tweet.reset_mock()
         self.tweet.quoted_tweet = None
         self.tweet.quoted_tweet_id = 2
         self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
         self.handler.on_tweet(self.tweet)
-        self.client.tweet.assert_has_calls([
-            call('@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=30', in_reply_to=1),
-            call('@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=40', in_reply_to=1)
-        ])
+        expect(self.client.tweet).to.be.any_call(
+            '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=30',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
+        expect(self.client.tweet).to.be.any_call(
+            '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=40',
+            in_reply_to=1,
+            filename='officer_1.png',
+            file=twitterbot_handlers.NamedTemporaryFile()
+        )
 
     def test_filter_tweets_from_other_bots(self):
         tweets = [Mock(user=Mock(id=bot)) for bot in [30582622, 4880788160, 4923697764]]

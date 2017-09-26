@@ -1,10 +1,12 @@
 import itertools
 import logging
+from tempfile import NamedTemporaryFile
 
 from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
 from nameparser.parser import HumanName
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
+import requests
 
 from data.models import Officer
 
@@ -42,7 +44,7 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
         return results
 
     def tweet(self, response):
-        sources, tweet_content, entity_url = response
+        sources, tweet_content, entity_url, media_url = response
         original_tweet = self._context['original_tweet']
         incoming_tweet = self._context['incoming_tweet']
 
@@ -61,7 +63,17 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             tweet_content = '%s %s' % (tweet_content, entity_url)
 
         try:
-            outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
+            if media_url:
+                file_name = media_url.split('/')[-1]
+                media_file = requests.get(media_url)
+                tmp_file = NamedTemporaryFile(delete=False)
+                tmp_file.write(media_file.content)
+                outgoing_tweet = self.client.tweet(
+                    tweet_content, in_reply_to=self._context['first_non_retweet'].id,
+                    filename=file_name, file=tmp_file)
+                tmp_file.close()
+            else:
+                outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
         except CharacterLimitError:
             logger.error('Tweet is too long - %s' % tweet_content)
             return

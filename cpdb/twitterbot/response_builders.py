@@ -21,9 +21,10 @@ class BaseResponseBuilder:
             source = variables_set.get('source', ())
             url = variables_set.get('_url', '')
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
+            media_url = variables_set.get('_media_url', '')
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
-            yield (source, tweet_content, url)
+            yield (source, tweet_content, url, media_url)
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
@@ -34,7 +35,8 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
             yield {
                 'officer': officer,
                 '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
-                'source': (source, )
+                'source': (source, ),
+                '_media_url': officer.visual_token_png
             }
 
 

@@ -26,7 +26,7 @@ class BaseResponseBuilderTestCase(TestCase):
         builder = self.builder_class()
 
         with patch('twitterbot.response_builders.random.choice', return_value=Mock(syntax='a is {{number}}')):
-            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([((), 'a is 18', '')])
+            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([((), 'a is 18', '', '')])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
         builder = self.builder_class()
@@ -36,7 +36,7 @@ class BaseResponseBuilderTestCase(TestCase):
 
         context = dict()
 
-        expect(list(builder.build(context=context))).to.eq([((), 'b', '')])
+        expect(list(builder.build(context=context))).to.eq([((), 'b', '', '')])
 
         expect(context['responses_count']).to.eq(1)
 
@@ -44,7 +44,7 @@ class BaseResponseBuilderTestCase(TestCase):
         builder = self.builder_class()
         ResponseTemplateFactory(response_type='dumb', syntax='@{{user_name}} anything else')
         with patch('twitterbot.response_builders.len', return_value=150):
-            _, tweet_content, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
+            _, tweet_content, _, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
             expect(tweet_content).to.eq('anything else')
 
 
@@ -53,9 +53,13 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
         ResponseTemplate.objects.all().delete()
 
     def test_build(self):
-        officer1 = Mock(full_name='Jerome Finnigan', complaints=3)
+        officer1 = Mock(
+            full_name='Jerome Finnigan', complaints=3,
+            visual_token_png='https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png')
         officer1.get_absolute_url = Mock(return_value='/officer/1/')
-        officer2 = Mock(full_name='Raymond Piwnicki', complaints=0)
+        officer2 = Mock(
+            full_name='Raymond Piwnicki', complaints=0,
+            visual_token_png='https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png')
         officer2.get_absolute_url = Mock(return_value='/officer/2/')
 
         ResponseTemplateFactory(
@@ -68,9 +72,11 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
         with self.settings(DOMAIN='http://foo.co'):
             expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([
                 (('source1',), '@abc Jerome Finnigan has 3 complaints',
-                    'http://foo.co/officer/1/'),
+                    'http://foo.co/officer/1/',
+                    'https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png'),
                 (('source2',), '@abc Raymond Piwnicki has 0 complaints',
-                    'http://foo.co/officer/2/')
+                    'http://foo.co/officer/2/',
+                    'https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png')
             ])
 
 
@@ -103,7 +109,7 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
             [('source1', officer1), ('source2', officer2), ('source3', officer3)],
             {'user_name': 'abc'}))
         ).to.eq([
-            (('source1', 'source2'), '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case', '')
+            (('source1', 'source2'), '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case', '', '')
         ])
 
 
@@ -125,7 +131,7 @@ class NotFoundResponseBuilderTestCase(TestCase):
             'incoming_tweet': tweet
         }
         expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([
-            ((), 'Sorry, @abc, the bot find nothing', '')
+            ((), 'Sorry, @abc, the bot find nothing', '', '')
         ])
 
     def test_build_with_response(self):
