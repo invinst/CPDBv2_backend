@@ -9,7 +9,7 @@ from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateEr
 from data.models import Officer
 
 from .recipient_extractors import TweetAuthorRecipientExtractor, TweetMentionRecipientExtractor
-from .name_parsers import RosettePersonNameParser
+from .name_parsers import GoogleNaturalLanguageNameParser
 from .response_builders import (
     SingleOfficerResponseBuilder, CoaccusedPairResponseBuilder, NotFoundResponseBuilder
 )
@@ -130,7 +130,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
         lambda tweet: not tweet.is_unfollow_tweet
     ]
     response_loggers = [DatabaseResponseLogger()]
-    name_parser = RosettePersonNameParser()
+    name_parser = GoogleNaturalLanguageNameParser()
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()

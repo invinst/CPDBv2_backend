@@ -231,8 +231,6 @@ V1_URL = 'https://beta.cpdb.co'
 
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
-ROSETTE_API_KEY = env.str('ROSETTE_API_KEY', default='')
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

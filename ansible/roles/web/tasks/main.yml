@@ -36,5 +36,8 @@
   tags: cron
   when: enable_cron_job
 
+- include: setup_twitterbot.yml
+  tags: twitterbot
+
 - include: install_azcopy_and_optipng.yml
   tags: visual_token

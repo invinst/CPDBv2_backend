@@ -40,8 +40,8 @@ ansible/external-roles
 data_source
 .ipynb_checkpoints
 
-# Npm
-node_modules/
+twitterbot-nl-api.json
+
 .tmp/
 
 test_visual_token_media
