@@ -609,3 +609,19 @@ class AttachmentFile(models.Model):
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)
+
+
+class AttachmentRequest(models.Model):
+    allegation = models.ForeignKey(Allegation)
+    email = models.EmailField(max_length=255)
+    status = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (('allegation', 'email'),)
+
+    def __str__(self):
+        return '%s - %s' % (self.email, self.allegation.crid)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(AttachmentRequest, self).save(*args, **kwargs)
