@@ -13,3 +13,11 @@ NOSE_PLUGINS = [
 ]
 
 INSTALLED_APPS += ('snapshot_test',)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {},
+    'handlers': {},
+    'loggers': {}
+}

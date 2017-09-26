@@ -12,6 +12,7 @@ application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
 requirements_file: "{{ project_root_path }}/requirements/base.txt"
 staticfiles_dir: "{{ project_path }}/static"
+newrelic_admin_path: "{{ virtualenv_path }}/bin/newrelic-admin"
 
 # Gunicorn settings
 deploy_user: vagrant
@@ -41,6 +42,8 @@ newrelic_app_name: "CPDB v2 production"
 
 force_rewrite_env_file: yes
 
+twitterbot_newrelic_environment: development
+twitterbot_newrelic_app_name: Twitterbot
 yarn_version: "0.23.4"
 nvm_version: "v0.33.2"
 npm_version: "3.10.10"

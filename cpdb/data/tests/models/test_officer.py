@@ -23,6 +23,9 @@ class OfficerTestCase(TestCase):
     def test_v2_to(self):
         expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
 
+    def test_get_absolute_url(self):
+        expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
+
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
         expect(officer.current_badge).to.equal('')
@@ -139,6 +142,13 @@ class OfficerTestCase(TestCase):
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
+
+    def test_discipline_count(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory(officer=officer, final_outcome='100')
+        OfficerAllegationFactory(officer=officer, final_outcome='600')
+        OfficerAllegationFactory(officer=officer, final_outcome='')
+        expect(officer.discipline_count).to.eq(1)
 
     def test_visual_token_background_color(self):
         crs_colors = [

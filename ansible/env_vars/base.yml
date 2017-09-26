@@ -10,6 +10,7 @@ ssl_dest_dir: /etc/ssl
 run_rebuild_index: yes
 run_django_db_migrations: yes
 run_django_collectstatic: yes
+run_twitterbot: yes
 
 frontend_static_dir: /www/static/
 
