@@ -163,3 +163,7 @@ class OfficerTestCase(TestCase):
             officer = OfficerFactory()
             OfficerAllegationFactory.create_batch(cr, officer=officer)
             expect(officer.visual_token_background_color).to.eq(color)
+
+    def test_visual_token_png(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')

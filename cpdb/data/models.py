@@ -392,6 +392,12 @@ class Officer(TaggableModel):
             cr_threshold=cr_threshold
         )]
 
+    @property
+    def visual_token_png(self):
+        return 'https://{account_name}.blob.core.windows.net/visual-token/officer_{id}.png'.format(
+            account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
+        )
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
