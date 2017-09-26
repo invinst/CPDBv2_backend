@@ -43,7 +43,10 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
         return results
 
     def tweet(self, response):
-        sources, tweet_content, entity_url, media_url = response
+        sources = response['source']
+        tweet_content = response['tweet_content']
+        entity_url = response['url']
+        media_url = response['media_url']
         original_tweet = self._context['original_tweet']
         incoming_tweet = self._context['incoming_tweet']
 

@@ -24,7 +24,12 @@ class BaseResponseBuilder:
             media_url = variables_set.get('_media_url', '')
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
-            yield (source, tweet_content, url, media_url)
+            yield {
+                'source': source,
+                'tweet_content': tweet_content,
+                'url': url,
+                'media_url': media_url,
+            }
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):

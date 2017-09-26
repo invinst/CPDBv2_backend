@@ -26,7 +26,12 @@ class BaseResponseBuilderTestCase(TestCase):
         builder = self.builder_class()
 
         with patch('twitterbot.response_builders.random.choice', return_value=Mock(syntax='a is {{number}}')):
-            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([((), 'a is 18', '', '')])
+            expect(list(builder.build(extra_variables={'number': 18}))).to.eq([{
+                'source': (),
+                'tweet_content': 'a is 18',
+                'url': '',
+                'media_url': ''
+            }])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
         builder = self.builder_class()
@@ -36,7 +41,12 @@ class BaseResponseBuilderTestCase(TestCase):
 
         context = dict()
 
-        expect(list(builder.build(context=context))).to.eq([((), 'b', '', '')])
+        expect(list(builder.build(context=context))).to.eq([{
+            'source': (),
+            'tweet_content': 'b',
+            'url': '',
+            'media_url': ''
+        }])
 
         expect(context['responses_count']).to.eq(1)
 
@@ -44,7 +54,9 @@ class BaseResponseBuilderTestCase(TestCase):
         builder = self.builder_class()
         ResponseTemplateFactory(response_type='dumb', syntax='@{{user_name}} anything else')
         with patch('twitterbot.response_builders.len', return_value=150):
-            _, tweet_content, _, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
+            # _, tweet_content, _, _ = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
+            first_built = list(builder.build(extra_variables={'user_name': 'abc'}))[0]
+            tweet_content = first_built['tweet_content']
             expect(tweet_content).to.eq('anything else')
 
 
@@ -70,14 +82,17 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
         officers = [('source1', officer1), ('source2', officer2)]
 
         with self.settings(DOMAIN='http://foo.co'):
-            expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([
-                (('source1',), '@abc Jerome Finnigan has 3 complaints',
-                    'http://foo.co/officer/1/',
-                    'https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png'),
-                (('source2',), '@abc Raymond Piwnicki has 0 complaints',
-                    'http://foo.co/officer/2/',
-                    'https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png')
-            ])
+            expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([{
+                'source': ('source1',),
+                'tweet_content': '@abc Jerome Finnigan has 3 complaints',
+                'url': 'http://foo.co/officer/1/',
+                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png'
+            }, {
+                'source': ('source2',),
+                'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
+                'url': 'http://foo.co/officer/2/',
+                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png'
+            }])
 
 
 class CoaccusedPairResponseBuilderTestCase(TestCase):
@@ -108,9 +123,12 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
         expect(list(builder.build(
             [('source1', officer1), ('source2', officer2), ('source3', officer3)],
             {'user_name': 'abc'}))
-        ).to.eq([
-            (('source1', 'source2'), '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case', '', '')
-        ])
+        ).to.eq([{
+            'source': ('source1', 'source2'),
+            'tweet_content': '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
+            'url': '',
+            'media_url': ''
+        }])
 
 
 class NotFoundResponseBuilderTestCase(TestCase):
@@ -130,9 +148,12 @@ class NotFoundResponseBuilderTestCase(TestCase):
             'response_count': 0,
             'incoming_tweet': tweet
         }
-        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([
-            ((), 'Sorry, @abc, the bot find nothing', '', '')
-        ])
+        expect(list(builder.build(extra_variables={'user_name': 'abc'}, context=context))).to.eq([{
+            'source': (),
+            'tweet_content': 'Sorry, @abc, the bot find nothing',
+            'url': '',
+            'media_url': ''
+        }])
 
     def test_build_with_response(self):
         builder = NotFoundResponseBuilder()
