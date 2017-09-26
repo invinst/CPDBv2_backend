@@ -1,21 +1,21 @@
 import os
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.conf import settings
-from django.utils.text import slugify
 from django.db.models import F
+from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES)
+    DISCIPLINE_CODES
+)
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
-
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
@@ -453,11 +453,9 @@ class LineArea(models.Model):
 
 class Investigator(models.Model):
     raw_name = models.CharField(max_length=160)
-    name = models.CharField(max_length=160)
+    name = models.CharField(max_length=160, blank=True)
     current_rank = models.CharField(max_length=50, blank=True)
-    current_report = models.CharField(max_length=4, blank=True)
     unit = models.ForeignKey(PoliceUnit, null=True)
-    agency = models.CharField(choices=AGENCY_CHOICES, max_length=10)
 
 
 class Allegation(models.Model):
