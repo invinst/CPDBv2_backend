@@ -18,7 +18,6 @@ from .response_builders import (
 from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from .tweet_extractors import RelatedTweetExtractor
 from .tweets import Tweet
-from .response_loggers import DatabaseResponseLogger
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
@@ -141,7 +140,6 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
         lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,
         lambda tweet: not tweet.is_unfollow_tweet
     ]
-    response_loggers = [DatabaseResponseLogger()]
     name_parser = GoogleNaturalLanguageNameParser()
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
