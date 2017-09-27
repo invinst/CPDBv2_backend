@@ -21,6 +21,7 @@ from .tweets import Tweet
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
+from .post_processors import ActivityGridUpdater
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,8 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             responses = builder.build(officers, {'user_name': recipient}, self._context)
             for response in responses:
                 self.tweet(response)
+                for processor in self.post_processors:
+                    processor.process(response)
 
 
 class CPDBEventHandler(BaseEventHandler):
@@ -147,6 +150,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
         )
+    post_processors = (ActivityGridUpdater(),)
 
 
 @register_handler

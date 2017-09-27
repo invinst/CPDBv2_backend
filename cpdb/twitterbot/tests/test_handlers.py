@@ -9,6 +9,7 @@ from robber import expect
 from freezegun import freeze_time
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
 
+from activity_grid.models import ActivityCard
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 
 from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler
@@ -82,6 +83,8 @@ class OfficerTweetHandlerTestCase(TestCase):
             filename='officer_1.png',
             file=twitterbot_handlers.NamedTemporaryFile()
         )
+        expect(ActivityCard.objects.get(officer=self.officer).last_activity).to.eq(
+            datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
 
     @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))

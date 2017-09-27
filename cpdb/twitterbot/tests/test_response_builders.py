@@ -31,25 +31,33 @@ class BaseResponseBuilderTestCase(TestCase):
             'source': (),
             'tweet_content': 'temp1',
             'url': '',
-            'media_url': ''
+            'type': 'single_officer',
+            'media_url': '',
+            'entity': None,
         }])
         expect(list(builder.build(extra_variables={'user_name': 'def'}))).to.eq([{
             'source': (),
             'tweet_content': 'temp1',
             'url': '',
-            'media_url': ''
+            'type': 'single_officer',
+            'media_url': '',
+            'entity': None,
         }])
         expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([{
             'source': (),
             'tweet_content': 'temp2',
             'url': '',
-            'media_url': ''
+            'type': 'single_officer',
+            'media_url': '',
+            'entity': None,
         }])
         expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([{
             'source': (),
             'tweet_content': 'temp1',
             'url': '',
-            'media_url': ''
+            'type': 'single_officer',
+            'media_url': '',
+            'entity': None,
         }])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
@@ -64,7 +72,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'source': (),
             'tweet_content': 'b',
             'url': '',
-            'media_url': ''
+            'type': 'single_officer',
+            'media_url': '',
+            'entity': None,
         }])
 
         expect(context['responses_count']).to.eq(1)
@@ -104,12 +114,16 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'source': ('source1',),
                 'tweet_content': '@abc Jerome Finnigan has 3 complaints',
                 'url': 'http://foo.co/officer/1/',
-                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png'
+                'type': 'single_officer',
+                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_1.png',
+                'entity': officer1,
             }, {
                 'source': ('source2',),
                 'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
                 'url': 'http://foo.co/officer/2/',
-                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png'
+                'type': 'single_officer',
+                'media_url': 'https://cpdbdev.blob.core.windows.net/visual-token/officer_2.png',
+                'entity': officer2,
             }])
 
 
@@ -145,7 +159,9 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
             'source': ('source1', 'source2'),
             'tweet_content': '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
             'url': '',
-            'media_url': ''
+            'type': 'coaccused_pair',
+            'media_url': '',
+            'entity': None,
         }])
 
 
@@ -171,7 +187,9 @@ class NotFoundResponseBuilderTestCase(TestCase):
                 'source': (),
                 'tweet_content': 'Sorry, @abc, the bot find nothing',
                 'url': 'http://foo.co',
-                'media_url': ''
+                'type': 'not_found',
+                'media_url': '',
+                'entity': None,
             }])
 
     def test_build_with_response(self):

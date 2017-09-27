@@ -3,6 +3,7 @@ import itertools
 from django.conf import settings
 from django.template import Context, Template
 
+from .models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR, TYPE_NOT_FOUND
 from data.models import Allegation
 from twitterbot.models import TweetResponseRoundRobin
 
@@ -21,23 +22,27 @@ class BaseResponseBuilder:
             url = variables_set.get('_url', '')
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
             media_url = variables_set.get('_media_url', '')
+            entity = variables_set.get('_entity', None)
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
             yield {
                 'source': source,
                 'tweet_content': tweet_content,
+                'entity': entity,
                 'url': url,
+                'type': self.response_type,
                 'media_url': media_url,
             }
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
-    response_type = 'single_officer'
+    response_type = TYPE_SINGLE_OFFICER
 
     def get_variables_sets(self, entities, context):
         for (source, officer) in entities:
             yield {
                 'officer': officer,
+                '_entity': officer,
                 '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
                 'source': (source, ),
                 '_media_url': officer.visual_token_png
@@ -45,7 +50,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
 
 
 class CoaccusedPairResponseBuilder(BaseResponseBuilder):
-    response_type = 'coaccused_pair'
+    response_type = TYPE_COACCUSED_PAIR
 
     def get_variables_sets(self, entities, context):
         for (source1, officer1), (source2, officer2) in itertools.combinations(entities, 2):
@@ -61,7 +66,7 @@ class CoaccusedPairResponseBuilder(BaseResponseBuilder):
 
 
 class NotFoundResponseBuilder(BaseResponseBuilder):
-    response_type = 'not_found'
+    response_type = TYPE_NOT_FOUND
 
     def get_variables_sets(self, entities, context):
         try:
