@@ -41,3 +41,8 @@ data_source
 .ipynb_checkpoints
 
 twitterbot-nl-api.json
+
+.tmp/
+
+test_visual_token_media
+visual_token_media

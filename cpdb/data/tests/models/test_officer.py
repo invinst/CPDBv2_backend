@@ -149,3 +149,17 @@ class OfficerTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, final_outcome='600')
         OfficerAllegationFactory(officer=officer, final_outcome='')
         expect(officer.discipline_count).to.eq(1)
+
+    def test_visual_token_background_color(self):
+        crs_colors = [
+            (0, '#f5f4f4'),
+            (3, '#edf0fa'),
+            (7, '#d4e2f4'),
+            (20, '#c6d4ec'),
+            (30, '#aec9e8'),
+            (45, '#90b1f5')
+        ]
+        for cr, color in crs_colors:
+            officer = OfficerFactory()
+            OfficerAllegationFactory.create_batch(cr, officer=officer)
+            expect(officer.visual_token_background_color).to.eq(color)

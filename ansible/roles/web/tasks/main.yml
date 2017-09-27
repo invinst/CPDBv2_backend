@@ -1,6 +1,9 @@
 - include: create_directories.yml
   tags: base
 
+- include: install_chromedriver.yml
+  tags: chrome
+
 - include: setup_pyenv.yml
   tags: pyenv
 
@@ -35,3 +38,6 @@
 
 - include: setup_twitterbot.yml
   tags: twitterbot
+
+- include: install_azcopy_and_optipng.yml
+  tags: visual_token

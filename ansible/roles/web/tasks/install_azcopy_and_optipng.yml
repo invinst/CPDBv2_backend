@@ -1,0 +1,31 @@
+---
+
+- name: Add dot Net Core to source list
+  apt_repository:
+    repo: deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main
+    filename: dotnetdev
+    state: present
+
+- name: Add apt key for dot Net Core
+  apt_key:
+    id: 417A0893
+    keyserver: hkp://keyserver.ubuntu.com:80
+    state: present
+
+- name: Add Microsoft Linux product to source list
+  get_url:
+    url: https://packages.microsoft.com/config/ubuntu/14.04/prod.list
+    dest: /etc/apt/sources.list.d/microsoft-prod.list
+
+- name: Add apt key for Microsoft Linux product
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Update repositories cache and install azcopy package
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items:
+    - azcopy
+    - optipng

@@ -10,8 +10,10 @@ from django.db.models import F
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, DISCIPLINE_CODES)
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, BACKGROUND_COLOR_SCHEME,
+    DISCIPLINE_CODES)
 from data.utils.aggregation import get_num_range_case
+from data.utils.interpolate import ScaleThreshold
 
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -379,6 +381,16 @@ class Officer(TaggableModel):
     @property
     def discipline_count(self):
         return self.officerallegation_set.filter(final_outcome__in=DISCIPLINE_CODES).count()
+
+    @property
+    def visual_token_background_color(self):
+        cr_scale = ScaleThreshold(domain=[1, 5, 10, 25, 40], target_range=range(6))
+
+        cr_threshold = cr_scale.interpolate(self.allegation_count)
+
+        return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
+            cr_threshold=cr_threshold
+        )]
 
 
 class OfficerBadgeNumber(models.Model):

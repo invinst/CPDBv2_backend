@@ -51,7 +51,9 @@ LOCAL_APPS = (
     'cr',
     'units',
     'alias',
-    'twitterbot'
+    'twitterbot',
+    'visual_token',
+    'activity_grid'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -259,3 +261,9 @@ LOGGING = {
 TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH = ROOT_DIR.path('twitterbot_newrelic.ini')
 
 TEST = False
+
+VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('visual_token_media'))
+VISUAL_TOKEN_STORAGEACCOUNTNAME = env.str('VISUAL_TOKEN_STORAGEACCOUNTNAME', default='')
+VISUAL_TOKEN_STORAGEACCOUNTKEY = env.str('VISUAL_TOKEN_STORAGEACCOUNTKEY', default='')
+
+RUNNING_PORT = '80'

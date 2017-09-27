@@ -19,4 +19,5 @@ beautifulsoup4==4.6.0
 rosette_api==1.7.0
 nameparser==0.5.3
 responsebot==0.6.0
+selenium==3.5.0
 google-cloud-language==0.29.0
