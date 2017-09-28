@@ -89,27 +89,11 @@ function initializeDrawingArea() {
   svg.append('g').attr('class', 'node-group');
 }
 
-function getSVGFittingViewBox(nodes) {
-  var padding = 20;
-  var xValues = nodes.map(function (node) { return node.x; });
-  var yValues = nodes.map(function (node) { return node.y; });
-  var minX = Math.min.apply(null, xValues) - padding;
-  var minY = Math.min.apply(null, yValues) - padding;
-  var maxX = Math.max.apply(null, xValues) + padding;
-  var maxY = Math.max.apply(null, yValues) + padding;
-  return [minX, minY, maxX - minX, maxY - minY];
-}
-
 function getSVGString(nodes) {
-  var viewBox = getSVGFittingViewBox(nodes);
   return [
-    '<svg width="',
-    viewBox[2],
-    '" height="',
-    viewBox[3],
-    '" viewBox="',
-    viewBox.join(' '),
-    '" xmlns="http://www.w3.org/2000/svg">',
+    '<?xml version="1.0"?>',
+    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">',
+    '<svg width="675" height="675" viewBox="-337.5 -337.5 675 675" xmlns="http://www.w3.org/2000/svg">',
     document.getElementById('social-graph').innerHTML,
     '</svg>'
   ].join('');
@@ -177,6 +161,7 @@ window.render = function (jsonString) {
     .insert('line')
     .merge(link)
     .attr('class', 'link')
+    .attr('shape-rendering', 'optimizeQuality')
     .style('stroke', calculateEdgeColor(state.backgroundColor));
 
   node.exit().remove();
