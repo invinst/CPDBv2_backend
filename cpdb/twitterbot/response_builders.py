@@ -21,7 +21,7 @@ class BaseResponseBuilder:
             source = variables_set.get('source', ())
             url = variables_set.get('_url', '')
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
-            media_url = variables_set.get('_media_url', '')
+            media_path = variables_set.get('_media_path', '')
             entity = variables_set.get('_entity', None)
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
@@ -31,7 +31,7 @@ class BaseResponseBuilder:
                 'entity': entity,
                 'url': url,
                 'type': self.response_type,
-                'media_url': media_url,
+                'media_path': media_path,
             }
 
 
@@ -45,7 +45,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
                 '_entity': officer,
                 '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
                 'source': (source, ),
-                '_media_url': officer.visual_token_png
+                '_media_path': officer.visual_token_png_path
             }
 
 
