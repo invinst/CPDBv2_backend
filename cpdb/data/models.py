@@ -654,3 +654,10 @@ class Award(models.Model):
     requester_full_name = models.CharField(max_length=255, null=True)
     ceremony_date = models.DateField(null=True)
     tracking_no = models.BigIntegerField(null=True)
+
+
+class Victim(models.Model):
+    allegation = models.ForeignKey(Allegation)
+    gender = models.CharField(max_length=1, blank=True)
+    race = models.CharField(max_length=50, blank=True)
+    age = models.IntegerField(null=True)
