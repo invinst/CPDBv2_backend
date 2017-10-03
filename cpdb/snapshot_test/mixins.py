@@ -7,12 +7,10 @@ from django.apps import apps
 from .config import test_snapshot_dir
 
 
-_app_paths = [app_config.path for app_config in apps.get_app_configs()]
-
-
 class SnapshotTestMixin:
     _is_creating_snapshot = False
     _clobber = False
+    _app_paths = [app_config.path for app_config in apps.get_app_configs()]
 
     def assert_snapshot_match(self, file_path, snapshot_path):
         snapshot_path = self.full_snapshot_path(snapshot_path)
@@ -23,7 +21,7 @@ class SnapshotTestMixin:
 
     def full_snapshot_path(self, path):
         file_path = inspect.getfile(sys.modules[self.__class__.__module__])
-        app_path = next(path for path in _app_paths if file_path.startswith(path))
+        app_path = next(path for path in self._app_paths if file_path.startswith(path))
         return os.path.join(app_path, test_snapshot_dir, path)
 
     def enable_create_snapshot_mode(self):
