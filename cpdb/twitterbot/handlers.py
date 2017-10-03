@@ -18,7 +18,6 @@ from .response_builders import (
 from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from .tweet_extractors import RelatedTweetExtractor
 from .tweets import Tweet
-from .response_loggers import DatabaseResponseLogger
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
@@ -27,11 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
-    def __init__(self, *args, **kwargs):
-        super(BaseOfficerTweetHandler, self).__init__(*args, **kwargs)
-        self._context = {'client': self.client}
-        self.incoming_tweet = None
-
     def get_officers(self, names):
         results = []
         for (source, name) in names:
@@ -42,6 +36,9 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             if officer is not None and officer not in results:
                 results.append((source, officer))
         return results
+
+    def reset_context(self):
+        self._context = {'client': self.client}
 
     def tweet(self, response):
         sources, tweet_content, entity_url, media_url = response
@@ -93,6 +90,7 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
     def on_tweet(self, tweet):
         self.incoming_tweet = Tweet(tweet, client=self.client)
+        self.reset_context()
         logger.info('%s - received tweet: "%s" from %s %s' % (
             self.__class__.__name__, self.incoming_tweet.text, self.incoming_tweet.screen_name, self.incoming_tweet.url
         ))
@@ -141,7 +139,6 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
         lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,
         lambda tweet: not tweet.is_unfollow_tweet
     ]
-    response_loggers = [DatabaseResponseLogger()]
     name_parser = GoogleNaturalLanguageNameParser()
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (

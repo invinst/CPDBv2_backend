@@ -99,3 +99,7 @@ class Tweet:
     @property
     def is_unfollow_tweet(self):
         return self.text == '@{bot} STOP'.format(bot=self._client.get_current_user().screen_name)
+
+    @property
+    def is_mentioning_twitterbot(self):
+        return self._client.get_current_user().screen_name in self.user_mention_screen_names
