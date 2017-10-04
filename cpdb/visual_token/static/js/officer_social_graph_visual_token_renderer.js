@@ -96,7 +96,7 @@ function getSVGString(nodes) {
     '    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">\n',
     '<svg width="675" height="675" viewBox="-337.5 -337.5 675 675" xmlns="http://www.w3.org/2000/svg">',
     document.getElementById('social-graph').innerHTML,
-    '</svg>'
+    '</svg>\n'
   ].join('');
 }
 
