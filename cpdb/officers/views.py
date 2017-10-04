@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from data.models import Officer
+from officers.doc_types import OfficerSocialGraphDocType
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerTimelineMinimapDocType
 from .serializers import TimelineSerializer
 from .pagination import ESQueryPagination
@@ -40,5 +41,14 @@ class OfficersViewSet(viewsets.ViewSet):
         search_result = query.execute()
         try:
             return Response(search_result[0].to_dict()['items'])
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @detail_route(methods=['get'], url_path='social-graph')
+    def social_graph(self, request, pk):
+        query = OfficerSocialGraphDocType().search().query('term', officer_id=pk)
+        search_result = query.execute()
+        try:
+            return Response(search_result[0].to_dict()['graph'])
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
