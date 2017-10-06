@@ -35,7 +35,7 @@ class SnapshotTestMixinTestCase(SimpleTestCase):
         expect(self.mixin._assert_snapshot_match).to.be.called_once_with('some_file_path', 'some_snapshot_path')
         expect(self.mixin._create_snapshot).not_to.be.called()
 
-    @patch('snapshot_test.mixins._app_paths', ['/myapp'])
+    @patch('snapshot_test.mixins.SnapshotTestMixin._app_paths', ['/myapp'])
     @patch('snapshot_test.mixins.inspect.getfile', return_value='/myapp/file')
     def test_full_snapshot_path(self, getfile):
         expect(self.mixin.full_snapshot_path('abc')).to.eq('/myapp/test_snapshots/abc')
@@ -49,32 +49,32 @@ class SnapshotTestMixinTestCase(SimpleTestCase):
         expect(self.mixin._clobber).to.be.true()
 
     def test_assert_snapshot_match(self):
-        file = NamedTemporaryFile(delete=False)
+        temp_file = NamedTemporaryFile(delete=False)
         snapshot = NamedTemporaryFile(delete=False)
 
-        file.write('something')
+        temp_file.write('something')
         snapshot.write('something')
-        file.close()
+        temp_file.close()
         snapshot.close()
 
-        self.mixin._assert_snapshot_match(file.name, snapshot.name)
+        self.mixin._assert_snapshot_match(temp_file.name, snapshot.name)
         expect(self.mixin.assertEqual).to.be.called_once_with(
             'something', 'something',
-            msg='Snapshot does not match: %s !== %s' % (file.name, snapshot.name))
+            msg='Snapshot does not match: %s !== %s' % (temp_file.name, snapshot.name))
 
     def test_assert_snapshot_mismatch(self):
-        file = NamedTemporaryFile(delete=False)
+        temp_file = NamedTemporaryFile(delete=False)
         snapshot = NamedTemporaryFile(delete=False)
 
-        file.write('something')
+        temp_file.write('something')
         snapshot.write('some other thing')
-        file.close()
+        temp_file.close()
         snapshot.close()
 
-        self.mixin._assert_snapshot_match(file.name, snapshot.name)
+        self.mixin._assert_snapshot_match(temp_file.name, snapshot.name)
         expect(self.mixin.assertEqual).to.be.called_once_with(
             'something', 'some other thing',
-            msg='Snapshot does not match: %s !== %s' % (file.name, snapshot.name))
+            msg='Snapshot does not match: %s !== %s' % (temp_file.name, snapshot.name))
 
     @patch('snapshot_test.mixins.os.path.isfile')
     @patch('snapshot_test.mixins.open')
@@ -86,26 +86,26 @@ class SnapshotTestMixinTestCase(SimpleTestCase):
 
     def test_create_snapshot_clobber(self):
         self.mixin._clobber = True
-        file = NamedTemporaryFile(delete=False)
-        file.write('a')
-        file.close()
+        temp_file = NamedTemporaryFile(delete=False)
+        temp_file.write('a')
+        temp_file.close()
         snapshot = NamedTemporaryFile(delete=False)
         snapshot.close()
-        self.mixin._create_snapshot(file.name, snapshot.name)
+        self.mixin._create_snapshot(temp_file.name, snapshot.name)
 
         with open(snapshot.name) as snapshot_file:
             expect(snapshot_file.read()).to.eq('a')
 
     def test_create_snapshot_create_new(self):
-        file = NamedTemporaryFile(delete=False)
-        file.write('a')
-        file.close()
+        temp_file = NamedTemporaryFile(delete=False)
+        temp_file.write('a')
+        temp_file.close()
         snapshot_path = '/tmp/tmp123/tmpabc'
         dirname = os.path.dirname(snapshot_path)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
 
-        self.mixin._create_snapshot(file.name, snapshot_path)
+        self.mixin._create_snapshot(temp_file.name, snapshot_path)
 
         with open(snapshot_path) as snapshot_file:
             expect(snapshot_file.read()).to.eq('a')
