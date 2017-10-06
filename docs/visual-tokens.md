@@ -45,3 +45,12 @@ The background color for each token is included in the officer object.
 with open_engine(renderer) as engine:
     ...
 ```
+
+# Initialize activity grid on development machine
+
+You simply need to generate some `ActivityCard` instances. It's recommended to create exactly 40 cards, the activity grid will only display 40 cards maximum anyhow. Below is example of how you create 40 cards for officers with "interesting" visual tokens:
+
+```python
+for officer in Officer.objects.filter(officerallegation__isnull=False)[:40]:
+    ActivityCard.objects.get_or_create(officer=officer)
+```

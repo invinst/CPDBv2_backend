@@ -1,10 +1,13 @@
 from django.db import models
 
 
+TYPE_SINGLE_OFFICER = 'single_officer'
+TYPE_COACCUSED_PAIR = 'coaccused_pair'
+TYPE_NOT_FOUND = 'not_found'
 TYPE_CHOICES = [
-    ['single_officer', 'Single Officer'],
-    ['coaccused_pair', 'Coaccused Pair'],
-    ['not_found', 'Not Found']
+    [TYPE_SINGLE_OFFICER, 'Single Officer'],
+    [TYPE_COACCUSED_PAIR, 'Coaccused Pair'],
+    [TYPE_NOT_FOUND, 'Not Found']
 ]
 
 
