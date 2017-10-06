@@ -71,7 +71,7 @@ urlpatterns = [
         r'officer/\d+(?:/timeline)?|'
         r'unit/\d+|'
         r'complaint/\d+/\d+|'
-        r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
+        r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
