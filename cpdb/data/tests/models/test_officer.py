@@ -163,3 +163,12 @@ class OfficerTestCase(TestCase):
             officer = OfficerFactory()
             OfficerAllegationFactory.create_batch(cr, officer=officer)
             expect(officer.visual_token_background_color).to.eq(color)
+
+    def test_visual_token_png_url(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
+
+    @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='media_folder')
+    def test_visual_token_png_path(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')

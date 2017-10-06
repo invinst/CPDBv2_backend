@@ -19,6 +19,7 @@ from .tweets import Tweet
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
+from .post_processors import ActivityGridUpdater
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,10 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
         self._context = {'client': self.client}
 
     def tweet(self, response):
-        sources, tweet_content, entity_url = response
+        sources = response['source']
+        tweet_content = response['tweet_content']
+        entity_url = response['url']
+        media_path = response['media_path']
         original_tweet = self._context['original_tweet']
         incoming_tweet = self._context['incoming_tweet']
 
@@ -58,7 +62,14 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             tweet_content = '%s %s' % (tweet_content, entity_url)
 
         try:
-            outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
+            if media_path:
+                file_name = media_path.split('/')[-1]
+                with open(media_path) as media_file:
+                    outgoing_tweet = self.client.tweet(
+                        tweet_content, in_reply_to=self._context['first_non_retweet'].id,
+                        filename=file_name, file=media_file)
+            else:
+                outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
         except CharacterLimitError:
             logger.error('Tweet is too long - %s' % tweet_content)
             return
@@ -109,6 +120,8 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             responses = builder.build(officers, {'user_name': recipient}, self._context)
             for response in responses:
                 self.tweet(response)
+                for processor in self.post_processors:
+                    processor.process(response)
 
 
 class CPDBEventHandler(BaseEventHandler):
@@ -132,6 +145,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
         )
+    post_processors = (ActivityGridUpdater(),)
 
 
 @register_handler
