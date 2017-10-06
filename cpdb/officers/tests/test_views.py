@@ -224,7 +224,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             ]
         })
 
-    def test_social_graph(self):
+    def test_social_graph_success(self):
         officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
         officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
         allegation = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
@@ -255,3 +255,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 }
             ]
         })
+
+    def test_social_graph_not_found(self):
+        officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
+        officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+        allegation = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
+        OfficerAllegationFactory(officer=officer1, allegation=allegation)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-social-graph', kwargs={'pk': 3}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
