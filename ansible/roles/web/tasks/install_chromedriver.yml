@@ -1,0 +1,11 @@
+---
+
+- name: Download and install Chrome
+  apt:
+    deb: https://cpdbdev.blob.core.windows.net/circleci/google-chrome-stable_current_amd64.deb
+
+- name: Download and extract chromedriver
+  unarchive:
+    src: https://chromedriver.storage.googleapis.com/2.32/chromedriver_linux64.zip
+    dest: "{{ virtualenv_path }}/bin"
+    remote_src: True

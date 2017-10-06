@@ -23,6 +23,9 @@ class OfficerTestCase(TestCase):
     def test_v2_to(self):
         expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
 
+    def test_get_absolute_url(self):
+        expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
+
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
         expect(officer.current_badge).to.equal('')
@@ -139,3 +142,33 @@ class OfficerTestCase(TestCase):
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
+
+    def test_discipline_count(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory(officer=officer, final_outcome='100')
+        OfficerAllegationFactory(officer=officer, final_outcome='600')
+        OfficerAllegationFactory(officer=officer, final_outcome='')
+        expect(officer.discipline_count).to.eq(1)
+
+    def test_visual_token_background_color(self):
+        crs_colors = [
+            (0, '#f5f4f4'),
+            (3, '#edf0fa'),
+            (7, '#d4e2f4'),
+            (20, '#c6d4ec'),
+            (30, '#aec9e8'),
+            (45, '#90b1f5')
+        ]
+        for cr, color in crs_colors:
+            officer = OfficerFactory()
+            OfficerAllegationFactory.create_batch(cr, officer=officer)
+            expect(officer.visual_token_background_color).to.eq(color)
+
+    def test_visual_token_png_url(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
+
+    @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='media_folder')
+    def test_visual_token_png_path(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
