@@ -6,7 +6,13 @@
             backup=yes
 
 - name: Re-read the Supervisor config files
-  supervisorctl: name={{ application_name }} state=present
+  supervisorctl: name={{ item }} state=present
+  with_items:
+    - "{{ application_name }}"
+    - twitterbot
 
 - name: Restart Supervisor
-  supervisorctl: name={{ application_name }} state=restarted
+  supervisorctl: name={{ item }} state=restarted
+  with_items:
+    - "{{ application_name }}"
+    - twitterbot

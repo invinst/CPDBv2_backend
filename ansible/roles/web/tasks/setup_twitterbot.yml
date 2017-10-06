@@ -1,0 +1,12 @@
+---
+- name: Create Twitterbot Google cloud service account key
+  file:
+    path: "{{ twitterbot_google_cloud_service_account_key_path }}"
+    owner: "{{ deploy_user }}"
+    mode: 0644
+    state: touch
+
+- name: Put content into service account key file
+  copy:
+    content: "{{ twitterbot_google_cloud_service_account_key }}"
+    dest: "{{ twitterbot_google_cloud_service_account_key_path }}"

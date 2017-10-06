@@ -16,6 +16,8 @@ dependencies:
   post:
     - if [[ ! -e elasticsearch-5.1.1 ]]; then wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.1.1.tar.gz && tar -xvf elasticsearch-5.1.1.tar.gz; fi
     - elasticsearch-5.1.1/bin/elasticsearch: {background: true}
+    - curl -O https://cpdbdev.blob.core.windows.net/circleci/google-chrome-stable_current_amd64.deb && sudo dpkg -i google-chrome-stable_current_amd64.deb
+    - wget https://chromedriver.storage.googleapis.com/2.32/chromedriver_linux64.zip && unzip chromedriver_linux64.zip && sudo mv chromedriver /usr/local/bin/
 
 test:
   override:
