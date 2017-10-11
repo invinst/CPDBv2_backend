@@ -121,7 +121,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'category': 'category',
                     'subcategory': 'sub category',
                     'finding': 'Unfounded',
-                    'coaccused': 4
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
                 },
                 {
                     'kind': 'YEAR',
@@ -134,6 +137,68 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 }
             ]
         })
+
+    def test_timeline_items_filter_params(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory(crid='123456')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='Illegal Search', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+
+        allegation2 = AllegationFactory(crid='654321')
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2017, 8, 23), allegation=allegation2,
+            allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
+        )
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}),
+                                   data={'category': 'Illegal Search', 'finding': 'Unfounded', 'invalid': 'X'})
+        # NOTE: 'finding' and 'invalid' should drop since this is not in ALLOWED LIST
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 6,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'kind': 'YEAR',
+                    'year': 2017,
+                    'crs': 1
+                }, {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                }, {
+                    'kind': 'YEAR',
+                    'year': 2016,
+                    'crs': 1
+                }, {
+                    'kind': 'CR',
+                    'date': '2016-08-23',
+                    'crid': '123456',
+                    'category': 'Illegal Search',
+                    'subcategory': 'sub category',
+                    'finding': 'Unfounded',
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
+                }, {
+                    'kind': 'YEAR',
+                    'year': 2000,
+                    'crs': 0
+                }, {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
+                }
+            ]
+        })
+        pass
 
     def test_timeline_no_data(self):
         response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 456}))
@@ -157,25 +222,34 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
     def test_timeline_minimap(self):
         officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
-        allegation = AllegationFactory()
-        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27))
+        allegation = AllegationFactory(crid='111222')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit__unit_name='69')
         OfficerAllegationFactory(officer=officer, start_date=date(2016, 8, 23), allegation=allegation)
         self.refresh_index()
 
         response = self.client.get(reverse('api-v2:officers-timeline-minimap', kwargs={'pk': 123}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
+        # TODO: remap to the existing one
         expect(response.data).to.eq([
             {
                 'kind': 'Unit',
-                'year': 2017
-            },
-            {
+                'year': 2017,
+                'unit_name': '69',
+                'date': '2017-02-27'
+            }, {
                 'kind': 'CR',
-                'year': 2016
-            },
-            {
+                'crid': '111222',
+                'gender': ['Unknown'],
+                'age': ['Unknown'],
+                'date': '2016-08-23',
+                'race': ['Unknown'],
+                'year': 2016,
+                'finding': 'Unknown',
+                'coaccused': 1
+            }, {
                 'kind': 'Joined',
-                'year': 2000
+                'year': 2000,
+                'date': '2000-01-01'
             }
         ])
 
@@ -214,7 +288,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'category': 'category',
                     'subcategory': 'sub category',
                     'finding': 'Unfounded',
-                    'coaccused': 4
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
                 },
                 {
                     'kind': 'YEAR',

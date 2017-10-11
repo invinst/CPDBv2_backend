@@ -137,6 +137,10 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
         officer_allegation.subcategory = 'Search of premise/vehicle without warrant'
         officer_allegation.final_finding_display = 'Unfounded'
         officer_allegation.coaccused_count = 4
+        officer_allegation.allegation.complainant_races = ['White', 'Unknown']
+        officer_allegation.allegation.complainant_age_groups = ['21-30', '51+']
+        officer_allegation.allegation.complainant_genders = ['M']
+
         expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
             'date_sort': date(2012, 1, 1),
@@ -148,7 +152,10 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             'category': 'Illegal Search',
             'subcategory': 'Search of premise/vehicle without warrant',
             'finding': 'Unfounded',
-            'coaccused': 4
+            'coaccused': 4,
+            'race': ['White', 'Unknown'],
+            'age': ['21-30', '51+'],
+            'gender': ['M']
         })
 
 

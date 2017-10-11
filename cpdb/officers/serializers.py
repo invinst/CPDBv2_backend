@@ -38,12 +38,24 @@ class CRTimelineSerializer(serializers.Serializer):
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
     coaccused = serializers.IntegerField(source='coaccused_count')
+    race = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    gender = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'CR'
 
     def get_priority_sort(self, obj):
         return 40
+
+    def get_race(self, obj):
+        return obj.allegation.complainant_races
+
+    def get_age(self, obj):
+        return obj.allegation.complainant_age_groups
+
+    def get_gender(self, obj):
+        return obj.allegation.complainant_genders
 
 
 class UnitChangeTimelineSerializer(serializers.Serializer):
@@ -84,4 +96,24 @@ class TimelineSerializer(serializers.Serializer):
         result.pop('date_sort')
         result.pop('year_sort')
         result.pop('priority_sort')
+        return result
+
+
+class TimelineMinimapSerializer(serializers.Serializer):
+    _KIND_MAPPINGS = {
+        'UNIT_CHANGE': 'Unit',
+        'JOINED': 'Joined',
+    }
+
+    def to_representation(self, obj):
+        result = obj.to_dict()
+        if hasattr(obj, 'date'):
+            result['year'] = int(obj.date[:4])
+
+        result.pop('officer_id')
+        result.pop('date_sort')
+        result.pop('year_sort')
+        result.pop('priority_sort')
+
+        result['kind'] = self._KIND_MAPPINGS.get(result['kind'], result['kind'])
         return result

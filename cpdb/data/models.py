@@ -577,6 +577,35 @@ class Allegation(models.Model):
         return self.complainant_set.all()
 
     @property
+    def complainant_races(self):
+        query = self.complainant_set.annotate(
+            name=models.Case(
+                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [result['name'] for result in query]
+        return results if results else ['Unknown']
+
+    @property
+    def complainant_age_groups(self):
+        results = self.complainant_set.annotate(name=get_num_range_case('age', [0, 20, 30, 40, 50]))
+        results = results.values('name').distinct()
+        results = [result['name'] for result in results]
+        return results if results else ['Unknown']
+
+    @property
+    def complainant_genders(self):
+        query = self.complainant_set.annotate(
+            name=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [result['name'] for result in query]
+        return results if results else ['Unknown']
+
+    @property
     def videos(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_VIDEO)
 
