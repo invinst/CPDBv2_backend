@@ -68,7 +68,7 @@ urlpatterns = [
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
-        r'officer/\d+(?:/timeline)?|'
+        r'officer/\d+(?:/(?:timeline|social-graph))?|'
         r'unit/\d+|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
