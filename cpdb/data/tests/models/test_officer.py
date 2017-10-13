@@ -75,7 +75,7 @@ class OfficerTestCase(TestCase):
                         'name': 'Use of Force'
                     }, {
                         'year': 2011,
-                        'count': 2,
+                        'count': 1,
                         'sustained_count': 1,
                         'name': 'Use of Force'
                     }

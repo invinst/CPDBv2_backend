@@ -15,7 +15,6 @@ from data.constants import (
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
 from data.utils.aggregation import get_num_range_case
 
-
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
@@ -121,15 +120,15 @@ class PoliceUnit(TaggableModel):
                 default='allegation_category__category',
                 output_field=models.CharField()
             )).values('name').annotate(
-                count=models.Count('allegation__id', distinct=True),
-                sustained_count=models.Sum(
-                    models.Case(
-                        models.When(final_finding='SU', then=1),
-                        default=0,
-                        output_field=models.IntegerField()
-                    )
+            count=models.Count('allegation__id', distinct=True),
+            sustained_count=models.Sum(
+                models.Case(
+                    models.When(final_finding='SU', then=1),
+                    default=0,
+                    output_field=models.IntegerField()
                 )
             )
+        )
         return list(query_set)
 
     @property
@@ -282,13 +281,11 @@ class Officer(TaggableModel):
 
     @property
     def allegation_count(self):
-        # return self.officerallegation_set.all().distinct().count()
-        return self.officerallegation_set.filter(start_date__isnull=False).distinct().count()
+        return self.officerallegation_set.all().distinct().count()
 
     @property
     def sustained_count(self):
-        # return self.officerallegation_set.filter(final_finding='SU').distinct().count()
-        return self.officerallegation_set.filter(start_date__isnull=False, final_finding='SU').distinct().count()
+        return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
     def v1_url(self):
@@ -311,12 +308,17 @@ class Officer(TaggableModel):
         unknown_group = None
         for k, g in groupby(data, lambda x: x[key_name]):
             group = {'name': k, 'count': 0, 'sustained_count': 0, 'items': []}
+            unknown_year = None
             for item in g:
-                group['items'].append(item)
+                if item['year']:
+                    group['items'].append(item)
+                    group['count'] += item['count']
+                    group['sustained_count'] += item['sustained_count']
+                else:
+                    unknown_year = item
+            if unknown_year:
                 group['count'] += item['count']
-                item['count'] = group['count']
                 group['sustained_count'] += item['sustained_count']
-                item['sustained_count'] = group['sustained_count']
             if k != 'Unknown':
                 groups.append(group)
             else:
@@ -324,12 +326,11 @@ class Officer(TaggableModel):
 
         if unknown_group is not None:
             groups.append(unknown_group)
-
         return groups
 
     @property
     def complaint_category_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = self.officerallegation_set.all()
         query = query.annotate(
             name=models.Case(
                 models.When(
@@ -347,7 +348,7 @@ class Officer(TaggableModel):
 
     @property
     def complainant_race_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = self.officerallegation_set.all()
         query = query.annotate(
             name=models.Case(
                 models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
@@ -371,7 +372,7 @@ class Officer(TaggableModel):
 
     @property
     def complainant_age_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = self.officerallegation_set.all()
         query = query.annotate(
             name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]),
             year=ExtractYear('start_date')
@@ -391,7 +392,7 @@ class Officer(TaggableModel):
     @property
     def complainant_gender_aggregation(self):
 
-        query = self.officerallegation_set.filter(start_date__isnull=False)
+        query = self.officerallegation_set.all()
         query = query.values('allegation__complainant__gender').annotate(
             complainant_gender=models.Case(
                 models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
@@ -428,7 +429,7 @@ class Officer(TaggableModel):
         query = self.officerallegation_set.filter(start_date__isnull=False)
         query = query.annotate(year=ExtractYear('start_date'))
         query = query.values('year').order_by('year').annotate(
-            count=models.Count('year'),
+            count=models.Count('id'),
             sustained_count=models.Sum(
                 models.Case(
                     models.When(final_finding='SU', then=1),
@@ -437,16 +438,12 @@ class Officer(TaggableModel):
                 )
             )
         )
-
-        count = 0
-        sustained_count = 0
+        aggregate_count = 0
+        aggregate_sustained_count = 0
         results = list(query)
-        for year in results:
-            count += year['count']
-            year['count'] = count
-            sustained_count += year['sustained_count']
-            year['sustained_count'] = sustained_count
-
+        for item in results:
+            aggregate_count += item['count']
+            aggregate_sustained_count += item['sustained_count']
         return results
 
     @property
