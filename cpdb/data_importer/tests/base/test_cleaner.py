@@ -8,7 +8,7 @@ from pandas import DataFrame
 from robber import expect
 
 from data_importer.base.cleaner import DataCleaner, ToBool, ToNaN, ToDateTime, ToDate, ZFill, Just, strip, \
-    capitalise_generation_suffix, clean_name, titleize, to_int, ignore_null, lower
+    capitalise_generation_suffix, clean_name, titleize, to_int, ignore_null, lower, remove_whitespace
 
 
 class DataCleanerTestCase(SimpleTestCase):
@@ -137,3 +137,9 @@ class LowerTestCase(SimpleTestCase):
     def test_call(self):
         expect(lower(None)).to.be.none()
         expect(lower('Foo')).to.be.eq('foo')
+
+
+class RemoveWhitespaceTestCase(SimpleTestCase):
+    def test_call(self):
+        expect(remove_whitespace(None)).to.be.none()
+        expect(remove_whitespace(' F  oo ')).to.be.eq('Foo')

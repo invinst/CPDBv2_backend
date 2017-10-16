@@ -145,6 +145,13 @@ def titleize(st):
     return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda mo: mo.group(0)[0].upper() + mo.group(0)[1:].lower(), st)
 
 
+def remove_whitespace(value):
+    if pd.isnull(value):
+        return value
+
+    return value.replace(' ', '')
+
+
 class DataCleaner(object):
     def __init__(self, schema):
         self.schema = schema or {}
