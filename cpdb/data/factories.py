@@ -79,6 +79,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
 
     allegation = factory.SubFactory(AllegationFactory)
     officer = factory.SubFactory(OfficerFactory)
+    start_date = factory.LazyFunction(lambda: fake.date())
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):

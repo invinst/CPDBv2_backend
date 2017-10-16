@@ -19,5 +19,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.host_key_checking = false
     ansible.vault_password_file = "../vault_pass.txt"
     ansible.verbose = "v"
+    ansible.tags = "visual_token"
   end
 end
