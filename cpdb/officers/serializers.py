@@ -21,7 +21,8 @@ class OfficerSummarySerializer(serializers.Serializer):
                 {'name': 'complainant race', 'entries': obj.complainant_race_aggregation},
                 {'name': 'complainant age', 'entries': obj.complainant_age_aggregation},
                 {'name': 'complainant gender', 'entries': obj.complainant_gender_aggregation},
-            ]
+            ],
+            'items': obj.total_complaints_aggregation
         }
 
 
