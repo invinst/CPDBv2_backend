@@ -34,6 +34,8 @@ from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
+from visual_token.views import VisualTokenView
+from activity_grid.views import ActivityGridViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -57,6 +59,7 @@ router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
+router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -65,7 +68,7 @@ urlpatterns = [
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
-        r'officer/\d+(?:/timeline)?|'
+        r'officer/\d+(?:/(?:timeline|social))?|'
         r'unit/\d+|'
         r'complaint/\d+/\d+|'
         r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
@@ -73,4 +76,5 @@ urlpatterns = [
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
+    url(r'^visual-token/(?P<renderer>[\w\.]+)/$', VisualTokenView.as_view(), name='visual_token'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

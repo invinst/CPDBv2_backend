@@ -12,3 +12,4 @@ elasticsearch_apt_dependencies:
 elasticsearch_home_dir: /usr/share/elasticsearch
 elasticsearch_data_dir: /mnt/elasticsearch-data
 elasticsearch_work_dir: /tmp/elasticsearch
+elasticsearch_network_host: 127.0.0.1
