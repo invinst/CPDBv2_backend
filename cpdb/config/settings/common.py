@@ -50,7 +50,10 @@ LOCAL_APPS = (
     'officers',
     'cr',
     'units',
-    'alias'
+    'alias',
+    'twitterbot',
+    'visual_token',
+    'activity_grid'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -67,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware'
 ]
 
 # DEBUG
@@ -218,7 +222,48 @@ VFTG_LIST_ID = 'e38095f8d7'
 
 AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
+TWITTER_CONSUMER_KEY = env.str('TWITTER_CONSUMER_KEY', default='')
+TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
+TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
+TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
 V1_URL = 'https://beta.cpdb.co'
 
 ELASTICSEARCH_HOSTS = ['localhost:9200']
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'error-file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/pyenv/versions/cpdb/logs/django-error.log',
+            'maxBytes': 1024*1024*10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'standard',
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['error-file'],
+            'level': 'ERROR',
+            'propagate': True,
+        }
+    },
+}
+
+TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH = ROOT_DIR.path('twitterbot_newrelic.ini')
+
+TEST = False
+
+VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('visual_token_media'))
+VISUAL_TOKEN_STORAGEACCOUNTNAME = env.str('VISUAL_TOKEN_STORAGEACCOUNTNAME', default='cpdbdev')
+VISUAL_TOKEN_STORAGEACCOUNTKEY = env.str('VISUAL_TOKEN_STORAGEACCOUNTKEY', default='')
+
+RUNNING_PORT = '80'
