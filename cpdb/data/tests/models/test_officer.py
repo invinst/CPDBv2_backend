@@ -55,6 +55,10 @@ class OfficerTestCase(TestCase):
         OfficerAllegationFactory(officer=officer,
                                  allegation=AllegationFactory(),
                                  allegation_category=allegation_category,
+                                 start_date=None)
+        OfficerAllegationFactory(officer=officer,
+                                 allegation=AllegationFactory(),
+                                 allegation_category=allegation_category,
                                  start_date=date(2010, 1, 1))
         OfficerAllegationFactory(officer=officer,
                                  allegation=AllegationFactory(),
@@ -65,7 +69,7 @@ class OfficerTestCase(TestCase):
         expect(officer.complaint_category_aggregation).to.eq([
             {
                 'name': 'Use of Force',
-                'count': 2,
+                'count': 3,
                 'sustained_count': 1,
                 'items': [
                     {
@@ -87,16 +91,19 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
+        allegation3 = AllegationFactory()
         OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
                                  final_finding='SU')
         OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
+        OfficerAllegationFactory(officer=officer, allegation=allegation3, start_date=None)
         ComplainantFactory(allegation=allegation1, race='White')
         ComplainantFactory(allegation=allegation2, race='')
+        ComplainantFactory(allegation=allegation3, race='White')
 
         expect(officer.complainant_race_aggregation).to.eq([
             {
                 'name': 'White',
-                'count': 1,
+                'count': 2,
                 'sustained_count': 1,
                 'items': [
                     {
