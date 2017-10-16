@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 
+import pytz
 from django.core.urlresolvers import reverse
 
 from rest_framework.test import APITestCase
@@ -222,3 +223,46 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 }
             ]
         })
+
+    def test_social_graph_success(self):
+        officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
+        officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+        allegation = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
+        OfficerAllegationFactory(officer=officer1, allegation=allegation)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-social-graph', kwargs={'pk': 1}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'links': [
+                {
+                    'source': 1,
+                    'target': 2,
+                    'cr_years': [2001]
+                }
+            ],
+            'nodes': [
+                {
+                    'id': 1,
+                    'name': 'Clarence Featherwater',
+                    'cr_years': [2001]
+                },
+                {
+                    'id': 2,
+                    'name': 'Raymond Piwnicki',
+                    'cr_years': [2001]
+                }
+            ]
+        })
+
+    def test_social_graph_not_found(self):
+        officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
+        officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+        allegation = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
+        OfficerAllegationFactory(officer=officer1, allegation=allegation)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-social-graph', kwargs={'pk': 3}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
