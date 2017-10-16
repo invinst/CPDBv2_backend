@@ -27,7 +27,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
-            officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU'
+            officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU',
+            start_date=date(2000, 1, 1)
         )
         self.refresh_index()
 
@@ -45,22 +46,31 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 1,
+                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
                 'facets': [
                     {
                         'name': 'category',
-                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1}]
+                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
+                        ]}]
                     },
                     {
                         'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1}]
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
+                        ]}]
                     },
                     {
                         'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1}]
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
+                        ]}]
                     },
                     {
                         'name': 'complainant gender',
-                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1}]
+                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
+                        ]}]
                     }
                 ]
             }
