@@ -2,19 +2,20 @@ import os
 from datetime import datetime
 from itertools import groupby
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.conf import settings
-from django.utils.text import slugify
 from django.db.models import F
+from django.utils.text import slugify
 from django.db.models.functions import ExtractYear
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, AGENCY_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES)
+    DISCIPLINE_CODES
+)
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 
@@ -250,10 +251,10 @@ class PoliceUnit(TaggableModel):
 
 
 class Officer(TaggableModel):
-    first_name = models.CharField(
-        max_length=255, null=True, db_index=True, blank=True)
-    last_name = models.CharField(
-        max_length=255, null=True, db_index=True, blank=True)
+    first_name = models.CharField(max_length=255, db_index=True)
+    last_name = models.CharField(max_length=255, db_index=True)
+    middle_initial = models.CharField(max_length=5, null=True)
+    suffix_name = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
@@ -534,11 +535,9 @@ class LineArea(models.Model):
 
 class Investigator(models.Model):
     raw_name = models.CharField(max_length=160)
-    name = models.CharField(max_length=160)
+    name = models.CharField(max_length=160, blank=True)
     current_rank = models.CharField(max_length=50, blank=True)
-    current_report = models.CharField(max_length=4, blank=True)
     unit = models.ForeignKey(PoliceUnit, null=True)
-    agency = models.CharField(choices=AGENCY_CHOICES, max_length=10)
 
 
 class Allegation(models.Model):
@@ -723,6 +722,27 @@ class AttachmentFile(models.Model):
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)
+
+
+class Award(models.Model):
+    officer = models.ForeignKey(Officer)
+    type = models.CharField(max_length=255)
+    incident_start_date = models.DateField(null=True)
+    incident_end_date = models.DateField(null=True)
+    current_status = models.CharField(max_length=20)
+    request_date = models.DateField()
+    rank = models.CharField(max_length=100, blank=True)
+    last_promotion_date = models.DateField(null=True)
+    requester_full_name = models.CharField(max_length=255, null=True)
+    ceremony_date = models.DateField(null=True)
+    tracking_no = models.BigIntegerField(null=True)
+
+
+class Victim(models.Model):
+    allegation = models.ForeignKey(Allegation)
+    gender = models.CharField(max_length=1, blank=True)
+    race = models.CharField(max_length=50, blank=True)
+    age = models.IntegerField(null=True)
 
 
 class AttachmentRequest(models.Model):
