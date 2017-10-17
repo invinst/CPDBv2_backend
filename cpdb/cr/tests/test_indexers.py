@@ -40,7 +40,8 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.beat.name = '23'
         allegation.involvement_set = Mock()
         allegation.involvement_set.filter = Mock(return_value=[Mock(
-            involved_type='investigator', officer=Mock(id=1, abbr_name='L. Skol', gender_display='Male', race='White')
+            involved_type='investigator',
+            officer=Mock(id=1, abbr_name='L. Skol', current_badge='11111')
         )])
 
         allegation.audios = [Mock(title='CR audio', url='http://foo.com/')]
@@ -75,7 +76,7 @@ class CRIndexerTestCase(SimpleTestCase):
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'officers': [{'id': 1, 'abbr_name': 'L. Skol', 'extra_info': 'male, white'}]
+                    'officers': [{'id': 1, 'abbr_name': 'L. Skol', 'extra_info': 'Badge 11111'}]
                 }
             ],
             'audios': [
