@@ -7,7 +7,7 @@ from faker import Faker
 
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
-    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile)
+    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -135,3 +135,11 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
     original_url = factory.LazyFunction(lambda: fake.url())
+
+
+class AttachmentRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AttachmentRequest
+
+    allegation = factory.SubFactory(AllegationFactory)
+    email = factory.LazyFunction(lambda: fake.email())
