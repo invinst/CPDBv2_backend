@@ -180,3 +180,53 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_retrieve_no_match(self):
         response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_request_document(self):
+        AllegationFactory(crid='112233')
+        response = self.client.post(
+            reverse('api-v2:cr-request-document', kwargs={'pk': '112233'}),
+            {'email': 'valid_email@example.com'}
+        )
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'message': 'Thanks for subscribing',
+            'crid': '112233'
+        })
+
+    def test_request_same_document_twice(self):
+        allegation = AllegationFactory(crid='112233')
+        self.client.post(
+            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
+            {'email': 'valid_email@example.com'}
+        )
+
+        response2 = self.client.post(
+            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
+            {'email': 'valid_email@example.com'}
+        )
+        expect(response2.status_code).to.eq(status.HTTP_200_OK)
+        expect(response2.data).to.eq({
+            'message': 'Email already added',
+            'crid': '112233'
+        })
+
+    def test_request_document_without_email(self):
+        AllegationFactory(crid='321')
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'error': 'Please enter a valid email'
+        })
+
+    def test_request_document_with_invalid_email(self):
+        AllegationFactory(crid='321')
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}),
+                                    {'email': 'invalid@email'})
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'error': 'Please enter a valid email'
+        })
+
+    def test_request_document_with_invalid_allegation(self):
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
