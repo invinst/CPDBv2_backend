@@ -1578,6 +1578,37 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Officer social graph [/officers/{officer_id}/social-graph]
+
+### Get Officer social graph [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "links": [
+                {
+                    "source": 1,
+                    "target": 2,
+                    "cr_years": [2009, 2011]
+                }
+            ],
+            "nodes": [
+                {
+                    "id": 1,
+                    "name": "Clarence Featherwater",
+                    "cr_years": [null, 1984, 2009, 2009, 2011]
+                },
+                {
+                    "id": 2,
+                    "name": "Raymond Piwnicki",
+                    "cr_years": [2009, 2011]
+                }
+            ]
+        }
+
 
 ## CR [/cr/{crid}/]
 
@@ -1797,3 +1828,23 @@ This api require an api access token set in `Authorization` header. To get an ap
                 ]
             }
         }
+
+
+## Activity grid [/activity-grid]
+
+### Get activity cards [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Jerome Finnigan",
+                "visual_token_background_color": "#90b1f5"
+            },
+            {
+                "id": 2,
+                "full_name": "Raymond Piwnicki",
+                "visual_token_background_color": "#aec9e8"
+            }
+        ]

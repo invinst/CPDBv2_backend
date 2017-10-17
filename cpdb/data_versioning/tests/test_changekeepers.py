@@ -64,9 +64,9 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         })
         changelog = Changelog.objects.first()
         self.assertEqual(changelog.content['polygon'], (
-            'SRID=4326;MULTIPOLYGON (((-87.6472903440513420 41.9777476245163967, '
-            '-87.6488601283914619 41.9770421499063531, -87.6489575350607453 41.9769610907360757, '
-            '-87.6472903440513420 41.9777476245163967)))'))
+            'SRID=4326;MULTIPOLYGON (((-87.64729034405134 41.9777476245164, '
+            '-87.64886012839146 41.97704214990635, -87.64895753506075 41.97696109073608, '
+            '-87.64729034405134 41.9777476245164)))'))
 
     def test_create_with_multilinestring(self):
         self.changekeeper.create(LineArea, source=dict(), content={
@@ -75,7 +75,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         changelog = Changelog.objects.first()
         self.assertEqual(
             changelog.content['geom'],
-            'SRID=4326;MULTILINESTRING ((1.0000000000000000 2.0000000000000000, 2.0000000000000000 3.0000000000000000))'
+            'SRID=4326;MULTILINESTRING ((1 2, 2 3))'
         )
 
     def test_create_with_point(self):
@@ -83,7 +83,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         changelog = Changelog.objects.first()
         self.assertEqual(
             changelog.content['point'],
-            'SRID=4326;POINT (4.0000000000000000 5.0000000000000000)'
+            'SRID=4326;POINT (4 5)'
         )
 
     def test_update(self):
@@ -93,8 +93,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             crid='123456',
             incident_date=None,
             beat=areas[1])
-        allegation.areas = [areas[0]]
-        allegation.save()
+        allegation.areas.set([areas[0]])
 
         change_obj = {
             'incident_date': datetime(2000, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
@@ -163,7 +162,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             'line_areas': [line_area.pk],
             'add2': 'def',
             'location': '01',
-            'point': 'SRID=4326;POINT (0.0000000000000000 0.0000000000000000)',
+            'point': 'SRID=4326;POINT (0 0)',
             'source': 'IPRA',
             'summary': 'lorem ipsum',
             'incident_date': '2000-01-01T00:00:00Z',

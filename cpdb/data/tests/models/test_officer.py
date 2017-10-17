@@ -1,3 +1,4 @@
+from datetime import date
 from django.test.testcases import TestCase, override_settings
 
 from robber.expect import expect
@@ -22,6 +23,9 @@ class OfficerTestCase(TestCase):
 
     def test_v2_to(self):
         expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
+
+    def test_get_absolute_url(self):
+        expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
 
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
@@ -50,15 +54,39 @@ class OfficerTestCase(TestCase):
 
     def test_complaint_category_aggregation(self):
         officer = OfficerFactory()
-        allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
-        OfficerAllegationFactory(officer=officer, allegation=allegation, allegation_category=allegation_category)
+        OfficerAllegationFactory(officer=officer,
+                                 allegation=AllegationFactory(),
+                                 allegation_category=allegation_category,
+                                 start_date=None)
+        OfficerAllegationFactory(officer=officer,
+                                 allegation=AllegationFactory(),
+                                 allegation_category=allegation_category,
+                                 start_date=date(2010, 1, 1))
+        OfficerAllegationFactory(officer=officer,
+                                 allegation=AllegationFactory(),
+                                 allegation_category=allegation_category,
+                                 start_date=date(2011, 1, 1),
+                                 final_finding='SU')
 
         expect(officer.complaint_category_aggregation).to.eq([
             {
                 'name': 'Use of Force',
-                'count': 1,
-                'sustained_count': 0
+                'count': 3,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Use of Force'
+                    }, {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'Use of Force'
+                    }
+                ]
             }
         ])
 
@@ -66,21 +94,41 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        allegation3 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
+                                 final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
+        OfficerAllegationFactory(officer=officer, allegation=allegation3, start_date=None)
         ComplainantFactory(allegation=allegation1, race='White')
         ComplainantFactory(allegation=allegation2, race='')
+        ComplainantFactory(allegation=allegation3, race='White')
 
         expect(officer.complainant_race_aggregation).to.eq([
             {
                 'name': 'White',
-                'count': 1,
-                'sustained_count': 1
+                'count': 2,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'White'
+                    }
+                ]
             },
             {
                 'name': 'Unknown',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
             }
         ])
 
@@ -92,21 +140,38 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
+                                 final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
         ComplainantFactory(allegation=allegation1, age=23)
         ComplainantFactory(allegation=allegation2, age=None)
 
         expect(officer.complainant_age_aggregation).to.eq([
             {
-                'name': 'Unknown',
-                'count': 1,
-                'sustained_count': 0
-            },
-            {
                 'name': '21-30',
                 'count': 1,
-                'sustained_count': 1
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': '21-30'
+                    }
+                ]
+            },
+            {
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
             }
         ])
 
@@ -114,8 +179,9 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2)
+        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
+                                 final_finding='SU')
+        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
         ComplainantFactory(allegation=allegation1, gender='F')
         ComplainantFactory(allegation=allegation2, gender='')
 
@@ -123,12 +189,28 @@ class OfficerTestCase(TestCase):
             {
                 'name': 'Female',
                 'count': 1,
-                'sustained_count': 1
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'Female'
+                    }
+                ]
             },
             {
                 'name': 'Unknown',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
             }
         ])
 
@@ -139,3 +221,33 @@ class OfficerTestCase(TestCase):
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
+
+    def test_discipline_count(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory(officer=officer, final_outcome='100')
+        OfficerAllegationFactory(officer=officer, final_outcome='600')
+        OfficerAllegationFactory(officer=officer, final_outcome='')
+        expect(officer.discipline_count).to.eq(1)
+
+    def test_visual_token_background_color(self):
+        crs_colors = [
+            (0, '#f5f4f4'),
+            (3, '#edf0fa'),
+            (7, '#d4e2f4'),
+            (20, '#c6d4ec'),
+            (30, '#aec9e8'),
+            (45, '#90b1f5')
+        ]
+        for cr, color in crs_colors:
+            officer = OfficerFactory()
+            OfficerAllegationFactory.create_batch(cr, officer=officer)
+            expect(officer.visual_token_background_color).to.eq(color)
+
+    def test_visual_token_png_url(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
+
+    @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='media_folder')
+    def test_visual_token_png_path(self):
+        officer = OfficerFactory(id=90)
+        expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')

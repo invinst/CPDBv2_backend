@@ -1,17 +1,19 @@
 ---
 
-- name: Create a {{ application_name }} virtual machine via vagrant
+- name: Create {{ application_name }} staging
   hosts: all
   become: yes
   become_user: root
-  remote_user: ansible
+  remote_user: "{{ansible_remote_user}}"
   vars:
+    - ansible_remote_user: ansible
     - update_apt_cache: yes
     - postgresql_version: "9.4"
     - postgresql_package_version: "9.4.*-1.pgdg14.04+1"
   vars_files:
     - env_vars/base.yml
     - env_vars/secrets.yml
+    - env_vars/staging-secrets.yml
     - env_vars/staging.yml
   roles:
     - base

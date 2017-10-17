@@ -1,11 +1,7 @@
 from .common import *  # NOQA
 
 
-INSTALLED_APPS += ('corsheaders', 'django_extensions')  # NOQA
-
-MIDDLEWARE_CLASSES += (  # NOQA
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',)
+INSTALLED_APPS += ('django_extensions',)  # NOQA
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:9966',
@@ -15,7 +11,19 @@ CORS_ORIGIN_WHITELIST = (
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 MEDIA_ROOT = '/www/media/'
+DOMAIN = 'http://localhost:9966'
 
 DEBUG = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+}
+RUNNING_PORT = '8000'

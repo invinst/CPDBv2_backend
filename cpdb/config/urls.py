@@ -22,9 +22,6 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
-from wagtail.wagtailadmin import urls as wagtailadmin_urls
-from wagtail.wagtailcore import urls as wagtail_urls
-
 from vftg.views import VFTGViewSet
 from .views import index
 from search.views import SearchV2ViewSet, SearchV1ViewSet
@@ -37,6 +34,8 @@ from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
+from visual_token.views import VisualTokenView
+from activity_grid.views import ActivityGridViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -60,22 +59,22 @@ router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
+router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^cms/', include(wagtailadmin_urls)),
-    url(r'^wagtail/', include(wagtail_urls)),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
-        r'officer/\d+(?:/timeline)?|'
+        r'officer/\d+(?:/(?:timeline|social))?|'
         r'unit/\d+|'
         r'complaint/\d+/\d+|'
-        r'edit(?:/(?:reporting|faq)(?:/\d+)?)?'
+        r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index), name='index'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
+    url(r'^visual-token/(?P<renderer>[\w\.]+)/$', VisualTokenView.as_view(), name='visual_token'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

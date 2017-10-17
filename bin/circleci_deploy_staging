@@ -1,3 +1,20 @@
 #!/usr/bin/env bash
 
-echo $ANSIBLE_VAULT_PASSWORD > vault_pass.txt && ansible-playbook ansible/staging.yml -i ansible/inventory/staging --tags "deploy" --vault-password-file ./vault_pass.txt
+# Only run rebuild_index and rebuild_search_index if the latest commit message
+# has the text `[rebuild_index]` in it.
+
+GIT_COMMIT_MSG=`git log --format=%B -n 1 $CIRCLE_SHA1`
+
+if [[ $GIT_COMMIT_MSG == *"[rebuild_index]"* ]]; then
+  REBUILD_INDEX="true"
+else
+  REBUILD_INDEX="false"
+fi
+
+echo $ANSIBLE_VAULT_PASSWORD > vault_pass.txt
+
+ansible-playbook ansible/staging.yml \
+  -i ansible/inventory/staging \
+  --tags "deploy" \
+  --vault-password-file ./vault_pass.txt \
+  --extra-vars "{\"run_rebuild_index\": $REBUILD_INDEX}"

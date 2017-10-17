@@ -138,7 +138,9 @@ class UnitIndexer(BaseIndexer):
         return {
             'name': datum.unit_name,
             'description': datum.description,
-            'url': datum.v1_url
+            'url': datum.v1_url,
+            'active_member_count': datum.active_member_count,
+            'member_count': datum.member_count
         }
 
 

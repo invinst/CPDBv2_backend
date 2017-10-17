@@ -18,16 +18,15 @@ Ansible variables in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagran
 - `db_user`: Database user name
 - `db_name`: Database name
 - `db_password`: Database password
-- `env_file`: A multiline string with the same format in `env.sample` file which contains following environment variables:
-    - `DJANGO_SETTINGS_MODULE`: Django settings module
-    - `DJANGO_DEBUG`: Debug mode
-    - `DATABASE_URL`: Database url
-    - `DJANGO_SECRET_KEY`: Django secret key
-    - `MAILCHIMP_API_KEY`: Mailchimp api key
-    - `MAILCHIMP_USER`: Mailchimp user name
-    - `AZURE_STORAGE_ACCOUNT_NAME`: Azure storage account name
-    - `AZURE_STORAGE_ACCOUNT_KEY`: Azure store account key
-    - `MAILGUN_API_KEY`: Mailgun api key
+- `django_settings_module`: Django settings module
+- `django_debug`: Debug mode
+- `database_url`: Database url
+- `django_secret_key`: Django secret key
+- `mailchimp_api_key`: Mailchimp api key
+- `mailchimp_user`: Mailchimp user name
+- `azure_storage_account_name`: Azure storage account name
+- `azure_storage_account_key`: Azure store account key
+- `mailgun_api_key`: Mailgun api key
 - `newrelic_license`: Newrelic license key
 
 Then just `vagrant up --provision` and wait for ansible to do its things. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` if you like.
@@ -63,6 +62,23 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 bin/deploy_staging
 ```
 
+In fact, our CircleCI is currently set up to automatically deploy the `staging` branch. In cases where the feature being merged into staging requires rebuilding the
+Elasticsearch index, you must tell the deploy script to do so by including `[rebuild_index]` in the merge commit's message:
+
+```bash
+# Do work on feature branch, commit & push as usual:
+git commit
+git push
+# Checkout staging and merge said branch:
+git checkout staging && git pull
+git merge feature/my-feature-branch  # merge commit message editor opens - include `[rebuild_index]` here
+git push  # remember to test locally before pushing of course!
+```
+
+# Removed apps
+
+The following apps are removed: `landing_page`, `faq`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `faq_` or `story_`, it should be safe to remove them.
+
 # Infrastructure changes
 
 For any infrastructure changes, please add a new Ansible role to set it up. Changes that are needed to run every deployment, please put the tag `deploy`.
@@ -80,3 +96,8 @@ Regarding to the nginx changes, please update both files: with and without https
     + Data from v1 will be exported into csv files in root folder after run above command.
 - Import v2 data: Run `cpdb/manage.py import_002_officer_data_from_v1 --folder [FOLDER]` on v2 repository.
 - After importing run: `cpdb/manage.py rebuild_index` to rebuild indexes for elasticsearch.
+
+# Miscelaneous
+
+- [Snapshot test](docs/snapshot-test.md)
+- [Visual tokens](docs/visual-tokens.md)

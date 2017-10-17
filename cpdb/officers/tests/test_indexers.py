@@ -1,13 +1,16 @@
-from datetime import date
+from datetime import date, datetime
 
+import pytz
 from django.test import SimpleTestCase
+from django.test.testcases import TestCase
 
 from mock import Mock, patch
 from robber import expect
 
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer, YearTimelineEventIndexer,
-    JoinedTimelineEventIndexer, TimelineMinimapIndexer
+    JoinedTimelineEventIndexer, TimelineMinimapIndexer, SocialGraphIndexer
 )
 
 
@@ -33,32 +36,45 @@ class OfficersIndexerTestCase(SimpleTestCase):
         officer.appointed_date = date(2017, 2, 27)
         officer.allegation_count = 1
         officer.sustained_count = 0
+        officer.total_complaints_aggregation = [{'year': 2000, 'count': 1, 'sustained_count': 0}]
         officer.complaint_category_aggregation = [
             {
                 'name': 'Illegal Search',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_race_aggregation = [
             {
                 'name': 'White',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_age_aggregation = [
             {
                 'name': '<20',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
         officer.complainant_gender_aggregation = [
             {
                 'name': 'Male',
                 'count': 1,
-                'sustained_count': 0
+                'sustained_count': 0,
+                'items': [
+                    {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                ]
             }
         ]
 
@@ -74,22 +90,31 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 0,
+                'items': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
                 'facets': [
                     {
                         'name': 'category',
-                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     },
                     {
                         'name': 'complainant gender',
-                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0}]
+                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                        ]}]
                     }
                 ]
             }
@@ -249,3 +274,59 @@ class TimelineMinimapIndexerTestCase(SimpleTestCase):
                         }
                     ]
                 })
+
+
+class SocialGraphIndexerTestCase(TestCase):
+    def setUp(self):
+        self.indexer = SocialGraphIndexer()
+
+        self.officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
+        allegation1 = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
+        allegation2 = AllegationFactory(incident_date=datetime(2002, 2, 2, tzinfo=pytz.utc))
+        allegation3 = AllegationFactory(incident_date=None)
+        allegation4 = AllegationFactory(incident_date=datetime(2002, 12, 12, tzinfo=pytz.utc))
+
+        OfficerAllegationFactory(officer=self.officer1, allegation=allegation1)
+        OfficerAllegationFactory(officer=self.officer1, allegation=allegation2)
+        OfficerAllegationFactory(officer=self.officer1, allegation=allegation3)
+        OfficerAllegationFactory(officer=self.officer1, allegation=allegation4)
+
+        self.officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+        OfficerAllegationFactory(officer=self.officer2, allegation=allegation1)
+        OfficerAllegationFactory(officer=self.officer2, allegation=allegation2)
+
+        unrelated_allegation = AllegationFactory(incident_date=datetime(2003, 3, 3, tzinfo=pytz.utc))
+        unrelated_officer = OfficerFactory(id=3, first_name='Some', last_name='Unrelated Guy')
+        OfficerAllegationFactory(officer=unrelated_officer, allegation=unrelated_allegation)
+        OfficerAllegationFactory(officer=self.officer2, allegation=unrelated_allegation)
+
+    def test_get_queryset(self):
+        officer = Mock()
+        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
+            expect(SocialGraphIndexer().get_queryset()).to.eq([officer])
+
+    def test_extract_datum(self):
+        expect(self.indexer.extract_datum(self.officer1)).to.eq({
+            'officer_id': 1,
+            'graph': {
+                'links': [
+                    {
+                        'source': 1,
+                        'target': 2,
+                        'cr_years': [2001, 2002]
+                    }
+                ],
+                'nodes': [
+                    {
+                        'id': 1,
+                        'name': 'Clarence Featherwater',
+                        'cr_years': [None, 2001, 2002, 2002]
+                    },
+                    {
+                        'id': 2,
+                        'name': 'Raymond Piwnicki',
+                        'cr_years': [2001, 2002, 2003]
+                    }
+                ]
+            }
+        })

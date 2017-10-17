@@ -1,6 +1,7 @@
 from datetime import datetime, date
 
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.contrib.gis.geos.collections import MultiPolygon, Point, MultiLineString
 
 from rest_framework import serializers
@@ -97,7 +98,10 @@ class PostgreSQLChangeKeeper(object):
                     diff[key] = (getattr(instance, key), val)
                 diff[key] = (self._json_serialize(diff[key][0]), self._json_serialize(diff[key][1]))
 
-                setattr(instance, key, val)
+                if isinstance(instance._meta.get_field(key), models.ManyToManyField):
+                    getattr(instance, key).set(val)
+                else:
+                    setattr(instance, key, val)
 
         instance.save()
         self._create_changelog(klass, diff, source, log_type=LOG_TYPE_UPDATE, pk=instance.pk)
@@ -108,6 +112,7 @@ class PostgreSQLChangeKeeper(object):
         class klassSerializer(serializers.ModelSerializer):
             class Meta:
                 model = klass
+                fields = '__all__'
 
         self._create_changelog(klass, klassSerializer(instance).data, source, log_type=LOG_TYPE_DELETE, pk=instance.pk)
         instance.delete()

@@ -1,15 +1,13 @@
 import random
 
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
-from django.contrib.contenttypes.models import ContentType
 
 import factory
 from faker import Faker
-from wagtail.wagtailcore.models import Page
 
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
-    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile)
+    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -53,15 +51,6 @@ class InvestigatorFactory(factory.django.DjangoModelFactory):
     current_rank = factory.LazyFunction(lambda: fake.word())
 
 
-class RootPageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Page
-
-    title = 'Root'
-    slug = 'root'
-    content_type = ContentType.objects.get_for_model(Page)
-
-
 class OfficerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Officer
@@ -90,6 +79,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
 
     allegation = factory.SubFactory(AllegationFactory)
     officer = factory.SubFactory(OfficerFactory)
+    start_date = factory.LazyFunction(lambda: fake.date())
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
@@ -127,6 +117,7 @@ class OfficerHistoryFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     unit = factory.SubFactory(PoliceUnitFactory)
     effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
 
 
 class InvolvementFactory(factory.django.DjangoModelFactory):
@@ -144,3 +135,11 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
     original_url = factory.LazyFunction(lambda: fake.url())
+
+
+class AttachmentRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AttachmentRequest
+
+    allegation = factory.SubFactory(AllegationFactory)
+    email = factory.LazyFunction(lambda: fake.email())

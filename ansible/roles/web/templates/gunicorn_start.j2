@@ -6,7 +6,7 @@ SOCKFILE={{ virtualenv_path }}/run/gunicorn.sock
 USER={{ deploy_user }}
 GROUP={{ deploy_group }}
 NUM_WORKERS={{ gunicorn_num_workers }}
-export DJANGO_SETTINGS_MODULE={{ django_settings_file }}
+export DJANGO_SETTINGS_MODULE={{ django_settings_module }}
 # Set this to 0 for unlimited requests. During development, you might want to
 # set this to 1 to automatically restart the process on each request (i.e. your
 # code will be reloaded on every request).

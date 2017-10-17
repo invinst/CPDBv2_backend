@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from data.models import AttachmentRequest
 
 
 class CoaccusedSerializer(serializers.Serializer):
     id = serializers.IntegerField(source='officer.id')
+    badge = serializers.CharField(source='officer.current_badge')
     full_name = serializers.CharField(source='officer.full_name')
     gender = serializers.CharField(source='officer.gender_display')
     race = serializers.CharField(source='officer.race')
@@ -27,7 +29,7 @@ class InvolvementOfficerSerializer(serializers.Serializer):
     extra_info = serializers.SerializerMethodField()
 
     def get_extra_info(self, obj):
-        return ('%s, %s' % (obj.gender_display, obj.race)).lower()
+        return 'Badge %s' % obj.current_badge
 
 
 class BeatSerializer(serializers.Serializer):
@@ -71,3 +73,10 @@ class CRSerializer(serializers.Serializer):
             {'involved_type': involved_type, 'officers': officers}
             for involved_type, officers in results.iteritems()]
         return results
+
+
+class AttachmentRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AttachmentRequest
+        fields = '__all__'

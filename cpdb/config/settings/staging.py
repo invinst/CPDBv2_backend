@@ -3,13 +3,8 @@ from .common import *  # NOQA
 import environ
 
 env = environ.Env()
+
 DEBUG = False
-
-
-INSTALLED_APPS += ('corsheaders',)  # NOQA
-MIDDLEWARE_CLASSES += (  # NOQA
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware')
 
 CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
@@ -45,7 +40,8 @@ LOGGING = {
     },
 }
 
-V1_URL = 'https://staging.cpdb.co'
+V1_URL = 'http://staging.cpdb.co'
+DOMAIN = 'http://staging.cpdp.co'
 
 ANYMAIL = {
     'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY'),

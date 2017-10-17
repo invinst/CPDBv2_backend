@@ -25,7 +25,7 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.crid = '12345'
         allegation.officer_allegations = [
             Mock(
-                officer=Mock(id=1, full_name='Mr. Foo', gender_display='Male', race='White'),
+                officer=Mock(id=1, full_name='Mr. Foo', gender_display='Male', race='White', current_badge='123456'),
                 final_finding_display='Sustained', recc_outcome_display='Reprimand', final_outcome_display='Reprimand',
                 start_date='2002-02-28', end_date='2003-02-28', category='Operation/Personnel Violations',
                 subcategory='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
@@ -40,7 +40,8 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.beat.name = '23'
         allegation.involvement_set = Mock()
         allegation.involvement_set.filter = Mock(return_value=[Mock(
-            involved_type='investigator', officer=Mock(id=1, abbr_name='L. Skol', gender_display='Male', race='White')
+            involved_type='investigator',
+            officer=Mock(id=1, abbr_name='L. Skol', current_badge='11111')
         )])
 
         allegation.audios = [Mock(title='CR audio', url='http://foo.com/')]
@@ -48,7 +49,7 @@ class CRIndexerTestCase(SimpleTestCase):
         allegation.documents = [Mock(title='CR document', url='http://foo.com/')]
 
         result = CRIndexer().extract_datum(allegation)
-        self.assertEqual(result, {
+        expect(result).to.eq({
             'crid': '12345',
             'coaccused': [
                 {
@@ -63,6 +64,7 @@ class CRIndexerTestCase(SimpleTestCase):
                     'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
                     'start_date': '2002-02-28',
                     'end_date': '2003-02-28',
+                    'badge': '123456'
                 }
             ],
             'complainants': [{'gender': 'Male', 'race': 'White', 'age': 30}],
@@ -74,7 +76,7 @@ class CRIndexerTestCase(SimpleTestCase):
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'officers': [{'id': 1, 'abbr_name': 'L. Skol', 'extra_info': 'male, white'}]
+                    'officers': [{'id': 1, 'abbr_name': 'L. Skol', 'extra_info': 'Badge 11111'}]
                 }
             ],
             'audios': [
