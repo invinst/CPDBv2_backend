@@ -51,6 +51,9 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         involvedOfficer1 = OfficerFactory(id=1, first_name='Lee', last_name='Skol', gender='F', race='White')
         involvedOfficer2 = OfficerFactory(id=2, first_name='Richard', last_name='Piwinicki', gender='M', race='White')
         involvedOfficer3 = OfficerFactory(id=3, first_name='Jack', last_name='Ipsum', gender='M', race='Black')
+        OfficerBadgeNumberFactory(officer=involvedOfficer1, star='11111', current=True)
+        OfficerBadgeNumberFactory(officer=involvedOfficer2, star='22222', current=True)
+        OfficerBadgeNumberFactory(officer=involvedOfficer3, star='33333', current=True)
 
         InvolvementFactory(
             allegation=allegation, involved_type='investigator', officer=involvedOfficer1)
@@ -134,7 +137,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                         {
                             'id': 1,
                             'abbr_name': 'L. Skol',
-                            'extra_info': 'female, white'
+                            'extra_info': 'Badge 11111'
                         }
                     ]
                 },
@@ -144,12 +147,12 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                         {
                             'id': 3,
                             'abbr_name': 'J. Ipsum',
-                            'extra_info': 'male, black'
+                            'extra_info': 'Badge 33333'
                         },
                         {
                             'id': 2,
                             'abbr_name': 'R. Piwinicki',
-                            'extra_info': 'male, white'
+                            'extra_info': 'Badge 22222'
                         }
                     ]
                 }

@@ -8,9 +8,9 @@ from cr.serializers import InvolvementOfficerSerializer, CRSerializer
 
 class InvolvementOfficerSerializerTestCase(TestCase):
     def test_get_extra_info(self):
-        officer = Mock(id=1, abbr_name='M. Foo', gender_display='Female', race='White')
+        officer = Mock(id=1, abbr_name='M. Foo', current_badge='11111')
         result = InvolvementOfficerSerializer(officer).data
-        expect(result['extra_info']).to.eq('female, white')
+        expect(result['extra_info']).to.eq('Badge 11111')
 
 
 class CRSerializerTestCase(TestCase):
@@ -61,10 +61,10 @@ class CRSerializerTestCase(TestCase):
         obj.audios = []
         obj.involvement_set = Mock()
 
-        officer1 = Mock(id=1, abbr_name='M. Foo', gender_display='Male', race='White')
+        officer1 = Mock(id=1, abbr_name='M. Foo', gender_display='Male', race='White', current_badge='11111')
         involvement1 = Mock(officer=officer1, involved_type='commander')
 
-        officer2 = Mock(id=2, abbr_name='M. Bar', gender_display='Female', race='Black')
+        officer2 = Mock(id=2, abbr_name='M. Bar', gender_display='Female', race='Black', current_badge='22222')
         involvement2 = Mock(officer=officer2, involved_type='investigator')
 
         obj.involvement_set.filter = Mock(return_value=[involvement1, involvement2])
@@ -74,13 +74,13 @@ class CRSerializerTestCase(TestCase):
             'officers': [{
                 'id': 2,
                 'abbr_name': 'M. Bar',
-                'extra_info': 'female, black'
+                'extra_info': 'Badge 22222'
             }]
         }, {
             'involved_type': 'commander',
             'officers': [{
                 'id': 1,
                 'abbr_name': 'M. Foo',
-                'extra_info': 'male, white'
+                'extra_info': 'Badge 11111'
             }]
         }])

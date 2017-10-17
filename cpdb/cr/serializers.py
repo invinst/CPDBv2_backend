@@ -29,7 +29,7 @@ class InvolvementOfficerSerializer(serializers.Serializer):
     extra_info = serializers.SerializerMethodField()
 
     def get_extra_info(self, obj):
-        return ('%s, %s' % (obj.gender_display, obj.race)).lower()
+        return 'Badge %s' % obj.current_badge
 
 
 class BeatSerializer(serializers.Serializer):
