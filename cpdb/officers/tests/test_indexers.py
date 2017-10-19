@@ -10,7 +10,7 @@ from robber import expect
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer, YearTimelineEventIndexer,
-    JoinedTimelineEventIndexer, TimelineMinimapIndexer, SocialGraphIndexer
+    JoinedTimelineEventIndexer, SocialGraphIndexer
 )
 
 
@@ -246,41 +246,6 @@ class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
             'year_sort': 2012,
             'priority_sort': 10,
         })
-
-
-class TimelineMinimapIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(TimelineMinimapIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock()
-        officer.pk = 123
-        officer.appointed_date = date(2000, 1, 1)
-        oa = Mock()
-        oa.start_date = date(2012, 1, 1)
-        unit = Mock()
-        unit.effective_date = date(2001, 1, 1)
-        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[oa]):
-            with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[unit]):
-                expect(TimelineMinimapIndexer().extract_datum(officer)).to.eq({
-                    'officer_id': 123,
-                    'items': [
-                        {
-                            'kind': 'CR',
-                            'year': 2012
-                        },
-                        {
-                            'kind': 'Unit',
-                            'year': 2001
-                        },
-                        {
-                            'kind': 'Joined',
-                            'year': 2000
-                        }
-                    ]
-                })
 
 
 class SocialGraphIndexerTestCase(TestCase):

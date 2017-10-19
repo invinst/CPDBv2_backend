@@ -234,22 +234,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             {
                 'kind': 'Unit',
                 'year': 2017,
-                'unit_name': '69',
-                'date': '2017-02-27'
             }, {
                 'kind': 'CR',
-                'crid': '111222',
-                'gender': ['Unknown'],
-                'age': ['Unknown'],
-                'date': '2016-08-23',
-                'race': ['Unknown'],
                 'year': 2016,
-                'finding': 'Unknown',
-                'coaccused': 1
             }, {
                 'kind': 'Joined',
                 'year': 2000,
-                'date': '2000-01-01'
             }
         ])
 

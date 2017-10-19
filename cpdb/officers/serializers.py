@@ -105,15 +105,11 @@ class TimelineMinimapSerializer(serializers.Serializer):
         'JOINED': 'Joined',
     }
 
-    def to_representation(self, obj):
-        result = obj.to_dict()
-        if hasattr(obj, 'date'):
-            result['year'] = int(obj.date[:4])
+    year = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
 
-        result.pop('officer_id')
-        result.pop('date_sort')
-        result.pop('year_sort')
-        result.pop('priority_sort')
+    def get_year(self, obj):
+        return int(obj.date[:4])  # date is in ISO format: YYYY-MM-DD
 
-        result['kind'] = self._KIND_MAPPINGS.get(result['kind'], result['kind'])
-        return result
+    def get_kind(self, obj):
+        return self._KIND_MAPPINGS.get(obj.kind, obj.kind)
