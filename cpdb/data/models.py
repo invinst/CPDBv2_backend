@@ -602,7 +602,7 @@ class Allegation(models.Model):
                 default='gender',
                 output_field=models.CharField()))
         query = query.values('name').distinct()
-        results = [result['name'] for result in query]
+        results = [GENDER_DICT.get(result['name'], 'Unknown') for result in query]
         return results if results else ['Unknown']
 
     @property

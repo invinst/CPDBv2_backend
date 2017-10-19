@@ -139,7 +139,7 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
         officer_allegation.coaccused_count = 4
         officer_allegation.allegation.complainant_races = ['White', 'Unknown']
         officer_allegation.allegation.complainant_age_groups = ['21-30', '51+']
-        officer_allegation.allegation.complainant_genders = ['M']
+        officer_allegation.allegation.complainant_genders = ['Male']
 
         expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -155,7 +155,7 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             'coaccused': 4,
             'race': ['White', 'Unknown'],
             'age': ['21-30', '51+'],
-            'gender': ['M']
+            'gender': ['Male']
         })
 
 
