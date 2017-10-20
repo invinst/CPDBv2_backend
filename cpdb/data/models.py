@@ -735,7 +735,7 @@ class Award(models.Model):
     last_promotion_date = models.DateField(null=True)
     requester_full_name = models.CharField(max_length=255, null=True)
     ceremony_date = models.DateField(null=True)
-    tracking_no = models.BigIntegerField(null=True)
+    tracking_no = models.CharField(max_length=255, null=True)
 
 
 class Victim(models.Model):
