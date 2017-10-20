@@ -726,7 +726,7 @@ class AttachmentFile(models.Model):
 
 class Award(models.Model):
     officer = models.ForeignKey(Officer)
-    type = models.CharField(max_length=255)
+    award_type = models.CharField(max_length=255)
     incident_start_date = models.DateField(null=True)
     incident_end_date = models.DateField(null=True)
     current_status = models.CharField(max_length=20)
