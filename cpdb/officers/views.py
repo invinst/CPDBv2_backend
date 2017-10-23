@@ -42,7 +42,7 @@ class OfficersViewSet(viewsets.ViewSet):
 
         # match all non-CR events and CR events that match provided filters
         if filter_params:
-            query = query.query(~Q('match', kind='CR') | Q('bool', must=filter_params))
+            query = query.filter(~Q('match', kind='CR') | Q('bool', must=filter_params))
 
         return query
 
