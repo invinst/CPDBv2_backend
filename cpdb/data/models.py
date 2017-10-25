@@ -37,6 +37,10 @@ class PoliceUnit(TaggableModel):
         return self.unit_name
 
     @property
+    def v2_to(self):
+        return '/unit/%s/' % self.unit_name
+
+    @property
     def v1_url(self):
         return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(
             domain=settings.V1_URL, unit_name=self.unit_name
