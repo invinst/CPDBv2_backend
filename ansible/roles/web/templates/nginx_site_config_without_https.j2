@@ -31,7 +31,7 @@ server {
     if ($is_redirect = C) {
         return 301 $scheme://{{ nginx_mobile_server_name }}$request_uri;
     }
-    
+
     location /static/ {
         alias   {{ nginx_static_dir }};
     }
@@ -57,6 +57,7 @@ server {
         # *application* server like Unicorn/Rainbows! serve static files.
         if (!-f $request_filename) {
             proxy_pass http://{{ application_name }}_wsgi_server;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
             break;
         }
     }
