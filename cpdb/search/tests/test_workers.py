@@ -38,13 +38,18 @@ class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
 class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
         doc = OfficerDocType(
-            full_name='full name', badge='123')
+            full_name='full name', badge='123', allegation_count=10)
+        doc.save()
+        doc = OfficerDocType(
+            full_name='funny naga', badge='456', allegation_count=20)
         doc.save()
 
         self.refresh_index()
 
         response = OfficerWorker().search('fu na')
-        expect(response.hits.total).to.be.equal(1)
+        expect(response.hits.total).to.be.equal(2)
+        expect(response.hits.hits[0]['full_name']).to.equal('funny naga')
+        expect(response.hits.hits[0]['full_name']).to.equal('full name')
 
 
 class UnitWorkerTestCase(IndexMixin, SimpleTestCase):

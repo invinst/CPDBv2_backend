@@ -8,6 +8,7 @@ from .doc_types import (
 class Worker(object):
     doc_type_klass = None
     fields = []
+    sort_order = []
     name = ''
 
     @property
@@ -18,8 +19,9 @@ class Worker(object):
         return search_results[begin:size]
 
     def query(self, term):
-        return self._searcher.query('multi_match', query=term,
-                                    operator='and', fields=self.fields)
+        return self._searcher\
+            .query('multi_match', query=term, operator='and', fields=self.fields)\
+            .sort(*self.sort_order)
 
     def search(self, term, size=10, begin=0):
         return self._limit(self.query(term), begin, size).execute()
@@ -48,6 +50,7 @@ class ReportWorker(Worker):
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
     fields = ['full_name', 'badge', 'tags']
+    sort_order = ['-allegation_count']
 
 
 class UnitWorker(Worker):
@@ -80,6 +83,7 @@ class CoAccusedOfficerWorker(Worker):
 class UnitOfficerWorker(Worker):
     doc_type_klass = UnitOfficerDocType
     fields = ['unit_name']
+    sort_order = ['-allegation_count']
 
     def query(self, term):
         return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')

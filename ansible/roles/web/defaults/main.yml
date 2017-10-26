@@ -3,7 +3,7 @@
 # Application settings.
 pyenv_root: "/pyenv"
 pyenv_virtualenv: true
-python_version: "2.7.11"
+python_version: "2.7.14"
 pyenv: "{{ pyenv_root }}/bin/pyenv"
 virtualenv_path: "{{ pyenv_root }}/versions/{{ application_name }}"
 project_root_path: "/CPDB/{{ project_name }}"
