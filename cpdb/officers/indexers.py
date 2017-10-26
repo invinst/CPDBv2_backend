@@ -5,7 +5,7 @@ from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
 from .doc_types import (
-    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerTimelineMinimapDocType, OfficerSocialGraphDocType
+    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
@@ -98,32 +98,6 @@ class JoinedTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, officer):
         return JoinedTimelineSerializer(officer).data
-
-
-@register_indexer(app_name)
-class TimelineMinimapIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineMinimapDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, officer):
-        items = []
-        for oa in OfficerAllegation.objects.filter(start_date__isnull=False, officer=officer):
-            items.append({'kind': 'CR', 'year': oa.start_date.year, 'date': oa.start_date})
-
-        for oh in OfficerHistory.objects.filter(effective_date__isnull=False, officer=officer):
-            items.append({'kind': 'Unit', 'year': oh.effective_date.year, 'date': oh.effective_date})
-
-        if officer.appointed_date is not None:
-            items.append({'kind': 'Joined', 'year': officer.appointed_date.year, 'date': officer.appointed_date})
-
-        items = sorted(items, key=lambda item: item['date'], reverse=True)
-        for item in items:
-            item.pop('date')
-
-        return {'officer_id': officer.pk, 'items': items}
 
 
 @register_indexer(app_name)

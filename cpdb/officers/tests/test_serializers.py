@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from django.test import SimpleTestCase
 
 from robber import expect
 from mock import Mock
 
-from officers.serializers import TimelineSerializer
+from officers.serializers import TimelineSerializer, CRTimelineSerializer, TimelineMinimapSerializer
 
 
 class TimelineSerializerTestCase(SimpleTestCase):
@@ -18,6 +18,7 @@ class TimelineSerializerTestCase(SimpleTestCase):
             'year_sort': 2000,
             'priority_sort': 40,
             'officer_id': 123
+
         })
         expect(TimelineSerializer(obj).data).to.eq({
             'a': 'b',
@@ -46,4 +47,77 @@ class TimelineSerializerTestCase(SimpleTestCase):
         ], many=True).data).to.eq([
             {'a': 'b'},
             {'c': 'd'}
+        ])
+
+
+class CRTimelineSerializerTestCase(SimpleTestCase):
+    def test_serialization(self):
+        obj = Mock(**{
+            'officer_id': 123,
+            'start_date': date(2016, 1, 1),
+            'crid': '123456',
+            'category': 'Illegal Search',
+            'subcategory': 'XXX',
+            'final_finding_display': 'Unfounded',
+            'coaccused_count': 0,
+            'allegation': Mock(**{
+                'complainant_races': ['White'],
+                'complainant_age_groups': ['31-40'],
+                'complainant_genders': ['Female', 'Male']
+            })
+        })
+        expect(CRTimelineSerializer(obj).data).to.eq({
+            'officer_id': 123,
+            'date': '2016-01-01',
+            'date_sort': date(2016, 1, 1),
+            'year_sort': 2016,
+            'priority_sort': 40,
+            'kind': 'CR',
+            'crid': '123456',
+            'category': 'Illegal Search',
+            'subcategory': 'XXX',
+            'finding': 'Unfounded',
+            'coaccused': 0,
+            'race': ['White'],
+            'age': ['31-40'],
+            'gender': ['Female', 'Male']
+        })
+
+
+class TimelineMinimapSerializerTestCase(SimpleTestCase):
+    def test_serialization(self):
+        # obj = Mock()
+        obj = Mock(**{
+            'x': 123,
+            'date': '2017-05-01',
+            'kind': 'CR',
+        })
+        expect(TimelineMinimapSerializer(obj).data).to.eq({
+            'kind': 'CR',
+            'year': 2017
+        })
+
+    def test_serialize_multiple(self):
+        obj1 = Mock(**{
+            'x': 123,
+            'date': '2017-05-01',
+            'kind': 'CR',
+        })
+
+        obj2 = Mock(**{
+            'y': 321,
+            'date': '2016-05-01',
+            'kind': 'UNIT_CHANGE',
+        })
+
+        obj3 = Mock(**{
+            'z': 333,
+            'date': '2016-02-01',
+            'kind': 'JOINED',
+        })
+
+        expect(TimelineMinimapSerializer([obj1, obj2, obj3], many=True).data).to.eq([
+            {'kind': 'CR', 'year': 2017},
+            {'kind': 'Unit', 'year': 2016},
+            {'kind': 'Joined', 'year': 2016}
         ])

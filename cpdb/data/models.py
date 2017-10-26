@@ -57,7 +57,7 @@ class PoliceUnit(TaggableModel):
         query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
             name=models.Case(
                 models.When(race__isnull=True, then=models.Value('Unknown')),
-                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
                 default='race',
                 output_field=models.CharField()
             )
@@ -142,7 +142,7 @@ class PoliceUnit(TaggableModel):
         ).distinct().annotate(
             name=models.Case(
                 models.When(race__isnull=True, then=models.Value('Unknown')),
-                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
                 default='race',
                 output_field=models.CharField()
             )
@@ -156,7 +156,7 @@ class PoliceUnit(TaggableModel):
         ).distinct().annotate(
             name=models.Case(
                 models.When(race__isnull=True, then=models.Value('Unknown')),
-                models.When(race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                models.When(race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
                 default='race',
                 output_field=models.CharField()
             )
@@ -356,7 +356,7 @@ class Officer(TaggableModel):
         query = query.annotate(
             name=models.Case(
                 models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                models.When(allegation__complainant__race__in=['n/a', 'n/a ', ''], then=models.Value('Unknown')),
+                models.When(allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
                 default='allegation__complainant__race',
                 output_field=models.CharField()
             ),
@@ -574,6 +574,35 @@ class Allegation(models.Model):
     @property
     def complainants(self):
         return self.complainant_set.all()
+
+    @property
+    def complainant_races(self):
+        query = self.complainant_set.annotate(
+            name=models.Case(
+                models.When(race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
+                default='race',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [result['name'] for result in query]
+        return results if results else ['Unknown']
+
+    @property
+    def complainant_age_groups(self):
+        results = self.complainant_set.annotate(name=get_num_range_case('age', [0, 20, 30, 40, 50]))
+        results = results.values('name').distinct()
+        results = [result['name'] for result in results]
+        return results if results else ['Unknown']
+
+    @property
+    def complainant_genders(self):
+        query = self.complainant_set.annotate(
+            name=models.Case(
+                models.When(gender='', then=models.Value('Unknown')),
+                default='gender',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [GENDER_DICT.get(result['name'], 'Unknown') for result in query]
+        return results if results else ['Unknown']
 
     @property
     def videos(self):
