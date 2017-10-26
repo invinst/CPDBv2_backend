@@ -99,6 +99,7 @@ server {
         # *application* server like Unicorn/Rainbows! serve static files.
         if (!-f $request_filename) {
             proxy_pass http://{{ application_name }}_wsgi_server;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
             break;
         }
     }
