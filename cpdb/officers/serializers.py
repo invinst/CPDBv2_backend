@@ -38,12 +38,24 @@ class CRTimelineSerializer(serializers.Serializer):
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
     coaccused = serializers.IntegerField(source='coaccused_count')
+    race = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    gender = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'CR'
 
     def get_priority_sort(self, obj):
         return 40
+
+    def get_race(self, obj):
+        return obj.allegation.complainant_races
+
+    def get_age(self, obj):
+        return obj.allegation.complainant_age_groups
+
+    def get_gender(self, obj):
+        return obj.allegation.complainant_genders
 
 
 class UnitChangeTimelineSerializer(serializers.Serializer):
@@ -85,3 +97,19 @@ class TimelineSerializer(serializers.Serializer):
         result.pop('year_sort')
         result.pop('priority_sort')
         return result
+
+
+class TimelineMinimapSerializer(serializers.Serializer):
+    _KIND_MAPPINGS = {
+        'UNIT_CHANGE': 'Unit',
+        'JOINED': 'Joined',
+    }
+
+    year = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+
+    def get_year(self, obj):
+        return int(obj.date[:4])  # date is in ISO format: YYYY-MM-DD
+
+    def get_kind(self, obj):
+        return self._KIND_MAPPINGS.get(obj.kind, obj.kind)
