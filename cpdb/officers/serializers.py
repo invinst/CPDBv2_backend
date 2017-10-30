@@ -5,6 +5,8 @@ class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     unit = serializers.CharField(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
+    date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
+    active = serializers.SerializerMethodField()
     rank = serializers.CharField()
     full_name = serializers.CharField()
     race = serializers.CharField()
@@ -24,6 +26,9 @@ class OfficerSummarySerializer(serializers.Serializer):
             ],
             'items': obj.total_complaints_aggregation
         }
+
+    def get_active(self, obj):
+        return obj.get_active_display()
 
 
 class CRTimelineSerializer(serializers.Serializer):
