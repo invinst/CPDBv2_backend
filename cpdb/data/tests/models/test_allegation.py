@@ -58,3 +58,33 @@ class AllegationTestCase(TestCase):
         AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         expect(allegation.documents.count()).to.eq(1)
         expect(allegation.documents[0].id).to.eq(1)
+
+    def test_complainant_races(self):
+        allegation = AllegationFactory()
+        ComplainantFactory(race='White', allegation=allegation)
+        expect(allegation.complainant_races).to.eq(['White'])
+
+        ComplainantFactory(race='White/Hispinic', allegation=allegation)
+        expect(allegation.complainant_races).to.eq(['White/Hispinic', 'White'])
+
+    def test_complainant_age_groups(self):
+        allegation = AllegationFactory()
+        ComplainantFactory(age=32, allegation=allegation)
+        expect(allegation.complainant_age_groups).to.eq(['31-40'])
+
+        ComplainantFactory(age=38, allegation=allegation)
+        expect(allegation.complainant_age_groups).to.eq(['31-40'])
+
+        ComplainantFactory(age=55, allegation=allegation)
+        expect(allegation.complainant_age_groups).to.eq(['31-40', '51+'])
+
+        allegation_no_complainant = AllegationFactory()
+        expect(allegation_no_complainant.complainant_age_groups).to.eq(['Unknown'])
+
+    def test_complainant_genders(self):
+        allegation = AllegationFactory()
+        ComplainantFactory(gender='F', allegation=allegation)
+        expect(allegation.complainant_genders).to.eq(['Female'])
+
+        ComplainantFactory(allegation=allegation)
+        expect(allegation.complainant_genders).to.eq(['Female', 'Unknown'])

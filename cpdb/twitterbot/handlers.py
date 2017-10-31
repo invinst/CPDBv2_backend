@@ -1,6 +1,7 @@
 import itertools
 import logging
 
+from django.db.models.aggregates import Count
 from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
 from nameparser.parser import HumanName
@@ -25,12 +26,17 @@ logger = logging.getLogger(__name__)
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
-    def get_officers(self, names):
+    @staticmethod
+    def get_officers(names):
         results = []
         for (source, name) in names:
             officer_name = HumanName(name)
+
             officer = Officer.objects.filter(
-                first_name__iexact=officer_name.first, last_name__iexact=officer_name.last).first()
+                first_name__iexact=officer_name.first, last_name__iexact=officer_name.last
+            ).annotate(
+                num_allegation=Count('officerallegation')
+            ).order_by('-num_allegation').first()
 
             if officer is not None and officer not in results:
                 results.append((source, officer))
@@ -144,7 +150,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
-        )
+    )
     post_processors = (ActivityGridUpdater(),)
 
 
