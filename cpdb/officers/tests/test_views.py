@@ -13,13 +13,15 @@ from data.factories import (
     ComplainantFactory, AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory
 )
 from .mixins import OfficerSummaryTestCaseMixin
+from data.constants import ACTIVE_YES_CHOICE
 
 
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_summary(self):
         officer = OfficerFactory(
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
-            appointed_date=date(2017, 2, 27), rank='PO'
+            appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
+            active=ACTIVE_YES_CHOICE
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
@@ -38,6 +40,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'id': 123,
             'unit': 'CAND',
             'date_of_appt': '2017-02-27',
+            'date_of_resignation': '2017-12-27',
+            'active': 'Active',
             'rank': 'PO',
             'full_name': 'Kevin Kerl',
             'race': 'White',
