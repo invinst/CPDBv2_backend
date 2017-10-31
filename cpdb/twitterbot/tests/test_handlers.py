@@ -13,7 +13,7 @@ from robber import expect
 from activity_grid.models import ActivityCard
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 from twitterbot.factories import ResponseTemplateFactory, MockClientFactory
-from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler
+from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler, BaseOfficerTweetHandler
 from twitterbot.models import ResponseTemplate
 from twitterbot.models import TwitterBotResponseLog
 from twitterbot.tweets import Tweet
@@ -387,3 +387,15 @@ class CPDBUnfollowHandlerTestCase(SimpleTestCase):
         self.tweet.text = 'Any text other than @{user} STOP'
         self.handler.on_tweet(self.tweet)
         self.client.unfollow.assert_not_called()
+
+
+class GetOfficersTestCase(TestCase):
+    def test_get_officer_with_most_complaint(self):
+        officer1 = OfficerFactory(id=1, first_name='Dwayne', last_name='Johnson')
+        officer2 = OfficerFactory(id=2, first_name='Dwayne', last_name='Johnson')
+        OfficerAllegationFactory.create_batch(size=1, officer=officer1)
+        OfficerAllegationFactory.create_batch(size=5, officer=officer2)
+        names = [('some_source', 'Dwayne Johnson')]
+
+        result = BaseOfficerTweetHandler.get_officers(names)
+        expect(result).to.eq([('some_source', officer2)])
