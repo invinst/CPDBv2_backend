@@ -30,6 +30,21 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 call(queries[1].query)
             ])
 
+    def test_get_call_process_documentcloud_result(self):
+        query = DocumentCloudSearchQueryFactory()
+
+        with patch('document_cloud.management.commands.update_documents.DocumentCloud') as mock_documentcloud:
+            with patch(
+                'document_cloud.management.commands.update_documents.Command.process_documentcloud_result'
+            ) as mock_process:
+                cleaned_result = MagicMock(title='title')
+                mock_search = mock_documentcloud().documents.search
+                mock_search.return_value = [cleaned_result]
+
+                management.call_command('update_documents')
+
+                mock_process.assert_called_with(cleaned_result, query.type)
+
     def test_skip_empty_syntaxes(self):
         queries = [
             DocumentCloudSearchQueryFactory(),
