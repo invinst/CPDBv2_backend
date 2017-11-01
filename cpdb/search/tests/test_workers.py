@@ -36,7 +36,7 @@ class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
 
 
 class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
+    def test_search_prioritizing_allegation_count(self):
         doc = OfficerDocType(
             full_name='full name', badge='123', allegation_count=10)
         doc.save()
@@ -47,9 +47,26 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         self.refresh_index()
 
         response = OfficerWorker().search('fu na')
+
         expect(response.hits.total).to.be.equal(2)
-        expect(response.hits.hits[0]['full_name']).to.equal('funny naga')
-        expect(response.hits.hits[0]['full_name']).to.equal('full name')
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('funny naga')
+        expect(response.hits.hits[1]['_source']['full_name']).to.eq('full name')
+
+    def test_search_prioritizing_tags(self):
+        doc = OfficerDocType(
+            full_name='some dude', badge='123', allegation_count=10)
+        doc.save()
+        doc = OfficerDocType(
+            full_name='another guy', badge='456', allegation_count=10, tags='somersault')
+        doc.save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('some')
+
+        expect(response.hits.total).to.be.equal(2)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('another guy')
+        expect(response.hits.hits[1]['_source']['full_name']).to.eq('some dude')
 
 
 class UnitWorkerTestCase(IndexMixin, SimpleTestCase):

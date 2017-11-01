@@ -49,8 +49,26 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge', 'tags']
-    sort_order = ['-allegation_count']
+    fields = ['full_name', 'badge', 'tags^10000']
+
+    def query(self, term):
+        _query = self._searcher\
+            .query(
+                'function_score',
+                query={
+                    "multi_match": {
+                        "query": term,
+                        "fields": self.fields
+                    }
+                },
+                script_score={
+                    "script": {
+                        "lang": "painless",
+                        "inline": "_score + doc['allegation_count'].value"
+                    }
+                }
+            )
+        return _query
 
 
 class UnitWorker(Worker):
