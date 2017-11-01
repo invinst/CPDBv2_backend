@@ -24,12 +24,12 @@ class Command(BaseCommand):
         if not allegation:
             return
 
-        document = AttachmentFile.objects.filter(allegation=allegation, url__icontains=result.id).first()
-        if document:
+        try:
+            document = AttachmentFile.objects.get(allegation=allegation, url__icontains=result.id)
             if document.title != result.title:
                 document.title = result.title
                 document.save()
-        else:
+        except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', result.title)
             parsed_link = documentcloud_service.parse_link(result.canonical_url)
             AttachmentFile.objects.create(

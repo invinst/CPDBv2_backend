@@ -33,4 +33,4 @@ class DocumentcloudService(object):
         if matched:
             return matched.group('crid')
 
-        return False
+        return

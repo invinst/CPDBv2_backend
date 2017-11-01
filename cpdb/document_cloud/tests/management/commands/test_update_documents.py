@@ -14,6 +14,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
     def setUp(self):
         super(UpdateDocumentsCommandTestCase, self).setUp()
 
+    def tearDown(self):
         AttachmentFile.objects.all().delete()
         Allegation.objects.all().delete()
 
