@@ -55,12 +55,14 @@ class CoAccusedOfficerFormatter(SimpleFormatter):
 
 class UnitFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
         return {
-            'text': doc.name,
+            'text': serialized_doc['name'],
             'payload': {
-                'result_text': doc.name,
-                'result_extra_information': doc.description,
-                'url': doc.url
+                'tags': tags,
+                'result_text': serialized_doc['name'],
+                'to': serialized_doc['to']
             }
         }
 
