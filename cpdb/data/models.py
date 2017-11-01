@@ -262,6 +262,7 @@ class Officer(TaggableModel):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, blank=True)
     appointed_date = models.DateField(null=True)
+    resignation_date = models.DateField(null=True)
     rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)

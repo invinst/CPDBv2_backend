@@ -34,6 +34,8 @@ class OfficersIndexerTestCase(SimpleTestCase):
         officer.current_badge = '123456'
         officer.gender_display = 'Male'
         officer.appointed_date = date(2017, 2, 27)
+        officer.resignation_date = date(2017, 12, 27)
+        officer.get_active_display = Mock(return_value='Active')
         officer.allegation_count = 1
         officer.sustained_count = 0
         officer.total_complaints_aggregation = [{'year': 2000, 'count': 1, 'sustained_count': 0}]
@@ -87,6 +89,8 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'badge': '123456',
             'gender': 'Male',
             'date_of_appt': '2017-02-27',
+            'date_of_resignation': '2017-12-27',
+            'active': 'Active',
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 0,
