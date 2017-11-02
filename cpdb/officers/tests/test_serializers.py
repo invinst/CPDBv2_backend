@@ -118,7 +118,6 @@ class CRTimelineSerializerTestCase(SimpleTestCase):
 
 class TimelineMinimapSerializerTestCase(SimpleTestCase):
     def test_serialization(self):
-        # obj = Mock()
         obj = Mock(**{
             'x': 123,
             'date': '2017-05-01',

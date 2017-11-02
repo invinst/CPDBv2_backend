@@ -88,17 +88,39 @@ class CoAccusedOfficerFormatterTestCase(SimpleTestCase):
 
 class UnitFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(description='123', url='url')
-        doc.name = 'name'
+        doc = Mock()
+        doc.to_dict = Mock(return_value={
+            'name': '123',
+            'to': '/unit/123/',
+            'tags': ['foo']
+        })
 
         expect(
             UnitFormatter().doc_format(doc)
         ).to.be.eq({
-            'text': 'name',
+            'text': '123',
             'payload': {
-                'result_text': 'name',
-                'result_extra_information': '123',
-                'url': 'url'
+                'result_text': '123',
+                'to': '/unit/123/',
+                'tags': ['foo']
+            }
+        })
+
+    def test_doc_format_without_tags(self):
+        doc = Mock()
+        doc.to_dict = Mock(return_value={
+            'name': '123',
+            'to': '/unit/123/'
+        })
+
+        expect(
+            UnitFormatter().doc_format(doc)
+        ).to.be.eq({
+            'text': '123',
+            'payload': {
+                'result_text': '123',
+                'to': '/unit/123/',
+                'tags': []
             }
         })
 
