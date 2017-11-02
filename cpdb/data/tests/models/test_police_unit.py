@@ -13,6 +13,11 @@ class PoliceUnitTestCase(TestCase):
     def test_str(self):
         self.assertEqual(str(PoliceUnit(unit_name='lorem')), 'lorem')
 
+    def test_v2_to(self):
+        unit = '011'
+        to = '/unit/011/'
+        expect(PoliceUnit(unit_name=unit).v2_to).to.eq(to)
+
     @override_settings(V1_URL='domain')
     def test_v1_url(self):
         unit = 'unit'

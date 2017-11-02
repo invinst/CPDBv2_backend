@@ -140,6 +140,7 @@ class UnitIndexer(BaseIndexer):
             'name': datum.unit_name,
             'description': datum.description,
             'url': datum.v1_url,
+            'to': datum.v2_to,
             'active_member_count': datum.active_member_count,
             'member_count': datum.member_count
         }
