@@ -628,7 +628,7 @@ class Allegation(models.Model):
         # We need to hide those documents
         ipra_query = Q(original_url__icontains='ipra')
         copa_query = Q(original_url__icontains='copa')
-        tag_query = Q(tag__in=['TRR', 'OBR'])
+        tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
         return self.attachment_files.filter(type_query & ~(tag_query & (ipra_query | copa_query)))
 
