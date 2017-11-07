@@ -44,20 +44,35 @@ class AllegationTestCase(TestCase):
     def test_videos(self):
         allegation = AllegationFactory()
         AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_VIDEO)
-        expect(allegation.videos.count()).to.eq(1)
-        expect(allegation.videos[0].id).to.eq(1)
+        expect(allegation.videos.count()).to.eq(0)
 
     def test_audios(self):
         allegation = AllegationFactory()
         AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_AUDIO)
-        expect(allegation.audios.count()).to.eq(1)
-        expect(allegation.audios[0].id).to.eq(1)
+        expect(allegation.audios.count()).to.eq(0)
 
     def test_documents(self):
         allegation = AllegationFactory()
         AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         expect(allegation.documents.count()).to.eq(1)
         expect(allegation.documents[0].id).to.eq(1)
+
+    def test_exclude_ipra_documents(self):
+        allegation = AllegationFactory()
+        AttachmentFileFactory(
+            id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TRR',
+            original_url='http://www.chicagocopa.org/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+        )
+        AttachmentFileFactory(
+            id=2, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OBR',
+            original_url='http://www.iprachicago.org/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+        )
+        AttachmentFileFactory(
+            id=3, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TAG',
+            original_url='http://www.documentcloud.com/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+        )
+        expect(allegation.documents.count()).to.eq(1)
+        expect(allegation.documents[0].id).to.eq(3)
 
     def test_complainant_races(self):
         allegation = AllegationFactory()
