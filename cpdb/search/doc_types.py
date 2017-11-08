@@ -32,6 +32,7 @@ class OfficerDocType(DocType):
     full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     badge = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    allegation_count = Long()
 
     class Meta:
         doc_type = 'officer'

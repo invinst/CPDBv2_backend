@@ -121,6 +121,7 @@ class OfficerIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return {
+            'allegation_count': datum.allegation_count,
             'full_name': datum.full_name,
             'badge': datum.current_badge,
             'to': datum.v2_to,
@@ -139,6 +140,7 @@ class UnitIndexer(BaseIndexer):
             'name': datum.unit_name,
             'description': datum.description,
             'url': datum.v1_url,
+            'to': datum.v2_to,
             'active_member_count': datum.active_member_count,
             'member_count': datum.member_count
         }
@@ -155,7 +157,7 @@ class UnitOfficerIndexer(BaseIndexer):
             'full_name': datum.officer.full_name,
             'badge': datum.officer.current_badge,
             'to': datum.officer.v2_to,
-            'allegation_count': datum.officer.officerallegation_set.count(),
+            'allegation_count': datum.officer.allegation_count,
             'unit_name': datum.unit.unit_name
         }
 

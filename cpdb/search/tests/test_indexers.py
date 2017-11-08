@@ -130,6 +130,7 @@ class OfficerIndexerTestCase(TestCase):
         expect(
             OfficerIndexer().extract_datum(datum)
         ).to.be.eq({
+            'allegation_count': 0,
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
@@ -144,7 +145,7 @@ class UnitIndexerTestCase(TestCase):
         expect(UnitIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = PoliceUnitFactory(unit_name='unit', description='description')
+        datum = PoliceUnitFactory(unit_name='011', description='description')
         officer = OfficerFactory()
         officer2 = OfficerFactory()
         OfficerHistoryFactory(officer=officer, unit=datum, end_date=None)
@@ -153,9 +154,10 @@ class UnitIndexerTestCase(TestCase):
         expect(
             UnitIndexer().extract_datum(datum)
         ).to.be.eq({
-            'name': 'unit',
+            'name': '011',
             'description': 'description',
             'url': datum.v1_url,
+            'to': datum.v2_to,
             'active_member_count': 1,
             'member_count': 2
         })

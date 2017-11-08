@@ -5,6 +5,8 @@ class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     unit = serializers.CharField(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
+    date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
+    active = serializers.SerializerMethodField()
     rank = serializers.CharField()
     full_name = serializers.CharField()
     race = serializers.CharField()
@@ -25,6 +27,9 @@ class OfficerSummarySerializer(serializers.Serializer):
             'items': obj.total_complaints_aggregation
         }
 
+    def get_active(self, obj):
+        return obj.get_active_display()
+
 
 class CRTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
@@ -34,13 +39,16 @@ class CRTimelineSerializer(serializers.Serializer):
     priority_sort = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
     crid = serializers.CharField()
-    category = serializers.CharField()
+    category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
     coaccused = serializers.IntegerField(source='coaccused_count')
     race = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
     gender = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        return obj.category if obj.category else 'Unknown'
 
     def get_kind(self, obj):
         return 'CR'
