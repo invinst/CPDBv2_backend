@@ -134,7 +134,8 @@ class OfficerIndexerTestCase(TestCase):
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
-            'tags': ['tag1', 'tag2']
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#f5f4f4'
         })
 
 
