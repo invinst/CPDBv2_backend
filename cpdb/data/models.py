@@ -7,13 +7,14 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F
-from django.utils.text import slugify
+from django.db.models import Q
 from django.db.models.functions import ExtractYear
+from django.utils.text import slugify
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, BACKGROUND_COLOR_SCHEME,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
     DISCIPLINE_CODES
 )
 from data.utils.aggregation import get_num_range_case
@@ -611,15 +612,25 @@ class Allegation(models.Model):
 
     @property
     def videos(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_VIDEO)
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide all videos
+        return self.attachment_files.none()
 
     @property
     def audios(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_AUDIO)
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide all audios
+        return self.attachment_files.none()
 
     @property
     def documents(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide those documents
+        ipra_query = Q(original_url__icontains='ipra')
+        copa_query = Q(original_url__icontains='copa')
+        tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
+        type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
+        return self.attachment_files.filter(type_query & ~(tag_query & (ipra_query | copa_query)))
 
 
 class AllegationCategory(models.Model):

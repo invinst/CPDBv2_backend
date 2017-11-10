@@ -130,6 +130,7 @@ class OfficerIndexerTestCase(TestCase):
         expect(
             OfficerIndexer().extract_datum(datum)
         ).to.be.eq({
+            'allegation_count': 0,
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,

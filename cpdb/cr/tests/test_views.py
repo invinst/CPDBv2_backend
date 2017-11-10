@@ -157,18 +157,6 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     ]
                 }
             ],
-            'audios': [
-                {
-                    'title': 'CR audio',
-                    'url': 'http://cr-audio.com/'
-                }
-            ],
-            'videos': [
-                {
-                    'title': 'CR video',
-                    'url': 'http://cr-video.com/'
-                }
-            ],
             'documents': [
                 {
                     'title': 'CR document',
