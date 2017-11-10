@@ -20,8 +20,9 @@ class Command(BaseCommand):
         if not crid:
             return
 
-        allegation = Allegation.objects.filter(crid=crid).first()
-        if not allegation:
+        try:
+            allegation = Allegation.objects.get(crid=crid)
+        except Allegation.DoesNotExist:
             return
 
         try:
