@@ -1,0 +1,58 @@
+[
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 1,
+    "fields": {
+      "query": "title:(crid and cr)",
+      "type": "CR"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 2,
+    "fields": {
+      "query": "title:(crid and cpb)",
+      "type": "CPB"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 3,
+    "fields": {
+      "query": "title:(crid and trr)",
+      "type": "TRR"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 4,
+    "fields": {
+      "query": "title:(crid and ocir)",
+      "type": "OCIR"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 5,
+    "fields": {
+      "query": "title:(crid and obr)",
+      "type": "OBR"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 6,
+    "fields": {
+      "query": "title:(crid and ar)",
+      "type": "AR"
+    }
+  },
+  {
+    "model": "document_cloud.documentcloudsearchquery",
+    "pk": 7,
+    "fields": {
+      "query": "title:(crid and chi r)",
+      "type": "CHI-R"
+    }
+  }
+]
