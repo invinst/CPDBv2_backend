@@ -125,6 +125,7 @@ class OfficerIndexer(BaseIndexer):
             'full_name': datum.full_name,
             'badge': datum.current_badge,
             'to': datum.v2_to,
+            'visual_token_background_color': datum.visual_token_background_color,
             'tags': datum.tags
         }
 
