@@ -2,6 +2,7 @@ import re
 from collections import OrderedDict
 
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from documentcloud import DocumentCloud
 
 from data.models import AttachmentFile, Allegation
@@ -26,6 +27,7 @@ class Command(BaseCommand):
             return
 
         try:
+            # Normalize document title if document originate from documentcloud
             document = AttachmentFile.objects.get(allegation=allegation, url__icontains=result.id)
             if document.title != result.title:
                 document.title = result.title
@@ -52,7 +54,7 @@ class Command(BaseCommand):
         return list(cleaned_results.values())
 
     def handle(self, *args, **options):
-        client = DocumentCloud()
+        client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
 
