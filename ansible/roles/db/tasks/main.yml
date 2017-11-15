@@ -7,8 +7,16 @@
       - postgresql-server-dev-9.4
     tags: packages
 
+  - name: setup postgresql.conf file
+    copy: src=postgresql.conf dest=/etc/postgresql/9.4/main/postgresql.conf owner=postgres group=postgres mode=0640
+
   - name: setup pg_hba file
-    copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf owner=postgres group=postgres mode=0640
+    template:
+      src: pg_hba.conf.j2
+      dest: /etc/postgresql/9.4/main/pg_hba.conf
+      owner: postgres
+      group: postgres
+      mode: 0640
 
   - name: reload postgres
     service: name=postgresql state=reloaded enabled=yes
@@ -22,5 +30,12 @@
     postgresql_user:
       db={{ db_name }} name={{ db_user }} password={{ db_password }}
       priv=ALL role_attr_flags=SUPERUSER
+    become: true
+    become_user: postgres
+
+  - name: Ensure numeracy has access to cpdb database on data tables
+    postgresql_user:
+      db={{ db_name }} name=numeracy password={{ numeracy_db_password }}
+      priv={{numeracy_postgres_priv}}
     become: true
     become_user: postgres

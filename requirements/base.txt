@@ -20,3 +20,4 @@ rosette_api==1.7.0
 responsebot==0.6.0
 selenium==3.5.0
 google-cloud-language==0.29.0
+python-documentcloud==1.0.4
