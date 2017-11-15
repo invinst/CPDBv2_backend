@@ -399,3 +399,9 @@ class GetOfficersTestCase(TestCase):
 
         result = BaseOfficerTweetHandler.get_officers(names)
         expect(result).to.eq([('some_source', officer2)])
+
+    def test_match_officer_with_middle_name(self):
+        officer = OfficerFactory(id=1, first_name='Kevin', last_name='Mc Donald')
+        names = [('source', 'Kevin Mc Donald')]
+        result = BaseOfficerTweetHandler.get_officers(names)
+        expect(result).to.eq([('source', officer)])

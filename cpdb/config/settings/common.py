@@ -53,7 +53,8 @@ LOCAL_APPS = (
     'alias',
     'twitterbot',
     'visual_token',
-    'activity_grid'
+    'activity_grid',
+    'document_cloud'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
