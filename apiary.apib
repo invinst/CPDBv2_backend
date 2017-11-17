@@ -1850,3 +1850,380 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#aec9e8"
             }
         ]
+
+## General search [/v1/suggestion/{term}/?limit={limit}]
+
++ Parameters
+    + term (string) - Search term
+    + limit (number) - Django REST framework limit pagination
+
+### Get search results [GET]
+
++ Response 200 (application/json)
+
+        {
+          "NEIGHBORHOOD": [
+            {
+              "text": "Washington Heights",
+              "payload": {
+                "result_text": "Washington Heights",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?neighborhood=Washington Heights",
+                "tags": []
+              },
+              "id": "345"
+            },
+            {
+              "text": "Washington Park",
+              "payload": {
+                "result_text": "Washington Park",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?neighborhood=Washington Park",
+                "tags": []
+              },
+              "id": "339"
+            }
+          ],
+          "CO-ACCUSED": [
+            {
+              "text": "Henry Thomas",
+              "payload": {
+                "result_text": "Henry Thomas",
+                "to": "/officer/28416/",
+                "result_extra_information": "Badge # 20455",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFVEEvAIPTOfirI"
+            },
+            {
+              "text": "Geno Rouse",
+              "payload": {
+                "result_text": "Geno Rouse",
+                "to": "/officer/32306/",
+                "result_extra_information": "Badge # 2155",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFfEEvAIPTOfirL"
+            },
+            {
+              "text": "Floyd Abron",
+              "payload": {
+                "result_text": "Floyd Abron",
+                "to": "/officer/34/",
+                "result_extra_information": "Badge # 12861",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFlEEvAIPTOfirN"
+            },
+            {
+              "text": "Darrell Davis",
+              "payload": {
+                "result_text": "Darrell Davis",
+                "to": "/officer/6301/",
+                "result_extra_information": "Badge # 3717",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFsEEvAIPTOfirP"
+            },
+            {
+              "text": "David Morales",
+              "payload": {
+                "result_text": "David Morales",
+                "to": "/officer/32203/",
+                "result_extra_information": "Badge # 3449",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFNEEvAIPTOfirG"
+            },
+            {
+              "text": "Kevin Spisak",
+              "payload": {
+                "result_text": "Kevin Spisak",
+                "to": "/officer/27205/",
+                "result_extra_information": "Badge # 3119",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFzEEvAIPTOfirR"
+            },
+            {
+              "text": "Hope Mckeown",
+              "payload": {
+                "result_text": "Hope Mckeown",
+                "to": "/officer/32179/",
+                "result_extra_information": "Badge # 6006",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHF2EEvAIPTOfirS"
+            },
+            {
+              "text": "Patrick Boyle",
+              "payload": {
+                "result_text": "Patrick Boyle",
+                "to": "/officer/2563/",
+                "result_extra_information": "Badge # 975",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHF5EEvAIPTOfirT"
+            },
+            {
+              "text": "Rodney Kincaid",
+              "payload": {
+                "result_text": "Rodney Kincaid",
+                "to": "/officer/14638/",
+                "result_extra_information": "Badge # 4106",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHGVEEvAIPTOfirb"
+            },
+            {
+              "text": "Traci Walker",
+              "payload": {
+                "result_text": "Traci Walker",
+                "to": "/officer/29811/",
+                "result_extra_information": "Badge # 2374",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFYEEvAIPTOfirJ"
+            }
+          ],
+          "COMMUNITY": [
+            {
+              "text": "Washington Heights",
+              "payload": {
+                "result_text": "Washington Heights",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?community=Washington Heights",
+                "tags": []
+              },
+              "id": "497"
+            },
+            {
+              "text": "Washington Park",
+              "payload": {
+                "result_text": "Washington Park",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?community=Washington Park",
+                "tags": []
+              },
+              "id": "432"
+            }
+          ],
+          "UNIT": [],
+          "UNIT > OFFICERS": [],
+          "OFFICER": [
+            {
+              "text": "Tommy Walker",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 2328",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "005",
+                "salary": null,
+                "result_text": "Tommy Walker",
+                "tags": [],
+                "to": "/officer/29841/",
+                "race": "Black"
+              },
+              "id": "29841"
+            },
+            {
+              "text": "Corey Walker",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 1730",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "008",
+                "salary": null,
+                "result_text": "Corey Walker",
+                "tags": [],
+                "to": "/officer/29833/",
+                "race": "Black"
+              },
+              "id": "29833"
+            },
+            {
+              "text": "William Walker",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 15967",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "010",
+                "salary": null,
+                "result_text": "William Walker",
+                "tags": [],
+                "to": "/officer/29831/",
+                "race": "Black"
+              },
+              "id": "29831"
+            },
+            {
+              "text": "Joshua Wallace",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 1700",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "189",
+                "salary": null,
+                "result_text": "Joshua Wallace",
+                "tags": [],
+                "to": "/officer/32401/",
+                "race": "Black"
+              },
+              "id": "32401"
+            },
+            {
+              "text": "Joseph Walsh",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 12865",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "008",
+                "salary": null,
+                "result_text": "Joseph Walsh",
+                "tags": [],
+                "to": "/officer/29940/",
+                "race": "White"
+              },
+              "id": "29940"
+            },
+            {
+              "text": "Ronald Watts",
+              "payload": {
+                "visual_token_background_color": "#aec9e8",
+                "result_extra_information": "Badge # 2640",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "002",
+                "salary": null,
+                "result_text": "Ronald Watts",
+                "tags": [],
+                "to": "/officer/30215/",
+                "race": "Black"
+              },
+              "id": "30215"
+            },
+            {
+              "text": "Dante Walker",
+              "payload": {
+                "visual_token_background_color": "#aec9e8",
+                "result_extra_information": "Badge # 18396",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "012",
+                "salary": null,
+                "result_text": "Dante Walker",
+                "tags": [],
+                "to": "/officer/29842/",
+                "race": "Black"
+              },
+              "id": "29842"
+            },
+            {
+              "text": "Ronald Walker",
+              "payload": {
+                "visual_token_background_color": "#aec9e8",
+                "result_extra_information": "Badge # 1459",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "006",
+                "salary": null,
+                "result_text": "Ronald Walker",
+                "tags": [],
+                "to": "/officer/29837/",
+                "race": "Hispanic"
+              },
+              "id": "29837"
+            },
+            {
+              "text": "William Wagner",
+              "payload": {
+                "visual_token_background_color": "#aec9e8",
+                "result_extra_information": "Badge # 10600",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "008",
+                "salary": null,
+                "result_text": "William Wagner",
+                "tags": [],
+                "to": "/officer/29772/",
+                "race": "White"
+              },
+              "id": "29772"
+            },
+            {
+              "text": "Joseph Waszak",
+              "payload": {
+                "visual_token_background_color": "#aec9e8",
+                "result_extra_information": "Badge # 19258",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "022",
+                "salary": null,
+                "result_text": "Joseph Waszak",
+                "tags": [],
+                "to": "/officer/30137/",
+                "race": "White"
+              },
+              "id": "30137"
+            }
+          ]
+        }
+
+
+## Specific type search [/v1/suggestion/{term}/?contentType={type}]
+
++ Parameters
+    + term (string) - Search term
+    + type (string) - Data content type (OFFICER, UNIT, COMMUNITY, NEIGHBORHOOD, CO-ACCUSED, UNIT > OFFICERS)
+
+### Get search results [GET]
+
+        {
+          OFFICER: [
+            {
+              text: "Orson Ward",
+              payload: {
+                visual_token_background_color: "#c6d4ec",
+                result_extra_information: "Badge # 13603",
+                rank: "Police Officer",
+                sex: "Male",
+                result_reason: "",
+                unit: "010",
+                salary: null,
+                result_text: "Orson Ward",
+                tags: [],
+                to: "/officer/30022/",
+                race: "Black"
+              },
+              id: "30022"
+            },
+            {
+              text: "Orson Kallenback",
+              payload: {
+                visual_token_background_color: "#f5f4f4",
+                result_extra_information: "",
+                rank: "Police Officer",
+                sex: "Male",
+                result_reason: "",
+                unit: "169",
+                salary: null,
+                result_text: "Orson Kallenback",
+                tags: [],
+                to: "/officer/14026/",
+                race: "White"
+              },
+              id: "14026"
+            }
+          ]
+        }
