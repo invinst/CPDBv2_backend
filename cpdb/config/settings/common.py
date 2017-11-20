@@ -35,7 +35,8 @@ THIRD_PARTY_APPS = (
     'django_nose',
     'taggit',
     'anymail',
-    'corsheaders'
+    'corsheaders',
+    'adminsortable'
 )
 
 LOCAL_APPS = (
@@ -54,7 +55,8 @@ LOCAL_APPS = (
     'twitterbot',
     'visual_token',
     'activity_grid',
-    'document_cloud'
+    'document_cloud',
+    'search_terms'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

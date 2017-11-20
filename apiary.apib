@@ -1865,7 +1865,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "name": "Police Districts",
                         "description": "A form of division of a geographical area patrolled by a police force",
                         "id": "police-districts",
-                        "type": "view_all"
+                        "call_to_action_type": "view_all"
                     }
                 ]
             },
@@ -1876,7 +1876,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "name": "Officer Name",
                         "description": "Type the name of an officer into the search bar",
                         "id": "officer-name",
-                        "type": "plain_text"
+                        "call_to_action_type": "plain_text"
                     }
                 ]
             },
@@ -1887,14 +1887,14 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "name": "Conduct Unbecoming",
                         "description": "Search the data tool for Conduct Unbecoming",
                         "id": "conduct-unbecoming",
-                        "type": "link",
+                        "call_to_action_type": "link",
                         "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Conduct%20Unbecoming"
                     }
                 ]
             }
         ]
 
-## Search term category detail [/search-term-categories/{id}/]
+## Search term item detail [/search-term-items/{id}/]
 
 + Parameters
     + id (string) - ID of search term category
@@ -1906,7 +1906,7 @@ This api require an api access token set in `Authorization` header. To get an ap
         {
             "id": "police-districts",
             "name": "Police Districts",
-            "items": [
+            "terms": [
                 {
                     "name": "1st District - Central",
                     "link": "http://beta.cpdb.co/url-mediator/session-builder?police_district=1st"
