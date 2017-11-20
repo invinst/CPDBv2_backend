@@ -49,7 +49,7 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge', 'tags^10000']
+    fields = ['full_name', 'badge', 'tags^10000', '_id']
 
     def query(self, term):
         _query = self._searcher\
