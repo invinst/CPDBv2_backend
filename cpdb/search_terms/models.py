@@ -30,7 +30,7 @@ class SearchTermItem(SortableMixin):
     category = SortableForeignKey(SearchTermCategory)
     slug = models.CharField(primary_key=True, max_length=30)
     name = models.CharField(max_length=60)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     call_to_action_type = models.CharField(
         choices=SEARCH_TERM_CTA_TYPES, default=PLAIN_TEXT_CTA_TYPE, max_length=20)
     link = models.URLField(null=True, blank=True)
