@@ -49,25 +49,44 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge', 'tags^10000', '_id']
 
     def query(self, term):
-        _query = self._searcher\
-            .query(
-                'function_score',
-                query={
-                    "multi_match": {
-                        "query": term,
-                        "fields": self.fields
+        _query = self._searcher.query(
+            'function_score',
+            query={
+                'multi_match': {
+                    'query': term,
+                    'fields': ['badge', 'full_name', 'tags', '_id']
+                }
+            },
+            functions=[
+                {
+                    'filter': {'match': {'tags': term}},
+                    'script_score': {
+                        'script': '_score + 1000'
                     }
                 },
-                script_score={
-                    "script": {
-                        "lang": "painless",
-                        "inline": "_score + doc['allegation_count'].value"
+                {
+                    'filter': {'match': {'full_name': term}},
+                    'script_score': {
+                        'script': (
+                            'if (_score >= 10) {return _score * 1000; } '
+                            'else {return _score + doc[\'allegation_count\'].value * 3; }'
+                        )
                     }
+                },
+                {
+                    'filter': {'match': {'badge': term}},
+                    'weight': 1
+                },
+                {
+                    'filter': {'match': {'_id': term}},
+                    'weight': 1
                 }
-            )
+            ],
+            score_mode='max',
+            boost_mode='max'
+        )
         return _query
 
 
