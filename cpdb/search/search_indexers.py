@@ -1,11 +1,10 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area, OfficerAllegation, OfficerHistory
+from data.models import Officer, PoliceUnit, Area, OfficerHistory
 from search.doc_types import (
-        FAQDocType, ReportDocType, OfficerDocType,
-        UnitDocType, NeighborhoodsDocType, CommunityDocType,
-        CoAccusedOfficerDocType, UnitOfficerDocType)
+    FAQDocType, ReportDocType, OfficerDocType, UnitDocType, NeighborhoodsDocType, CommunityDocType, UnitOfficerDocType
+)
 from .indices import autocompletes
 
 
@@ -25,7 +24,7 @@ class BaseIndexer(object):
     def extract_datum_with_id(self, datum):
         '''
         Ensure that the indexed document has the same ID as its corresponding database record.
-        We can't do this to indexer classes where extract_datum() returns a list (e.g. CoAccusedOfficerIndexer) because
+        We can't do this to indexer classes where extract_datum() returns a list because
         multiple documents cannot share the same ID.
         '''
         extracted_data = self.extract_datum(datum)
@@ -85,32 +84,6 @@ class ReportIndexer(BaseIndexer):
             'publish_date': fields['publish_date_value'],
             'tags': datum.tags
         }
-
-
-class CoAccusedOfficerIndexer(BaseIndexer):
-    doc_type_klass = CoAccusedOfficerDocType
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, datum):
-        pks = datum.officerallegation_set.values_list('allegation__pk', flat=True)
-        involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
-            .values_list('officer__pk', flat=True)
-        officers = Officer.objects.filter(pk__in=involved_pks)
-        # TODO: This piece of code is quite confusing between officer and co-accused officer, we left this
-        # `todo` here to re-write it a bit later to make it clearer later.
-        return [{
-            'full_name': officer.full_name,
-            'badge': officer.current_badge,
-            'to': officer.v2_to,
-            'co_accused_officer': {
-                'full_name': datum.full_name,
-                'badge': datum.current_badge,
-                'tags': datum.tags,
-                'id': datum.pk
-            }
-        } for officer in officers]
 
 
 class OfficerIndexer(BaseIndexer):

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, InnerObjectWrapper, Nested, Long
+from elasticsearch_dsl import DocType, Text, Long
 
 from .indices import autocompletes
 
@@ -63,18 +63,6 @@ class CommunityDocType(DocType):
 
     class Meta:
         doc_type = 'community'
-
-
-@autocompletes.doc_type
-class CoAccusedOfficerDocType(DocType):
-    co_accused_officer = Nested(doc_class=InnerObjectWrapper, properties={
-        'full_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        'badge': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        'tags': Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    })
-
-    class Meta:
-        doc_type = 'coaccusedofficer'
 
 
 @autocompletes.doc_type

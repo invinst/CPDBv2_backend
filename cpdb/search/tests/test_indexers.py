@@ -4,12 +4,13 @@ from robber import expect
 from django.test import SimpleTestCase, TestCase
 
 from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager, UnitOfficerIndexer)
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
+    CommunityIndexer, IndexerManager, UnitOfficerIndexer
+)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
-        AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-        AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
+    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory, OfficerHistoryFactory
+)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -124,7 +125,13 @@ class OfficerIndexerTestCase(TestCase):
         expect(OfficerIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = OfficerFactory(first_name='first', last_name='last', tags=['tag1', 'tag2'])
+        datum = OfficerFactory(
+            first_name='first',
+            last_name='last',
+            tags=['tag1', 'tag2'],
+        )
+        unit = PoliceUnitFactory(unit_name='011')
+        OfficerHistoryFactory(officer=datum, unit=unit)
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
 
         expect(
@@ -193,31 +200,6 @@ class CommunityIndexerTestCase(TestCase):
 
         expect(CommunityIndexer().get_queryset()).to.have.length(1)
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
-
-
-class CoAccusedOfficerIndexerTestCase(TestCase):
-    def setUp(self):
-        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn', tags=['tag1', 'tag2'])
-        self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
-        OfficerAllegationFactory(allegation=allegation, officer=self.officer_2)
-
-    def test_get_queryset(self):
-        expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
-
-    def test_extract_datum(self):
-        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq([{
-            'full_name': 'Cristiano Ronaldo',
-            'badge': '',
-            'to': self.officer_2.v2_to,
-            'co_accused_officer': {
-                'id': self.officer_1.pk,
-                'badge': '',
-                'full_name': 'Kevin Osborn',
-                'tags': ['tag1', 'tag2']
-            },
-        }])
 
 
 class UnitOfficerIndexerTestCase(TestCase):

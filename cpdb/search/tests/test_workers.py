@@ -3,11 +3,12 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from search.workers import (
-        FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-        NeighborhoodsWorker, CommunityWorker, CoAccusedOfficerWorker)
+        FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker, NeighborhoodsWorker, CommunityWorker
+)
 from search.doc_types import (
-        FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType,
-        NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
+        FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType, NeighborhoodsDocType,
+        CommunityDocType
+)
 from search.tests.utils import IndexMixin
 
 
@@ -100,24 +101,6 @@ class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
 
         response = CommunityWorker().search('name')
         expect(response.hits.total).to.be.equal(1)
-
-
-class CoAccusedOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
-        doc = CoAccusedOfficerDocType(
-            full_name='Kevin Osborn', co_accused_officer=[{
-                'full_name': 'Cristiano Ronaldo',
-                'badge': '123'
-                }])
-        doc.save()
-
-        self.refresh_index()
-
-        response = CoAccusedOfficerWorker().search('Cris')
-        expect(response.hits.total).to.be.equal(1)
-        co_accused_doc = response.hits[0]
-        expect(co_accused_doc.full_name).to.eq('Kevin Osborn')
-        expect(co_accused_doc.co_accused_officer[0]['full_name']).to.eq('Cristiano Ronaldo')
 
 
 class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
