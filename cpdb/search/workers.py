@@ -54,34 +54,34 @@ class OfficerWorker(Worker):
         _query = self._searcher.query(
             'function_score',
             query={
-                "multi_match": {
-                    "query": term,
-                    "fields": ["badge", "full_name", "tags"]
+                'multi_match': {
+                    'query': term,
+                    'fields': ['badge', 'full_name', 'tags']
                 }
             },
             functions=[
                 {
-                    "filter": {"match": {"tags": term}},
-                    "script_score": {
-                        "script": "_score + 1000"
+                    'filter': {'match': {'tags': term}},
+                    'script_score': {
+                        'script': '_score + 1000'
                     }
                 },
                 {
-                    "filter": {"match": {"full_name": term}},
-                    "script_score": {
-                        "script": (
-                            "if (_score >= 10) {return _score * 1000; } "
-                            "else {return _score + doc['allegation_count'].value * 3; }"
+                    'filter': {'match': {'full_name': term}},
+                    'script_score': {
+                        'script': (
+                            'if (_score >= 10) {return _score * 1000; } '
+                            'else {return _score + doc[\'allegation_count\'].value * 3; }'
                         )
                     }
                 },
                 {
-                    "filter": {"match": {"badge": term}},
-                    "weight": 1
+                    'filter': {'match': {'badge': term}},
+                    'weight': 1
                 }
             ],
-            score_mode="max",
-            boost_mode="max"
+            score_mode='max',
+            boost_mode='max'
         )
         return _query
 
