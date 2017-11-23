@@ -1,3 +1,4 @@
+from search.doc_types import CrDocType
 from .doc_types import (
     OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
 )
@@ -106,3 +107,8 @@ class UnitOfficerWorker(Worker):
 
     def query(self, term):
         return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
+
+
+class CrWorker(Worker):
+    doc_type_klass = CrDocType
+    fields = ['crid']

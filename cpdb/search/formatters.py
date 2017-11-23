@@ -112,3 +112,15 @@ class ReportFormatter(SimpleFormatter):
             'excerpt': doc.excerpt,
             'tags': getattr(doc, 'tags', []),
         }
+
+
+class CrFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'text': serialized_doc['crid'],
+            'payload': {
+                'result_text': serialized_doc['crid'],
+                'to': serialized_doc['to']
+            }
+        }

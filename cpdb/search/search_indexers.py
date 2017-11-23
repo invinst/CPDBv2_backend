@@ -1,9 +1,11 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area, OfficerHistory
+from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
 from search.doc_types import (
-    FAQDocType, ReportDocType, OfficerDocType, UnitDocType, NeighborhoodsDocType, CommunityDocType, UnitOfficerDocType
+    FAQDocType, ReportDocType, OfficerDocType,
+    UnitDocType, NeighborhoodsDocType, CommunityDocType,
+    UnitOfficerDocType, CrDocType
 )
 from .indices import autocompletes
 
@@ -180,3 +182,16 @@ class IndexerManager(object):
     def rebuild_index(self):
         self._build_mapping()
         self._index_data()
+
+
+class CrIndexer(BaseIndexer):
+    doc_type_klass = CrDocType
+
+    def get_queryset(self):
+        return Allegation.objects.all()
+
+    def extract_datum(self, datum):
+        return {
+            'crid': datum.crid,
+            'to': datum.v2_to
+        }
