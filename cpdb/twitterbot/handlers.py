@@ -2,9 +2,11 @@ import itertools
 import logging
 
 from django.db.models.aggregates import Count
+from django.db.models.functions import Concat
+from django.db.models import F, Value, CharField
+
 from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
-from nameparser.parser import HumanName
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
 
 from data.models import Officer
@@ -30,10 +32,13 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
     def get_officers(names):
         results = []
         for (source, name) in names:
-            officer_name = HumanName(name)
-
-            officer = Officer.objects.filter(
-                first_name__iexact=officer_name.first, last_name__iexact=officer_name.last
+            officer = Officer.objects.annotate(fullname=Concat(
+                F('first_name'),
+                Value(' '),
+                F('last_name'),
+                output_field=CharField()
+            )).filter(
+                fullname__iexact=name
             ).annotate(
                 num_allegation=Count('officerallegation')
             ).order_by('-num_allegation').first()

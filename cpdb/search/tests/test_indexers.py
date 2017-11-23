@@ -8,8 +8,8 @@ from ..search_indexers import (
     NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager, UnitOfficerIndexer)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
-        AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-        AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
+    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+    AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -124,16 +124,31 @@ class OfficerIndexerTestCase(TestCase):
         expect(OfficerIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = OfficerFactory(first_name='first', last_name='last', tags=['tag1', 'tag2'])
+        datum = OfficerFactory(
+            first_name='first',
+            last_name='last',
+            tags=['tag1', 'tag2'],
+            rank='some rank',
+            race='some race',
+            gender='M'
+        )
+        unit = PoliceUnitFactory(unit_name='011')
+        OfficerHistoryFactory(officer=datum, unit=unit)
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
 
         expect(
             OfficerIndexer().extract_datum(datum)
         ).to.be.eq({
+            'allegation_count': 0,
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
-            'tags': ['tag1', 'tag2']
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#f5f4f4',
+            'unit': '011',
+            'rank': 'some rank',
+            'race': 'some race',
+            'sex': 'Male'
         })
 
 

@@ -36,15 +36,51 @@ class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
 
 
 class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
+    def test_search_prioritizing_allegation_count(self):
         doc = OfficerDocType(
-            full_name='full name', badge='123')
+            full_name='full name', badge='123', allegation_count=10)
+        doc.save()
+        doc = OfficerDocType(
+            full_name='funny naga', badge='456', allegation_count=20)
         doc.save()
 
         self.refresh_index()
 
         response = OfficerWorker().search('fu na')
-        expect(response.hits.total).to.be.equal(1)
+
+        expect(response.hits.total).to.equal(2)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('funny naga')
+        expect(response.hits.hits[1]['_source']['full_name']).to.eq('full name')
+
+    def test_search_prioritizing_tags(self):
+        doc = OfficerDocType(
+            full_name='some dude', badge='123', allegation_count=10)
+        doc.save()
+        doc = OfficerDocType(
+            full_name='another guy', badge='456', allegation_count=10, tags='somersault')
+        doc.save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('some')
+
+        expect(response.hits.total).to.equal(2)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('another guy')
+        expect(response.hits.hits[1]['_source']['full_name']).to.eq('some dude')
+
+    def test_search_officer_badge(self):
+        OfficerDocType(full_name='John Doe', badge='100123').save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('100')
+
+        expect(response.hits.total).to.equal(1)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
+
+    # Note: We've found that scoring of elasticsearch is incredibly complex and could not
+    # be easily replicated in unit tests. Therefore we decided to stop adding tests to this
+    # particular test case and instead rely more on manual testing.
 
 
 class UnitWorkerTestCase(IndexMixin, SimpleTestCase):

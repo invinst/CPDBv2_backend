@@ -44,7 +44,12 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'full_name': 'name',
             'badge': '123',
             'to': 'to',
-            'tags': ['tag1', 'tag2']
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#ffffff',
+            'unit': '001',
+            'rank': 'some rank',
+            'race': 'White',
+            'sex': 'Male'
         }))
 
         expect(
@@ -56,7 +61,13 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'result_extra_information': 'Badge # 123',
                 'to': 'to',
                 'result_reason': 'tag1, tag2',
-                'tags': ['tag1', 'tag2']
+                'tags': ['tag1', 'tag2'],
+                'visual_token_background_color': '#ffffff',
+                'unit': '001',
+                'rank': 'some rank',
+                'race': 'White',
+                'sex': 'Male',
+                'salary': None  # no data yet so always return None here
             }
         })
 

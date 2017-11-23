@@ -8,6 +8,7 @@ from .doc_types import (
 class Worker(object):
     doc_type_klass = None
     fields = []
+    sort_order = []
     name = ''
 
     @property
@@ -18,8 +19,9 @@ class Worker(object):
         return search_results[begin:size]
 
     def query(self, term):
-        return self._searcher.query('multi_match', query=term,
-                                    operator='and', fields=self.fields)
+        return self._searcher\
+            .query('multi_match', query=term, operator='and', fields=self.fields)\
+            .sort(*self.sort_order)
 
     def search(self, term, size=10, begin=0):
         return self._limit(self.query(term), begin, size).execute()
@@ -47,7 +49,41 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge', 'tags']
+
+    def query(self, term):
+        _query = self._searcher.query(
+            'function_score',
+            query={
+                'multi_match': {
+                    'query': term,
+                    'fields': ['badge', 'full_name', 'tags']
+                }
+            },
+            functions=[
+                {
+                    'filter': {'match': {'tags': term}},
+                    'script_score': {
+                        'script': '_score + 1000'
+                    }
+                },
+                {
+                    'filter': {'match': {'full_name': term}},
+                    'script_score': {
+                        'script': (
+                            'if (_score >= 10) {return _score * 1000; } '
+                            'else {return _score + doc[\'allegation_count\'].value * 3; }'
+                        )
+                    }
+                },
+                {
+                    'filter': {'match': {'badge': term}},
+                    'weight': 1
+                }
+            ],
+            score_mode='max',
+            boost_mode='max'
+        )
+        return _query
 
 
 class UnitWorker(Worker):
@@ -80,6 +116,7 @@ class CoAccusedOfficerWorker(Worker):
 class UnitOfficerWorker(Worker):
     doc_type_klass = UnitOfficerDocType
     fields = ['unit_name']
+    sort_order = ['-allegation_count']
 
     def query(self, term):
         return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
