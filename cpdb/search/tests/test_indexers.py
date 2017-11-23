@@ -9,7 +9,8 @@ from ..search_indexers import (
 )
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
-    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory, OfficerHistoryFactory
+    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+    OfficerHistoryFactory
 )
 
 
@@ -129,6 +130,9 @@ class OfficerIndexerTestCase(TestCase):
             first_name='first',
             last_name='last',
             tags=['tag1', 'tag2'],
+            rank='some rank',
+            race='some race',
+            gender='M'
         )
         unit = PoliceUnitFactory(unit_name='011')
         OfficerHistoryFactory(officer=datum, unit=unit)
@@ -142,7 +146,11 @@ class OfficerIndexerTestCase(TestCase):
             'badge': '123',
             'to': datum.v2_to,
             'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#f5f4f4'
+            'visual_token_background_color': '#f5f4f4',
+            'unit': '011',
+            'rank': 'some rank',
+            'race': 'some race',
+            'sex': 'Male'
         })
 
 

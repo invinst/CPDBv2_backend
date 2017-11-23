@@ -30,7 +30,12 @@ class OfficerFormatter(SimpleFormatter):
                     serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
                 'to': serialized_doc['to'],
                 'visual_token_background_color': serialized_doc['visual_token_background_color'],
-                'tags': tags
+                'tags': tags,
+                'unit': serialized_doc.get('unit', None),
+                'rank': serialized_doc.get('rank', None),
+                'salary': None,
+                'race': serialized_doc['race'],
+                'sex': serialized_doc['sex']
             }
         }
 
