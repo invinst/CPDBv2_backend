@@ -1,8 +1,6 @@
-from elasticsearch_dsl import Q
-
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType,
-    NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
+    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
+)
 
 
 class Worker(object):
@@ -19,8 +17,8 @@ class Worker(object):
         return search_results[begin:size]
 
     def query(self, term):
-        return self._searcher\
-            .query('multi_match', query=term, operator='and', fields=self.fields)\
+        return self._searcher \
+            .query('multi_match', query=term, operator='and', fields=self.fields) \
             .sort(*self.sort_order)
 
     def search(self, term, size=10, begin=0):
@@ -103,18 +101,6 @@ class NeighborhoodsWorker(Worker):
 class CommunityWorker(Worker):
     doc_type_klass = CommunityDocType
     fields = ['name', 'tags']
-
-
-class CoAccusedOfficerWorker(Worker):
-    doc_type_klass = CoAccusedOfficerDocType
-    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge', 'co_accused_officer.tags']
-
-    def query(self, term):
-        return self._searcher.query(
-            'nested',
-            path='co_accused_officer',
-            query=Q('multi_match', query=term, operator='and', fields=self.fields)
-        )
 
 
 class UnitOfficerWorker(Worker):
