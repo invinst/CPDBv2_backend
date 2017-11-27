@@ -69,6 +69,19 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.hits[0]['_source']['full_name']).to.eq('another guy')
         expect(response.hits.hits[1]['_source']['full_name']).to.eq('some dude')
 
+    def test_search_by_officer_id(self):
+        doc = OfficerDocType(full_name='some dude', badge='123', meta={'_id': '456'})
+        doc.save()
+        doc2 = OfficerDocType(full_name='another guy', badge='789', meta={'_id': '012'})
+        doc2.save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('456')
+
+        expect(response.hits.total).to.be.equal(1)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('some dude')
+
     def test_search_officer_badge(self):
         OfficerDocType(full_name='John Doe', badge='100123').save()
 
