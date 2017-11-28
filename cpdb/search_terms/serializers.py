@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import SearchTermCategory, SearchTermItem
-from .term_builders import get_term_builders
 
 
 class SearchTermItemSerializer(serializers.ModelSerializer):
@@ -20,15 +19,3 @@ class SearchTermCategorySerializer(serializers.ModelSerializer):
         model = SearchTermCategory
         fields = ('name', 'items')
         depth = 1
-
-
-class SearchTermItemWithTermsSerializer(serializers.ModelSerializer):
-    id = serializers.SlugField(source='slug')
-    terms = serializers.SerializerMethodField()
-
-    class Meta:
-        model = SearchTermItem
-        fields = ('id', 'name', 'terms')
-
-    def get_terms(self, obj):
-        return get_term_builders(obj.slug).build_terms()

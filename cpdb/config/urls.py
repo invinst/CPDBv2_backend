@@ -36,7 +36,7 @@ from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from visual_token.views import VisualTokenView
 from activity_grid.views import ActivityGridViewSet
-from search_terms.views import SearchTermCategoryViewSet, SearchTermItemViewSet
+from search_terms.views import SearchTermCategoryViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -62,7 +62,6 @@ router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
 router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_name='search-term-categories')
-router_v2.register(r'search-term-items', SearchTermItemViewSet, base_name='search-term-items')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
