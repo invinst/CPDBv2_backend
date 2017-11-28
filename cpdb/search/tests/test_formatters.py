@@ -6,7 +6,7 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, CoAccusedOfficerFormatter, UnitFormatter)
+    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -68,31 +68,6 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'race': 'White',
                 'sex': 'Male',
                 'salary': None  # no data yet so always return None here
-            }
-        })
-
-
-class CoAccusedOfficerFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(to_dict=Mock(return_value={
-            'full_name': 'name',
-            'badge': '123',
-            'to': 'to',
-            'co_accused_officer': {
-                'full_name': 'David Beckham',
-                'badge': '7'
-            }
-        }))
-
-        expect(
-            CoAccusedOfficerFormatter().doc_format(doc)
-        ).to.be.eq({
-            'text': 'name',
-            'payload': {
-                'result_text': 'name',
-                'result_extra_information': 'Badge # 123',
-                'to': 'to',
-                'result_reason': 'coaccused with David Beckham (7)'
             }
         })
 

@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from .services import SearchManager
 from .formatters import (
     OfficerFormatter, NameFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter,
-    FAQFormatter, ReportFormatter, CoAccusedOfficerFormatter)
+    FAQFormatter, ReportFormatter)
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
-    CoAccusedOfficerWorker, UnitOfficerWorker)
+    UnitOfficerWorker)
 from analytics.search_hooks import QueryTrackingSearchHook
 
 
@@ -51,7 +51,6 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': UnitFormatter,
         'NEIGHBORHOOD': NameFormatter,
         'COMMUNITY': NameFormatter,
-        'CO-ACCUSED': CoAccusedOfficerFormatter,
         'UNIT > OFFICERS': OfficerFormatter
     }
     workers = {
@@ -59,7 +58,6 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
-        'CO-ACCUSED': CoAccusedOfficerWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker()
     }
 

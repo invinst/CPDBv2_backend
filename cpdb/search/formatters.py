@@ -12,6 +12,7 @@ class SimpleFormatter(Formatter):
             result = self.doc_format(doc)
             result['id'] = doc._id
             return result
+
         return [process_doc(doc) for doc in response.hits]
 
 
@@ -35,26 +36,6 @@ class OfficerFormatter(SimpleFormatter):
                 'salary': None,
                 'race': serialized_doc['race'],
                 'sex': serialized_doc['sex']
-            }
-        }
-
-
-class CoAccusedOfficerFormatter(SimpleFormatter):
-    def doc_format(self, doc):
-        serialized_doc = doc.to_dict()
-        reason = 'coaccused with {name} ({badge})'.format(
-            name=serialized_doc['co_accused_officer']['full_name'],
-            badge=serialized_doc['co_accused_officer']['badge']
-        )
-
-        return {
-            'text': serialized_doc['full_name'],
-            'payload': {
-                'result_reason': reason,
-                'result_text': serialized_doc['full_name'],
-                'result_extra_information':
-                    serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
-                'to': serialized_doc['to']
             }
         }
 
