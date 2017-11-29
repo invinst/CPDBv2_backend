@@ -634,7 +634,13 @@ class Allegation(models.Model):
     def v2_to(self):
         if self.officerallegation_set.count() == 0:
             return '/complaint/%s/' % self.crid
-        return '/complaint/%s/%s/' % (self.crid, self.officerallegation_set.first().officer.pk)
+
+        officer_allegations = self.officerallegation_set.filter(officer__isnull=False)
+
+        if officer_allegations.count() == 0:
+            return '/complaint/%s/' % self.crid
+
+        return '/complaint/%s/%s/' % (self.crid, officer_allegations.first().officer.pk)
 
 
 class AllegationCategory(models.Model):
