@@ -138,7 +138,12 @@ class UnitOfficerIndexer(BaseIndexer):
             'badge': datum.officer.current_badge,
             'to': datum.officer.v2_to,
             'allegation_count': datum.officer.allegation_count,
-            'unit_name': datum.unit.unit_name
+            'visual_token_background_color': datum.officer.visual_token_background_color,
+            'unit_name': datum.unit.unit_name,
+            'unit': datum.officer.last_unit,
+            'rank': datum.officer.rank,
+            'race': datum.officer.race,
+            'sex': datum.officer.gender_display
         }
 
 
