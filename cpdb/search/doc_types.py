@@ -73,3 +73,11 @@ class UnitOfficerDocType(DocType):
 
     class Meta:
         doc_type = 'unitofficer'
+
+
+@autocompletes.doc_type
+class CrDocType(DocType):
+    crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'cr'

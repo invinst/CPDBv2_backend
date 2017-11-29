@@ -630,6 +630,12 @@ class Allegation(models.Model):
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
         return self.attachment_files.filter(type_query & ~tag_query)
 
+    @property
+    def v2_to(self):
+        if self.officerallegation_set.count() == 0:
+            return '/complaint/%s/' % self.crid
+        return '/complaint/%s/%s/' % (self.crid, self.officerallegation_set.first().officer.pk)
+
 
 class AllegationCategory(models.Model):
     category_code = models.CharField(max_length=255)
