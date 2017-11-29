@@ -3,6 +3,7 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
+from search.search_indexers import CrIndexer
 from ..search_indexers import (
     BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
     CommunityIndexer, IndexerManager, UnitOfficerIndexer
@@ -10,8 +11,8 @@ from ..search_indexers import (
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
     AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-    OfficerHistoryFactory
-)
+    OfficerHistoryFactory, AllegationFactory,
+    OfficerAllegationFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -246,3 +247,24 @@ class IndexerManagerTestCase(SimpleTestCase):
         expect(autocompletes.delete.called).to.be.true()
         expect(autocompletes.create.called).to.be.true()
         expect(indexer_obj.index_data.called).to.be.true()
+
+
+class CrIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(CrIndexer().get_queryset().count()).to.eq(0)
+        allegation = AllegationFactory()
+        officer = OfficerFactory()
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+        expect(CrIndexer().get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        allegation = AllegationFactory(crid='123456')
+        officer = OfficerFactory(id=10)
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+
+        expect(
+            CrIndexer().extract_datum(allegation)
+        ).to.eq({
+            'crid': '123456',
+            'to': '/complaint/123456/10/'
+        })

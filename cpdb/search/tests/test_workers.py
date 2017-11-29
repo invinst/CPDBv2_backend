@@ -3,11 +3,12 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from search.workers import (
-        FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker, NeighborhoodsWorker, CommunityWorker
+    FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
+    NeighborhoodsWorker, CommunityWorker, CrWorker
 )
 from search.doc_types import (
-        FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType, NeighborhoodsDocType,
-        CommunityDocType
+    FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType,
+    NeighborhoodsDocType, CommunityDocType, CrDocType
 )
 from search.tests.utils import IndexMixin
 
@@ -145,3 +146,14 @@ class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.be.equal(2)
         expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')
         expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')
+
+
+class CrWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        doc = CrDocType(crid='123456')
+        doc.save()
+
+        self.refresh_index()
+
+        response = CrWorker().search('123456')
+        expect(response.hits.total).to.be.equal(1)

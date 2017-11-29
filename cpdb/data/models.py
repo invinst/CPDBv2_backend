@@ -626,11 +626,15 @@ class Allegation(models.Model):
     def documents(self):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
-        ipra_query = Q(original_url__icontains='ipra')
-        copa_query = Q(original_url__icontains='copa')
         tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
-        return self.attachment_files.filter(type_query & ~(tag_query & (ipra_query | copa_query)))
+        return self.attachment_files.filter(type_query & ~tag_query)
+
+    @property
+    def v2_to(self):
+        if self.officerallegation_set.count() == 0:
+            return '/complaint/%s/' % self.crid
+        return '/complaint/%s/%s/' % (self.crid, self.officerallegation_set.first().officer.pk)
 
 
 class AllegationCategory(models.Model):
