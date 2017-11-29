@@ -123,3 +123,9 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory(crid='456')
 
         expect(allegation.v2_to).to.eq('/complaint/456/')
+
+    def test_v2_to_with_officerallegation_without_officer(self):
+        allegation = AllegationFactory(crid='456')
+        OfficerAllegationFactory(allegation=allegation, officer=None)
+
+        expect(allegation.v2_to).to.eq('/complaint/456/')
