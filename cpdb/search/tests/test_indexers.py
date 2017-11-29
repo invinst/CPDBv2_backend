@@ -3,13 +3,16 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
+from search.search_indexers import CrIndexer
 from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer,
-    NeighborhoodsIndexer, CommunityIndexer, CoAccusedOfficerIndexer, IndexerManager, UnitOfficerIndexer)
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
+    CommunityIndexer, IndexerManager, UnitOfficerIndexer
+)
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
-        AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
-        AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory)
+    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+    OfficerHistoryFactory, AllegationFactory,
+    OfficerAllegationFactory)
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -124,7 +127,16 @@ class OfficerIndexerTestCase(TestCase):
         expect(OfficerIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        datum = OfficerFactory(first_name='first', last_name='last', tags=['tag1', 'tag2'])
+        datum = OfficerFactory(
+            first_name='first',
+            last_name='last',
+            tags=['tag1', 'tag2'],
+            rank='some rank',
+            race='some race',
+            gender='M'
+        )
+        unit = PoliceUnitFactory(unit_name='011')
+        OfficerHistoryFactory(officer=datum, unit=unit)
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
 
         expect(
@@ -135,7 +147,11 @@ class OfficerIndexerTestCase(TestCase):
             'badge': '123',
             'to': datum.v2_to,
             'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#f5f4f4'
+            'visual_token_background_color': '#f5f4f4',
+            'unit': '011',
+            'rank': 'some rank',
+            'race': 'some race',
+            'sex': 'Male'
         })
 
 
@@ -195,35 +211,10 @@ class CommunityIndexerTestCase(TestCase):
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
 
 
-class CoAccusedOfficerIndexerTestCase(TestCase):
-    def setUp(self):
-        self.officer_1 = OfficerFactory(first_name='Kevin', last_name='Osborn', tags=['tag1', 'tag2'])
-        self.officer_2 = OfficerFactory(first_name='Cristiano', last_name='Ronaldo')
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(allegation=allegation, officer=self.officer_1)
-        OfficerAllegationFactory(allegation=allegation, officer=self.officer_2)
-
-    def test_get_queryset(self):
-        expect(CoAccusedOfficerIndexer().get_queryset()).to.have.length(2)
-
-    def test_extract_datum(self):
-        expect(CoAccusedOfficerIndexer().extract_datum(self.officer_1)).to.eq([{
-            'full_name': 'Cristiano Ronaldo',
-            'badge': '',
-            'to': self.officer_2.v2_to,
-            'co_accused_officer': {
-                'id': self.officer_1.pk,
-                'badge': '',
-                'full_name': 'Kevin Osborn',
-                'tags': ['tag1', 'tag2']
-            },
-        }])
-
-
 class UnitOfficerIndexerTestCase(TestCase):
     def setUp(self):
         unit = PoliceUnitFactory(unit_name='001')
-        officer = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        officer = OfficerFactory(first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M')
         self.history = OfficerHistoryFactory(unit=unit, officer=officer)
 
     def test_get_queryset(self):
@@ -235,7 +226,12 @@ class UnitOfficerIndexerTestCase(TestCase):
             'badge': '',
             'to': self.history.officer.v2_to,
             'allegation_count': 0,
-            'unit_name': '001'
+            'unit_name': '001',
+            'unit': '001',
+            'rank': 'somebody',
+            'race': 'White',
+            'sex': 'Male',
+            'visual_token_background_color': '#f5f4f4'
         })
 
 
@@ -251,3 +247,24 @@ class IndexerManagerTestCase(SimpleTestCase):
         expect(autocompletes.delete.called).to.be.true()
         expect(autocompletes.create.called).to.be.true()
         expect(indexer_obj.index_data.called).to.be.true()
+
+
+class CrIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(CrIndexer().get_queryset().count()).to.eq(0)
+        allegation = AllegationFactory()
+        officer = OfficerFactory()
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+        expect(CrIndexer().get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        allegation = AllegationFactory(crid='123456')
+        officer = OfficerFactory(id=10)
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+
+        expect(
+            CrIndexer().extract_datum(allegation)
+        ).to.eq({
+            'crid': '123456',
+            'to': '/complaint/123456/10/'
+        })
