@@ -11,8 +11,6 @@ class GoogleNaturalLanguageNameParser:
 
     def parse(self, content):
         source, text = content
-        document = types.Document(
-            content=text,
-            type=enums.Document.Type.PLAIN_TEXT)
+        document = types.Document(content=text, type=enums.Document.Type.PLAIN_TEXT)
         entities = self.client.analyze_entities(document=document).entities
         return [(source, e.name) for e in entities if e.type == self.type]

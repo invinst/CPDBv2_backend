@@ -1,8 +1,6 @@
-from elasticsearch_dsl import Q
-
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType,
-    NeighborhoodsDocType, CommunityDocType, CoAccusedOfficerDocType)
+    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
+)
 
 
 class Worker(object):
@@ -19,8 +17,8 @@ class Worker(object):
         return search_results[begin:size]
 
     def query(self, term):
-        return self._searcher\
-            .query('multi_match', query=term, operator='and', fields=self.fields)\
+        return self._searcher \
+            .query('multi_match', query=term, operator='and', fields=self.fields) \
             .sort(*self.sort_order)
 
     def search(self, term, size=10, begin=0):
@@ -49,25 +47,44 @@ class ReportWorker(Worker):
 
 class OfficerWorker(Worker):
     doc_type_klass = OfficerDocType
-    fields = ['full_name', 'badge', 'tags^10000']
 
     def query(self, term):
-        _query = self._searcher\
-            .query(
-                'function_score',
-                query={
-                    "multi_match": {
-                        "query": term,
-                        "fields": self.fields
+        _query = self._searcher.query(
+            'function_score',
+            query={
+                'multi_match': {
+                    'query': term,
+                    'fields': ['badge', 'full_name', 'tags', '_id']
+                }
+            },
+            functions=[
+                {
+                    'filter': {'match': {'tags': term}},
+                    'script_score': {
+                        'script': '_score + 1000'
                     }
                 },
-                script_score={
-                    "script": {
-                        "lang": "painless",
-                        "inline": "_score + doc['allegation_count'].value"
+                {
+                    'filter': {'match': {'full_name': term}},
+                    'script_score': {
+                        'script': (
+                            'if (_score >= 10) {return _score * 1000; } '
+                            'else {return _score + doc[\'allegation_count\'].value * 3; }'
+                        )
                     }
+                },
+                {
+                    'filter': {'match': {'badge': term}},
+                    'weight': 1
+                },
+                {
+                    'filter': {'match': {'_id': term}},
+                    'weight': 1
                 }
-            )
+            ],
+            score_mode='max',
+            boost_mode='max'
+        )
         return _query
 
 
@@ -84,18 +101,6 @@ class NeighborhoodsWorker(Worker):
 class CommunityWorker(Worker):
     doc_type_klass = CommunityDocType
     fields = ['name', 'tags']
-
-
-class CoAccusedOfficerWorker(Worker):
-    doc_type_klass = CoAccusedOfficerDocType
-    fields = ['co_accused_officer.full_name', 'co_accused_officer.badge', 'co_accused_officer.tags']
-
-    def query(self, term):
-        return self._searcher.query(
-            'nested',
-            path='co_accused_officer',
-            query=Q('multi_match', query=term, operator='and', fields=self.fields)
-        )
 
 
 class UnitOfficerWorker(Worker):
