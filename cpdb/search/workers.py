@@ -55,7 +55,7 @@ class OfficerWorker(Worker):
             query={
                 'multi_match': {
                     'query': term,
-                    'fields': ['badge', 'full_name', 'tags']
+                    'fields': ['badge', 'full_name', 'tags', '_id']
                 }
             },
             functions=[
@@ -76,6 +76,10 @@ class OfficerWorker(Worker):
                 },
                 {
                     'filter': {'match': {'badge': term}},
+                    'weight': 1
+                },
+                {
+                    'filter': {'match': {'_id': term}},
                     'weight': 1
                 }
             ],
