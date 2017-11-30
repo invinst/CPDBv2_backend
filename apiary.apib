@@ -1893,3 +1893,166 @@ This api require an api access token set in `Authorization` header. To get an ap
                 ]
             }
         ]
+
+## General search [/v1/suggestion/{term}/?limit={limit}]
+
++ Parameters
+    + term (string) - Search term
+    + limit (number) - Django REST framework limit pagination
+
+### Get search results [GET]
+
++ Response 200 (application/json)
+
+        {
+          "NEIGHBORHOOD": [
+            {
+              "text": "Washington Heights",
+              "payload": {
+                "result_text": "Washington Heights",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?neighborhood=Washington Heights",
+                "tags": []
+              },
+              "id": "345"
+            },
+            {
+              "text": "Washington Park",
+              "payload": {
+                "result_text": "Washington Park",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?neighborhood=Washington Park",
+                "tags": []
+              },
+              "id": "339"
+            }
+          ],
+          "CO-ACCUSED": [
+            {
+              "text": "Henry Thomas",
+              "payload": {
+                "result_text": "Henry Thomas",
+                "to": "/officer/28416/",
+                "result_extra_information": "Badge # 20455",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFVEEvAIPTOfirI"
+            },
+            {
+              "text": "Geno Rouse",
+              "payload": {
+                "result_text": "Geno Rouse",
+                "to": "/officer/32306/",
+                "result_extra_information": "Badge # 2155",
+                "result_reason": "coaccused with Walter Ware (17626)"
+              },
+              "id": "AV_JHHFfEEvAIPTOfirL"
+            },
+          ],
+          "COMMUNITY": [
+            {
+              "text": "Washington Heights",
+              "payload": {
+                "result_text": "Washington Heights",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?community=Washington Heights",
+                "tags": []
+              },
+              "id": "497"
+            },
+            {
+              "text": "Washington Park",
+              "payload": {
+                "result_text": "Washington Park",
+                "url": "http://staging.cpdb.co/url-mediator/session-builder?community=Washington Park",
+                "tags": []
+              },
+              "id": "432"
+            }
+          ],
+          "UNIT": [],
+          "UNIT > OFFICERS": [],
+          "OFFICER": [
+            {
+              "text": "Tommy Walker",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 2328",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "005",
+                "salary": null,
+                "result_text": "Tommy Walker",
+                "tags": [],
+                "to": "/officer/29841/",
+                "race": "Black"
+              },
+              "id": "29841"
+            },
+            {
+              "text": "Corey Walker",
+              "payload": {
+                "visual_token_background_color": "#90b1f5",
+                "result_extra_information": "Badge # 1730",
+                "rank": "Sergeant Of Police",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "008",
+                "salary": null,
+                "result_text": "Corey Walker",
+                "tags": [],
+                "to": "/officer/29833/",
+                "race": "Black"
+              },
+              "id": "29833"
+            },
+          ]
+        }
+
+
+## Specific type search [/v1/suggestion/{term}/?contentType={type}]
+
++ Parameters
+    + term (string) - Search term
+    + type (string) - Data content type (OFFICER, UNIT, COMMUNITY, NEIGHBORHOOD, CO-ACCUSED, UNIT > OFFICERS)
+
+### Get search results [GET]
+
++ Response 200 (application/json)
+
+        {
+          "OFFICER": [
+            {
+              "text": "Orson Ward",
+              "payload": {
+                "visual_token_background_color": "#c6d4ec",
+                "result_extra_information": "Badge # 13603",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "010",
+                "salary": null,
+                "result_text": "Orson Ward",
+                "tags": [],
+                "to": "/officer/30022/",
+                "race": "Black"
+              },
+              "id": "30022"
+            },
+            {
+              "text": "Orson Kallenback",
+              "payload": {
+                "visual_token_background_color": "#f5f4f4",
+                "result_extra_information": "",
+                "rank": "Police Officer",
+                "sex": "Male",
+                "result_reason": "",
+                "unit": "169",
+                "salary": null,
+                "result_text": "Orson Kallenback",
+                "tags": [],
+                "to": "/officer/14026/",
+                "race": "White"
+              },
+              "id": "14026"
+            }
+          ]
+        }

@@ -1,11 +1,12 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area, OfficerAllegation, OfficerHistory
+from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
 from search.doc_types import (
-        FAQDocType, ReportDocType, OfficerDocType,
-        UnitDocType, NeighborhoodsDocType, CommunityDocType,
-        CoAccusedOfficerDocType, UnitOfficerDocType)
+    FAQDocType, ReportDocType, OfficerDocType,
+    UnitDocType, NeighborhoodsDocType, CommunityDocType,
+    UnitOfficerDocType, CrDocType
+)
 from .indices import autocompletes
 
 
@@ -25,7 +26,7 @@ class BaseIndexer(object):
     def extract_datum_with_id(self, datum):
         '''
         Ensure that the indexed document has the same ID as its corresponding database record.
-        We can't do this to indexer classes where extract_datum() returns a list (e.g. CoAccusedOfficerIndexer) because
+        We can't do this to indexer classes where extract_datum() returns a list because
         multiple documents cannot share the same ID.
         '''
         extracted_data = self.extract_datum(datum)
@@ -87,32 +88,6 @@ class ReportIndexer(BaseIndexer):
         }
 
 
-class CoAccusedOfficerIndexer(BaseIndexer):
-    doc_type_klass = CoAccusedOfficerDocType
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, datum):
-        pks = datum.officerallegation_set.values_list('allegation__pk', flat=True)
-        involved_pks = OfficerAllegation.objects.filter(allegation__pk__in=pks).exclude(officer=datum)\
-            .values_list('officer__pk', flat=True)
-        officers = Officer.objects.filter(pk__in=involved_pks)
-        # TODO: This piece of code is quite confusing between officer and co-accused officer, we left this
-        # `todo` here to re-write it a bit later to make it clearer later.
-        return [{
-            'full_name': officer.full_name,
-            'badge': officer.current_badge,
-            'to': officer.v2_to,
-            'co_accused_officer': {
-                'full_name': datum.full_name,
-                'badge': datum.current_badge,
-                'tags': datum.tags,
-                'id': datum.pk
-            }
-        } for officer in officers]
-
-
 class OfficerIndexer(BaseIndexer):
     doc_type_klass = OfficerDocType
 
@@ -126,7 +101,11 @@ class OfficerIndexer(BaseIndexer):
             'badge': datum.current_badge,
             'to': datum.v2_to,
             'visual_token_background_color': datum.visual_token_background_color,
-            'tags': datum.tags
+            'tags': datum.tags,
+            'unit': datum.last_unit,
+            'rank': datum.rank,
+            'race': datum.race,
+            'sex': datum.gender_display
         }
 
 
@@ -159,7 +138,12 @@ class UnitOfficerIndexer(BaseIndexer):
             'badge': datum.officer.current_badge,
             'to': datum.officer.v2_to,
             'allegation_count': datum.officer.allegation_count,
-            'unit_name': datum.unit.unit_name
+            'visual_token_background_color': datum.officer.visual_token_background_color,
+            'unit_name': datum.unit.unit_name,
+            'unit': datum.officer.last_unit,
+            'rank': datum.officer.rank,
+            'race': datum.officer.race,
+            'sex': datum.officer.gender_display
         }
 
 
@@ -203,3 +187,16 @@ class IndexerManager(object):
     def rebuild_index(self):
         self._build_mapping()
         self._index_data()
+
+
+class CrIndexer(BaseIndexer):
+    doc_type_klass = CrDocType
+
+    def get_queryset(self):
+        return Allegation.objects.all()
+
+    def extract_datum(self, datum):
+        return {
+            'crid': datum.crid,
+            'to': datum.v2_to
+        }

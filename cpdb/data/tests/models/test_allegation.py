@@ -61,23 +61,23 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory()
         AttachmentFileFactory(
             id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TRR',
-            original_url='http://www.chicagocopa.org/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+            original_url='original_url_1'
         )
         AttachmentFileFactory(
             id=2, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OBR',
-            original_url='http://www.iprachicago.org/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+            original_url='original_url_2'
         )
         AttachmentFileFactory(
             id=3, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OCIR',
-            original_url='http://www.iprachicago.org/wp-content/uploads/2017/08/Arrest-Report-REDACTED.pdf'
+            original_url='original_url_3'
         )
         AttachmentFileFactory(
             id=4, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='AR',
-            original_url='http://www.chicagocopa.org/wp-content/uploads/2017/08/Arrest-Report-REDACTED.pdf'
+            original_url='original_url_4'
         )
         AttachmentFileFactory(
             id=5, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TAG',
-            original_url='http://www.documentcloud.com/wp-content/uploads/2017/07/Arrest-Report-REDACTED.pdf'
+            original_url='original_url_5'
         )
         expect(allegation.documents.count()).to.eq(1)
         expect(allegation.documents[0].id).to.eq(5)
@@ -111,3 +111,15 @@ class AllegationTestCase(TestCase):
 
         ComplainantFactory(allegation=allegation)
         expect(allegation.complainant_genders).to.eq(['Female', 'Unknown'])
+
+    def test_v2_to_with_officer(self):
+        allegation = AllegationFactory(crid='456')
+        officer = OfficerFactory(id=123)
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+
+        expect(allegation.v2_to).to.eq('/complaint/456/123/')
+
+    def test_v2_to_without_officer(self):
+        allegation = AllegationFactory(crid='456')
+
+        expect(allegation.v2_to).to.eq('/complaint/456/')
