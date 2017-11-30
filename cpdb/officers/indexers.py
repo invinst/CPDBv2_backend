@@ -1,4 +1,3 @@
-from datetime import date
 from itertools import combinations
 
 from es_index import register_indexer
@@ -49,43 +48,6 @@ class UnitChangeTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return UnitChangeTimelineSerializer(datum).data
-
-
-@register_indexer(app_name)
-class YearTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, officer):
-        results = dict()
-        for oa in OfficerAllegation.objects.filter(officer=officer, start_date__isnull=False):
-            year_dict = results.setdefault(oa.start_date.year, dict())
-            year_dict.setdefault('crs', 0)
-            year_dict['crs'] += 1
-
-        if officer.appointed_date is not None:
-            year_dict = results.setdefault(officer.appointed_date.year, dict())
-            year_dict.setdefault('crs', 0)
-
-        for oh in OfficerHistory.objects.filter(officer=officer, effective_date__isnull=False):
-            year_dict = results.setdefault(oh.effective_date.year, dict())
-            year_dict.setdefault('crs', 0)
-
-        for key, val in results.iteritems():
-            val.update(
-                {
-                    'kind': 'YEAR',
-                    'officer_id': officer.pk,
-                    'year': key,
-                    'priority_sort': 20,
-                    'date_sort': date(key, 12, 31),
-                    'year_sort': key
-                }
-            )
-            yield val
 
 
 @register_indexer(app_name)

@@ -63,9 +63,6 @@ class OfficersViewSet(viewsets.ViewSet):
         if Officer.objects.filter(pk=pk).exists():
             query = self._query_timeline_items(request, pk)
 
-            # exclude "YEAR" events from minimap
-            query = query.query('bool', filter=[~Q('match', kind='YEAR')])
-
             return Response(TimelineMinimapSerializer(query[:10000].execute(), many=True).data)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
