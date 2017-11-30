@@ -1893,23 +1893,3 @@ This api require an api access token set in `Authorization` header. To get an ap
                 ]
             }
         ]
-
-## Search term item detail [/search-term-items/{id}/]
-
-+ Parameters
-    + id (string) - ID of search term category
-
-### Get search term category [GET]
-
-+ Response 200 (application/json)
-
-        {
-            "id": "police-districts",
-            "name": "Police Districts",
-            "terms": [
-                {
-                    "name": "1st District - Central",
-                    "link": "http://beta.cpdb.co/url-mediator/session-builder?police_district=1st"
-                }
-            ]
-        }
