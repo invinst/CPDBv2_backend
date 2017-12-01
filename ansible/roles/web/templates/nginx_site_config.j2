@@ -44,6 +44,13 @@ server {
     return 301 https://cpdb.co$request_uri;
 }
 
+# Redirect www to non-www
+server {
+    listen      80;
+    server_name www.cpdp.co;
+    return 301 https://cpdp.co$request_uri;
+}
+
 server {
     listen              443 ssl;
     server_name         {{ nginx_server_name }};
