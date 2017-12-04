@@ -96,6 +96,7 @@ class PoliceUnitFactory(factory.django.DjangoModelFactory):
         model = PoliceUnit
 
     unit_name = factory.LazyFunction(lambda: fake.numerify(text="###"))
+    description = factory.LazyFunction(lambda: fake.text(25))
 
 
 class ComplainantFactory(factory.django.DjangoModelFactory):

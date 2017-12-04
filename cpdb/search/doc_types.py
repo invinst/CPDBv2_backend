@@ -69,6 +69,7 @@ class CommunityDocType(DocType):
 class UnitOfficerDocType(DocType):
     allegation_count = Long()
     unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    unit_description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
