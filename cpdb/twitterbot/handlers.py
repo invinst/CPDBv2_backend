@@ -1,15 +1,9 @@
 import itertools
 import logging
 
-from django.db.models.aggregates import Count
-from django.db.models.functions import Concat
-from django.db.models import F, Value, CharField
-
 from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
-
-from data.models import Officer
 
 from .recipient_extractors import TweetAuthorRecipientExtractor, TweetMentionRecipientExtractor
 from .name_parsers import GoogleNaturalLanguageNameParser
@@ -19,6 +13,7 @@ from .response_builders import (
 from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from .tweet_extractors import RelatedTweetExtractor
 from .tweets import Tweet
+from .officer_extractors import ElasticSearchOfficerExtractor
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
@@ -28,25 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
-    @staticmethod
-    def get_officers(names):
-        results = []
-        for (source, name) in names:
-            officer = Officer.objects.annotate(fullname=Concat(
-                F('first_name'),
-                Value(' '),
-                F('last_name'),
-                output_field=CharField()
-            )).filter(
-                fullname__iexact=name
-            ).annotate(
-                num_allegation=Count('officerallegation')
-            ).order_by('-num_allegation').first()
-
-            if officer is not None and officer not in results:
-                results.append((source, officer))
-        return results
-
     def reset_context(self):
         self._context = {'client': self.client}
 
@@ -120,7 +96,7 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
                 (source, name) for source, name in self.name_parser.parse((text_source, text))
                 if (source, name) not in names]
 
-        officers = self.get_officers(names)
+        officers = self.officer_extractor.get_officers(names)
 
         recipients = []
         for recipient_extractor in self.recipient_extractors:
@@ -152,6 +128,7 @@ class OfficerTweetHandler(BaseOfficerTweetHandler):
         lambda tweet: not tweet.is_unfollow_tweet
     ]
     name_parser = GoogleNaturalLanguageNameParser()
+    officer_extractor = ElasticSearchOfficerExtractor()
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
