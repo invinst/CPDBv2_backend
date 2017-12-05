@@ -11,30 +11,18 @@ class ElasticSearchOfficerExtractor:
                 'function_score',
                 query={
                     'match': {
-                        'name': name
+                        'name': {
+                            'query': name,
+                            'operator': 'and'
+                        }
                     }
                 },
-                functions=[
-                    {
-                        'filter': {
-                            'match': {
-                                'name': {
-                                    'query': name,
-                                    'operator': 'and'
-                                }
-                            }
-                        },
-                        'script_score': {
-                            'script': '_score + 500'
-                        }
-                    },
-                    {
-                        'filter': {'match': {'name': name}},
-                        'script_score': {
-                            'script': '_score + doc[\'allegation_count\'].value * 3'
-                        }
+                script_score={
+                    'script': {
+                        'lang': 'painless',
+                        'inline': '_score + doc[\'allegation_count\'].value * 3'
                     }
-                ]
+                }
             )
             search_result = query[:1].execute()
             results += [

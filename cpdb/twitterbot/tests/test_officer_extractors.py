@@ -63,3 +63,17 @@ class ElasticSearchOfficerExtractorTestCase(RebuildIndexMixin, TestCase):
             self.extractor.get_officers([('text', 'Michael')]),
             [officer2]
         )
+
+    def test_find_officer_with_correct_match(self):
+        officer = OfficerFactory(first_name='Michael', last_name='Flynn')
+
+        self.refresh_index()
+
+        self.check_result_match_officer(
+            self.extractor.get_officers([('text', 'Michael')]),
+            [officer]
+        )
+        self.check_result_match_officer(
+            self.extractor.get_officers([('text', 'Michael Glynn')]),
+            []
+        )
