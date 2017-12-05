@@ -187,3 +187,5 @@ BACKGROUND_COLOR_SCHEME = {
     '45': '#520051',
     '55': '#131313',
 }
+
+RACE_UNKNOWN_STRINGS = ['nan', '']

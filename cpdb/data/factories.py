@@ -3,11 +3,13 @@ import random
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
 import factory
+from factory.fuzzy import FuzzyInteger
 from faker import Faker
 
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
-    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest)
+    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
+    PoliceWitness)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -104,6 +106,9 @@ class ComplainantFactory(factory.django.DjangoModelFactory):
         model = Complainant
 
     allegation = factory.SubFactory(AllegationFactory)
+    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
+    race = 'Black'
+    age = FuzzyInteger(18, 60)
 
 
 class AllegationCategoryFactory(factory.django.DjangoModelFactory):
@@ -144,3 +149,23 @@ class AttachmentRequestFactory(factory.django.DjangoModelFactory):
 
     allegation = factory.SubFactory(AllegationFactory)
     email = factory.LazyFunction(lambda: fake.email())
+
+
+class VictimFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Victim
+
+    allegation = factory.SubFactory(AllegationFactory)
+    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
+    race = 'Black'
+    age = FuzzyInteger(18, 60)
+
+
+class PoliceWitnessFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PoliceWitness
+
+    allegation = factory.SubFactory(AllegationFactory)
+    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
+    race = 'Black'
+    officer = factory.SubFactory(OfficerFactory)
