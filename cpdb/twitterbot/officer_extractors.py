@@ -11,7 +11,7 @@ class ElasticSearchOfficerExtractor:
                 'function_score',
                 query={
                     'match': {
-                        'name': {
+                        'full_name': {
                             'query': name,
                             'operator': 'and'
                         }

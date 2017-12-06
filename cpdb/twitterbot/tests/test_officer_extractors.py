@@ -26,6 +26,10 @@ class ElasticSearchOfficerExtractorTestCase(RebuildIndexMixin, TestCase):
             [officer]
         )
         self.check_result_match_officer(
+            self.extractor.get_officers([('text', 'Micha')]),
+            [officer]
+        )
+        self.check_result_match_officer(
             self.extractor.get_officers([('text', 'Flynn')]),
             [officer]
         )

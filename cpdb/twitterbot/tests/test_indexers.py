@@ -16,6 +16,6 @@ class OfficerIndexerTestCase(TestCase):
         indexer = OfficerIndexer()
         expect(indexer.extract_datum(Mock(id=123, allegation_count=3, full_name='John Doe'))).to.eq({
             'id': 123,
-            'name': 'John Doe',
+            'full_name': 'John Doe',
             'allegation_count': 3
         })

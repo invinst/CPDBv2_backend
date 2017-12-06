@@ -6,5 +6,8 @@ from .index_aliases import twitterbot_index_alias
 
 @twitterbot_index_alias.doc_type
 class OfficerDocType(DocType):
-    name = Text(analyzer=autocomplete_analyzer, search_analyzer=autocomplete_search_analyzer)
+    full_name = Text(analyzer=autocomplete_analyzer, search_analyzer=autocomplete_search_analyzer)
     allegation_count = Long()
+
+    class Meta:
+        doc_type = 'officer'
