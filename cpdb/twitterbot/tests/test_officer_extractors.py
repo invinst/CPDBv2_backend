@@ -52,10 +52,8 @@ class ElasticSearchOfficerExtractorTestCase(RebuildIndexMixin, TestCase):
     def test_find_only_officer_with_highest_complaint_count(self):
         officer1 = OfficerFactory(first_name='Michael', last_name='Flynn')
         officer2 = OfficerFactory(first_name='Michael', last_name='Glynn')
-        for _ in range(3):
-            OfficerAllegationFactory(officer=officer2)
-        for _ in range(2):
-            OfficerAllegationFactory(officer=officer1)
+        OfficerAllegationFactory.create_batch(3, officer=officer2)
+        OfficerAllegationFactory.create_batch(2, officer=officer1)
 
         self.refresh_index()
 
