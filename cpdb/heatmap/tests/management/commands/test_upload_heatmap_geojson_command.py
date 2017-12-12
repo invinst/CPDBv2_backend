@@ -36,12 +36,15 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
         OfficerAllegationFactory(
             allegation=allegation1,
             allegation_category=allegation_category,
-            final_outcome='100')
+            final_finding='NS',
+            final_outcome='100'
+        )
         OfficerAllegationFactory(
             allegation=allegation2,
             allegation_category=allegation_category,
             final_finding='SU',
-            final_outcome='100')
+            final_outcome='100'
+        )
         self.command = Command()
 
     def test_get_heatmap_cluster_data(self):
