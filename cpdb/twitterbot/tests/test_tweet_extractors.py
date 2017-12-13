@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 from robber import expect
 from mock import Mock, patch
 
-from twitterbot.tweet_extractors import RelatedTweetExtractor
+from twitterbot.tweet_extractors import RelatedTweetExtractor, DirectMentionTweetExtractor
 from twitterbot.factories import TweetFactory, MockClientFactory
 
 
@@ -89,3 +89,20 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
         context = {}
         extractor.extract(tweet, context=context)
         expect(context.get('original_tweet', None)).to.be.none()
+
+
+class DirectMentionTweetExtractorTestCase(SimpleTestCase):
+    def setUp(self):
+        self.screen_name = 'TwitterBot'
+        self.extractor = DirectMentionTweetExtractor()
+        self.client = MockClientFactory(screen_name=self.screen_name)
+
+    def test_extract_direct_mention(self):
+        tweet = TweetFactory(client=self.client, mentioned_screen_names=[self.screen_name])
+        tweet_ids = [t.id for t in self.extractor.extract(tweet, context={'client': self.client})]
+        expect(tweet_ids).to.eq([tweet.id])
+
+    def test_extract_not_direct_mention(self):
+        tweet = TweetFactory(client=self.client, mentioned_screen_names=[])
+        tweet_ids = [t.id for t in self.extractor.extract(tweet, context={'client': self.client})]
+        expect(tweet_ids).to.eq([])

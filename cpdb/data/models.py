@@ -19,6 +19,7 @@ from data.constants import (
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
+from data.validators import validate_race
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
@@ -261,7 +262,7 @@ class Officer(TaggableModel):
     middle_initial = models.CharField(max_length=5, null=True)
     suffix_name = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     appointed_date = models.DateField(null=True)
     resignation_date = models.DateField(null=True)
     rank = models.CharField(max_length=100, blank=True)
@@ -723,14 +724,14 @@ class OfficerAllegation(models.Model):
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
     gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     officer = models.ForeignKey(Officer, null=True)
 
 
 class Complainant(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
     gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
 
     @property
@@ -755,7 +756,7 @@ class Involvement(models.Model):
     full_name = models.CharField(max_length=50)
     involved_type = models.CharField(max_length=25)
     gender = models.CharField(max_length=1, null=True)
-    race = models.CharField(max_length=50, null=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
 
     @property
@@ -796,7 +797,7 @@ class Award(models.Model):
 class Victim(models.Model):
     allegation = models.ForeignKey(Allegation)
     gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
 
 

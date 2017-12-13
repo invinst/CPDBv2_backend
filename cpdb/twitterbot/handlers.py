@@ -17,7 +17,7 @@ from .response_builders import (
     SingleOfficerResponseBuilder, CoaccusedPairResponseBuilder, NotFoundResponseBuilder
 )
 from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
-from .tweet_extractors import RelatedTweetExtractor
+from .tweet_extractors import DirectMentionTweetExtractor
 from .tweets import Tweet
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
@@ -146,7 +146,7 @@ class CPDBEventHandler(BaseEventHandler):
 class OfficerTweetHandler(BaseOfficerTweetHandler):
     event_handler_class = CPDBEventHandler
     text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
-    tweet_extractor = RelatedTweetExtractor()
+    tweet_extractor = DirectMentionTweetExtractor()
     incoming_tweet_filters = [
         lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,
         lambda tweet: not tweet.is_unfollow_tweet

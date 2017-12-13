@@ -109,7 +109,7 @@ class AllegationTestCase(TestCase):
         ComplainantFactory(gender='F', allegation=allegation)
         expect(allegation.complainant_genders).to.eq(['Female'])
 
-        ComplainantFactory(allegation=allegation)
+        ComplainantFactory(gender='U', allegation=allegation)
         expect(allegation.complainant_genders).to.eq(['Female', 'Unknown'])
 
     def test_v2_to_with_officer(self):
