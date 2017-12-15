@@ -20,12 +20,18 @@ class IndexAlias:
     def doc_type(self, doc_type):
         return self._read_index.doc_type(doc_type)
 
+    def close_write_index(self):
+        self._write_index.close()
+
+    def open_write_index(self):
+        self._write_index.open()
+
     @contextmanager
     def indexing(self):
         self._write_index.create(ignore=400)
         try:
             yield self
-        except:
+        except Exception:
             self._write_index.delete(ignore=404)
             raise
         self._read_index.delete(ignore=404)

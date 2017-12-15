@@ -9,7 +9,7 @@ from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from officers.indexers import (
-    OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer, YearTimelineEventIndexer,
+    OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
     JoinedTimelineEventIndexer, SocialGraphIndexer
 )
 
@@ -184,52 +184,6 @@ class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
             'year_sort': 2010,
             'priority_sort': 30,
         })
-
-
-class YearTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(YearTimelineEventIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock()
-        officer.pk = 123
-        officer.appointed_date = date(2012, 1, 1)
-        oa_1 = Mock()
-        oa_1.start_date = date(2012, 1, 3)
-        oa_2 = Mock()
-        oa_2.start_date = date(2015, 2, 3)
-        oa_3 = Mock()
-        oa_3.start_date = date(2015, 5, 3)
-        oh = Mock()
-        oh.effective_date = date(2015, 7, 3)
-        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[oa_1, oa_2, oa_3]):
-            with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[oh]):
-                expect(sorted(
-                    list(YearTimelineEventIndexer().extract_datum(officer)),
-                    key=lambda item: item['year']
-                )).to.eq([
-                    {
-                        'officer_id': 123,
-                        'kind': 'YEAR',
-                        'year': 2012,
-                        'date_sort': date(2012, 12, 31),
-                        'year_sort': 2012,
-                        'priority_sort': 20,
-                        'crs': 1
-                    },
-                    {
-                        'officer_id': 123,
-                        'kind': 'YEAR',
-                        'year': 2015,
-                        'date_sort': date(2015, 12, 31),
-                        'year_sort': 2015,
-                        'priority_sort': 20,
-                        'crs': 2
-                    }
-                ])
 
 
 class JoinedTimelineEventIndexerTestCase(SimpleTestCase):

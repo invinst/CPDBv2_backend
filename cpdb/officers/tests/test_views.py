@@ -99,24 +99,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'count': 6,
+            'count': 3,
             'next': None,
             'previous': None,
             'results': [
                 {
-                    'kind': 'YEAR',
-                    'year': 2017,
-                    'crs': 0
-                },
-                {
                     'kind': 'UNIT_CHANGE',
                     'date': '2017-02-27',
                     'unit_name': 'A'
-                },
-                {
-                    'kind': 'YEAR',
-                    'year': 2016,
-                    'crs': 1
                 },
                 {
                     'kind': 'CR',
@@ -129,11 +119,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'race': ['Unknown'],
                     'gender': ['Unknown'],
                     'age': ['Unknown']
-                },
-                {
-                    'kind': 'YEAR',
-                    'year': 2000,
-                    'crs': 0
                 },
                 {
                     'kind': 'JOINED',
@@ -165,22 +150,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'count': 6,
+            'count': 3,
             'next': None,
             'previous': None,
             'results': [
                 {
-                    'kind': 'YEAR',
-                    'year': 2017,
-                    'crs': 1
-                }, {
                     'kind': 'UNIT_CHANGE',
                     'date': '2017-02-27',
                     'unit_name': 'A'
-                }, {
-                    'kind': 'YEAR',
-                    'year': 2016,
-                    'crs': 1
                 }, {
                     'kind': 'CR',
                     'date': '2016-08-23',
@@ -192,10 +169,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'race': ['Unknown'],
                     'gender': ['Unknown'],
                     'age': ['Unknown']
-                }, {
-                    'kind': 'YEAR',
-                    'year': 2000,
-                    'crs': 0
                 }, {
                     'kind': 'JOINED',
                     'date': '2000-01-01'
@@ -215,7 +188,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'offset': 10})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data['count']).to.eq(43)
+        expect(response.data['count']).to.eq(41)
         expect(response.data['next']).to.match(r'.+\?limit=20\&offset=30$')
         expect(response.data['previous']).to.match(r'.+\?limit=20$')
         expect(len(response.data['results'])).to.eq(20)
@@ -262,18 +235,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'count': 6,
+            'count': 3,
             'next': None,
             'previous': None,
             'results': [
                 {
                     'kind': 'JOINED',
                     'date': '2000-01-01'
-                },
-                {
-                    'kind': 'YEAR',
-                    'year': 2000,
-                    'crs': 0
                 },
                 {
                     'kind': 'CR',
@@ -288,19 +256,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'age': ['Unknown']
                 },
                 {
-                    'kind': 'YEAR',
-                    'year': 2016,
-                    'crs': 1
-                },
-                {
                     'kind': 'UNIT_CHANGE',
                     'date': '2017-02-27',
                     'unit_name': 'A'
-                },
-                {
-                    'kind': 'YEAR',
-                    'year': 2017,
-                    'crs': 0
                 }
             ]
         })

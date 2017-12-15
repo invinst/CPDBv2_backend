@@ -24,6 +24,9 @@ class BaseIndexer(object):
             doc.save(index=self.index_alias.new_index_name)
 
     def reindex(self):
+        self.index_alias.close_write_index()
+        self.doc_type_klass.init(index=self.index_alias.new_index_name)
+        self.index_alias.open_write_index()
         for datum in tqdm(
                 self.get_queryset(),
                 desc='Indexing {doc_type_name}'.format(

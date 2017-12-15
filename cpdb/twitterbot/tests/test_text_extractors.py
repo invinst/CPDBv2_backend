@@ -13,6 +13,10 @@ class TweetTextExtractorTestCase(SimpleTestCase):
         tweet = TweetFactory(text='abc')
         expect(extractor.extract(tweet)).to.eq([('text', 'abc')])
 
+    def test_extract_remove_mention(self):
+        extractor = TweetTextExtractor()
+        expect(extractor.extract(TweetFactory(text='@def hey @twilight abc'))).to.eq([('text', 'hey abc')])
+
 
 class HashTagTextExtractorTestCase(SimpleTestCase):
     def test_extract(self):

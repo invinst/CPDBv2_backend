@@ -77,8 +77,7 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
                 raise StopIteration()
             if tweet.is_quoted_tweet_of_twitterbot:
                 raise StopIteration()
-            if not tweet.is_mentioning_twitterbot:
-                raise StopIteration()
+
         except AttributeError:
             raise StopIteration()
         yield {
