@@ -155,8 +155,6 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_not_found(self, _):
-        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
-        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
             'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
@@ -166,8 +164,6 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_context_is_reset(self, _):
-        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
-        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
             'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
