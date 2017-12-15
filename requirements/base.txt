@@ -3,7 +3,7 @@ django-environ==0.4.0
 django-filter==1.0.4
 djangorestframework==3.6.3
 six==1.10.0
-psycopg2==2.6.1
+psycopg2==2.7.3
 django-cors-headers==2.1.0
 iso8601==0.1.11
 tqdm==4.17.1
