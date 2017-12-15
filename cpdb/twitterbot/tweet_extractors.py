@@ -1,4 +1,4 @@
-class RelatedTweetExtractor:
+class RelatedTweetExtractor(object):
     def extract(self, tweet, context):
         tweets = self.get_tweets(tweet, context)
         try:
@@ -11,11 +11,13 @@ class RelatedTweetExtractor:
     def is_self_tweet(self, tweet, context):
         return tweet.user_id == context['client'].get_current_user().id
 
+    def is_valid_tweet(self, tweet, context):
+        return tweet is not None and not self.is_self_tweet(tweet, context)
+
     def get_tweets(self, tweet, context):
-        if tweet is None or self.is_self_tweet(tweet, context):
+        if not self.is_valid_tweet(tweet, context):
             return []
-        else:
-            tweets = [tweet]
+        tweets = [tweet]
         tweets += self.get_related_tweets(tweet, context)
         return tweets
 
@@ -29,3 +31,9 @@ class RelatedTweetExtractor:
     def get_original_tweet(self, tweets):
         if len(tweets) > 0:
             return min(tweets, key=lambda tweet: tweet.created_at)
+
+
+class DirectMentionTweetExtractor(RelatedTweetExtractor):
+    def is_valid_tweet(self, tweet, context):
+        return super(DirectMentionTweetExtractor, self).is_valid_tweet(tweet, context) \
+            and tweet.is_mentioning_twitterbot

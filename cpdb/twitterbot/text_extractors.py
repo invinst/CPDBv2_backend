@@ -5,7 +5,8 @@ from utils import web_parsing
 
 class TweetTextExtractor:
     def extract(self, tweet):
-        return [('text', tweet.text)]
+        text = re.sub(r'\@[^\s]+\s+', '', tweet.text)
+        return [('text', text)]
 
 
 class HashTagTextExtractor:
