@@ -56,7 +56,8 @@ LOCAL_APPS = (
     'visual_token',
     'activity_grid',
     'document_cloud',
-    'search_terms'
+    'search_terms',
+    'heatmap',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

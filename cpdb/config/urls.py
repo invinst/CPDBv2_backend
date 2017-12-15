@@ -80,3 +80,9 @@ urlpatterns = [
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^visual-token/(?P<renderer>[\w\.]+)/$', VisualTokenView.as_view(), name='visual_token'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:  # pragma: no cover
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
