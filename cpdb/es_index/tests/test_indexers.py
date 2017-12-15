@@ -26,6 +26,22 @@ class IndexersTestCase(SimpleTestCase):
         indexer.doc_type_klass.assert_called_once_with(key='something')
         expect(doc_type.save.called).to.be.true()
 
+    def test_index_datum_return_generator(self):
+        def extract_datum(*args):
+            yield {'key': 'something'}
+
+        indexer = BaseIndexer()
+        doc_type = Mock()
+        indexer.doc_type_klass = Mock(return_value=doc_type)
+        indexer.extract_datum = extract_datum
+        indexer.get_queryset = Mock(return_value=['something'])
+        indexer.index_alias = Mock()
+
+        indexer.index_datum('anything')
+
+        indexer.doc_type_klass.assert_called_once_with(key='something')
+        expect(doc_type.save.called).to.be.true()
+
     def test_reindex(self):
         indexer = BaseIndexer()
         indexer.get_queryset = Mock(return_value=[1])
