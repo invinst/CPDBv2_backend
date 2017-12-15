@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from elasticsearch_dsl import DocType
 from robber import expect
+from mock import patch
 
 from es_index import es_client
 from es_index.index_aliases import IndexAlias
@@ -59,3 +60,13 @@ class IndexAliasTestCase(TestCase):
 
         expect(indexing).to.throw_exactly(MyException)
         expect(self.alias._write_index.exists()).to.be.false()
+
+    def test_open_write_index(self):
+        with patch.object(self.alias._write_index, 'open') as mock_open:
+            self.alias.open_write_index()
+            expect(mock_open.called).to.be.true()
+
+    def test_close_write_index(self):
+        with patch.object(self.alias._write_index, 'close') as mock_close:
+            self.alias.close_write_index()
+            expect(mock_close.called).to.be.true()

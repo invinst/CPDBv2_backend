@@ -47,6 +47,7 @@ class IndexersTestCase(SimpleTestCase):
         indexer.get_queryset = Mock(return_value=[1])
         indexer.doc_type_klass = Mock()
         indexer.index_datum = Mock()
+        indexer.index_alias = Mock()
 
         indexer.reindex()
 
