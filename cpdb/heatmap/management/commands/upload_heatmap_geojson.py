@@ -47,9 +47,9 @@ class Command(BaseCommand):
             weight = cluster[0]
 
             allegation_json = {
-                "type": "Feature",
-                "properties": {
-                    "weight": weight
+                'type': 'Feature',
+                'properties': {
+                    'weight': weight
                 },
                 'geometry': {
                     'coordinates': [point.x, point.y],
@@ -64,8 +64,8 @@ class Command(BaseCommand):
         areas = Area.objects.filter(area_type=NEIGHBORHOODS_AREA_CHOICE, polygon__isnull=False)
 
         area_dict = {
-            "type": "FeatureCollection",
-            "features": [],
+            'type': 'FeatureCollection',
+            'features': [],
         }
         for area in tqdm(areas):
             polygon = json.loads(area.polygon.geojson)
@@ -86,8 +86,8 @@ class Command(BaseCommand):
                 .order_by('-outcome_count').first()
 
             area_json = {
-                "type": "Feature",
-                "properties": {
+                'type': 'Feature',
+                'properties': {
                     'id': area.id,
                     'name': area.name,
                     'complaints_count': Allegation.objects.filter(areas__id=area.id).distinct().count(),
