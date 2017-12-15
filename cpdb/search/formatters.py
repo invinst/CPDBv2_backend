@@ -21,13 +21,18 @@ class OfficerFormatter(SimpleFormatter):
         serialized_doc = doc.to_dict()
         tags = serialized_doc.get('tags', [])
 
+        unit_description = serialized_doc.get('unit_description', None)
+        if unit_description is not None:
+            extra_info = unit_description
+        else:
+            extra_info = serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or ''
+
         return {
             'text': serialized_doc['full_name'],
             'payload': {
                 'result_reason': ', '.join(tags),
                 'result_text': serialized_doc['full_name'],
-                'result_extra_information':
-                    serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or '',
+                'result_extra_information': extra_info,
                 'to': serialized_doc['to'],
                 'visual_token_background_color': serialized_doc['visual_token_background_color'],
                 'tags': tags,
@@ -49,6 +54,7 @@ class UnitFormatter(SimpleFormatter):
             'payload': {
                 'tags': tags,
                 'result_text': serialized_doc['name'],
+                'result_extra_information': serialized_doc['description'],
                 'to': serialized_doc['to']
             }
         }

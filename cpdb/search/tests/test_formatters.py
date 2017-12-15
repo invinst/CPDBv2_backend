@@ -40,7 +40,7 @@ class SimpleFormatterTestCase(SimpleTestCase):
 
 
 class OfficerFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
+    def test_officer_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
             'full_name': 'name',
             'badge': '123',
@@ -72,12 +72,46 @@ class OfficerFormatterTestCase(SimpleTestCase):
             }
         })
 
+    def test_unit_officer_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'full_name': 'name',
+            'badge': '123',
+            'to': 'to',
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#ffffff',
+            'unit': '001',
+            'unit_description': 'foo bar',
+            'rank': 'some rank',
+            'race': 'White',
+            'sex': 'Male'
+        }))
+
+        expect(
+            OfficerFormatter().doc_format(doc)
+        ).to.be.eq({
+            'text': 'name',
+            'payload': {
+                'result_text': 'name',
+                'result_extra_information': 'foo bar',
+                'to': 'to',
+                'result_reason': 'tag1, tag2',
+                'tags': ['tag1', 'tag2'],
+                'visual_token_background_color': '#ffffff',
+                'unit': '001',
+                'rank': 'some rank',
+                'race': 'White',
+                'sex': 'Male',
+                'salary': None  # no data yet so always return None here
+            }
+        })
+
 
 class UnitFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock()
         doc.to_dict = Mock(return_value={
             'name': '123',
+            'description': 'foo bar',
             'to': '/unit/123/',
             'tags': ['foo']
         })
@@ -88,6 +122,7 @@ class UnitFormatterTestCase(SimpleTestCase):
             'text': '123',
             'payload': {
                 'result_text': '123',
+                'result_extra_information': 'foo bar',
                 'to': '/unit/123/',
                 'tags': ['foo']
             }
@@ -97,6 +132,7 @@ class UnitFormatterTestCase(SimpleTestCase):
         doc = Mock()
         doc.to_dict = Mock(return_value={
             'name': '123',
+            'description': 'foo bar',
             'to': '/unit/123/'
         })
 
@@ -106,6 +142,7 @@ class UnitFormatterTestCase(SimpleTestCase):
             'text': '123',
             'payload': {
                 'result_text': '123',
+                'result_extra_information': 'foo bar',
                 'to': '/unit/123/',
                 'tags': []
             }
