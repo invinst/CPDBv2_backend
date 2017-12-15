@@ -13,10 +13,11 @@ from robber import expect
 from activity_grid.models import ActivityCard
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 from twitterbot.factories import ResponseTemplateFactory, MockClientFactory
-from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler, BaseOfficerTweetHandler
+from twitterbot.handlers import OfficerTweetHandler, CPDBEventHandler, CPDBUnfollowHandler
 from twitterbot.models import ResponseTemplate
 from twitterbot.models import TwitterBotResponseLog
 from twitterbot.tweets import Tweet
+from twitterbot.tests.mixins import RebuildIndexMixin
 
 
 def namepaser_returns(value):
@@ -30,12 +31,14 @@ def namepaser_returns(value):
 
 
 @override_settings(DOMAIN='http://foo.com')
-class OfficerTweetHandlerTestCase(TestCase):
+class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def setUp(self):
+        super(OfficerTweetHandlerTestCase, self).setUp()
         ResponseTemplate.objects.all().delete()
         self.officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         self.allegation = AllegationFactory()
         OfficerAllegationFactory(officer=self.officer, allegation=self.allegation)
+
         ResponseTemplateFactory(
             response_type='single_officer',
             syntax='@{{user_name}} {{officer.full_name}} has {{officer.allegation_count}} complaints')
@@ -69,6 +72,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             self.tweet.text = '@CPDPbot Jerome Finnigan'
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -85,6 +89,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             self.tweet.entities['hashtags'] = [{'text': 'jeromeFinnigan'}]
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -100,6 +105,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             self.tweet.entities['urls'] = [{'expanded_url': 'http://fakeurl.com'}]
             with patch('twitterbot.utils.web_parsing.parse', return_value='Chicago Police Jerome Finnigan'):
+                self.refresh_index()
                 self.handler.on_tweet(self.tweet)
                 expect(self.client.tweet).to.be.called_with(
                     '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -114,6 +120,7 @@ class OfficerTweetHandlerTestCase(TestCase):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             self.tweet.entities['user_mentions'] = [{'screen_name': self.screen_name}, {'screen_name': 'def'}]
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -136,6 +143,9 @@ class OfficerTweetHandlerTestCase(TestCase):
                 officer=OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki'),
                 allegation=self.allegation
             )
+
+            self.refresh_index()
+
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
@@ -170,6 +180,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_retweet_mentioning_twitterbot(self):
         self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
         self.tweet.retweeted_tweet = Mock(user=Mock(id=111))
+        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
@@ -177,6 +188,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_quoted_tweet_mentioning_twitterbot(self):
         self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
         self.tweet.quoted_tweet = Mock(user=Mock(id=111))
+        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
@@ -196,6 +208,7 @@ class OfficerTweetHandlerTestCase(TestCase):
                 entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.in_reply_to_tweet_id = 2
             self.client.register(Tweet(original_tweet=replied_tweet, client=self.client))
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -226,6 +239,7 @@ class OfficerTweetHandlerTestCase(TestCase):
                 entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.retweeted_tweet = retweeted_tweet
             self.client.register(Tweet(original_tweet=retweeted_tweet, client=self.client))
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -258,6 +272,7 @@ class OfficerTweetHandlerTestCase(TestCase):
                 entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.quoted_tweet = quoted_tweet
             self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -312,6 +327,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     @patch('twitterbot.handlers.open', mock_open(), create=True)
     def test_save_log(self):
         self.tweet.text = '@CPDPbot Jerome Finnigan'
+        self.refresh_index()
         self.handler.on_tweet(self.tweet)
 
         response_log = TwitterBotResponseLog.objects.all().first()
@@ -338,6 +354,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_character_limit_error(self, _):
         self.client.tweet = Mock(side_effect=CharacterLimitError)
         with patch('twitterbot.handlers.logger.error') as mock_error:
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             mock_error.assert_called_with(
                 'Tweet is too long - '
@@ -349,6 +366,7 @@ class OfficerTweetHandlerTestCase(TestCase):
     def test_status_duplicate_error(self, _):
         self.client.tweet = Mock(side_effect=StatusDuplicateError)
         with patch('twitterbot.handlers.logger.error') as mock_error:
+            self.refresh_index()
             self.handler.on_tweet(self.tweet)
             mock_error.assert_called_with(
                 'Tweet already sent recently - tweet: '
@@ -389,21 +407,3 @@ class CPDBUnfollowHandlerTestCase(SimpleTestCase):
         self.tweet.text = 'Any text other than @{user} STOP'
         self.handler.on_tweet(self.tweet)
         self.client.unfollow.assert_not_called()
-
-
-class GetOfficersTestCase(TestCase):
-    def test_get_officer_with_most_complaint(self):
-        officer1 = OfficerFactory(id=1, first_name='Dwayne', last_name='Johnson')
-        officer2 = OfficerFactory(id=2, first_name='Dwayne', last_name='Johnson')
-        OfficerAllegationFactory.create_batch(size=1, officer=officer1)
-        OfficerAllegationFactory.create_batch(size=5, officer=officer2)
-        names = [('some_source', 'Dwayne Johnson')]
-
-        result = BaseOfficerTweetHandler.get_officers(names)
-        expect(result).to.eq([('some_source', officer2)])
-
-    def test_match_officer_with_middle_name(self):
-        officer = OfficerFactory(id=1, first_name='Kevin', last_name='Mc Donald')
-        names = [('source', 'Kevin Mc Donald')]
-        result = BaseOfficerTweetHandler.get_officers(names)
-        expect(result).to.eq([('source', officer)])
