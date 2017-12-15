@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 class UnitSummarySerializer(serializers.Serializer):
     unit_name = serializers.CharField()
+    description = serializers.CharField()
     member_records = serializers.SerializerMethodField()
     complaint_records = serializers.SerializerMethodField()
 

@@ -17,7 +17,7 @@ class UnitsViewSetTestCase(UnitSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_summary(self):
-        unit = PoliceUnitFactory(unit_name='123')
+        unit = PoliceUnitFactory(unit_name='123', description='foo')
         officer = OfficerFactory(race='White', gender='F', birth_year='1980')
         OfficerHistoryFactory(unit=unit, officer=officer, end_date=None)
         allegation = AllegationFactory()
@@ -33,6 +33,7 @@ class UnitsViewSetTestCase(UnitSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:units-summary', kwargs={'pk': '123'}))
         expect(response.data).to.be.eq({
             'unit_name': '123',
+            'description': 'foo',
             'member_records': {
                 'active_members': 1,
                 'total': 1,
