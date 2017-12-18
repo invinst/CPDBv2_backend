@@ -10,7 +10,7 @@ from .name_parsers import GoogleNaturalLanguageNameParser
 from .response_builders import (
     SingleOfficerResponseBuilder, CoaccusedPairResponseBuilder, NotFoundResponseBuilder
 )
-from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
+from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor, CPDBUrlExtractor
 from .tweet_extractors import DirectMentionTweetExtractor
 from .tweets import Tweet
 from .officer_extractors import ElasticSearchOfficerExtractor
@@ -90,13 +90,17 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
         for tweet, text_extractor in itertools.product(tweets, self.text_extractors):
             texts += text_extractor.extract(self.incoming_tweet)
 
-        names = []
+        officer_names = []
+        officer_ids = set()
         for text_source, text in texts:
-            names += [
-                (source, name) for source, name in self.name_parser.parse((text_source, text))
-                if (source, name) not in names]
+            if text_source == CPDBUrlExtractor.TEXT_SOURCE:
+                officer_ids.add((text_source, int(text)))
+            else:
+                officer_names += [
+                    (source, name) for source, name in self.name_parser.parse((text_source, text))
+                    if (source, name) not in officer_names]
 
-        officers = self.officer_extractor.get_officers(names)
+        officers = self.officer_extractor.get_officers(officer_names, officer_ids)
 
         recipients = []
         for recipient_extractor in self.recipient_extractors:
@@ -121,7 +125,7 @@ class CPDBEventHandler(BaseEventHandler):
 @register_handler
 class OfficerTweetHandler(BaseOfficerTweetHandler):
     event_handler_class = CPDBEventHandler
-    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
+    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor(), CPDBUrlExtractor())
     tweet_extractor = DirectMentionTweetExtractor()
     incoming_tweet_filters = [
         lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,

@@ -79,3 +79,23 @@ class ElasticSearchOfficerExtractorTestCase(RebuildIndexMixin, TestCase):
             self.extractor.get_officers([('text', 'Michael Glynn')]),
             []
         )
+
+    def test_find_officer_with_matching_id(self):
+        officer = OfficerFactory(id=999, first_name='Michael', last_name='Flynn')
+
+        self.refresh_index()
+
+        self.check_result_match_officer(
+            self.extractor.get_officers([], [('cpdb-url', 999)]),
+            [officer]
+        )
+
+    def test_find_officer_ignore_invalid_id(self):
+        OfficerFactory(id=999, first_name='Michael', last_name='Flynn')
+
+        self.refresh_index()
+
+        self.check_result_match_officer(
+            self.extractor.get_officers([], [('cpdb-url', 888)]),
+            []
+        )

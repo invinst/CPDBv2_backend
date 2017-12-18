@@ -59,7 +59,8 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             quoted_tweet=None,
             quoted_tweet_id=None,
             created_at=datetime.datetime(2017, 8, 3, 11, 59, 0, tzinfo=pytz.utc),
-            entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
+            entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
+        )
         self.client = MockClientFactory(screen_name=self.screen_name)
         self.outgoing_tweet = Mock(id=10, user=self.client.get_current_user())
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
@@ -82,6 +83,25 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             )
             expect(ActivityCard.objects.get(officer=self.officer).last_activity).to.eq(
                 datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
+
+    @namepaser_returns([])
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
+    def test_tweet_cpdb_officer_page_url(self, _):
+        _mock_open = mock_open()
+        with patch('twitterbot.handlers.open', _mock_open, create=True):
+            self.tweet.text = '@CPDPbot http://foo.com/officer/1/'
+            self.tweet.entities['urls'] = [
+                {'expanded_url': 'http://foo.com/officer/1/'}
+            ]
+
+            self.refresh_index()
+            self.handler.on_tweet(self.tweet)
+            expect(self.client.tweet).to.be.called_with(
+                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
+            )
 
     @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
