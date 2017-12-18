@@ -94,9 +94,10 @@ MANAGERS = ADMINS
 # DATABASE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASE_CONFIG = env.db('DATABASE_URL')
 DATABASES = {
     # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': env.db('DATABASE_URL'),
+    'default': DATABASE_CONFIG,
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
