@@ -62,6 +62,11 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 bin/deploy_staging
 ```
 
+Currently, we are using azure blob storage to serve our heatmap cluster. In order to make the heatmap cluster available you will need to run the upload command:
+```
+cpdb/manage.py upload_heatmap_geojson
+```
+
 In fact, our CircleCI is currently set up to automatically deploy the `staging` branch. In cases where the feature being merged into staging requires rebuilding the
 Elasticsearch index, you must tell the deploy script to do so by including `[rebuild_index]` in the merge commit's message:
 
