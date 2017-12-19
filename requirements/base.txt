@@ -3,13 +3,15 @@ django-environ==0.4.0
 django-filter==1.0.4
 djangorestframework==3.6.3
 six==1.10.0
-psycopg2==2.6.1
+psycopg2==2.7.3
 django-cors-headers==2.1.0
 iso8601==0.1.11
 tqdm==4.17.1
 requests==2.11.1
 elasticsearch-dsl==5.1.0
-azure==2.0.0rc6
+azure==2.0.0
+azure-mgmt-storage==1.0.0
+azure-storage-blob==0.37.1
 django-taggit==0.21.2
 pytz==2016.6.1
 newrelic==2.68.0.50
@@ -21,3 +23,6 @@ responsebot==0.6.0
 selenium==3.5.0
 google-cloud-language==0.29.0
 python-documentcloud==1.0.4
+django-admin-sortable==2.1.1
+sh==1.12.14
+fake-factory==0.5.7

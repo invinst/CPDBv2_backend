@@ -35,7 +35,8 @@ THIRD_PARTY_APPS = (
     'django_nose',
     'taggit',
     'anymail',
-    'corsheaders'
+    'corsheaders',
+    'adminsortable'
 )
 
 LOCAL_APPS = (
@@ -54,7 +55,9 @@ LOCAL_APPS = (
     'twitterbot',
     'visual_token',
     'activity_grid',
-    'document_cloud'
+    'document_cloud',
+    'search_terms',
+    'heatmap',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -91,9 +94,10 @@ MANAGERS = ADMINS
 # DATABASE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASE_CONFIG = env.db('DATABASE_URL')
 DATABASES = {
     # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': env.db('DATABASE_URL'),
+    'default': DATABASE_CONFIG,
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 

@@ -38,14 +38,22 @@ LOCATION_CHOICES = [
     ['19', 'Private Residence']
 ]
 
+
+BEAT_AREA_CHOICE = 'beat'
+NEIGHBORHOODS_AREA_CHOICE = 'neighborhoods'
+POLICE_BEATS_AREA_CHOICE = 'police-beats'
+SCHOOL_GROUNDS_AREA_CHOICE = 'school-grounds'
+WARDS_AREA_CHOICE = 'wards'
+COMMUNITY_AREA_CHOICE = 'community'
+POLICE_DISTRICTS_AREA_CHOICE = 'police-districts'
 AREA_CHOICES = [
-    ['beat', 'Beat'],
-    ['neighborhoods', 'Neighborhood'],
-    ['police-beats', 'Police Beat'],
-    ['school-grounds', 'School Ground'],
-    ['wards', 'Ward'],
-    ['Community', 'Community'],
-    ['police-districts', 'Police District']
+    [BEAT_AREA_CHOICE, 'Beat'],
+    [NEIGHBORHOODS_AREA_CHOICE, 'Neighborhood'],
+    [POLICE_BEATS_AREA_CHOICE, 'Police Beat'],
+    [SCHOOL_GROUNDS_AREA_CHOICE, 'School Ground'],
+    [WARDS_AREA_CHOICE, 'Ward'],
+    [COMMUNITY_AREA_CHOICE, 'Community'],
+    [POLICE_DISTRICTS_AREA_CHOICE, 'Police District']
 ]
 
 LINE_AREA_CHOICES = [['passageway', 'Passageway']]
@@ -179,3 +187,5 @@ BACKGROUND_COLOR_SCHEME = {
     '45': '#520051',
     '55': '#131313',
 }
+
+RACE_UNKNOWN_STRINGS = ['nan', '']

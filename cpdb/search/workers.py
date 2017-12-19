@@ -62,29 +62,29 @@ class OfficerWorker(Worker):
                 {
                     'filter': {'match': {'tags': term}},
                     'script_score': {
-                        'script': '_score + 1000'
+                        'script': '_score + 60000'
+                    }
+                },
+                {
+                    'filter': {
+                        'match': {
+                            'full_name': {
+                                'query': term,
+                                'operator': 'and'
+                            }
+                        }
+                    },
+                    'script_score': {
+                        'script': '_score + 500'
                     }
                 },
                 {
                     'filter': {'match': {'full_name': term}},
                     'script_score': {
-                        'script': (
-                            'if (_score >= 10) {return _score * 1000; } '
-                            'else {return _score + doc[\'allegation_count\'].value * 3; }'
-                        )
+                        'script': '_score + doc[\'allegation_count\'].value * 3'
                     }
-                },
-                {
-                    'filter': {'match': {'badge': term}},
-                    'weight': 1
-                },
-                {
-                    'filter': {'match': {'_id': term}},
-                    'weight': 1
                 }
-            ],
-            score_mode='max',
-            boost_mode='max'
+            ]
         )
         return _query
 

@@ -36,6 +36,7 @@ from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from visual_token.views import VisualTokenView
 from activity_grid.views import ActivityGridViewSet
+from search_terms.views import SearchTermCategoryViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -60,13 +61,14 @@ router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
+router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_name='search-term-categories')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
-        r'collaborate|faq(/\d+)?|reporting(/\d+)?|search|'
+        r'collaborate|faq(/\d+)?|reporting(/\d+)?|search(?:/terms)?|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'officer/\d+(?:/(?:timeline|social))?|'
         r'unit/\d+|'
@@ -78,3 +80,9 @@ urlpatterns = [
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^visual-token/(?P<renderer>[\w\.]+)/$', VisualTokenView.as_view(), name='visual_token'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:  # pragma: no cover
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

@@ -15,7 +15,8 @@ class UnitIndexerTestCase(SimpleTestCase):
 
     def test_extract_datum(self):
         unit = Mock(
-            unit_name='001', member_count=2, active_member_count=1, complaint_count=1, sustained_count=0,
+            unit_name='001', description='Lorem',
+            member_count=2, active_member_count=1, complaint_count=1, sustained_count=0,
             member_race_aggregation=[{'name': 'White', 'count': 1}],
             member_age_aggregation=[{'name': '21-30', 'count': 1}],
             member_gender_aggregation=[{'name': 'Female', 'count': 1}],
@@ -27,6 +28,7 @@ class UnitIndexerTestCase(SimpleTestCase):
 
         expect(UnitIndexer().extract_datum(unit)).to.eq({
             'unit_name': '001',
+            'description': 'Lorem',
             'member_records': {
                 'active_members': 1,
                 'total': 2,
