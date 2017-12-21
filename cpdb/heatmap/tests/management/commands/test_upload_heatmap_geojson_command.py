@@ -9,20 +9,20 @@ from robber import expect
 from mock import patch
 
 from data.factories import AllegationFactory, AreaFactory, OfficerAllegationFactory, AllegationCategoryFactory
-from data.constants import NEIGHBORHOODS_AREA_CHOICE
+from data.constants import COMMUNITY_AREA_CHOICE
 from heatmap.management.commands.upload_heatmap_geojson import Command
 
 
 class UploadHeatmapGeoJSONCommandTestCase(TestCase):
     def setUp(self):
-        area = AreaFactory(id=123, name='Hyde Park', area_type=NEIGHBORHOODS_AREA_CHOICE, polygon=MultiPolygon(Polygon((
+        area = AreaFactory(id=123, name='Hyde Park', area_type=COMMUNITY_AREA_CHOICE, polygon=MultiPolygon(Polygon((
             (87.940101, 42.023135),
             (87.523661, 42.023135),
             (87.523661, 41.644286),
             (87.940101, 41.644286),
             (87.940101, 42.023135))))
         )
-        AreaFactory(id=124, name='Lincoln Square', area_type=NEIGHBORHOODS_AREA_CHOICE, polygon=MultiPolygon(Polygon((
+        AreaFactory(id=124, name='Lincoln Square', area_type=COMMUNITY_AREA_CHOICE, polygon=MultiPolygon(Polygon((
             (81, 41),
             (82, 41),
             (82, 42),
@@ -74,8 +74,8 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
         with gzip.open(file_name) as f:
             expect(f.read()).to.eq(expected_content)
 
-    def test_get_neighborhood_data(self):
-        expect(self.command.get_neighborhood_data()).to.eq(json.dumps({
+    def test_get_community_data(self):
+        expect(self.command.get_community_data()).to.eq(json.dumps({
             'type': 'FeatureCollection',
             'features': [{
                 'type': 'Feature',
