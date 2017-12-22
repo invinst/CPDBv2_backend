@@ -53,8 +53,8 @@ class UnitFormatter(SimpleFormatter):
             'text': serialized_doc['name'],
             'payload': {
                 'tags': tags,
-                'result_text': serialized_doc['name'],
-                'result_extra_information': serialized_doc['description'],
+                'result_text': serialized_doc['description'],
+                'result_extra_information': serialized_doc['name'],
                 'to': serialized_doc['to']
             }
         }

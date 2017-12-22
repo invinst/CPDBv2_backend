@@ -121,8 +121,8 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'text': '123',
             'payload': {
-                'result_text': '123',
-                'result_extra_information': 'foo bar',
+                'result_text': 'foo bar',
+                'result_extra_information': '123',
                 'to': '/unit/123/',
                 'tags': ['foo']
             }
@@ -141,8 +141,8 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'text': '123',
             'payload': {
-                'result_text': '123',
-                'result_extra_information': 'foo bar',
+                'result_text': 'foo bar',
+                'result_extra_information': '123',
                 'to': '/unit/123/',
                 'tags': []
             }
