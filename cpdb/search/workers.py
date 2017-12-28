@@ -106,7 +106,7 @@ class CommunityWorker(Worker):
 
 class UnitOfficerWorker(Worker):
     doc_type_klass = UnitOfficerDocType
-    fields = ['unit_name']
+    fields = ['unit_name', 'unit_description']
     sort_order = ['-allegation_count']
 
     def query(self, term):

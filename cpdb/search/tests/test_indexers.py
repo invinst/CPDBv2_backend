@@ -213,7 +213,7 @@ class CommunityIndexerTestCase(TestCase):
 
 class UnitOfficerIndexerTestCase(TestCase):
     def setUp(self):
-        unit = PoliceUnitFactory(unit_name='001')
+        unit = PoliceUnitFactory(unit_name='001', description='Something')
         officer = OfficerFactory(first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M')
         self.history = OfficerHistoryFactory(unit=unit, officer=officer)
 
@@ -227,6 +227,7 @@ class UnitOfficerIndexerTestCase(TestCase):
             'to': self.history.officer.v2_to,
             'allegation_count': 0,
             'unit_name': '001',
+            'unit_description': 'Something',
             'unit': '001',
             'rank': 'somebody',
             'race': 'White',
