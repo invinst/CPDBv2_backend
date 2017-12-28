@@ -32,3 +32,5 @@ db_password: password
 database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ db_name }}"
 visual_token_storageaccountname: 'cpdbdev'
 visual_token_storageaccountkey: ''
+
+import_initial_db_dump: no
