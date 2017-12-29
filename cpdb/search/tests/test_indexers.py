@@ -133,8 +133,10 @@ class OfficerIndexerTestCase(TestCase):
             tags=['tag1', 'tag2'],
             rank='some rank',
             race='some race',
+            birth_year=1980,
             gender='M'
         )
+        OfficerAllegationFactory.create_batch(10, officer=datum)
         unit = PoliceUnitFactory(unit_name='011')
         OfficerHistoryFactory(officer=datum, unit=unit)
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
@@ -142,12 +144,14 @@ class OfficerIndexerTestCase(TestCase):
         expect(
             OfficerIndexer().extract_datum(datum)
         ).to.be.eq({
-            'allegation_count': 0,
+            'allegation_count': 10,
+            'sustained_count': 0,
+            'birth_year': 1980,
             'full_name': 'first last',
             'badge': '123',
             'to': datum.v2_to,
             'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#f5f4f4',
+            'visual_token_background_color': '#c6d4ec',
             'unit': '011',
             'rank': 'some rank',
             'race': 'some race',
@@ -214,7 +218,10 @@ class CommunityIndexerTestCase(TestCase):
 class UnitOfficerIndexerTestCase(TestCase):
     def setUp(self):
         unit = PoliceUnitFactory(unit_name='001', description='Something')
-        officer = OfficerFactory(first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M')
+        officer = OfficerFactory(
+            first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M', birth_year=1944
+        )
+        OfficerAllegationFactory.create_batch(10, officer=officer)
         self.history = OfficerHistoryFactory(unit=unit, officer=officer)
 
     def test_get_queryset(self):
@@ -225,14 +232,16 @@ class UnitOfficerIndexerTestCase(TestCase):
             'full_name': 'Kevin Osborn',
             'badge': '',
             'to': self.history.officer.v2_to,
-            'allegation_count': 0,
+            'allegation_count': 10,
+            'sustained_count': 0,
+            'birth_year': 1944,
             'unit_name': '001',
             'unit_description': 'Something',
             'unit': '001',
             'rank': 'somebody',
             'race': 'White',
             'sex': 'Male',
-            'visual_token_background_color': '#f5f4f4'
+            'visual_token_background_color': '#c6d4ec'
         })
 
 

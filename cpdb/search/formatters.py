@@ -40,7 +40,10 @@ class OfficerFormatter(SimpleFormatter):
                 'rank': serialized_doc.get('rank', None),
                 'salary': None,
                 'race': serialized_doc['race'],
-                'sex': serialized_doc['sex']
+                'sex': serialized_doc['sex'],
+                'birth_year': serialized_doc['birth_year'],
+                'allegation_count': serialized_doc.get('allegation_count', 0),
+                'sustained_count': serialized_doc.get('sustained_count', 0)
             }
         }
 

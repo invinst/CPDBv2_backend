@@ -46,9 +46,12 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'badge': '123',
             'to': 'to',
             'tags': ['tag1', 'tag2'],
+            'allegation_count': 10,
+            'sustained_count': 2,
             'visual_token_background_color': '#ffffff',
             'unit': '001',
             'rank': 'some rank',
+            'birth_year': 1972,
             'race': 'White',
             'sex': 'Male'
         }))
@@ -66,7 +69,10 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'visual_token_background_color': '#ffffff',
                 'unit': '001',
                 'rank': 'some rank',
+                'allegation_count': 10,
+                'sustained_count': 2,
                 'race': 'White',
+                'birth_year': 1972,
                 'sex': 'Male',
                 'salary': None  # no data yet so always return None here
             }
@@ -80,8 +86,11 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'tags': ['tag1', 'tag2'],
             'visual_token_background_color': '#ffffff',
             'unit': '001',
+            'allegation_count': 10,
+            'sustained_count': 2,
             'unit_description': 'foo bar',
             'rank': 'some rank',
+            'birth_year': 1972,
             'race': 'White',
             'sex': 'Male'
         }))
@@ -98,7 +107,10 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'tags': ['tag1', 'tag2'],
                 'visual_token_background_color': '#ffffff',
                 'unit': '001',
+                'allegation_count': 10,
+                'sustained_count': 2,
                 'rank': 'some rank',
+                'birth_year': 1972,
                 'race': 'White',
                 'sex': 'Male',
                 'salary': None  # no data yet so always return None here
