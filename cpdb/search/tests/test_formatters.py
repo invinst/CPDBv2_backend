@@ -38,6 +38,16 @@ class SimpleFormatterTestCase(SimpleTestCase):
             SimpleFormatter().format(response)
         ).to.be.eq([{'a': 'a', 'id': 'a_id'}, {'b': 'b', 'id': 'b_id'}])
 
+    def test_serialize(self):
+        doc = Mock(
+            to_dict=Mock(return_value={'a': 'a'}),
+            _id='a_id'
+        )
+        expect(SimpleFormatter().serialize([doc])).to.eq([{
+            'a': 'a',
+            'id': 'a_id'
+        }])
+
 
 class OfficerFormatterTestCase(SimpleTestCase):
     def test_officer_doc_format(self):

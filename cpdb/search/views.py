@@ -1,5 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import detail_route
 
 from .services import SearchManager
 from .formatters import (
@@ -10,6 +11,7 @@ from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
     UnitOfficerWorker, CrWorker
 )
+from es_index.pagination import ESQueryPagination
 from analytics.search_hooks import QueryTrackingSearchHook
 
 
@@ -21,17 +23,35 @@ class SearchViewSet(viewsets.ViewSet):
         QueryTrackingSearchHook
     ]
 
-    def retrieve(self, request, text):
-        results = SearchManager(
+    def __init__(self, *args, **kwargs):
+        super(SearchViewSet, self).__init__(*args, **kwargs)
+        self.search_manager = SearchManager(
             formatters=self.formatters,
             workers=self.workers,
             hooks=self.hooks
-        ).search(
+        )
+
+    def retrieve(self, request, text):
+        results = self.search_manager.search(
             text,
             content_type=self._content_type
         )
 
         return Response(results)
+
+    @detail_route(methods=['get'], url_path='single')
+    def single(self, request, text):
+        if not self._content_type:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        query = self.search_manager.get_search_query_for_type(
+            text, content_type=self._content_type
+        )
+        paginator = ESQueryPagination()
+        paginated_query = paginator.paginate_es_query(query, request)
+        return paginator.get_paginated_response(
+            self.search_manager.get_formatted_results(paginated_query, self._content_type)
+        )
 
     def list(self, request):
         results = SearchManager(

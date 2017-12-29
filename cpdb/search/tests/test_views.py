@@ -27,6 +27,34 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(response.data).to.equal('anything_suggester_returns')
         search.assert_called_with(text, content_type='OFFICER')
 
+    def test_retrieve_single_with_content_type(self):
+        OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        text = 'Ke'
+        retrieve_single_url = reverse('api:suggestion-single', kwargs={
+            'text': text
+        })
+        response = self.client.get(retrieve_single_url, {
+            'contentType': 'OFFICER'
+        })
+        expect(response.status_code).to.equal(status.HTTP_200_OK)
+        expect(response.data['count']).to.equal(1)
+        expect(response.data['next']).to.equal(None)
+        expect(response.data['previous']).to.equal(None)
+        expect(len(response.data['results'])).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq('123')
+
+    def test_retrieve_single_without_content_type(self):
+        text = 'Ke'
+        retrieve_single_url = reverse('api:suggestion-single', kwargs={
+            'text': text
+        })
+        response = self.client.get(retrieve_single_url)
+        expect(response.status_code).to.equal(status.HTTP_400_BAD_REQUEST)
+
     def test_search_unit_officer(self):
         officer = OfficerFactory()
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='123'))

@@ -7,13 +7,16 @@ class SimpleFormatter(Formatter):
     def doc_format(self, doc):
         return doc.to_dict()
 
-    def format(self, response):
-        def process_doc(doc):
-            result = self.doc_format(doc)
-            result['id'] = doc._id
-            return result
+    def process_doc(self, doc):
+        result = self.doc_format(doc)
+        result['id'] = doc._id
+        return result
 
-        return [process_doc(doc) for doc in response.hits]
+    def format(self, response):
+        return [self.process_doc(doc) for doc in response.hits]
+
+    def serialize(self, docs):
+        return [self.process_doc(doc) for doc in docs]
 
 
 class OfficerFormatter(SimpleFormatter):
