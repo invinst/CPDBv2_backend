@@ -1,10 +1,9 @@
 from django.test import SimpleTestCase
 
 from robber import expect
-from mock import patch, Mock
+from mock import patch
 
-from twitterbot.text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor, \
-    CPDBUrlExtractor
+from twitterbot.text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from twitterbot.factories import TweetFactory, MockClientFactory
 
 
@@ -43,13 +42,3 @@ class URLContentTextExtractorTestCase(SimpleTestCase):
     def test_extract_with_content_not_contains_key_words(self):
         with patch('twitterbot.text_extractors.web_parsing.parse', return_value='some text'):
             expect(self.extractor.extract(self.tweet)).to.eq([])
-
-
-class CPDBUrlExtractorTestCase(SimpleTestCase):
-    def test_extract(self):
-        tweet = Mock(urls=[
-            'http://foo.com/officer/1234/',
-            'http://foo.com/complaints/54321/',
-            'http://some-external-site.com/officer/2345/'
-        ])
-        expect(CPDBUrlExtractor().extract(tweet)).to.eq([('cpdb-url', '1234')])

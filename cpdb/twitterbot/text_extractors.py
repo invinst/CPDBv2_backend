@@ -1,8 +1,4 @@
 import re
-from urlparse import urlparse
-
-from django.conf import settings
-
 from utils import web_parsing
 
 
@@ -30,21 +26,4 @@ class URLContentTextExtractor:
             text = web_parsing.parse(url)
             if 'CPD' in text or ('Chicago' in text and 'Police' in text):
                 text_sources.append((url, text))
-        return text_sources
-
-
-class CPDBUrlExtractor:
-    TEXT_SOURCE = 'cpdb-url'
-    site_netloc = urlparse(settings.DOMAIN).netloc
-
-    def extract(self, tweet):
-        text_sources = []
-        for url in tweet.urls:
-            parsed = urlparse(url)
-            if parsed.netloc == self.site_netloc:
-                matches = re.match('^/officer/(\d+)', parsed.path)
-                if matches is not None:
-                    officer_id = matches.group(1)
-                    text_sources.append((self.TEXT_SOURCE, officer_id))
-
         return text_sources
