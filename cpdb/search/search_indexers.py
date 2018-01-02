@@ -140,6 +140,7 @@ class UnitOfficerIndexer(BaseIndexer):
             'allegation_count': datum.officer.allegation_count,
             'visual_token_background_color': datum.officer.visual_token_background_color,
             'unit_name': datum.unit.unit_name,
+            'unit_description': datum.unit.description,
             'unit': datum.officer.last_unit,
             'rank': datum.officer.rank,
             'race': datum.officer.race,

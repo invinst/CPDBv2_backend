@@ -13,7 +13,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
 
 from data.models import Area, Allegation
-from data.constants import NEIGHBORHOODS_AREA_CHOICE, DISCIPLINE_CODES, OUTCOMES_DICT
+from data.constants import COMMUNITY_AREA_CHOICE, DISCIPLINE_CODES, OUTCOMES_DICT
 
 
 # pragma: no cover
@@ -60,8 +60,8 @@ class Command(BaseCommand):
 
         return json.dumps(ret)
 
-    def get_neighborhood_data(self):
-        areas = Area.objects.filter(area_type=NEIGHBORHOODS_AREA_CHOICE, polygon__isnull=False)
+    def get_community_data(self):
+        areas = Area.objects.filter(area_type=COMMUNITY_AREA_CHOICE, polygon__isnull=False)
 
         area_dict = {
             'type': 'FeatureCollection',
@@ -131,7 +131,7 @@ class Command(BaseCommand):
         )
         block_blob_service.create_blob_from_path(
             'heatmap',
-            'neighborhood.geojson',
-            file_path=self.save_to_gzip_file(self.get_neighborhood_data()),
+            'community.geojson',
+            file_path=self.save_to_gzip_file(self.get_community_data()),
             content_settings=content_settings
         )

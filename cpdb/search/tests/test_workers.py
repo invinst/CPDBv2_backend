@@ -99,13 +99,22 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
 
 
 class UnitWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
+    def test_search_by_name(self):
         doc = UnitDocType(name='name')
         doc.save()
 
         self.refresh_index()
 
         response = UnitWorker().search('name')
+        expect(response.hits.total).to.be.equal(1)
+
+    def test_search_by_description(self):
+        doc = UnitDocType(description='foo bar')
+        doc.save()
+
+        self.refresh_index()
+
+        response = UnitWorker().search('foo')
         expect(response.hits.total).to.be.equal(1)
 
 
@@ -132,7 +141,7 @@ class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
 
 
 class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
+    def test_search_by_unit_name(self):
         doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Osborn', allegation_count=1)
         doc.save()
         doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Cascone', allegation_count=0)
@@ -143,6 +152,21 @@ class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         self.refresh_index()
 
         response = UnitOfficerWorker().search('001')
+        expect(response.hits.total).to.be.equal(2)
+        expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')
+        expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')
+
+    def test_search_by_unit_description(self):
+        doc = UnitOfficerDocType(unit_description='foo', full_name='Kevin Osborn', allegation_count=1)
+        doc.save()
+        doc = UnitOfficerDocType(unit_description='foo', full_name='Kevin Cascone', allegation_count=0)
+        doc.save()
+        doc = UnitOfficerDocType(unit_description='bar', full_name='Cristiano Cascone', allegation_count=0)
+        doc.save()
+
+        self.refresh_index()
+
+        response = UnitOfficerWorker().search('foo')
         expect(response.hits.total).to.be.equal(2)
         expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')
         expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')
