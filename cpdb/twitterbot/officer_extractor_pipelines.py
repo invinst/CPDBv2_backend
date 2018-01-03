@@ -10,7 +10,7 @@ from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLConten
 from .officer_extractors import ElasticSearchOfficerExtractor
 
 
-class TextPipeline:
+class TextPipeline(object):
     text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
     name_parser = GoogleNaturalLanguageNameParser()
     officer_from_name_extractor = ElasticSearchOfficerExtractor()
@@ -30,7 +30,7 @@ class TextPipeline:
         return cls.officer_from_name_extractor.get_officers(officer_names)
 
 
-class UrlPipeline:
+class UrlPipeline(object):
     site_netloc = urlparse(settings.DOMAIN).netloc
 
     @classmethod
@@ -41,11 +41,10 @@ class UrlPipeline:
                 parsed = urlparse(url)
                 if parsed.netloc == cls.site_netloc:
                     matches = re.match('^/officer/(\d+)', parsed.path)
-                    if matches is not None:
+                    try:
                         officer_id = matches.group(1)
-                        try:
-                            officer = Officer.objects.get(pk=officer_id)
-                            results.append(('cpdb-url', officer))
-                        except ObjectDoesNotExist:
-                            continue
+                        officer = Officer.objects.get(pk=officer_id)
+                        results.append(('cpdb-url', officer))
+                    except (AttributeError, ObjectDoesNotExist):
+                        continue
         return results
