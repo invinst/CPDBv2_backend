@@ -136,7 +136,7 @@ class OfficerIndexerTestCase(TestCase):
             birth_year=1980,
             gender='M'
         )
-        OfficerAllegationFactory.create_batch(10, officer=datum)
+        OfficerAllegationFactory.create_batch(10, final_finding='NS', officer=datum)
         unit = PoliceUnitFactory(unit_name='011')
         OfficerHistoryFactory(officer=datum, unit=unit)
         OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
@@ -221,7 +221,7 @@ class UnitOfficerIndexerTestCase(TestCase):
         officer = OfficerFactory(
             first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M', birth_year=1944
         )
-        OfficerAllegationFactory.create_batch(10, officer=officer)
+        OfficerAllegationFactory.create_batch(10, final_finding='NS', officer=officer)
         self.history = OfficerHistoryFactory(unit=unit, officer=officer)
 
     def test_get_queryset(self):
