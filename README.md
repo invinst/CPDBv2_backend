@@ -9,7 +9,11 @@ Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your mac
 ansible-galaxy install azavea.postgresql
 ```
 
-Ask the team for the ansible vault password, then put it in a text file at `../vault_pass.txt` (parent dir of this repo). This file is used to decrypt ansible variables contained in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files.
+You'll then need to manually create these files - ask the team to give them to you:
+
+- `../vault_pass.txt` (parent dir of this repo): This file is used to decrypt ansible variables contained in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files.
+- `./initial_dump.sql`: Initial Db dump. Running `vagrant provision` should pick this up and delete it automatically after importing.
+
 
 Ansible variables in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files:
 - `ssl_key_password`: password for ssl key

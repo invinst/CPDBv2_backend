@@ -53,3 +53,5 @@ force_rewrite_env_file: no
 # We don't want to mess with authorized_keys here because vagrant
 # generates its own key pair that works out of the box.
 manage_authorized_keys: no
+
+import_initial_db_dump: yes
