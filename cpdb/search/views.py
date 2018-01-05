@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from .services import SearchManager
+from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, NameFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter,
     FAQFormatter, ReportFormatter, CrFormatter
@@ -11,7 +12,6 @@ from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
     UnitOfficerWorker, CrWorker
 )
-from es_index.pagination import ESQueryPagination
 from analytics.search_hooks import QueryTrackingSearchHook
 
 
@@ -47,7 +47,7 @@ class SearchViewSet(viewsets.ViewSet):
         query = self.search_manager.get_search_query_for_type(
             text, content_type=self._content_type
         )
-        paginator = ESQueryPagination()
+        paginator = SearchQueryPagination()
         paginated_query = paginator.paginate_es_query(query, request)
         return paginator.get_paginated_response(
             self.search_manager.get_formatted_results(paginated_query, self._content_type)

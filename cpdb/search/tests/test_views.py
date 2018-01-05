@@ -47,6 +47,23 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(len(response.data['results'])).to.eq(1)
         expect(response.data['results'][0]['id']).to.eq('123')
 
+    def test_retrieve_single_page_size(self):
+        OfficerFactory.create_batch(40, first_name='Steve')
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        retrieve_single_url = reverse('api:suggestion-single', kwargs={
+            'text': 'Ste'
+        })
+        response = self.client.get(retrieve_single_url, {
+            'contentType': 'OFFICER'
+        })
+        expect(response.status_code).to.equal(status.HTTP_200_OK)
+        expect(response.data['count']).to.equal(40)
+        expect(response.data['next']).to.ne(None)
+        expect(len(response.data['results'])).to.eq(30)
+
     def test_retrieve_single_without_content_type(self):
         text = 'Ke'
         retrieve_single_url = reverse('api:suggestion-single', kwargs={
