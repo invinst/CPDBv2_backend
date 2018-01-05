@@ -541,10 +541,12 @@ class LineArea(models.Model):
 
 
 class Investigator(models.Model):
-    raw_name = models.CharField(max_length=160)
-    name = models.CharField(max_length=160, blank=True)
-    current_rank = models.CharField(max_length=50, blank=True)
-    unit = models.ForeignKey(PoliceUnit, null=True)
+    first_name = models.CharField(max_length=255, db_index=True, null=True)
+    last_name = models.CharField(max_length=255, db_index=True, null=True)
+    middle_initial = models.CharField(max_length=5, null=True)
+    suffix_name = models.CharField(max_length=5, null=True)
+    appointed_date = models.DateField(null=True)
+    officer = models.ForeignKey(Officer, null=True)
 
 
 class Allegation(models.Model):
@@ -556,7 +558,6 @@ class Allegation(models.Model):
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
     incident_date = models.DateTimeField(null=True)
-    investigator = models.ForeignKey(Investigator, null=True)
     areas = models.ManyToManyField(Area)
     line_areas = models.ManyToManyField(LineArea)
     point = models.PointField(srid=4326, null=True)
@@ -642,6 +643,14 @@ class Allegation(models.Model):
             return '/complaint/%s/' % self.crid
 
         return '/complaint/%s/%s/' % (self.crid, officer_allegations.first().officer.pk)
+
+
+class InvestigatorAllegation(models.Model):
+    investigator = models.ForeignKey(Investigator)
+    allegation = models.ForeignKey(Allegation)
+    current_star = models.CharField(max_length=10, null=True)
+    current_rank = models.CharField(max_length=100, null=True)
+    current_unit = models.ForeignKey(PoliceUnit, null=True)
 
 
 class AllegationCategory(models.Model):

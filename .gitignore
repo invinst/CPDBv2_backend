@@ -51,3 +51,5 @@ visual_token_media
 data_report/
 cpdb/data_importer/cleaned_data/
 cpdb/data_importer/original_data/
+
+Output/
