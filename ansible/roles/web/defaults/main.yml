@@ -53,5 +53,6 @@ node_path: "{{ nvm_dir }}/versions/node/v{{ nvm_node_version }}/bin"
 
 visual_token_media_path: "{{ project_path }}/visual_token_media/"
 twitterbot_google_cloud_service_account_key_path: "{{ project_root_path }}/twitterbot-nl-api.json"
+twitterbot_google_cloud_service_account_key: 'change me'
 
 mailgun_api_key: ''
