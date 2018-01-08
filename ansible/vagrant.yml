@@ -7,6 +7,7 @@
   remote_user: "{{ansible_remote_user}}"
   vars:
     - ansible_remote_user: vagrant
+    - create_pam_environment: no
     - update_apt_cache: yes
     - postgresql_version: "9.4"
     - postgresql_package_version: "9.4.*-1.pgdg14.04+1"
