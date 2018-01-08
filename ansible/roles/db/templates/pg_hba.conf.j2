@@ -90,6 +90,7 @@ local   all             all                                     trust
 # IPv4 local connections:
 host    all             all             127.0.0.1/32            md5
 hostssl cpdb            numeracy        {{ numeracy_ip }}/32    md5
+hostssl cpdb            notebook        {{ notebook_ip }}/32    md5
 # Allow replication connections from localhost, by a user with the
 # replication privilege.
 #local   replication     postgres                                peer

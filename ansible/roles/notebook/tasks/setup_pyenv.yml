@@ -1,0 +1,65 @@
+---
+
+- name: Install requirements
+  apt: pkg={{ item }} state=present update_cache=true
+  with_items:
+    - make
+    - build-essential
+    - libssl-dev
+    - zlib1g-dev
+    - libbz2-dev
+    - libreadline-dev
+    - libsqlite3-dev
+    - wget
+    - curl
+    - llvm
+    - git
+
+- name: Creates pyenv directory
+  file: path={{ pyenv_root }} state=directory owner={{ deploy_user }}
+
+- name: Install pyenv
+  git: repo=https://github.com/yyuu/pyenv.git dest={{ pyenv_root }}
+
+- name: Add to run commands
+  lineinfile: >
+    dest=~/.bashrc
+    state=present
+    create=yes
+    line="{{ item }}"
+  with_items:
+    - "export PYENV_ROOT=\"{{ pyenv_root }}\""
+    - "export PATH=\"$PYENV_ROOT/bin:$PATH\""
+    - if which pyenv > /dev/null; then
+    - "    eval \"$(pyenv init -)\""
+    - "fi # pyenv"
+  become: yes
+  become_user: "{{ deploy_user }}"
+
+- name: Install pyenv-virtualenv
+  git: repo=https://github.com/yyuu/pyenv-virtualenv.git dest={{ pyenv_root }}/plugins/pyenv-virtualenv
+
+- name: Install specific python version
+  script: install-python.sh {{ python_version }}
+  become: yes
+  become_user: "{{ deploy_user }}"
+
+- name: Create the virtualenv
+  script: create-env.sh {{ python_version }} {{ application_name }}
+  become: yes
+  become_user: "{{ deploy_user }}"
+
+- name: Install pip requirements
+  pip: virtualenv={{ virtualenv_path }} name={{ item }}
+  with_items:
+    - dropbox==8.5.1
+    - tqdm==4.19.5
+    - azure==2.0.0
+    - azure-mgmt-storage==1.5.0
+    - azure-storage-blob==0.37.1
+    - sqlalchemy==1.2.0
+    - pandas==0.22.0
+    - psycopg2==2.7.3.2
+    - jupyter==1.0.0
+  become: yes
+  become_user: "{{ deploy_user }}"

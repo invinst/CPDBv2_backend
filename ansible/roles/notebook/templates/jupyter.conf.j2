@@ -1,0 +1,14 @@
+start on filesystem or runlevel [2345]
+stop on shutdown
+respawn
+
+description "Jupyter / IPython Notebook Upstart script"
+
+script
+    echo $$ > /var/run/jupyter.pid
+    exec su -s /bin/sh -c 'exec "$0" "$@"' {{ deploy_user }} -- {{ virtualenv_path }}bin/jupyter-notebook --config='/home/{{ deploy_user }}/.jupyter/jupyter_notebook_config.py' --no-browser  --notebook-dir='{{ application_home }}'
+end script
+
+pre-stop script
+    rm /var/run/jupyter.pid
+end script
