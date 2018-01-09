@@ -6,7 +6,7 @@ description "Jupyter / IPython Notebook Upstart script"
 
 script
     echo $$ > /var/run/jupyter.pid
-    exec su -s /bin/sh -c 'exec "$0" "$@"' {{ deploy_user }} -- {{ virtualenv_path }}bin/jupyter-notebook --config='/home/{{ deploy_user }}/.jupyter/jupyter_notebook_config.py' --no-browser  --notebook-dir='{{ application_home }}'
+    exec su -s /bin/bash -c 'exec "$0" "$@"' {{ deploy_user }} -- /home/{{ deploy_user }}/start_jupyter.sh
 end script
 
 pre-stop script
