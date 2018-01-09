@@ -9,7 +9,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness)
+    PoliceWitness, InvestigatorAllegation)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -46,11 +46,9 @@ class LineAreaFactory(factory.django.DjangoModelFactory):
 class InvestigatorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Investigator
-        django_get_or_create = ('name',)
 
-    name = factory.LazyFunction(lambda: fake.name())
-    raw_name = factory.LazyAttribute(lambda o: o.name.upper())
-    current_rank = factory.LazyFunction(lambda: fake.word())
+    first_name = factory.LazyFunction(lambda: fake.name())
+    last_name = factory.LazyFunction(lambda: fake.name())
 
 
 class OfficerFactory(factory.django.DjangoModelFactory):
@@ -73,6 +71,14 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+
+
+class InvestigatorAllegationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestigatorAllegation
+
+    investigator = factory.SubFactory(InvestigatorFactory)
+    allegation = factory.SubFactory(AllegationFactory)
 
 
 class OfficerAllegationFactory(factory.django.DjangoModelFactory):
