@@ -7,7 +7,7 @@ import pytz
 from freezegun import freeze_time
 
 from data.models import Allegation, Area, LineArea
-from data.factories import AreaFactory, InvestigatorFactory, LineAreaFactory
+from data.factories import AreaFactory, InvestigatorFactory, LineAreaFactory, InvestigatorAllegationFactory
 from data_versioning.models import Changelog, LOG_TYPE_CREATE, LOG_TYPE_UPDATE, LOG_TYPE_DELETE
 from data_versioning.changekeepers import PostgreSQLChangeKeeper
 
@@ -129,7 +129,6 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
                 add1=103,
                 beat=areas[0],
                 city='abc',
-                investigator=investigator,
                 add2='def',
                 location='01',
                 point=Point(0, 0),
@@ -138,6 +137,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
                 incident_date=datetime(2000, 1, 1, tzinfo=pytz.utc)
             )
 
+            InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
             allegation.line_areas.add(line_area)
             allegation.areas.add(*areas[1:])
             allegation.save()
@@ -165,6 +165,5 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             'point': 'SRID=4326;POINT (0 0)',
             'source': 'IPRA',
             'summary': 'lorem ipsum',
-            'incident_date': '2000-01-01T00:00:00Z',
-            'investigator': investigator.pk
+            'incident_date': '2000-01-01T00:00:00Z'
         })
