@@ -99,12 +99,17 @@ Regarding to the nginx changes, please update both files: with and without https
 # Documentation
 - [API standards](docs/api-standards.md)
 
-# Import data from v1
-- Export v2 data:
-    + Run `./manage.py export_all_data_for_v2` on v1 repository (**Note:** Base on new v2 model you may need to modify this script).
-    + Data from v1 will be exported into csv files in root folder after run above command.
-- Import v2 data: Run `cpdb/manage.py import_002_officer_data_from_v1 --folder [FOLDER]` on v2 repository.
-- After importing run: `cpdb/manage.py rebuild_index` to rebuild indexes for elasticsearch.
+# Data pipeline
+
+Going forward the only recommended way to import new data is to follow the following steps:
+
+- Write database migrations as necessary. Do not write data migration.
+- Produce fixtures to either insert new data or change existing data. A couple things:
+    - Fixture file should be named like this: `<id>_<table_name>.json` (i.e. 001_investigator.json). `id` starts from "001" and increase each time a new fixture file is written. `id` should not collide with old ones of course, otherwise the fixture won't be applied.
+    - You could produce the fixture file in any number of ways. But the recommended way for now is to create a notebook on http://cpdp-notebooks.southeastasia.cloudapp.azure.com/. Ask your teammate for credentials. Notebooks kept there must be named like this: `<date>_<name>.ipynb` (i.e. 20180109_Import_CMAP_data.ipynb)
+- Test your fixture by running `cpdb/manage.py apply_fixtures` on local. It should only applied fixtures that haven't been applied.
+- When you deploy to production or staging `apply_fixtures` is ran automatically.
+- The applied fixtures can be checked by visiting admin page `/admin/data_pipeline/appliedfixture/`
 
 # Miscelaneous
 
