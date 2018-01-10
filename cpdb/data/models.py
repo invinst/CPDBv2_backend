@@ -520,6 +520,7 @@ class Area(TaggableModel):
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
+    median_income = models.CharField(max_length=100, null=True)
 
     @property
     def v1_url(self):
@@ -532,6 +533,12 @@ class Area(TaggableModel):
                                                                                    name=self.name)
 
         return settings.V1_URL
+
+
+class RacePopulation(models.Model):
+    race = models.CharField(max_length=255)
+    count = models.PositiveIntegerField()
+    area = models.ForeignKey(Area)
 
 
 class LineArea(models.Model):
