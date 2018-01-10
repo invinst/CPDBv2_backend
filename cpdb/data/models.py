@@ -563,6 +563,7 @@ class Allegation(models.Model):
     point = models.PointField(srid=4326, null=True)
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
+    is_officer_complaint = models.BooleanField(default=False)
 
     @property
     def address(self):
