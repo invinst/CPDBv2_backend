@@ -134,6 +134,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
                 point=Point(0, 0),
                 source='IPRA',
                 summary='lorem ipsum',
+                is_officer_complaint=False,
                 incident_date=datetime(2000, 1, 1, tzinfo=pytz.utc)
             )
 
@@ -165,5 +166,6 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             'point': 'SRID=4326;POINT (0 0)',
             'source': 'IPRA',
             'summary': 'lorem ipsum',
-            'incident_date': '2000-01-01T00:00:00Z'
+            'incident_date': '2000-01-01T00:00:00Z',
+            'is_officer_complaint': False,
         })
