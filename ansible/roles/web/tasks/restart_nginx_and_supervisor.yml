@@ -3,8 +3,10 @@
 - name: Restart nginx
   service: name=nginx state=restarted enabled=yes
 
-- name: Restart Supervisor
-  supervisorctl: name={{ item }} state=restarted
-  with_items:
-    - "{{ application_name }}"
-    - twitterbot
+
+- name: Supervisor restart web process
+  supervisorctl: name={{ application_name }} state=restarted
+
+- name: Supervisor restart twitterbot
+  supervisorctl: name=twitterbot state=restarted
+  when: run_twitterbot

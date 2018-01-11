@@ -34,6 +34,12 @@ class SearchManager(object):
 
         return response
 
+    def get_search_query_for_type(self, term, content_type):
+        return self.workers[content_type].query(term)
+
+    def get_formatted_results(self, documents, content_type):
+        return self._formatter_for(content_type)().serialize(documents)
+
     def suggest_sample(self):
         '''
         Return 1 random item that has tags from each content type.

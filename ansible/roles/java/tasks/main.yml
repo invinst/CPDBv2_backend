@@ -8,10 +8,10 @@
   apt_repository:
     repo={{ item }}
     state=present
-    update_cache=yes
   with_items: "{{ java_apt_repos }}"
 
 - name: java | Install dependencies
   apt:
     pkg={{apt_java_package}}
+    update_cache=yes
     state=present

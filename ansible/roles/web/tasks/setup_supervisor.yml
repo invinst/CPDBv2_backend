@@ -5,14 +5,16 @@
             dest=/etc/supervisor/conf.d/{{ application_name }}.conf
             backup=yes
 
-- name: Re-read the Supervisor config files
-  supervisorctl: name={{ item }} state=present
-  with_items:
-    - "{{ application_name }}"
-    - twitterbot
+- name: Re-read cpdb Supervisor config
+  supervisorctl: name={{ application_name }} state=present
 
-- name: Restart Supervisor
-  supervisorctl: name={{ item }} state=restarted
-  with_items:
-    - "{{ application_name }}"
-    - twitterbot
+- name: Re-read twitterbot Supervisor config
+  supervisorctl: name={{ twitterbot }} state=present
+  when: run_twitterbot
+
+- name: Restart cpdb web process with supervisor
+  supervisorctl: name={{ application_name }} state=restarted
+
+- name: Restart twitterbot with supervisor
+  supervisorctl: name=twitterbot state=restarted
+  when: run_twitterbot

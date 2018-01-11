@@ -1,6 +1,6 @@
 from search.indices import autocompletes
 from search import es_client
-from search.search_indexers import UnitOfficerIndexer
+from search.search_indexers import UnitOfficerIndexer, OfficerIndexer
 
 
 class IndexMixin(object):
@@ -11,6 +11,7 @@ class IndexMixin(object):
 
     def rebuild_index(self):
         UnitOfficerIndexer().index_data()
+        OfficerIndexer().index_data()
 
     def refresh_index(self):
         es_client.indices.refresh(index="test_autocompletes")
