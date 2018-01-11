@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
 
-from officers.pagination import ESQueryPagination
+from es_index.pagination import ESQueryPagination
 
 
 class ESQueryPaginationTestCase(SimpleTestCase):
