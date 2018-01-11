@@ -2018,7 +2018,7 @@ This api require an api access token set in `Authorization` header. To get an ap
         }
 
 
-## Specific type search [/v1/suggestion/{term}/?contentType={type}]
+## Specific type search [/v1/suggestion/{term}/single/?contentType={type}]
 
 + Parameters
     + term (string) - Search term
@@ -2029,7 +2029,10 @@ This api require an api access token set in `Authorization` header. To get an ap
 + Response 200 (application/json)
 
         {
-          "OFFICER": [
+          "count": 2,
+          "previous": null,
+          "next": null,
+          "results": [
             {
               "text": "Orson Ward",
               "payload": {

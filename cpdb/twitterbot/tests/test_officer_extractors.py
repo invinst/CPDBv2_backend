@@ -7,14 +7,16 @@ from twitterbot.officer_extractors import ElasticSearchOfficerExtractor
 from twitterbot.tests.mixins import RebuildIndexMixin
 
 
-class ElasticSearchOfficerExtractorTestCase(RebuildIndexMixin, TestCase):
-    def setUp(self):
-        super(ElasticSearchOfficerExtractorTestCase, self).setUp()
-        self.extractor = ElasticSearchOfficerExtractor()
-
+class OfficerExtractorTestCase(RebuildIndexMixin, TestCase):
     def check_result_match_officer(self, result, officers):
         expect(result).to.have.length(len(officers))
         expect([obj.pk for _, obj in result]).to.eq([officer.pk for officer in officers])
+
+
+class ElasticSearchOfficerExtractorTestCase(OfficerExtractorTestCase):
+    def setUp(self):
+        super(ElasticSearchOfficerExtractorTestCase, self).setUp()
+        self.extractor = ElasticSearchOfficerExtractor()
 
     def test_find_officer(self):
         officer = OfficerFactory(first_name='Michael', last_name='Flynn')

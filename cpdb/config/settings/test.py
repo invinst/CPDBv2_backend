@@ -21,3 +21,5 @@ LOGGING = {
     'handlers': {},
     'loggers': {}
 }
+
+DOMAIN = 'http://foo.com'
