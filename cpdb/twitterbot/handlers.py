@@ -5,15 +5,13 @@ from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_ha
 from responsebot.models import TweetFilter
 from responsebot.common.exceptions import CharacterLimitError, StatusDuplicateError
 
+from .officer_extractor_pipelines import TextPipeline, UrlPipeline
 from .recipient_extractors import TweetAuthorRecipientExtractor, TweetMentionRecipientExtractor
-from .name_parsers import GoogleNaturalLanguageNameParser
 from .response_builders import (
     SingleOfficerResponseBuilder, CoaccusedPairResponseBuilder, NotFoundResponseBuilder
 )
-from .text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
 from .tweet_extractors import DirectMentionTweetExtractor
 from .tweets import Tweet
-from .officer_extractors import ElasticSearchOfficerExtractor
 from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
@@ -86,17 +84,19 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
 
         tweets = self.tweet_extractor.extract(self.incoming_tweet, self._context)
 
-        texts = []
-        for tweet, text_extractor in itertools.product(tweets, self.text_extractors):
-            texts += text_extractor.extract(self.incoming_tweet)
-
-        names = []
-        for text_source, text in texts:
-            names += [
-                (source, name) for source, name in self.name_parser.parse((text_source, text))
-                if (source, name) not in names]
-
-        officers = self.officer_extractor.get_officers(names)
+        # Extract officers:
+        officer_extractor_pipeline_results = [
+            pipeline.extract(tweets)
+            for pipeline in self.officer_extractor_pipelines
+        ]
+        # Eliminate duplicate officers
+        officers = []
+        existing_ids = []
+        for result in officer_extractor_pipeline_results:
+            for source, officer in result:
+                if officer.id not in existing_ids:
+                    officers.append((source, officer))
+                    existing_ids.append(officer.id)
 
         recipients = []
         for recipient_extractor in self.recipient_extractors:
@@ -121,14 +121,12 @@ class CPDBEventHandler(BaseEventHandler):
 @register_handler
 class OfficerTweetHandler(BaseOfficerTweetHandler):
     event_handler_class = CPDBEventHandler
-    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
     tweet_extractor = DirectMentionTweetExtractor()
     incoming_tweet_filters = [
         lambda tweet: tweet.user_id not in IDS_OF_OTHER_BOTS,
         lambda tweet: not tweet.is_unfollow_tweet
     ]
-    name_parser = GoogleNaturalLanguageNameParser()
-    officer_extractor = ElasticSearchOfficerExtractor()
+    officer_extractor_pipelines = (TextPipeline, UrlPipeline)
     recipient_extractors = (TweetAuthorRecipientExtractor(), TweetMentionRecipientExtractor())
     response_builders = (
         SingleOfficerResponseBuilder(), CoaccusedPairResponseBuilder(), NotFoundResponseBuilder()
