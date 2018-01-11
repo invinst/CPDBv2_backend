@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from data.models import Officer
+from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
-from .pagination import ESQueryPagination
 
 _ALLOWED_FILTERS = [
     'category',
