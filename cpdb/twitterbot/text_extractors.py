@@ -1,5 +1,4 @@
 import re
-
 from utils import web_parsing
 
 
