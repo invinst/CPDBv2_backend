@@ -102,3 +102,17 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         term = 'whatever'
         SearchManager(hooks=[mock_hook], workers={'mock': mock_worker}).search(term)
         mock_hook.execute.assert_called_with(term, None, {'mock': 'formatter_results'})
+
+    @patch('search.services.OfficerWorker.query', return_value='abc')
+    def test_get_search_query_for_type(self, patched_query):
+        query = SearchManager().get_search_query_for_type('term', 'OFFICER')
+        patched_query.assert_called_with('term')
+        expect(query).to.eq('abc')
+
+    def test_get_formatted_results(self):
+        mock_document = Mock(to_dict=Mock(return_value={'a': 'b'}), _id=123)
+        formatted_results = SearchManager().get_formatted_results([mock_document], 'SIMPLE')
+        expect(formatted_results).to.eq([{
+            'a': 'b',
+            'id': 123
+        }])

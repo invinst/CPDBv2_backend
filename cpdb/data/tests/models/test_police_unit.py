@@ -207,7 +207,8 @@ class PoliceUnitTestCase(TestCase):
         OfficerHistoryFactory(unit=unit, officer=officer)
         OfficerAllegationFactory(
             officer=officer,
-            allegation_category=AllegationCategoryFactory(category='Use of Force')
+            allegation_category=AllegationCategoryFactory(category='Use of Force'),
+            final_finding='NS'
         )
         expect(unit.complaint_category_aggregation).to.eq([{
             'name': 'Use of Force',
@@ -223,8 +224,12 @@ class PoliceUnitTestCase(TestCase):
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerHistoryFactory(officer=officer1, unit=unit)
         OfficerHistoryFactory(officer=officer2, unit=unit)
-        OfficerAllegationFactory(officer=officer1, allegation=allegation, allegation_category=allegation_category)
-        OfficerAllegationFactory(officer=officer2, allegation=allegation, allegation_category=allegation_category)
+        OfficerAllegationFactory(
+            officer=officer1, allegation=allegation, allegation_category=allegation_category, final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation, allegation_category=allegation_category, final_finding='NS'
+        )
         expect(unit.complaint_category_aggregation).to.eq([{
             'name': 'Use of Force',
             'count': 1,
@@ -236,7 +241,7 @@ class PoliceUnitTestCase(TestCase):
         officer = OfficerFactory()
         allegation = AllegationFactory()
         OfficerHistoryFactory(unit=unit, officer=officer)
-        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        OfficerAllegationFactory(officer=officer, allegation=allegation, final_finding='NS')
         ComplainantFactory(allegation=allegation, race='White')
         expect(unit.complainant_race_aggregation).to.eq([{
             'name': 'White',

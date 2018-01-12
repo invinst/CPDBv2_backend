@@ -7,13 +7,16 @@ class SimpleFormatter(Formatter):
     def doc_format(self, doc):
         return doc.to_dict()
 
-    def format(self, response):
-        def process_doc(doc):
-            result = self.doc_format(doc)
-            result['id'] = doc._id
-            return result
+    def process_doc(self, doc):
+        result = self.doc_format(doc)
+        result['id'] = doc._id
+        return result
 
-        return [process_doc(doc) for doc in response.hits]
+    def format(self, response):
+        return [self.process_doc(doc) for doc in response.hits]
+
+    def serialize(self, docs):
+        return [self.process_doc(doc) for doc in docs]
 
 
 class OfficerFormatter(SimpleFormatter):
@@ -40,7 +43,10 @@ class OfficerFormatter(SimpleFormatter):
                 'rank': serialized_doc.get('rank', None),
                 'salary': None,
                 'race': serialized_doc['race'],
-                'sex': serialized_doc['sex']
+                'sex': serialized_doc['sex'],
+                'birth_year': serialized_doc['birth_year'],
+                'allegation_count': serialized_doc.get('allegation_count', 0),
+                'sustained_count': serialized_doc.get('sustained_count', 0)
             }
         }
 
