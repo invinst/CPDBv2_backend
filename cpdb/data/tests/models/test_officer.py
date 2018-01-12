@@ -262,6 +262,7 @@ class OfficerTestCase(TestCase):
             OfficerAllegationFactory.create_batch(cr, officer=officer)
             expect(officer.visual_token_background_color).to.eq(color)
 
+    @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
     def test_visual_token_png_url(self):
         officer = OfficerFactory(id=90)
         expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
