@@ -1,0 +1,24 @@
+---
+
+- name: Install Nginx
+  apt: name=nginx state=installed
+
+- name: Create the Nginx configuration file
+  template: src=notebook_nginx.conf.j2
+            dest=/etc/nginx/sites-available/notebook
+            backup=yes
+  notify: reload nginx
+
+- name: Ensure that the default site is disabled
+  file: path=/etc/nginx/sites-enabled/default
+        state=absent
+  notify: reload nginx
+
+- name: Ensure that the application site is enabled
+  file: src=/etc/nginx/sites-available/notebook
+        dest=/etc/nginx/sites-enabled/notebook
+        state=link
+  notify: reload nginx
+
+- name: Ensure Nginx service is started
+  service: name=nginx state=started enabled=yes
