@@ -55,19 +55,27 @@ class OfficerTestCase(TestCase):
     def test_complaint_category_aggregation(self):
         officer = OfficerFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
-        OfficerAllegationFactory(officer=officer,
-                                 allegation=AllegationFactory(),
-                                 allegation_category=allegation_category,
-                                 start_date=None)
-        OfficerAllegationFactory(officer=officer,
-                                 allegation=AllegationFactory(),
-                                 allegation_category=allegation_category,
-                                 start_date=date(2010, 1, 1))
-        OfficerAllegationFactory(officer=officer,
-                                 allegation=AllegationFactory(),
-                                 allegation_category=allegation_category,
-                                 start_date=date(2011, 1, 1),
-                                 final_finding='SU')
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=None,
+            final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=date(2010, 1, 1),
+            final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=date(2011, 1, 1),
+            final_finding='SU'
+        )
 
         expect(officer.complaint_category_aggregation).to.eq([
             {
@@ -95,10 +103,15 @@ class OfficerTestCase(TestCase):
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
         allegation3 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
-                                 final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
-        OfficerAllegationFactory(officer=officer, allegation=allegation3, start_date=None)
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation3, start_date=None, final_finding='NS'
+        )
         ComplainantFactory(allegation=allegation1, race='White')
         ComplainantFactory(allegation=allegation2, race='')
         ComplainantFactory(allegation=allegation3, race='White')
@@ -140,9 +153,12 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
-                                 final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
         ComplainantFactory(allegation=allegation1, age=23)
         ComplainantFactory(allegation=allegation2, age=None)
 
@@ -179,9 +195,12 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         allegation1 = AllegationFactory()
         allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer, allegation=allegation1, start_date=date(2010, 1, 1),
-                                 final_finding='SU')
-        OfficerAllegationFactory(officer=officer, allegation=allegation2, start_date=date(2011, 1, 1))
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
         ComplainantFactory(allegation=allegation1, gender='F')
         ComplainantFactory(allegation=allegation2, gender='')
 

@@ -12,11 +12,21 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
         obj.officer = Mock(
             full_name='ABC',
             id=10,
-            visual_token_background_color='#fff'
-            )
+            visual_token_background_color='#fff',
+            allegation_count=2,
+            sustained_count=1,
+            birth_year=1950,
+            race='Asian',
+            gender_display='Male',
+        )
 
         expect(ActivityCardSerializer(obj).data).to.eq({
             'full_name': 'ABC',
             'id': 10,
-            'visual_token_background_color': '#fff'
-            })
+            'visual_token_background_color': '#fff',
+            'complaint_count': 2,
+            'sustained_count': 1,
+            'birth_year': 1950,
+            'race': 'Asian',
+            'gender': 'Male',
+        })

@@ -88,6 +88,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
+    final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
