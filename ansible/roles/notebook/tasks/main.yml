@@ -1,0 +1,7 @@
+---
+
+- include: setup_pyenv.yml
+
+- include: setup_notebook.yml
+
+- include: setup_nginx.yml

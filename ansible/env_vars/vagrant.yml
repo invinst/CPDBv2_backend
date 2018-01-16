@@ -30,6 +30,8 @@ mailchimp_api_key: ""
 mailchimp_user: ""
 azure_storage_account_name: ""
 azure_storage_account_key: ""
+data_pipeline_storage_account_name: ""
+data_pipeline_storage_account_key: ""
 twitter_consumer_key: ""
 twitter_consumer_secret: ""
 twitter_app_token_key: ""
@@ -53,3 +55,5 @@ force_rewrite_env_file: no
 # We don't want to mess with authorized_keys here because vagrant
 # generates its own key pair that works out of the box.
 manage_authorized_keys: no
+
+import_initial_db_dump: yes

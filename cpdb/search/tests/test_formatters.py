@@ -38,17 +38,30 @@ class SimpleFormatterTestCase(SimpleTestCase):
             SimpleFormatter().format(response)
         ).to.be.eq([{'a': 'a', 'id': 'a_id'}, {'b': 'b', 'id': 'b_id'}])
 
+    def test_serialize(self):
+        doc = Mock(
+            to_dict=Mock(return_value={'a': 'a'}),
+            _id='a_id'
+        )
+        expect(SimpleFormatter().serialize([doc])).to.eq([{
+            'a': 'a',
+            'id': 'a_id'
+        }])
+
 
 class OfficerFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
+    def test_officer_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
             'full_name': 'name',
             'badge': '123',
             'to': 'to',
             'tags': ['tag1', 'tag2'],
+            'allegation_count': 10,
+            'sustained_count': 2,
             'visual_token_background_color': '#ffffff',
             'unit': '001',
             'rank': 'some rank',
+            'birth_year': 1972,
             'race': 'White',
             'sex': 'Male'
         }))
@@ -66,6 +79,48 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'visual_token_background_color': '#ffffff',
                 'unit': '001',
                 'rank': 'some rank',
+                'allegation_count': 10,
+                'sustained_count': 2,
+                'race': 'White',
+                'birth_year': 1972,
+                'sex': 'Male',
+                'salary': None  # no data yet so always return None here
+            }
+        })
+
+    def test_unit_officer_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'full_name': 'name',
+            'badge': '123',
+            'to': 'to',
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#ffffff',
+            'unit': '001',
+            'allegation_count': 10,
+            'sustained_count': 2,
+            'unit_description': 'foo bar',
+            'rank': 'some rank',
+            'birth_year': 1972,
+            'race': 'White',
+            'sex': 'Male'
+        }))
+
+        expect(
+            OfficerFormatter().doc_format(doc)
+        ).to.be.eq({
+            'text': 'name',
+            'payload': {
+                'result_text': 'name',
+                'result_extra_information': 'foo bar',
+                'to': 'to',
+                'result_reason': 'tag1, tag2',
+                'tags': ['tag1', 'tag2'],
+                'visual_token_background_color': '#ffffff',
+                'unit': '001',
+                'allegation_count': 10,
+                'sustained_count': 2,
+                'rank': 'some rank',
+                'birth_year': 1972,
                 'race': 'White',
                 'sex': 'Male',
                 'salary': None  # no data yet so always return None here
@@ -78,6 +133,7 @@ class UnitFormatterTestCase(SimpleTestCase):
         doc = Mock()
         doc.to_dict = Mock(return_value={
             'name': '123',
+            'description': 'foo bar',
             'to': '/unit/123/',
             'tags': ['foo']
         })
@@ -87,7 +143,8 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'text': '123',
             'payload': {
-                'result_text': '123',
+                'result_text': 'foo bar',
+                'result_extra_information': '123',
                 'to': '/unit/123/',
                 'tags': ['foo']
             }
@@ -97,6 +154,7 @@ class UnitFormatterTestCase(SimpleTestCase):
         doc = Mock()
         doc.to_dict = Mock(return_value={
             'name': '123',
+            'description': 'foo bar',
             'to': '/unit/123/'
         })
 
@@ -105,7 +163,8 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'text': '123',
             'payload': {
-                'result_text': '123',
+                'result_text': 'foo bar',
+                'result_extra_information': '123',
                 'to': '/unit/123/',
                 'tags': []
             }

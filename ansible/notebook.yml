@@ -1,0 +1,11 @@
+---
+
+- name: Create notebook instance
+  hosts: all
+  become: yes
+  become_user: root
+  remote_user: ansible
+  vars_files:
+    - env_vars/secrets.yml
+  roles:
+    - notebook
