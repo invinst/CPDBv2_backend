@@ -22,9 +22,17 @@ class ActivityGridViewSetTestCase(APITestCase):
         expect(response.data).to.have.length(40)
 
     def test_list_item_content(self):
-        officer = OfficerFactory(id=20, first_name='Jerome', last_name='Finnigan')
+        officer = OfficerFactory(
+            id=20,
+            first_name='Jerome',
+            last_name='Finnigan',
+            birth_year=1950,
+            race='Asian',
+            gender='M'
+        )
         OfficerActivityCardFactory(officer=officer)
-        OfficerAllegationFactory.create_batch(6, officer=officer)
+        OfficerAllegationFactory.create_batch(2, officer=officer, final_finding='SU')
+        OfficerAllegationFactory.create_batch(4, officer=officer, final_finding='NS')
         url = reverse('api-v2:activity-grid-list')
         response = self.client.get(url)
 
@@ -33,7 +41,12 @@ class ActivityGridViewSetTestCase(APITestCase):
                 {
                     'id': 20,
                     'full_name': 'Jerome Finnigan',
-                    'visual_token_background_color': '#d4e2f4'
+                    'visual_token_background_color': '#d4e2f4',
+                    'complaint_count': 6,
+                    'sustained_count': 2,
+                    'birth_year': 1950,
+                    'race': 'Asian',
+                    'gender': 'Male'
                 }
             ])
 

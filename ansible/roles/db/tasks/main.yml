@@ -33,9 +33,35 @@
     become: true
     become_user: postgres
 
+  - name: Check if initial db dump is present
+    stat: path={{ project_root_path }}/initial_dump.sql
+    register: initial_dump_file
+
+  - name: Dump initial data
+    postgresql_db:
+      name={{ application_name }}
+      state=restore
+      target={{ project_root_path }}/initial_dump.sql
+    become: true
+    become_user: postgres
+    when: import_initial_db_dump and initial_dump_file.stat.exists
+
+  - name: Clean up initial dump file
+    file:
+      path={{ project_root_path }}/initial_dump.sql
+      state=absent
+    when: import_initial_db_dump and initial_dump_file.stat.exists
+
   - name: Ensure numeracy has access to cpdb database on data tables
     postgresql_user:
       db={{ db_name }} name=numeracy password={{ numeracy_db_password }}
       priv={{numeracy_postgres_priv}}
+    become: true
+    become_user: postgres
+
+  - name: Ensure notebook user has access to cpdb database on data tables
+    postgresql_user:
+      db={{ db_name }} name=notebook password={{ notebook_db_password }}
+      priv={{notebook_postgres_priv}}
     become: true
     become_user: postgres

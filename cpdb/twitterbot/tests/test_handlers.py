@@ -49,6 +49,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         ResponseTemplateFactory(
             response_type='not_found',
             syntax='Sorry, @{{user_name}}, the bot find nothing')
+        self.screen_name = 'CPDPbot'
         self.tweet = Mock(
             id=1,
             user=Mock(id=123, screen_name='abc'),
@@ -58,8 +59,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             quoted_tweet=None,
             quoted_tweet_id=None,
             created_at=datetime.datetime(2017, 8, 3, 11, 59, 0, tzinfo=pytz.utc),
-            entities={'user_mentions': [], 'hashtags': [], 'urls': []})
-        self.client = MockClientFactory()
+            entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
+        )
+        self.client = MockClientFactory(screen_name=self.screen_name)
         self.outgoing_tweet = Mock(id=10, user=self.client.get_current_user())
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
@@ -81,6 +83,25 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             )
             expect(ActivityCard.objects.get(officer=self.officer).last_activity).to.eq(
                 datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
+
+    @namepaser_returns([])
+    @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
+    def test_tweet_cpdb_officer_page_url(self, _):
+        _mock_open = mock_open()
+        with patch('twitterbot.handlers.open', _mock_open, create=True):
+            self.tweet.text = '@CPDPbot http://foo.com/officer/1/'
+            self.tweet.entities['urls'] = [
+                {'expanded_url': 'http://foo.com/officer/1/'}
+            ]
+
+            self.refresh_index()
+            self.handler.on_tweet(self.tweet)
+            expect(self.client.tweet).to.be.called_with(
+                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
+            )
 
     @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
@@ -118,7 +139,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def test_tweet_mention_recipients(self, _):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
-            self.tweet.entities['user_mentions'] = [{'screen_name': 'def'}]
+            self.tweet.entities['user_mentions'] = [{'screen_name': self.screen_name}, {'screen_name': 'def'}]
             self.refresh_index()
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
@@ -154,8 +175,6 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_not_found(self, _):
-        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
-        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
             'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
@@ -165,8 +184,6 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_context_is_reset(self, _):
-        self.tweet.entities['user_mentions'] = [{'screen_name': 'ScreenName'}]
-        self.refresh_index()
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_called_with(
             'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
@@ -208,7 +225,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
                 retweeted_tweet=None,
                 quoted_tweet=None,
                 quoted_tweet_id=None,
-                entities={'user_mentions': [], 'hashtags': [], 'urls': []})
+                entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.in_reply_to_tweet_id = 2
             self.client.register(Tweet(original_tweet=replied_tweet, client=self.client))
             self.refresh_index()
@@ -239,7 +256,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
                 retweeted_tweet=None,
                 quoted_tweet=None,
                 quoted_tweet_id=None,
-                entities={'user_mentions': [], 'hashtags': [], 'urls': []})
+                entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.retweeted_tweet = retweeted_tweet
             self.client.register(Tweet(original_tweet=retweeted_tweet, client=self.client))
             self.refresh_index()
@@ -272,7 +289,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
                 retweeted_tweet=None,
                 quoted_tweet=None,
                 quoted_tweet_id=None,
-                entities={'user_mentions': [], 'hashtags': [], 'urls': []})
+                entities={'user_mentions': [{'screen_name': self.screen_name}], 'hashtags': [], 'urls': []})
             self.tweet.quoted_tweet = quoted_tweet
             self.client.register(Tweet(original_tweet=quoted_tweet, client=self.client))
             self.refresh_index()
@@ -315,12 +332,13 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.client.tweet.assert_not_called()
 
     def test_filter_unfollow_tweets(self):
-        self.tweet.text = '@ScreenName STOP'
+        self.tweet.text = '@{screen_name} STOP'.format(screen_name=self.screen_name)
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     def test_tweet_not_mentioning_twitterbot(self):
+        self.tweet.entities['user_mentions'] = []
         self.handler.on_tweet(self.tweet)
         self.client.tweet.assert_not_called()
 
@@ -339,7 +357,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         expect(response_log.tweet_content).to.eq(
             '@abc Jerome Finnigan has 1 complaints %s' % (entity_url))
         expect(response_log.created_at).to.eq(datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
-        expect(response_log.tweet_url).to.eq('https://twitter.com/ScreenName/status/10/')
+        expect(response_log.tweet_url).to.eq('https://twitter.com/{screen_name}/status/10/'.format(
+            screen_name=self.screen_name
+        ))
         expect(response_log.incoming_tweet_username).to.eq('abc')
         expect(response_log.incoming_tweet_url).to.eq('https://twitter.com/abc/status/1/')
         expect(response_log.incoming_tweet_content).to.eq('@CPDPbot Jerome Finnigan')

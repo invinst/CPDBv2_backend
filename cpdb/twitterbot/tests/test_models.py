@@ -3,7 +3,7 @@ from django.test import TestCase
 from robber import expect
 
 from twitterbot.factories import ResponseTemplateFactory
-from twitterbot.models import TweetResponseRoundRobin
+from twitterbot.models import TweetResponseRoundRobin, TwitterBotResponseLog
 
 
 class TweetResponseRoundRobinManagerTestCase(TestCase):
@@ -32,3 +32,9 @@ class TweetResponseRoundRobinManagerTestCase(TestCase):
         response_template = TweetResponseRoundRobin.objects.get_template(
             username='Somedude', response_type='single_officer')
         expect(response_template.syntax).to.eq('single_officer_template_1')
+
+
+class TwitterBotResponseLogTestCase(TestCase):
+    def test_unicode(self):
+        response_log = TwitterBotResponseLog(tweet_content='abc')
+        expect(str(response_log)).to.eq('abc')

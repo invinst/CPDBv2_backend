@@ -1,0 +1,8 @@
+---
+
+pyenv_root: /pyenv/
+deploy_user: ansible
+application_name: notebook
+application_home: /notebook
+python_version: 2.7.13
+virtualenv_path: "{{ pyenv_root }}/versions/{{ application_name }}/"

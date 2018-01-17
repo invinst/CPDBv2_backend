@@ -56,7 +56,9 @@ LOCAL_APPS = (
     'visual_token',
     'activity_grid',
     'document_cloud',
-    'search_terms'
+    'search_terms',
+    'heatmap',
+    'data_pipeline',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -93,9 +95,10 @@ MANAGERS = ADMINS
 # DATABASE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASE_CONFIG = env.db('DATABASE_URL')
 DATABASES = {
     # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': env.db('DATABASE_URL'),
+    'default': DATABASE_CONFIG,
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
@@ -225,6 +228,8 @@ VFTG_LIST_ID = 'e38095f8d7'
 
 AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
+DATA_PIPELINE_STORAGE_ACCOUNT_NAME = env.str('DATA_PIPELINE_STORAGE_ACCOUNT_NAME', default='')
+DATA_PIPELINE_STORAGE_ACCOUNT_KEY = env.str('DATA_PIPELINE_STORAGE_ACCOUNT_KEY', default='')
 TWITTER_CONSUMER_KEY = env.str('TWITTER_CONSUMER_KEY', default='')
 TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
 TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
@@ -241,6 +246,14 @@ LOGGING = {
         'standard': {
             'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
         },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
     },
     'handlers': {
         'error-file': {
@@ -250,12 +263,23 @@ LOGGING = {
             'maxBytes': 1024*1024*10,  # 10MB
             'backupCount': 10,
             'formatter': 'standard',
-        }
+        },
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['error-file'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'django.command': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         }
     },

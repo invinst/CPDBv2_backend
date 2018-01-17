@@ -1,7 +1,10 @@
 from .common import *  # NOQA
 
 
-INSTALLED_APPS += ('django_extensions',)  # NOQA
+INSTALLED_APPS += (  # NOQA
+    'django_extensions',
+    'debug_toolbar',
+    )
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:9966',
@@ -33,3 +36,7 @@ NOTEBOOK_ARGUMENTS = [
     '--port=8888',
     '--no-browser',
 ]
+
+MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']  # NOQA
+REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] += ('rest_framework.renderers.BrowsableAPIRenderer',)  # NOQA
+INTERNAL_IPS = ['10.0.2.2']

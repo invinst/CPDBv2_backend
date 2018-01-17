@@ -202,7 +202,10 @@ class NotFoundResponseBuilderTestCase(TestCase):
 
     def test_do_nothing_if_retweet_of_twitterbot(self):
         builder = NotFoundResponseBuilder()
-        tweet = Mock(is_retweet_of_twitterbot=True)
+        tweet = Mock(
+            is_tweet_from_followed_accounts=False,
+            is_retweet_of_twitterbot=True,
+            is_quoted_tweet_of_twitterbot=False)
         context = {
             'responses_count': 0,
             'incoming_tweet': tweet
@@ -211,7 +214,10 @@ class NotFoundResponseBuilderTestCase(TestCase):
 
     def test_do_nothing_if_quoted_tweet_of_twitterbot(self):
         builder = NotFoundResponseBuilder()
-        tweet = Mock(is_quoted_tweet_of_twitterbot=True)
+        tweet = Mock(
+            is_tweet_from_followed_accounts=False,
+            is_retweet_of_twitterbot=False,
+            is_quoted_tweet_of_twitterbot=True)
         context = {
             'responses_count': 0,
             'incoming_tweet': tweet

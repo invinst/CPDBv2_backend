@@ -1842,12 +1842,22 @@ This api require an api access token set in `Authorization` header. To get an ap
             {
                 "id": 1,
                 "full_name": "Jerome Finnigan",
-                "visual_token_background_color": "#90b1f5"
+                "visual_token_background_color": "#90b1f5",
+                "birth_year": 1963,
+                "complaint_count": 90,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 4
             },
             {
                 "id": 2,
                 "full_name": "Raymond Piwnicki",
-                "visual_token_background_color": "#aec9e8"
+                "visual_token_background_color": "#aec9e8",
+                "birth_year": 1963,
+                "complaint_count": 89,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 6
             }
         ]
 
@@ -2008,7 +2018,7 @@ This api require an api access token set in `Authorization` header. To get an ap
         }
 
 
-## Specific type search [/v1/suggestion/{term}/?contentType={type}]
+## Specific type search [/v1/suggestion/{term}/single/?contentType={type}]
 
 + Parameters
     + term (string) - Search term
@@ -2019,7 +2029,10 @@ This api require an api access token set in `Authorization` header. To get an ap
 + Response 200 (application/json)
 
         {
-          "OFFICER": [
+          "count": 2,
+          "previous": null,
+          "next": null,
+          "results": [
             {
               "text": "Orson Ward",
               "payload": {

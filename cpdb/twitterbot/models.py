@@ -37,6 +37,9 @@ class TwitterBotResponseLog(models.Model):
     original_tweet_content = models.TextField()
     status = models.CharField(max_length=10, choices=status_choices, default=PENDING)
 
+    def __unicode__(self):
+        return self.tweet_content
+
 
 class TweetResponseRoundRobinManager(models.Manager):
     def get_template(self, username, response_type):
@@ -57,3 +60,8 @@ class TweetResponseRoundRobin(models.Model):
     response_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     last_index = models.PositiveIntegerField(default=0)
     objects = TweetResponseRoundRobinManager()
+
+
+class TwitterBotVisitLog(models.Model):
+    response_log = models.ForeignKey(TwitterBotResponseLog)
+    request_path = models.CharField(max_length=255)

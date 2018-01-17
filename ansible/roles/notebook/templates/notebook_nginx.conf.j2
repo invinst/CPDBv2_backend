@@ -1,0 +1,33 @@
+upstream notebook {
+    server localhost:8888;
+}
+
+server{
+    listen 80;
+    server_name cpdp-notebooks.southeastasia.cloudapp.azure.com;
+
+    location / {
+        proxy_pass            http://notebook;
+        proxy_set_header      Host $host;
+    }
+
+    location ~ /api/kernels/ {
+        proxy_pass            http://notebook;
+        proxy_set_header      Host $host;
+        # websocket support
+        proxy_http_version    1.1;
+        proxy_set_header      Upgrade "websocket";
+        proxy_set_header      Connection "Upgrade";
+        proxy_read_timeout    86400;
+    }
+
+    location ~ /terminals/ {
+        proxy_pass            http://notebook;
+        proxy_set_header      Host $host;
+        # websocket support
+        proxy_http_version    1.1;
+        proxy_set_header      Upgrade "websocket";
+        proxy_set_header      Connection "Upgrade";
+        proxy_read_timeout    86400;
+    }
+}

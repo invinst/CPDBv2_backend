@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from data.models import Officer
+from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
-from .pagination import ESQueryPagination
 
 _ALLOWED_FILTERS = [
     'category',
@@ -62,9 +62,6 @@ class OfficersViewSet(viewsets.ViewSet):
     def timeline_minimap(self, request, pk):
         if Officer.objects.filter(pk=pk).exists():
             query = self._query_timeline_items(request, pk)
-
-            # exclude "YEAR" events from minimap
-            query = query.query('bool', filter=[~Q('match', kind='YEAR')])
 
             return Response(TimelineMinimapSerializer(query[:10000].execute(), many=True).data)
         else:
