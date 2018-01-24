@@ -51,8 +51,13 @@ not
 - Error message format:
 ```javascript
 {
-  'error': {
-    'message': 'This is a message for end-user'
+  'message': 'This is a message for end-user'
+}
+// or
+{
+  'message': {
+    'field1': ['Error 1.'],
+    'field2': ['Error 2.', 'Error 3.']
   }
 }
 ```
