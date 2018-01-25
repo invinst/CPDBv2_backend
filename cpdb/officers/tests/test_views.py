@@ -1,11 +1,9 @@
-from datetime import date, datetime
-
 import pytz
+from datetime import date, datetime
 from django.core.urlresolvers import reverse
-
+from mock import patch
 from rest_framework.test import APITestCase
 from rest_framework import status
-
 from robber import expect
 
 from data.factories import (
@@ -305,3 +303,67 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:officers-social-graph', kwargs={'pk': 3}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_top_officers_by_allegation(self):
+        OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
+                       complaint_percentile=100.0, gender='M', birth_year=1970)
+        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0)
+        OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
+                       complaint_percentile=99.2, gender='M', birth_year=1960)
+        response = self.client.get(reverse('api-v2:officers-top-by-allegation'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data).to.eq([{
+            'id': 1,
+            'visual_token_background_color': '#f5f4f4',
+            'full_name': 'Clarence Featherwater',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1970,
+            'complaint_percentile': 100.0,
+            'race': 'White',
+            'gender': 'Male'
+        }, {
+            'id': 3,
+            'visual_token_background_color': '#f5f4f4',
+            'full_name': 'Ronald Watts',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1960,
+            'complaint_percentile': 99.2,
+            'race': 'White',
+            'gender': 'Male'
+        }])
+
+    @patch('random.shuffle')
+    def test_top_officers_by_allegation_random(self, shuffle):
+        OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
+                       complaint_percentile=100.0, gender='M', birth_year=1970)
+        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0)
+        OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
+                       complaint_percentile=99.2, gender='M', birth_year=1960)
+        response = self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
+
+        shuffle.assert_called_once_with([{
+            'id': 1,
+            'visual_token_background_color': '#f5f4f4',
+            'full_name': 'Clarence Featherwater',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1970,
+            'complaint_percentile': 100.0,
+            'race': 'White',
+            'gender': 'Male'
+        }, {
+            'id': 3,
+            'visual_token_background_color': '#f5f4f4',
+            'full_name': 'Ronald Watts',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1960,
+            'complaint_percentile': 99.2,
+            'race': 'White',
+            'gender': 'Male'
+        }])
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.have.length(2)

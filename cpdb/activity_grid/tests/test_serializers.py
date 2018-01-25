@@ -17,6 +17,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             sustained_count=1,
             birth_year=1950,
             race='Asian',
+            complaint_percentile=99.0,
             gender_display='Male',
         )
 
@@ -27,6 +28,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'complaint_count': 2,
             'sustained_count': 1,
             'birth_year': 1950,
+            'complaint_percentile': 99.0,
             'race': 'Asian',
             'gender': 'Male',
         })
