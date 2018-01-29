@@ -1,6 +1,9 @@
 import types
 
 from tqdm import tqdm
+from elasticsearch.helpers import bulk
+
+from es_index import es_client
 
 
 class BaseIndexer(object):
@@ -13,22 +16,27 @@ class BaseIndexer(object):
     def extract_datum(self, datum):
         raise NotImplementedError
 
-    def index_datum(self, datum):
-        result = self.extract_datum(datum)
-        if isinstance(result, types.GeneratorType):
-            for obj in result:
-                doc = self.doc_type_klass(**obj)
-                doc.save(index=self.index_alias.new_index_name)
-        else:
-            doc = self.doc_type_klass(**result)
-            doc.save(index=self.index_alias.new_index_name)
+    def doc_dict(self, raw_doc):
+        doc = self.doc_type_klass(**raw_doc).to_dict(include_meta=True)
+        doc['_index'] = self.index_alias.new_index_name
+        return doc
 
-    def reindex(self):
-        self.index_alias.close_write_index()
-        self.doc_type_klass.init(index=self.index_alias.new_index_name)
-        self.index_alias.open_write_index()
+    def docs(self):
         for datum in tqdm(
                 self.get_queryset(),
                 desc='Indexing {doc_type_name}'.format(
                     doc_type_name=self.doc_type_klass._doc_type.name)):
-            self.index_datum(datum)
+            result = self.extract_datum(datum)
+            if isinstance(result, types.GeneratorType):
+                for obj in result:
+                    yield self.doc_dict(obj)
+            else:
+                yield self.doc_dict(result)
+
+    def reindex(self):
+        self.index_alias.write_index.close()
+        self.doc_type_klass.init(index=self.index_alias.new_index_name)
+        self.index_alias.write_index.settings(refresh_interval='-1')
+        self.index_alias.write_index.open()
+        bulk(es_client, self.docs())
+        self.index_alias.write_index.settings(refresh_interval='1s')
