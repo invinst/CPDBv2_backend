@@ -4,10 +4,10 @@ from report_bottomsheet.indexers import OfficerIndexer
 
 class ReportBottomSheetTestCaseMixin(object):
     def setUp(self):
-        report_bottomsheet_index_alias._write_index.delete(ignore=404)
-        report_bottomsheet_index_alias._read_index.create(ignore=400)
+        report_bottomsheet_index_alias.write_index.delete(ignore=404)
+        report_bottomsheet_index_alias.read_index.create(ignore=400)
 
     def refresh_index(self):
         with report_bottomsheet_index_alias.indexing():
             OfficerIndexer().reindex()
-        report_bottomsheet_index_alias._write_index.refresh()
+        report_bottomsheet_index_alias.write_index.refresh()
