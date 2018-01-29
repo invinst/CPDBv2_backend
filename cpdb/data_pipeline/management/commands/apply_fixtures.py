@@ -1,17 +1,13 @@
 import re
 import os
-import logging
 from tempfile import NamedTemporaryFile
 
-from django.core.management import BaseCommand, call_command
+from django.core.management import BaseCommand, call_command, CommandError
 from django.conf import settings
 
 from azure.storage.blob import BlockBlobService
 
 from data_pipeline.models import AppliedFixture
-
-
-logger = logging.getLogger('django.command')
 
 
 class Command(BaseCommand):
@@ -37,11 +33,21 @@ class Command(BaseCommand):
         blobs = sorted(blobs, key=lambda blob: blob['id'])
 
         for blob in blobs:
-            logger.info('Applying %s ...' % blob['name'])
+            self.stdout.write('Applying %s ...' % blob['name'])
             tmp_file = NamedTemporaryFile(suffix='.json', dir=os.getcwd(), delete=False)
-            block_blob_service.get_blob_to_path('fixtures', blob['name'], tmp_file.name)
-            call_command('loaddata', tmp_file.name)
-            os.remove(tmp_file.name)
+            try:
+                block_blob_service.get_blob_to_path('fixtures', blob['name'], tmp_file.name)
+                call_command('loaddata', tmp_file.name)
+            except CommandError:
+                self.stderr.write(
+                    'Cant load data from fixture %s. '
+                    'There is something wrong with the fixture file. '
+                    'Have you migrated schema?' % blob['name']
+                )
+                self.stdout.write('Abort')
+                break
+            finally:
+                os.remove(tmp_file.name)
             AppliedFixture.objects.create(file_name=blob['name'], id=blob['id'])
 
-        logger.info('Done!')
+        self.stdout.write('Done!')
