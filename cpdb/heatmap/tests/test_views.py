@@ -23,8 +23,17 @@ class CitySummaryViewSetTestCase(TestCase):
             'allegation_count': 10,
             'discipline_count': 7,
             'most_common_complaints': [
-                'Operation/Personnel Violations',
-                'Use Of Force',
-                'Illegal Search'
+                {
+                    'name': 'Operation/Personnel Violations',
+                    'count': 4
+                },
+                {
+                    'name': 'Use Of Force',
+                    'count': 3
+                },
+                {
+                    'name': 'Illegal Search',
+                    'count': 2
+                }
             ]
         })
