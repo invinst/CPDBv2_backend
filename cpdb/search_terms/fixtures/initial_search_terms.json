@@ -4,15 +4,17 @@
   "pk": 1,
   "fields": {
     "name": "Geography",
-    "order_number": 2
+    "order_number": 1,
+    "description": "Where are complaints coming from?"
   }
 },
 {
   "model": "search_terms.searchtermcategory",
   "pk": 2,
   "fields": {
-    "name": "Officers Characteristics",
-    "order_number": 1
+    "name": "Officer Characteristics",
+    "order_number": 7,
+    "description": "Who has complaints?"
   }
 },
 {
@@ -20,7 +22,8 @@
   "pk": 3,
   "fields": {
     "name": "Complaint Categories",
-    "order_number": 3
+    "order_number": 2,
+    "description": "What are the complaints about?"
   }
 },
 {
@@ -28,7 +31,8 @@
   "pk": 4,
   "fields": {
     "name": "Outcomes of Complaint Investigations",
-    "order_number": 4
+    "order_number": 3,
+    "description": "What happened after the complaint was filed?"
   }
 },
 {
@@ -36,7 +40,8 @@
   "pk": 5,
   "fields": {
     "name": "Complaint Characteristic",
-    "order_number": 5
+    "order_number": 4,
+    "description": "What information is featured?"
   }
 },
 {
@@ -44,7 +49,8 @@
   "pk": 6,
   "fields": {
     "name": "Complainant Demographic",
-    "order_number": 6
+    "order_number": 5,
+    "description": "Who files complaints?"
   }
 },
 {
@@ -52,30 +58,42 @@
   "pk": 7,
   "fields": {
     "name": "Officer Demographic",
+    "order_number": 6,
+    "description": "Who has complaints?"
+  }
+},
+{
+  "model": "search_terms.searchtermcategory",
+  "pk": 8,
+  "fields": {
+    "name": "Keywords",
+    "order_number": 8,
+    "description": "Search the summary abstracts of complaints provided by IPRA for any words, like \"taser\" or \"mediation\u201d"
+  }
+},
+{
+  "model": "search_terms.searchtermitem",
+  "pk": "90th-percentile-for-complaints",
+  "fields": {
+    "category": 2,
+    "name": "90th Percentile for Complaints",
+    "description": "This search will find all officers who have more complaints per year than 90% of their fellow officers. This means that an officer who received nine complaints in two years as an officer might appear on this search, but an officer who has 20 complaints in 15 years might not.",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
     "order_number": 7
   }
 },
 {
   "model": "search_terms.searchtermitem",
-  "pk": "10-complaints",
+  "pk": "99th-percentile-for-complaints",
   "fields": {
     "category": 2,
-    "name": "10+ Complaints",
-    "description": "Search the data tool for officers with 10+ complaints",
-    "call_to_action_type": "link",
-    "link": "https://beta.cpdb.co/url-mediator/session-builder?officer__allegations_count__gt=10",
-    "order_number": 7
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "20-complaints",
-  "fields": {
-    "category": 2,
-    "name": "20+ Complaints",
-    "description": "Search the data tool for officers with 20+ complaints",
-    "call_to_action_type": "link",
-    "link": "https://beta.cpdb.co/url-mediator/session-builder?officer__allegations_count__gt=20",
+    "name": "99th Percentile for Complaints",
+    "description": "This search will find all officers who have more complaints per year than 99% of their fellow officers. This means that an officer who received nine complaints in two years as an officer might appear on this search, but an officer who has 20 complaints in 15 years might not.",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
     "order_number": 8
   }
 },
@@ -85,8 +103,9 @@
   "fields": {
     "category": 2,
     "name": "Active",
-    "description": "Search the data tool for active officers",
+    "description": "Active officers are presently serving in the CPD, per our most recent data.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "https://beta.cpdb.co/url-mediator/session-builder?officer__active=Yes",
     "order_number": 9
   }
@@ -97,21 +116,23 @@
   "fields": {
     "category": 4,
     "name": "Administrative Termination",
-    "description": null,
+    "description": "This designation includes officers who have been fired by the Chicago Police. The process for firing an officer is time-consuming and involves a serious finding against an officer, input from the police superintendent, review by the city\u2019s Police Board, and a grievance and appeal process. Officers sometimes resign after exhausting their appeals instead of being fired directly by the department. [Fact Check]",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=300",
     "order_number": 34
   }
 },
 {
   "model": "search_terms.searchtermitem",
-  "pk": "age-20-30",
+  "pk": "age-18-30",
   "fields": {
     "category": 6,
-    "name": "Age 20-30",
-    "description": "Search the data tool for Age 20-30",
+    "name": "Age 18-30",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_age=21-30",
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_age=18-30",
     "order_number": 69
   }
 },
@@ -121,10 +142,11 @@
   "fields": {
     "category": 6,
     "name": "Age 31-40",
-    "description": "Search the data tool for Age 31-40",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_age=31-40",
-    "order_number": 70
+    "order_number": 71
   }
 },
 {
@@ -133,10 +155,11 @@
   "fields": {
     "category": 6,
     "name": "Age 41-50",
-    "description": "Search the data tool for Age 41-50",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_age=41-50",
-    "order_number": 71
+    "order_number": 72
   }
 },
 {
@@ -145,10 +168,24 @@
   "fields": {
     "category": 6,
     "name": "Age 51+",
-    "description": "Search the data tool for Age 51+",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_age=>51",
-    "order_number": 72
+    "order_number": 73
+  }
+},
+{
+  "model": "search_terms.searchtermitem",
+  "pk": "arrest-lockup-procedures",
+  "fields": {
+    "category": 3,
+    "name": "Arrest / Lockup Procedures",
+    "description": "This category (04) includes complaints about misconduct during the process of arresting and processing a suspect. It also includes excessive detention, improper care of a detained person, and improper searches of a detained person.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
+    "call_to_action_type": "link",
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Arrest+%2F+Lockup+Procedures",
+    "order_number": 23
   }
 },
 {
@@ -157,8 +194,9 @@
   "fields": {
     "category": 6,
     "name": "Asian",
-    "description": "Search the data tool for Asian",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=Asian",
     "order_number": 64
   }
@@ -169,8 +207,9 @@
   "fields": {
     "category": 2,
     "name": "Badge Number",
-    "description": "Type the badge# of an officer into the search bar",
+    "description": "Each CPD officer has a badge number, which is typically displayed on their uniform. Badge numbers typically range between 1 and 20,000. An officer\u2019s badge number may change multiple times over their career. Badge numbers are also reused when an officer leaves the force.",
     "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
     "link": null,
     "order_number": 4
   }
@@ -181,8 +220,9 @@
   "fields": {
     "category": 6,
     "name": "Black",
-    "description": "Search the data tool for Black",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=Black",
     "order_number": 61
   }
@@ -193,10 +233,24 @@
   "fields": {
     "category": 3,
     "name": "Bribery / Official Corruption",
-    "description": null,
+    "description": "This category (06) includes complaints about official misconduct, including accepting or soliciting bribes, false testimony, and maintaining gang affiliations.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Bribery+%2F+Official+Corruption",
-    "order_number": 31
+    "order_number": 30
+  }
+},
+{
+  "model": "search_terms.searchtermitem",
+  "pk": "census-tracts",
+  "fields": {
+    "category": 1,
+    "name": "Census Tracts",
+    "description": "According to the Census Bureau, \u201ccensus tracts are small, relatively permanent statistical subdivisions of a county or equivalent entity that are updated by local participants prior to each decennial census.\u201d Each tract contains approximately 1,200 - 8,000 residents. In Chicago, census tracts generally fit within the city\u2019s 77 community areas.",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
+    "order_number": 7
   }
 },
 {
@@ -205,10 +259,11 @@
   "fields": {
     "category": 1,
     "name": "Communities",
-    "description": "",
+    "description": "Chicago is divided into 77 community areas. These boundaries date back to the 1920s and have only been modified slightly in the intervening years. Community areas frequently contain multiple neighborhoods, but also often align fairly closely with existing community boundaries.",
     "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 13
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?community=<name>",
+    "order_number": 1
   }
 },
 {
@@ -216,9 +271,10 @@
   "pk": "conduct-unbecoming-off-duty",
   "fields": {
     "category": 3,
-    "name": "Conduct Unbecoming (Off-Duty)",
-    "description": "Search the data tool for Conduct Unbecoming",
+    "name": "Conduct Unbecoming (Off Duty)",
+    "description": "This category (09) is made up of a wide range of non-physical misbehavior, including harassment, traffic violations, and off-duty altercations. \r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Conduct+Unbecoming+%28Off-Duty%29",
     "order_number": 19
   }
@@ -229,8 +285,9 @@
   "fields": {
     "category": 5,
     "name": "CRID",
-    "description": "Type a CR code into the search bar to easily find a specific complaint.",
+    "description": "Each complaint is given a unique ID number (CRID). You can search for a specific case using the CRID here.",
     "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
     "link": null,
     "order_number": 53
   }
@@ -241,22 +298,11 @@
   "fields": {
     "category": 3,
     "name": "Criminal Misconduct",
-    "description": "Search the data tool for Criminal Misconduct",
+    "description": "This group of complaints (08) is comprised of categories where a police officer has allegedly committed a crime, not just an act of misconduct.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Criminal+Misconduct",
     "order_number": 20
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "discharged",
-  "fields": {
-    "category": 4,
-    "name": "Discharged",
-    "description": null,
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=DS",
-    "order_number": 35
   }
 },
 {
@@ -265,10 +311,11 @@
   "fields": {
     "category": 4,
     "name": "Disciplined 10-30 days",
-    "description": null,
+    "description": "This search will find cases where an officer was suspended between ten and thirty days as a result of the complaint.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?outcome_text=10-30+days",
-    "order_number": 37
+    "order_number": 36
   }
 },
 {
@@ -277,10 +324,11 @@
   "fields": {
     "category": 4,
     "name": "Disciplined 1-9 days",
-    "description": null,
+    "description": "This search will find cases where an officer was suspended between one and nine days as a result of the complaint.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?outcome_text=1-9+days",
-    "order_number": 36
+    "order_number": 35
   }
 },
 {
@@ -289,10 +337,11 @@
   "fields": {
     "category": 4,
     "name": "Disciplined 30+ days",
-    "description": null,
+    "description": "This search will find cases where an officer was suspended over thirty days as a result of the complaint. Suspensions over thirty days have to be reviewed by Chicago\u2019s Police Board, which is appointed by the mayor. The Police Board sometimes overturns or reduces discipline.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?outcome_text=30+more+days",
-    "order_number": 38
+    "order_number": 37
   }
 },
 {
@@ -301,8 +350,9 @@
   "fields": {
     "category": 3,
     "name": "Domestic",
-    "description": "Search the data tool for Domestic",
+    "description": "This search will find use of force complaints that are marked as domestic-related. \r\n\r\nThis search will only return complaints where one officer is named because due to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a complaint accuses one officer of domestic violence and two other officers of foul language, then all three officers could have a complaint marked as \u201cDomestic Altercation - Physical Abuse\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Domestic",
     "order_number": 21
   }
@@ -313,10 +363,11 @@
   "fields": {
     "category": 3,
     "name": "Drug / Alcohol Abuse",
-    "description": null,
+    "description": "This search will find complaints from two categories (02 and 15) that cover allegations of drug or alcohol abuse by officers. Types of complaints in this category include DUIs, failed drug tests, and drinking on duty.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Drug+%2F+Alcohol+Abuse",
-    "order_number": 30
+    "order_number": 29
   }
 },
 {
@@ -325,22 +376,11 @@
   "fields": {
     "category": 4,
     "name": "Exonerated",
-    "description": null,
+    "description": "This designation means that investigators have determined that the officer did commit the actions detailed in the complaint, but also decided that those actions are within department policy. For example, investigators might rule that the actions described in an allegation of excessive force did take place, but that the force was appropriate.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=EX",
-    "order_number": 39
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "false-arrest",
-  "fields": {
-    "category": 3,
-    "name": "False Arrest",
-    "description": "Search the data tool for False Arrest",
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=False+Arrest",
-    "order_number": 22
+    "order_number": 38
   }
 },
 {
@@ -349,22 +389,11 @@
   "fields": {
     "category": 6,
     "name": "Female",
-    "description": "Search the data tool for Female",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_gender=F",
     "order_number": 67
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "first-amendment",
-  "fields": {
-    "category": 3,
-    "name": "First Amendment",
-    "description": null,
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=First+Amendment",
-    "order_number": 32
   }
 },
 {
@@ -373,8 +402,9 @@
   "fields": {
     "category": 5,
     "name": "has:address",
-    "description": "Search the data tool for complaints with address",
+    "description": "This will limit you search to cases where we have received address information for the incident, typically at the block level.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?has=address",
     "order_number": 58
   }
@@ -385,8 +415,9 @@
   "fields": {
     "category": 5,
     "name": "has:documents",
-    "description": "Search the data tool for complaints with documents",
+    "description": "This will limit your search to cases where we have obtained at least some of the official documents and made them available on this site.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?has=document",
     "order_number": 54
   }
@@ -397,8 +428,9 @@
   "fields": {
     "category": 5,
     "name": "has:identified officer",
-    "description": "Search the data tool for complaints with identified officers",
+    "description": "This will limit your search to cases where at least one officer has been identified. In some cases, the complainant is unable to name a specific officer.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?has=identified",
     "order_number": 56
   }
@@ -409,34 +441,11 @@
   "fields": {
     "category": 5,
     "name": "has:investigator",
-    "description": "Search the data tool for complaints with investigator",
+    "description": "This will limit your search to cases where we have received data about the investigator. Some cases are investigated by civilian investigators working for a police oversight agency (first called OPS, then IPRA, then COPA). Others are investigated by CPD personnel, usually either a supervisor or an officer assigned to the Bureau of Internal Affairs.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?has=investigator",
     "order_number": 57
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "haslocation",
-  "fields": {
-    "category": 5,
-    "name": "has:location",
-    "description": "Search the data tool for complaints with location",
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?has=location",
-    "order_number": 59
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "hasmap",
-  "fields": {
-    "category": 5,
-    "name": "has:map",
-    "description": "Search the data tool for complaints with map",
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?has=map",
-    "order_number": 60
   }
 },
 {
@@ -445,8 +454,9 @@
   "fields": {
     "category": 5,
     "name": "has:summary",
-    "description": "Search the data tool for complaints with summary",
+    "description": "This will limit your search to cases where we have obtained the summary of the complaint, which typically includes a description of the case and the investigation.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?has=summary",
     "order_number": 55
   }
@@ -457,22 +467,24 @@
   "fields": {
     "category": 6,
     "name": "Hispanic",
-    "description": "Search the data tool for Hispanic",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=Hispanic",
     "order_number": 63
   }
 },
 {
   "model": "search_terms.searchtermitem",
-  "pk": "illegal-search",
+  "pk": "improper-search",
   "fields": {
     "category": 3,
-    "name": "Illegal Search",
-    "description": "Search the data tool for Illegal Search",
+    "name": "Improper Search",
+    "description": "This category (03) includes complaints about searches without a warrant, first amendment violations, planting drugs on a suspect, and unlawful detention.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Illegal+Search",
-    "order_number": 23
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Improper+Search",
+    "order_number": 22
   }
 },
 {
@@ -481,22 +493,11 @@
   "fields": {
     "category": 2,
     "name": "Inactive",
-    "description": "Search the data tool for inactive officers",
+    "description": "Inactive officers have retired or left the force for other reasons.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "https://beta.cpdb.co/url-mediator/session-builder?officer__active=No",
     "order_number": 10
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "lockup-procedures",
-  "fields": {
-    "category": 3,
-    "name": "Lockup Procedures",
-    "description": "Search the data tool for Lockup Procedures",
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Lockup+Procedures",
-    "order_number": 24
   }
 },
 {
@@ -505,34 +506,11 @@
   "fields": {
     "category": 6,
     "name": "Male",
-    "description": "Search the data tool for Male",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_gender=M",
     "order_number": 66
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "money-property",
-  "fields": {
-    "category": 3,
-    "name": "Money / Property",
-    "description": null,
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Money+%2F+Property",
-    "order_number": 33
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "neighborhoods",
-  "fields": {
-    "category": 1,
-    "name": "Neighborhood",
-    "description": "",
-    "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 14
   }
 },
 {
@@ -541,10 +519,11 @@
   "fields": {
     "category": 4,
     "name": "No Action Taken",
-    "description": null,
+    "description": "This category means that the complaint has been sustained (meaning at least some of the allegations of misconduct were found to be true), but no types of discipline or reprimand were recommended as a result.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=600",
-    "order_number": 52
+    "order_number": 53
   }
 },
 {
@@ -553,10 +532,11 @@
   "fields": {
     "category": 4,
     "name": "No Affidavit",
-    "description": null,
+    "description": "Complaints made against a Chicago Police officer require a sworn affidavit to prompt an investigation. In a substantial number of complaints, the complainant is unwilling or unable to file a sworn affidavit, leading the complaint to be dropped. Chicago\u2019s oversight agency, IPRA (now COPA), has the power to override the affidavit requirement and investigate a case, but has rarely used this power.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=NA",
-    "order_number": 40
+    "order_number": 39
   }
 },
 {
@@ -567,8 +547,9 @@
     "name": "No Cooperation",
     "description": null,
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=NC",
-    "order_number": 41
+    "order_number": 40
   }
 },
 {
@@ -577,10 +558,11 @@
   "fields": {
     "category": 4,
     "name": "No Discipline",
-    "description": null,
+    "description": "This search will return cases where investigators ruled that at least part of the complaint was sustained, but the officers involved did not receive any discipline. This includes categories such as \u201cno action taken,\u201d \u201cviolation noted,\u201d \u201cresigned,\u201d \u201cunknown,\u201d and cases where officers are reinstated by either the Police Board or a court.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?outcome_text=no+discipline",
-    "order_number": 42
+    "order_number": 41
   }
 },
 {
@@ -589,10 +571,11 @@
   "fields": {
     "category": 4,
     "name": "Not Sustained",
-    "description": null,
+    "description": "A not sustained finding means that investigators have determined they do not have enough evidence to rule that the officer engaged in misconduct. It also means they did find enough evidence to rule that the allegations were either unfounded or that they did take place but did not violate department policy. Most cases that are investigated  by the CPD or its outside watchdog (first IPRA, now COPA) end in not sustained findings.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=NS",
-    "order_number": 43
+    "order_number": 42
   }
 },
 {
@@ -601,22 +584,24 @@
   "fields": {
     "category": 2,
     "name": "Off-Duty",
-    "description": "Search the data tool for off-duty officers",
+    "description": "Some complaints specifically refer to off-duty incidents. Other complaints may involve off-duty officers, but are not explicitly marked as such in the complaint category. Off-duty Chicago Police officers retain their police powers.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "https://beta.cpdb.co/url-mediator/session-builder?cat__on_duty=false",
-    "order_number": 12
+    "order_number": 11
   }
 },
 {
   "model": "search_terms.searchtermitem",
-  "pk": "officer-age-20-30",
+  "pk": "officer-age-21-30",
   "fields": {
     "category": 7,
-    "name": "Age 20-30",
-    "description": "Search the data tool for Age 20-30",
+    "name": "Age 21-30",
+    "description": "CPD officers must be at least [21 years](https://home.chicagopolice.org/wp-content/uploads/2015/10/CPD-2017-Police-Officer-FAQs-FINAL-111716-2.pdf) old. The CPD has a mandatory [retirement age](https://chicagocode.org/2-152-410/) of 63.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer_age=21-30",
-    "order_number": 81
+    "order_number": 80
   }
 },
 {
@@ -625,8 +610,9 @@
   "fields": {
     "category": 7,
     "name": "Age 31-40",
-    "description": "Search the data tool for Age 31-40",
+    "description": "CPD officers must be at least [21 years](https://home.chicagopolice.org/wp-content/uploads/2015/10/CPD-2017-Police-Officer-FAQs-FINAL-111716-2.pdf) old. The CPD has a mandatory [retirement age](https://chicagocode.org/2-152-410/) of 63.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer_age=31-40",
     "order_number": 82
   }
@@ -637,8 +623,9 @@
   "fields": {
     "category": 7,
     "name": "Age 41-50",
-    "description": "Search the data tool for Age 41-50",
+    "description": "CPD officers must be at least [21 years](https://home.chicagopolice.org/wp-content/uploads/2015/10/CPD-2017-Police-Officer-FAQs-FINAL-111716-2.pdf) old. The CPD has a mandatory [retirement age](https://chicagocode.org/2-152-410/) of 63.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer_age=41-50",
     "order_number": 83
   }
@@ -649,8 +636,9 @@
   "fields": {
     "category": 7,
     "name": "Age 51+",
-    "description": "Search the data tool for Age 51+",
+    "description": "CPD officers must be at least [21 years](https://home.chicagopolice.org/wp-content/uploads/2015/10/CPD-2017-Police-Officer-FAQs-FINAL-111716-2.pdf) old. The CPD has a mandatory [retirement age](https://chicagocode.org/2-152-410/) of 63.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer_age=>51",
     "order_number": 84
   }
@@ -661,8 +649,9 @@
   "fields": {
     "category": 7,
     "name": "Asian",
-    "description": "Search the data tool for Asian",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 53% of CPD officers were white, 25% were black, 19% were Hispanic, and 3% were of other races. Those numbers had changed over the preceding decade, with the number of white officers decreasing slightly while the number of Hispanic officers has grown slightly.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__race=Asian",
     "order_number": 76
   }
@@ -673,8 +662,9 @@
   "fields": {
     "category": 7,
     "name": "Black",
-    "description": "Search the data tool for Black",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 53% of CPD officers were white, 25% were black, 19% were Hispanic, and 3% were of other races. Those numbers had changed over the preceding decade, with the number of white officers decreasing slightly while the number of Hispanic officers has grown slightly.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__race=Black",
     "order_number": 73
   }
@@ -685,8 +675,9 @@
   "fields": {
     "category": 7,
     "name": "Female",
-    "description": "Search the data tool for Female",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 76% of CPD officers were male and 24% were female.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__gender=F",
     "order_number": 79
   }
@@ -697,8 +688,9 @@
   "fields": {
     "category": 7,
     "name": "Hispanic",
-    "description": "Search the data tool for Hispanic",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 53% of CPD officers were white, 25% were black, 19% were Hispanic, and 3% were of other races. Those numbers had changed over the preceding decade, with the number of white officers decreasing slightly while the number of Hispanic officers has grown slightly.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__race=Hispanic",
     "order_number": 75
   }
@@ -709,8 +701,9 @@
   "fields": {
     "category": 7,
     "name": "Male",
-    "description": "Search the data tool for Male",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 76% of CPD officers were male and 24% were female.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__gender=M",
     "order_number": 78
   }
@@ -720,9 +713,10 @@
   "pk": "officer-name",
   "fields": {
     "category": 2,
-    "name": "Officer Name",
+    "name": "Name",
     "description": "Type the name of an officer into the search bar",
     "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
     "link": null,
     "order_number": 3
   }
@@ -733,8 +727,9 @@
   "fields": {
     "category": 7,
     "name": "Others",
-    "description": "Search the data tool for Others",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 53% of CPD officers were white, 25% were black, 19% were Hispanic, and 3% were of other races. Those numbers had changed over the preceding decade, with the number of white officers decreasing slightly while the number of Hispanic officers has grown slightly.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__race=Asian/Pacific+Islander&officer__race=Native+American/Alaskan+Native",
     "order_number": 77
   }
@@ -745,8 +740,9 @@
   "fields": {
     "category": 2,
     "name": "Rank",
-    "description": "Type the rank of an officer into the search bar",
+    "description": "The Chicago Police Department is organized by rank. Police Officers make up the bulk of the department, patrolling neighborhoods and serving on specialized teams. Detectives are at type of specialized police officer who conduct investigations. Sergeants are lower-level supervisors who oversee roughly a dozen officers (though this varies widely) and sometimes command small teams. Lieutenants are mid-level supervisors who run teams and may be responsible for supervising shifts for an entire police district. A Commander runs each of Chicago\u2019s 22 police districts and sometimes hold other leadership roles. Each district Commander is typically supported by a single Captain. Above commanders are a range of high-level officials, including Deputy Chiefs and Chiefs. These officials may oversee multiple police districts or an entire bureau (like investigations or patrol). The CPD is led by the Superintendent.",
     "call_to_action_type": "view_all",
+    "call_to_action_text": null,
     "link": null,
     "order_number": 6
   }
@@ -757,8 +753,9 @@
   "fields": {
     "category": 2,
     "name": "Unit",
-    "description": "Description for unit goes here...",
+    "description": "The Chicago Police Department is organized into a number of units, with substantial variation in size and role. For example, Unit 003 is the Third District and includes hundreds of officers who patrol Woodlawn and nearby neighborhoods. Other units are much smaller and might include record-keeping divisions, SWAT teams, or human resources.",
     "call_to_action_type": "view_all",
+    "call_to_action_text": null,
     "link": null,
     "order_number": 5
   }
@@ -769,34 +766,24 @@
   "fields": {
     "category": 7,
     "name": "White",
-    "description": "Search the data tool for White",
+    "description": "As of 2010 (when the CPD last published its [annual report](https://home.chicagopolice.org/wp-content/uploads/2014/12/2010-Annual-Report.pdf)), 53% of CPD officers were white, 25% were black, 19% were Hispanic, and 3% were of other races. Those numbers had changed over the preceding decade, with the number of white officers decreasing slightly while the number of Hispanic officers has grown slightly.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__race=White",
     "order_number": 74
   }
 },
 {
   "model": "search_terms.searchtermitem",
-  "pk": "officer-x",
+  "pk": "open",
   "fields": {
-    "category": 7,
-    "name": "X",
-    "description": "Search the data tool for X",
-    "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?officer__gender=X",
-    "order_number": 80
-  }
-},
-{
-  "model": "search_terms.searchtermitem",
-  "pk": "on-duty",
-  "fields": {
-    "category": 2,
-    "name": "On-Duty",
-    "description": "Search the data tool for on-duty officers",
-    "call_to_action_type": "link",
-    "link": "https://beta.cpdb.co/url-mediator/session-builder?cat__on_duty=true",
-    "order_number": 11
+    "category": 4,
+    "name": "Open",
+    "description": "Open cases are still being actively investigated at the time this data was last updated. Cases frequently take years to wind through the investigation process.",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
+    "order_number": 48
   }
 },
 {
@@ -804,11 +791,12 @@
   "pk": "operation-personnel-violations",
   "fields": {
     "category": 3,
-    "name": "Operation/Personnel Violations",
-    "description": "Search the data tool for Operation/Personnel Violations",
+    "name": "Operation / Personnel Violations",
+    "description": "This category (10) includes on-duty administrative violations like leaving or failing to show up for work, having an unauthorized second job, or poor handling of a request for police assistance. These complaints are more likely to be initiated by other police officers.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Operation%2FPersonnel+Violations",
-    "order_number": 25
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Operation+%2F+Personnel+Violations",
+    "order_number": 24
   }
 },
 {
@@ -817,9 +805,10 @@
   "fields": {
     "category": 6,
     "name": "Others",
-    "description": "Search the data tool for Others",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
-    "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=Api&complainant_race=Amer Ind/Alaskan Native",
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=Api&complainant_race=Amer+Ind/Alaskan+Native",
     "order_number": 65
   }
 },
@@ -829,10 +818,11 @@
   "fields": {
     "category": 4,
     "name": "Penalty Not Served",
-    "description": null,
+    "description": "This category includes officers who have not served discipline, but may be required to do so in the future. For example, investigators might recommend an officer be suspended, but that suspension cannot be served because the officer is on indefinite medical leave.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=900",
-    "order_number": 45
+    "order_number": 44
   }
 },
 {
@@ -841,10 +831,11 @@
   "fields": {
     "category": 1,
     "name": "Police Beat",
-    "description": "",
+    "description": "Police beats are the smallest area patrolled by officers, usually made up of a few dozen blocks. Many officers are assigned to specific beats and exclusively patrol these areas.",
     "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 15
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?beat=<name>",
+    "order_number": 2
   }
 },
 {
@@ -853,10 +844,11 @@
   "fields": {
     "category": 1,
     "name": "Police District",
-    "description": "A form of division of a geographical area patrolled by a police force",
+    "description": "Chicago is divided into 22 police districts. Each district has several hundred officers, though there is substantial variation in the size and population of each district. Most Chicago police officers, including the vast majority of patrol officers, are assigned to a specific police district. Some types of officers, such as SWAT officers, detectives, and narcotics officers support several districts or work citywide.",
     "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 1
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?police_district=<name>",
+    "order_number": 3
   }
 },
 {
@@ -865,10 +857,11 @@
   "fields": {
     "category": 4,
     "name": "Reinstated by Police Board",
-    "description": null,
+    "description": "Chicago\u2019s Police Board, a body appointed by the mayor, reviews major disciplinary rulings against officers. It must approve department moves to fire officers or suspend them for more than 30 days. The Board has historically overturned discipline in a substantial number of cases, reinstating officers who were to be fired, shortening suspensions, or converting a firing recommendation into a suspension.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=500",
-    "order_number": 46
+    "order_number": 45
   }
 },
 {
@@ -877,10 +870,11 @@
   "fields": {
     "category": 4,
     "name": "Reprimand",
-    "description": null,
+    "description": "A minor type of discipline in which an officer is issued a formal reprimand for misconduct. This is the most serious type of discipline short of a suspension.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=100",
-    "order_number": 44
+    "order_number": 43
   }
 },
 {
@@ -889,10 +883,11 @@
   "fields": {
     "category": 4,
     "name": "Resigned",
-    "description": null,
+    "description": "This designation signals that an officer resigned before the full disciplinary process had run its course. Some officers may have merely retire with a case unsettled, but Chicago\u2019s very slow process for firing officers also means that many officers accused of serious misconduct exhaust their appeals and then resign when it is clear they will be fired.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=800",
-    "order_number": 47
+    "order_number": 46
   }
 },
 {
@@ -901,10 +896,11 @@
   "fields": {
     "category": 1,
     "name": "Public Schools",
-    "description": "",
+    "description": "This search will show any complaints located within 1,000 meters of a Chicago Public School. These complaints are not necessarily related to the school. Many CPS schools do have dedicated police officers supplied by the CPD.",
     "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 17
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?school_ground=<name>",
+    "order_number": 4
   }
 },
 {
@@ -913,10 +909,11 @@
   "fields": {
     "category": 3,
     "name": "Supervisory Responsibilities",
-    "description": null,
+    "description": "This category (12) consists of complaints that specifically apply to CPD supervisors. This includes failing to properly supervise subordinates, failure to conduct an adequate investigation, and failure to intake a civilian complaint.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Supervisory+Responsibilities",
-    "order_number": 26
+    "order_number": 25
   }
 },
 {
@@ -925,10 +922,11 @@
   "fields": {
     "category": 4,
     "name": "Sustained",
-    "description": null,
+    "description": "A complaint ending in a sustained finding means that investigators determined that at least some of the alleged misconduct did take place. A sustained finding can result in discipline for an officer (range from a reprimand to a suspension to a firing), but not all sustained cases result in discipline. Additionally, many cases have multiple allegations of misconduct (i.e. an officer is accused of using excessive force and also of not filing the correct paperwork after using that force). If any of those allegations are found to be true, then the whole case is marked as \u201csustained\u201d in the CPD\u2019s data systems.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=SU",
-    "order_number": 48
+    "order_number": 47
   }
 },
 {
@@ -937,10 +935,11 @@
   "fields": {
     "category": 3,
     "name": "Traffic",
-    "description": null,
+    "description": "This category (07) includes complaints related to traffic stops and citations, excluding alleged bribes or uses of force that take place during traffic stops.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Traffic",
-    "order_number": 27
+    "order_number": 26
   }
 },
 {
@@ -949,9 +948,23 @@
   "fields": {
     "category": 4,
     "name": "Unfounded",
-    "description": null,
+    "description": "This finding occurs when the investigator determines that the allegations against an officer did not occur. Like \u201cexonerated\u201d or \u201cnot sustained\u201d complaints, unfounded complaints do not result in discipline. Unlike these other categories, this finding means that investigators determined that the original allegations against the officer contained falsehoods.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding=UN",
+    "order_number": 51
+  }
+},
+{
+  "model": "search_terms.searchtermitem",
+  "pk": "Unknown",
+  "fields": {
+    "category": 4,
+    "name": "Unknown",
+    "description": "",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
     "order_number": 50
   }
 },
@@ -961,8 +974,9 @@
   "fields": {
     "category": 4,
     "name": "Unsustained",
-    "description": null,
-    "call_to_action_type": "link",
+    "description": "This category includes all cases where investigators did not rule against an officer. This includes cases marked as \u201cnot sustained\u201d, \u201cunfounded\u201d, \u201cno affidavit\u201d, \u201cexonerated\u201d, \u201cunknown\u201d and \u201cno cooperation\u201d",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_finding_text=unsustained",
     "order_number": 49
   }
@@ -973,10 +987,11 @@
   "fields": {
     "category": 3,
     "name": "Use Of Force",
-    "description": null,
+    "description": "This category (05) includes a wide range of complaints, mostly involving different types of police use of force.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Use+Of+Force",
-    "order_number": 29
+    "order_number": 28
   }
 },
 {
@@ -985,10 +1000,11 @@
   "fields": {
     "category": 3,
     "name": "Verbal Abuse",
-    "description": null,
+    "description": "This category (01) includes complaints about profanity, racial slurs, or other forms of biased language. As of 2018, this type of complaint is typically investigated by COPA, Chicago\u2019s civilian police watchdog.\r\n\r\nDue to the limitations of the CPD\u2019s data systems, each complaint is only marked with one allegation type. This means that if a single complaint accuses one officer of excessive force and two other officers of foul language, then all three officers will have a complaint marked as \u201cexcessive force.\u201d",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?cat__category=Verbal+Abuse",
-    "order_number": 28
+    "order_number": 27
   }
 },
 {
@@ -997,10 +1013,11 @@
   "fields": {
     "category": 4,
     "name": "Violation Noted",
-    "description": null,
+    "description": "This is a minor type of discipline in which an officer\u2019s misconduct is officially noted on their record, but no other discipline is handed out.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?final_outcome=000",
-    "order_number": 51
+    "order_number": 52
   }
 },
 {
@@ -1009,10 +1026,11 @@
   "fields": {
     "category": 1,
     "name": "Ward",
-    "description": "",
+    "description": "Chicago is divided into 50 wards, each of which elects an alderman to City Council. Chicago\u2019s wards often overlap the city\u2019s neighborhoods, but are frequently shaped by political considerations as well.",
     "call_to_action_type": "view_all",
-    "link": null,
-    "order_number": 18
+    "call_to_action_text": null,
+    "link": "http://beta.cpdb.co/url-mediator/session-builder?ward=<name>",
+    "order_number": 5
   }
 },
 {
@@ -1021,8 +1039,9 @@
   "fields": {
     "category": 6,
     "name": "White",
-    "description": "Search the data tool for White",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_race=White",
     "order_number": 62
   }
@@ -1033,10 +1052,24 @@
   "fields": {
     "category": 6,
     "name": "X",
-    "description": "Search the data tool for X",
+    "description": "The complainant is the person who filed the complaint and is not necessarily the victim of the alleged police misconduct.\r\n\r\nNot all complaints have demographic information about the person who filed the complaint, especially those filed prior to September 2007. Some complaints are also jointly filed by multiple individuals.",
     "call_to_action_type": "link",
+    "call_to_action_text": null,
     "link": "http://beta.cpdb.co/url-mediator/session-builder?complainant_gender=X",
     "order_number": 68
+  }
+},
+{
+  "model": "search_terms.searchtermitem",
+  "pk": "zip-codes",
+  "fields": {
+    "category": 1,
+    "name": "Zip Codes",
+    "description": "Used by the US Postal Service, zip codes often run through multiple neighborhoods. While less precise than police districts or community areas, they can still be used to search a particular area.",
+    "call_to_action_type": "plain_text",
+    "call_to_action_text": null,
+    "link": null,
+    "order_number": 6
   }
 }
 ]
