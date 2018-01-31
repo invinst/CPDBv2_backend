@@ -1719,6 +1719,88 @@ This api require an api access token set in `Authorization` header. To get an ap
         }
 
 
+## Search Aliases [/aliases/{aliasType}/{id}/]
+
+### Update search aliases for a search result [POST]
+
++ Parameters
+    + aliasType (string) - Can be officer/neighborhood/community/faq/report/unit
+    + id (number) - Primary key of search result
+
++ Request (application/json)
+
+        {
+            aliases: ["foo", "bar"]
+        }
+
++ Response 200 (application/json)
+
+        {
+            "message": "Aliases successfully updated",
+            "aliases": ["foo", "bar"]
+        }
+
++ Request (application/json)
+
+        {
+            aliases: ["an alias that is absolutely way too long"]
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": {
+                "aliases": ["Ensure this field has no more than 20 characters."]
+            }
+        }
+
+
+## CR Documents [/cr/{crid}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + crid (number) - number ID of Allegation
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
+        }
+
+
 ## Unit summary [/units/{unit_id}/summary]
 
 ### Get Unit Summary [GET]

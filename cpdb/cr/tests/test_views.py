@@ -203,7 +203,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
-            'error': 'Please enter a valid email'
+            'message': 'Please enter a valid email'
         })
 
     def test_request_document_with_invalid_email(self):
@@ -212,7 +212,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                                     {'email': 'invalid@email'})
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
-            'error': 'Please enter a valid email'
+            'message': 'Please enter a valid email'
         })
 
     def test_request_document_with_invalid_allegation(self):
