@@ -5,15 +5,15 @@ from tempfile import NamedTemporaryFile
 from django.core.management import BaseCommand
 from django.conf import settings
 from django.db import connection
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.contrib.gis.geos.factory import fromstr
 
 from tqdm import tqdm
 from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
 
-from data.models import Area, Allegation
-from data.constants import COMMUNITY_AREA_CHOICE, DISCIPLINE_CODES, OUTCOMES_DICT
+from data.models import Area, OfficerAllegation, Officer
+from data.constants import COMMUNITY_AREA_CHOICE, DISCIPLINE_CODES
 
 
 # pragma: no cover
@@ -70,38 +70,31 @@ class Command(BaseCommand):
         for area in tqdm(areas):
             polygon = json.loads(area.polygon.geojson)
 
-            most_common_complaint = Allegation.objects.filter(
-                    areas__id=area.id,
-                    officerallegation__allegation_category__category__isnull=False)\
-                .distinct()\
-                .values('officerallegation__allegation_category__category')\
-                .annotate(category_count=Count('id'))\
-                .order_by('-category_count').first()
-            most_common_discipline = Allegation.objects.filter(
-                    areas__id=area.id,
-                    officerallegation__final_outcome__in=DISCIPLINE_CODES)\
-                .distinct()\
-                .values('officerallegation__final_outcome')\
-                .annotate(outcome_count=Count('id'))\
-                .order_by('-outcome_count').first()
-
             area_json = {
                 'type': 'Feature',
                 'properties': {
                     'id': area.id,
                     'name': area.name,
-                    'complaints_count': Allegation.objects.filter(areas__id=area.id).distinct().count(),
-                    'sustaineds_count': Allegation.objects.filter(
-                        areas__id=area.id,
-                        officerallegation__final_finding='SU').distinct().count(),
-                    'most_common_complaint':
-                        most_common_complaint.get('officerallegation__allegation_category__category')
-                        if most_common_complaint
-                        else 'N/A',
-                    'most_common_discipline':
-                        OUTCOMES_DICT.get(most_common_discipline.get('officerallegation__final_outcome'))
-                        if most_common_discipline
-                        else 'N/A'
+                    'allegation_count': OfficerAllegation.objects.filter(
+                        allegation__areas__id=area.id).distinct().count(),
+                    'discipline_count': OfficerAllegation.objects.filter(
+                        allegation__areas__id=area.id,
+                        final_outcome__in=DISCIPLINE_CODES).distinct().count(),
+                    'most_complaints_officers': [
+                        {
+                            'full_name': officer.full_name,
+                            'complaints_count': officer.complaints_count,
+                            'id': officer.id
+                        }
+                        for officer in Officer.objects.filter(
+                            officerallegation__allegation__areas__id=area.id
+                        ).annotate(
+                            complaints_count=Count('officerallegation__allegation_id')
+                        ).order_by('-complaints_count')[:3]
+                    ],
+                    'population': area.racepopulation_set.aggregate(population=Sum('count'))['population'],
+                    'median_income': area.median_income,
+                    'race_count': list(area.racepopulation_set.order_by('-count').values('race', 'count'))
                 },
                 'geometry': polygon
             }
