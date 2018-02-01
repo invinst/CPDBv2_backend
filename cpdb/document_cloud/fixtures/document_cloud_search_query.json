@@ -3,7 +3,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 1,
     "fields": {
-      "query": "title:(crid and cr)",
+      "query": "title:cr crid",
       "type": "CR"
     }
   },
@@ -11,7 +11,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 2,
     "fields": {
-      "query": "title:(crid and cpb)",
+      "query": "title:cpb crid",
       "type": "CPB"
     }
   },
@@ -19,7 +19,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 3,
     "fields": {
-      "query": "title:(crid and trr)",
+      "query": "title:trr crid",
       "type": "TRR"
     }
   },
@@ -27,7 +27,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 4,
     "fields": {
-      "query": "title:(crid and ocir)",
+      "query": "title:ocir crid",
       "type": "OCIR"
     }
   },
@@ -35,7 +35,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 5,
     "fields": {
-      "query": "title:(crid and obr)",
+      "query": "title:obr crid",
       "type": "OBR"
     }
   },
@@ -43,7 +43,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 6,
     "fields": {
-      "query": "title:(crid and ar)",
+      "query": "title:ar crid",
       "type": "AR"
     }
   },
@@ -51,7 +51,7 @@
     "model": "document_cloud.documentcloudsearchquery",
     "pk": 7,
     "fields": {
-      "query": "title:(crid and chi r)",
+      "query": "title:'CHI R' crid",
       "type": "CHI-R"
     }
   }

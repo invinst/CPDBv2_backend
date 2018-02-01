@@ -792,6 +792,8 @@ class AttachmentFile(models.Model):
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+    preview_image_url = models.CharField(max_length=255, null=True)
+    last_updated = models.DateTimeField(null=True)
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)

@@ -16,7 +16,6 @@ class Command(BaseCommand):
 
     def process_documentcloud_result(self, result, document_type):
         documentcloud_service = DocumentcloudService()
-
         crid = documentcloud_service.parse_crid_from_title(result.title, document_type)
         if not crid:
             return
@@ -27,11 +26,9 @@ class Command(BaseCommand):
             return
 
         try:
-            # Normalize document title if document originate from documentcloud
+            # update if current info is mismatched
             document = AttachmentFile.objects.get(allegation=allegation, url__icontains=result.id)
-            if document.title != result.title:
-                document.title = result.title
-                document.save()
+            self.update_mismatched_existing_data(document, result)
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', result.title)
             parsed_link = documentcloud_service.parse_link(result.canonical_url)
@@ -42,7 +39,27 @@ class Command(BaseCommand):
                 file_type=MEDIA_TYPE_DOCUMENT,
                 tag=document_type,
                 additional_info=parsed_link,
-                original_url=result.canonical_url)
+                original_url=result.canonical_url,
+                preview_image_url=result.normal_image_url,
+                last_updated=result.updated_at
+            )
+
+    def update_mismatched_existing_data(self, document, result):
+
+        should_save = False
+        # Normalize document title if document originate from documentcloud
+        if document.title != result.title:
+            document.title = result.title
+            should_save = True
+        if document.preview_image_url != result.normal_image_url:
+            document.preview_image_url = result.normal_image_url
+            should_save = True
+        if document.last_updated != result.updated_at:
+            document.last_updated = result.updated_at
+            should_save = True
+
+        if should_save:
+            document.save()
 
     def clean_documentcloud_results(self, results):
         cleaned_results = OrderedDict()
