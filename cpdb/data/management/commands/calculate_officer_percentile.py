@@ -1,10 +1,8 @@
 import time
-import logging
+
 from django.core.management import BaseCommand
 
 from data.models import Officer
-
-logger = logging.getLogger('django.command')
 
 
 class Command(BaseCommand):
@@ -23,4 +21,4 @@ class Command(BaseCommand):
         top_percentile = Officer.top_complaint_officers(100)  # calculate all
         self.update_percentile_to_db(top_percentile)
 
-        logger.info("Finished on --- %s seconds ---" % (time.time() - start_time))
+        self.stdout.write("Finished on --- %s seconds ---" % (time.time() - start_time))

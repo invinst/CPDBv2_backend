@@ -1,4 +1,3 @@
-import random
 from elasticsearch_dsl.query import Q
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -82,14 +81,13 @@ class OfficersViewSet(viewsets.ViewSet):
     def top_officers_by_allegation(self, request):
         is_random = request.GET.get('random', 0)
         limit = request.GET.get('limit', 48)
-        queryset = Officer.objects.filter(complaint_percentile__gt=99.0)
-        limit = min(len(queryset), limit)
-        queryset = queryset.order_by('-complaint_percentile')
         if is_random:
-            results = OfficerCardSerializer(queryset, many=True).data
-            random.shuffle(results)
-            results = results[:limit]
+            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('?')
         else:
-            results = OfficerCardSerializer(queryset[:limit], many=True).data
+            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('-complaint_percentile')
+
+        limit = min(len(queryset), limit)
+        queryset = queryset[:limit]
+        results = OfficerCardSerializer(queryset, many=True).data
 
         return Response(results)

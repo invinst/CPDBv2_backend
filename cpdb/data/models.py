@@ -348,6 +348,7 @@ class Officer(TaggableModel):
             officer_id: num for officer_id, num in query.values_list('officer', 'num_allegation')
         }
 
+        # TODO: change these to (mostly) ORM to improve performance
         metrics = {}
         for officer_id, service_time in duration:
             allegation_count = 0

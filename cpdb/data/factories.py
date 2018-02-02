@@ -1,8 +1,10 @@
-import factory
 import random
 import pytz
+
 from django.utils import timezone
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
+
+import factory
 from factory.fuzzy import FuzzyInteger
 from faker import Faker
 
