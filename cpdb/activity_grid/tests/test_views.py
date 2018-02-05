@@ -46,7 +46,8 @@ class ActivityGridViewSetTestCase(APITestCase):
                     'sustained_count': 2,
                     'birth_year': 1950,
                     'race': 'Asian',
-                    'gender': 'Male'
+                    'gender': 'Male',
+                    'complaint_percentile': None
                 }
             ])
 

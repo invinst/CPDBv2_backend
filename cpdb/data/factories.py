@@ -1,5 +1,7 @@
 import random
+import pytz
 
+from django.utils import timezone
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
 import factory
@@ -76,6 +78,13 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+
+    # required for percentile calculation, we ensure all objects factoried in same data range
+    incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(
+        datetime_start=timezone.datetime(2000, 1, 1),
+        datetime_end=timezone.datetime(2017, 6, 30),
+        tzinfo=pytz.utc
+    ))
 
 
 class InvestigatorAllegationFactory(factory.django.DjangoModelFactory):

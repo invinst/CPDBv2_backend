@@ -1611,6 +1611,39 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Top Officers by allegation [/activity-grid/]
+
+### Get Officer cards on top 1% complaint percentile [GET]
+
++ Parameters
+    + random (1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Jerome Finnigan",
+                "visual_token_background_color": "#90b1f5",
+                "birth_year": 1963,
+                "complaint_count": 90,
+                "complaint_percentile": 100.00,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 4
+            },
+            {
+                "id": 2,
+                "full_name": "Raymond Piwnicki",
+                "visual_token_background_color": "#aec9e8",
+                "birth_year": 1963,
+                "complaint_count": 99.63,
+                "complaint_percentile": None,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 6
+            }
+        ]
 
 ## CR [/cr/{crid}/]
 
@@ -1927,6 +1960,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#90b1f5",
                 "birth_year": 1963,
                 "complaint_count": 90,
+                "complaint_percentile": 88.55,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 4
@@ -1937,6 +1971,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#aec9e8",
                 "birth_year": 1963,
                 "complaint_count": 89,
+                "complaint_percentile": None,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 6
