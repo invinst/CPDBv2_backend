@@ -1,15 +1,15 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import groupby
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F
-from django.db.models import Q
+from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
 from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
+from django.utils.timezone import now
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -639,6 +639,38 @@ class Allegation(models.Model):
         tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
         return self.attachment_files.filter(type_query & ~tag_query)
+
+    def get_latest_document(self):
+        return self.documents.latest('last_updated')
+
+    @staticmethod
+    def get_cr_with_new_documents(limit):
+        start_datetime = now() - timedelta(weeks=12)
+        query = Allegation.objects.all()
+        tag_query = Q(attachment_files__tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
+        type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
+
+        query = query.annotate(
+            last_documents_updated=Max(
+                Case(
+                    When(type_query & ~tag_query, then='attachment_files__last_updated'),
+                    output_field=DateTimeField()
+                )
+            )
+        )
+        query = query.filter(last_documents_updated__isnull=False).order_by('-last_documents_updated')[:limit]
+        query = query.annotate(
+            num_recent_documents=Count(
+                Case(
+                    When(
+                        type_query & ~tag_query &
+                        Q(attachment_files__last_updated__gte=start_datetime),
+                        then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        return query
 
     @property
     def v2_to(self):
