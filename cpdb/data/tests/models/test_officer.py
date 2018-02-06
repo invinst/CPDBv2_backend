@@ -1,6 +1,5 @@
-from datetime import date
+from datetime import date, timedelta
 from django.test.testcases import TestCase, override_settings
-
 from robber.expect import expect
 
 from data.models import Officer
@@ -261,6 +260,29 @@ class OfficerTestCase(TestCase):
             officer = OfficerFactory()
             OfficerAllegationFactory.create_batch(cr, officer=officer)
             expect(officer.visual_token_background_color).to.eq(color)
+
+    def test_top_complaint_officers(self):
+        officer1 = OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60))
+        OfficerAllegationFactory.create_batch(1, officer=officer1)
+        officer2 = OfficerFactory(id=2, appointed_date=date(1980, 1, 1))
+        OfficerAllegationFactory.create_batch(1, officer=officer2)
+        officer3 = OfficerFactory(id=3, appointed_date=date(1980, 1, 1))
+        OfficerAllegationFactory.create_batch(2, officer=officer3)
+
+        results = Officer.top_complaint_officers(100)
+        expect(results).to.eq([
+            (2, 0.0),
+            (3, 50.0)
+        ])
+
+        officer4 = OfficerFactory(id=4, appointed_date=date(1980, 1, 1))
+        OfficerAllegationFactory.create_batch(3, officer=officer4)
+        officer5 = OfficerFactory(id=5, appointed_date=date(1980, 1, 1))
+        OfficerAllegationFactory.create_batch(4, officer=officer5)
+        results = Officer.top_complaint_officers(25)
+        expect(results).to.eq([
+            (5, 75.0)
+        ])
 
     @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
     def test_visual_token_png_url(self):

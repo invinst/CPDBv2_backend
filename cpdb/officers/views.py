@@ -1,8 +1,9 @@
 from elasticsearch_dsl.query import Q
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 
+from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType
@@ -75,3 +76,18 @@ class OfficersViewSet(viewsets.ViewSet):
             return Response(search_result[0].to_dict()['graph'])
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @list_route(methods=['get'], url_path='top-by-allegation')
+    def top_officers_by_allegation(self, request):
+        is_random = request.GET.get('random', 0)
+        limit = request.GET.get('limit', 48)
+        if is_random:
+            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('?')
+        else:
+            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('-complaint_percentile')
+
+        limit = min(len(queryset), limit)
+        queryset = queryset[:limit]
+        results = OfficerCardSerializer(queryset, many=True).data
+
+        return Response(results)

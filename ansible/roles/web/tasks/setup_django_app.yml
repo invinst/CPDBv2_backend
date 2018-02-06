@@ -27,6 +27,16 @@
   become: yes
   become_user: "{{ deploy_user }}"
 
+- name: Compute essential data
+  django_manage:
+    command: calculate_officer_percentile
+    app_path: "{{ project_path }}"
+    virtualenv: "{{ virtualenv_path }}"
+    settings: "{{ django_settings_module }}"
+  environment: "{{ django_environment }}"
+  become: yes
+  become_user: "{{ deploy_user }}"
+
 - name: Run rebuild_index for ES
   django_manage:
     command: rebuild_index

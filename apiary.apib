@@ -1611,6 +1611,39 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Top Officers by allegation [/activity-grid/]
+
+### Get Officer cards on top 1% complaint percentile [GET]
+
++ Parameters
+    + random (1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Jerome Finnigan",
+                "visual_token_background_color": "#90b1f5",
+                "birth_year": 1963,
+                "complaint_count": 90,
+                "complaint_percentile": 100.00,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 4
+            },
+            {
+                "id": 2,
+                "full_name": "Raymond Piwnicki",
+                "visual_token_background_color": "#aec9e8",
+                "birth_year": 1963,
+                "complaint_count": 99.63,
+                "complaint_percentile": None,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 6
+            }
+        ]
 
 ## CR [/cr/{crid}/]
 
@@ -1716,6 +1749,88 @@ This api require an api access token set in `Authorization` header. To get an ap
                     "url": "http://foo.com"
                 }
             ]
+        }
+
+
+## Search Aliases [/aliases/{aliasType}/{id}/]
+
+### Update search aliases for a search result [POST]
+
++ Parameters
+    + aliasType (string) - Can be officer/neighborhood/community/faq/report/unit
+    + id (number) - Primary key of search result
+
++ Request (application/json)
+
+        {
+            aliases: ["foo", "bar"]
+        }
+
++ Response 200 (application/json)
+
+        {
+            "message": "Aliases successfully updated",
+            "aliases": ["foo", "bar"]
+        }
+
++ Request (application/json)
+
+        {
+            aliases: ["an alias that is absolutely way too long"]
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": {
+                "aliases": ["Ensure this field has no more than 20 characters."]
+            }
+        }
+
+
+## CR Documents [/cr/{crid}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + crid (number) - number ID of Allegation
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
         }
 
 
@@ -1845,6 +1960,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#90b1f5",
                 "birth_year": 1963,
                 "complaint_count": 90,
+                "complaint_percentile": 88.55,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 4
@@ -1855,6 +1971,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#aec9e8",
                 "birth_year": 1963,
                 "complaint_count": 89,
+                "complaint_percentile": None,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 6
@@ -2068,4 +2185,30 @@ This api require an api access token set in `Authorization` header. To get an ap
               "id": "14026"
             }
           ]
+        }
+
+
+## City Summary [/v2/city-summary/]
+
+### Get city summary [GET]
+
++ Response 200 (application/json)
+
+        {
+            "allegation_count": 125735,
+            "most_common_complaints": [
+                {
+                    "name": "Operation/Personnel Violations",
+                    "count": 1
+                },
+                {
+                    "name": "Use Of Force",
+                    "count": 1
+                },
+                {
+                    "name": "Illegal Search",
+                    "count": 1
+                },
+            ],
+            "discipline_count": 6404
         }

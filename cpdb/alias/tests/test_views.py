@@ -31,9 +31,18 @@ class AliasViewSetTestCase(IndexMixin, APITestCase):
         )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'aliases': ['foo', 'bar']
-        })
+        expect(response.data).to.eq({'message': 'Aliases successfully updated', 'aliases': ['foo', 'bar']})
+
+    def test_update_with_invalid_aliases(self):
+        response = self.client.put(
+            reverse('api-v2:alias-detail', kwargs={'alias_type': 'officer', 'pk': '1'}),
+            {
+                'aliases': ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({'message': {'aliases': ['Ensure this field has no more than 20 characters.']}})
 
     def test_update_aliases_with_wrong_type(self):
 
@@ -45,7 +54,7 @@ class AliasViewSetTestCase(IndexMixin, APITestCase):
         )
 
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
-        expect(response.data).to.eq({'detail': 'Cannot find type "not an alias type"'})
+        expect(response.data).to.eq({'message': 'Cannot find type "not an alias type"'})
 
     def test_update_aliases_with_wrong_pk(self):
 
@@ -57,4 +66,4 @@ class AliasViewSetTestCase(IndexMixin, APITestCase):
         )
 
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
-        expect(response.data).to.eq({'detail': 'Cannot find any "officer" record with pk=2'})
+        expect(response.data).to.eq({'message': 'Cannot find any "officer" record with pk=2'})

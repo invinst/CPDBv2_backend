@@ -1,6 +1,5 @@
 from elasticsearch import NotFoundError
-from rest_framework import viewsets
-from rest_framework.exceptions import NotFound
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -18,22 +17,18 @@ class AliasViewSet(viewsets.ViewSet):
         try:
             indexer_class = INDEXER_MAPPINGS[alias_type]
         except KeyError:
-            raise NotFound('Cannot find type "{}"'.format(alias_type))
+            return Response({'message': 'Cannot find type "{}"'.format(alias_type)}, status=status.HTTP_404_NOT_FOUND)
 
         aliases = AliasSerializer(data=request.data)
-        aliases.is_valid(raise_exception=True)
+        if not aliases.is_valid():
+            return Response({'message': aliases.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_aliases = aliases.validated_data['aliases']
         try:
             set_aliases(indexer_class, pk, validated_aliases)
         except NotFoundError:
-            raise NotFound(
-                'Cannot find any "{alias_type}" record with pk={pk}'.format(
-                    pk=pk,
-                    alias_type=alias_type
-                )
-            )
+            return Response({
+                'message': 'Cannot find any "{alias_type}" record with pk={pk}'.format(pk=pk, alias_type=alias_type)
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({
-            'aliases': validated_aliases
-        })
+        return Response({'message': 'Aliases successfully updated', 'aliases': validated_aliases})

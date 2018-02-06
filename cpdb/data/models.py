@@ -1,13 +1,12 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import groupby
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F
-from django.db.models import Q
+from django.db.models import F, Q
 from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
 
@@ -18,6 +17,7 @@ from data.constants import (
     DISCIPLINE_CODES
 )
 from data.utils.aggregation import get_num_range_case
+from data.utils.calculations import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
 
@@ -269,6 +269,8 @@ class Officer(TaggableModel):
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
+    complaint_percentile = models.DecimalField(max_digits=6, decimal_places=3, null=True)
+
     def __str__(self):
         return self.full_name
 
@@ -308,6 +310,54 @@ class Officer(TaggableModel):
             return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit.unit_name
         except IndexError:
             return None
+
+    @staticmethod
+    def top_complaint_officers(top_percentile_value):
+        """ This is calculate top percentile of top_percentile_value
+        :return: list of (officer_id, percentile_value)
+        """
+        dataset_max_date, dateset_min_date = Allegation.objects.all().aggregate(
+            models.Max('incident_date'),
+            models.Min('incident_date')
+        ).values()
+        query = Officer.objects.filter(appointed_date__isnull=False)
+
+        query = query.annotate(
+            end_date=models.Case(
+                models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
+                default='resignation_date',
+                output_field=models.DateTimeField()),
+            start_date=models.Case(
+                models.When(appointed_date__lt=dateset_min_date, then=models.Value(dateset_min_date)),
+                default='appointed_date',
+                output_field=models.DateTimeField()),
+        )
+        query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
+
+        duration = query.annotate(
+            service_time=models.ExpressionWrapper(
+                F('end_date') - F('start_date'),
+                output_field=models.DurationField())
+        ).values_list('id', 'service_time')
+
+        query = OfficerAllegation.objects.all()
+        query = query.values('officer').annotate(
+            num_allegation=models.Count('officer')
+        ).order_by('-num_allegation')
+        officers_allegation_count = {
+            officer_id: num for officer_id, num in query.values_list('officer', 'num_allegation')
+        }
+
+        # TODO: change these to (mostly) ORM to improve performance
+        metrics = {}
+        for officer_id, service_time in duration:
+            allegation_count = 0
+            if officer_id in officers_allegation_count:
+                allegation_count = officers_allegation_count[officer_id]
+            metrics[officer_id] = allegation_count / (service_time.days / 365.0)
+
+        top_percentiles = percentile(metrics, 100.0 - top_percentile_value)
+        return top_percentiles
 
     @staticmethod
     def _group_and_sort_aggregations(data, key_name='name'):
@@ -520,6 +570,7 @@ class Area(TaggableModel):
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
+    median_income = models.CharField(max_length=100, null=True)
 
     @property
     def v1_url(self):
@@ -532,6 +583,12 @@ class Area(TaggableModel):
                                                                                    name=self.name)
 
         return settings.V1_URL
+
+
+class RacePopulation(models.Model):
+    race = models.CharField(max_length=255)
+    count = models.PositiveIntegerField()
+    area = models.ForeignKey(Area)
 
 
 class LineArea(models.Model):
