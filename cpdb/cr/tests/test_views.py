@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 
 from django.core.urlresolvers import reverse
 from django.contrib.gis.geos import Point
+from django.utils.timezone import now
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -221,7 +222,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_cr_new_documents(self):
-        three_months_ago = datetime.now() - timedelta(weeks=12)
+        six_month_ago = now() - timedelta(weeks=12)
         allegation = AllegationFactory(crid='111')
         AttachmentFileFactory(
             allegation=allegation,
@@ -230,7 +231,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url',
-            last_updated=three_months_ago + timedelta(days=10)
+            created_at=six_month_ago + timedelta(days=10)
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -238,7 +239,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            last_updated=three_months_ago + timedelta(days=5)
+            created_at=six_month_ago + timedelta(days=5)
         )
 
         allegation2 = AllegationFactory(crid='112')
@@ -249,7 +250,7 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            last_updated=three_months_ago + timedelta(days=6)
+            created_at=six_month_ago + timedelta(days=6)
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')

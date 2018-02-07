@@ -41,23 +41,23 @@ class Command(BaseCommand):
                 additional_info=parsed_link,
                 original_url=result.canonical_url,
                 preview_image_url=result.normal_image_url,
+                created_at=result.created_at,
                 last_updated=result.updated_at
             )
 
     def update_mismatched_existing_data(self, document, result):
-
         should_save = False
-        # Normalize document title if document originate from documentcloud
-        if document.title != result.title:
-            document.title = result.title
-            should_save = True
-        if document.preview_image_url != result.normal_image_url:
-            document.preview_image_url = result.normal_image_url
-            should_save = True
-        if document.last_updated != result.updated_at:
-            document.last_updated = result.updated_at
-            should_save = True
+        mapping_fields = [
+            ('title', 'title'),
+            ('preview_image_url', 'normal_image_url'),
+            ('last_updated', 'updated_at'),
+            ('created_at', 'created_at')
+        ]
 
+        for (model_field, doc_field) in mapping_fields:
+            if getattr(document, model_field) != getattr(result, doc_field):
+                setattr(document, model_field, getattr(result, doc_field))
+                should_save = True
         if should_save:
             document.save()
 

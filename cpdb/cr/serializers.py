@@ -84,5 +84,5 @@ class AttachmentRequestSerializer(serializers.ModelSerializer):
 
 class AllegationWithNewDocumentsSerializer(serializers.Serializer):
     crid = serializers.CharField()
-    latest_document = AttachmentFileSerializer(source='get_latest_document')
+    latest_document = AttachmentFileSerializer(source='get_newest_added_document')
     num_recent_documents = serializers.IntegerField()

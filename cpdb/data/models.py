@@ -640,31 +640,37 @@ class Allegation(models.Model):
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
         return self.attachment_files.filter(type_query & ~tag_query)
 
-    def get_latest_document(self):
-        return self.documents.latest('last_updated')
+    def get_newest_added_document(self):
+        return self.documents.exclude(created_at__isnull=True).latest('created_at')
 
     @staticmethod
     def get_cr_with_new_documents(limit):
-        start_datetime = now() - timedelta(weeks=12)
+        start_datetime = now() - timedelta(weeks=24)
         query = Allegation.objects.all()
         tag_query = Q(attachment_files__tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
 
+        # get 40 allegations which has newest documents
         query = query.annotate(
-            last_documents_updated=Max(
+            new_document_added=Max(
                 Case(
-                    When(type_query & ~tag_query, then='attachment_files__last_updated'),
+                    When(type_query & ~tag_query, then='attachment_files__created_at'),
                     output_field=DateTimeField()
                 )
             )
         )
-        query = query.filter(last_documents_updated__isnull=False).order_by('-last_documents_updated')[:limit]
+        query = query.filter(
+            new_document_added__gte=start_datetime,
+            new_document_added__isnull=False
+        ).order_by('-new_document_added')[:limit]
+
+        # count number of recent documents for each above allegation
         query = query.annotate(
             num_recent_documents=Count(
                 Case(
                     When(
                         type_query & ~tag_query &
-                        Q(attachment_files__last_updated__gte=start_datetime),
+                        Q(attachment_files__created_at__gte=start_datetime),
                         then=1),
                     output_field=IntegerField(),
                 )
@@ -824,7 +830,10 @@ class AttachmentFile(models.Model):
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+
+    # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(null=True)
     last_updated = models.DateTimeField(null=True)
 
     class Meta:

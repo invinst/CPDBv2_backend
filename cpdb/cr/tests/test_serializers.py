@@ -84,8 +84,3 @@ class CRSerializerTestCase(TestCase):
                 'extra_info': 'Badge 11111'
             }]
         }])
-
-
-class AllegationWithNewDocumentsSerializerTestCase(TestCase):
-    def test_serializer(self):
-        pass

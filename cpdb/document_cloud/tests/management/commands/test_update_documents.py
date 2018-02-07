@@ -102,6 +102,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 MagicMock(
                     title='new', id='id',
                     normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
                     updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)),
                 'CR')
 
@@ -125,6 +126,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                     id=1,
                     canonical_url='canonical_url',
                     normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
                     updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)
                 ), 'CR'
             )
@@ -148,8 +150,9 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 MagicMock(
                     title='new',
                     normal_image_url='normal_image.jpg',
-                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)),
-                'CR')
+                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0),
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0)
+                ), 'CR')
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
@@ -168,12 +171,14 @@ class UpdateDocumentsCommandTestCase(TestCase):
                     id=allegation.id,
                     canonical_url='canonical_url 1',
                     normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
                     updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)
                 ), 'CR'
             )
             command.process_documentcloud_result(
                 MagicMock(title='new - document', id=allegation.id, canonical_url='canonical_url 2',
-                          normal_image_url='normal_image.jpg', updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)
+                          normal_image_url='normal_image.jpg', updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0),
+                          created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
                           ), 'CR'
             )
 
