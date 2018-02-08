@@ -9,11 +9,9 @@ from rest_framework.fields import SkipField
 
 from data.models import Officer
 from cms.fields import (
-    RandomizerField, DateField, LinkField,
-    StringField, RichTextField, BaseCMSField
+    DateField, StringField, RichTextField, BaseCMSField
 )
 from cms.models import ReportPage, SlugPage, FAQPage
-from cms.randomizers import randomize, STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY
 
 
 class BaseCMSPageSerializer(serializers.Serializer):
@@ -257,75 +255,21 @@ class CreateFAQPageSerializer(IdPageSerializer):
 
 
 class LandingPageSerializer(SlugPageSerializer):
-    reporting_header = RichTextField(fake_value=['Recent Reports'], source='fields')
-    reporting_randomizer = RandomizerField(
-        source='fields', strategies=(STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS))
-    reports = serializers.SerializerMethodField(source='fields')
-    faqs = serializers.SerializerMethodField(source='fields')
-    faq_header = RichTextField(fake_value=['FAQ'], source='fields')
-    faq_randomizer = RandomizerField(
-        source='fields', strategies=(STRATEGY_LAST_N_ENTRIES, STRATEGY_LAST_N_DAYS, STRATEGY_STARRED_ONLY))
-    hero_title = RichTextField(fake_value=[
-        'The Citizens Police Data Project collects and publishes information about police accountability in Chicago.'],
-        source='fields')
-    hero_complaint_text = RichTextField(fake_value=['Explore Complaints against police officers'], source='fields')
-    hero_use_of_force_text = RichTextField(
-        fake_value=['View Use of Force incidents by police officers'],
-        source='fields')
-    vftg_header = RichTextField(fake_value=['CPDP WEEKLY'], source='fields')
-    vftg_date = DateField(source='fields')
-    vftg_link = LinkField(source='fields')
-    vftg_content = RichTextField(fake_value=['Real Independence for Police Oversight Agencies'], source='fields')
-    collaborate_header = RichTextField(fake_value=['Collaborate'], source='fields')
-    collaborate_content = RichTextField(
+    navbar_title = RichTextField(
+        fake_value=['Citizens Police Data Project'],
+        source='fields'
+    )
+    navbar_subtitle = RichTextField(
         fake_value=[
-            'We are collecting and publishing information that sheds light on police misconduct.',
-            'If you have documents or datasets you would like to publish, please email us, or learn more.'],
-        source='fields')
-    about_header = RichTextField(fake_value=['About'], source='fields')
-    about_content = RichTextField(
-        fake_value=[
-            'The Citizens Police Data Project houses police disciplinary information '
-            'obtained from the City of Chicago.',
-            'The information and stories we have collected here are intended as a resource for public oversight.'
-            ' Our aim is to create a new model of accountability between officers and citizens.'],
-        source='fields')
+            'collects and information',
+            'about police misconduct in Chicago.'
+        ],
+        source='fields'
+    )
 
     class Meta:
         slug = 'landing-page'
         model = SlugPage
-
-    def get_reports(self, obj):
-        randomizer = self.fields['reporting_randomizer']
-        attribute = randomizer.get_attribute(obj)
-        randomizer_value = randomizer.to_representation(attribute)['value']
-        reports = randomize(
-            ReportPage.objects,
-            randomizer_value['poolSize'],
-            8,
-            randomizer_value['selectedStrategyId'])
-
-        return {
-            'name': 'reports',
-            'type': 'randomized_list',
-            'value': ReportPageSerializer(reports, many=True).data
-        }
-
-    def get_faqs(self, obj):
-        randomizer = self.fields['faq_randomizer']
-        attribute = randomizer.get_attribute(obj)
-        randomizer_value = randomizer.to_representation(attribute)['value']
-        faqs = randomize(
-            FAQPage.objects.filter(fields__has_key='answer_value'),
-            randomizer_value['poolSize'],
-            5,
-            randomizer_value['selectedStrategyId'])
-
-        return {
-            'name': 'faqs',
-            'type': 'randomized_list',
-            'value': FAQPageSerializer(faqs, many=True).data
-        }
 
 
 def get_slug_page_serializer(cms_page):
