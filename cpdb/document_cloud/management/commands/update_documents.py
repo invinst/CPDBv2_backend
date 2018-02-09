@@ -28,7 +28,7 @@ class Command(BaseCommand):
         try:
             # update if current info is mismatched
             document = AttachmentFile.objects.get(allegation=allegation, url__icontains=result.id)
-            self.update_mismatched_existing_data(document, result)
+            self.update_mismatched_existing_data(document, result, document_type)
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', result.title)
             parsed_link = documentcloud_service.parse_link(result.canonical_url)
@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 last_updated=result.updated_at
             )
 
-    def update_mismatched_existing_data(self, document, result):
+    def update_mismatched_existing_data(self, document, result, document_type):
         should_save = False
         mapping_fields = [
             ('title', 'title'),
@@ -58,6 +58,10 @@ class Command(BaseCommand):
             if getattr(document, model_field) != getattr(result, doc_field):
                 setattr(document, model_field, getattr(result, doc_field))
                 should_save = True
+        if document.tag != document_type:
+            document.tag = document_type
+            should_save = True
+
         if should_save:
             document.save()
 
