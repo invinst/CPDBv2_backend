@@ -31,6 +31,7 @@ class CRIndexerTestCase(SimpleTestCase):
                 subcategory='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
             )
         ]
+        allegation.summary = 'Summary'
         allegation.complainants = [Mock(gender_display='Male', race='White', age=30)]
         allegation.point = Point(12, 21)
         allegation.incident_date = date(2017, 3, 21)
@@ -44,6 +45,7 @@ class CRIndexerTestCase(SimpleTestCase):
             officer=Mock(id=1, abbr_name='L. Skol', current_badge='11111')
         )])
 
+        allegation.category_names = ['Operation/Personnel Violations']
         allegation.audios = [Mock(title='CR audio', url='http://foo.com/')]
         allegation.videos = [Mock(title='CR video', url='http://foo.com/')]
         allegation.documents = [Mock(title='CR document', url='http://foo.com/')]
@@ -68,6 +70,8 @@ class CRIndexerTestCase(SimpleTestCase):
                 }
             ],
             'complainants': [{'gender': 'Male', 'race': 'White', 'age': 30}],
+            'category_names': ['Operation/Personnel Violations'],
+            'summary': 'Summary',
             'point': {'long': 12.0, 'lat': 21.0},
             'incident_date': '2017-03-21',
             'address': '3510 Michigan Ave, Chicago, IL 60653',
