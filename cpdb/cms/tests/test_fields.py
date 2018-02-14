@@ -73,6 +73,15 @@ class LinkFieldTestCase(SimpleTestCase):
                 'type': 'link',
                 'value': 'http://google.com'
             })
+        self.assertDictEqual(
+            self.link_field.fake_data(value='http://abc.xyz'),
+            {
+                'name': 'vftg_link',
+                'type': 'link',
+                'value': 'http://abc.xyz'
+            })
+        another_link_field = LinkField()
+        self.assertIsNotNone(another_link_field.fake_data()['value'])
 
     def test_to_internal_value(self):
         self.assertDictEqual(
