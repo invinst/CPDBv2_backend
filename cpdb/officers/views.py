@@ -6,7 +6,8 @@ from rest_framework.decorators import detail_route, list_route
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
-from officers.doc_types import OfficerSocialGraphDocType
+from officers.doc_types import OfficerSocialGraphDocType, OfficerPercentileDocType
+from officers.serializers import OfficerYearlyPercentileSerializer
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
 
@@ -74,6 +75,15 @@ class OfficersViewSet(viewsets.ViewSet):
         search_result = query.execute()
         try:
             return Response(search_result[0].to_dict()['graph'])
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @detail_route(methods=['get'], url_path='percentile')
+    def officer_percentile(self, request, pk):
+        query = OfficerPercentileDocType().search().query('term', officer_id=pk).sort('year')
+        results = query[:100].execute()
+        try:
+            return Response(OfficerYearlyPercentileSerializer(results, many=True).data)
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

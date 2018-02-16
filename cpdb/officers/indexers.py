@@ -1,8 +1,10 @@
+import csv
 from itertools import combinations
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
+from officers.doc_types import OfficerPercentileDocType
 from .doc_types import (
     OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType
 )
@@ -106,3 +108,30 @@ class SocialGraphIndexer(BaseIndexer):
             'links': self._links(coaccuseds),
             'nodes': [self._node(coaccused) for coaccused in coaccuseds]
         }}
+
+
+@register_indexer(app_name)
+class OfficerPercentileIndexer(BaseIndexer):
+    doc_type_klass = OfficerPercentileDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        # TODO: change read csv to import from database
+        results = []
+        with open('all_yearly_officer_percentile.csv') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                results.append(row)
+        return results
+
+    def extract_datum(self, datum):
+        return {
+            'officer_id': int(float(datum['UID'])),
+            'year': int(float(datum['TRR_date'])),
+            'percentile_alL_trr': float(datum['ALL_TRR']) * 100,
+            'percentile_civilian': float(datum['CIVILLIAN']) * 100,
+            'percentile_internal': float(datum['INTERNAL']) * 100,
+            'percentile_shooting': float(datum['SHOOTING']) * 100,
+            'percentile_taser': float(datum['TASER']) * 100,
+            'percentile_others': float(datum['OTHERS']) * 100
+        }
