@@ -13,6 +13,7 @@ class OfficerSummarySerializer(serializers.Serializer):
     badge = serializers.CharField(source='current_badge')
     gender = serializers.CharField(source='gender_display')
     complaint_records = serializers.SerializerMethodField()
+    birth_year = serializers.IntegerField()
 
     def get_complaint_records(self, obj):
         return {

@@ -47,6 +47,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'race': 'White',
             'badge': '123456',
             'gender': 'Male',
+            'birth_year':  1910,
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 1,
