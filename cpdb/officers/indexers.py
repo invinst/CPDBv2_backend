@@ -86,8 +86,8 @@ class SocialGraphIndexer(BaseIndexer):
     def _links(self, officers):
         links = []
         for o1, o2 in combinations(officers, 2):
-            qs = Allegation.objects.filter(officerallegation__officer=o1)\
-                    .filter(officerallegation__officer=o2).distinct()
+            qs = Allegation.objects.filter(officerallegation__officer=o1) \
+                .filter(officerallegation__officer=o2).distinct()
             if qs.exists():
                 link = {
                     'source': o1.id,
@@ -116,13 +116,16 @@ class OfficerPercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        # TODO: change read csv to import from database
-        results = []
-        with open('all_yearly_officer_percentile.csv') as csv_file:
-            reader = csv.DictReader(csv_file)
-            for row in reader:
-                results.append(row)
-        return results
+        try:
+            results = []
+            # TODO: compute from db when TRR is ready
+            with open('all_yearly_officer_percentile.csv') as csv_file:
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                    results.append(row)
+            return results
+        except IOError:
+            return []
 
     def extract_datum(self, datum):
         return {
