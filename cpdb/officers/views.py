@@ -82,10 +82,7 @@ class OfficersViewSet(viewsets.ViewSet):
     def officer_percentile(self, request, pk):
         query = OfficerPercentileDocType().search().query('term', officer_id=pk).sort('year')
         results = query[:100].execute()
-        try:
-            return Response(OfficerYearlyPercentileSerializer(results, many=True).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(OfficerYearlyPercentileSerializer(results, many=True).data)
 
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):

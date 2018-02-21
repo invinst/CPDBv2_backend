@@ -341,3 +341,28 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         with patch('data.models.Officer.objects') as mock_func:
             self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
+
+    def test_officer_percentile(self):
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:officers-percentile', kwargs={'pk': 1}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'officer_id': 1,
+            'year': 2006,
+            'percentile_alL_trr': '0.000',
+            'percentile_civilian': '67.000',
+            'percentile_internal': '0.020',
+            'percentile_shooting': '0.000',
+            'percentile_taser': '0.100',
+            'percentile_others': '0.000'
+        }, {
+            'officer_id': 1,
+            'year': 2007,
+            'percentile_alL_trr': '0.000',
+            'percentile_civilian': '77.000',
+            'percentile_internal': '0.020',
+            'percentile_shooting': '45.000',
+            'percentile_taser': '0.100',
+            'percentile_others': '0.000'
+        }])
