@@ -45,6 +45,8 @@ class AttachmentFileSerializer(serializers.Serializer):
 class CRSerializer(serializers.Serializer):
     crid = serializers.CharField()
     coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
+    summary = serializers.CharField()
+    category_names = serializers.ListField(child=serializers.CharField())
     complainants = ComplainantSerializer(many=True)
     point = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
@@ -74,6 +76,13 @@ class CRSerializer(serializers.Serializer):
             {'involved_type': involved_type, 'officers': officers}
             for involved_type, officers in results.iteritems()]
         return results
+
+
+class CRSummarySerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    category_names = serializers.ListField(child=serializers.CharField())
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    summary = serializers.CharField()
 
 
 class AttachmentRequestSerializer(serializers.ModelSerializer):

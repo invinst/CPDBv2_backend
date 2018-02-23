@@ -81,6 +81,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             'crid': '12345',
+            'category_names': ['Operation/Personnel Violations', 'Use of Force'],
+            'summary': '',
             'coaccused': [
                 {
                     'id': 123,
@@ -220,6 +222,23 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_request_document_with_invalid_allegation(self):
         response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_request_complaint_summary(self):
+        allegation = AllegationFactory(crid='11',
+                                       incident_date=datetime(2002, 2, 28),
+                                       summary='Summary')
+        category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(allegation=allegation,
+                                 allegation_category=category)
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:cr-complaint-summaries'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'crid': '11',
+            'category_names': ['Use of Force'],
+            'incident_date': '2002-02-28',
+            'summary': 'Summary'
+        }])
 
     def test_cr_new_documents(self):
         six_month_ago = now() - timedelta(weeks=12)

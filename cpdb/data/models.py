@@ -624,6 +624,17 @@ class Allegation(models.Model):
     is_officer_complaint = models.BooleanField(default=False)
 
     @property
+    def category_names(self):
+        query = self.officer_allegations.annotate(
+            name=models.Case(
+                models.When(allegation_category__isnull=True, then=models.Value('Unknown')),
+                default='allegation_category__category',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [result['name'] for result in query]
+        return results if results else ['Unknown']
+
+    @property
     def address(self):
         result = ''
         if self.add1 is not None:
