@@ -9,6 +9,11 @@ class OfficerSummaryDocType(DocType):
 
 
 @officers_index_alias.doc_type
+class OfficerMetricsDocType(DocType):
+    id = Integer()
+
+
+@officers_index_alias.doc_type
 class OfficerTimelineEventDocType(DocType):
     date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
     year_sort = Integer()

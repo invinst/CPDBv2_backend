@@ -32,6 +32,16 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.get_active_display()
 
 
+class OfficerMetricsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    allegation_count = serializers.IntegerField()
+    complaint_percentile = serializers.FloatField()
+    honorable_mention_count = serializers.IntegerField()
+    sustained_count = serializers.IntegerField()
+    discipline_count = serializers.IntegerField()
+    civilian_compliment_count = serializers.IntegerField()
+
+
 class CRTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='start_date', format=None)

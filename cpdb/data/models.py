@@ -301,6 +301,14 @@ class Officer(TaggableModel):
         return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
+    def honorable_mention_count(self):
+        return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
+
+    @property
+    def civilian_compliment_count(self):
+        return self.award_set.filter(award_type='Complimentary Letter').distinct().count()
+
+    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 

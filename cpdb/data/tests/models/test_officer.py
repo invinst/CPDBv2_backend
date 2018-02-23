@@ -5,7 +5,7 @@ from robber.expect import expect
 from data.models import Officer
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory,
-    OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory
+    OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory, AwardFactory
 )
 
 
@@ -44,6 +44,26 @@ class OfficerTestCase(TestCase):
 
     def test_gender_display_keyerror(self):
         expect(OfficerFactory(gender='').gender_display).to.equal('')
+
+    def test_honorable_mention_count(self):
+        officer = OfficerFactory()
+        AwardFactory(officer=officer, award_type='Other')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honorable Mention')
+        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+
+        expect(officer.honorable_mention_count).to.eq(2)
+
+    def test_civilian_compliment_count(self):
+        officer = OfficerFactory()
+        AwardFactory(officer=officer, award_type='Other')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honorable Mention')
+        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+
+        expect(officer.civilian_compliment_count).to.eq(2)
 
     def test_last_unit(self):
         officer = OfficerFactory()

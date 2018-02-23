@@ -7,7 +7,7 @@ from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType
-from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
+from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerMetricsDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
 
 _ALLOWED_FILTERS = [
@@ -22,6 +22,15 @@ class OfficersViewSet(viewsets.ViewSet):
     @detail_route(methods=['get'])
     def summary(self, request, pk):
         query = OfficerSummaryDocType().search().query('term', id=pk)
+        search_result = query.execute()
+        try:
+            return Response(search_result[0].to_dict())
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @detail_route(methods=['get'])
+    def metrics(self, request, pk):
+        query = OfficerMetricsDocType().search().query('term', id=pk)
         search_result = query.execute()
         try:
             return Response(search_result[0].to_dict())

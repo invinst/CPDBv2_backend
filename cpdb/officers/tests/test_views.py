@@ -10,7 +10,7 @@ from robber import expect
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    ComplainantFactory, AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory
+    ComplainantFactory, AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
 )
 from .mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
@@ -21,7 +21,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         officer = OfficerFactory(
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE
+            active=ACTIVE_YES_CHOICE, birth_year=1910
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
@@ -83,6 +83,44 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
     def test_summary_no_match(self):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def officer_allegation_helper(self, officer, final_finding, final_outcome):
+        allegation = AllegationFactory()
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation, allegation_category=allegation_category,
+            final_finding=final_finding, final_outcome=final_outcome, start_date=date(2000, 1, 1)
+        )
+
+    def test_metrics(self):
+        officer = OfficerFactory(id=123, complaint_percentile=90.0)
+        self.officer_allegation_helper(officer=officer, final_finding='NS', final_outcome='027')
+        self.officer_allegation_helper(officer=officer, final_finding='NS', final_outcome='028')
+        self.officer_allegation_helper(officer=officer, final_finding='SU', final_outcome='600')
+
+        AwardFactory(officer=officer, award_type='Other')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honorable Mention')
+        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 123}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': 123,
+            'allegation_count': 3,
+            'complaint_percentile': 90.0,
+            'honorable_mention_count': 2,
+            'sustained_count': 1,
+            'discipline_count': 2,
+            'civilian_compliment_count': 2
+        })
+
+    def test_metrics_no_match(self):
+        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_timeline_items(self):

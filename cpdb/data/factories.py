@@ -11,7 +11,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation)
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -103,6 +103,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
+    final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
@@ -190,3 +191,17 @@ class PoliceWitnessFactory(factory.django.DjangoModelFactory):
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'Black'
     officer = factory.SubFactory(OfficerFactory)
+
+
+class AwardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Award
+
+    officer = factory.SubFactory(OfficerFactory)
+    award_type = factory.LazyFunction(lambda: random.choice(['Honorable Mention', 'Complimentary Letter']))
+    incident_start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    incident_end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    request_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    rank = factory.LazyFunction(lambda: fake.word())
+    last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade())

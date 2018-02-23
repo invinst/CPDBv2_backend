@@ -10,7 +10,7 @@ from robber import expect
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer, SocialGraphIndexer
+    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer
 )
 
 
@@ -33,6 +33,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
         officer.race = 'White'
         officer.current_badge = '123456'
         officer.gender_display = 'Male'
+        officer.birth_year = 1910
         officer.appointed_date = date(2017, 2, 27)
         officer.resignation_date = date(2017, 12, 27)
         officer.get_active_display = Mock(return_value='Active')
@@ -91,6 +92,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_appt': '2017-02-27',
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
+            'birth_year': 1910,
             'complaint_records': {
                 'count': 1,
                 'sustained_count': 0,
@@ -122,6 +124,38 @@ class OfficersIndexerTestCase(SimpleTestCase):
                     }
                 ]
             }
+        })
+
+
+class OfficerMetricsIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer = Mock()
+
+        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
+            expect(OfficerMetricsIndexer().get_queryset()).to.eq([officer])
+
+    def test_extract_datum(self):
+        officer = Mock()
+        officer.id = 123
+        officer.full_name = 'Alex Mack'
+        officer.appointed_date = date(2017, 2, 27)
+        officer.get_active_display = Mock(return_value='Active')
+        officer.allegation_count = 1
+        officer.sustained_count = 0
+        officer.complaint_percentile = 90.0
+        officer.honorable_mention_count = 2
+        officer.sustained_count = 1
+        officer.discipline_count = 2
+        officer.civilian_compliment_count = 2
+
+        self.assertDictEqual(OfficerMetricsIndexer().extract_datum(officer), {
+            'id': 123,
+            'allegation_count': 1,
+            'complaint_percentile': 90.0,
+            'honorable_mention_count': 2,
+            'sustained_count': 1,
+            'discipline_count': 2,
+            'civilian_compliment_count': 2
         })
 
 
