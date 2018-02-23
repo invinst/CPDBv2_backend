@@ -19,9 +19,9 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         landing_page_serializer.is_valid()
         landing_page_serializer.save()
         landing_page = SlugPage.objects.first()
-        landing_page.fields['faq_header_type'] = 'plain_text'
-        landing_page.fields.pop('vftg_content_type')
-        landing_page.fields.pop('vftg_content_value')
+        landing_page.fields['navbar_title_type'] = 'plain_text'
+        landing_page.fields.pop('navbar_subtitle_type')
+        landing_page.fields.pop('navbar_subtitle_value')
         landing_page.save()
 
         report_page_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
@@ -38,8 +38,8 @@ class CorrectTypeInDatabaseCommandTestCase(TestCase):
         landing_page.refresh_from_db()
         self.assertEqual(report.fields['title_type'], 'rich_text')
         self.assertTrue('excerpt_type' in report.fields)
-        self.assertEqual(landing_page.fields['faq_header_type'], 'rich_text')
-        self.assertTrue('vftg_content_type' in landing_page.fields)
-        self.assertTrue('vftg_content_value' in landing_page.fields)
+        self.assertEqual(landing_page.fields['navbar_title_type'], 'rich_text')
+        self.assertTrue('navbar_subtitle_type' in landing_page.fields)
+        self.assertTrue('navbar_subtitle_value' in landing_page.fields)
         self.assertEqual(faq.fields['question_type'], 'rich_text')
         self.assertTrue('answer_type' in faq.fields)
