@@ -46,9 +46,13 @@ class CRIndexerTestCase(SimpleTestCase):
         )])
 
         allegation.category_names = ['Operation/Personnel Violations']
-        allegation.audios = [Mock(title='CR audio', url='http://foo.com/')]
-        allegation.videos = [Mock(title='CR video', url='http://foo.com/')]
-        allegation.documents = [Mock(title='CR document', url='http://foo.com/')]
+        allegation.audios = [Mock(title='CR audio', url='http://foo.com/', preview_image_url=None)]
+        allegation.videos = [Mock(title='CR video', url='http://foo.com/', preview_image_url=None)]
+        allegation.documents = [Mock(
+            title='CR document',
+            url='http://foo.com/',
+            preview_image_url='http://web.com/image'
+        )]
 
         result = CRIndexer().extract_datum(allegation)
         expect(result).to.eq({
@@ -86,19 +90,22 @@ class CRIndexerTestCase(SimpleTestCase):
             'audios': [
                 {
                     'title': 'CR audio',
-                    'url': 'http://foo.com/'
+                    'url': 'http://foo.com/',
+                    'preview_image_url': None
                 }
             ],
             'videos': [
                 {
                     'title': 'CR video',
-                    'url': 'http://foo.com/'
+                    'url': 'http://foo.com/',
+                    'preview_image_url': None
                 }
             ],
             'documents': [
                 {
                     'title': 'CR document',
-                    'url': 'http://foo.com/'
+                    'url': 'http://foo.com/',
+                    'preview_image_url': 'http://web.com/image'
                 }
             ]
         })

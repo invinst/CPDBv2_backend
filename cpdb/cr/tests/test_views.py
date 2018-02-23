@@ -1,7 +1,8 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from django.core.urlresolvers import reverse
 from django.contrib.gis.geos import Point
+from django.utils.timezone import now
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -162,7 +163,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             'documents': [
                 {
                     'title': 'CR document',
-                    'url': 'http://cr-document.com/'
+                    'url': 'http://cr-document.com/',
+                    'preview_image_url': None
                 }
             ]
         })
@@ -237,3 +239,59 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             'incident_date': '2002-02-28',
             'summary': 'Summary'
         }])
+
+    def test_cr_new_documents(self):
+        six_month_ago = now() - timedelta(weeks=12)
+        allegation = AllegationFactory(crid='111')
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='CR document 1',
+            tag='CR',
+            url='http://cr-document.com/1',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url',
+            created_at=six_month_ago + timedelta(days=10)
+        )
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='CR document 2',
+            tag='CR',
+            url='http://cr-document.com/2',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            created_at=six_month_ago + timedelta(days=5)
+        )
+
+        allegation2 = AllegationFactory(crid='112')
+        AttachmentFileFactory(
+            allegation=allegation2,
+            title='CR document 3',
+            tag='CR',
+            url='http://cr-document.com/3',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url3',
+            created_at=six_month_ago + timedelta(days=6)
+        )
+
+        AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
+        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                "crid": "111",
+                "latest_document": {
+                    "title": "CR document 1",
+                    "url": "http://cr-document.com/1",
+                    "preview_image_url": "http://preview.com/url"
+                },
+                "num_recent_documents": 2
+            },
+            {
+                "crid": "112",
+                "latest_document": {
+                    "title": "CR document 3",
+                    "url": "http://cr-document.com/3",
+                    "preview_image_url": "http://preview.com/url3"
+                },
+                "num_recent_documents": 1
+            },
+        ])
