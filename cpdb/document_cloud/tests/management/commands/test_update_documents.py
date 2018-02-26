@@ -1,3 +1,4 @@
+import datetime
 from django.core import management
 from django.test import TestCase
 from mock import patch, MagicMock, call
@@ -97,7 +98,13 @@ class UpdateDocumentsCommandTestCase(TestCase):
         with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
             mock_service().parse_crid_from_title = MagicMock(return_value=allegation.crid)
 
-            command.process_documentcloud_result(MagicMock(title='new', id='id'), 'CR')
+            command.process_documentcloud_result(
+                MagicMock(
+                    title='new', id='id',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
+                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)),
+                'CR')
 
             expect(AttachmentFile.objects.all().count()).to.eq(1)
             expect(AttachmentFile.objects.all()[0].title).to.eq('new')
@@ -114,7 +121,14 @@ class UpdateDocumentsCommandTestCase(TestCase):
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
             command.process_documentcloud_result(
-                MagicMock(title='new', id=1, canonical_url='canonical_url'), 'CR'
+                MagicMock(
+                    title='new',
+                    id=1,
+                    canonical_url='canonical_url',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
+                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)
+                ), 'CR'
             )
 
             expect(AttachmentFile.objects.all().count()).to.eq(1)
@@ -132,7 +146,13 @@ class UpdateDocumentsCommandTestCase(TestCase):
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
-            command.process_documentcloud_result(MagicMock(title='new'), 'CR')
+            command.process_documentcloud_result(
+                MagicMock(
+                    title='new',
+                    normal_image_url='normal_image.jpg',
+                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0),
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0)
+                ), 'CR')
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
@@ -146,10 +166,20 @@ class UpdateDocumentsCommandTestCase(TestCase):
             mock_service.parse_link = MagicMock(return_value={})
 
             command.process_documentcloud_result(
-                MagicMock(title='new-document', id=allegation.id, canonical_url='canonical_url 1'), 'CR'
+                MagicMock(
+                    title='new-document',
+                    id=allegation.id,
+                    canonical_url='canonical_url 1',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
+                    updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0)
+                ), 'CR'
             )
             command.process_documentcloud_result(
-                MagicMock(title='new - document', id=allegation.id, canonical_url='canonical_url 2'), 'CR'
+                MagicMock(title='new - document', id=allegation.id, canonical_url='canonical_url 2',
+                          normal_image_url='normal_image.jpg', updated_at=datetime.datetime(2016, 1, 1, 0, 0, 0),
+                          created_at=datetime.datetime(2015, 12, 31, 0, 0, 0),
+                          ), 'CR'
             )
 
             media = AttachmentFile.objects.first()

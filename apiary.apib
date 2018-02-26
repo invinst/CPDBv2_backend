@@ -1611,6 +1611,64 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Top Officers by allegation [/activity-grid/]
+
+### Get Officer cards on top 1% complaint percentile [GET]
+
++ Parameters
+    + random (1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Jerome Finnigan",
+                "visual_token_background_color": "#90b1f5",
+                "birth_year": 1963,
+                "complaint_count": 90,
+                "complaint_percentile": 100.00,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 4
+            },
+            {
+                "id": 2,
+                "full_name": "Raymond Piwnicki",
+                "visual_token_background_color": "#aec9e8",
+                "birth_year": 1963,
+                "complaint_count": 99.63,
+                "complaint_percentile": None,
+                "gender": "Male"
+                "race": "White",
+                "sustained_count": 6
+            }
+        ]
+
+## CR [/cr/complaint-summaries/]
+
+### List recent updated Summary of CR [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "crid": "1080158",
+                "category_names": [
+                    "Unknown"
+                ],
+                "incident_date": "2016-04-18",
+                "summary": "Officer A was off-duty and inside her residence when she reportedly ..."
+            },
+            {
+                "crid": "1079959",
+                "category_names": [
+                    "Unknown"
+                ],
+                "incident_date": "2016-04-05",
+                "summary": "Subject and the off-duty Officer A had a motor vehicle accident in which Subject ..."
+            }
+        ]
 
 ## CR [/cr/{crid}/]
 
@@ -1800,6 +1858,36 @@ This api require an api access token set in `Authorization` header. To get an ap
             "message": "Please enter a valid email"
         }
 
+## CR Documents [/cr/list-by-new-document]
+
+### List document which has new documents (in document-cloud) [GET]
+
++ Parameters
+    + limit (number) - number of allegations which has new document
+
++ Response 200 (application/json)
+        [
+            {
+                "crid": "111",
+                "latest_document": {
+                    "title": "CR document 1",
+                    "url": "http://cr-document.com/1",
+                    "preview_image_url": "http://preview.com/url"
+                },
+                "num_recent_documents": 2
+            },
+            {
+                "crid": "112",
+                "latest_document": {
+                    "title": "CR document 3",
+                    "url": "http://cr-document.com/3",
+                    "preview_image_url": "http://preview.com/url3"
+                },
+                "num_recent_documents": 1
+            },
+        ]
+
+
 
 ## Unit summary [/units/{unit_id}/summary]
 
@@ -1927,6 +2015,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#90b1f5",
                 "birth_year": 1963,
                 "complaint_count": 90,
+                "complaint_percentile": 88.55,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 4
@@ -1937,6 +2026,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "visual_token_background_color": "#aec9e8",
                 "birth_year": 1963,
                 "complaint_count": 89,
+                "complaint_percentile": None,
                 "gender": "Male"
                 "race": "White",
                 "sustained_count": 6
