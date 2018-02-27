@@ -6,9 +6,10 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q
+from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
 from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
+from django.utils.timezone import now
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -623,6 +624,17 @@ class Allegation(models.Model):
     is_officer_complaint = models.BooleanField(default=False)
 
     @property
+    def category_names(self):
+        query = self.officer_allegations.annotate(
+            name=models.Case(
+                models.When(allegation_category__isnull=True, then=models.Value('Unknown')),
+                default='allegation_category__category',
+                output_field=models.CharField()))
+        query = query.values('name').distinct()
+        results = [result['name'] for result in query]
+        return results if results else ['Unknown']
+
+    @property
     def address(self):
         result = ''
         if self.add1 is not None:
@@ -689,6 +701,44 @@ class Allegation(models.Model):
         tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
         return self.attachment_files.filter(type_query & ~tag_query)
+
+    def get_newest_added_document(self):
+        return self.documents.exclude(created_at__isnull=True).latest('created_at')
+
+    @staticmethod
+    def get_cr_with_new_documents(limit):
+        start_datetime = now() - timedelta(weeks=24)
+        query = Allegation.objects.all()
+        tag_query = Q(attachment_files__tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
+        type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
+
+        # get 40 allegations which has newest documents
+        query = query.annotate(
+            new_document_added=Max(
+                Case(
+                    When(type_query & ~tag_query, then='attachment_files__created_at'),
+                    output_field=DateTimeField()
+                )
+            )
+        )
+        query = query.filter(
+            new_document_added__gte=start_datetime,
+            new_document_added__isnull=False
+        ).order_by('-new_document_added')[:limit]
+
+        # count number of recent documents for each above allegation
+        query = query.annotate(
+            num_recent_documents=Count(
+                Case(
+                    When(
+                        type_query & ~tag_query &
+                        Q(attachment_files__created_at__gte=start_datetime),
+                        then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        return query
 
     @property
     def v2_to(self):
@@ -842,6 +892,11 @@ class AttachmentFile(models.Model):
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+
+    # Document cloud information
+    preview_image_url = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(null=True)
+    last_updated = models.DateTimeField(null=True)
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)
