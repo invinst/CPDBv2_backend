@@ -733,8 +733,6 @@ class OfficerAllegation(models.Model):
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
-    gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     officer = models.ForeignKey(Officer, null=True)
 
 
@@ -793,8 +791,8 @@ class AttachmentFile(models.Model):
 class Award(models.Model):
     officer = models.ForeignKey(Officer)
     award_type = models.CharField(max_length=255)
-    incident_start_date = models.DateField(null=True)
-    incident_end_date = models.DateField(null=True)
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
     current_status = models.CharField(max_length=20)
     request_date = models.DateField()
     rank = models.CharField(max_length=100, blank=True)
