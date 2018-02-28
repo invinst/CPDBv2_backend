@@ -12,14 +12,16 @@ class SearchTermItemInline(SortableTabularInline):
 
 @admin.register(SearchTermCategory)
 class SearchTermCategoryAdmin(SortableAdmin):
-    list_display = ('name', 'order_number')
+    list_display = ('name', 'description', 'order_number')
     ordering = ('order_number',)
     inlines = [SearchTermItemInline]
 
 
 @admin.register(SearchTermItem)
 class SearchTermItemAdmin(SortableAdmin):
-    list_display = ('slug', 'name', 'category', 'call_to_action_type', 'description', 'order_number')
+    list_display = (
+        'slug', 'name', 'category', 'call_to_action_type', 'call_to_action_text', 'description', 'order_number'
+    )
     list_filter = ('category', 'call_to_action_type')
     search_fields = ('name', 'slug', 'description')
     ordering = ('order_number',)

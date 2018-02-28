@@ -1,7 +1,8 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from django.core.urlresolvers import reverse
 from django.contrib.gis.geos import Point
+from django.utils.timezone import now
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -80,6 +81,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             'crid': '12345',
+            'category_names': ['Operation/Personnel Violations', 'Use of Force'],
+            'summary': '',
             'coaccused': [
                 {
                     'id': 123,
@@ -160,7 +163,8 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
             'documents': [
                 {
                     'title': 'CR document',
-                    'url': 'http://cr-document.com/'
+                    'url': 'http://cr-document.com/',
+                    'preview_image_url': None
                 }
             ]
         })
@@ -218,3 +222,76 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_request_document_with_invalid_allegation(self):
         response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_request_complaint_summary(self):
+        allegation = AllegationFactory(crid='11',
+                                       incident_date=datetime(2002, 2, 28),
+                                       summary='Summary')
+        category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(allegation=allegation,
+                                 allegation_category=category)
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:cr-complaint-summaries'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'crid': '11',
+            'category_names': ['Use of Force'],
+            'incident_date': '2002-02-28',
+            'summary': 'Summary'
+        }])
+
+    def test_cr_new_documents(self):
+        six_month_ago = now() - timedelta(weeks=12)
+        allegation = AllegationFactory(crid='111')
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='CR document 1',
+            tag='CR',
+            url='http://cr-document.com/1',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url',
+            created_at=six_month_ago + timedelta(days=10)
+        )
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='CR document 2',
+            tag='CR',
+            url='http://cr-document.com/2',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            created_at=six_month_ago + timedelta(days=5)
+        )
+
+        allegation2 = AllegationFactory(crid='112')
+        AttachmentFileFactory(
+            allegation=allegation2,
+            title='CR document 3',
+            tag='CR',
+            url='http://cr-document.com/3',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url3',
+            created_at=six_month_ago + timedelta(days=6)
+        )
+
+        AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
+        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                "crid": "111",
+                "latest_document": {
+                    "title": "CR document 1",
+                    "url": "http://cr-document.com/1",
+                    "preview_image_url": "http://preview.com/url"
+                },
+                "num_recent_documents": 2
+            },
+            {
+                "crid": "112",
+                "latest_document": {
+                    "title": "CR document 3",
+                    "url": "http://cr-document.com/3",
+                    "preview_image_url": "http://preview.com/url3"
+                },
+                "num_recent_documents": 1
+            },
+        ])
