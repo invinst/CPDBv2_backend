@@ -8,6 +8,7 @@ class OfficerCardSerializer(serializers.Serializer):
     complaint_count = serializers.IntegerField(source='allegation_count')
     sustained_count = serializers.IntegerField()
     birth_year = serializers.IntegerField()
+    complaint_percentile = serializers.FloatField()
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
 

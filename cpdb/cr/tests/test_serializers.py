@@ -21,6 +21,7 @@ class CRSerializerTestCase(TestCase):
         obj.involvement_set.filter = Mock(return_value=[])
         obj.officer_allegations = []
         obj.complainants = []
+        obj.category_names = []
         obj.documents = []
         obj.videos = []
         obj.audios = []
@@ -39,6 +40,7 @@ class CRSerializerTestCase(TestCase):
         obj.involvement_set.filter = Mock(return_value=[])
         obj.officer_allegations = []
         obj.complainants = []
+        obj.category_names = []
         obj.documents = []
         obj.videos = []
         obj.audios = []
@@ -56,6 +58,7 @@ class CRSerializerTestCase(TestCase):
         obj = Mock()
         obj.officer_allegations = []
         obj.complainants = []
+        obj.category_names = []
         obj.documents = []
         obj.videos = []
         obj.audios = []

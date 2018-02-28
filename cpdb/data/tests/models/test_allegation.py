@@ -3,8 +3,8 @@ from django.test.testcases import TestCase
 from robber.expect import expect
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AttachmentFileFactory
-)
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AttachmentFileFactory,
+    AllegationCategoryFactory)
 from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
 
 
@@ -81,6 +81,18 @@ class AllegationTestCase(TestCase):
         )
         expect(allegation.documents.count()).to.eq(1)
         expect(allegation.documents[0].id).to.eq(5)
+
+    def test_get_category_names(self):
+        allegation = AllegationFactory()
+
+        category1 = AllegationCategoryFactory(category='Use of Force')
+        category2 = AllegationCategoryFactory(category='Illegal Search')
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category1)
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
+        expect(allegation.category_names).to.eq(['Illegal Search', 'Use of Force'])
+
+        OfficerAllegationFactory(allegation=allegation)
+        expect(allegation.category_names).to.eq(['Illegal Search', 'Unknown', 'Use of Force'])
 
     def test_complainant_races(self):
         allegation = AllegationFactory()
