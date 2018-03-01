@@ -1645,6 +1645,31 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## CR [/cr/complaint-summaries/]
+
+### List recent updated Summary of CR [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "crid": "1080158",
+                "category_names": [
+                    "Unknown"
+                ],
+                "incident_date": "2016-04-18",
+                "summary": "Officer A was off-duty and inside her residence when she reportedly ..."
+            },
+            {
+                "crid": "1079959",
+                "category_names": [
+                    "Unknown"
+                ],
+                "incident_date": "2016-04-05",
+                "summary": "Subject and the off-duty Officer A had a motor vehicle accident in which Subject ..."
+            }
+        ]
+
 ## CR [/cr/{crid}/]
 
 ### Get CR [GET]
@@ -1832,6 +1857,36 @@ This api require an api access token set in `Authorization` header. To get an ap
         {
             "message": "Please enter a valid email"
         }
+
+## CR Documents [/cr/list-by-new-document]
+
+### List document which has new documents (in document-cloud) [GET]
+
++ Parameters
+    + limit (number) - number of allegations which has new document
+
++ Response 200 (application/json)
+        [
+            {
+                "crid": "111",
+                "latest_document": {
+                    "title": "CR document 1",
+                    "url": "http://cr-document.com/1",
+                    "preview_image_url": "http://preview.com/url"
+                },
+                "num_recent_documents": 2
+            },
+            {
+                "crid": "112",
+                "latest_document": {
+                    "title": "CR document 3",
+                    "url": "http://cr-document.com/3",
+                    "preview_image_url": "http://preview.com/url3"
+                },
+                "num_recent_documents": 1
+            },
+        ]
+
 
 
 ## Unit summary [/units/{unit_id}/summary]
