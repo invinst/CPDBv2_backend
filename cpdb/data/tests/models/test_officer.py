@@ -4,8 +4,8 @@ from robber.expect import expect
 
 from data.models import Officer
 from data.factories import (
-    OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory,
-    OfficerAllegationFactory, AllegationCategoryFactory, ComplainantFactory, AwardFactory
+    OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
+    OfficerAllegationFactory, AwardFactory
 )
 
 

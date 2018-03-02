@@ -10,7 +10,7 @@ from robber import expect
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    ComplainantFactory, AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
+    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
 )
 from .mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE

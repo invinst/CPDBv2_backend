@@ -1,13 +1,11 @@
 import os
 from datetime import datetime, timedelta
-from itertools import groupby
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
-from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
 from django.utils.timezone import now
 
