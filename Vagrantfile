@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder ".", "/CPDB/CPDBv2_backend", owner: "vagrant", group: "vagrant"
 
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "4096"
+    vb.memory = "8192"
   end
 
   config.vm.provision "ansible" do |ansible|
