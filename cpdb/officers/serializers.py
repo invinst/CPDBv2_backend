@@ -12,21 +12,7 @@ class OfficerSummarySerializer(serializers.Serializer):
     race = serializers.CharField()
     badge = serializers.CharField(source='current_badge')
     gender = serializers.CharField(source='gender_display')
-    complaint_records = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField()
-
-    def get_complaint_records(self, obj):
-        return {
-            'count': obj.allegation_count,
-            'sustained_count': obj.sustained_count,
-            'facets': [
-                {'name': 'category', 'entries': obj.complaint_category_aggregation},
-                {'name': 'complainant race', 'entries': obj.complainant_race_aggregation},
-                {'name': 'complainant age', 'entries': obj.complainant_age_aggregation},
-                {'name': 'complainant gender', 'entries': obj.complainant_gender_aggregation},
-            ],
-            'items': obj.total_complaints_aggregation
-        }
 
     def get_active(self, obj):
         return obj.get_active_display()

@@ -26,7 +26,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
-        ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
             officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU',
@@ -48,37 +47,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'badge': '123456',
             'gender': 'Male',
             'birth_year':  1910,
-            'complaint_records': {
-                'count': 1,
-                'sustained_count': 1,
-                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
-                'facets': [
-                    {
-                        'name': 'category',
-                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant gender',
-                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    }
-                ]
-            }
         })
 
     def test_summary_no_match(self):
