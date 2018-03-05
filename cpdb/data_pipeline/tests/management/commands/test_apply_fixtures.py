@@ -70,7 +70,7 @@ class ApplyFixturesCommandTestCase(TestCase):
             call('fixtures', '002_allegation', 'tmp_file'),
             call('fixtures', '003_investigatorallegation', 'tmp_file')
             ])
-        patched_call_command.assert_called_with('loaddata', 'tmp_file')
+        patched_call_command.to.be.called_with('loaddata', 'tmp_file')
         expect(AppliedFixture.objects.count()).to.eq(3)
 
     @patch('data_pipeline.management.commands.apply_fixtures.os.remove')
@@ -96,7 +96,7 @@ class ApplyFixturesCommandTestCase(TestCase):
             call('fixtures', '001_investigator', 'tmp_file'),
             call('fixtures', '002_allegation', 'tmp_file')
             ])
-        patched_call_command.assert_called_with('loaddata', 'tmp_file')
+        patched_call_command.to.be.called_with('loaddata', 'tmp_file')
         expect(AppliedFixture.objects.count()).to.eq(2)
 
     @patch('data_pipeline.management.commands.apply_fixtures.os.remove')
@@ -114,6 +114,6 @@ class ApplyFixturesCommandTestCase(TestCase):
     def test_handle_command_error_gracefully(self, _, patched_call_command, __, ___):
         patched_call_command.side_effect = CommandError('Format not right')
         call_command('apply_fixtures')
-        mock_get_blob_to_path.assert_called_with('fixtures', '001_investigator', 'tmp_file')
-        patched_call_command.assert_called_with('loaddata', 'tmp_file')
+        mock_get_blob_to_path.to.be.called_with('fixtures', '001_investigator', 'tmp_file')
+        patched_call_command.to.be.called_with('loaddata', 'tmp_file')
         expect(AppliedFixture.objects.count()).to.eq(0)
