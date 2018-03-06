@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0027_rename_award_fields'),
+        ('data', '0030_rename_award_fields'),
     ]
 
     operations = [

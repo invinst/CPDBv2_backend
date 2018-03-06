@@ -261,6 +261,7 @@ class Officer(TaggableModel):
     first_name = models.CharField(max_length=255, db_index=True)
     last_name = models.CharField(max_length=255, db_index=True)
     middle_initial = models.CharField(max_length=5, null=True)
+    middle_initial2 = models.CharField(max_length=5, null=True)
     suffix_name = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
@@ -935,3 +936,16 @@ class AttachmentRequest(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(AttachmentRequest, self).save(*args, **kwargs)
+
+
+class Salary(models.Model):
+    pay_grade = models.CharField(max_length=16)
+    rank = models.CharField(max_length=64, null=True)
+    salary = models.PositiveIntegerField()
+    employee_status = models.CharField(max_length=32)
+    org_hire_date = models.DateField(null=True)
+    spp_date = models.DateField(null=True)
+    start_date = models.DateField(null=True)
+    year = models.PositiveSmallIntegerField()
+    age_at_hire = models.PositiveSmallIntegerField(null=True)
+    officer = models.ForeignKey(Officer)
