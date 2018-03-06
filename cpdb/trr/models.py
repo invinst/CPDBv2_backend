@@ -46,12 +46,12 @@ WC_SEVERE_CROSS_WIND = 'SEVERE CROSS WIND'
 WC_FOG_SMOKE_HAZE = 'FOG/SMOKE/HAZE'
 
 WEATHER_CONDITION_CHOICES = (
-    (WC_OTHER, 'Other')
-    (WC_CLEAR, 'Clear')
-    (WC_SNOW, 'Snow')
-    (WC_RAIN, 'Rain')
-    (WC_SLEET_HAIL, 'Sleet/hail')
-    (WC_SEVERE_CROSS_WIND, 'Severe Cross Wind')
+    (WC_OTHER, 'Other'),
+    (WC_CLEAR, 'Clear'),
+    (WC_SNOW, 'Snow'),
+    (WC_RAIN, 'Rain'),
+    (WC_SLEET_HAIL, 'Sleet/hail'),
+    (WC_SEVERE_CROSS_WIND, 'Severe Cross Wind'),
     (WC_FOG_SMOKE_HAZE, 'Fog/smoke/haze')
 )
 
@@ -87,14 +87,13 @@ class TRR(models.Model):
     total_number_of_shots = models.PositiveSmallIntegerField(null=True)
     firearm_used = models.NullBooleanField()
     number_of_officers_using_firearm = models.PositiveSmallIntegerField(null=True)
-    # officer = models.ForeignKey('data.Officer')
-    # officer_assigned_beat = models.CharField(max_length=255, null=True)
-    # officer_duty_status = models.NullBooleanField()
-    # officer_in_uniform = models.NullBooleanField()
+    officer = models.ForeignKey('data.Officer', null=True)
+    officer_assigned_beat = models.CharField(max_length=16, null=True)
+    officer_duty_status = models.NullBooleanField()
+    officer_in_uniform = models.NullBooleanField()
     officer_injured = models.NullBooleanField()
-    # unit = models.ForeignKey('data.PoliceUnit')
-    # unit_detail = models.CharField(max_length=255, null=True)
-    subject_id = models.PositiveSmallIntegerField(null=True)
+    officer_rank = models.CharField(max_length=32, null=True)
+    subject_id = models.PositiveIntegerField(null=True)
     subject_armed = models.NullBooleanField()
     subject_injured = models.NullBooleanField()
     subject_alleged_injury = models.NullBooleanField()
