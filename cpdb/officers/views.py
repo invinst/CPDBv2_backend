@@ -8,6 +8,7 @@ from data.models import Officer
 from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType, OfficerPercentileDocType
 from officers.serializers import OfficerYearlyPercentileSerializer
+from officers.workers import PercentileWorker
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
 
@@ -93,8 +94,18 @@ class OfficersViewSet(viewsets.ViewSet):
         else:
             queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('-complaint_percentile')
 
-        limit = min(len(queryset), limit)
-        queryset = queryset[:limit]
-        results = OfficerCardSerializer(queryset, many=True).data
+        queryset = queryset[0: limit]
+        ids = queryset.values_list('id', flat=True)
+
+        es_result = PercentileWorker().search(ids, size=100)
+        percentile_data = {h.officer_id: h for h in es_result.hits}
+
+        results = []
+        for obj in queryset:
+            if obj.id in percentile_data:
+                obj.percentile = percentile_data[obj.id].to_dict()
+            results.append(obj)
+
+        results = OfficerCardSerializer(results, many=True).data
 
         return Response(results)

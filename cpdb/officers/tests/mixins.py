@@ -23,8 +23,8 @@ class OfficerSummaryTestCaseMixin(object):
             SocialGraphIndexer().reindex()
 
             percentile_csv = u'UID,TRR_date,ALL_TRR,CIVILLIAN,INTERNAL,OTHERS,SHOOTING,TASER\n' + \
-                             '1.0,2006,0.0,0.67,0.0002,0.0,0.0,0.0010\n' + \
-                             '1.0,2007,0.0,0.77,0.0002,0.0,0.45,0.0010'
+                             '1.0,2015,0.0,0.67,0.0002,0.0,0.0,0.0010\n' + \
+                             '1.0,2016,0.0,0.77,0.0002,0.0,0.45,0.0010'
             with patch('__builtin__.open', mock_open(read_data=percentile_csv)) as mock_file:
                 mock_file.return_value = StringIO(percentile_csv)
                 OfficerPercentileIndexer().reindex()

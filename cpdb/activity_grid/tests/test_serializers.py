@@ -19,6 +19,16 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             race='Asian',
             complaint_percentile=99.0,
             gender_display='Male',
+            percentile={
+                'officer_id': 1,
+                'year': 2016,
+                'percentile_alL_trr': u'0.000',
+                'percentile_civilian': u'77.000',
+                'percentile_internal': u'0.020',
+                'percentile_shooting': u'45.000',
+                'percentile_taser': u'0.100',
+                'percentile_others': u'0.000'
+            }
         )
 
         expect(ActivityCardSerializer(obj).data).to.eq({
@@ -31,4 +41,14 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'complaint_percentile': 99.0,
             'race': 'Asian',
             'gender': 'Male',
+            'percentile': {
+                'officer_id': 1,
+                'year': 2016,
+                'percentile_alL_trr': u'0.000',
+                'percentile_civilian': u'77.000',
+                'percentile_internal': u'0.020',
+                'percentile_shooting': u'45.000',
+                'percentile_taser': u'0.100',
+                'percentile_others': u'0.000'
+            }
         })
