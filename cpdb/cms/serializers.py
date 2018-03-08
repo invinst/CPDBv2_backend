@@ -266,6 +266,40 @@ class LandingPageSerializer(SlugPageSerializer):
         ],
         source='fields'
     )
+    carousel_complaint_title = RichTextField(
+        fake_value=['Complaint Summaries'],
+        source='fields'
+    )
+    carousel_complaint_desc = RichTextField(
+        fake_value=['These records contain summary information of the incident of the alleged complaint.'],
+        source='fields'
+    )
+    carousel_allegation_title = RichTextField(
+        fake_value=['Officers by Allegation'],
+        source='fields'
+    )
+    carousel_allegation_desc = RichTextField(
+        fake_value=['These are the officers with the most allegations of misconduct in Chicago.'],
+        source='fields'
+    )
+    carousel_document_title = RichTextField(
+        fake_value=['New Document'],
+        source='fields'
+    )
+    carousel_document_desc = RichTextField(
+        fake_value=['We often update our complaint records as we recieve more information from the City.',
+                    'Here are some of the recent updates.'],
+        source='fields'
+    )
+    carousel_activity_title = RichTextField(
+        fake_value=['Recent Activity'],
+        source='fields'
+    )
+    carousel_activity_desc = RichTextField(
+        fake_value=['The officers, pairings, and units we display here are based on what other guests are searching '
+                    'on cpdp in addition to officers who are mentioned in conversation with our twitter bot,@cpdpbot'],
+        source='fields'
+    )
 
     class Meta:
         slug = 'landing-page'
