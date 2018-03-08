@@ -3,7 +3,6 @@ from datetime import date, datetime
 import pytz
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
-
 from mock import Mock, patch
 from robber import expect
 
@@ -25,20 +24,21 @@ class OfficersIndexerTestCase(SimpleTestCase):
             expect(OfficersIndexer().get_queryset()).to.eq([officer])
 
     def test_extract_datum(self):
-        officer = Mock()
-        officer.id = 123
-        officer.full_name = 'Alex Mack'
-        officer.last_unit = '4'
-        officer.rank = '5'
-        officer.race = 'White'
-        officer.current_badge = '123456'
-        officer.gender_display = 'Male'
-        officer.birth_year = 1910
-        officer.appointed_date = date(2017, 2, 27)
-        officer.resignation_date = date(2017, 12, 27)
-        officer.get_active_display = Mock(return_value='Active')
+        officer = Mock(
+            id=123,
+            full_name='Alex Mack',
+            last_unit='4',
+            rank='5',
+            race='White',
+            current_badge='123456',
+            gender_display='Male',
+            birth_year=1910,
+            appointed_date=date(2017, 2, 27),
+            resignation_date=date(2017, 12, 27),
+            get_active_display=Mock(return_value='Active'),
+        )
 
-        self.assertDictEqual(OfficersIndexer().extract_datum(officer), {
+        expect(OfficersIndexer().extract_datum(officer)).to.eq({
             'id': 123,
             'full_name': 'Alex Mack',
             'unit': '4',
@@ -61,20 +61,20 @@ class OfficerMetricsIndexerTestCase(SimpleTestCase):
             expect(OfficerMetricsIndexer().get_queryset()).to.eq([officer])
 
     def test_extract_datum(self):
-        officer = Mock()
-        officer.id = 123
-        officer.full_name = 'Alex Mack'
-        officer.appointed_date = date(2017, 2, 27)
-        officer.get_active_display = Mock(return_value='Active')
-        officer.allegation_count = 1
-        officer.sustained_count = 0
-        officer.complaint_percentile = 90.0
-        officer.honorable_mention_count = 2
-        officer.sustained_count = 1
-        officer.discipline_count = 2
-        officer.civilian_compliment_count = 2
+        officer = Mock(
+            id=123,
+            full_name='Alex Mack',
+            appointed_date=date(2017, 2, 27),
+            get_active_display=Mock(return_value='Active'),
+            allegation_count=1,
+            complaint_percentile=90.0,
+            honorable_mention_count=2,
+            sustained_count=1,
+            discipline_count=2,
+            civilian_compliment_count=2,
+        )
 
-        self.assertDictEqual(OfficerMetricsIndexer().extract_datum(officer), {
+        expect(OfficerMetricsIndexer().extract_datum(officer)).to.eq({
             'id': 123,
             'allegation_count': 1,
             'complaint_percentile': 90.0,
@@ -93,17 +93,20 @@ class CRTimelineEventIndexerTestCase(SimpleTestCase):
             expect(CRTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
 
     def test_extract_datum(self):
-        officer_allegation = Mock()
-        officer_allegation.officer_id = 123
-        officer_allegation.start_date = date(2012, 1, 1)
-        officer_allegation.crid = '123456'
-        officer_allegation.category = 'Illegal Search'
-        officer_allegation.subcategory = 'Search of premise/vehicle without warrant'
-        officer_allegation.final_finding_display = 'Unfounded'
-        officer_allegation.coaccused_count = 4
-        officer_allegation.allegation.complainant_races = ['White', 'Unknown']
-        officer_allegation.allegation.complainant_age_groups = ['21-30', '51+']
-        officer_allegation.allegation.complainant_genders = ['Male']
+        officer_allegation = Mock(
+            officer_id=123,
+            start_date=date(2012, 1, 1),
+            crid='123456',
+            category='Illegal Search',
+            subcategory='Search of premise/vehicle without warrant',
+            final_finding_display='Unfounded',
+            coaccused_count=4,
+            allegation=Mock(
+                complainant_races=['White', 'Unknown'],
+                complainant_age_groups=['21-30', '51+'],
+                complainant_genders=['Male'],
+            )
+        )
 
         expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,

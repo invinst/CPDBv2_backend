@@ -53,19 +53,18 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def officer_allegation_helper(self, officer, final_finding, final_outcome):
-        allegation = AllegationFactory()
+    def create_officer_allegation(self, officer, final_finding, final_outcome):
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerAllegationFactory(
-            officer=officer, allegation=allegation, allegation_category=allegation_category,
-            final_finding=final_finding, final_outcome=final_outcome, start_date=date(2000, 1, 1)
+            officer=officer, allegation_category=allegation_category,
+            final_finding=final_finding, final_outcome=final_outcome
         )
 
     def test_metrics(self):
         officer = OfficerFactory(id=123, complaint_percentile=90.0)
-        self.officer_allegation_helper(officer=officer, final_finding='NS', final_outcome='027')
-        self.officer_allegation_helper(officer=officer, final_finding='NS', final_outcome='028')
-        self.officer_allegation_helper(officer=officer, final_finding='SU', final_outcome='600')
+        self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='027')
+        self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='028')
+        self.create_officer_allegation(officer=officer, final_finding='SU', final_outcome='600')
 
         AwardFactory(officer=officer, award_type='Other')
         AwardFactory(officer=officer, award_type='Complimentary Letter')
