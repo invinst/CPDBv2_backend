@@ -199,8 +199,8 @@ class AwardFactory(factory.django.DjangoModelFactory):
 
     officer = factory.SubFactory(OfficerFactory)
     award_type = factory.LazyFunction(lambda: random.choice(['Honorable Mention', 'Complimentary Letter']))
-    incident_start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
-    incident_end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     request_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     rank = factory.LazyFunction(lambda: fake.word())
     last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
