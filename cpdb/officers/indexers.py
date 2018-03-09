@@ -4,11 +4,13 @@ from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
 from .doc_types import (
-    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType
+    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType, OfficerMetricsDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    OfficerSummarySerializer, CRTimelineSerializer, UnitChangeTimelineSerializer, JoinedTimelineSerializer
+    OfficerSummarySerializer, CRTimelineSerializer,
+    UnitChangeTimelineSerializer, JoinedTimelineSerializer,
+    OfficerMetricsSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -24,6 +26,18 @@ class OfficersIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerSummarySerializer(datum).data
+
+
+@register_indexer(app_name)
+class OfficerMetricsIndexer(BaseIndexer):
+    doc_type_klass = OfficerMetricsDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Officer.objects.all()
+
+    def extract_datum(self, datum):
+        return OfficerMetricsSerializer(datum).data
 
 
 @register_indexer(app_name)
