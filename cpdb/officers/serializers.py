@@ -118,3 +118,14 @@ class TimelineMinimapSerializer(serializers.Serializer):
 
     def get_kind(self, obj):
         return self._KIND_MAPPINGS.get(obj.kind, obj.kind)
+
+
+class OfficerYearlyPercentileSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    year = serializers.IntegerField()
+    percentile_alL_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_shooting = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_taser = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_others = serializers.DecimalField(max_digits=6, decimal_places=3)

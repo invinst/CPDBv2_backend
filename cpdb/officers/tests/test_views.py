@@ -318,6 +318,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0)
         OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
                        complaint_percentile=99.2, gender='M', birth_year=1960)
+        self.refresh_index()
+
         response = self.client.get(reverse('api-v2:officers-top-by-allegation'))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
 
@@ -330,7 +332,17 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1970,
             'complaint_percentile': 100.0,
             'race': 'White',
-            'gender': 'Male'
+            'gender': 'Male',
+            'percentile': {
+                'officer_id': 1,
+                'year': 2016,
+                'percentile_alL_trr': u'0.000',
+                'percentile_civilian': u'77.000',
+                'percentile_internal': u'0.020',
+                'percentile_shooting': u'45.000',
+                'percentile_taser': u'0.100',
+                'percentile_others': u'0.000'
+            }
         }, {
             'id': 3,
             'visual_token_background_color': '#f5f4f4',
@@ -340,10 +352,35 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1960,
             'complaint_percentile': 99.2,
             'race': 'White',
-            'gender': 'Male'
+            'gender': 'Male',
         }])
 
     def test_top_officers_by_allegation_random(self):
         with patch('data.models.Officer.objects') as mock_func:
             self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
+
+    def test_officer_percentile(self):
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:officers-percentile', kwargs={'pk': 1}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'officer_id': 1,
+            'year': 2015,
+            'percentile_alL_trr': '0.000',
+            'percentile_civilian': '67.000',
+            'percentile_internal': '0.020',
+            'percentile_shooting': '0.000',
+            'percentile_taser': '0.100',
+            'percentile_others': '0.000'
+        }, {
+            'officer_id': 1,
+            'year': 2016,
+            'percentile_alL_trr': '0.000',
+            'percentile_civilian': '77.000',
+            'percentile_internal': '0.020',
+            'percentile_shooting': '45.000',
+            'percentile_taser': '0.100',
+            'percentile_others': '0.000'
+        }])

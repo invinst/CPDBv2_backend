@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from officers.serializers import OfficerYearlyPercentileSerializer
+
 
 class OfficerCardSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -11,6 +13,7 @@ class OfficerCardSerializer(serializers.Serializer):
     complaint_percentile = serializers.FloatField()
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
+    percentile = OfficerYearlyPercentileSerializer(read_only=True)
 
 
 class ActivityCardSerializer(serializers.Serializer):

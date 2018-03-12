@@ -1,15 +1,18 @@
 from datetime import date, datetime
+from io import StringIO
 
 import pytz
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
-from mock import Mock, patch
+
+from mock import Mock, patch, mock_open
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer
+    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
+    OfficerPercentileIndexer
 )
 
 
@@ -223,3 +226,53 @@ class SocialGraphIndexerTestCase(TestCase):
                 ]
             }
         })
+
+
+class OfficerPercentileIndexerTestCase(TestCase):
+    def test_get_queryset_file_not_found(self):
+        with patch('__builtin__.open', mock_open(), create=True) as mock_file:
+            mock_file.side_effect = IOError()
+            results = OfficerPercentileIndexer().get_queryset()
+            expect(results).to.be.eq([])
+
+    def test_get_queryset_n_extract_datum(self):
+        dummy_data = u'UID,TRR_date,ALL_TRR,CIVILLIAN,INTERNAL,OTHERS,SHOOTING,TASER\n' + \
+                     '1.0,2006,0.0,0.67,0.0002,0.0,0.0,0.0010\n' + \
+                     '1.0,2007,0.0,0.77,0.0002,0.0,0.45,0.0010'
+
+        with patch('__builtin__.open', mock_open(read_data=dummy_data)) as mock_file:
+            mock_file.return_value = StringIO(dummy_data)
+
+            results = OfficerPercentileIndexer().get_queryset()
+            expect(mock_file).to.be.called_with('all_yearly_officer_percentile.csv')
+
+            expect(results).to.eq([{
+                'ALL_TRR': '0.0',
+                'UID': '1.0',
+                'TRR_date': '2006',
+                'CIVILLIAN': '0.67',
+                'TASER': '0.0010',
+                'INTERNAL': '0.0002',
+                'OTHERS': '0.0',
+                'SHOOTING': '0.0'
+            }, {
+                'ALL_TRR': '0.0',
+                'UID': '1.0',
+                'TRR_date': '2007',
+                'CIVILLIAN': '0.77',
+                'TASER': '0.0010',
+                'INTERNAL': '0.0002',
+                'OTHERS': '0.0',
+                'SHOOTING': '0.45'
+            }])
+
+            expect(OfficerPercentileIndexer().extract_datum(results[0])).to.eq({
+                'officer_id': 1,
+                'year': 2006,
+                'percentile_alL_trr': 0.0,
+                'percentile_taser': 0.1,
+                'percentile_shooting': 0.0,
+                'percentile_internal': 0.02,
+                'percentile_civilian': 67.0,
+                'percentile_others': 0.0
+            })

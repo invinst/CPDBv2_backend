@@ -1,8 +1,10 @@
+import csv
 from itertools import combinations
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
+from officers.doc_types import OfficerPercentileDocType
 from .doc_types import (
     OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType, OfficerMetricsDocType
 )
@@ -98,8 +100,8 @@ class SocialGraphIndexer(BaseIndexer):
     def _links(self, officers):
         links = []
         for o1, o2 in combinations(officers, 2):
-            qs = Allegation.objects.filter(officerallegation__officer=o1)\
-                    .filter(officerallegation__officer=o2).distinct()
+            qs = Allegation.objects.filter(officerallegation__officer=o1) \
+                .filter(officerallegation__officer=o2).distinct()
             if qs.exists():
                 link = {
                     'source': o1.id,
@@ -120,3 +122,30 @@ class SocialGraphIndexer(BaseIndexer):
             'links': self._links(coaccuseds),
             'nodes': [self._node(coaccused) for coaccused in coaccuseds]
         }}
+
+
+@register_indexer(app_name)
+class OfficerPercentileIndexer(BaseIndexer):
+    doc_type_klass = OfficerPercentileDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        try:
+            # TODO: compute from db when TRR is ready
+            with open('all_yearly_officer_percentile.csv') as csv_file:
+                reader = csv.DictReader(csv_file)
+                return [row for row in reader]
+        except IOError:
+            return []
+
+    def extract_datum(self, datum):
+        return {
+            'officer_id': int(float(datum['UID'])),
+            'year': int(float(datum['TRR_date'])),
+            'percentile_alL_trr': float(datum['ALL_TRR']) * 100,
+            'percentile_civilian': float(datum['CIVILLIAN']) * 100,
+            'percentile_internal': float(datum['INTERNAL']) * 100,
+            'percentile_shooting': float(datum['SHOOTING']) * 100,
+            'percentile_taser': float(datum['TASER']) * 100,
+            'percentile_others': float(datum['OTHERS']) * 100
+        }

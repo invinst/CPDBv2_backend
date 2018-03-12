@@ -1,7 +1,12 @@
+from io import StringIO
+
+from mock import mock_open, patch
+
 from officers.index_aliases import officers_index_alias
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer
+    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
+    OfficerPercentileIndexer
 )
 
 
@@ -18,4 +23,12 @@ class OfficerSummaryTestCaseMixin(object):
             UnitChangeTimelineEventIndexer().reindex()
             JoinedTimelineEventIndexer().reindex()
             SocialGraphIndexer().reindex()
+
+            percentile_csv = u'UID,TRR_date,ALL_TRR,CIVILLIAN,INTERNAL,OTHERS,SHOOTING,TASER\n' + \
+                             '1.0,2015,0.0,0.67,0.0002,0.0,0.0,0.0010\n' + \
+                             '1.0,2016,0.0,0.77,0.0002,0.0,0.45,0.0010'
+            with patch('__builtin__.open', mock_open(read_data=percentile_csv)) as mock_file:
+                mock_file.return_value = StringIO(percentile_csv)
+                OfficerPercentileIndexer().reindex()
+
         officers_index_alias.write_index.refresh()

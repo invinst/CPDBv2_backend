@@ -6,7 +6,9 @@ from rest_framework.decorators import detail_route, list_route
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
-from officers.doc_types import OfficerSocialGraphDocType
+from officers.doc_types import OfficerSocialGraphDocType, OfficerPercentileDocType
+from officers.serializers import OfficerYearlyPercentileSerializer
+from officers.workers import PercentileWorker
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerMetricsDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
 
@@ -86,17 +88,29 @@ class OfficersViewSet(viewsets.ViewSet):
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @detail_route(methods=['get'], url_path='percentile')
+    def officer_percentile(self, request, pk):
+        query = OfficerPercentileDocType().search().query('term', officer_id=pk).sort('year')
+        results = query[:100].execute()
+        return Response(OfficerYearlyPercentileSerializer(results, many=True).data)
+
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):
         is_random = request.GET.get('random', 0)
         limit = request.GET.get('limit', 48)
-        if is_random:
-            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('?')
-        else:
-            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('-complaint_percentile')
 
-        limit = min(len(queryset), limit)
-        queryset = queryset[:limit]
-        results = OfficerCardSerializer(queryset, many=True).data
+        order_by = '?' if is_random else '-complaint_percentile'
+        queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by(order_by)
+        queryset = queryset[0: limit]
+        ids = queryset.values_list('id', flat=True)
 
-        return Response(results)
+        es_result = PercentileWorker().search(ids, size=100)
+        percentile_data = {h.officer_id: h for h in es_result.hits}
+
+        results = []
+        for obj in queryset:
+            if obj.id in percentile_data:
+                obj.percentile = percentile_data[obj.id].to_dict()
+            results.append(obj)
+
+        return Response(OfficerCardSerializer(results, many=True).data)
