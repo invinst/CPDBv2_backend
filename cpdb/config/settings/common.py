@@ -59,6 +59,7 @@ LOCAL_APPS = (
     'search_terms',
     'heatmap',
     'data_pipeline',
+    'trr',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

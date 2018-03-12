@@ -2,14 +2,14 @@ from django.core.management import call_command
 from django.test.testcases import TestCase
 from robber import expect
 
-from data.factories import OfficerFactory, VictimFactory, ComplainantFactory, InvolvementFactory, PoliceWitnessFactory
-from data.models import Officer, Victim, PoliceWitness, Complainant, Involvement
+from data.factories import OfficerFactory, VictimFactory, ComplainantFactory, InvolvementFactory
+from data.models import Officer, Victim, Complainant, Involvement
 
 
 class CleanUpFalsyRaceFieldsTestCase(TestCase):
     def test_handle(self):
-        models = [Victim, PoliceWitness, Complainant, Involvement, Officer]
-        factories = [VictimFactory, PoliceWitnessFactory, ComplainantFactory, InvolvementFactory, OfficerFactory]
+        models = [Victim, Complainant, Involvement, Officer]
+        factories = [VictimFactory, ComplainantFactory, InvolvementFactory, OfficerFactory]
 
         for model, factory in zip(models, factories):
 
