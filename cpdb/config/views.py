@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, reverse
 from data.models import OfficerAlias
 
 
-def index_view(request):
+def index_view(request, path=None):
     return render(request, 'index.html')
 
 
