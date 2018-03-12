@@ -98,11 +98,9 @@ class OfficersViewSet(viewsets.ViewSet):
     def top_officers_by_allegation(self, request):
         is_random = request.GET.get('random', 0)
         limit = request.GET.get('limit', 48)
-        if is_random:
-            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('?')
-        else:
-            queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by('-complaint_percentile')
 
+        order_by = '?' if is_random else '-complaint_percentile'
+        queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by(order_by)
         queryset = queryset[0: limit]
         ids = queryset.values_list('id', flat=True)
 
@@ -115,6 +113,4 @@ class OfficersViewSet(viewsets.ViewSet):
                 obj.percentile = percentile_data[obj.id].to_dict()
             results.append(obj)
 
-        results = OfficerCardSerializer(results, many=True).data
-
-        return Response(results)
+        return Response(OfficerCardSerializer(results, many=True).data)

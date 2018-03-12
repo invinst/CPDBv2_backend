@@ -9,9 +9,8 @@ class PercentileWorker(Worker):
 
     def query(self, officer_ids):
         combineQ = [Q('term', officer_id=id) for id in officer_ids]
-        query = self._searcher.query(Q(
+        return self._searcher.query(Q(
             'bool',
             must=[Q('term', year=2016)],  # TODO: change to aggregate MAX
             should=combineQ
         ))
-        return query

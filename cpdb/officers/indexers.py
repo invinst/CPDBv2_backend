@@ -131,13 +131,10 @@ class OfficerPercentileIndexer(BaseIndexer):
 
     def get_queryset(self):
         try:
-            results = []
             # TODO: compute from db when TRR is ready
             with open('all_yearly_officer_percentile.csv') as csv_file:
                 reader = csv.DictReader(csv_file)
-                for row in reader:
-                    results.append(row)
-            return results
+                return [row for row in reader]
         except IOError:
             return []
 
