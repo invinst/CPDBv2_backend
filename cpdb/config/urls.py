@@ -23,7 +23,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import routers
 
 from vftg.views import VFTGViewSet
-from .views import index
+from .views import index_view, officer_view, complaint_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
@@ -72,11 +72,13 @@ urlpatterns = [
     url(r'^(?:(?P<path>'
         r'collaborate|faq(/\d+)?|reporting(/\d+)?|search(?:/terms)?|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
-        r'officer/\d+(?:/(?:timeline|social))?|'
         r'unit/\d+|'
-        r'complaint/\d+(/\d+)?|'
         r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
-        r')/)?$', ensure_csrf_cookie(index), name='index'),
+        r')/)?$', ensure_csrf_cookie(index_view), name='index'),
+    url(
+        r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?$',
+        ensure_csrf_cookie(officer_view), name='officer'),
+    url(r'^complaint/(?P<crid>\d+)(?:/(?P<officer_id>\d+))?', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),

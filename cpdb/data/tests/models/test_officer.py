@@ -1,5 +1,7 @@
 from datetime import date, timedelta
+
 from django.test.testcases import TestCase, override_settings
+
 from robber.expect import expect
 
 from data.models import Officer
