@@ -32,7 +32,7 @@ class OfficerViewTestCase(TestCase):
         with patch('config.views.redirect') as mock_redirect:
             request = self.request_factory.get('/officer/2')
             officer_view(request, officer_id=2)
-            mock_redirect.assert_called_once_with('/officer/3', permanent=True)
+            mock_redirect.assert_called_once_with('/officer/3/', permanent=True)
 
 
 class ComplaintViewTestCase(TestCase):
@@ -51,4 +51,4 @@ class ComplaintViewTestCase(TestCase):
         with patch('config.views.redirect') as mock_redirect:
             request = self.request_factory.get('/complaint/123/2/')
             complaint_view(request, officer_id=2, crid=123)
-            mock_redirect.assert_called_once_with('/complaint/123/3', permanent=True)
+            mock_redirect.assert_called_once_with('/complaint/123/3/', permanent=True)
