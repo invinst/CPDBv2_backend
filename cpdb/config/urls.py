@@ -76,9 +76,9 @@ urlpatterns = [
         r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(
-        r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?$',
+        r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
         ensure_csrf_cookie(officer_view), name='officer'),
-    url(r'^complaint/(?P<crid>\d+)(?:/(?P<officer_id>\d+))?', ensure_csrf_cookie(complaint_view), name='complaint'),
+    url(r'^complaint/(?P<crid>\d+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
