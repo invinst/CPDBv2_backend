@@ -102,7 +102,7 @@ class OfficersViewSet(viewsets.ViewSet):
         order_by = '?' if is_random else '-complaint_percentile'
         queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by(order_by)
         queryset = queryset[0: limit]
-        ids = queryset.values_list('id', flat=True)
+        ids = list(queryset.values_list('id', flat=True))
 
         es_result = PercentileWorker().search(ids, size=100)
         percentile_data = {h.officer_id: h for h in es_result.hits}

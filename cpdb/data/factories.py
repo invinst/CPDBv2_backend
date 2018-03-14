@@ -82,7 +82,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
     # required for percentile calculation, we ensure all objects factoried in same data range
     incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(
         datetime_start=timezone.datetime(2000, 1, 1),
-        datetime_end=timezone.datetime(2017, 6, 30),
+        datetime_end=timezone.datetime(2016, 1, 1),
         tzinfo=pytz.utc
     ))
 

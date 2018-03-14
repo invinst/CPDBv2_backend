@@ -13,7 +13,8 @@ class ActivityGridViewSet(viewsets.ViewSet):
         queryset = queryset.annotate(null_position=Count('last_activity'))
         queryset = queryset.order_by('-important', '-null_position', '-last_activity')[:40]
 
-        ids = queryset.values_list('officer', flat=True)
+        ids = list(queryset.values_list('officer', flat=True))
+
         es_results = PercentileWorker().search(ids, size=40)
         percentile_data = {h.officer_id: h for h in es_results.hits}
 

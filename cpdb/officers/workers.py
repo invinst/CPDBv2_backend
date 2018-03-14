@@ -1,5 +1,3 @@
-from elasticsearch_dsl import Q
-
 from search.workers import Worker
 from .doc_types import OfficerPercentileDocType
 
@@ -8,9 +6,11 @@ class PercentileWorker(Worker):
     doc_type_klass = OfficerPercentileDocType
 
     def query(self, officer_ids):
-        combineQ = [Q('term', officer_id=id) for id in officer_ids]
-        return self._searcher.query(Q(
+        year_max = self._searcher.aggs.metric('year_max', 'max', field='year').execute()
+        year_max = year_max.aggregations.year_max.value
+
+        return self._searcher.query(
             'bool',
-            must=[Q('term', year=2016)],  # TODO: change to aggregate MAX
-            should=combineQ
-        ))
+            must={'term': {'year': year_max if year_max else 0}},
+            filter={'terms': {'officer_id': officer_ids}}
+        )

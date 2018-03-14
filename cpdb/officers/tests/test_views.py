@@ -381,6 +381,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
     def test_top_officers_by_allegation_random(self):
         with patch('data.models.Officer.objects') as mock_func:
+            # mock_func.filter.return_value.order_by.return_value.execute.return_value.values_list.return_value = []
             self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
 
