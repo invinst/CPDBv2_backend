@@ -1,6 +1,7 @@
 from datetime import date, datetime
+
 from django.test.testcases import TestCase, override_settings
-from django.utils.timezone import now
+
 from robber.expect import expect
 
 from data.models import Officer
@@ -109,13 +110,6 @@ class OfficerTestCase(TestCase):
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
 
     def test_compute_num_allegation_trr(self):
-        # ========================= #     # ========================= #
-        # year  |   # Allegation    |     # year  |   # Percentile    |
-        #       | o1 | o2 | o3 | o4 |     #       | o1 | o2 | o3 | o4 |
-        # 2014  | 1  |    |    |    |  => # 2014  | 75 | 0  | 0  | 0  |
-        # 2015  | 1  | 3  |    |    |     # 2015  | 50 | 75 | 0  | 0  |
-        # 2016  | 1  |    |    |    |     # 2016  | 50 | 50 | 0  | 0  |
-        # ========================= #     # ========================= #
 
         appointed_date = datetime(2013, 1, 1)
         officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
@@ -283,7 +277,7 @@ class OfficerTestCase(TestCase):
 
         expected_service_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         expected_service_time -= appointed_date
-        current_year = now().year
+        current_year = datetime.now().year
         expect(Officer.top_complaint_officers(100)).to.eq([
             {
                 'percentile_trr': 0,
