@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+import pytz
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
 from django.utils.text import slugify
-from django.utils.timezone import now
+from django.utils.timezone import now, datetime, timedelta
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -77,7 +77,7 @@ class PoliceUnit(TaggableModel):
         query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
             member_age=models.Case(
                 models.When(birth_year__isnull=True, then=None),
-                default=datetime.now().year - F('birth_year'),
+                default=now().year - F('birth_year'),
                 output_field=models.IntegerField()
             )
         ).annotate(
@@ -320,52 +320,102 @@ class Officer(TaggableModel):
             return None
 
     @staticmethod
-    def top_complaint_officers(top_percentile_value):
-        """ This is calculate top percentile of top_percentile_value
-        :return: list of (officer_id, percentile_value)
-        """
-        dataset_max_date, dateset_min_date = Allegation.objects.all().aggregate(
-            models.Max('incident_date'),
+    def compute_num_allegation_trr(year_end):
+        # We consider `now` as dataset_max_date (not with max of incident date)
+        dataset_max_date = now().replace(hour=0, minute=0, second=0, microsecond=0)
+        dataset_min_date = Allegation.objects.all().aggregate(
             models.Min('incident_date')
-        ).values()
-        query = Officer.objects.filter(appointed_date__isnull=False)
+        ).values()[0]
+        if year_end:
+            dataset_max_date = min(dataset_max_date, datetime(year_end, 12, 31, tzinfo=pytz.UTC))
 
+        # STEP 1: compute the service time of all officers
+        query = Officer.objects.filter(appointed_date__isnull=False)
         query = query.annotate(
             end_date=models.Case(
                 models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
                 default='resignation_date',
                 output_field=models.DateTimeField()),
             start_date=models.Case(
-                models.When(appointed_date__lt=dateset_min_date, then=models.Value(dateset_min_date)),
+                models.When(appointed_date__lt=dataset_min_date, then=models.Value(dataset_min_date)),
                 default='appointed_date',
                 output_field=models.DateTimeField()),
         )
-        query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
 
-        duration = query.annotate(
+        query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
+        query = query.annotate(
             service_time=models.ExpressionWrapper(
                 F('end_date') - F('start_date'),
                 output_field=models.DurationField())
-        ).values_list('id', 'service_time')
+        )
 
-        query = OfficerAllegation.objects.all()
-        query = query.values('officer').annotate(
-            num_allegation=models.Count('officer')
-        ).order_by('-num_allegation')
-        officers_allegation_count = {
-            officer_id: num for officer_id, num in query.values_list('officer', 'num_allegation')
-        }
+        # STEP 2: count the allegation (internal/civil) and TRR
+        query = query.annotate(
+            officer_id=F('id'),
+            num_allegation=models.Count(
+                models.Case(
+                    models.When(
+                        officerallegation__start_date__lte=dataset_max_date,
+                        then='officerallegation'
+                    ), output_field=models.CharField(),
+                ), distinct=True
+            ),
+            num_allegation_internal=models.Count(
+                models.Case(
+                    models.When(
+                        Q(officerallegation__allegation__is_officer_complaint=True) &
+                        Q(officerallegation__start_date__lte=dataset_max_date),
+                        then='officerallegation'
+                    )
+                ), distinct=True
+            ),
+            num_trr=models.Count(
+                models.Case(
+                    models.When(
+                        trr__trr_datetime__lte=dataset_max_date,
+                        then='trr'
+                    ), output_field=models.CharField(),
+                ), distinct=True
+            ),
+        )
+        query = query.annotate(
+            num_allegation_civilian=models.ExpressionWrapper(
+                F('num_allegation') - F('num_allegation_internal'),
+                output_field=models.IntegerField())
+        ).order_by('num_allegation', 'num_trr')
 
-        # TODO: change these to (mostly) ORM to improve performance
-        metrics = {}
-        for officer_id, service_time in duration:
-            allegation_count = 0
-            if officer_id in officers_allegation_count:
-                allegation_count = officers_allegation_count[officer_id]
-            metrics[officer_id] = allegation_count / (service_time.days / 365.0)
+        return query.values(
+            'officer_id',
+            'service_time',
+            'num_allegation',
+            'num_allegation_civilian',
+            'num_allegation_internal',
+            'num_trr'
+        )
 
-        top_percentiles = percentile(metrics, 100.0 - top_percentile_value)
-        return top_percentiles
+    @staticmethod
+    def top_complaint_officers(top_percentile_value, year=None, type=[]):
+        """ This is calculate top percentile of top_percentile_value
+        :return: list of (officer_id, percentile_value)
+        """
+
+        computed_data = list(Officer.compute_num_allegation_trr(year))
+        if not computed_data:
+            return []
+        TYPE = ['allegation', 'allegation_internal', 'allegation_civilian', 'trr']
+        if not type:
+            type = TYPE
+        elif any(t not in TYPE for t in type):
+            raise ValueError("type is invalid")
+
+        for key in type:
+            for v in computed_data:
+                v['year'] = year if year else now().year
+                v[key] = v['num_' + key] / (v['service_time'].days / 365.0)
+            computed_data = percentile(computed_data, 100.0 - top_percentile_value,
+                                       key=key, inline=True)
+
+        return computed_data
 
     @property
     def v2_to(self):

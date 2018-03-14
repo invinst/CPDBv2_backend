@@ -30,10 +30,13 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             last_name='Finnigan',
             birth_year=1950,
             race='Asian',
-            gender='M'
+            gender='M',
+            appointed_date=datetime(2011, 1, 1)
         )
         OfficerActivityCardFactory(officer=officer)
-        OfficerAllegationFactory.create_batch(2, officer=officer, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, final_finding='SU',
+                                 allegation__incident_date=datetime(2014, 1, 1))
+        OfficerAllegationFactory(officer=officer, final_finding='SU', allegation__incident_date=datetime(2016, 1, 1))
         OfficerAllegationFactory.create_batch(4, officer=officer, final_finding='NS')
 
         self.refresh_index()
@@ -55,12 +58,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile': {
                     'officer_id': 1,
                     'year': 2016,
-                    'percentile_alL_trr': u'0.000',
-                    'percentile_civilian': u'77.000',
-                    'percentile_internal': u'0.020',
-                    'percentile_shooting': u'45.000',
-                    'percentile_taser': u'0.100',
-                    'percentile_others': u'0.000'
+                    'percentile_trr': '0.000',
+                    'percentile_allegation': '0.000',
+                    'percentile_allegation_internal': '0.000',
+                    'percentile_allegation_civilian': '0.000'
+
                 }
             }
         ])

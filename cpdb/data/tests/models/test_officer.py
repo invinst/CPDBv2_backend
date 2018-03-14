@@ -1,5 +1,6 @@
-from datetime import date, timedelta
+from datetime import date, datetime
 from django.test.testcases import TestCase, override_settings
+from django.utils.timezone import now
 from robber.expect import expect
 
 from data.models import Officer
@@ -7,6 +8,7 @@ from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory
 )
+from trr.factories import TRRFactory
 
 
 class OfficerTestCase(TestCase):
@@ -96,29 +98,6 @@ class OfficerTestCase(TestCase):
             OfficerAllegationFactory.create_batch(cr, officer=officer)
             expect(officer.visual_token_background_color).to.eq(color)
 
-    def test_top_complaint_officers(self):
-        officer1 = OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60))
-        OfficerAllegationFactory.create_batch(1, officer=officer1)
-        officer2 = OfficerFactory(id=2, appointed_date=date(1980, 1, 1))
-        OfficerAllegationFactory.create_batch(1, officer=officer2)
-        officer3 = OfficerFactory(id=3, appointed_date=date(1980, 1, 1))
-        OfficerAllegationFactory.create_batch(2, officer=officer3)
-
-        results = Officer.top_complaint_officers(100)
-        expect(results).to.eq([
-            (2, 0.0),
-            (3, 50.0)
-        ])
-
-        officer4 = OfficerFactory(id=4, appointed_date=date(1980, 1, 1))
-        OfficerAllegationFactory.create_batch(3, officer=officer4)
-        officer5 = OfficerFactory(id=5, appointed_date=date(1980, 1, 1))
-        OfficerAllegationFactory.create_batch(4, officer=officer5)
-        results = Officer.top_complaint_officers(25)
-        expect(results).to.eq([
-            (5, 75.0)
-        ])
-
     @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
     def test_visual_token_png_url(self):
         officer = OfficerFactory(id=90)
@@ -128,3 +107,395 @@ class OfficerTestCase(TestCase):
     def test_visual_token_png_path(self):
         officer = OfficerFactory(id=90)
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
+
+    def test_compute_num_allegation_trr(self):
+        # ========================= #     # ========================= #
+        # year  |   # Allegation    |     # year  |   # Percentile    |
+        #       | o1 | o2 | o3 | o4 |     #       | o1 | o2 | o3 | o4 |
+        # 2014  | 1  |    |    |    |  => # 2014  | 75 | 0  | 0  | 0  |
+        # 2015  | 1  | 3  |    |    |     # 2015  | 50 | 75 | 0  | 0  |
+        # 2016  | 1  |    |    |    |     # 2016  | 50 | 50 | 0  | 0  |
+        # ========================= #     # ========================= #
+
+        appointed_date = datetime(2013, 1, 1)
+        officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
+        officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
+        OfficerFactory(id=3, appointed_date=appointed_date)
+        OfficerFactory(id=4, appointed_date=appointed_date)
+        OfficerAllegationFactory(officer=officer1,
+                                 allegation__incident_date=datetime(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
+                                 allegation__incident_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
+                                 allegation__incident_date=datetime(2016, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        TRRFactory(
+            officer=officer2,
+            trr_datetime=datetime(2016, 1, 1)
+        )
+
+        OfficerAllegationFactory.create_batch(
+            3,
+            officer=officer2,
+            start_date=date(2015, 10, 12),
+            allegation__is_officer_complaint=False
+        )
+
+        expected_service_time = datetime(2017, 12, 31) - appointed_date
+
+        expect(list(Officer.compute_num_allegation_trr(2017))).to.eq([
+            {
+                'service_time': expected_service_time,
+                'num_allegation': 0,
+                'num_allegation_civilian': 0,
+                'officer_id': 3,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 0,
+                'num_allegation_civilian': 0,
+                'officer_id': 4,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'num_trr': 1
+            }])
+
+        expected_service_time = datetime(2015, 12, 31) - appointed_date
+        expect(list(Officer.compute_num_allegation_trr(2015))).to.eq([
+            {
+                'service_time': expected_service_time,
+                'num_allegation': 0,
+                'num_allegation_civilian': 0,
+                'officer_id': 3,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 0,
+                'num_allegation_civilian': 0,
+                'officer_id': 4,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 2,
+                'num_allegation_civilian': 2,
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': expected_service_time,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }])
+
+    def test_compute_num_allegation_trr_less_one_year(self):
+        appointed_date1 = datetime(2013, 1, 1)
+        appointed_date2 = datetime(2016, 1, 1)
+        officer1 = OfficerFactory(id=1, appointed_date=appointed_date1)
+        officer2 = OfficerFactory(id=2, appointed_date=appointed_date2)
+        OfficerAllegationFactory(officer=officer1,
+                                 allegation__incident_date=datetime(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
+                                 allegation__incident_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
+                                 allegation__incident_date=datetime(2016, 1, 1),
+                                 allegation__is_officer_complaint=False)
+
+        OfficerAllegationFactory.create_batch(
+            3,
+            officer=officer2,
+            start_date=date(2015, 10, 12),
+            allegation__is_officer_complaint=False
+        )
+
+        expect(list(Officer.compute_num_allegation_trr(2016))).to.eq([
+            {
+                'service_time': datetime(2016, 12, 31) - appointed_date1,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }])
+
+        expect(list(Officer.compute_num_allegation_trr(2017))).to.eq([
+            {
+                'service_time': datetime(2017, 12, 31) - appointed_date1,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }, {
+                'service_time': datetime(2017, 12, 31) - appointed_date2,
+                'num_allegation': 3,
+                'num_allegation_civilian': 3,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'num_trr': 0
+            }
+        ])
+
+    def test_top_complaint_officers(self):
+        appointed_date = datetime(2013, 1, 1)
+        officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
+        officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
+        OfficerFactory(id=3, appointed_date=appointed_date)
+        OfficerFactory(id=4, appointed_date=appointed_date)
+        OfficerAllegationFactory(officer=officer1,
+                                 allegation__incident_date=datetime(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
+                                 allegation__incident_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
+                                 allegation__incident_date=datetime(2016, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        TRRFactory(
+            officer=officer2,
+            trr_datetime=datetime(2016, 1, 1)
+        )
+
+        expected_service_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        expected_service_time -= appointed_date
+        current_year = now().year
+        expect(Officer.top_complaint_officers(100)).to.eq([
+            {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': current_year,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 3,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0},
+            {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': current_year,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 4,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            },
+            {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 3,
+                'percentile_allegation_civilian': 75.0,
+                'service_time': expected_service_time,
+                'year': current_year,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 3,
+                'allegation': 3 / (expected_service_time.days / 365.0),
+                'allegation_civilian': 3 / (expected_service_time.days / 365.0),
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 75.0,
+                'percentile_allegation_internal': 0
+            },
+            {
+                'percentile_trr': 75.0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': current_year,
+                'allegation_internal': 0.0,
+                'num_trr': 1,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'trr': 1 / (expected_service_time.days / 365.0),
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }
+        ])
+
+        expected_service_time = datetime(2017, 12, 31) - appointed_date
+        expect(expected_service_time.days / 365.0).to.eq(5)
+        expect(Officer.top_complaint_officers(100, year=2017)).to.eq([
+            {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 3,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }, {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 4,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }, {
+                'percentile_trr': 0,
+                'num_allegation_civilian': 3,
+                'percentile_allegation_civilian': 75.0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'allegation_internal': 0.0,
+                'num_trr': 0,
+                'num_allegation': 3,
+                'allegation': 0.6,
+                'allegation_civilian': 0.6,
+                'officer_id': 1,
+                'num_allegation_internal': 0,
+                'trr': 0.0,
+                'percentile_allegation': 75.0,
+                'percentile_allegation_internal': 0
+            }, {
+                'percentile_trr': 75.0,
+                'num_allegation_civilian': 0,
+                'percentile_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'allegation_internal': 0.0,
+                'num_trr': 1,
+                'num_allegation': 0,
+                'allegation': 0.0,
+                'allegation_civilian': 0.0,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'trr': 0.2,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }
+        ])
+
+    def test_top_complaint_officers_type_not_found(self):
+        officer1 = OfficerFactory(id=1, appointed_date=datetime(2016, 1, 1))
+        OfficerAllegationFactory(officer=officer1,
+                                 allegation__incident_date=datetime(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        with self.assertRaisesRegex(ValueError, 'type is invalid'):
+            Officer.top_complaint_officers(100, year=2017, type=['not_exist'])
+
+    def test_top_complaint_officers_with_type(self):
+        appointed_date = datetime(2013, 1, 1)
+        officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
+        officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
+        OfficerFactory(id=3, appointed_date=appointed_date)
+        OfficerFactory(id=4, appointed_date=appointed_date)
+        OfficerAllegationFactory(officer=officer1,
+                                 allegation__incident_date=datetime(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
+                                 allegation__incident_date=datetime(2014, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
+                                 allegation__incident_date=datetime(2016, 1, 1),
+                                 allegation__is_officer_complaint=False)
+        TRRFactory(
+            officer=officer2,
+            trr_datetime=datetime(2016, 1, 1)
+        )
+
+        expected_service_time = datetime(2017, 12, 31) - appointed_date
+        expect(expected_service_time.days / 365.0).to.eq(5)
+        expect(Officer.top_complaint_officers(100, year=2017, type=['allegation'])).to.eq([
+            {
+                'num_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'officer_id': 3,
+                'num_allegation_internal': 0,
+                'allegation': 0.0,
+                'percentile_allegation': 0,
+            }, {
+                'num_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'num_trr': 0,
+                'num_allegation': 0,
+                'officer_id': 4,
+                'num_allegation_internal': 0,
+                'allegation': 0.0,
+                'percentile_allegation': 0,
+            }, {
+                'num_allegation_civilian': 0,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'num_trr': 1,
+                'num_allegation': 0,
+                'officer_id': 2,
+                'num_allegation_internal': 0,
+                'allegation': 0.0,
+                'percentile_allegation': 0,
+            }, {
+                'num_allegation_civilian': 3,
+                'service_time': expected_service_time,
+                'year': 2017,
+                'num_trr': 0,
+                'num_allegation': 3,
+                'officer_id': 1,
+                'allegation': 0.6,
+                'num_allegation_internal': 0,
+                'percentile_allegation': 75.0
+            }
+        ])

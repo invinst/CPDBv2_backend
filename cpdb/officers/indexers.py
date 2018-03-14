@@ -1,10 +1,14 @@
-import csv
 from itertools import combinations
+
+from django.db.models import Max
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
+from tqdm import tqdm
+
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
 from officers.doc_types import OfficerPercentileDocType
+from officers.serializers import OfficerYearlyPercentileSerializer
 from .doc_types import (
     OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType, OfficerMetricsDocType
 )
@@ -130,22 +134,15 @@ class OfficerPercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        try:
-            # TODO: compute from db when TRR is ready
-            with open('all_yearly_officer_percentile.csv') as csv_file:
-                reader = csv.DictReader(csv_file)
-                return [row for row in reader]
-        except IOError:
+        max_incident_date = Allegation.objects.all().aggregate(Max('incident_date'))['incident_date__max']
+        if not max_incident_date:
             return []
+        max_year = max_incident_date.year
+
+        results = []
+        for yr in tqdm(range(2000, max_year + 1), desc='Prepare percentile data'):
+            results.extend(Officer.top_complaint_officers(100, yr))
+        return results
 
     def extract_datum(self, datum):
-        return {
-            'officer_id': int(float(datum['UID'])),
-            'year': int(float(datum['TRR_date'])),
-            'percentile_alL_trr': float(datum['ALL_TRR']) * 100,
-            'percentile_civilian': float(datum['CIVILLIAN']) * 100,
-            'percentile_internal': float(datum['INTERNAL']) * 100,
-            'percentile_shooting': float(datum['SHOOTING']) * 100,
-            'percentile_taser': float(datum['TASER']) * 100,
-            'percentile_others': float(datum['OTHERS']) * 100
-        }
+        return OfficerYearlyPercentileSerializer(datum).data
