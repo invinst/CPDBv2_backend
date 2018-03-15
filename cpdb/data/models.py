@@ -1,5 +1,5 @@
 import os
-import pytz
+from datetime import date
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
 from django.utils.text import slugify
-from django.utils.timezone import now, datetime, timedelta
+from django.utils.timezone import now, timedelta
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
@@ -322,12 +322,15 @@ class Officer(TaggableModel):
     @staticmethod
     def compute_num_allegation_trr(year_end):
         # We consider `now` as dataset_max_date (not with max of incident date)
-        dataset_max_date = now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        dataset_max_date = now().date()
         dataset_min_date = Allegation.objects.all().aggregate(
             models.Min('incident_date')
-        ).values()[0]
+        ).values()
+        dataset_min_date = dataset_min_date[0].date() if dataset_min_date else None
+
         if year_end:
-            dataset_max_date = min(dataset_max_date, datetime(year_end, 12, 31, tzinfo=pytz.UTC))
+            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
 
         # STEP 1: compute the service time of all officers
         query = Officer.objects.filter(appointed_date__isnull=False)
@@ -335,14 +338,15 @@ class Officer(TaggableModel):
             end_date=models.Case(
                 models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
                 default='resignation_date',
-                output_field=models.DateTimeField()),
+                output_field=models.DateField()),
             start_date=models.Case(
                 models.When(appointed_date__lt=dataset_min_date, then=models.Value(dataset_min_date)),
                 default='appointed_date',
-                output_field=models.DateTimeField()),
+                output_field=models.DateField()),
         )
 
         query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
+
         query = query.annotate(
             service_time=models.ExpressionWrapper(
                 F('end_date') - F('start_date'),

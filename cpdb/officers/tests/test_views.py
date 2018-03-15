@@ -313,7 +313,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_top_officers_by_allegation(self):
-        appointed_date = datetime(2003, 1, 1)
+        appointed_date = date(2003, 1, 1)
         officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
                                  complaint_percentile=100.0, gender='M', birth_year=1970,
                                  appointed_date=appointed_date
@@ -324,13 +324,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                        complaint_percentile=99.2, gender='M', birth_year=1960, appointed_date=appointed_date)
 
         OfficerAllegationFactory(
-            officer=officer, start_date=datetime(2016, 1, 12),
+            officer=officer, start_date=date(2016, 1, 12),
             allegation__incident_date=datetime(2015, 1, 1),
             allegation__is_officer_complaint=False,
             final_finding='NS'
         )
         OfficerAllegationFactory(
-            officer=officer, start_date=datetime(2016, 1, 12),
+            officer=officer, start_date=date(2016, 1, 12),
             allegation__incident_date=datetime(2016, 1, 1),
             allegation__is_officer_complaint=False,
             final_finding='NS'
@@ -386,7 +386,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
 
     def test_officer_percentile(self):
-        appointed_date = datetime(2003, 1, 1)
+        appointed_date = date(2003, 1, 1)
         officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
                                  complaint_percentile=100.0, gender='M', birth_year=1970,
                                  appointed_date=appointed_date)
@@ -397,17 +397,18 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                        appointed_date=appointed_date)
 
         OfficerAllegationFactory.create_batch(
-            2, officer=officer, start_date=datetime(2015, 1, 12),
+            2, officer=officer, start_date=date(2015, 1, 12),
             allegation__incident_date=datetime(2014, 1, 1),
             allegation__is_officer_complaint=False,
             final_finding='NS'
         )
         OfficerAllegationFactory.create_batch(
-            2, officer=officer, start_date=datetime(2016, 1, 12),
+            2, officer=officer, start_date=date(2016, 1, 12),
             allegation__incident_date=datetime(2016, 1, 1),
             allegation__is_officer_complaint=False,
             final_finding='NS'
         )
+
         self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-percentile', kwargs={'pk': 1}))
 

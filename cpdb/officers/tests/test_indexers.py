@@ -235,7 +235,7 @@ class OfficerPercentileIndexerTestCase(TestCase):
         expect(self.indexer.get_queryset()).to.be.empty()
 
     def test_get_queryset(self):
-        appointed_date = datetime(2003, 1, 1, tzinfo=pytz.utc)
+        appointed_date = date(2003, 1, 1)
         officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
                                  complaint_percentile=100.0, gender='M', birth_year=1970,
                                  appointed_date=appointed_date
@@ -246,18 +246,18 @@ class OfficerPercentileIndexerTestCase(TestCase):
                        complaint_percentile=99.2, gender='M', birth_year=1960, appointed_date=appointed_date)
 
         OfficerAllegationFactory(
-            officer=officer, start_date=datetime(2016, 1, 12, tzinfo=pytz.utc),
+            officer=officer, start_date=date(2016, 1, 12),
             allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False,
             final_finding='NS'
         )
         OfficerAllegationFactory(
-            officer=officer, start_date=datetime(2016, 1, 12, tzinfo=pytz.utc),
+            officer=officer, start_date=date(2016, 1, 12),
             allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False,
             final_finding='NS'
         )
-        expected_service_time = datetime(2016, 12, 31, tzinfo=pytz.utc) - datetime(2015, 1, 1, tzinfo=pytz.utc)
+        expected_service_time = date(2016, 12, 31) - date(2015, 1, 1)
         expect(self.indexer.get_queryset()).to.eq([{
             'percentile_trr': 0,
             'num_allegation_civilian': 0,

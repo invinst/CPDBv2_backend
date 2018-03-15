@@ -1,6 +1,8 @@
-from datetime import date, datetime
+import pytz
+from datetime import date
 
 from django.test.testcases import TestCase, override_settings
+from django.utils.timezone import now, datetime
 
 from robber.expect import expect
 
@@ -110,8 +112,7 @@ class OfficerTestCase(TestCase):
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
 
     def test_compute_num_allegation_trr(self):
-
-        appointed_date = datetime(2013, 1, 1)
+        appointed_date = date(2013, 1, 1)
         officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
         officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
         OfficerFactory(id=3, appointed_date=appointed_date)
@@ -138,7 +139,7 @@ class OfficerTestCase(TestCase):
             allegation__is_officer_complaint=False
         )
 
-        expected_service_time = datetime(2017, 12, 31) - appointed_date
+        expected_service_time = date(2017, 12, 31) - appointed_date
 
         expect(list(Officer.compute_num_allegation_trr(2017))).to.eq([
             {
@@ -171,7 +172,7 @@ class OfficerTestCase(TestCase):
                 'num_trr': 1
             }])
 
-        expected_service_time = datetime(2015, 12, 31) - appointed_date
+        expected_service_time = date(2015, 12, 31) - appointed_date
         expect(list(Officer.compute_num_allegation_trr(2015))).to.eq([
             {
                 'service_time': expected_service_time,
@@ -255,14 +256,14 @@ class OfficerTestCase(TestCase):
         ])
 
     def test_top_complaint_officers(self):
-        appointed_date = datetime(2013, 1, 1)
+        appointed_date = date(2013, 1, 1)
         officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
         officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
         OfficerFactory(id=3, appointed_date=appointed_date)
         OfficerFactory(id=4, appointed_date=appointed_date)
         OfficerAllegationFactory(officer=officer1,
                                  allegation__incident_date=datetime(2013, 1, 1),
-                                 start_date=datetime(2014, 1, 1),
+                                 start_date=date(2014, 1, 1),
                                  allegation__is_officer_complaint=False)
         OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
                                  allegation__incident_date=datetime(2014, 1, 1),
@@ -275,9 +276,10 @@ class OfficerTestCase(TestCase):
             trr_datetime=datetime(2016, 1, 1)
         )
 
-        expected_service_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        expected_service_time = now().date()
         expected_service_time -= appointed_date
-        current_year = datetime.now().year
+        current_year = now().year
+
         expect(Officer.top_complaint_officers(100)).to.eq([
             {
                 'percentile_trr': 0,
@@ -348,7 +350,7 @@ class OfficerTestCase(TestCase):
             }
         ])
 
-        expected_service_time = datetime(2017, 12, 31) - appointed_date
+        expected_service_time = datetime(2017, 12, 31).date() - appointed_date
         expect(expected_service_time.days / 365.0).to.eq(5)
         expect(Officer.top_complaint_officers(100, year=2017)).to.eq([
             {
@@ -419,36 +421,36 @@ class OfficerTestCase(TestCase):
         ])
 
     def test_top_complaint_officers_type_not_found(self):
-        officer1 = OfficerFactory(id=1, appointed_date=datetime(2016, 1, 1))
+        officer1 = OfficerFactory(id=1, appointed_date=date(2016, 1, 1))
         OfficerAllegationFactory(officer=officer1,
-                                 allegation__incident_date=datetime(2013, 1, 1),
-                                 start_date=datetime(2014, 1, 1),
+                                 allegation__incident_date=date(2013, 1, 1),
+                                 start_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
                                  allegation__is_officer_complaint=False)
         with self.assertRaisesRegex(ValueError, 'type is invalid'):
             Officer.top_complaint_officers(100, year=2017, type=['not_exist'])
 
     def test_top_complaint_officers_with_type(self):
-        appointed_date = datetime(2013, 1, 1)
+        appointed_date = date(2013, 1, 1)
         officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
         officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
         OfficerFactory(id=3, appointed_date=appointed_date)
         OfficerFactory(id=4, appointed_date=appointed_date)
         OfficerAllegationFactory(officer=officer1,
-                                 allegation__incident_date=datetime(2013, 1, 1),
-                                 start_date=datetime(2014, 1, 1),
+                                 allegation__incident_date=date(2013, 1, 1),
+                                 start_date=date(2014, 1, 1),
                                  allegation__is_officer_complaint=False)
         OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
-                                 allegation__incident_date=datetime(2014, 1, 1),
+                                 allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
                                  allegation__is_officer_complaint=False)
         OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
-                                 allegation__incident_date=datetime(2016, 1, 1),
+                                 allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
                                  allegation__is_officer_complaint=False)
         TRRFactory(
             officer=officer2,
-            trr_datetime=datetime(2016, 1, 1)
+            trr_datetime=datetime(2016, 1, 1, tzinfo=pytz.utc)
         )
 
-        expected_service_time = datetime(2017, 12, 31) - appointed_date
+        expected_service_time = date(2017, 12, 31) - appointed_date
         expect(expected_service_time.days / 365.0).to.eq(5)
         expect(Officer.top_complaint_officers(100, year=2017, type=['allegation'])).to.eq([
             {
