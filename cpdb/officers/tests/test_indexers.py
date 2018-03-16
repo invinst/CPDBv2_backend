@@ -11,9 +11,11 @@ from robber import expect
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from data.models import Officer
 from officers.indexers import (
-    OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
-    OfficerPercentileIndexer
+    OfficersIndexer,
+    CRTimelineEventIndexer, UnitChangeTimelineEventIndexer, JoinedTimelineEventIndexer,
+    CRNewTimelineEventIndexer, UnitChangeNewTimelineEventIndexer, JoinedNewTimelineEventIndexer,
+    TRRNewTimelineEventIndexer, AwardNewTimelineEventIndexer,
+    SocialGraphIndexer, OfficerMetricsIndexer, OfficerPercentileIndexer
 )
 
 
@@ -346,4 +348,153 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'percentile_allegation_internal': '50.000',
             'percentile_allegation_civilian': '0.000',
             'percentile_trr': '0.000',
+        })
+
+
+class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer = Mock()
+        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
+            expect(JoinedNewTimelineEventIndexer().get_queryset()).to.eq([officer])
+
+    def test_extract_datum(self):
+        officer = Mock(
+            id=123,
+            appointed_date=date(2012, 1, 1),
+            get_unit_name_by_date=Mock(return_value='001'),
+            rank='Police Officer',
+        )
+        expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2012, 1, 1),
+            'priority_sort': 10,
+            'date': '2012-01-01',
+            'kind': 'JOINED',
+            'unit_name': '001',
+            'rank': 'Police Officer',
+        })
+
+
+class UnitChangeNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer_history = Mock()
+
+        with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[officer_history]):
+            expect(UnitChangeNewTimelineEventIndexer().get_queryset()).to.eq([officer_history])
+
+    def test_extract_datum(self):
+        officer_history = Mock(
+            officer_id=123,
+            effective_date=date(2010, 3, 4),
+            unit_name='003',
+            officer=Mock(rank='Police Officer')
+        )
+        expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 20,
+            'date': '2010-03-04',
+            'kind': 'UNIT_CHANGE',
+            'unit_name': '003',
+            'rank': 'Police Officer',
+        })
+
+
+class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer_allegation = Mock()
+
+        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[officer_allegation]):
+            expect(CRNewTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
+
+    def test_extract_datum(self):
+        officer_allegation = Mock(
+            officer_id=123,
+            start_date=date(2012, 1, 1),
+            crid='123456',
+            category='Illegal Search',
+            subcategory='Search of premise/vehicle without warrant',
+            final_finding_display='Unfounded',
+            final_outcome_display='Unknown',
+            coaccused_count=4,
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_name_by_date=Mock(return_value='Unit 0'),
+            ),
+        )
+
+        expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2012, 1, 1),
+            'priority_sort': 30,
+            'date': '2012-01-01',
+            'kind': 'CR',
+            'crid': '123456',
+            'category': 'Illegal Search',
+            'subcategory': 'Search of premise/vehicle without warrant',
+            'finding': 'Unfounded',
+            'outcome': 'Unknown',
+            'coaccused': 4,
+            'unit_name': 'Unit 0',
+            'rank': 'Police Officer',
+        })
+
+
+class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        award = Mock()
+
+        with patch('officers.indexers.Award.objects.filter', return_value=[award]):
+            expect(AwardNewTimelineEventIndexer().get_queryset()).to.eq([award])
+
+    def test_extract_datum(self):
+        award = Mock(
+            officer_id=123,
+            start_date=date(2010, 3, 4),
+            award_type='Honorable Mention',
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_name_by_date=Mock(return_value='Unit 003'),
+            )
+        )
+        expect(AwardNewTimelineEventIndexer().extract_datum(award)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 40,
+            'date': '2010-03-04',
+            'kind': 'AWARD',
+            'award_type': 'Honorable Mention',
+            'unit_name': 'Unit 003',
+            'rank': 'Police Officer',
+        })
+
+
+class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        trr = Mock()
+
+        with patch('officers.indexers.TRR.objects.all', return_value=[trr]):
+            expect(TRRNewTimelineEventIndexer().get_queryset()).to.eq([trr])
+
+    def test_extract_datum(self):
+        trr = Mock(
+            officer_id=123,
+            trr_datetime=datetime(2010, 3, 4),
+            firearm_used=False,
+            taser=False,
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_name_by_date=Mock(return_value='Unit 003'),
+            )
+        )
+        expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 50,
+            'date': '2010-03-04',
+            'kind': 'FORCE',
+            'taser': False,
+            'firearm_used': False,
+            'unit_name': 'Unit 003',
+            'rank': 'Police Officer',
         })

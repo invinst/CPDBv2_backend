@@ -2,6 +2,8 @@ from officers.index_aliases import officers_index_alias
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
     JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
+    CRNewTimelineEventIndexer, UnitChangeNewTimelineEventIndexer, JoinedNewTimelineEventIndexer,
+    AwardNewTimelineEventIndexer, TRRNewTimelineEventIndexer,
     OfficerPercentileIndexer
 )
 
@@ -18,6 +20,11 @@ class OfficerSummaryTestCaseMixin(object):
             CRTimelineEventIndexer().reindex()
             UnitChangeTimelineEventIndexer().reindex()
             JoinedTimelineEventIndexer().reindex()
+            CRNewTimelineEventIndexer().reindex()
+            UnitChangeNewTimelineEventIndexer().reindex()
+            JoinedNewTimelineEventIndexer().reindex()
+            AwardNewTimelineEventIndexer().reindex()
+            TRRNewTimelineEventIndexer().reindex()
             SocialGraphIndexer().reindex()
             OfficerPercentileIndexer().reindex()
 

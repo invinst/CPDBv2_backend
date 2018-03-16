@@ -144,8 +144,8 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
     priority_sort = serializers.SerializerMethodField()
     date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     kind = serializers.SerializerMethodField()
-    unit_name = serializers.CharField(source='first_unit')
-    rank = serializers.SerializerMethodField()
+    unit_name = serializers.SerializerMethodField()
+    rank = serializers.CharField()
 
     def get_kind(self, obj):
         return 'JOINED'
@@ -153,8 +153,8 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
     def get_priority_sort(self, obj):
         return 10
 
-    def get_rank(self, obj):
-        return obj.officer.rank
+    def get_unit_name(self, obj):
+        return obj.get_unit_name_by_date(obj.appointed_date)
 
 
 class UnitChangeNewTimelineSerializer(serializers.Serializer):

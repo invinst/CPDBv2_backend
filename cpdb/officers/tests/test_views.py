@@ -12,6 +12,7 @@ from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
 )
+from trr.factories import TRRFactory
 from .mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
 
@@ -181,7 +182,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 }
             ]
         })
-        pass
 
     def test_timeline_no_data(self):
         response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 456}))
@@ -198,6 +198,109 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data['next']).to.match(r'.+\?limit=20\&offset=30$')
         expect(response.data['previous']).to.match(r'.+\?limit=20$')
         expect(len(response.data['results'])).to.eq(20)
+
+    def test_new_timeline_items_no_match(self):
+        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 456}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_new_timeline_item(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1), rank='Police Officer')
+
+        unit1 = PoliceUnitFactory(unit_name='001')
+        unit2 = PoliceUnitFactory(unit_name='002')
+        OfficerHistoryFactory(officer=officer, unit=unit1, effective_date=date(2010, 1, 1), end_date=date(2011, 12, 31))
+        OfficerHistoryFactory(officer=officer, unit=unit2, effective_date=date(2012, 1, 1), end_date=None)
+
+        AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
+        AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
+        allegation = AllegationFactory(crid='123456')
+        OfficerAllegationFactory(
+            final_finding='UN', final_outcome='',
+            officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+
+        allegation2 = AllegationFactory(crid='654321')
+        OfficerAllegationFactory(
+            final_finding='UN', final_outcome='009',
+            officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
+            allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
+        )
+
+        TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
+        TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'date': '2015-09-23',
+                'kind': 'FORCE',
+                'taser': False,
+                'firearm_used': False,
+                'unit_name': '002',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2015-08-23',
+                'kind': 'CR',
+                'crid': '654321',
+                'category': 'Use of Force',
+                'subcategory': 'sub category',
+                'finding': 'Unfounded',
+                'outcome': '9 Day Suspension',
+                'coaccused': 1,
+                'unit_name': '002',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2015-03-23',
+                'kind': 'AWARD',
+                'unit_name': '002',
+                'award_type': 'Complimentary Letter',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2012-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '002',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-09-23',
+                'kind': 'FORCE',
+                'taser': True,
+                'firearm_used': False,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-08-23',
+                'kind': 'CR',
+                'crid': '123456',
+                'category': 'category',
+                'subcategory': 'sub category',
+                'finding': 'Unfounded',
+                'outcome': 'Unknown',
+                'coaccused': 4,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-03-23',
+                'kind': 'AWARD',
+                'award_type': 'Honorable Mention',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2000-01-01',
+                'kind': 'JOINED',
+                'unit_name': '',
+                'rank': 'Police Officer',
+            },
+        ])
 
     def test_timeline_minimap_no_data(self):
         response = self.client.get(reverse('api-v2:officers-timeline-minimap', kwargs={'pk': 456}))

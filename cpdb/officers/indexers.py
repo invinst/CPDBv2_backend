@@ -209,5 +209,5 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
     def get_queryset(self):
         return TRR.objects.all()
 
-    def extract_datum(self, awards):
-        return TRRNewTimelineSerializer(awards).data
+    def extract_datum(self, trrs):
+        return TRRNewTimelineSerializer(trrs).data
