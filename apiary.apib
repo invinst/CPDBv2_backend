@@ -1467,22 +1467,24 @@ This api require an api access token set in `Authorization` header. To get an ap
 
 + Response 200 (application/json)
 
-        {
-            "officer_id": 1,
-            "year": 2016,
-            "percentile_trr": "0.000",
-            "percentile_allegation": "76.282",
-            "percentile_allegation_civilian": "79.479",
-            "percentile_allegation_internal": "0.000"
-        },
-        {
-            "officer_id": 1,
-            "year": 2017,
-            "percentile_trr": "0.000",
-            "percentile_allegation": "58.446",
-            "percentile_allegation_civilian": "63.044",
-            "percentile_allegation_internal": "0.000"
-        },
+        [
+            {
+                "officer_id": 1,
+                "year": 2016,
+                "percentile_trr": "0.000",
+                "percentile_allegation": "76.282",
+                "percentile_allegation_civilian": "79.479",
+                "percentile_allegation_internal": "0.000"
+            },
+            {
+                "officer_id": 1,
+                "year": 2017,
+                "percentile_trr": "0.000",
+                "percentile_allegation": "58.446",
+                "percentile_allegation_civilian": "63.044",
+                "percentile_allegation_internal": "0.000"
+            }
+        ]
 
 ## Officer timeline minimap [/officers/{officer_id}/timeline-minimap]
 
@@ -1577,12 +1579,12 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-## Top Officers by allegation [/officers/top-by-allegation/]
+## Top Officers by allegation [/officers/top-by-allegation/{?random}]
 
 ### Get Officer cards on top 1% complaint percentile [GET]
 
 + Parameters
-    + random (1 or 0) - 1: Optional randomize the result, default 0: sort complaint_percentile by descending
+    + random (optional, 1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
 
 + Response 200 (application/json)
 

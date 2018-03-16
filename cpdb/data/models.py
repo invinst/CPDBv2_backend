@@ -5,7 +5,8 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
+from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count, Func
+from django.db.models.functions import Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -13,12 +14,13 @@ from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES
-)
+    DISCIPLINE_CODES,
+    PERCENTILE_TYPES)
 from data.utils.aggregation import get_num_range_case
 from data.utils.calculations import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
+from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
@@ -320,20 +322,26 @@ class Officer(TaggableModel):
             return None
 
     @staticmethod
-    def compute_num_allegation_trr(year_end):
-        # We consider `now` as dataset_max_date (not with max of incident date)
-
-        dataset_max_date = now().date()
-        dataset_min_date = Allegation.objects.all().aggregate(
-            models.Min('incident_date')
+    def get_dataset_range():
+        allegation_date = Allegation.objects.aggregate(
+            models.Min('incident_date'),
+            models.Max('incident_date'),
+            models.Min('officerallegation__start_date'),
+            models.Max('officerallegation__start_date'),
+            models.Max('officerallegation__end_date'),
         ).values()
-        dataset_min_date = dataset_min_date[0].date() if dataset_min_date else None
+        trr_date = TRR.objects.aggregate(
+            models.Min('trr_datetime'),
+            models.Max('trr_datetime')
+        ).values()
+        all_date = allegation_date[:]
+        all_date.extend(trr_date)
+        all_date = [x.date() if hasattr(x, 'date') else x for x in all_date
+                    if x is not None]
+        return [min(all_date), max(all_date)]
 
-        if year_end:
-            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-
-        # STEP 1: compute the service time of all officers
-        query = Officer.objects.filter(appointed_date__isnull=False)
+    @staticmethod
+    def _embed_officer_working_range(query, dataset_min_date, dataset_max_date):
         query = query.annotate(
             end_date=models.Case(
                 models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
@@ -344,18 +352,17 @@ class Officer(TaggableModel):
                 default='appointed_date',
                 output_field=models.DateField()),
         )
-
+        # filter-out officer has service time smaller than 1 year
         query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
+        return query.annotate(service_year=(Func(F('end_date') - F('start_date'),
+                                                  template="%(function)s('day', %(expressions)s)",
+                                                  function='DATE_PART')) / 365)
 
-        query = query.annotate(
-            service_time=models.ExpressionWrapper(
-                F('end_date') - F('start_date'),
-                output_field=models.DurationField())
-        )
-
-        # STEP 2: count the allegation (internal/civil) and TRR
-        query = query.annotate(
+    @staticmethod
+    def _embed_num_complaint_n_trr(query, dataset_max_date):
+        return  query.annotate(
             officer_id=F('id'),
+            year=models.Value(dataset_max_date.year, output_field=IntegerField()),
             num_allegation=models.Count(
                 models.Case(
                     models.When(
@@ -382,43 +389,60 @@ class Officer(TaggableModel):
                 ), distinct=True
             ),
         )
+
+    @staticmethod
+    def compute_metric_percentile(year_end=None):
+        [dataset_min_date, dataset_max_date] = Officer.get_dataset_range()
+
+        if year_end:
+            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
+
+        # STEP 1: compute the service time of all officers
+        query = Officer.objects.filter(appointed_date__isnull=False)
+        query = Officer._embed_officer_working_range(query, dataset_min_date, dataset_max_date)
+
+        # STEP 2: count the allegation (internal/civil) and TRR
+        query = Officer._embed_num_complaint_n_trr(query, dataset_max_date)
+
+        # STEP 3: calculate the metric
         query = query.annotate(
-            num_allegation_civilian=models.ExpressionWrapper(
-                F('num_allegation') - F('num_allegation_internal'),
-                output_field=models.IntegerField())
-        ).order_by('num_allegation', 'num_trr')
+            metric_allegation=models.ExpressionWrapper(
+                F('num_allegation') / F('service_year'),
+                output_field=models.FloatField()),
+            metric_allegation_internal=models.ExpressionWrapper(
+                F('num_allegation_internal') / F('service_year'),
+                output_field=models.FloatField()),
+            metric_allegation_civilian=models.ExpressionWrapper(
+                (F('num_allegation') - F('num_allegation_internal')) / F('service_year'),
+                output_field=models.FloatField()),
+            metric_trr=models.ExpressionWrapper(
+                F('num_trr') / F('service_year'),
+                output_field=models.FloatField())
+        ).order_by('metric_allegation', 'metric_trr', 'officer_id')
 
         return query.values(
+            'year',
             'officer_id',
-            'service_time',
-            'num_allegation',
-            'num_allegation_civilian',
-            'num_allegation_internal',
-            'num_trr'
+            'service_year',
+            'metric_allegation',
+            'metric_allegation_civilian',
+            'metric_allegation_internal',
+            'metric_trr'
         )
 
     @staticmethod
-    def top_complaint_officers(top_percentile_value, year=None, type=[]):
+    def top_complaint_officers(top_percentile_value, year=now().year, percentile_types=PERCENTILE_TYPES):
         """ This is calculate top percentile of top_percentile_value
         :return: list of (officer_id, percentile_value)
         """
+        computed_data = list(Officer.compute_metric_percentile(year))
 
-        computed_data = list(Officer.compute_num_allegation_trr(year))
-        if not computed_data:
-            return []
-        TYPE = ['allegation', 'allegation_internal', 'allegation_civilian', 'trr']
-        if not type:
-            type = TYPE
-        elif any(t not in TYPE for t in type):
-            raise ValueError("type is invalid")
+        if any(t not in PERCENTILE_TYPES for t in percentile_types):
+            raise ValueError("percentile_type is invalid")
 
-        for key in type:
-            for v in computed_data:
-                v['year'] = year if year else now().year
-                v[key] = v['num_' + key] / (v['service_time'].days / 365.0)
+        for percentile_type in percentile_types:
             computed_data = percentile(computed_data, 100.0 - top_percentile_value,
-                                       key=key, inline=True)
-
+                                       key=percentile_type, inline=True)
         return computed_data
 
     @property

@@ -5,6 +5,9 @@ from data.utils.calculations import percentile
 
 
 class CalculationsTestCase(SimpleTestCase):
+    def test_percentile_with_no_data(self):
+        expect(percentile([])).to.be.eq([])
+
     def test_percentile_with_no_inline(self):
         data = [
             {'id': '2', 'value': 0.2},

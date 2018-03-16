@@ -9,6 +9,8 @@ def percentile(scores, percentile_rank, key='value', inline=False):
     """
     if key not in scores[0]:
         raise ValueError('Can not found the corresponding key')
+    if not scores:
+        return []
 
     sorted_scores = sorted(scores, key=lambda x: x[key])
     scores_length = len(sorted_scores)
@@ -22,7 +24,7 @@ def percentile(scores, percentile_rank, key='value', inline=False):
             previous_score = item[key]
         if current_rank >= percentile_rank:
             if inline:
-                item['percentile_'+key] = current_rank
+                item['percentile_{}'.format(key.replace('metric_', ''))] = current_rank
             else:
                 results.append((item, current_rank))
 
