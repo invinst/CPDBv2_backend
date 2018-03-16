@@ -1548,6 +1548,52 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Officer timeline items list [/officers/{officer_id}/timeline-items]
+
+### Get Officer timeline items list [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+    [
+        {
+                'date': '2011-09-23',
+                'kind': 'FORCE',
+                'taser': True,
+                'firearm_used': False,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-08-23',
+                'kind': 'CR',
+                'crid': '123456',
+                'category': 'category',
+                'subcategory': 'sub category',
+                'finding': 'Unfounded',
+                'outcome': 'Unknown',
+                'coaccused': 4,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-03-23',
+                'kind': 'AWARD',
+                'award_type': 'Honorable Mention',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2000-01-01',
+                'kind': 'JOINED',
+                'unit_name': '',
+                'rank': 'Police Officer',
+            },
+    ]
+
 ## Officer social graph [/officers/{officer_id}/social-graph]
 
 ### Get Officer social graph [GET]

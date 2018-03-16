@@ -81,7 +81,7 @@ class OfficersViewSet(viewsets.ViewSet):
     def new_timeline_items(self, _, pk):
         if Officer.objects.filter(pk=pk).exists():
             query = self._query_new_timeline_items(pk)
-            result = query.execute()
+            result = query[:10000].execute()
             return Response(NewTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
