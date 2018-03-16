@@ -1458,6 +1458,32 @@ This api require an api access token set in `Authorization` header. To get an ap
             "complaint_percentile": 40.0
         }
 
+## Officer percentile [/officers/{officer_id}/percentile]
+
+### Get Officer Percentile group by year [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "officer_id": 1,
+            "year": 2016,
+            "percentile_trr": "0.000",
+            "percentile_allegation": "76.282",
+            "percentile_allegation_civilian": "79.479",
+            "percentile_allegation_internal": "0.000"
+        },
+        {
+            "officer_id": 1,
+            "year": 2017,
+            "percentile_trr": "0.000",
+            "percentile_allegation": "58.446",
+            "percentile_allegation_civilian": "63.044",
+            "percentile_allegation_internal": "0.000"
+        },
+
 ## Officer timeline minimap [/officers/{officer_id}/timeline-minimap]
 
 ### Get Officer timeline minimap [GET]
@@ -1551,37 +1577,53 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-## Top Officers by allegation [/activity-grid/]
+## Top Officers by allegation [/officers/top-by-allegation/]
 
 ### Get Officer cards on top 1% complaint percentile [GET]
 
 + Parameters
-    + random (1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+    + random (1 or 0) - 1: Optional randomize the result, default 0: sort complaint_percentile by descending
 
 + Response 200 (application/json)
 
         [
             {
-                "id": 1,
-                "full_name": "Jerome Finnigan",
+                "id": 8658,
                 "visual_token_background_color": "#90b1f5",
-                "birth_year": 1963,
-                "complaint_count": 90,
-                "complaint_percentile": 100.00,
-                "gender": "Male"
-                "race": "White",
-                "sustained_count": 4
+                "full_name": "Corey Flagg",
+                "complaint_count": 67,
+                "sustained_count": 5,
+                "birth_year": 1970,
+                "complaint_percentile": 99.995,
+                "race": "Black",
+                "gender": "Male",
+                "percentile": {
+                    "officer_id": 8658,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "99.995",
+                    "percentile_allegation_civilian": "99.990",
+                    "percentile_allegation_internal": "99.795"
+                }
             },
             {
-                "id": 2,
-                "full_name": "Raymond Piwnicki",
-                "visual_token_background_color": "#aec9e8",
-                "birth_year": 1963,
-                "complaint_count": 99.63,
-                "complaint_percentile": None,
-                "gender": "Male"
-                "race": "White",
-                "sustained_count": 6
+                "id": 13788,
+                "visual_token_background_color": "#90b1f5",
+                "full_name": "Broderick Jones",
+                "complaint_count": 69,
+                "sustained_count": 8,
+                "birth_year": 1971,
+                "complaint_percentile": 99.99,
+                "race": "Black",
+                "gender": "Male",
+                "percentile": {
+                    "officer_id": 13788,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "99.990",
+                    "percentile_allegation_civilian": "99.995",
+                    "percentile_allegation_internal": "90.565"
+                }
             }
         ]
 
@@ -1958,7 +2000,15 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "complaint_percentile": 88.55,
                 "gender": "Male"
                 "race": "White",
-                "sustained_count": 4
+                "sustained_count": 4,
+                "percentile": {
+                    "officer_id": 5193,
+                    "year": 2017,
+                    "percentile_trr": "91.696",
+                    "percentile_allegation": "99.870",
+                    "percentile_allegation_civilian": "99.895",
+                    "percentile_allegation_internal": "80.494"
+                }
             },
             {
                 "id": 2,
@@ -1969,7 +2019,15 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "complaint_percentile": None,
                 "gender": "Male"
                 "race": "White",
-                "sustained_count": 6
+                "sustained_count": 6,
+                "percentile": {
+                    "officer_id": 5193,
+                    "year": 2017,
+                    "percentile_trr": "91.696",
+                    "percentile_allegation": "99.870",
+                    "percentile_allegation_civilian": "99.895",
+                    "percentile_allegation_internal": "80.494"
+                }
             }
         ]
 
