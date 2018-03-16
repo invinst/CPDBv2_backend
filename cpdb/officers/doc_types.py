@@ -23,6 +23,14 @@ class OfficerTimelineEventDocType(DocType):
 
 
 @officers_index_alias.doc_type
+class OfficerNewTimelineEventDocType(DocType):
+    date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
+    priority_sort = Integer()
+    kind = Keyword()
+    officer_id = Integer()
+
+
+@officers_index_alias.doc_type
 class OfficerTimelineMinimapDocType(DocType):
     officer_id = Integer()
 

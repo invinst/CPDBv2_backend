@@ -104,6 +104,15 @@ class TimelineSerializer(serializers.Serializer):
         return result
 
 
+class NewTimelineSerializer(serializers.Serializer):
+    def to_representation(self, obj):
+        result = obj.to_dict()
+        result.pop('officer_id')
+        result.pop('date_sort')
+        result.pop('priority_sort')
+        return result
+
+
 class TimelineMinimapSerializer(serializers.Serializer):
     _KIND_MAPPINGS = {
         'UNIT_CHANGE': 'Unit',
@@ -127,3 +136,125 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
+
+
+class JoinedNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField(source='id')
+    date_sort = serializers.DateField(source='appointed_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    unit_name = serializers.CharField(source='first_unit')
+    rank = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'JOINED'
+
+    def get_priority_sort(self, obj):
+        return 10
+
+    def get_rank(self, obj):
+        return obj.officer.rank
+
+
+class UnitChangeNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='effective_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    unit_name = serializers.CharField()
+    rank = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'UNIT_CHANGE'
+
+    def get_priority_sort(self, obj):
+        return 20
+
+    def get_rank(self, obj):
+        return obj.officer.rank
+
+
+class CRNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='start_date', format=None)
+    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    priority_sort = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+    crid = serializers.CharField()
+    category = serializers.SerializerMethodField()
+    subcategory = serializers.CharField()
+    finding = serializers.CharField(source='final_finding_display')
+    outcome = serializers.CharField(source='final_outcome_display')
+    coaccused = serializers.IntegerField(source='coaccused_count')
+    unit_name = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        return obj.category if obj.category else 'Unknown'
+
+    def get_kind(self, obj):
+        return 'CR'
+
+    def get_priority_sort(self, obj):
+        return 30
+
+    def get_unit_name(self, obj):
+        return obj.officer.get_unit_name_by_date(obj.start_date)
+
+    def get_rank(self, obj):
+        return obj.officer.rank
+
+
+class AwardNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='start_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    award_type = serializers.CharField()
+    unit_name = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'AWARD'
+
+    def get_priority_sort(self, obj):
+        return 40
+
+    def get_unit_name(self, obj):
+        return obj.officer.get_unit_name_by_date(obj.start_date)
+
+    def get_rank(self, obj):
+        return obj.officer.rank
+
+
+class TRRNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.SerializerMethodField()
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+    taser = serializers.NullBooleanField()
+    firearm_used = serializers.NullBooleanField()
+    unit_name = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'FORCE'
+
+    def get_priority_sort(self, obj):
+        return 50
+
+    def get_unit_name(self, obj):
+        return obj.officer.get_unit_name_by_date(obj.trr_datetime)
+
+    def get_rank(self, obj):
+        return obj.officer.rank
+
+    def get_date_sort(self, obj):
+        return obj.trr_datetime.date()
+
+    def get_date(self, obj):
+        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
