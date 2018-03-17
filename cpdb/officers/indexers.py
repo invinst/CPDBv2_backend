@@ -1,6 +1,6 @@
 from itertools import combinations
 
-from django.db.models import Max
+from django.utils.timezone import now
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
@@ -134,14 +134,13 @@ class OfficerPercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        max_incident_date = Allegation.objects.all().aggregate(Max('incident_date'))['incident_date__max']
-        if not max_incident_date:
-            return []
-        max_year = max_incident_date.year
-
         results = []
-        for yr in tqdm(range(2000, max_year + 1), desc='Prepare percentile data'):
-            results.extend(Officer.top_complaint_officers(100, yr))
+        for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
+            result = Officer.top_complaint_officers(100, yr)
+            if result and result[0]['year'] < yr:
+                # we have no more data to calculate, should break here
+                break
+            results.extend(result)
         return results
 
     def extract_datum(self, datum):

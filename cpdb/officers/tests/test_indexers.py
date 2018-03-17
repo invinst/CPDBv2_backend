@@ -1,13 +1,15 @@
-from datetime import date, datetime, timedelta
-
+from datetime import date, datetime
 import pytz
+
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
+from django.utils.timezone import now
 
 from mock import Mock, patch
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from data.models import Officer
 from officers.indexers import (
     OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
     JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
@@ -234,97 +236,108 @@ class OfficerPercentileIndexerTestCase(TestCase):
     def test_get_queryset_no_allegation(self):
         expect(self.indexer.get_queryset()).to.be.empty()
 
-    def test_get_queryset(self):
-        appointed_date = date(2003, 1, 1)
-        officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
-                                 complaint_percentile=100.0, gender='M', birth_year=1970,
-                                 appointed_date=appointed_date
-                                 )
-        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0,
-                       appointed_date=appointed_date)
-        OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
-                       complaint_percentile=99.2, gender='M', birth_year=1960, appointed_date=appointed_date)
+    def _prepare_data_up_to_2017(self):
+        officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
 
         OfficerAllegationFactory(
-            officer=officer, start_date=date(2016, 1, 12),
+            officer=officer1,
             allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False,
-            final_finding='NS'
+            start_date=datetime(2015, 1, 1),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(
+            officer=officer1,
+            start_date=date(2015, 1, 1),
+            allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(
+            officer=officer1,
+            start_date=date(2016, 1, 22),
+            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory.create_batch(
+            2, officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False
         )
         OfficerAllegationFactory(
-            officer=officer, start_date=date(2016, 1, 12),
-            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False,
-            final_finding='NS'
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
         )
-        expected_service_time = date(2016, 12, 31) - date(2015, 1, 1)
-        expect(self.indexer.get_queryset()).to.eq([{
-            'percentile_trr': 0,
-            'num_allegation_civilian': 0,
-            'percentile_allegation_civilian': 0,
-            'service_time': expected_service_time,
-            'year': 2016,
-            'allegation_internal': 0.0,
-            'num_trr': 0,
-            'num_allegation': 0,
-            'allegation': 0.0,
-            'allegation_civilian': 0.0,
-            'officer_id': 2,
-            'num_allegation_internal': 0,
-            'trr': 0.0,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
-        }, {
-            'percentile_trr': 0,
-            'num_allegation_civilian': 0,
-            'percentile_allegation_civilian': 0,
-            'service_time': expected_service_time,
-            'year': 2016,
-            'allegation_internal': 0.0,
-            'num_trr': 0,
-            'num_allegation': 0,
-            'allegation': 0.0,
-            'allegation_civilian': 0.0,
-            'officer_id': 3,
-            'num_allegation_internal': 0,
-            'trr': 0.0,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
-        }, {
-            'percentile_trr': 0,
-            'num_allegation_civilian': 2,
-            'percentile_allegation_civilian': 66.66666666666667,
-            'service_time': expected_service_time,
-            'year': 2016,
-            'allegation_internal': 0.0,
-            'num_trr': 0,
-            'num_allegation': 2,
-            'allegation': 1.0,
-            'allegation_civilian': 1.0,
-            'officer_id': 1,
-            'num_allegation_internal': 0,
-            'trr': 0.0,
-            'percentile_allegation': 66.66666666666667,
-            'percentile_allegation_internal': 0
-        }])
+
+    def test_get_queryset(self):
+        self._prepare_data_up_to_2017()
+        # expect officer 2 not have year 2017 since less than 1 year
+        # expect no year 2018, since dataset only up to 2017
+        expect(self.indexer.get_queryset()).to.eq([
+            {
+                'percentile_trr': 0,
+                'percentile_allegation_civilian': 0,
+                'metric_allegation_civilian': 1.5,
+                'service_year': 2.0,
+                'metric_trr': 0.0,
+                'metric_allegation_internal': 0.0,
+                'metric_allegation': 1.5,
+                'year': 2016,
+                'officer_id': 1,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }, {
+                'percentile_trr': 0,
+                'percentile_allegation_civilian': 0,
+                'metric_allegation_civilian': 1.0714,
+                'service_year': 2.8,
+                'metric_trr': 0.0,
+                'metric_allegation_internal': 0.0,
+                'metric_allegation': 1.0714,
+                'year': 2017,
+                'officer_id': 1,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0
+            }, {
+                'percentile_trr': 0,
+                'percentile_allegation_civilian': 50.0,
+                'metric_allegation_civilian': 1.25,
+                'service_year': 1.6,
+                'metric_trr': 0.0,
+                'metric_allegation_internal': 0.625,
+                'metric_allegation': 1.875,
+                'year': 2017,
+                'officer_id': 2,
+                'percentile_allegation': 50.0,
+                'percentile_allegation_internal': 50.0
+            }
+        ])
+
+    def test_get_queryset_with_dataset_upto_now(self):
+        self._prepare_data_up_to_2017()
+        currentYear = now().year
+        officer1 = Officer.objects.get(id=1)
+        OfficerAllegationFactory(
+            officer=officer1,
+            start_date=date(currentYear, 1, 2),
+            allegation__incident_date=datetime(currentYear, 1, 2, tzinfo=pytz.utc)
+        )
+        results = self.indexer.get_queryset()
+        expect(results).to.have.length(3 + (currentYear - 2017) * 2)
+        expect(results[-1]['year']).to.eq(currentYear)
 
     def test_extract_datum(self):
         data = {
-            'percentile_trr': 0,
-            'num_allegation_civilian': 0,
-            'percentile_allegation_civilian': 0,
-            'service_time': timedelta(100),
             'year': 2016,
-            'allegation_internal': 0.0,
-            'num_trr': 0,
-            'num_allegation': 0,
-            'allegation': 0.0,
-            'allegation_civilian': 0.0,
             'officer_id': 1,
-            'num_allegation_internal': 0,
-            'trr': 0.0,
-            'percentile_allegation': 66.66666666666667,
-            'percentile_allegation_internal': 50
+            'service_year': 2.2,
+            'metric_trr': 0,
+            'metric_allegation': 0,
+            'metric_allegation_internal': 0,
+            'metric_allegation_civilian': 0,
+            'percentile_allegation': 66.6667,
+            'percentile_allegation_internal': 50,
+            'percentile_trr': 0,
+            'percentile_allegation_civilian': 0
         }
         expect(self.indexer.extract_datum(data)).to.eq({
             'officer_id': 1,

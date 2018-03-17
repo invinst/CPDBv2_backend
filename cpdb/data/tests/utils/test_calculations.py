@@ -6,7 +6,7 @@ from data.utils.calculations import percentile
 
 class CalculationsTestCase(SimpleTestCase):
     def test_percentile_with_no_data(self):
-        expect(percentile([])).to.be.eq([])
+        expect(percentile([], 0)).to.be.eq([])
 
     def test_percentile_with_no_inline(self):
         data = [
@@ -56,5 +56,4 @@ class CalculationsTestCase(SimpleTestCase):
             {'id': '1', 'value': 0.1},
             {'id': '2', 'value': 0.2}
         ]
-        expect(lambda: percentile(data, 50, key='not_exist')) \
-            .to.throw_exactly(ValueError)
+        expect(lambda: percentile(data, 50, key='not_exist')).to.throw_exactly(ValueError)

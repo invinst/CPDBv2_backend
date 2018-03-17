@@ -12,5 +12,5 @@ class TRRFactory(DjangoModelFactory):
     class Meta:
         model = TRR
 
-    trr_datetime = LazyFunction(lambda: fake.past_datetime())
+    trr_datetime = LazyFunction(lambda: fake.date_time())
     officer = SubFactory(OfficerFactory)

@@ -343,7 +343,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         expect(response.data).to.eq([{
             'id': 1,
-            'visual_token_background_color': '#edf0fa',  # f5f4f4
+            'visual_token_background_color': '#edf0fa',
             'full_name': 'Clarence Featherwater',
             'complaint_count': 2,
             'sustained_count': 0,
@@ -381,7 +381,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
     def test_top_officers_by_allegation_random(self):
         with patch('data.models.Officer.objects') as mock_func:
-            # mock_func.filter.return_value.order_by.return_value.execute.return_value.values_list.return_value = []
             self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
 

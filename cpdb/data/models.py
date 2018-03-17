@@ -6,7 +6,6 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -14,12 +13,13 @@ from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES,
-    PERCENTILE_TYPES)
+    DISCIPLINE_CODES, PERCENTILE_TYPES
+)
 from data.utils.aggregation import get_num_range_case
 from data.utils.calculations import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
+from data.utils.calculations import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -338,6 +338,8 @@ class Officer(TaggableModel):
         all_date.extend(trr_date)
         all_date = [x.date() if hasattr(x, 'date') else x for x in all_date
                     if x is not None]
+        if not all_date:
+            return []
         return [min(all_date), max(all_date)]
 
     @staticmethod
@@ -354,13 +356,20 @@ class Officer(TaggableModel):
         )
         # filter-out officer has service time smaller than 1 year
         query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
-        return query.annotate(service_year=(Func(F('end_date') - F('start_date'),
-                                                  template="%(function)s('day', %(expressions)s)",
-                                                  function='DATE_PART')) / 365)
+        return query.annotate(
+            service_year=(
+                Func(
+                    F('end_date') - F('start_date'),
+                    template="ROUND(CAST(%(function)s('day', %(expressions)s) / 365.0 as numeric), 4)",
+                    function='DATE_PART',
+                    output_field=models.FloatField()
+                )  # in order to easy to test and calculate, we only get 4 decimal points
+            )
+        )
 
     @staticmethod
     def _embed_num_complaint_n_trr(query, dataset_max_date):
-        return  query.annotate(
+        return query.annotate(
             officer_id=F('id'),
             year=models.Value(dataset_max_date.year, output_field=IntegerField()),
             num_allegation=models.Count(
@@ -392,7 +401,10 @@ class Officer(TaggableModel):
 
     @staticmethod
     def compute_metric_percentile(year_end=None):
-        [dataset_min_date, dataset_max_date] = Officer.get_dataset_range()
+        dataset_range = Officer.get_dataset_range()
+        if not dataset_range:
+            return []
+        [dataset_min_date, dataset_max_date] = dataset_range
 
         if year_end:
             dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
@@ -407,16 +419,16 @@ class Officer(TaggableModel):
         # STEP 3: calculate the metric
         query = query.annotate(
             metric_allegation=models.ExpressionWrapper(
-                F('num_allegation') / F('service_year'),
+                Round(F('num_allegation') / F('service_year')),
                 output_field=models.FloatField()),
             metric_allegation_internal=models.ExpressionWrapper(
-                F('num_allegation_internal') / F('service_year'),
+                Round(F('num_allegation_internal') / F('service_year')),
                 output_field=models.FloatField()),
             metric_allegation_civilian=models.ExpressionWrapper(
-                (F('num_allegation') - F('num_allegation_internal')) / F('service_year'),
+                Round((F('num_allegation') - F('num_allegation_internal')) / F('service_year')),
                 output_field=models.FloatField()),
             metric_trr=models.ExpressionWrapper(
-                F('num_trr') / F('service_year'),
+                Round(F('num_trr') / F('service_year')),
                 output_field=models.FloatField())
         ).order_by('metric_allegation', 'metric_trr', 'officer_id')
 
@@ -442,7 +454,7 @@ class Officer(TaggableModel):
 
         for percentile_type in percentile_types:
             computed_data = percentile(computed_data, 100.0 - top_percentile_value,
-                                       key=percentile_type, inline=True)
+                                       key=percentile_type, inline=True, decimal_places=4)
         return computed_data
 
     @property

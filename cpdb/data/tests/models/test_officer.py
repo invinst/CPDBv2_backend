@@ -2,10 +2,11 @@ import pytz
 from datetime import date
 
 from django.test.testcases import TestCase, override_settings
-from django.utils.timezone import now, datetime
+from django.utils.timezone import datetime
 
 from robber.expect import expect
 
+from data.constants import PERCENTILE_ALLEGATION
 from data.models import Officer
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
@@ -112,133 +113,71 @@ class OfficerTestCase(TestCase):
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
 
     def test_compute_metric_pecentile(self):
-        appointed_date = date(2013, 1, 1)
-        officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
-        officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
-        OfficerFactory(id=3, appointed_date=appointed_date)
-        OfficerFactory(id=4, appointed_date=appointed_date)
-        OfficerAllegationFactory(
-            officer=officer1,
-            allegation__incident_date=datetime(2013, 1, 1, tzinfo=pytz.utc),
-            start_date=date(2014, 1, 1),
-            allegation__is_officer_complaint=False)
-        OfficerAllegationFactory(
-            officer=officer1, start_date=date(2015, 1, 1),
-            allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False)
-        OfficerAllegationFactory(
-            officer=officer1, start_date=date(2016, 1, 22),
-            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False)
-        TRRFactory(
-            officer=officer2,
-            trr_datetime=datetime(2016, 1, 12, tzinfo=pytz.utc)
-        )
-        expect(Officer.get_dataset_range()).to.be.eq([
-            date(2013, 1, 1),
-            date(2016, 1, 22)
-        ])
+        self._create_dataset_for_percentile()
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
 
-        expect(list(Officer.compute_metric_percentile(2017))).to.eq([
+        expeced_result_yr2017 = [
             {
+                'year': 2017,
                 'officer_id': 3,
-                'service_year': 3.05753424657534,
+                'service_year': 2.6,
                 'metric_allegation': 0,
                 'metric_allegation_internal': 0,
                 'metric_allegation_civilian': 0,
                 'metric_trr': 0
             }, {
+                'year': 2017,
                 'officer_id': 4,
-                'service_year': 3.05753424657534,
+                'service_year': 2.8,
                 'metric_allegation': 0,
                 'metric_allegation_civilian': 0,
                 'metric_allegation_internal': 0,
                 'metric_trr': 0
             }, {
+                'year': 2017,
                 'officer_id': 1,
-                'service_year': 3.05753424657534,
-                'metric_allegation': 3 / 3.05753424657534,
-                'metric_allegation_civilian': 3 / 3.05753424657534,
+                'service_year': 4.8,
+                'metric_allegation': 0.625,
+                'metric_allegation_civilian': 0.625,
                 'metric_allegation_internal': 0,
                 'metric_trr': 0
             }, {
+                'year': 2017,
                 'officer_id': 2,
-                'service_year': 3.05753424657534,
-                'metric_allegation': 3,
-                'metric_allegation_civilian': 3 / 3.05753424657534,
-                'metric_allegation_internal': 0,
-                'metric_trr': 1 / 3.05753424657534
-            }])
+                'service_year': 1.6,
+                'metric_allegation': 1.875,
+                'metric_allegation_civilian': 1.25,
+                'metric_allegation_internal': 0.625,
+                'metric_trr': 0.625
+            }]
+        expect(list(Officer.compute_metric_percentile(2017))).to.eq(expeced_result_yr2017)
 
-        # expected_service_year = date(2015, 12, 31) - appointed_date
-        # expect(list(Officer.compute_metric_percentile(2015))).to.eq([
-        #     {
-        #         'officer_id': 3,
-        #         'service_year': expected_service_year,
-        #         'num_allegation': 0,
-        #         'num_allegation_civilian': 0,
-        #         'num_allegation_internal': 0,
-        #         'num_trr': 0
-        #     }, {
-        #         'service_year': expected_service_year,
-        #         'num_allegation': 0,
-        #         'num_allegation_civilian': 0,
-        #         'officer_id': 4,
-        #         'num_allegation_internal': 0,
-        #         'num_trr': 0
-        #     }, {
-        #         'service_year': expected_service_year,
-        #         'num_allegation': 2,
-        #         'num_allegation_civilian': 2,
-        #         'officer_id': 1,
-        #         'num_allegation_internal': 0,
-        #         'num_trr': 0
-        #     }, {
-        #         'service_year': expected_service_year,
-        #         'num_allegation': 3,
-        #         'num_allegation_civilian': 3,
-        #         'officer_id': 2,
-        #         'num_allegation_internal': 0,
-        #         'num_trr': 0
-        #     }])
+        # we have no data of 2018, then percentile metric should return value of 2017 instead
+        expect(list(Officer.compute_metric_percentile(2018))).to.eq(expeced_result_yr2017)
+
+        expect(list(Officer.compute_metric_percentile(2015))).to.eq([
+            {
+                'year': 2015,
+                'officer_id': 1,
+                'service_year': 2.9973,  # ~1094 days / 365.0
+                'metric_allegation_internal': 0.0,
+                'metric_allegation_civilian': 0.6673,  # ceils(2 / 2.9973),
+                'metric_allegation': 0.6673,
+                'metric_trr': 0.0
+            }
+        ])
 
     def test_compute_metric_pecentile_less_one_year(self):
-        appointed_date1 = datetime(2013, 1, 1)
-        appointed_date2 = datetime(2016, 1, 1)
-        officer1 = OfficerFactory(id=1, appointed_date=appointed_date1)
-        officer2 = OfficerFactory(id=2, appointed_date=appointed_date2)
-        OfficerAllegationFactory(
-            officer=officer1,
-            allegation__incident_date=datetime(2013, 1, 1, tzinfo=pytz.utc),
-            start_date=datetime(2014, 1, 1),
-            allegation__is_officer_complaint=False)
-        OfficerAllegationFactory(
-            officer=officer1,
-            start_date=date(2015, 1, 1),
-            allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False)
-        OfficerAllegationFactory(
-            officer=officer1,
-            start_date=date(2016, 1, 22),
-            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False)
-        OfficerAllegationFactory.create_batch(
-            3, officer=officer2,
-            start_date=date(2017, 10, 12),
-            allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
-            allegation__is_officer_complaint=False
-        )
-        expect(Officer.get_dataset_range()).to.be.eq([
-            date(2013, 1, 1),
-            date(2017, 10, 12)
-        ])
+        self._create_dataset_for_percentile()
 
+        # expect officer2 to be excluded cause he service less than 1 year
         expect(list(Officer.compute_metric_percentile(2016))).to.eq([
             {
                 'year': 2016,
                 'officer_id': 1,
                 'service_year': 4.0,  # ~ 1460.0 / 365.0,
-                'metric_allegation': 0.75, #3.0 / (1116.0 / 365.0),
+                'metric_allegation': 0.75,  # 3.0 / (1116.0 / 365.0),
                 'metric_allegation_civilian': 0.75,
                 'metric_allegation_internal': 0.0,
                 'metric_trr': 0.0
@@ -248,23 +187,25 @@ class OfficerTestCase(TestCase):
             {
                 'year': 2017,
                 'officer_id': 1,
-                'service_year': 1745.0 / 365,
-                'metric_allegation': 3.0 / (1745.0 / 365),
-                'metric_allegation_civilian': 3.0 / (1745.0 / 365),
+                'service_year': 4.8,
+                'metric_allegation': 0.625,
+                'metric_allegation_civilian': 0.625,
                 'metric_allegation_internal': 0.0,
                 'metric_trr': 0.0
             }, {
                 'year': 2017,
                 'officer_id': 2,
-                'service_year': 650.0 / 365,
-                'metric_allegation': 3.0 / (650.0 / 365),
-                'metric_allegation_civilian': 3.0 / (650.0 / 365),
-                'metric_allegation_internal': 0.0,
-                'metric_trr': 0.0
+                'service_year': 1.6,
+                'metric_allegation': 1.875,
+                'metric_allegation_civilian': 1.25,
+                'metric_allegation_internal': 0.625,
+                'metric_trr': 0.625
             }
         ])
 
     def test_get_dataset_range(self):
+        expect(Officer.get_dataset_range()).to.be.empty()
+
         OfficerAllegationFactory(
             allegation__incident_date=datetime(2013, 1, 1),
             start_date=date(2014, 1, 1))
@@ -291,156 +232,115 @@ class OfficerTestCase(TestCase):
             date(2016, 2, 29),
         ])
 
-    def test_top_complaint_officers(self):
-        appointed_date = date(2013, 1, 1)
-        officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
-        officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
-        OfficerFactory(id=3, appointed_date=appointed_date)
-        OfficerFactory(id=4, appointed_date=appointed_date)
+    def _create_dataset_for_percentile(self):
+        officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
+
         OfficerAllegationFactory(
             officer=officer1,
             allegation__incident_date=datetime(2013, 1, 1, tzinfo=pytz.utc),
-            start_date=date(2014, 1, 1),
+            start_date=datetime(2014, 1, 1),
             allegation__is_officer_complaint=False)
         OfficerAllegationFactory(
-            officer=officer1, start_date=date(2015, 1, 1),
+            officer=officer1,
+            start_date=date(2015, 1, 1),
             allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False)
         OfficerAllegationFactory(
-            officer=officer1, start_date=date(2016, 1, 22),
+            officer=officer1,
+            start_date=date(2016, 1, 22),
             allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False)
-        TRRFactory(
-            officer=officer2,
-            trr_datetime=datetime(2016, 1, 12, tzinfo=pytz.utc)
+        OfficerAllegationFactory.create_batch(
+            2, officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False
         )
+        OfficerAllegationFactory(
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
+        )
+        TRRFactory(officer=officer2, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
         expect(Officer.get_dataset_range()).to.be.eq([
             date(2013, 1, 1),
-            date(2016, 1, 22)
+            date(2017, 10, 19)
         ])
 
-        current_year = now().year
+    def test_top_complaint_officers(self):
+        self._create_dataset_for_percentile()
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
+
+        # current year
         expect(Officer.top_complaint_officers(100)).to.eq([
             {
-                'year': current_year,
+                'year': 2017,
                 'officer_id': 3,
-                'service_year': 3.057534,
-                'metric_allegation': 0.0,
+                'service_year': 2.6,
+                'metric_allegation': 0,
+                'metric_allegation_internal': 0,
+                'metric_allegation_civilian': 0,
+                'metric_trr': 0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_allegation_civilian': 0,
+                'percentile_trr': 0
+            }, {
+                'year': 2017,
+                'officer_id': 4,
+                'service_year': 2.8,
+                'metric_allegation': 0,
+                'metric_allegation_civilian': 0,
+                'metric_allegation_internal': 0,
+                'metric_trr': 0,
+                'percentile_allegation': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_allegation_civilian': 0,
+                'percentile_trr': 0
+            }, {
+                'year': 2017,
+                'officer_id': 1,
+                'service_year': 4.8,
+                'metric_allegation': 0.625,
+                'metric_allegation_civilian': 0.625,
+                'metric_allegation_internal': 0,
+                'metric_trr': 0,
+                'percentile_allegation': 50.0,
+                'percentile_allegation_internal': 0.0,
+                'percentile_allegation_civilian': 50.0,
+                'percentile_trr': 0
+            }, {
+                'year': 2017,
+                'officer_id': 2,
+                'service_year': 1.6,
+                'metric_allegation': 1.875,
+                'metric_allegation_civilian': 1.25,
+                'metric_allegation_internal': 0.625,
+                'metric_trr': 0.625,
+                'percentile_allegation': 75.0,
+                'percentile_allegation_internal': 75.0,
+                'percentile_allegation_civilian': 75.0,
+                'percentile_trr': 75.0
+            }])
+
+        expect(Officer.top_complaint_officers(100, year=2015)).to.eq([
+            {
+                'year': 2015,
+                'officer_id': 1,
+                'service_year': 2.9973,  # ~1094 days / 365.0
                 'metric_allegation_internal': 0.0,
-                'metric_allegation_civilian': 0.0,
+                'metric_allegation_civilian': 0.6673,  # ceils(2 / 2.9973),
+                'metric_allegation': 0.6673,
                 'metric_trr': 0.0,
                 'percentile_allegation': 0.0,
                 'percentile_allegation_internal': 0.0,
                 'percentile_allegation_civilian': 0.0,
                 'percentile_trr': 0.0
-            }, {
-                'year': current_year,
-                'officer_id': 3,
-                'service_year': 3.057534,
-                'metric_allegation': 0.0,
-                'metric_allegation_internal': 0.0,
-                'metric_allegation_civilian': 0.0,
-                'metric_trr': 0.0,
-                'percentile_allegation': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
-                'percentile_trr': 0
-            }, {
-                'year': current_year,
-                'officer_id': 3,
-                'service_year': 3.057534,
-                'metric_allegation': 0.0,
-                'metric_allegation_internal': 0.0,
-                'metric_allegation_civilian': 0.0,
-                'metric_trr': 0.0,
-                'percentile_allegation': 75.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 75.0,
-                'percentile_trr': 0
-            }, {
-                'year': current_year,
-                'officer_id': 3,
-                'service_year': 3.057534,
-                'metric_allegation': 0.0,
-                'metric_allegation_internal': 0.0,
-                'metric_allegation_civilian': 0.0,
-                'metric_trr': 0.0,
-                'percentile_allegation': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
-                'percentile_trr': 75.0
             }
         ])
-
-        # expected_service_year = datetime(2017, 12, 31).date() - appointed_date
-        # expect(expected_service_year.days / 365.0).to.eq(5)
-        # expect(Officer.top_complaint_officers(100, year=2017)).to.eq([
-        #     {
-        #         'percentile_trr': 0,
-        #         'num_allegation_civilian': 0,
-        #         'percentile_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'allegation_internal': 0.0,
-        #         'num_trr': 0,
-        #         'num_allegation': 0,
-        #         'allegation': 0.0,
-        #         'allegation_civilian': 0.0,
-        #         'officer_id': 3,
-        #         'num_allegation_internal': 0,
-        #         'trr': 0.0,
-        #         'percentile_allegation': 0,
-        #         'percentile_allegation_internal': 0
-        #     }, {
-        #         'percentile_trr': 0,
-        #         'num_allegation_civilian': 0,
-        #         'percentile_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'allegation_internal': 0.0,
-        #         'num_trr': 0,
-        #         'num_allegation': 0,
-        #         'allegation': 0.0,
-        #         'allegation_civilian': 0.0,
-        #         'officer_id': 4,
-        #         'num_allegation_internal': 0,
-        #         'trr': 0.0,
-        #         'percentile_allegation': 0,
-        #         'percentile_allegation_internal': 0
-        #     }, {
-        #         'percentile_trr': 0,
-        #         'num_allegation_civilian': 3,
-        #         'percentile_allegation_civilian': 75.0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'allegation_internal': 0.0,
-        #         'num_trr': 0,
-        #         'num_allegation': 3,
-        #         'allegation': 0.6,
-        #         'allegation_civilian': 0.6,
-        #         'officer_id': 1,
-        #         'num_allegation_internal': 0,
-        #         'trr': 0.0,
-        #         'percentile_allegation': 75.0,
-        #         'percentile_allegation_internal': 0
-        #     }, {
-        #         'percentile_trr': 75.0,
-        #         'num_allegation_civilian': 0,
-        #         'percentile_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'allegation_internal': 0.0,
-        #         'num_trr': 1,
-        #         'num_allegation': 0,
-        #         'allegation': 0.0,
-        #         'allegation_civilian': 0.0,
-        #         'officer_id': 2,
-        #         'num_allegation_internal': 0,
-        #         'trr': 0.2,
-        #         'percentile_allegation': 0,
-        #         'percentile_allegation_internal': 0
-        #     }
-        # ])
 
     def test_top_complaint_officers_type_not_found(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2016, 1, 1))
@@ -452,69 +352,20 @@ class OfficerTestCase(TestCase):
             Officer.top_complaint_officers(100, year=2017, percentile_types=['not_exist'])
 
     def test_top_complaint_officers_with_type(self):
-        pass
-        # appointed_date = date(2013, 1, 1)
-        # officer1 = OfficerFactory(id=1, appointed_date=appointed_date)
-        # officer2 = OfficerFactory(id=2, appointed_date=appointed_date)
-        # OfficerFactory(id=3, appointed_date=appointed_date)
-        # OfficerFactory(id=4, appointed_date=appointed_date)
-        # OfficerAllegationFactory(officer=officer1,
-        #                          allegation__incident_date=date(2013, 1, 1),
-        #                          start_date=date(2014, 1, 1),
-        #                          allegation__is_officer_complaint=False)
-        # OfficerAllegationFactory(officer=officer1, start_date=date(2015, 1, 1),
-        #                          allegation__incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc),
-        #                          allegation__is_officer_complaint=False)
-        # OfficerAllegationFactory(officer=officer1, start_date=date(2016, 1, 22),
-        #                          allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
-        #                          allegation__is_officer_complaint=False)
-        # TRRFactory(
-        #     officer=officer2,
-        #     trr_datetime=datetime(2016, 1, 1, tzinfo=pytz.utc)
-        # )
-        #
-        # expected_service_year = date(2017, 12, 31) - appointed_date
-        # expect(expected_service_year.days / 365.0).to.eq(5)
-        # expect(Officer.top_complaint_officers(100, year=2017, percentile_types=['allegation'])).to.eq([
-        #     {
-        #         'num_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'num_trr': 0,
-        #         'num_allegation': 0,
-        #         'officer_id': 3,
-        #         'num_allegation_internal': 0,
-        #         'allegation': 0.0,
-        #         'percentile_allegation': 0,
-        #     }, {
-        #         'num_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'num_trr': 0,
-        #         'num_allegation': 0,
-        #         'officer_id': 4,
-        #         'num_allegation_internal': 0,
-        #         'allegation': 0.0,
-        #         'percentile_allegation': 0,
-        #     }, {
-        #         'num_allegation_civilian': 0,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'num_trr': 1,
-        #         'num_allegation': 0,
-        #         'officer_id': 2,
-        #         'num_allegation_internal': 0,
-        #         'allegation': 0.0,
-        #         'percentile_allegation': 0,
-        #     }, {
-        #         'num_allegation_civilian': 3,
-        #         'service_year': expected_service_year,
-        #         'year': 2017,
-        #         'num_trr': 0,
-        #         'num_allegation': 3,
-        #         'officer_id': 1,
-        #         'allegation': 0.6,
-        #         'num_allegation_internal': 0,
-        #         'percentile_allegation': 75.0
-        #     }
-        # ])
+        self._create_dataset_for_percentile()
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
+
+        # expect calculate percentile_allegation only
+        expect(Officer.top_complaint_officers(100, year=2015, percentile_types=[PERCENTILE_ALLEGATION])).to.eq([
+            {
+                'year': 2015,
+                'officer_id': 1,
+                'service_year': 2.9973,  # ~1094 days / 365.0
+                'metric_allegation_internal': 0.0,
+                'metric_allegation_civilian': 0.6673,  # ceils(2 / 2.9973),
+                'metric_allegation': 0.6673,
+                'metric_trr': 0.0,
+                'percentile_allegation': 0.0,
+            }
+        ])

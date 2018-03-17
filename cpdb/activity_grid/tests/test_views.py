@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
+import pytz
 
 from django.core.urlresolvers import reverse
 
-import pytz
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
@@ -34,9 +34,15 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             appointed_date=datetime(2011, 1, 1)
         )
         OfficerActivityCardFactory(officer=officer)
-        OfficerAllegationFactory(officer=officer, final_finding='SU',
-                                 allegation__incident_date=datetime(2014, 1, 1))
-        OfficerAllegationFactory(officer=officer, final_finding='SU', allegation__incident_date=datetime(2016, 1, 1))
+        OfficerAllegationFactory(
+            officer=officer, final_finding='SU',
+            start_date=date(2014, 1, 1),
+            allegation__incident_date=datetime(2014, 1, 1))
+        OfficerAllegationFactory(
+            officer=officer, final_finding='SU',
+            allegation__incident_date=datetime(2016, 1, 1),
+            start_date=date(2016, 1, 1)
+        )
         OfficerAllegationFactory.create_batch(4, officer=officer, final_finding='NS')
 
         self.refresh_index()
