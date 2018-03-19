@@ -1,0 +1,21 @@
+FROM circleci/python:2.7-jessie-node
+
+USER root
+
+
+############################################################################
+# We also need ansible for deploying stuff
+############################################################################
+
+RUN pip install --upgrade pip
+RUN pip install --upgrade pyOpenSSL ansible
+
+
+############################################################################
+# Run as non root user
+############################################################################
+
+RUN useradd -ms /bin/bash deploy
+
+USER deploy
+WORKDIR /home/deploy

@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: cpdbdev/cpdbv2_backend:0.1.0
+      - image: cpdbdev/postgis:9.4-alpine
+        command: postgres
+      - image: docker.elastic.co/elasticsearch/elasticsearch:5.5.3
+        environment:
+          discovery.type: single-node
+    environment:
+      - DJANGO_SETTINGS_MODULE: config.settings.test
+    steps:
+      - checkout
+      - run: pip install -r requirements/test.txt
+      - run: flake8
+      - run: coverage run cpdb/manage.py test --noinput --nologcapture
+      - run: coverage combine
+      - run: coverage report --omit="/home/ubuntu/virtualenvs/*,common/json_serializer.py"
+      - run: coveralls
+      - store_artifacts:
+          path: /home/deploy/errorShots
+
+  deploy:
+    docker:
+      - image: cpdbdev/cpdbv2_backend:0.1.0
+    environment:
+      - NODE_ENV: development
+    steps:
+      - checkout
+      - run: bin/circleci_deploy_staging
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: staging
