@@ -8,7 +8,7 @@ USER root
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade pyOpenSSL ansible==2.4.3.0
-RUN ansible-galaxy install azavea.postgresql
+RUN ansible-galaxy install --roles-path=/home/deploy/project/ansible/external-roles azavea.postgresql
 
 
 ############################################################################
