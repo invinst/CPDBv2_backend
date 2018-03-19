@@ -7,7 +7,7 @@ USER root
 ############################################################################
 
 RUN pip install --upgrade pip
-RUN pip install --upgrade pyOpenSSL ansible
+RUN pip install --upgrade pyOpenSSL ansible==2.4.3.0
 RUN ansible-galaxy install azavea.postgresql
 
 
