@@ -7,7 +7,7 @@ MEDIA_ROOT = str(APPS_DIR('test_media'))
 VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('test_visual_token_media'))
 TEST = True
 
-SELENIUM_URL = 'http://localhost:4444'
+SELENIUM_URL = 'http://localhost:4444/wd/hub'
 
 NOSE_PLUGINS = [
     'snapshot_test.plugins.CreateSnapshotPlugin',
