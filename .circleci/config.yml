@@ -8,7 +8,7 @@ jobs:
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
     environment:
-      - DJANGO_SETTINGS_MODULE: config.settings.test
+      - DJANGO_SETTINGS_MODULE: config.settings.circleci
       - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
     steps:
       - checkout
