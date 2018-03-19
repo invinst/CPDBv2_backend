@@ -6,6 +6,7 @@ jobs:
       - image: cpdbdev/postgis:9.4-alpine
         command: postgres
       - image: elasticsearch:5-alpine
+      - image: selenium/standalone-chrome:3.5
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.test
       - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
