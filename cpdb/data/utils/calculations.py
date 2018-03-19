@@ -14,7 +14,7 @@ def percentile(scores, percentile_rank, key='value', inline=False, decimal_place
     if not scores:
         return []
     if key not in scores[0]:
-        raise ValueError('Can not found the corresponding key')
+        raise ValueError('Can not find the corresponding key')
 
     sorted_scores = sorted(scores, key=lambda x: x[key])
     scores_length = len(sorted_scores)

@@ -343,7 +343,7 @@ class Officer(TaggableModel):
         return [min(all_date), max(all_date)]
 
     @staticmethod
-    def _embed_officer_working_range(query, dataset_min_date, dataset_max_date):
+    def _annotate_officer_working_range(query, dataset_min_date, dataset_max_date):
         query = query.annotate(
             end_date=models.Case(
                 models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
@@ -368,7 +368,7 @@ class Officer(TaggableModel):
         )
 
     @staticmethod
-    def _embed_num_complaint_n_trr(query, dataset_max_date):
+    def _annotate_num_complaint_n_trr(query, dataset_max_date):
         return query.annotate(
             officer_id=F('id'),
             year=models.Value(dataset_max_date.year, output_field=IntegerField()),
@@ -392,7 +392,7 @@ class Officer(TaggableModel):
             num_trr=models.Count(
                 models.Case(
                     models.When(
-                        trr__trr_datetime__lte=dataset_max_date,
+                        trr__trr_datetime__date__lte=dataset_max_date,
                         then='trr'
                     ), output_field=models.CharField(),
                 ), distinct=True
@@ -411,10 +411,10 @@ class Officer(TaggableModel):
 
         # STEP 1: compute the service time of all officers
         query = Officer.objects.filter(appointed_date__isnull=False)
-        query = Officer._embed_officer_working_range(query, dataset_min_date, dataset_max_date)
+        query = Officer._annotate_officer_working_range(query, dataset_min_date, dataset_max_date)
 
         # STEP 2: count the allegation (internal/civil) and TRR
-        query = Officer._embed_num_complaint_n_trr(query, dataset_max_date)
+        query = Officer._annotate_num_complaint_n_trr(query, dataset_max_date)
 
         # STEP 3: calculate the metric
         query = query.annotate(
