@@ -5,9 +5,7 @@ jobs:
       - image: cpdbdev/cpdbv2_backend:0.1.0
       - image: cpdbdev/postgis:9.4-alpine
         command: postgres
-      - image: docker.elastic.co/elasticsearch/elasticsearch:5.5.3
-        environment:
-          discovery.type: single-node
+      - image: elasticsearch:5-alpine
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.test
       - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
