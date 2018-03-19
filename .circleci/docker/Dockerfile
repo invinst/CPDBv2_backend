@@ -19,3 +19,4 @@ RUN useradd -ms /bin/bash deploy
 
 USER deploy
 WORKDIR /home/deploy
+ENV PATH /home/deploy/.local/bin:$PATH
