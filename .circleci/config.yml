@@ -10,6 +10,7 @@ jobs:
           discovery.type: single-node
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.test
+      - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
     steps:
       - checkout
       - run: pip install --user -r requirements/test.txt
