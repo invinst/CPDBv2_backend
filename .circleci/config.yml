@@ -25,7 +25,7 @@ jobs:
     docker:
       - image: cpdbdev/cpdbv2_backend:0.1.0
     environment:
-      - NODE_ENV: development
+      - ANSIBLE_HOST_KEY_CHECKING: False
     steps:
       - checkout
       - run: ansible-galaxy install azavea.postgresql
