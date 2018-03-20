@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword
+from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float
 
 from .index_aliases import officers_index_alias
 
@@ -36,3 +36,7 @@ class OfficerSocialGraphDocType(DocType):
 class OfficerPercentileDocType(DocType):
     officer_id = Integer()
     year = Integer()
+    percentile_trr = Float()
+    percentile_allegation = Float()
+    percentile_allegation_internal = Float()
+    percentile_allegation_civilian = Float()
