@@ -8,7 +8,6 @@ USER root
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade pyOpenSSL ansible==2.4.3.0
-RUN ansible-galaxy install --roles-path=/home/deploy/project/ansible/external-roles azavea.postgresql
 
 
 ############################################################################
@@ -26,5 +25,5 @@ RUN apt-get update \
 RUN useradd -ms /bin/bash deploy
 
 USER deploy
-WORKDIR /home/deploy
 ENV PATH /home/deploy/.local/bin:$PATH
+WORKDIR /home/deploy/project
