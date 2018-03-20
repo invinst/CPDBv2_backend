@@ -20,9 +20,9 @@ class Engine:
         return 'http://localhost:%s' % settings.RUNNING_PORT
 
     def start(self):
-        try:
+        try:  # pragma: no cover
             service_url = settings.SELENIUM_URL
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             service.start()
             service_url = service.service_url
 
