@@ -24,6 +24,9 @@ RUN apt-get update \
 
 RUN useradd -ms /bin/bash deploy
 
+RUN mkdir -p /home/deploy/project
+RUN chown -R deploy /home/deploy
+
 USER deploy
 ENV PATH /home/deploy/.local/bin:$PATH
 WORKDIR /home/deploy/project

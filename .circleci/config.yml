@@ -28,6 +28,7 @@ jobs:
       - NODE_ENV: development
     steps:
       - checkout
+      - run: ansible-galaxy install azavea.postgresql
       - run: bin/circleci_deploy_staging
 
 workflows:
