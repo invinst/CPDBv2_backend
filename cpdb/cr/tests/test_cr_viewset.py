@@ -18,9 +18,9 @@ from data.constants import (MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AU
 from .mixins import CRTestCaseMixin
 
 
-class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
     def setUp(self):
-        super(OfficersViewSetTestCase, self).setUp()
+        super(CRViewSetTestCase, self).setUp()
         self.maxDiff = None
 
     def test_retrieve(self):

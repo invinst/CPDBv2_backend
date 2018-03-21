@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import OrderedDict
 
 from elasticsearch_dsl import Q
 from rest_framework import viewsets, status
@@ -9,7 +10,12 @@ from django.shortcuts import get_object_or_404
 
 from .doc_types import CRDocType
 from data.models import Allegation
-from cr.serializers import AttachmentRequestSerializer, CRSummarySerializer, AllegationWithNewDocumentsSerializer
+from cr.serializers import (
+    AttachmentRequestSerializer, CRSummarySerializer,
+    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
+    CRRelatedComplaintSerializer
+)
+from es_index.pagination import ESQueryPagination
 
 
 class CRViewSet(viewsets.ViewSet):
@@ -55,3 +61,72 @@ class CRViewSet(viewsets.ViewSet):
         query = query.sort('-incident_date', '-crid')
         results = query[0:40].execute()
         return Response(CRSummarySerializer(results, many=True).data, status=status.HTTP_200_OK)
+
+    @detail_route(methods=['GET'], url_path='related-complaints')
+    def related_complaints(self, request, pk):
+        allegation = get_object_or_404(Allegation, crid=pk)
+
+        if allegation.point is None:
+            return Response(OrderedDict([
+                ('count', 0),
+                ('next', None),
+                ('previous', None),
+                ('results', [])
+            ]))
+
+        request_serializer = CRRelatedComplaintRequestSerializer(data=request.GET)
+        if not request_serializer.is_valid():
+            return Response({'message': request_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        query_filter = {
+            'geo_distance': {
+                'distance': request_serializer.validated_data['distance'],
+                'point': {
+                    'lat': allegation.point.y,
+                    'lon': allegation.point.x
+                }
+            }
+        }
+
+        if request_serializer.validated_data['match'] == 'categories':
+            query = CRDocType().search().query(
+                'bool',
+                must={
+                    'terms': {
+                        'category_names': [
+                            obj.category
+                            for obj in allegation.officerallegation_set.all()
+                        ]
+                    }
+                },
+                must_not={
+                    "terms": {"crid": [pk]}
+                },
+                filter=query_filter
+            )
+        elif request_serializer.validated_data['match'] == 'officers':
+            query = CRDocType().search().query(
+                'bool',
+                must={
+                    'nested': {
+                        'path': 'coaccused',
+                        'query': {
+                            'terms': {
+                                'coaccused.id': [
+                                    obj.officer_id
+                                    for obj in allegation.officerallegation_set.all()
+                                ]
+                            }
+                        }
+                    }
+                },
+                must_not={
+                    "terms": {"crid": [pk]}
+                },
+                filter=query_filter
+            )
+
+        paginator = ESQueryPagination()
+        paginated_query = paginator.paginate_es_query(query, request)
+        related_complaint_serializer = CRRelatedComplaintSerializer(paginated_query, many=True)
+        return paginator.get_paginated_response(related_complaint_serializer.data)

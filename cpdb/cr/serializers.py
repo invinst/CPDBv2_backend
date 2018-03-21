@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from data.models import AttachmentRequest
 
+MATCH_CHOICES = ['categories', 'officers']
+DISTANCE_CHOICES = ['0.5mi', '1mi', '2.5mi', '5mi', '10mi']
+
 
 class CoaccusedSerializer(serializers.Serializer):
     id = serializers.IntegerField(source='officer.id')
@@ -60,7 +63,7 @@ class CRSerializer(serializers.Serializer):
 
     def get_point(self, obj):
         if obj.point is not None:
-            return {'long': obj.point.x, 'lat': obj.point.y}
+            return {'lon': obj.point.x, 'lat': obj.point.y}
         else:
             return None
 
@@ -95,3 +98,23 @@ class AllegationWithNewDocumentsSerializer(serializers.Serializer):
     crid = serializers.CharField()
     latest_document = AttachmentFileSerializer(source='get_newest_added_document')
     num_recent_documents = serializers.IntegerField()
+
+
+class CRRelatedComplaintRequestSerializer(serializers.Serializer):
+    match = serializers.ChoiceField(choices=MATCH_CHOICES, required=True)
+    distance = serializers.ChoiceField(choices=DISTANCE_CHOICES, required=True)
+    offset = serializers.IntegerField(default=0)
+    limit = serializers.IntegerField(default=20)
+
+
+class CRRelatedComplaintSerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    complainants = serializers.SerializerMethodField()
+    coaccused = serializers.SerializerMethodField()
+    category_names = serializers.ListField(child=serializers.CharField())
+
+    def get_coaccused(self, obj):
+        return [coaccused.full_name for coaccused in obj.coaccused]
+
+    def get_complainants(self, obj):
+        return [complainant.to_dict() for complainant in obj.complainants]

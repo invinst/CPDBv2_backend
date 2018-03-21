@@ -1478,12 +1478,16 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
-## Officer timeline items list [/officers/{officer_id}/timeline-items]
+## Officer timeline items list [/officers/{officer_id}/timeline-items/{?offset,limit}]
 
 ### Get Officer timeline items list [GET]
 
 + Parameters
     + officer_id (number) - number ID of the officer
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
 
 + Response 200 (application/json)
 
@@ -1585,7 +1589,7 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
-## CR [/cr/complaint-summaries/]
+## Complaint summaries [/cr/complaint-summaries/]
 
 ### List recent updated Summary of CR [GET]
 
@@ -1715,6 +1719,56 @@ This api require an api access token set in `Authorization` header. To get an ap
                 }
             ]
         }
+
+
+## Related Complaints [/cr/{crid}/related-complaints/{?match,distance,offset,limit}]
+
+### Get related complaints [GET]
+
++ Parameters
+    + crid (number, required) - number ID of Allegation
+    + match (enum[string], required) - whether the related complaints have similar categories or similar officers
+        + Members
+            + `categories`
+            + `officers`
+    + distance (enum[string], required) - distance from where this incident happen
+        + Members
+            + `0.5mi`
+            + `1mi`
+            + `2.5mi`
+            + `5mi`
+            + `10mi`
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+            "count": 1,
+            "previous": null,
+            "next": null
+            "results": [
+                {
+                    "crid": "838409",
+                    "complainants": [{
+                        "race": "White",
+                        "gender": "Male",
+                        "age": 18
+                    }],
+                    "coaccused": [
+                        "R. Piwnicki",
+                        "T. Parker"
+                    ],
+                    "category_names": [
+                        "False Arrest",
+                        "Use Of Force"
+                    ]
+                }
+            ]
+        }
+
 
 
 ## Search Aliases [/aliases/{aliasType}/{id}/]
@@ -2130,11 +2184,15 @@ This api require an api access token set in `Authorization` header. To get an ap
         }
 
 
-## Specific type search [/v1/suggestion/{term}/single/?contentType={type}]
+## Specific type search [/v1/suggestion/{term}/single/{?contentType,offset,limit}]
 
 + Parameters
     + term (string) - Search term
-    + type (string) - Data content type (OFFICER, UNIT, COMMUNITY, NEIGHBORHOOD, CO-ACCUSED, UNIT > OFFICERS)
+    + contentType (string) - Data content type (OFFICER, UNIT, COMMUNITY, NEIGHBORHOOD, CO-ACCUSED, UNIT > OFFICERS)
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
 
 ### Get search results [GET]
 
