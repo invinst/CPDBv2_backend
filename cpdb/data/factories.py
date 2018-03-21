@@ -11,7 +11,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation)
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -66,7 +66,7 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     last_name = factory.LazyFunction(lambda: fake.last_name())
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'White'
-    appointed_date = factory.LazyFunction(lambda: fake.date_time().date())
+    appointed_date = factory.LazyFunction(lambda: fake.date())
     rank = factory.LazyFunction(lambda: fake.word())
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
@@ -82,7 +82,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
     # required for percentile calculation, we ensure all objects factoried in same data range
     incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(
         datetime_start=timezone.datetime(2000, 1, 1),
-        datetime_end=timezone.datetime(2017, 6, 30),
+        datetime_end=timezone.datetime(2016, 12, 31),
         tzinfo=pytz.utc
     ))
 
@@ -103,6 +103,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
+    final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
@@ -190,3 +191,17 @@ class PoliceWitnessFactory(factory.django.DjangoModelFactory):
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'Black'
     officer = factory.SubFactory(OfficerFactory)
+
+
+class AwardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Award
+
+    officer = factory.SubFactory(OfficerFactory)
+    award_type = factory.LazyFunction(lambda: random.choice(['Honorable Mention', 'Complimentary Letter']))
+    start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    request_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    rank = factory.LazyFunction(lambda: fake.word())
+    last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade())

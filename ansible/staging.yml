@@ -20,6 +20,6 @@
     - { role: azavea.postgresql }
     - { role: java, tags: "elasticsearch" }
     - { role: elasticsearch, tags: "elasticsearch" }
-    - db
+    - { role: db, tags: "db" }
     - { role: ssh_user, tags: "ssh_user" }
     - web

@@ -1,26 +1,26 @@
 import os
-from datetime import datetime, timedelta
-from itertools import groupby
+from datetime import date
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count
-from django.db.models.functions import ExtractYear
+from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count, Func
 from django.utils.text import slugify
-from django.utils.timezone import now
+from django.utils.timezone import now, timedelta
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES
+    DISCIPLINE_CODES, PERCENTILE_TYPES
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.calculations import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
+from data.utils.calculations import Round
+from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
@@ -79,7 +79,7 @@ class PoliceUnit(TaggableModel):
         query_set = Officer.objects.filter(officerhistory__unit=self).distinct().annotate(
             member_age=models.Case(
                 models.When(birth_year__isnull=True, then=None),
-                default=datetime.now().year - F('birth_year'),
+                default=now().year - F('birth_year'),
                 output_field=models.IntegerField()
             )
         ).annotate(
@@ -261,6 +261,7 @@ class Officer(TaggableModel):
     first_name = models.CharField(max_length=255, db_index=True)
     last_name = models.CharField(max_length=255, db_index=True)
     middle_initial = models.CharField(max_length=5, null=True)
+    middle_initial2 = models.CharField(max_length=5, null=True)
     suffix_name = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
@@ -302,6 +303,14 @@ class Officer(TaggableModel):
         return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
+    def honorable_mention_count(self):
+        return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
+
+    @property
+    def civilian_compliment_count(self):
+        return self.award_set.filter(award_type='Complimentary Letter').distinct().count()
+
+    @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
@@ -313,200 +322,140 @@ class Officer(TaggableModel):
             return None
 
     @staticmethod
-    def top_complaint_officers(top_percentile_value):
-        """ This is calculate top percentile of top_percentile_value
-        :return: list of (officer_id, percentile_value)
-        """
-        dataset_max_date, dateset_min_date = Allegation.objects.all().aggregate(
+    def get_dataset_range():
+        allegation_date = Allegation.objects.aggregate(
+            models.Min('incident_date'),
             models.Max('incident_date'),
-            models.Min('incident_date')
+            models.Min('officerallegation__start_date'),
+            models.Max('officerallegation__start_date'),
+            models.Max('officerallegation__end_date'),
         ).values()
-        query = Officer.objects.filter(appointed_date__isnull=False)
+        trr_date = TRR.objects.aggregate(
+            models.Min('trr_datetime'),
+            models.Max('trr_datetime')
+        ).values()
+        all_date = allegation_date[:]
+        all_date.extend(trr_date)
+        all_date = [x.date() if hasattr(x, 'date') else x for x in all_date
+                    if x is not None]
+        if not all_date:
+            return []
+        return [min(all_date), max(all_date)]
 
+    @staticmethod
+    def _annotate_officer_working_range(query, dataset_min_date, dataset_max_date):
         query = query.annotate(
             end_date=models.Case(
                 models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
                 default='resignation_date',
-                output_field=models.DateTimeField()),
+                output_field=models.DateField()),
             start_date=models.Case(
-                models.When(appointed_date__lt=dateset_min_date, then=models.Value(dateset_min_date)),
+                models.When(appointed_date__lt=dataset_min_date, then=models.Value(dataset_min_date)),
                 default='appointed_date',
-                output_field=models.DateTimeField()),
+                output_field=models.DateField()),
         )
+        # filter-out officer has service time smaller than 1 year
         query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
-
-        duration = query.annotate(
-            service_time=models.ExpressionWrapper(
-                F('end_date') - F('start_date'),
-                output_field=models.DurationField())
-        ).values_list('id', 'service_time')
-
-        query = OfficerAllegation.objects.all()
-        query = query.values('officer').annotate(
-            num_allegation=models.Count('officer')
-        ).order_by('-num_allegation')
-        officers_allegation_count = {
-            officer_id: num for officer_id, num in query.values_list('officer', 'num_allegation')
-        }
-
-        # TODO: change these to (mostly) ORM to improve performance
-        metrics = {}
-        for officer_id, service_time in duration:
-            allegation_count = 0
-            if officer_id in officers_allegation_count:
-                allegation_count = officers_allegation_count[officer_id]
-            metrics[officer_id] = allegation_count / (service_time.days / 365.0)
-
-        top_percentiles = percentile(metrics, 100.0 - top_percentile_value)
-        return top_percentiles
+        return query.annotate(
+            service_year=(
+                Func(
+                    F('end_date') - F('start_date'),
+                    template="ROUND(CAST(%(function)s('day', %(expressions)s) / 365.0 as numeric), 4)",
+                    function='DATE_PART',
+                    output_field=models.FloatField()
+                )  # in order to easy to test and calculate, we only get 4 decimal points
+            )
+        )
 
     @staticmethod
-    def _group_and_sort_aggregations(data, key_name='name'):
-        """
-        Helper to group by name, aggregate count & sustained_counts.
-        Also makes sure 'Unknown' group is always the last item.
-        """
-        groups = []
-        unknown_group = None
-        for k, g in groupby(data, lambda x: x[key_name]):
-            group = {'name': k, 'count': 0, 'sustained_count': 0, 'items': []}
-            unknown_year = None
-            for item in g:
-                if item['year']:
-                    group['items'].append(item)
-                    group['count'] += item['count']
-                    group['sustained_count'] += item['sustained_count']
-                else:
-                    unknown_year = item
-            if unknown_year:
-                group['count'] += item['count']
-                group['sustained_count'] += item['sustained_count']
-            if k != 'Unknown':
-                groups.append(group)
-            else:
-                unknown_group = group
-
-        if unknown_group is not None:
-            groups.append(unknown_group)
-        return groups
-
-    @property
-    def complaint_category_aggregation(self):
-        query = self.officerallegation_set.all()
-        query = query.annotate(
-            name=models.Case(
-                models.When(
-                    allegation_category__category__isnull=True, then=models.Value('Unknown')),
-                default='allegation_category__category',
-                output_field=models.CharField()),
-            year=ExtractYear('start_date'))
-        query = query.values('name', 'year').order_by('name', 'year').annotate(
-            count=models.Count('name'),
-            sustained_count=models.Sum(models.Case(
-                models.When(final_finding='SU', then=1), default=models.Value(0),
-                output_field=models.IntegerField())))
-
-        return Officer._group_and_sort_aggregations(list(query))
-
-    @property
-    def complainant_race_aggregation(self):
-        query = self.officerallegation_set.all()
-        query = query.annotate(
-            name=models.Case(
-                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                models.When(allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
-                default='allegation__complainant__race',
-                output_field=models.CharField()
+    def _annotate_num_complaint_n_trr(query, dataset_max_date):
+        return query.annotate(
+            officer_id=F('id'),
+            year=models.Value(dataset_max_date.year, output_field=IntegerField()),
+            num_allegation=models.Count(
+                models.Case(
+                    models.When(
+                        officerallegation__start_date__lte=dataset_max_date,
+                        then='officerallegation'
+                    ), output_field=models.CharField(),
+                ), distinct=True
             ),
-            year=ExtractYear('start_date'),
-        )
-        query = query.values('name', 'year').order_by('name', 'year').annotate(
-            count=models.Count('name'),
-            sustained_count=models.Sum(
+            num_allegation_internal=models.Count(
                 models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
-        )
-        return Officer._group_and_sort_aggregations(list(query))
-
-    @property
-    def complainant_age_aggregation(self):
-        query = self.officerallegation_set.all()
-        query = query.annotate(
-            name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]),
-            year=ExtractYear('start_date')
-        )
-        query = query.values('name', 'year').order_by('name', 'year').annotate(
-            count=models.Count('name'),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
-        )
-        return Officer._group_and_sort_aggregations(list(query))
-
-    @property
-    def complainant_gender_aggregation(self):
-
-        query = self.officerallegation_set.all()
-        query = query.values('allegation__complainant__gender').annotate(
-            complainant_gender=models.Case(
-                models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
-                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                default='allegation__complainant__gender',
-                output_field=models.CharField()
+                    models.When(
+                        Q(officerallegation__allegation__is_officer_complaint=True) &
+                        Q(officerallegation__start_date__lte=dataset_max_date),
+                        then='officerallegation'
+                    )
+                ), distinct=True
             ),
-            year=ExtractYear('start_date')
-        )
-        query = query.values('complainant_gender', 'year').order_by('complainant_gender', 'year').annotate(
-            count=models.Count('complainant_gender'),
-            sustained_count=models.Sum(
+            num_trr=models.Count(
                 models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
+                    models.When(
+                        trr__trr_datetime__date__lte=dataset_max_date,
+                        then='trr'
+                    ), output_field=models.CharField(),
+                ), distinct=True
+            ),
         )
 
-        data = [
-            {
-                'name': GENDER_DICT.get(obj['complainant_gender'], 'Unknown'),
-                'sustained_count': obj['sustained_count'],
-                'count': obj['count'],
-                'year': obj['year']
-            }
-            for obj in query if obj['count'] > 0
-        ]
-        return Officer._group_and_sort_aggregations(data)
+    @staticmethod
+    def compute_metric_percentile(year_end=None):
+        dataset_range = Officer.get_dataset_range()
+        if not dataset_range:
+            return []
+        [dataset_min_date, dataset_max_date] = dataset_range
 
-    @property
-    def total_complaints_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
-        query = query.annotate(year=ExtractYear('start_date'))
-        query = query.values('year').order_by('year').annotate(
-            count=models.Count('id'),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
+        if year_end:
+            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
+
+        # STEP 1: compute the service time of all officers
+        query = Officer.objects.filter(appointed_date__isnull=False)
+        query = Officer._annotate_officer_working_range(query, dataset_min_date, dataset_max_date)
+
+        # STEP 2: count the allegation (internal/civil) and TRR
+        query = Officer._annotate_num_complaint_n_trr(query, dataset_max_date)
+
+        # STEP 3: calculate the metric
+        query = query.annotate(
+            metric_allegation=models.ExpressionWrapper(
+                Round(F('num_allegation') / F('service_year')),
+                output_field=models.FloatField()),
+            metric_allegation_internal=models.ExpressionWrapper(
+                Round(F('num_allegation_internal') / F('service_year')),
+                output_field=models.FloatField()),
+            metric_allegation_civilian=models.ExpressionWrapper(
+                Round((F('num_allegation') - F('num_allegation_internal')) / F('service_year')),
+                output_field=models.FloatField()),
+            metric_trr=models.ExpressionWrapper(
+                Round(F('num_trr') / F('service_year')),
+                output_field=models.FloatField())
+        ).order_by('metric_allegation', 'metric_trr', 'officer_id')
+
+        return query.values(
+            'year',
+            'officer_id',
+            'service_year',
+            'metric_allegation',
+            'metric_allegation_civilian',
+            'metric_allegation_internal',
+            'metric_trr'
         )
-        aggregate_count = 0
-        aggregate_sustained_count = 0
-        results = list(query)
-        for item in results:
-            aggregate_count += item['count']
-            aggregate_sustained_count += item['sustained_count']
-        return results
+
+    @staticmethod
+    def top_complaint_officers(top_percentile_value, year=now().year, percentile_types=PERCENTILE_TYPES):
+        """ This is calculate top percentile of top_percentile_value
+        :return: list of (officer_id, percentile_value)
+        """
+        computed_data = list(Officer.compute_metric_percentile(year))
+
+        if any(t not in PERCENTILE_TYPES for t in percentile_types):
+            raise ValueError("percentile_type is invalid")
+
+        for percentile_type in percentile_types:
+            computed_data = percentile(computed_data, 100.0 - top_percentile_value,
+                                       key=percentile_type, inline=True, decimal_places=4)
+        return computed_data
 
     @property
     def v2_to(self):
@@ -840,8 +789,6 @@ class OfficerAllegation(models.Model):
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
-    gender = models.CharField(max_length=1, blank=True)
-    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     officer = models.ForeignKey(Officer, null=True)
 
 
@@ -905,8 +852,8 @@ class AttachmentFile(models.Model):
 class Award(models.Model):
     officer = models.ForeignKey(Officer)
     award_type = models.CharField(max_length=255)
-    incident_start_date = models.DateField(null=True)
-    incident_end_date = models.DateField(null=True)
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
     current_status = models.CharField(max_length=20)
     request_date = models.DateField()
     rank = models.CharField(max_length=100, blank=True)
@@ -937,3 +884,16 @@ class AttachmentRequest(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(AttachmentRequest, self).save(*args, **kwargs)
+
+
+class Salary(models.Model):
+    pay_grade = models.CharField(max_length=16)
+    rank = models.CharField(max_length=64, null=True)
+    salary = models.PositiveIntegerField()
+    employee_status = models.CharField(max_length=32)
+    org_hire_date = models.DateField(null=True)
+    spp_date = models.DateField(null=True)
+    start_date = models.DateField(null=True)
+    year = models.PositiveSmallIntegerField()
+    age_at_hire = models.PositiveSmallIntegerField(null=True)
+    officer = models.ForeignKey(Officer)

@@ -10,7 +10,7 @@ from robber import expect
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    ComplainantFactory, AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory
+    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
 )
 from .mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
@@ -21,12 +21,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         officer = OfficerFactory(
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE
+            active=ACTIVE_YES_CHOICE, birth_year=1910
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
-        ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
             officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU',
@@ -47,41 +46,48 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'race': 'White',
             'badge': '123456',
             'gender': 'Male',
-            'complaint_records': {
-                'count': 1,
-                'sustained_count': 1,
-                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
-                'facets': [
-                    {
-                        'name': 'category',
-                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant gender',
-                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    }
-                ]
-            }
+            'birth_year': 1910,
         })
 
     def test_summary_no_match(self):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def create_officer_allegation(self, officer, final_finding, final_outcome):
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(
+            officer=officer, allegation_category=allegation_category,
+            final_finding=final_finding, final_outcome=final_outcome
+        )
+
+    def test_metrics(self):
+        officer = OfficerFactory(id=123, complaint_percentile=90.0)
+        self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='027')
+        self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='028')
+        self.create_officer_allegation(officer=officer, final_finding='SU', final_outcome='600')
+
+        AwardFactory(officer=officer, award_type='Other')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honorable Mention')
+        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 123}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': 123,
+            'allegation_count': 3,
+            'complaint_percentile': 90.0,
+            'honorable_mention_count': 2,
+            'sustained_count': 1,
+            'discipline_count': 2,
+            'civilian_compliment_count': 2
+        })
+
+    def test_metrics_no_match(self):
+        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_timeline_items(self):
@@ -307,24 +313,52 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_top_officers_by_allegation(self):
-        OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
-                       complaint_percentile=100.0, gender='M', birth_year=1970)
-        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0)
+        appointed_date = date(2003, 1, 1)
+        officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
+                                 complaint_percentile=100.0, gender='M', birth_year=1970,
+                                 appointed_date=appointed_date
+                                 )
+        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki',
+                       complaint_percentile=50.0, appointed_date=appointed_date)
         OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
-                       complaint_percentile=99.2, gender='M', birth_year=1960)
+                       complaint_percentile=99.2, gender='M', birth_year=1960, appointed_date=appointed_date)
+
+        OfficerAllegationFactory(
+            officer=officer, start_date=date(2016, 1, 12),
+            allegation__incident_date=datetime(2015, 1, 1),
+            allegation__is_officer_complaint=False,
+            final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer, start_date=date(2016, 1, 12),
+            allegation__incident_date=datetime(2016, 1, 1),
+            allegation__is_officer_complaint=False,
+            final_finding='NS'
+        )
+
+        self.refresh_index()
+
         response = self.client.get(reverse('api-v2:officers-top-by-allegation'))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
 
         expect(response.data).to.eq([{
             'id': 1,
-            'visual_token_background_color': '#f5f4f4',
+            'visual_token_background_color': '#edf0fa',
             'full_name': 'Clarence Featherwater',
-            'complaint_count': 0,
+            'complaint_count': 2,
             'sustained_count': 0,
             'birth_year': 1970,
             'complaint_percentile': 100.0,
             'race': 'White',
-            'gender': 'Male'
+            'gender': 'Male',
+            'percentile': {
+                'officer_id': 1,
+                'year': 2016,
+                'percentile_trr': '0.000',
+                'percentile_allegation': '66.667',
+                'percentile_allegation_civilian': '66.667',
+                'percentile_allegation_internal': '0.000'
+            }
         }, {
             'id': 3,
             'visual_token_background_color': '#f5f4f4',
@@ -334,10 +368,62 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1960,
             'complaint_percentile': 99.2,
             'race': 'White',
-            'gender': 'Male'
+            'gender': 'Male',
+            'percentile': {
+                'officer_id': 3,
+                'year': 2016,
+                'percentile_trr': '0.000',
+                'percentile_allegation': '0.000',
+                'percentile_allegation_civilian': '0.000',
+                'percentile_allegation_internal': '0.000'
+            }
         }])
 
     def test_top_officers_by_allegation_random(self):
         with patch('data.models.Officer.objects') as mock_func:
             self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
             expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
+
+    def test_officer_percentile(self):
+        appointed_date = date(2003, 1, 1)
+        officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
+                                 complaint_percentile=100.0, gender='M', birth_year=1970,
+                                 appointed_date=appointed_date)
+        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki', complaint_percentile=50.0,
+                       appointed_date=appointed_date)
+        OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
+                       complaint_percentile=99.2, gender='M', birth_year=1960,
+                       appointed_date=appointed_date)
+
+        OfficerAllegationFactory.create_batch(
+            2, officer=officer, start_date=date(2015, 1, 12),
+            allegation__incident_date=datetime(2014, 1, 1),
+            allegation__is_officer_complaint=False,
+            final_finding='NS'
+        )
+        OfficerAllegationFactory.create_batch(
+            2, officer=officer, start_date=date(2016, 1, 12),
+            allegation__incident_date=datetime(2016, 1, 1),
+            allegation__is_officer_complaint=False,
+            final_finding='NS'
+        )
+
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:officers-percentile', kwargs={'pk': 1}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'officer_id': 1,
+            'year': 2015,
+            'percentile_trr': '0.000',
+            'percentile_allegation': '66.667',
+            'percentile_allegation_civilian': '66.667',
+            'percentile_allegation_internal': '0.000'
+        }, {
+            'officer_id': 1,
+            'year': 2016,
+            'percentile_trr': '0.000',
+            'percentile_allegation': '66.667',
+            'percentile_allegation_civilian': '66.667',
+            'percentile_allegation_internal': '0.000'
+        }])

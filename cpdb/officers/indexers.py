@@ -1,14 +1,22 @@
 from itertools import combinations
 
+from django.utils.timezone import now
+
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
+from tqdm import tqdm
+
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
+from officers.doc_types import OfficerPercentileDocType
+from officers.serializers import OfficerYearlyPercentileSerializer
 from .doc_types import (
-    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType
+    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType, OfficerMetricsDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    OfficerSummarySerializer, CRTimelineSerializer, UnitChangeTimelineSerializer, JoinedTimelineSerializer
+    OfficerSummarySerializer, CRTimelineSerializer,
+    UnitChangeTimelineSerializer, JoinedTimelineSerializer,
+    OfficerMetricsSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -24,6 +32,18 @@ class OfficersIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerSummarySerializer(datum).data
+
+
+@register_indexer(app_name)
+class OfficerMetricsIndexer(BaseIndexer):
+    doc_type_klass = OfficerMetricsDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Officer.objects.all()
+
+    def extract_datum(self, datum):
+        return OfficerMetricsSerializer(datum).data
 
 
 @register_indexer(app_name)
@@ -84,8 +104,8 @@ class SocialGraphIndexer(BaseIndexer):
     def _links(self, officers):
         links = []
         for o1, o2 in combinations(officers, 2):
-            qs = Allegation.objects.filter(officerallegation__officer=o1)\
-                    .filter(officerallegation__officer=o2).distinct()
+            qs = Allegation.objects.filter(officerallegation__officer=o1) \
+                .filter(officerallegation__officer=o2).distinct()
             if qs.exists():
                 link = {
                     'source': o1.id,
@@ -106,3 +126,22 @@ class SocialGraphIndexer(BaseIndexer):
             'links': self._links(coaccuseds),
             'nodes': [self._node(coaccused) for coaccused in coaccuseds]
         }}
+
+
+@register_indexer(app_name)
+class OfficerPercentileIndexer(BaseIndexer):
+    doc_type_klass = OfficerPercentileDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        results = []
+        for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
+            result = Officer.top_complaint_officers(100, yr)
+            if result and result[0]['year'] < yr:
+                # we have no more data to calculate, should break here
+                break
+            results.extend(result)
+        return results
+
+    def extract_datum(self, datum):
+        return OfficerYearlyPercentileSerializer(datum).data
