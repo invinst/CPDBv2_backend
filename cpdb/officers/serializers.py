@@ -123,9 +123,7 @@ class TimelineMinimapSerializer(serializers.Serializer):
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     year = serializers.IntegerField()
-    percentile_alL_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_shooting = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_taser = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_others = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
