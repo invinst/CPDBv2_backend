@@ -126,7 +126,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                 }
             ],
             'point': {
-                'long': 12.0,
+                'lon': 12.0,
                 'lat': 21.0
             },
             'incident_date': '2002-02-28',

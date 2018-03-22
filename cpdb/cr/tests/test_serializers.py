@@ -52,7 +52,7 @@ class CRSerializerTestCase(TestCase):
         obj.point.x = 1.0
         obj.point.y = 1.0
         result = CRSerializer(obj).data
-        expect(result['point']).to.eq({'long': 1.0, 'lat': 1.0})
+        expect(result['point']).to.eq({'lon': 1.0, 'lat': 1.0})
 
     def test_get_involvements(self):
         obj = Mock()

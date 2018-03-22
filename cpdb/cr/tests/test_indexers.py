@@ -76,7 +76,7 @@ class CRIndexerTestCase(SimpleTestCase):
             'complainants': [{'gender': 'Male', 'race': 'White', 'age': 30}],
             'category_names': ['Operation/Personnel Violations'],
             'summary': 'Summary',
-            'point': {'long': 12.0, 'lat': 21.0},
+            'point': {'lon': 12.0, 'lat': 21.0},
             'incident_date': '2017-03-21',
             'address': '3510 Michigan Ave, Chicago, IL 60653',
             'location': 'Police Building',

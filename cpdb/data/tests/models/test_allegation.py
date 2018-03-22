@@ -91,7 +91,7 @@ class AllegationTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
         expect(allegation.category_names).to.eq(['Illegal Search', 'Use of Force'])
 
-        OfficerAllegationFactory(allegation=allegation)
+        OfficerAllegationFactory(allegation=allegation, allegation_category=None)
         expect(allegation.category_names).to.eq(['Illegal Search', 'Unknown', 'Use of Force'])
 
     def test_complainant_races(self):
