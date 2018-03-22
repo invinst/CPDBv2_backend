@@ -43,7 +43,13 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             allegation__incident_date=datetime(2016, 1, 1),
             start_date=date(2016, 1, 1)
         )
-        OfficerAllegationFactory.create_batch(4, officer=officer, final_finding='NS')
+        OfficerAllegationFactory.create_batch(
+            4,
+            officer=officer,
+            final_finding='NS',
+            start_date=date(2015, 1, 1),
+            allegation__incident_date=datetime(2015, 2, 20)
+        )
 
         self.refresh_index()
         url = reverse('api-v2:activity-grid-list')
