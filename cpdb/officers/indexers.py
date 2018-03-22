@@ -1,11 +1,11 @@
 from itertools import combinations
+from tqdm import tqdm
 
 from django.utils.timezone import now
+from django.db.models import F
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from tqdm import tqdm
-
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from officers.doc_types import OfficerPercentileDocType
 from officers.serializers import OfficerYearlyPercentileSerializer
@@ -171,7 +171,11 @@ class UnitChangeNewTimelineEventIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return OfficerHistory.objects.filter(effective_date__isnull=False)
+        return OfficerHistory.objects.filter(
+            effective_date__isnull=False,
+        ).exclude(
+            effective_date=F('officer__appointed_date'),
+        )
 
     def extract_datum(self, datum):
         return UnitChangeNewTimelineSerializer(datum).data

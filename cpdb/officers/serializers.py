@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from cr.serializers import AttachmentFileSerializer
+
 
 class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -145,6 +147,7 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
     date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     kind = serializers.SerializerMethodField()
     unit_name = serializers.SerializerMethodField()
+    unit_description = serializers.SerializerMethodField()
     rank = serializers.CharField()
 
     def get_kind(self, obj):
@@ -154,7 +157,12 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
         return 10
 
     def get_unit_name(self, obj):
-        return obj.get_unit_name_by_date(obj.appointed_date)
+        unit = obj.get_unit_by_date(obj.appointed_date)
+        return unit.unit_name if unit else ''
+
+    def get_unit_description(self, obj):
+        unit = obj.get_unit_by_date(obj.appointed_date)
+        return unit.description if unit else ''
 
 
 class UnitChangeNewTimelineSerializer(serializers.Serializer):
@@ -164,6 +172,7 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
     date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
     kind = serializers.SerializerMethodField()
     unit_name = serializers.CharField()
+    unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
@@ -174,6 +183,9 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
 
     def get_rank(self, obj):
         return obj.officer.rank
+
+    def get_unit_description(self, obj):
+        return obj.unit.description
 
 
 class CRNewTimelineSerializer(serializers.Serializer):
@@ -189,7 +201,9 @@ class CRNewTimelineSerializer(serializers.Serializer):
     outcome = serializers.CharField(source='final_outcome_display')
     coaccused = serializers.IntegerField(source='coaccused_count')
     unit_name = serializers.SerializerMethodField()
+    unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
+    attachments = serializers.SerializerMethodField()
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -201,10 +215,21 @@ class CRNewTimelineSerializer(serializers.Serializer):
         return 30
 
     def get_unit_name(self, obj):
-        return obj.officer.get_unit_name_by_date(obj.start_date)
+        unit = obj.officer.get_unit_by_date(obj.start_date)
+        return unit.unit_name if unit else ''
+
+    def get_unit_description(self, obj):
+        unit = obj.officer.get_unit_by_date(obj.start_date)
+        return unit.description if unit else ''
 
     def get_rank(self, obj):
         return obj.officer.rank
+
+    def get_attachments(self, obj):
+        if obj.allegation.documents:
+            return [AttachmentFileSerializer(document).data for document in obj.allegation.documents]
+        else:
+            return None
 
 
 class AwardNewTimelineSerializer(serializers.Serializer):
@@ -215,6 +240,7 @@ class AwardNewTimelineSerializer(serializers.Serializer):
     kind = serializers.SerializerMethodField()
     award_type = serializers.CharField()
     unit_name = serializers.SerializerMethodField()
+    unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
@@ -224,7 +250,12 @@ class AwardNewTimelineSerializer(serializers.Serializer):
         return 40
 
     def get_unit_name(self, obj):
-        return obj.officer.get_unit_name_by_date(obj.start_date)
+        unit = obj.officer.get_unit_by_date(obj.start_date)
+        return unit.unit_name if unit else ''
+
+    def get_unit_description(self, obj):
+        unit = obj.officer.get_unit_by_date(obj.start_date)
+        return unit.description if unit else ''
 
     def get_rank(self, obj):
         return obj.officer.rank
@@ -239,6 +270,7 @@ class TRRNewTimelineSerializer(serializers.Serializer):
     taser = serializers.NullBooleanField()
     firearm_used = serializers.NullBooleanField()
     unit_name = serializers.SerializerMethodField()
+    unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
@@ -248,7 +280,12 @@ class TRRNewTimelineSerializer(serializers.Serializer):
         return 50
 
     def get_unit_name(self, obj):
-        return obj.officer.get_unit_name_by_date(obj.trr_datetime)
+        unit = obj.officer.get_unit_by_date(obj.trr_datetime)
+        return unit.unit_name if unit else ''
+
+    def get_unit_description(self, obj):
+        unit = obj.officer.get_unit_by_date(obj.trr_datetime)
+        return unit.description if unit else ''
 
     def get_rank(self, obj):
         return obj.officer.rank

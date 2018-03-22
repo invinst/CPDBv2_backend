@@ -495,13 +495,13 @@ class Officer(TaggableModel):
         )
         return os.path.join(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, file_name)
 
-    def get_unit_name_by_date(self, query_date):
+    def get_unit_by_date(self, query_date):
         try:
             officer_history = self.officerhistory_set.filter(
                 Q(effective_date__lte=query_date) | Q(effective_date__isnull=True),
                 Q(end_date__gte=query_date) | Q(end_date__isnull=True)
             )[0]
-            return officer_history.unit_name
+            return officer_history.unit
 
         except IndexError:
             return ''
