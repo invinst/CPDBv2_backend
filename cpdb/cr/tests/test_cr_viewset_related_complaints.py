@@ -27,10 +27,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
             )
         )
 
-    def test_allegation_has_no_point(self):
-        allegation = AllegationFactory(point=None)
-
-        response = self.search(allegation.crid, {})
+    def expect_empty_result(self, response):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             "count": 0,
@@ -38,6 +35,32 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
             "next": None,
             "results": []
         })
+
+    def test_allegation_has_no_point(self):
+        OfficerAllegationFactory(allegation=self.allegation)
+        allegation = AllegationFactory(point=None)
+
+        response = self.search(allegation.crid, {
+            'distance': '10mi',
+            'match': 'categories'
+        })
+        self.expect_empty_result(response)
+
+    def test_allegation_has_no_link_to_officer(self):
+        response = self.search(self.allegation.crid, {
+            'distance': '10mi',
+            'match': 'officers'
+        })
+        self.expect_empty_result(response)
+
+    def test_allegation_has_no_category(self):
+        OfficerAllegationFactory(allegation=self.allegation, allegation_category=None)
+
+        response = self.search(self.allegation.crid, {
+            'distance': '10mi',
+            'match': 'categories'
+        })
+        self.expect_empty_result(response)
 
     def test_missing_params(self):
         response = self.search(self.allegation.crid, {'match': 'officers'})

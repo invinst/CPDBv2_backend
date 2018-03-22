@@ -18,6 +18,14 @@ from cr.serializers import (
 from es_index.pagination import ESQueryPagination
 
 
+class NoCategoryError(Exception):
+    pass
+
+
+class NoOfficerError(Exception):
+    pass
+
+
 class CRViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
         query = CRDocType().search().query('term', crid=pk)
@@ -66,67 +74,76 @@ class CRViewSet(viewsets.ViewSet):
     def related_complaints(self, request, pk):
         allegation = get_object_or_404(Allegation, crid=pk)
 
-        if allegation.point is None:
+        request_serializer = CRRelatedComplaintRequestSerializer(data=request.GET)
+        if not request_serializer.is_valid():
+            return Response({'message': request_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            query_filter = {
+                'geo_distance': {
+                    'distance': request_serializer.validated_data['distance'],
+                    'point': {
+                        'lat': allegation.point.y,
+                        'lon': allegation.point.x
+                    }
+                }
+            }
+
+            if request_serializer.validated_data['match'] == 'categories':
+                categories = filter(None, [
+                    obj.category
+                    for obj in allegation.officerallegation_set.all()
+                ])
+                if len(categories) == 0:
+                    raise NoCategoryError()
+
+                query = CRDocType().search().query(
+                    'bool',
+                    must={
+                        'terms': {
+                            'category_names': categories
+                        }
+                    },
+                    must_not={
+                        "terms": {"crid": [pk]}
+                    },
+                    filter=query_filter
+                )
+            elif request_serializer.validated_data['match'] == 'officers':
+                officers = filter(None, [
+                    obj.officer_id
+                    for obj in allegation.officerallegation_set.all()
+                ])
+                if len(officers) == 0:
+                    raise NoOfficerError()
+
+                query = CRDocType().search().query(
+                    'bool',
+                    must={
+                        'nested': {
+                            'path': 'coaccused',
+                            'query': {
+                                'terms': {
+                                    'coaccused.id': officers
+                                }
+                            }
+                        }
+                    },
+                    must_not={
+                        "terms": {"crid": [pk]}
+                    },
+                    filter=query_filter
+                )
+
+            paginator = ESQueryPagination()
+            paginated_query = paginator.paginate_es_query(query, request)
+            related_complaint_serializer = CRRelatedComplaintSerializer(paginated_query, many=True)
+            return paginator.get_paginated_response(related_complaint_serializer.data)
+
+        except (NoCategoryError, NoOfficerError, AttributeError):
             return Response(OrderedDict([
                 ('count', 0),
                 ('next', None),
                 ('previous', None),
                 ('results', [])
             ]))
-
-        request_serializer = CRRelatedComplaintRequestSerializer(data=request.GET)
-        if not request_serializer.is_valid():
-            return Response({'message': request_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        query_filter = {
-            'geo_distance': {
-                'distance': request_serializer.validated_data['distance'],
-                'point': {
-                    'lat': allegation.point.y,
-                    'lon': allegation.point.x
-                }
-            }
-        }
-
-        if request_serializer.validated_data['match'] == 'categories':
-            query = CRDocType().search().query(
-                'bool',
-                must={
-                    'terms': {
-                        'category_names': [
-                            obj.category
-                            for obj in allegation.officerallegation_set.all()
-                        ]
-                    }
-                },
-                must_not={
-                    "terms": {"crid": [pk]}
-                },
-                filter=query_filter
-            )
-        elif request_serializer.validated_data['match'] == 'officers':
-            query = CRDocType().search().query(
-                'bool',
-                must={
-                    'nested': {
-                        'path': 'coaccused',
-                        'query': {
-                            'terms': {
-                                'coaccused.id': [
-                                    obj.officer_id
-                                    for obj in allegation.officerallegation_set.all()
-                                ]
-                            }
-                        }
-                    }
-                },
-                must_not={
-                    "terms": {"crid": [pk]}
-                },
-                filter=query_filter
-            )
-
-        paginator = ESQueryPagination()
-        paginated_query = paginator.paginate_es_query(query, request)
-        related_complaint_serializer = CRRelatedComplaintSerializer(paginated_query, many=True)
-        return paginator.get_paginated_response(related_complaint_serializer.data)
