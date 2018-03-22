@@ -114,7 +114,13 @@ class CRRelatedComplaintSerializer(serializers.Serializer):
     category_names = serializers.ListField(child=serializers.CharField())
 
     def get_coaccused(self, obj):
-        return [coaccused.full_name for coaccused in obj.coaccused]
+        try:
+            return [coaccused.full_name for coaccused in obj.coaccused]
+        except AttributeError:
+            return []
 
     def get_complainants(self, obj):
-        return [complainant.to_dict() for complainant in obj.complainants]
+        try:
+            return [complainant.to_dict() for complainant in obj.complainants]
+        except AttributeError:
+            return []

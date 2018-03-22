@@ -40,6 +40,8 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
         OfficerAllegationFactory(allegation=self.allegation)
         allegation = AllegationFactory(point=None)
 
+        self.refresh_index()
+
         response = self.search(allegation.crid, {
             'distance': '10mi',
             'match': 'categories'
@@ -47,6 +49,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
         self.expect_empty_result(response)
 
     def test_allegation_has_no_link_to_officer(self):
+        self.refresh_index()
         response = self.search(self.allegation.crid, {
             'distance': '10mi',
             'match': 'officers'
@@ -56,11 +59,56 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
     def test_allegation_has_no_category(self):
         OfficerAllegationFactory(allegation=self.allegation, allegation_category=None)
 
+        self.refresh_index()
+
         response = self.search(self.allegation.crid, {
             'distance': '10mi',
             'match': 'categories'
         })
         self.expect_empty_result(response)
+
+    def test_allegation_has_no_coaccused(self):
+        OfficerAllegationFactory(
+            allegation=self.allegation,
+            allegation_category__category='False Arrest')
+        complaint = OfficerAllegationFactory(
+            allegation__point=Point([0.01, 0.01]),
+            allegation_category__category='False Arrest',
+            officer=None
+        )
+
+        self.refresh_index()
+
+        response = self.search(self.allegation.crid, {
+            'distance': '10mi',
+            'match': 'categories'
+        })
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['crid']).to.eq(str(complaint.allegation.crid))
+        expect(response.data['results'][0]['coaccused']).to.have.length(0)
+
+    def test_allegation_has_no_complainant(self):
+        OfficerAllegationFactory(
+            allegation=self.allegation,
+            allegation_category__category='False Arrest')
+        complaint = OfficerAllegationFactory(
+            allegation__point=Point([0.01, 0.01]),
+            allegation_category__category='False Arrest'
+        )
+
+        self.refresh_index()
+
+        response = self.search(self.allegation.crid, {
+            'distance': '10mi',
+            'match': 'categories'
+        })
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['crid']).to.eq(str(complaint.allegation.crid))
+        expect(response.data['results'][0]['complainants']).to.have.length(0)
 
     def test_missing_params(self):
         response = self.search(self.allegation.crid, {'match': 'officers'})
@@ -105,7 +153,6 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
             allegation__point=Point([0.01, 0.01]),
             allegation_category__category='False Arrest'
         )
-        ComplainantFactory(allegation=complaint.allegation, gender='M', race='Black', age='18')
         OfficerAllegationFactory(
             allegation__point=Point([1, 1]),
             allegation_category__category='False Arrest'
