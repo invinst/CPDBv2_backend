@@ -504,7 +504,7 @@ class Officer(TaggableModel):
             return officer_history.unit
 
         except IndexError:
-            return ''
+            return None
 
 
 class OfficerBadgeNumber(models.Model):
@@ -525,6 +525,10 @@ class OfficerHistory(models.Model):
     @property
     def unit_name(self):
         return self.unit.unit_name
+
+    @property
+    def unit_description(self):
+        return self.unit.description
 
 
 class Area(TaggableModel):

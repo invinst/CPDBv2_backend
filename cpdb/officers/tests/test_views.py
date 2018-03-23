@@ -206,8 +206,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_new_timeline_item(self):
         officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1), rank='Police Officer')
 
-        unit1 = PoliceUnitFactory(unit_name='001')
-        unit2 = PoliceUnitFactory(unit_name='002')
+        unit1 = PoliceUnitFactory(unit_name='001', description='unit_001')
+        unit2 = PoliceUnitFactory(unit_name='002', description='unit_002')
         OfficerHistoryFactory(officer=officer, unit=unit1, effective_date=date(2010, 1, 1), end_date=date(2011, 12, 31))
         OfficerHistoryFactory(officer=officer, unit=unit2, effective_date=date(2012, 1, 1), end_date=None)
 
@@ -242,6 +242,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'taser': False,
                 'firearm_used': False,
                 'unit_name': '002',
+                'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
                 'date': '2015-08-23',
@@ -253,17 +254,20 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'outcome': '9 Day Suspension',
                 'coaccused': 1,
                 'unit_name': '002',
+                'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
                 'date': '2015-03-23',
                 'kind': 'AWARD',
                 'unit_name': '002',
+                'unit_description': 'unit_002',
                 'award_type': 'Complimentary Letter',
                 'rank': 'Police Officer',
             }, {
                 'date': '2012-01-01',
                 'kind': 'UNIT_CHANGE',
                 'unit_name': '002',
+                'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
                 'date': '2011-09-23',
@@ -271,6 +275,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'taser': True,
                 'firearm_used': False,
                 'unit_name': '001',
+                'unit_description': 'unit_001',
                 'rank': 'Police Officer',
             }, {
                 'date': '2011-08-23',
@@ -282,22 +287,26 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'outcome': 'Unknown',
                 'coaccused': 4,
                 'unit_name': '001',
+                'unit_description': 'unit_001',
                 'rank': 'Police Officer',
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
                 'award_type': 'Honorable Mention',
                 'unit_name': '001',
+                'unit_description': 'unit_001',
                 'rank': 'Police Officer',
             }, {
                 'date': '2010-01-01',
                 'kind': 'UNIT_CHANGE',
                 'unit_name': '001',
+                'unit_description': 'unit_001',
                 'rank': 'Police Officer',
             }, {
                 'date': '2000-01-01',
                 'kind': 'JOINED',
                 'unit_name': '',
+                'unit_description': '',
                 'rank': 'Police Officer',
             },
         ])

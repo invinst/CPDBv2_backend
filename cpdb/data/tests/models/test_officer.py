@@ -373,8 +373,8 @@ class OfficerTestCase(TestCase):
 
     def test_get_unit_by_date(self):
         officer = OfficerFactory()
-        unit_100 = PoliceUnitFactory(unit_name='100')
-        unit_101 = PoliceUnitFactory(unit_name='101')
+        unit_100 = PoliceUnitFactory()
+        unit_101 = PoliceUnitFactory()
         OfficerHistoryFactory(
             officer=officer,
             unit=unit_100,
@@ -387,7 +387,7 @@ class OfficerTestCase(TestCase):
             effective_date=date(2006, 1, 1),
             end_date=date(2010, 12, 31),
         )
-        expect(officer.get_unit_name_by_date(date(1999, 1, 1))).to.eq('')
-        expect(officer.get_unit_name_by_date(date(2001, 1, 1))).to.eq('100')
-        expect(officer.get_unit_name_by_date(date(2007, 1, 1))).to.eq('101')
-        expect(officer.get_unit_name_by_date(date(2011, 1, 1))).to.eq('')
+        expect(officer.get_unit_by_date(date(1999, 1, 1))).to.be.none()
+        expect(officer.get_unit_by_date(date(2001, 1, 1))).to.eq(unit_100)
+        expect(officer.get_unit_by_date(date(2007, 1, 1))).to.eq(unit_101)
+        expect(officer.get_unit_by_date(date(2011, 1, 1))).to.be.none()

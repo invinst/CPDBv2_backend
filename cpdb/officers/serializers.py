@@ -172,7 +172,7 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
     date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
     kind = serializers.SerializerMethodField()
     unit_name = serializers.CharField()
-    unit_description = serializers.SerializerMethodField()
+    unit_description = serializers.CharField()
     rank = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
@@ -183,9 +183,6 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
 
     def get_rank(self, obj):
         return obj.officer.rank
-
-    def get_unit_description(self, obj):
-        return obj.unit.description
 
 
 class CRNewTimelineSerializer(serializers.Serializer):

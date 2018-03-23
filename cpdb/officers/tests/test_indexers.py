@@ -1,14 +1,13 @@
 from datetime import date, datetime
-import pytz
 
+import pytz
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
 from django.utils.timezone import now
-
 from mock import Mock, patch
 from robber import expect
 
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
 from data.models import Officer
 from officers.indexers import (
     OfficersIndexer,
@@ -361,7 +360,10 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
         officer = Mock(
             id=123,
             appointed_date=date(2012, 1, 1),
-            get_unit_name_by_date=Mock(return_value='001'),
+            get_unit_by_date=Mock(return_value=Mock(
+                unit_name='001',
+                description='Unit_001',
+            )),
             rank='Police Officer',
         )
         expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
@@ -371,22 +373,32 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
             'date': '2012-01-01',
             'kind': 'JOINED',
             'unit_name': '001',
+            'unit_description': 'Unit_001',
             'rank': 'Police Officer',
         })
 
 
-class UnitChangeNewTimelineEventIndexerTestCase(SimpleTestCase):
+class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        officer_history = Mock()
-
-        with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[officer_history]):
-            expect(UnitChangeNewTimelineEventIndexer().get_queryset()).to.eq([officer_history])
+        officer_history = OfficerHistoryFactory(
+            effective_date=date(2010, 1, 1),
+            officer=OfficerFactory(appointed_date=date(2001, 2, 2))
+        )
+        OfficerHistoryFactory(
+            effective_date=date(2010, 1, 1),
+            officer=OfficerFactory(appointed_date=date(2010, 1, 1))
+        )
+        OfficerHistoryFactory(
+            effective_date=None,
+        )
+        expect(list(UnitChangeNewTimelineEventIndexer().get_queryset())).to.eq([officer_history])
 
     def test_extract_datum(self):
         officer_history = Mock(
             officer_id=123,
             effective_date=date(2010, 3, 4),
             unit_name='003',
+            unit_description='Unit_003',
             officer=Mock(rank='Police Officer')
         )
         expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
@@ -396,6 +408,7 @@ class UnitChangeNewTimelineEventIndexerTestCase(SimpleTestCase):
             'date': '2010-03-04',
             'kind': 'UNIT_CHANGE',
             'unit_name': '003',
+            'unit_description': 'Unit_003',
             'rank': 'Police Officer',
         })
 
@@ -419,7 +432,24 @@ class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
             coaccused_count=4,
             officer=Mock(
                 rank='Police Officer',
-                get_unit_name_by_date=Mock(return_value='Unit 0'),
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
+            allegation=Mock(
+                documents=[
+                    Mock(
+                        title='doc_1',
+                        url='url_1',
+                        preview_image_url='image_url_1',
+                    ),
+                    Mock(
+                        title='doc_2',
+                        url='url_2',
+                        preview_image_url='image_url_2',
+                    )
+                ]
             ),
         )
 
@@ -435,8 +465,21 @@ class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
             'finding': 'Unfounded',
             'outcome': 'Unknown',
             'coaccused': 4,
-            'unit_name': 'Unit 0',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'attachments': [
+                {
+                    'title': 'doc_1',
+                    'url': 'url_1',
+                    'preview_image_url': 'image_url_1',
+                },
+                {
+                    'title': 'doc_2',
+                    'url': 'url_2',
+                    'preview_image_url': 'image_url_2',
+                },
+            ]
         })
 
 
@@ -454,8 +497,11 @@ class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
             award_type='Honorable Mention',
             officer=Mock(
                 rank='Police Officer',
-                get_unit_name_by_date=Mock(return_value='Unit 003'),
-            )
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
         )
         expect(AwardNewTimelineEventIndexer().extract_datum(award)).to.eq({
             'officer_id': 123,
@@ -464,7 +510,8 @@ class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
             'date': '2010-03-04',
             'kind': 'AWARD',
             'award_type': 'Honorable Mention',
-            'unit_name': 'Unit 003',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
             'rank': 'Police Officer',
         })
 
@@ -484,8 +531,11 @@ class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
             taser=False,
             officer=Mock(
                 rank='Police Officer',
-                get_unit_name_by_date=Mock(return_value='Unit 003'),
-            )
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
         )
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
             'officer_id': 123,
@@ -495,6 +545,7 @@ class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'FORCE',
             'taser': False,
             'firearm_used': False,
-            'unit_name': 'Unit 003',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
             'rank': 'Police Officer',
         })
