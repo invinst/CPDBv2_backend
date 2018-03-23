@@ -51,7 +51,7 @@
 
 - name: Run rebuild_index for ES
   django_manage:
-    command: rebuild_index
+    command: "rebuild_index --from-azure"
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_module }}"
