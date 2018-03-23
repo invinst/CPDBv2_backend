@@ -5,3 +5,4 @@ omit =
   ~/virtualenvs/*
   manage.py
   */tests/*
+  */site-packages/*
