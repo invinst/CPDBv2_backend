@@ -22,12 +22,10 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             percentile={
                 'officer_id': 1,
                 'year': 2016,
-                'percentile_alL_trr': u'0.000',
-                'percentile_civilian': u'77.000',
-                'percentile_internal': u'0.020',
-                'percentile_shooting': u'45.000',
-                'percentile_taser': u'0.100',
-                'percentile_others': u'0.000'
+                'percentile_trr': '0.000',
+                'percentile_allegation': '0.088',
+                'percentile_allegation_civilian': '77.000',
+                'percentile_allegation_internal': '0.020'
             }
         )
 
@@ -44,11 +42,9 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'percentile': {
                 'officer_id': 1,
                 'year': 2016,
-                'percentile_alL_trr': u'0.000',
-                'percentile_civilian': u'77.000',
-                'percentile_internal': u'0.020',
-                'percentile_shooting': u'45.000',
-                'percentile_taser': u'0.100',
-                'percentile_others': u'0.000'
+                'percentile_trr': '0.000',
+                'percentile_allegation': '0.088',
+                'percentile_allegation_civilian': '77.000',
+                'percentile_allegation_internal': '0.020'
             }
         })
