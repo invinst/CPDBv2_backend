@@ -65,6 +65,8 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 ``` bash
 bin/deploy_staging
 ```
+Since deploy_staging command will NOT rebuild_index since it take great time. We recommend one should ssh to staging then 
+run `rebuild_index` separately with specific doc_type
 
 Currently, we are using azure blob storage to serve our heatmap cluster. In order to make the heatmap cluster available you will need to run the upload command:
 ```
@@ -83,6 +85,13 @@ git checkout staging && git pull
 git merge feature/my-feature-branch  # merge commit message editor opens - include `[rebuild_index]` here
 git push  # remember to test locally before pushing of course!
 ```
+**NOTE:** `[rebuild_index]` will rebuild ALL index, so it take 6 hours and impossible for CI to finish task. 
+We suggest that commit message should specific which doc_type should be rebuild; i.e. 
+``` Commit Message
+[c] 000 - Some commit description here
+[rebuild_index officers.officer_percentile_doc_type officers.officer_metrics_doc_type units]
+```
+
 
 # Removed apps
 

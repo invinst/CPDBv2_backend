@@ -26,6 +26,7 @@ ssl_dest_dir: /etc/ssl
 # Application settings.
 django_settings_module: "config.settings.staging"
 django_debug: false
+run_rebuild_index: no
 
 deploy_user: ansible
 deploy_group: ansible
