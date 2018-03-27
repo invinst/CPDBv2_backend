@@ -160,14 +160,3 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer1.create_mapping.assert_called_once()
         Indexer1.index_alias.migrate.assert_called_once()
         Indexer1.add_new_data.assert_called_once()
-
-    def test_rebuild_index_from_azure(self):
-        Indexer1 = self._prepare_data()
-        mock_get_blob_to_text = Mock(return_value=Mock(content='{"test": ["*"]}'))
-        with patch('es_index.management.commands.rebuild_index.BlockBlobService',
-                   return_value=Mock(get_blob_to_text=mock_get_blob_to_text)):
-            call_command('rebuild_index', '--from-azure')
-            mock_get_blob_to_text.assert_called_once()
-        Indexer1.create_mapping.assert_called_once()
-        Indexer1.index_alias.migrate.assert_called_once()
-        Indexer1.add_new_data.assert_called_once()

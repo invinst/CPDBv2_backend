@@ -1,10 +1,7 @@
 import json
 
-from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils.module_loading import autodiscover_modules
-
-from azure.storage.blob import BlockBlobService
 
 from es_index import indexer_klasses, indexer_klasses_map
 
@@ -16,12 +13,6 @@ class Command(BaseCommand):
             '--from-file',
             dest='from_file',
             help='Read config json and choose which indexer to rebuild'
-        )
-        parser.add_argument(
-            '--from-azure',
-            action='store_true',
-            dest='from_azure',
-            help='Read config json from Azure'
         )
 
     def _get_indexer_names_from_json(self, file_name):
@@ -43,14 +34,6 @@ class Command(BaseCommand):
                 indexer_names[indexer].append(es_type)
         return indexer_names
 
-    def _get_indexer_names_from_azure(self):
-        block_blob_service = BlockBlobService(
-            account_name=settings.DATA_PIPELINE_STORAGE_ACCOUNT_NAME,
-            account_key=settings.DATA_PIPELINE_STORAGE_ACCOUNT_KEY
-        )
-        rebuild_index_blob = block_blob_service.get_blob_to_text('rebuild-index', 'indexers.json')
-        return json.loads(rebuild_index_blob.content)
-
     def get_indexers(self, **options):
         autodiscover_modules('indexers')
         indexers = []
@@ -58,8 +41,6 @@ class Command(BaseCommand):
             indexer_names = self._get_indexer_names_from_args(options['app'])
         elif options['from_file']:
             indexer_names = self._get_indexer_names_from_json(options['from_file'])
-        elif options['from_azure']:
-            indexer_names = self._get_indexer_names_from_azure()
         else:
             return indexer_klasses
 

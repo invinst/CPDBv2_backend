@@ -47,4 +47,4 @@ authorized_keys: |
 visual_token_storageaccountname: 'cpdbvisualtoken'
 twitterbot_newrelic_environment: production
 
-extra_rebuild_index: '--from-azure'
+extra_rebuild_index: ''
