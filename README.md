@@ -93,6 +93,18 @@ We suggest that commit message should specific which doc_type should be rebuild;
 ```
 
 
+# Update Docker images
+
+We're using CircleCI version 2.0. As thus has moved on to running tests and deployment via Docker images. After you make changes to the Docker files, bump up the version and run following commands:
+
+```
+docker login
+docker build -t cpdbdev/cpdbv2_backend:0.1.0 .circleci/docker
+docker push cpdbdev/cpdbv2_backend:0.1.0
+docker build -t cpdbdev/postgis:9.4-alpine .circleci/postgis-docker
+docker push cpdbdev/postgis:9.4-alpine
+```
+
 # Removed apps
 
 The following apps are removed: `landing_page`, `faq`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `faq_` or `story_`, it should be safe to remove them.

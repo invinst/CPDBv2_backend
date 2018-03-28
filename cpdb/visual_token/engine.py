@@ -20,13 +20,17 @@ class Engine:
         return 'http://localhost:%s' % settings.RUNNING_PORT
 
     def start(self):
-        service.start()
+        try:  # pragma: no cover
+            service_url = settings.SELENIUM_URL
+        except AttributeError:  # pragma: no cover
+            service.start()
+            service_url = service.service_url
 
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         capabilities = chrome_options.to_capabilities()
 
-        self.driver = webdriver.Remote(service.service_url, desired_capabilities=capabilities)
+        self.driver = webdriver.Remote(service_url, desired_capabilities=capabilities)
         self.driver.get(
             '%s%s' % (
                 self.server_base_path, reverse('visual_token', args=[self.renderer.script_path])))
