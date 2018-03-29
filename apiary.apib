@@ -1579,12 +1579,9 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-## Top Officers by allegation [/officers/top-by-allegation/{?random}]
+## Top Officers by allegation [/officers/top-by-allegation/]
 
-### Get Officer cards on top 1% complaint percentile [GET]
-
-+ Parameters
-    + random (optional, 1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+### List Officer Cards based on top 1% complaint percentile, sort by descending [GET]
 
 + Response 200 (application/json)
 

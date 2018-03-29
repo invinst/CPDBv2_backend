@@ -60,13 +60,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             {
                 'id': 1,
                 'full_name': 'Jerome Finnigan',
-                'visual_token_background_color': '#d4e2f4',
                 'complaint_count': 6,
                 'sustained_count': 2,
                 'birth_year': 1950,
                 'race': 'Asian',
                 'gender': 'Male',
-                'complaint_percentile': None,
                 'percentile': {
                     'officer_id': 1,
                     'year': 2016,

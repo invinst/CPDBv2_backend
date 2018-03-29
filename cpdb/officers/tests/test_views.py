@@ -3,7 +3,7 @@ from datetime import date, datetime
 
 from django.core.urlresolvers import reverse
 
-from mock import patch
+from mock import patch, Mock
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
@@ -312,77 +312,82 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-social-graph', kwargs={'pk': 3}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_top_officers_by_allegation(self):
-        appointed_date = date(2003, 1, 1)
-        officer = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater',
-                                 complaint_percentile=100.0, gender='M', birth_year=1970,
-                                 appointed_date=appointed_date
-                                 )
-        OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki',
-                       complaint_percentile=50.0, appointed_date=appointed_date)
-        OfficerFactory(id=3, first_name='Ronald', last_name='Watts',
-                       complaint_percentile=99.2, gender='M', birth_year=1960, appointed_date=appointed_date)
-
-        OfficerAllegationFactory(
-            officer=officer, start_date=date(2016, 1, 12),
-            allegation__incident_date=datetime(2015, 1, 1),
-            allegation__is_officer_complaint=False,
-            final_finding='NS'
+    @patch('officers.views.OfficerMetricsWorker.search')
+    @patch('officers.views.OfficerPercentileWorker.get_top_officers')
+    def test_top_officers_by_allegation(self, get_top_officers_mock, search_mock):
+        get_top_officers_mock.return_value = [
+            Mock(
+                officer_id=1,
+                year=2016,
+                percentile_trr=0.000,
+                percentile_allegation=99.995,
+                percentile_allegation_civilian=99.990,
+                percentile_allegation_internal=99.802,
+            ),
+            Mock(
+                officer_id=2,
+                year=2016,
+                percentile_trr=0.000,
+                percentile_allegation=99.993,
+                percentile_allegation_civilian=99.901,
+                percentile_allegation_internal=99.812,
+            ),
+        ]
+        OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater', gender='M', birth_year=1970)
+        OfficerFactory(id=2, first_name='Ronald', last_name='Watts', gender='M', birth_year=1970)
+        metric1 = Mock(id=1)
+        metric1.to_dict.return_value = {
+            'id': 1,
+            'sustained_count': 20,
+            'allegation_count': 10,
+        }
+        metric2 = Mock(id=2)
+        metric2.to_dict.return_value = {
+            'id': 2,
+            'sustained_count': 15,
+            'allegation_count': 17,
+        }
+        search_mock.return_value = Mock(
+            hits=[metric1, metric2],
         )
-        OfficerAllegationFactory(
-            officer=officer, start_date=date(2016, 1, 12),
-            allegation__incident_date=datetime(2016, 1, 1),
-            allegation__is_officer_complaint=False,
-            final_finding='NS'
-        )
-
-        self.refresh_index()
 
         response = self.client.get(reverse('api-v2:officers-top-by-allegation'))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
 
-        expect(response.data).to.eq([{
-            'id': 1,
-            'visual_token_background_color': '#edf0fa',
-            'full_name': 'Clarence Featherwater',
-            'complaint_count': 2,
-            'sustained_count': 0,
-            'birth_year': 1970,
-            'complaint_percentile': 100.0,
-            'race': 'White',
-            'gender': 'Male',
-            'percentile': {
-                'officer_id': 1,
-                'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '66.667',
-                'percentile_allegation_civilian': '66.667',
-                'percentile_allegation_internal': '0.000'
-            }
-        }, {
-            'id': 3,
-            'visual_token_background_color': '#f5f4f4',
-            'full_name': 'Ronald Watts',
-            'complaint_count': 0,
-            'sustained_count': 0,
-            'birth_year': 1960,
-            'complaint_percentile': 99.2,
-            'race': 'White',
-            'gender': 'Male',
-            'percentile': {
-                'officer_id': 3,
-                'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '0.000',
-                'percentile_allegation_civilian': '0.000',
-                'percentile_allegation_internal': '0.000'
-            }
-        }])
-
-    def test_top_officers_by_allegation_random(self):
-        with patch('data.models.Officer.objects') as mock_func:
-            self.client.get(reverse('api-v2:officers-top-by-allegation'), {'random': 1})
-            expect(mock_func.filter.return_value.order_by).to.be.called_with('?')
+        expect(response.data).to.eq([
+            {
+                'id': 1,
+                'full_name': 'Clarence Featherwater',
+                'sustained_count': 20,
+                'complaint_count': 10,
+                'birth_year': 1970,
+                'race': 'White',
+                'gender': 'Male',
+                'percentile': {
+                    'officer_id': 1,
+                    'year': 2016,
+                    'percentile_trr': '0.000',
+                    'percentile_allegation': '99.995',
+                    'percentile_allegation_civilian': '99.990',
+                    'percentile_allegation_internal': '99.802',
+                }
+            }, {
+                'id': 2,
+                'full_name': 'Ronald Watts',
+                'sustained_count': 15,
+                'complaint_count': 17,
+                'race': 'White',
+                'gender': 'Male',
+                'birth_year': 1970,
+                'percentile': {
+                    'officer_id': 2,
+                    'year': 2016,
+                    'percentile_trr': '0.000',
+                    'percentile_allegation': '99.993',
+                    'percentile_allegation_civilian': '99.901',
+                    'percentile_allegation_internal': '99.812',
+                }
+            }])
 
     def test_officer_percentile(self):
         appointed_date = date(2003, 1, 1)

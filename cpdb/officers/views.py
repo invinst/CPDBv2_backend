@@ -8,7 +8,7 @@ from data.models import Officer
 from es_index.pagination import ESQueryPagination
 from officers.doc_types import OfficerSocialGraphDocType, OfficerPercentileDocType
 from officers.serializers import OfficerYearlyPercentileSerializer
-from officers.workers import PercentileWorker
+from officers.workers import OfficerPercentileWorker, OfficerMetricsWorker
 from .doc_types import OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerMetricsDocType
 from .serializers import TimelineSerializer, TimelineMinimapSerializer
 
@@ -96,21 +96,22 @@ class OfficersViewSet(viewsets.ViewSet):
 
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):
-        is_random = request.GET.get('random', 0)
-        limit = request.GET.get('limit', 48)
+        limit = request.GET.get('limit', 40)
+        top_officers_percentile = OfficerPercentileWorker().get_top_officers(size=limit)
+        ids = [p.officer_id for p in top_officers_percentile]
+        queryset = Officer.objects.filter(id__in=ids)
 
-        order_by = '?' if is_random else '-complaint_percentile'
-        queryset = Officer.objects.filter(complaint_percentile__gt=99.0).order_by(order_by)
-        queryset = queryset[0: limit]
-        ids = list(queryset.values_list('id', flat=True))
-
-        es_result = PercentileWorker().search(ids, size=100)
-        percentile_data = {h.officer_id: h for h in es_result.hits}
-
+        officers = {h.id: h for h in queryset}
+        es_results = OfficerMetricsWorker().search(ids, size=limit)
+        metric_data = {h.id: h.to_dict() for h in es_results.hits}
         results = []
-        for obj in queryset:
-            if obj.id in percentile_data:
-                obj.percentile = percentile_data[obj.id].to_dict()
+        for percentile in top_officers_percentile:
+            obj = officers[percentile.officer_id]
+            obj.percentile = percentile
+            if percentile.officer_id in metric_data:
+                officer_metric = metric_data[percentile.officer_id]
+                obj.sustained_count_metric = officer_metric['sustained_count']
+                obj.complaint_count_metric = officer_metric['allegation_count']
             results.append(obj)
 
         return Response(OfficerCardSerializer(results, many=True).data)

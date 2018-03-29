@@ -5,19 +5,17 @@ from officers.serializers import OfficerYearlyPercentileSerializer
 
 class OfficerCardSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    visual_token_background_color = serializers.CharField()
     full_name = serializers.CharField()
-    complaint_count = serializers.IntegerField(source='allegation_count')
-    sustained_count = serializers.IntegerField()
+    complaint_count = serializers.SerializerMethodField()
+    sustained_count = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField()
+    # complaint_percentile = serializers.FloatField()
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
     percentile = OfficerYearlyPercentileSerializer(read_only=True)
 
+    def get_complaint_count(self, obj):
+        return obj.complaint_count_metric
 
-class ActivityCardSerializer(serializers.Serializer):
-    def to_representation(self, obj):
-        if obj.officer:
-            result = OfficerCardSerializer(obj.officer).data
-            return result
+    def get_sustained_count(self, obj):
+        return obj.sustained_count_metric
