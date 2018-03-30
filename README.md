@@ -65,6 +65,8 @@ If you already setup your infrastructure with ansible, you can run deploy everyt
 ``` bash
 bin/deploy_staging
 ```
+Since deploy_staging command will NOT rebuild_index since it take great time. We recommend one should ssh to staging then 
+run `rebuild_index` separately with specific doc_type
 
 Currently, we are using azure blob storage to serve our heatmap cluster. In order to make the heatmap cluster available you will need to run the upload command:
 ```
@@ -82,6 +84,25 @@ git push
 git checkout staging && git pull
 git merge feature/my-feature-branch  # merge commit message editor opens - include `[rebuild_index]` here
 git push  # remember to test locally before pushing of course!
+```
+**NOTE:** `[rebuild_index]` will rebuild ALL index, so it take 6 hours and impossible for CI to finish task. 
+We suggest that commit message should specific which doc_type should be rebuild; i.e. 
+``` Commit Message
+[c] 000 - Some commit description here
+[rebuild_index officers.officer_percentile_doc_type officers.officer_metrics_doc_type units]
+```
+
+
+# Update Docker images
+
+We're using CircleCI version 2.0. As thus has moved on to running tests and deployment via Docker images. After you make changes to the Docker files, bump up the version and run following commands:
+
+```
+docker login
+docker build -t cpdbdev/cpdbv2_backend:0.1.0 .circleci/docker
+docker push cpdbdev/cpdbv2_backend:0.1.0
+docker build -t cpdbdev/postgis:9.4-alpine .circleci/postgis-docker
+docker push cpdbdev/postgis:9.4-alpine
 ```
 
 # Removed apps

@@ -7,7 +7,7 @@ from search.doc_types import (
     UnitDocType, NeighborhoodsDocType, CommunityDocType,
     UnitOfficerDocType, CrDocType
 )
-from .indices import autocompletes
+from search.indices import autocompletes_alias
 
 
 def extract_text_from_value(value):
@@ -16,6 +16,9 @@ def extract_text_from_value(value):
 
 class BaseIndexer(object):
     doc_type_klass = None
+
+    def __init__(self, index_name=None):
+        self.index_name = index_name or autocompletes_alias.new_index_name
 
     def get_queryset(self):
         raise NotImplementedError
@@ -34,7 +37,8 @@ class BaseIndexer(object):
             extracted_data['meta'] = {'id': datum.pk}
         return extracted_data
 
-    def save_doc(self, extracted_data):
+    def save_doc(self, extracted_data, index=None):
+        extracted_data['_index'] = self.index_name
         doc = self.doc_type_klass(**extracted_data)
         doc.save()
 
@@ -182,16 +186,21 @@ class IndexerManager(object):
         self.indexers = indexers or []
 
     def _build_mapping(self):
-        autocompletes.delete(ignore=404)
-        autocompletes.create()
+        autocompletes_alias.write_index.close()
+        for indexer in self.indexers:
+            indexer.doc_type_klass.init(index=autocompletes_alias.new_index_name)
+        autocompletes_alias.write_index.open()
 
     def _index_data(self):
         for indexer_klass in self.indexers:
-            indexer_klass().index_data()
+            a = indexer_klass()
+            a.index_data()
 
-    def rebuild_index(self):
-        self._build_mapping()
-        self._index_data()
+    def rebuild_index(self, migrate_doc_types=[]):
+        with autocompletes_alias.indexing():
+            self._build_mapping()
+            autocompletes_alias.migrate(migrate_doc_types)
+            self._index_data()
 
 
 class CrIndexer(BaseIndexer):
