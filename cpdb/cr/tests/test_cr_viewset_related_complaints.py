@@ -30,10 +30,10 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
     def expect_empty_result(self, response):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            "count": 0,
-            "previous": None,
-            "next": None,
-            "results": []
+            'count': 0,
+            'previous': None,
+            'next': None,
+            'results': []
         })
 
     def test_allegation_has_no_point(self):
