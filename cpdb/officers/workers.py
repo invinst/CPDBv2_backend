@@ -1,9 +1,9 @@
 from search.workers import Worker
-from .doc_types import OfficerPercentileDocType, OfficerMetricsDocType
+from .doc_types import OfficerInfoDocType
 
 
 class OfficerPercentileWorker(Worker):
-    doc_type_klass = OfficerPercentileDocType
+    doc_type_klass = OfficerInfoDocType
 
     def _get_lastest_year(self):
         year_max_query = self._searcher.aggs.metric('year_max', 'max', field='year').execute()
@@ -29,7 +29,7 @@ class OfficerPercentileWorker(Worker):
 
 
 class OfficerMetricsWorker(Worker):
-    doc_type_klass = OfficerMetricsDocType
+    doc_type_klass = OfficerInfoDocType
 
     def query(self, officer_ids):
         return self._searcher.filter('terms', id=officer_ids)
