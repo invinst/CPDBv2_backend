@@ -92,7 +92,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_new_timeline_items_no_match(self):
-        response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 456}))
+        response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_new_timeline_item(self):
