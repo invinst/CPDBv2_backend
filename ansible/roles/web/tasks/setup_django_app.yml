@@ -63,7 +63,7 @@
 
 - name: Run rebuild_search_index for ES
   django_manage:
-    command: rebuild_search_index
+    command: "rebuild_search_index {{ extra_rebuild_search_index }}"
     app_path: "{{ project_path }}"
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_module }}"

@@ -27,6 +27,8 @@ ssl_dest_dir: /etc/ssl
 django_settings_module: "config.settings.production"
 django_debug: false
 
+extra_rebuild_index: ''
+extra_rebuild_search_index: ''
 run_django_db_migrations: yes
 run_django_collectstatic: yes
 deploy_user: ansible
@@ -46,5 +48,3 @@ authorized_keys: |
 
 visual_token_storageaccountname: 'cpdbvisualtoken'
 twitterbot_newrelic_environment: production
-
-extra_rebuild_index: ''
