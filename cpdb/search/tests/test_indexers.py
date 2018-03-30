@@ -14,6 +14,8 @@ from data.factories import (
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory)
 
+from search.search_indexers import autocompletes_alias
+
 
 class BaseIndexerTestCase(SimpleTestCase):
     def test_get_queryset(self):
@@ -40,28 +42,30 @@ class BaseIndexerTestCase(SimpleTestCase):
         expect(indexer.extract_datum_with_id(datum)).to.eq([{'foo': 'bar'}])
 
     def test_index_datum_dict(self):
-        indexer = BaseIndexer()
-        doc_type = Mock()
-        indexer.doc_type_klass = Mock(return_value=doc_type)
-        indexer.extract_datum_with_id = Mock(return_value={'key': 'something'})
-        indexer.get_queryset = Mock(return_value=['something'])
+        with patch.object(autocompletes_alias, 'new_index_name', 'test_autocompletes_1'):
+            indexer = BaseIndexer()
+            doc_type = Mock()
+            indexer.doc_type_klass = Mock(return_value=doc_type)
+            indexer.extract_datum_with_id = Mock(return_value={'key': 'something'})
+            indexer.get_queryset = Mock(return_value=['something'])
 
-        indexer.index_datum('anything')
+            indexer.index_datum('anything')
 
-        indexer.doc_type_klass.assert_called_once_with(key='something')
-        expect(doc_type.save.called).to.be.true()
+            indexer.doc_type_klass.assert_called_once_with(key='something', _index='test_autocompletes_1')
+            expect(doc_type.save.called).to.be.true()
 
     def test_index_datum_list(self):
-        indexer = BaseIndexer()
-        doc_type = Mock()
-        indexer.doc_type_klass = Mock(return_value=doc_type)
-        indexer.extract_datum_with_id = Mock(return_value=[{'key': 'something'}])
-        indexer.get_queryset = Mock(return_value=['something'])
+        with patch.object(autocompletes_alias, 'new_index_name', 'test_autocompletes_1'):
+            indexer = BaseIndexer()
 
-        indexer.index_datum('anything')
+            doc_type = Mock()
+            indexer.doc_type_klass = Mock(return_value=doc_type)
+            indexer.extract_datum_with_id = Mock(return_value=[{'key': 'something'}])
+            indexer.get_queryset = Mock(return_value=['something'])
 
-        indexer.doc_type_klass.assert_called_once_with(key='something')
-        expect(doc_type.save.called).to.be.true()
+            indexer.index_datum('anything')
+            indexer.doc_type_klass.assert_called_once_with(key='something', _index='test_autocompletes_1')
+            expect(doc_type.save.called).to.be.true()
 
     def test_index_data(self):
         indexer = BaseIndexer()
@@ -246,16 +250,18 @@ class UnitOfficerIndexerTestCase(TestCase):
 
 
 class IndexerManagerTestCase(SimpleTestCase):
-    @patch('cpdb.search.search_indexers.autocompletes')
-    def test_rebuild_index(self, autocompletes):
+    @patch('cpdb.search.search_indexers.autocompletes_alias')
+    def test_rebuild_index(self, autocompletes_alias):
         indexer_obj = Mock()
         indexer = Mock(return_value=indexer_obj)
-
         manager = IndexerManager(indexers=[indexer])
-
         manager.rebuild_index()
-        expect(autocompletes.delete.called).to.be.true()
-        expect(autocompletes.create.called).to.be.true()
+
+        expect(autocompletes_alias.write_index.close.called).to.be.true()
+        expect(autocompletes_alias.migrate.called).to.be.true()
+        expect(autocompletes_alias.indexing.return_value.__enter__.called).to.be.true()
+        expect(autocompletes_alias.indexing.return_value.__exit__.called).to.be.true()
+        expect(indexer.doc_type_klass.init.called).to.be.true()
         expect(indexer_obj.index_data.called).to.be.true()
 
 
