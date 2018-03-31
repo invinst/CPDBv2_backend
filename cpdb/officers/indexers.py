@@ -37,18 +37,6 @@ class OfficersIndexer(BaseIndexer):
 
 
 @register_indexer(app_name)
-class OfficerMetricsIndexer(BaseIndexer):
-    doc_type_klass = OfficerInfoDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, datum):
-        return OfficerMetricsSerializer(datum).data
-
-
-@register_indexer(app_name)
 class SocialGraphIndexer(BaseIndexer):
     doc_type_klass = OfficerSocialGraphDocType
     index_alias = officers_index_alias

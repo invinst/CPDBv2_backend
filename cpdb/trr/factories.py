@@ -1,16 +1,17 @@
-from factory import LazyFunction, SubFactory
-from factory.django import DjangoModelFactory
+import factory
 from faker import Faker
 
-from data.factories import OfficerFactory
 from trr.models import TRR
+from data.factories import OfficerFactory
 
 fake = Faker()
 
 
-class TRRFactory(DjangoModelFactory):
+class TRRFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TRR
 
-    trr_datetime = LazyFunction(lambda: fake.date_time())
-    officer = SubFactory(OfficerFactory)
+    officer = factory.SubFactory(OfficerFactory)
+    trr_datetime = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    taser = factory.LazyFunction(lambda: fake.boolean())
+    firearm_used = factory.LazyFunction(lambda: fake.boolean())

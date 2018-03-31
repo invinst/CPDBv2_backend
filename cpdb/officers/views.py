@@ -4,11 +4,12 @@ from rest_framework.decorators import detail_route, list_route
 
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
-from officers.doc_types import OfficerSocialGraphDocType, OfficerInfoDocType, OfficerNewTimelineEventDocType
 from officers.serializers import (
     OfficerYearlyPercentileSerializer, NewTimelineSerializer
 )
-from officers.workers import OfficerPercentileWorker, OfficerMetricsWorker
+from .doc_types import (
+    OfficerInfoDocType, OfficerNewTimelineEventDocType, OfficerSocialGraphDocType
+)
 
 _ALLOWED_FILTERS = [
     'category',

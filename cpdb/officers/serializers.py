@@ -30,8 +30,9 @@ class OfficerMetricsSerializer(serializers.Serializer):
     civilian_compliment_count = serializers.IntegerField()
 
 
+
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(source='officer_id')
+    officer_id = serializers.IntegerField()
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
@@ -54,6 +55,7 @@ class NewTimelineSerializer(serializers.Serializer):
         result.pop('date_sort')
         result.pop('priority_sort')
         return result
+
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField(source='id')
