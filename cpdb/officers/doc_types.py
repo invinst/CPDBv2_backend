@@ -21,14 +21,21 @@ class OfficerSocialGraphDocType(DocType):
     officer_id = Integer()
 
 
+class OfficerYearlyPercentile(InnerObjectWrapper):
+    @staticmethod
+    def mapping():
+        return {
+            'year': Integer(),
+            'percentile_trr': Float(),
+            'percentile_allegation': Float(),
+            'percentile_allegation_internal': Float(),
+            'percentile_allegation_civilian': Float(),
+        }
+
+
 @officers_index_alias.doc_type
 class OfficerInfoDocType(DocType):
     id = Integer()
-
-    percentiles = Nested(properties={
-        'year': Integer(),
-        'percentile_trr': Float(),
-        'percentile_allegation': Float(),
-        'percentile_allegation_internal': Float(),
-        'percentile_allegation_civilian': Float(),
-    })
+    percentiles = Nested(
+        doc_class=OfficerYearlyPercentile,
+        properties=OfficerYearlyPercentile.mapping())

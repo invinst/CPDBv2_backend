@@ -7,6 +7,7 @@ from data.models import Officer
 from officers.serializers import (
     OfficerYearlyPercentileSerializer, NewTimelineSerializer
 )
+from officers.workers import OfficerMetricsWorker, OfficerPercentileWorker
 from .doc_types import (
     OfficerInfoDocType, OfficerNewTimelineEventDocType, OfficerSocialGraphDocType
 )

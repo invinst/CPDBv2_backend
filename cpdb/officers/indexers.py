@@ -16,7 +16,6 @@ from .doc_types import (
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    OfficerSummarySerializer, OfficerMetricsSerializer,
     CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
     AwardNewTimelineSerializer, TRRNewTimelineSerializer,
 )
