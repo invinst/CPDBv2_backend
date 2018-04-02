@@ -54,7 +54,7 @@ class Command(BaseCommand):
                              if idx.doc_type_klass._doc_type.name == doc_type]
 
         # Always ensure parent indexers to be index first
-        indexers = sorted(indexers, key=lambda x: x.parent_doc_type_property)
+        indexers = sorted(indexers, key=lambda x: getattr(x, 'parent_doc_type_property', None))
         return indexers
 
     def categorize_indexers_by_index_alias(self, indexers):

@@ -2,7 +2,6 @@ import types
 
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
-from elasticsearch import NotFoundError
 
 from es_index import es_client
 
@@ -38,12 +37,12 @@ class BaseIndexer(object):
     def doc_dict(self, raw_doc):
         doc = self.doc_type_klass(**raw_doc).to_dict(include_meta=True)
         doc['_index'] = self.index_alias.new_index_name
-        doc['_op_type'] = 'create'
+
+        if 'id' in raw_doc:
+            doc['_id'] = raw_doc['id']
 
         # if this is children indexers, we update instead of creating
         if self.parent_doc_type_property:
-            # use script with bulk MUCH faster than get-save method (8min < 35min)
-            doc['_id'] = raw_doc['id']
             doc = self._embed_update_script(doc)
         return doc
 
@@ -65,22 +64,6 @@ class BaseIndexer(object):
         self.index_alias.write_index.close()
         if not self.parent_doc_type_property:
             self.doc_type_klass.init(index=self.index_alias.new_index_name)
-
-    def upsert(self, docs):
-        """ This function will read docs from `docs(no_dict=False)`, then get the document, read content
-        update new elements, then write it.
-        NOTE: This is SO SLOW, so we not use this, but use bulk updating by painless-scripting
-        """
-        if not self.parent_doc_type_property:
-            raise TypeError('parent_doc_type_property must be set if parent_doc_type is not null')
-        for doc in docs:
-            try:
-                # NOTE: current `id` must be matched with parent indexer `id`
-                saved_doc = self.doc_type_klass.get(id=doc['id'], index=self.index_alias.new_index_name)
-                getattr(saved_doc, self.parent_doc_type_property).append(doc)
-                saved_doc.save()
-            except NotFoundError:  # should create here
-                pass
 
     def add_new_data(self):
         self.index_alias.write_index.settings(refresh_interval='-1')

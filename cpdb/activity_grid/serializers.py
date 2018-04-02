@@ -1,21 +1,19 @@
 from rest_framework import serializers
 
-from officers.serializers import OfficerYearlyPercentileSerializer
-
 
 class OfficerCardSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
-    complaint_count = serializers.SerializerMethodField()
-    sustained_count = serializers.SerializerMethodField()
+    complaint_count = serializers.IntegerField(source='allegation_count')
+    sustained_count = serializers.IntegerField()
     birth_year = serializers.IntegerField()
-    # complaint_percentile = serializers.FloatField()
+    complaint_percentile = serializers.SerializerMethodField()
     race = serializers.CharField()
-    gender = serializers.CharField(source='gender_display')
-    percentile = OfficerYearlyPercentileSerializer(read_only=True)
+    gender = serializers.CharField()
+    percentile = serializers.SerializerMethodField()
 
-    def get_complaint_count(self, obj):
-        return obj.complaint_count_metric
+    def get_complaint_percentile(self, obj):
+        return obj.percentiles[-1].to_dict()['percentile_allegation'] if obj.percentiles else None
 
-    def get_sustained_count(self, obj):
-        return obj.sustained_count_metric
+    def get_percentile(self, obj):
+        return obj.percentiles[-1].to_dict() if obj.percentiles else []

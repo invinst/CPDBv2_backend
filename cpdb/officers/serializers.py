@@ -31,20 +31,19 @@ class OfficerMetricsSerializer(serializers.Serializer):
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(source='officer_id')
+    id = serializers.SerializerMethodField()
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
+    def get_id(self, obj):
+        return obj.get('officer_id', obj.get('id', None))
+
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
-    percentile = OfficerYearlyPercentileSerializer(many=True, read_only=True)
-    meta = serializers.SerializerMethodField()  # this field for ES to make right index
-
-    def get_meta(self, obj):
-        return {'id': obj.id}
+    percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
 
 
 class NewTimelineSerializer(serializers.Serializer):

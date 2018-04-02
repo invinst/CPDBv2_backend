@@ -10,7 +10,7 @@ from robber import expect
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
 from data.models import Officer
 from officers.indexers import (
-    OfficersIndexer, SocialGraphIndexer, OfficerMetricsIndexer, OfficerPercentileIndexer,
+    OfficersIndexer, SocialGraphIndexer, OfficerPercentileIndexer,
     CRNewTimelineEventIndexer, UnitChangeNewTimelineEventIndexer, JoinedNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer, AwardNewTimelineEventIndexer
 )
@@ -39,6 +39,14 @@ class OfficersIndexerTestCase(SimpleTestCase):
             appointed_date=date(2017, 2, 27),
             resignation_date=date(2017, 12, 27),
             get_active_display=Mock(return_value='Active'),
+
+            allegation_count=2,
+            complaint_percentile=99.8,
+            honorable_mention_count=1,
+            sustained_count=1,
+            discipline_count=1,
+            civilian_compliment_count=0,
+            percentiles=[]
         )
 
         expect(OfficersIndexer().extract_datum(officer)).to.eq({
@@ -53,38 +61,14 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
             'birth_year': 1910,
-        })
 
-
-class OfficerMetricsIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(OfficerMetricsIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock(
-            id=123,
-            full_name='Alex Mack',
-            appointed_date=date(2017, 2, 27),
-            get_active_display=Mock(return_value='Active'),
-            allegation_count=1,
-            complaint_percentile=90.0,
-            honorable_mention_count=2,
-            sustained_count=1,
-            discipline_count=2,
-            civilian_compliment_count=2,
-        )
-
-        expect(OfficerMetricsIndexer().extract_datum(officer)).to.eq({
-            'id': 123,
-            'allegation_count': 1,
-            'complaint_percentile': 90.0,
-            'honorable_mention_count': 2,
+            'allegation_count': 2,
+            'complaint_percentile': 99.8,
+            'honorable_mention_count': 1,
             'sustained_count': 1,
-            'discipline_count': 2,
-            'civilian_compliment_count': 2
+            'discipline_count': 1,
+            'civilian_compliment_count': 0,
+            'percentiles': []
         })
 
 
@@ -255,7 +239,7 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'percentile_allegation_civilian': 0
         }
         expect(self.indexer.extract_datum(data)).to.eq({
-            'officer_id': 1,
+            'id': 1,
             'year': 2016,
             'percentile_allegation': '66.667',
             'percentile_allegation_internal': '50.000',

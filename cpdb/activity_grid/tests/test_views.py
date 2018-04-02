@@ -63,10 +63,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'complaint_count': 6,
                 'sustained_count': 2,
                 'birth_year': 1950,
+                'complaint_percentile': '0.000',
                 'race': 'Asian',
                 'gender': 'Male',
                 'percentile': {
-                    'officer_id': 1,
+                    'id': 1,
                     'year': 2016,
                     'percentile_trr': '0.000',
                     'percentile_allegation': '0.000',
