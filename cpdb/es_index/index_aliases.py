@@ -20,6 +20,19 @@ class IndexAlias:
     def doc_type(self, doc_type):
         return self.read_index.doc_type(doc_type)
 
+    def migrate(self, migrate_doc_types=[]):
+        if not migrate_doc_types:
+            return
+
+        self.write_index.open()
+        query = {}
+        query['source'] = {'index': self.name, 'type': migrate_doc_types}
+        query['dest'] = {
+            'index': self.new_index_name,
+            'version_type': 'external'
+        }
+        es_client.reindex(query, request_timeout=300)
+
     @contextmanager
     def indexing(self):
         self.write_index.create(ignore=400)

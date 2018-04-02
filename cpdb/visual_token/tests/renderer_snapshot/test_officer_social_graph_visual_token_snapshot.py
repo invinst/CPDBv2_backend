@@ -20,7 +20,6 @@ class OfficerSocialGraphVisualTokenSnapshotTestCase(SnapshotTestMixin, RendererS
         officer = OfficerFactory(first_name='John', last_name='Doe', id=1)
         self.engine.generate_visual_token(officer)
         self.assert_snapshot_match(token_path('officer_1.svg'), 'officer_1.svg')
-        self.assert_snapshot_match(token_path('officer_1.png'), 'officer_1.png')
 
     def test_each_background_color(self):
         crs = [0, 3, 7, 20, 30, 45]
@@ -31,7 +30,7 @@ class OfficerSocialGraphVisualTokenSnapshotTestCase(SnapshotTestMixin, RendererS
             with patch('data.models.Officer.allegation_count', cr):
                 self.engine.generate_visual_token(officer)
             self.assert_snapshot_match(
-                token_path('officer_%d.png' % id), 'officer_%d.png' % id)
+                token_path('officer_%d.svg' % id), 'officer_%d.svg' % id)
 
     def test_multiple_coaccused(self):
         allegation = AllegationFactory()
