@@ -23,7 +23,7 @@ class BaseIndexer(object):
         doc['_source'] = {
             'upsert': {
                 "id": raw_doc['id'],
-                "percentiles": [raw_doc]
+                self.parent_doc_type_property: [raw_doc]
             }
         }
         doc['_source']['script'] = {

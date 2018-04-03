@@ -63,43 +63,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    # def create_officer_allegation(self, officer, final_finding, final_outcome):
-    #     allegation_category = AllegationCategoryFactory(category='Use of Force')
-    #     OfficerAllegationFactory(
-    #         officer=officer, allegation_category=allegation_category,
-    #         final_finding=final_finding, final_outcome=final_outcome
-    #     )
-    #
-    # def test_metrics(self):
-    #     officer = OfficerFactory(id=123, complaint_percentile=90.0)
-    #     self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='027')
-    #     self.create_officer_allegation(officer=officer, final_finding='NS', final_outcome='028')
-    #     self.create_officer_allegation(officer=officer, final_finding='SU', final_outcome='600')
-    #
-    #     AwardFactory(officer=officer, award_type='Other')
-    #     AwardFactory(officer=officer, award_type='Complimentary Letter')
-    #     AwardFactory(officer=officer, award_type='Complimentary Letter')
-    #     AwardFactory(officer=officer, award_type='Honorable Mention')
-    #     AwardFactory(officer=officer, award_type='ABC Honorable Mention')
-    #
-    #     self.refresh_index()
-    #
-    #     response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 123}))
-    #     expect(response.status_code).to.eq(status.HTTP_200_OK)
-    #     expect(response.data).to.eq({
-    #         'id': 123,
-    #         'allegation_count': 3,
-    #         'complaint_percentile': 90.0,
-    #         'honorable_mention_count': 2,
-    #         'sustained_count': 1,
-    #         'discipline_count': 2,
-    #         'civilian_compliment_count': 2
-    #     })
-    #
-    # def test_metrics_no_match(self):
-    #     response = self.client.get(reverse('api-v2:officers-metrics', kwargs={'pk': 456}))
-    #     expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
-
     def test_new_timeline_items_no_match(self):
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
