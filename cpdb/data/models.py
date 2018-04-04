@@ -603,6 +603,10 @@ class Allegation(models.Model):
         return self.complainant_set.all()
 
     @property
+    def victims(self):
+        return self.victim_set.all()
+
+    @property
     def complainant_races(self):
         query = self.complainant_set.annotate(
             name=models.Case(
@@ -630,6 +634,22 @@ class Allegation(models.Model):
         query = query.values('name').distinct()
         results = [GENDER_DICT.get(result['name'], 'Unknown') for result in query]
         return results if results else ['Unknown']
+
+    @property
+    def first_start_date(self):
+        try:
+            return self.officerallegation_set.filter(start_date__isnull=False)\
+                .values_list('start_date', flat=True)[0]
+        except IndexError:
+            return None
+
+    @property
+    def first_end_date(self):
+        try:
+            return self.officerallegation_set.filter(end_date__isnull=False)\
+                .values_list('end_date', flat=True)[0]
+        except IndexError:
+            return None
 
     @property
     def videos(self):
@@ -868,6 +888,13 @@ class Victim(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
 
 
 class AttachmentRequest(models.Model):
