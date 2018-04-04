@@ -46,7 +46,7 @@ class BaseIndexer(object):
             doc = self._embed_update_script(doc)
         return doc
 
-    def docs(self, to_dict=True):
+    def docs(self):
         for datum in tqdm(
                 self.get_queryset(),
                 desc='Indexing {doc_type_name}({indexer_name})'.format(
@@ -56,9 +56,9 @@ class BaseIndexer(object):
             result = self.extract_datum(datum)
             if isinstance(result, types.GeneratorType):
                 for obj in result:
-                    yield self.doc_dict(obj) if to_dict else obj
+                    yield self.doc_dict(obj)
             else:
-                yield self.doc_dict(result) if to_dict else result
+                yield self.doc_dict(result)
 
     def create_mapping(self):
         self.index_alias.write_index.close()
