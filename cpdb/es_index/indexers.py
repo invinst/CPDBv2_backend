@@ -33,10 +33,16 @@ class BaseIndexer(object):
             else:
                 yield self.doc_dict(result)
 
-    def reindex(self):
+    def create_mapping(self):
         self.index_alias.write_index.close()
         self.doc_type_klass.init(index=self.index_alias.new_index_name)
+
+    def add_new_data(self):
         self.index_alias.write_index.settings(refresh_interval='-1')
         self.index_alias.write_index.open()
         bulk(es_client, self.docs())
         self.index_alias.write_index.settings(refresh_interval='1s')
+
+    def reindex(self):
+        self.create_mapping()
+        self.add_new_data()

@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from elasticsearch_dsl import DocType
+from mock import Mock
 from robber import expect
 
 from es_index import es_client
@@ -59,3 +60,18 @@ class IndexAliasTestCase(TestCase):
 
         expect(indexing).to.throw_exactly(MyException)
         expect(self.alias.write_index.exists()).to.be.false()
+
+    def test_migrate_not_call_reindex_when_doc_types_empty(self):
+        es_client.reindex = Mock()
+        self.alias.migrate([])
+        expect(es_client.reindex).not_to.be.called()
+
+    def test_migrate_call_reindex_when_doc_types_is_not_empty(self):
+        es_client.reindex = Mock()
+        self.alias.write_index.open = Mock()
+        self.alias.migrate(['type1'])
+        expect(self.alias.write_index.open).to.be.called()
+        expect(es_client.reindex).to.be.called_with({
+            'dest': {'index': self.alias.new_index_name, 'version_type': 'external'},
+            'source': {'index': 'test_abc', 'type': ['type1']},
+        }, request_timeout=300)
