@@ -1,22 +1,26 @@
 from itertools import combinations
+from tqdm import tqdm
 
 from django.utils.timezone import now
+from django.db.models import F
 
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from tqdm import tqdm
-
-from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation
+from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from officers.doc_types import OfficerPercentileDocType
 from officers.serializers import OfficerYearlyPercentileSerializer
+from trr.models import TRR
 from .doc_types import (
-    OfficerSummaryDocType, OfficerTimelineEventDocType, OfficerSocialGraphDocType, OfficerMetricsDocType
+    OfficerSummaryDocType,
+    OfficerSocialGraphDocType,
+    OfficerMetricsDocType,
+    OfficerNewTimelineEventDocType,
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    OfficerSummarySerializer, CRTimelineSerializer,
-    UnitChangeTimelineSerializer, JoinedTimelineSerializer,
-    OfficerMetricsSerializer
+    OfficerSummarySerializer, OfficerMetricsSerializer,
+    CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
+    AwardNewTimelineSerializer, TRRNewTimelineSerializer,
 )
 
 app_name = __name__.split('.')[0]
@@ -44,42 +48,6 @@ class OfficerMetricsIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerMetricsSerializer(datum).data
-
-
-@register_indexer(app_name)
-class CRTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return OfficerAllegation.objects.filter(start_date__isnull=False)
-
-    def extract_datum(self, datum):
-        return CRTimelineSerializer(datum).data
-
-
-@register_indexer(app_name)
-class UnitChangeTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return OfficerHistory.objects.filter(effective_date__isnull=False)
-
-    def extract_datum(self, datum):
-        return UnitChangeTimelineSerializer(datum).data
-
-
-@register_indexer(app_name)
-class JoinedTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.filter(appointed_date__isnull=False)
-
-    def extract_datum(self, officer):
-        return JoinedTimelineSerializer(officer).data
 
 
 @register_indexer(app_name)
@@ -145,3 +113,67 @@ class OfficerPercentileIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerYearlyPercentileSerializer(datum).data
+
+
+@register_indexer(app_name)
+class CRNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return OfficerAllegation.objects.filter(start_date__isnull=False)
+
+    def extract_datum(self, datum):
+        return CRNewTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
+class UnitChangeNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return OfficerHistory.objects.filter(
+            effective_date__isnull=False,
+        ).exclude(
+            effective_date=F('officer__appointed_date'),
+        )
+
+    def extract_datum(self, datum):
+        return UnitChangeNewTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
+class JoinedNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Officer.objects.filter(appointed_date__isnull=False)
+
+    def extract_datum(self, officer):
+        return JoinedNewTimelineSerializer(officer).data
+
+
+@register_indexer(app_name)
+class AwardNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Award.objects.filter(start_date__isnull=False)
+
+    def extract_datum(self, awards):
+        return AwardNewTimelineSerializer(awards).data
+
+
+@register_indexer(app_name)
+class TRRNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return TRR.objects.all()
+
+    def extract_datum(self, trrs):
+        return TRRNewTimelineSerializer(trrs).data
