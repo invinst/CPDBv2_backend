@@ -7,18 +7,15 @@ from django.db.models import F
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from officers.doc_types import OfficerPercentileDocType
-from officers.serializers import OfficerYearlyPercentileSerializer
+from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer
 from trr.models import TRR
 from .doc_types import (
-    OfficerSummaryDocType,
     OfficerSocialGraphDocType,
-    OfficerMetricsDocType,
     OfficerNewTimelineEventDocType,
+    OfficerInfoDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    OfficerSummarySerializer, OfficerMetricsSerializer,
     CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
     AwardNewTimelineSerializer, TRRNewTimelineSerializer,
 )
@@ -28,26 +25,14 @@ app_name = __name__.split('.')[0]
 
 @register_indexer(app_name)
 class OfficersIndexer(BaseIndexer):
-    doc_type_klass = OfficerSummaryDocType
+    doc_type_klass = OfficerInfoDocType
     index_alias = officers_index_alias
 
     def get_queryset(self):
         return Officer.objects.all()
 
     def extract_datum(self, datum):
-        return OfficerSummarySerializer(datum).data
-
-
-@register_indexer(app_name)
-class OfficerMetricsIndexer(BaseIndexer):
-    doc_type_klass = OfficerMetricsDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, datum):
-        return OfficerMetricsSerializer(datum).data
+        return OfficerInfoSerializer(datum).data
 
 
 @register_indexer(app_name)
@@ -98,8 +83,9 @@ class SocialGraphIndexer(BaseIndexer):
 
 @register_indexer(app_name)
 class OfficerPercentileIndexer(BaseIndexer):
-    doc_type_klass = OfficerPercentileDocType
     index_alias = officers_index_alias
+    doc_type_klass = OfficerInfoDocType
+    parent_doc_type_property = 'percentiles'
 
     def get_queryset(self):
         results = []

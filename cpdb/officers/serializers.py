@@ -30,6 +30,22 @@ class OfficerMetricsSerializer(serializers.Serializer):
     civilian_compliment_count = serializers.IntegerField()
 
 
+class OfficerYearlyPercentileSerializer(serializers.Serializer):
+    id = serializers.SerializerMethodField()
+    year = serializers.IntegerField()
+    percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
+    percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
+
+    def get_id(self, obj):
+        return obj.get('officer_id', obj.get('id', None))
+
+
+class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
+    percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
+
+
 class NewTimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
         result = obj.to_dict()
@@ -37,15 +53,6 @@ class NewTimelineSerializer(serializers.Serializer):
         result.pop('date_sort')
         result.pop('priority_sort')
         return result
-
-
-class OfficerYearlyPercentileSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    year = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
-    percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
