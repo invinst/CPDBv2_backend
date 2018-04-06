@@ -197,7 +197,10 @@ class AreaTypeIndexerTestCase(TestCase):
         ).to.be.eq({
             'name': 'name',
             'url': datum.v1_url,
-            'tags': ['tag']
+            'tags': ['tag'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': []
         })
 
 

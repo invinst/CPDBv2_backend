@@ -167,7 +167,10 @@ class AreaTypeIndexer(BaseIndexer):
         return {
             'name': datum.name,
             'url': datum.v1_url,
-            'tags': datum.tags
+            'tags': datum.tags,
+            'allegation_count': datum.allegation_count,
+            'officers_most_complaint': list(datum.get_officers_most_complaints()),
+            'most_common_complaint': list(datum.get_most_common_complaint())
         }
 
 
