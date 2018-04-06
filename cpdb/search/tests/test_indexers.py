@@ -12,7 +12,7 @@ from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
     AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
-    OfficerAllegationFactory)
+    OfficerAllegationFactory, RacePopulationFactory)
 
 from search.search_indexers import autocompletes_alias
 
@@ -191,6 +191,7 @@ class UnitIndexerTestCase(TestCase):
 class AreaTypeIndexerTestCase(TestCase):
     def test_extract_datum(self):
         datum = AreaFactory(name='name', tags=['tag'])
+        RacePopulationFactory(area=datum, race='Asian', count=101)
 
         expect(
             AreaTypeIndexer().extract_datum(datum)
@@ -200,7 +201,11 @@ class AreaTypeIndexerTestCase(TestCase):
             'tags': ['tag'],
             'allegation_count': 0,
             'officers_most_complaint': [],
-            'most_common_complaint': []
+            'most_common_complaint': [],
+            'population': [{
+                'race': 'Asian',
+                'count': 101
+            }]
         })
 
 

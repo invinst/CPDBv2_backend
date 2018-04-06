@@ -8,6 +8,7 @@ from search.doc_types import (
     UnitOfficerDocType, CrDocType
 )
 from search.indices import autocompletes_alias
+from search.serializers import RacePopulationSerializer
 
 
 def extract_text_from_value(value):
@@ -170,7 +171,8 @@ class AreaTypeIndexer(BaseIndexer):
             'tags': datum.tags,
             'allegation_count': datum.allegation_count,
             'officers_most_complaint': list(datum.get_officers_most_complaints()),
-            'most_common_complaint': list(datum.get_most_common_complaint())
+            'most_common_complaint': list(datum.get_most_common_complaint()),
+            'population': RacePopulationSerializer(datum.racepopulation_set.all(), many=True).data
         }
 
 
