@@ -1419,7 +1419,7 @@ This api require an api access token set in `Authorization` header. To get an ap
 
 ## Officer summary [/officers/{officer_id}/summary]
 
-### Get Officer Summary [GET]
+### Get Officer Summary (include bio, metrics, and yearly percentiles) [GET]
 
 + Parameters
     + officer_id (number) - number ID of the officer
@@ -1436,55 +1436,33 @@ This api require an api access token set in `Authorization` header. To get an ap
             "race": "White",
             "badge": "12345",
             "gender": "Male",
-            "birth_year": 1951
-        }
-
-## Officer summary [/officers/{officer_id}/metrics]
-
-### Get Officer Metrics [GET]
-
-+ Parameters
-    + officer_id (number) - number ID of the officer
-
-+ Response 200 (application/json)
-
-        {
-            "id": 8562,
+            "birth_year": 1951,
             "allegation_count": 90,
             "civilian_compliment_count": 0,
             "discipline_count": 0,
             "honorable_mention_count": 1,
             "sustained_count": 4,
-            "complaint_percentile": 40.0
+            "complaint_percentile": "58.446",
+            "percentiles": [
+                {
+                    "officer_id": 1,
+                    "year": 2016,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "76.282",
+                    "percentile_allegation_civilian": "79.479",
+                    "percentile_allegation_internal": "0.000"
+                },
+                {
+                    "officer_id": 1,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "58.446",
+                    "percentile_allegation_civilian": "63.044",
+                    "percentile_allegation_internal": "0.000"
+                }
+            ]
         }
 
-## Officer percentile [/officers/{officer_id}/percentile]
-
-### Get Officer Percentile group by year [GET]
-
-+ Parameters
-    + officer_id (number) - number ID of the officer
-
-+ Response 200 (application/json)
-
-        [
-            {
-                "officer_id": 1,
-                "year": 2016,
-                "percentile_trr": "0.000",
-                "percentile_allegation": "76.282",
-                "percentile_allegation_civilian": "79.479",
-                "percentile_allegation_internal": "0.000"
-            },
-            {
-                "officer_id": 1,
-                "year": 2017,
-                "percentile_trr": "0.000",
-                "percentile_allegation": "58.446",
-                "percentile_allegation_civilian": "63.044",
-                "percentile_allegation_internal": "0.000"
-            }
-        ]
 
 ## Officer timeline minimap [/officers/{officer_id}/timeline-minimap]
 
@@ -1548,6 +1526,52 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
+## Officer timeline items list [/officers/{officer_id}/timeline-items]
+
+### Get Officer timeline items list [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+    [
+        {
+                'date': '2011-09-23',
+                'kind': 'FORCE',
+                'taser': True,
+                'firearm_used': False,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-08-23',
+                'kind': 'CR',
+                'crid': '123456',
+                'category': 'category',
+                'subcategory': 'sub category',
+                'finding': 'Unfounded',
+                'outcome': 'Unknown',
+                'coaccused': 4,
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2011-03-23',
+                'kind': 'AWARD',
+                'award_type': 'Honorable Mention',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2000-01-01',
+                'kind': 'JOINED',
+                'unit_name': '',
+                'rank': 'Police Officer',
+            },
+    ]
+
 ## Officer social graph [/officers/{officer_id}/social-graph]
 
 ### Get Officer social graph [GET]
@@ -1579,12 +1603,9 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-## Top Officers by allegation [/officers/top-by-allegation/{?random}]
+## Top Officers by allegation [/officers/top-by-allegation/]
 
-### Get Officer cards on top 1% complaint percentile [GET]
-
-+ Parameters
-    + random (optional, 1 or 0) - 1: randomize the result, default 0: sort complaint_percentile by descending
+### List Officer Cards based on top 1% complaint percentile, sort by descending [GET]
 
 + Response 200 (application/json)
 

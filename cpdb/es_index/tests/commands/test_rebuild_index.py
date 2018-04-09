@@ -4,10 +4,11 @@ from django.core.management import call_command
 from mock import Mock, patch, mock_open
 
 from es_index import indexer_klasses, indexer_klasses_map
+from es_index.management.commands.rebuild_index import Command
 
 
 class RebuildIndexCommandTestCase(SimpleTestCase):
-    def _prepare_data(self):
+    def _prepare_data(self, clear=True):
         class Indexer:
             index_alias = Mock(new_index_name='new_name')
             doc_type_klass = Mock(_doc_type=Mock())
@@ -19,9 +20,10 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer.index_alias.indexing.return_value.__exit__ = Mock()
         Indexer.index_alias.indexing.return_value.__enter__ = Mock()
         Indexer.index_alias.migrate = Mock()
-        indexer_klasses_map.setdefault('test', set()).clear()
+        if clear:
+            indexer_klasses_map.setdefault('test', set()).clear()
+            indexer_klasses.clear()
         indexer_klasses_map['test'].add(Indexer)
-        indexer_klasses.clear()
         indexer_klasses.add(Indexer)
         return Indexer
 
@@ -116,6 +118,7 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         class Indexer2:
             index_alias = Mock(new_index_name='new_name')
             doc_type_klass = Mock(_doc_type=Mock())
+
         Indexer2.doc_type_klass._doc_type.name = 'b'
         Indexer2.index_alias.name = 'test'
         Indexer2.index_alias.migrate = Mock()
@@ -129,6 +132,7 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         class Indexer3:
             index_alias = Mock()
             doc_type_klass = Mock(_doc_type=Mock())
+
         Indexer3.doc_type_klass._doc_type.name = 'c'
         Indexer3.index_alias.name = 'test2'
         Indexer3.index_alias.migrate = Mock()
@@ -160,3 +164,29 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer1.create_mapping.assert_called_once()
         Indexer1.index_alias.migrate.assert_called_once()
         Indexer1.add_new_data.assert_called_once()
+
+    def test_parent_indexers_should_be_index_first(self):
+        rebuild_index_command = Command()
+        Indexer1 = self._prepare_data()
+
+        class Indexer2:
+            index_alias = Indexer1.index_alias
+            doc_type_klass = Indexer1.doc_type_klass
+            parent_doc_type_property = 'children'
+
+        Indexer2.doc_type_klass._doc_type.name = 'a'
+        Indexer2.index_alias.name = 'test'
+        Indexer2.index_alias.migrate = Mock()
+        Indexer2.create_mapping = Mock()
+        Indexer2.add_new_data = Mock()
+        Indexer2.index_alias.indexing.return_value.__exit__ = Mock()
+        Indexer2.index_alias.indexing.return_value.__enter__ = Mock()
+        indexer_klasses_map['test'].add(Indexer2)
+        indexer_klasses.add(Indexer2)
+
+        self._prepare_data(clear=False)
+
+        indexers = rebuild_index_command.get_indexers(app=['test.a'])
+        self.assertEqual(len(indexers), 3)
+        self.assertLess(indexers.index(Indexer1), indexers.index(Indexer2))
+        self.assertEqual(indexers[-1], Indexer2)
