@@ -10,7 +10,7 @@ from robber import expect
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory
+    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory
 )
 from .mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
@@ -26,6 +26,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
+        ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
             officer=officer, allegation=allegation, allegation_category=allegation_category, final_finding='SU',
@@ -46,6 +47,37 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'race': 'White',
             'badge': '123456',
             'gender': 'Male',
+            'complaint_records': {
+                'count': 1,
+                'sustained_count': 1,
+                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
+                'facets': [
+                    {
+                        'name': 'category',
+                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant race',
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant age',
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant gender',
+                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    }
+                ]
+            },
             'birth_year': 1910,
         })
 
