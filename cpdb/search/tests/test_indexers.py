@@ -111,7 +111,6 @@ class ReportIndexerTestCase(TestCase):
             title='title', excerpt=['excerpt1', 'excerpt2'],
             publish_date='2017-12-20'
         )
-
         expect(
             ReportIndexer().extract_datum(datum)
         ).to.be.eq({
@@ -190,7 +189,7 @@ class UnitIndexerTestCase(TestCase):
 
 class AreaTypeIndexerTestCase(TestCase):
     def test_extract_datum(self):
-        datum = AreaFactory(name='name', tags=['tag'])
+        datum = AreaFactory(name='name', tags=['tag'], median_income=343)
         RacePopulationFactory(area=datum, race='Asian', count=101)
 
         expect(
@@ -202,10 +201,11 @@ class AreaTypeIndexerTestCase(TestCase):
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
-            'population': [{
+            'race_count': [{
                 'race': 'Asian',
                 'count': 101
-            }]
+            }],
+            'median_income': 343,
         })
 
 
@@ -225,6 +225,20 @@ class CommunityIndexerTestCase(TestCase):
 
         expect(CommunityIndexer().get_queryset()).to.have.length(1)
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
+
+    def test_extract_datum(self):
+        datum = AreaFactory(name='name', area_type='community', median_income=200)
+
+        expect(CommunityIndexer().extract_datum(datum)).to.be.eq({
+            'name': 'name',
+            'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=name',
+            'tags': ['community'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 200,
+        })
 
 
 class UnitOfficerIndexerTestCase(TestCase):

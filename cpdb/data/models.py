@@ -541,20 +541,22 @@ class Area(TaggableModel):
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
         query = query.values('allegation_category__category').annotate(
-            category_name=F('allegation_category__category'),
-            num_allegation=Count('allegation', distinct=True)
+            id=F('allegation_category__id'),
+            name=F('allegation_category__category'),
+            count=Count('allegation', distinct=True)
         )
-        query = query.order_by('-num_allegation')[:3]
-        return query.values('category_name', 'num_allegation')
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
 
     def get_officers_most_complaints(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
         query = query.values('officer').annotate(
-            fullname=Concat('officer__first_name', Value(' '), 'officer__last_name'),
-            num_allegation=Count('allegation', distinct=True)
+            id=F('officer__id'),
+            name=Concat('officer__first_name', Value(' '), 'officer__last_name'),
+            count=Count('allegation', distinct=True)
         )
-        query = query.order_by('-num_allegation')[:3]
-        return query.values('fullname', 'num_allegation')
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
 
     @property
     def allegation_count(self):

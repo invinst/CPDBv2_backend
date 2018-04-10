@@ -6,8 +6,8 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter
-)
+    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
+    AreaFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -276,4 +276,20 @@ class CrFormatterTestCase(SimpleTestCase):
                 'result_text': '123456',
                 'to': '/complaint/123456/',
             },
+        })
+
+
+class AreaFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'name': 'name',
+            'type': 'community',
+        }))
+        expect(AreaFormatter().doc_format(doc)).to.eq({
+            'text': 'name',
+            'payload': {
+                'name': 'name',
+                'type': 'community',
+                'result_text': 'name',
+            }
         })
