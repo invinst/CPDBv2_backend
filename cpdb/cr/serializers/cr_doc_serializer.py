@@ -2,16 +2,20 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from data.models import AttachmentRequest
-
 
 class CoaccusedSerializer(serializers.Serializer):
     id = serializers.IntegerField(source='officer.id')
     full_name = serializers.CharField(source='officer.full_name')
     gender = serializers.CharField(source='officer.gender_display')
     race = serializers.CharField(source='officer.race')
+    rank = serializers.CharField(source='officer.rank')
     final_outcome = serializers.CharField(source='final_outcome_display')
+    final_finding = serializers.CharField(source='final_finding_display')
+    recc_outcome = serializers.CharField(source='recc_outcome_display')
     category = serializers.CharField()
+    subcategory = serializers.CharField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
     age = serializers.SerializerMethodField()
     allegation_count = serializers.IntegerField(source='officer.allegation_count')
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
@@ -32,15 +36,6 @@ class VictimSerializer(serializers.Serializer):
     age = serializers.IntegerField()
 
 
-class InvolvementOfficerSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    abbr_name = serializers.CharField()
-    extra_info = serializers.SerializerMethodField()
-
-    def get_extra_info(self, obj):
-        return 'Badge %s' % obj.current_badge
-
-
 class AttachmentFileSerializer(serializers.Serializer):
     title = serializers.CharField()
     url = serializers.CharField()
@@ -48,7 +43,33 @@ class AttachmentFileSerializer(serializers.Serializer):
     file_type = serializers.CharField()
 
 
-class CRSerializer(serializers.Serializer):
+class InvestigatorAllegationSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField(source='investigator.officer.id')
+    involved_type = serializers.SerializerMethodField()
+    full_name = serializers.CharField(source='investigator.officer.full_name')
+    abbr_name = serializers.CharField(source='investigator.officer.abbr_name')
+    num_cases = serializers.IntegerField(source='investigator.num_cases')
+    current_rank = serializers.CharField()
+
+    def get_involved_type(self, obj):
+        return 'investigator'
+
+
+class PoliceWitnessSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField(source='officer.id')
+    involved_type = serializers.SerializerMethodField()
+    full_name = serializers.CharField(source='officer.full_name')
+    abbr_name = serializers.CharField(source='officer.abbr_name')
+    allegation_count = serializers.IntegerField(source='officer.allegation_count')
+    sustained_count = serializers.IntegerField(source='officer.sustained_count')
+    gender = serializers.CharField(source='officer.gender_display')
+    race = serializers.CharField(source='officer.race')
+
+    def get_involved_type(self, obj):
+        return 'police_witness'
+
+
+class CRDocSerializer(serializers.Serializer):
     crid = serializers.CharField()
     category_names = serializers.ListField(child=serializers.CharField())
     coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
@@ -63,7 +84,7 @@ class CRSerializer(serializers.Serializer):
     location = serializers.SerializerMethodField()
     beat = serializers.SerializerMethodField()
     involvements = serializers.SerializerMethodField()
-    attachments = AttachmentFileSerializer(source='documents', many=True)
+    attachments = AttachmentFileSerializer(source='attachment_files', many=True)
 
     def get_point(self, obj):
         if obj.point is not None:
@@ -75,33 +96,10 @@ class CRSerializer(serializers.Serializer):
         return obj.get_location_display()
 
     def get_involvements(self, obj):
-        results = dict()
-        for involvement in obj.involvement_set.filter(officer__isnull=False):
-            results.setdefault(involvement.involved_type, list()).append(
-                InvolvementOfficerSerializer(involvement.officer).data)
-        results = [
-            {'involved_type': involved_type, 'officers': officers}
-            for involved_type, officers in results.iteritems()]
-        return results
+        return (
+            InvestigatorAllegationSerializer(obj.investigatorallegation_set.all(), many=True).data +
+            PoliceWitnessSerializer(obj.policewitness_set.all(), many=True).data
+        )
 
     def get_beat(self, obj):
         return obj.beat.name if obj.beat is not None else None
-
-
-class CRSummarySerializer(serializers.Serializer):
-    crid = serializers.CharField()
-    category_names = serializers.ListField(child=serializers.CharField())
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
-    summary = serializers.CharField()
-
-
-class AttachmentRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AttachmentRequest
-        fields = '__all__'
-
-
-class AllegationWithNewDocumentsSerializer(serializers.Serializer):
-    crid = serializers.CharField()
-    latest_document = AttachmentFileSerializer(source='get_newest_added_document')
-    num_recent_documents = serializers.IntegerField()

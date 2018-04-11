@@ -555,6 +555,10 @@ class Investigator(models.Model):
     appointed_date = models.DateField(null=True)
     officer = models.ForeignKey(Officer, null=True)
 
+    @property
+    def num_cases(self):
+        return self.investigatorallegation_set.all().count()
+
 
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
@@ -651,41 +655,21 @@ class Allegation(models.Model):
         except IndexError:
             return None
 
-    @property
-    def videos(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide all videos
-        return self.attachment_files.none()
-
-    @property
-    def audios(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide all audios
-        return self.attachment_files.none()
-
-    @property
-    def documents(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide those documents
-        tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
-        type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
-        return self.attachment_files.filter(type_query & ~tag_query)
-
     def get_newest_added_document(self):
-        return self.documents.exclude(created_at__isnull=True).latest('created_at')
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
+            .exclude(created_at__isnull=True).latest('created_at')
 
     @staticmethod
     def get_cr_with_new_documents(limit):
         start_datetime = now() - timedelta(weeks=24)
         query = Allegation.objects.all()
-        tag_query = Q(attachment_files__tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
 
         # get 40 allegations which has newest documents
         query = query.annotate(
             new_document_added=Max(
                 Case(
-                    When(type_query & ~tag_query, then='attachment_files__created_at'),
+                    When(type_query, then='attachment_files__created_at'),
                     output_field=DateTimeField()
                 )
             )
@@ -700,8 +684,7 @@ class Allegation(models.Model):
             num_recent_documents=Count(
                 Case(
                     When(
-                        type_query & ~tag_query &
-                        Q(attachment_files__created_at__gte=start_datetime),
+                        type_query & Q(attachment_files__created_at__gte=start_datetime),
                         then=1),
                     output_field=IntegerField(),
                 )

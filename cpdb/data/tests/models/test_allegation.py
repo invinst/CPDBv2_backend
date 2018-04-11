@@ -5,10 +5,9 @@ from django.test.testcases import TestCase
 from robber.expect import expect
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AttachmentFileFactory,
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory,
     AllegationCategoryFactory, VictimFactory
 )
-from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
 
 
 class AllegationTestCase(TestCase):
@@ -49,47 +48,6 @@ class AllegationTestCase(TestCase):
         VictimFactory(id=1, allegation=allegation)
         expect(allegation.victims.count()).to.eq(1)
         expect(allegation.victims[0].id).to.eq(1)
-
-    def test_videos(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_VIDEO)
-        expect(allegation.videos.count()).to.eq(0)
-
-    def test_audios(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_AUDIO)
-        expect(allegation.audios.count()).to.eq(0)
-
-    def test_documents(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        expect(allegation.documents.count()).to.eq(1)
-        expect(allegation.documents[0].id).to.eq(1)
-
-    def test_exclude_ipra_documents(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(
-            id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TRR',
-            original_url='original_url_1'
-        )
-        AttachmentFileFactory(
-            id=2, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OBR',
-            original_url='original_url_2'
-        )
-        AttachmentFileFactory(
-            id=3, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OCIR',
-            original_url='original_url_3'
-        )
-        AttachmentFileFactory(
-            id=4, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='AR',
-            original_url='original_url_4'
-        )
-        AttachmentFileFactory(
-            id=5, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TAG',
-            original_url='original_url_5'
-        )
-        expect(allegation.documents.count()).to.eq(1)
-        expect(allegation.documents[0].id).to.eq(5)
 
     def test_get_category_names(self):
         allegation = AllegationFactory()

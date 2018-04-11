@@ -10,8 +10,8 @@ from freezegun import freeze_time
 from cr.indexers import CRIndexer
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, AllegationFactory, AllegationCategoryFactory,
-    AreaFactory, ComplainantFactory, InvolvementFactory, AttachmentFileFactory, VictimFactory,
-    OfficerBadgeNumberFactory
+    AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
+    PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
 
 
@@ -45,29 +45,60 @@ class CRIndexerTestCase(TestCase):
             gender='M',
             race='White',
             birth_year=1986,
-            appointed_date=date(2001, 1, 1)
+            appointed_date=date(2001, 1, 1),
+            rank='Officer'
         )
 
         OfficerAllegationFactory(
             officer=coaccused,
             allegation=allegation,
             final_finding='SU',
+            recc_outcome='400',
             final_outcome='100',
-            start_date=date(2003, 2, 28),
-            end_date=date(2004, 4, 28),
-            allegation_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            start_date=date(2003, 3, 28),
+            end_date=date(2003, 4, 28),
+            allegation_category=AllegationCategoryFactory(
+                category='Operation/Personnel Violations',
+                allegation_name='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+            )
         )
 
         ComplainantFactory(allegation=allegation, gender='M', race='White', age=30)
         VictimFactory(allegation=allegation, gender='F', race='Black', age=25)
-        investigator = OfficerFactory(id=2, first_name='Jerome', last_name='Finnigan', appointed_date=date(2001, 5, 1))
-        InvolvementFactory(
+        officer = OfficerFactory(
+            id=2,
+            first_name='Jerome',
+            last_name='Finnigan',
+            gender='M',
+            appointed_date=date(2001, 5, 1))
+        OfficerAllegationFactory(
+            officer=officer,
+            final_finding='SU',
+            start_date=date(2003, 2, 28),
+            allegation__incident_date=date(2002, 2, 28),
+            allegation__is_officer_complaint=False
+        )
+        PoliceWitnessFactory(officer=officer, allegation=allegation)
+        investigator = OfficerFactory(
+            id=3,
+            first_name='German',
+            last_name='Lauren',
+            appointed_date=date(2001, 5, 1)
+        )
+        OfficerAllegationFactory(
+            officer=investigator,
+            final_finding='NS',
+            start_date=date(2003, 2, 28),
+            allegation__incident_date=date(2002, 2, 28),
+            allegation__is_officer_complaint=False
+        )
+        investigator = InvestigatorFactory(officer=investigator)
+        InvestigatorAllegationFactory(
             allegation=allegation,
-            involved_type='investigator',
-            officer=investigator
+            investigator=investigator,
+            current_rank='IPRA investigator'
         )
 
-        OfficerBadgeNumberFactory(officer=investigator, current=True, star=11111)
         AttachmentFileFactory(
             allegation=allegation,
             file_type='document',
@@ -77,7 +108,7 @@ class CRIndexerTestCase(TestCase):
         )
 
         result = CRIndexer().extract_datum(allegation)
-        expect(result).to.eq({
+        expect(dict(result)).to.eq({
             'crid': '12345',
             'category_names': ['Operation/Personnel Violations'],
             'coaccused': [
@@ -86,13 +117,19 @@ class CRIndexerTestCase(TestCase):
                     'full_name': 'Foo Bar',
                     'gender': 'Male',
                     'race': 'White',
+                    'rank': 'Officer',
+                    'final_finding': 'Sustained',
+                    'recc_outcome': 'Separation',
                     'final_outcome': 'Reprimand',
                     'category': 'Operation/Personnel Violations',
+                    'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
+                    'start_date': '2003-03-28',
+                    'end_date': '2003-04-28',
                     'age': 32,
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 50.0,
-                    'percentile_allegation_civilian': 50.0,
+                    'percentile_allegation': 0,
+                    'percentile_allegation_civilian': 0,
                     'percentile_allegation_internal': 0,
                     'percentile_trr': 0
                 }
@@ -102,15 +139,37 @@ class CRIndexerTestCase(TestCase):
             'summary': 'Summary',
             'point': {'lon': 12.0, 'lat': 21.0},
             'incident_date': '2002-02-28',
-            'start_date': '2003-02-28',
-            'end_date': '2004-04-28',
+            'start_date': '2003-03-28',
+            'end_date': '2003-04-28',
             'address': '3510 Michigan Ave, Chicago',
             'location': 'Police Building',
             'beat': '23',
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'officers': [{'id': 2, 'abbr_name': 'J. Finnigan', 'extra_info': 'Badge 11111'}]
+                    'officer_id': 3,
+                    'full_name': 'German Lauren',
+                    'abbr_name': 'G. Lauren',
+                    'num_cases': 1,
+                    'current_rank': 'IPRA investigator',
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
+                    'percentile_allegation': 0
+                },
+                {
+                    'involved_type': 'police_witness',
+                    'officer_id': 2,
+                    'full_name': 'Jerome Finnigan',
+                    'abbr_name': 'J. Finnigan',
+                    'gender': 'Male',
+                    'race': 'White',
+                    'allegation_count': 1,
+                    'sustained_count': 1,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
+                    'percentile_allegation': 0
                 }
             ],
             'attachments': [

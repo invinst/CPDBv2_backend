@@ -18,6 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.playbook = "ansible/vagrant.yml"
     ansible.host_key_checking = false
     ansible.vault_password_file = "../vault_pass.txt"
-    ansible.verbose = "v"
+    ansible.tags = "visual_token"
+    ansible.verbose = "vvv"
   end
 end

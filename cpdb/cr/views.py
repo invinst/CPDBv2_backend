@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from .doc_types import CRDocType
 from data.models import Allegation
 from cr.serializers import AttachmentRequestSerializer, CRSummarySerializer, AllegationWithNewDocumentsSerializer
+from cr.serializers.cr_response_serializers import CRDesktopSerializer, CRMobileSerializer
 
 
 class CRViewSet(viewsets.ViewSet):
@@ -17,7 +18,7 @@ class CRViewSet(viewsets.ViewSet):
         query = CRDocType().search().query('term', crid=pk)
         search_result = query.execute()
         try:
-            return Response(search_result[0].to_dict())
+            return Response(CRDesktopSerializer(search_result[0].to_dict()).data)
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -55,3 +56,13 @@ class CRViewSet(viewsets.ViewSet):
         query = query.sort('-incident_date', '-crid')
         results = query[0:40].execute()
         return Response(CRSummarySerializer(results, many=True).data, status=status.HTTP_200_OK)
+
+
+class CRMobileViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk):
+        query = CRDocType().search().query('term', crid=pk)
+        search_result = query.execute()
+        try:
+            return Response(CRMobileSerializer(search_result[0].to_dict()).data)
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)

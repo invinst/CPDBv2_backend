@@ -4,7 +4,7 @@ from data.models import Allegation, Officer
 from data.constants import PERCENTILE_TYPES
 from .doc_types import CRDocType
 from .index_aliases import cr_index_alias
-from .serializers import CRSerializer
+from .serializers.cr_doc_serializer import CRDocSerializer
 
 
 app_name = __name__.split('.')[0]
@@ -32,7 +32,17 @@ class CRIndexer(BaseIndexer):
         return Allegation.objects.all()
 
     def extract_datum(self, datum):
-        result = CRSerializer(datum).data
+        result = CRDocSerializer(datum).data
         for coaccused in result['coaccused']:
-            coaccused.update(self.top_percentile_dict[coaccused['id']])
+            try:
+                coaccused.update(self.top_percentile_dict[coaccused['id']])
+            except KeyError:
+                pass
+
+        for involvement in result['involvements']:
+            try:
+                involvement.update(self.top_percentile_dict[involvement['officer_id']])
+            except KeyError:
+                pass
+
         return result

@@ -1654,6 +1654,102 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## CR [/mobile/cr/{crid}/]
+
+### Get CR [GET]
+
++ Parameters
+    + crid (number) - number ID of Allegation
+
++ Response 200 (application/json)
+
+        {
+            "crid": "12345",
+            "coaccused": [
+                {
+                    "id": 123,
+                    "full_name": "Robert O’Niell",
+                    "gender": "Male",
+                    "race": "White",
+                    "final_finding": "Sustained",
+                    "recc_outcome": "Separation",
+                    "final_outcome": "Repriment",
+                    "category": "Operation/Personnel Violations",
+                    "subcategory": "NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY",
+                    "start_date": "2003-12-12",
+                    "end_date": "2004-12-12"
+                }
+            ],
+            "complainants": [
+                {
+                    "race": "White",
+                    "gender": "Male",
+                    "age": 18
+                },
+                {
+                    "race": "Black",
+                    "gender": "Female",
+                    "age": 20
+                }
+            ],
+            "point": {
+                "long": -87.664606,
+                "lat": 41.68731
+            },
+            "incident_date": "2002-02-28",
+            "address": "3510 Michigan Ave, Chicago, IL 60653",
+            "location": "Police Building",
+            "beat": {
+                "name": "23"
+            },
+            "involvements": [
+                {
+                    "involved_type": "investigator",
+                    "officers": [
+                        {
+                            "id": 1,
+                            "abbr_name": "L. Skol",
+                            "extra_info": "126 cases"
+                        }
+                    ]
+                },
+                {
+                    "involved_type": "police witnesses",
+                    "officers": [
+                        {
+                            "id": 2,
+                            "abbr_name": "R. Piwinicki",
+                            "extra_info": "male, white"
+                        },
+                        {
+                            "id": 3,
+                            "abbr_name": "J. Ipsum",
+                            "extra_info": "male, black"
+                        }
+                    ]
+                }
+            ],
+            "audios": [
+                {
+                    "title": "CHI - R-00001275 Red",
+                    "url": "http://foo.com"
+                }
+            ],
+            "videos": [
+                {
+                    "title": "CHI - R-00001275 Red",
+                    "url": "http://foo.com"
+                }
+            ],
+            "documents": [
+                {
+                    "title": "CHI - R-00001275 Red",
+                    "url": "http://foo.com"
+                }
+            ]
+        }
+
+
 ## CR [/cr/{crid}/]
 
 ### Get CR [GET]
@@ -1726,7 +1822,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "lon": -87.664606,
                 "lat": 41.68731
             },
-            "category_names": ["Operation/Personnel Violations", "Use of Force"],
             "incident_date": "2002-02-28",
             "start_date": "2002-02-30",
             "end_date": "2002-04-21",
@@ -1735,29 +1830,33 @@ This api require an api access token set in `Authorization` header. To get an ap
             "beat": "23",
             "involvements": [
                 {
+                    "officer_id": 1,
                     "involved_type": "investigator",
-                    "officers": [
-                        {
-                            "id": 1,
-                            "abbr_name": "L. Skol",
-                            "extra_info": "Badge 11111"
-                        }
-                    ]
+                    "full_name": "Lauren Skol",
+                    "current_rank": "IPRA investigator",
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 },
                 {
-                    "involved_type": "police witnesses",
-                    "officers": [
-                        {
-                            "id": 2,
-                            "abbr_name": "R. Piwinicki",
-                            "extra_info": "Badge 11111"
-                        },
-                        {
-                            "id": 3,
-                            "abbr_name": "J. Ipsum",
-                            "extra_info": "Badge 11111"
-                        }
-                    ]
+                    "officer_id": 2,
+                    "involved_type": "police_witness",
+                    "full_name": "Raymond Piwinicki",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
+                },
+                {
+                    "officer_id": 3,
+                    "involved_type": "police_witness",
+                    "full_name": "German Felix",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 }
             ],
             "attachments": [
@@ -1918,7 +2017,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                                 "count": 10
                             },
                             {
-                                "name": 'Unknown',
+                                "name": "Unknown",
                                 "count": 1
                             }
                         ]
@@ -1952,7 +2051,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                                 "count": 4
                             },
                             {
-                                "name": 'Unknown',
+                                "name": "Unknown",
                                 "count": 2
                             }
                         ]
