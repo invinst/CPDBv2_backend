@@ -1,6 +1,8 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q
+from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q, Text
 
 from .index_aliases import officers_index_alias
+
+from search.analyzers import autocomplete, autocomplete_search
 
 
 @officers_index_alias.doc_type
@@ -39,6 +41,7 @@ class OfficerInfoDocType(DocType):
     percentiles = Nested(
         doc_class=OfficerYearlyPercentile,
         properties=OfficerYearlyPercentile.mapping())
+    full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     @staticmethod
     def _get_lastest_year():

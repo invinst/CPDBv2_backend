@@ -283,6 +283,10 @@ class Officer(TaggableModel):
         return '%s %s' % (self.first_name, self.last_name,)
 
     @property
+    def trr_count(self):
+        return self.trr_set.count()
+
+    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star

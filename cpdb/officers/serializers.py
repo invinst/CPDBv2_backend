@@ -42,6 +42,7 @@ class OfficerMetricsSerializer(serializers.Serializer):
     sustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
+    trr_count = serializers.IntegerField()
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
