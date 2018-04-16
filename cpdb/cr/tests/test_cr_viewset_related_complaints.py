@@ -256,6 +256,10 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'Black',
                     'gender': 'Male',
                     'age': 18
-                }]
+                }],
+                'point': {
+                    'lat': 0.01,
+                    'lon': 0.01
+                }
             }]
         })

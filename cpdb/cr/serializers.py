@@ -112,6 +112,7 @@ class CRRelatedComplaintSerializer(serializers.Serializer):
     complainants = serializers.SerializerMethodField()
     coaccused = serializers.SerializerMethodField()
     category_names = serializers.ListField(child=serializers.CharField())
+    point = serializers.SerializerMethodField()
 
     def get_coaccused(self, obj):
         try:
@@ -124,3 +125,9 @@ class CRRelatedComplaintSerializer(serializers.Serializer):
             return [complainant.to_dict() for complainant in obj.complainants]
         except AttributeError:
             return []
+
+    def get_point(self, obj):
+        try:
+            return obj.point.to_dict()
+        except AttributeError:  # pragma: no cover
+            return None
