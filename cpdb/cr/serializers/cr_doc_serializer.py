@@ -46,13 +46,19 @@ class AttachmentFileSerializer(serializers.Serializer):
 class InvestigatorAllegationSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField(source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
-    full_name = serializers.CharField(source='investigator.officer.full_name')
-    abbr_name = serializers.CharField(source='investigator.officer.abbr_name')
+    full_name = serializers.SerializerMethodField()
+    abbr_name = serializers.SerializerMethodField()
     num_cases = serializers.IntegerField(source='investigator.num_cases')
     current_rank = serializers.CharField()
 
     def get_involved_type(self, obj):
         return 'investigator'
+
+    def get_full_name(self, obj):
+        return getattr(obj.investigator.officer, 'full_name', obj.investigator.full_name)
+
+    def get_abbr_name(self, obj):
+        return getattr(obj.investigator.officer, 'abbr_name', obj.investigator.abbr_name)
 
 
 class PoliceWitnessSerializer(serializers.Serializer):

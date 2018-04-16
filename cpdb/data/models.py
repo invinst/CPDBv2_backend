@@ -559,6 +559,14 @@ class Investigator(models.Model):
     def num_cases(self):
         return self.investigatorallegation_set.all().count()
 
+    @property
+    def full_name(self):
+        return '%s %s' % (self.first_name, self.last_name,)
+
+    @property
+    def abbr_name(self):
+        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+
 
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)

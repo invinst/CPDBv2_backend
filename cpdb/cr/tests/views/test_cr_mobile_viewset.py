@@ -185,3 +185,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                 }
             ]
         })
+
+    def test_retrieve_not_found(self):
+        response = self.client.get(reverse('api-v2:cr-mobile-detail', kwargs={'pk': '45678'}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)

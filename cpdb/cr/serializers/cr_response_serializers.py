@@ -53,19 +53,19 @@ class PoliceWitnessDesktopSerializer(CherryPickSerializer):
 
 class CRDesktopSerializer(serializers.Serializer):
     crid = serializers.CharField()
-    coaccused = CoaccusedDesktopSerializer(many=True)
-    complainants = serializers.JSONField()
-    victims = serializers.JSONField()
-    summary = serializers.CharField()
-    point = serializers.JSONField()
-    incident_date = serializers.CharField()
-    start_date = serializers.CharField()
-    end_date = serializers.CharField()
-    address = serializers.CharField()
-    location = serializers.CharField()
-    beat = serializers.CharField()
+    coaccused = CoaccusedDesktopSerializer(many=True, default=[])
+    complainants = serializers.JSONField(default=[])
+    victims = serializers.JSONField(default=[])
+    summary = serializers.CharField(required=False)
+    point = serializers.JSONField(required=False)
+    incident_date = serializers.CharField(required=False)
+    start_date = serializers.CharField(required=False)
+    end_date = serializers.CharField(required=False)
+    address = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
+    beat = serializers.CharField(required=False)
     involvements = serializers.SerializerMethodField()
-    attachments = serializers.JSONField()
+    attachments = serializers.JSONField(default=[])
 
     def get_involvements(self, obj):
         serializer_map = {
@@ -74,7 +74,7 @@ class CRDesktopSerializer(serializers.Serializer):
         }
         return [
             serializer_map[involvement['involved_type']](involvement).data
-            for involvement in obj['involvements']
+            for involvement in obj.get('involvements', [])
         ]
 
 
@@ -123,7 +123,7 @@ class InvestigatorMobileSerializer(serializers.Serializer):
                 'abbr_name': involvement['abbr_name'],
                 'extra_info': '%d case(s)' % involvement['num_cases']
             }
-            for involvement in obj['involvements']
+            for involvement in obj.get('involvements', [])
             if involvement['involved_type'] == 'investigator'
         ]
 
@@ -142,7 +142,7 @@ class PoliceWitnessMobileSerializer(serializers.Serializer):
                 'abbr_name': involvement['abbr_name'],
                 'extra_info': ', '.join([involvement['gender'], involvement['race']])
             }
-            for involvement in obj['involvements']
+            for involvement in obj.get('involvements', [])
             if involvement['involved_type'] == 'police_witness'
         ]
 
@@ -150,26 +150,30 @@ class PoliceWitnessMobileSerializer(serializers.Serializer):
 class CRMobileSerializer(serializers.Serializer):
     crid = serializers.CharField()
     coaccused = CoaccusedMobileSerializer(many=True)
-    complainants = serializers.JSONField()
-    point = serializers.SerializerMethodField()
-    incident_date = serializers.CharField()
-    address = serializers.CharField()
-    location = serializers.CharField()
+    complainants = serializers.JSONField(default=[])
+    point = serializers.SerializerMethodField(required=False)
+    incident_date = serializers.CharField(required=False)
+    address = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
     beat = serializers.SerializerMethodField()
     involvements = serializers.SerializerMethodField()
-    audios = AttachmentField(source='attachments', type=MEDIA_TYPE_AUDIO)
-    videos = AttachmentField(source='attachments', type=MEDIA_TYPE_VIDEO)
-    documents = AttachmentField(source='attachments', type=MEDIA_TYPE_DOCUMENT)
+    audios = AttachmentField(source='attachments', type=MEDIA_TYPE_AUDIO, default=[])
+    videos = AttachmentField(source='attachments', type=MEDIA_TYPE_VIDEO, default=[])
+    documents = AttachmentField(source='attachments', type=MEDIA_TYPE_DOCUMENT, default=[])
 
     def get_point(self, obj):
+        point = obj.get('point', {
+            'lon': None,
+            'lat': None
+        })
         return {
-            'long': obj['point']['lon'],
-            'lat': obj['point']['lat']
+            'long': point['lon'],
+            'lat': point['lat']
         }
 
     def get_beat(self, obj):
         return {
-            'name': obj['beat']
+            'name': obj.get('beat', '')
         }
 
     def get_involvements(self, obj):
