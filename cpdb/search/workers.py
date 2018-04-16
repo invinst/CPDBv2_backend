@@ -1,6 +1,6 @@
 from search.doc_types import CrDocType
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
+    UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
 )
 from officers.doc_types import OfficerInfoDocType
 
