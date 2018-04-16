@@ -1,17 +1,17 @@
-import pytz
 from datetime import date
 
+import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
-
 from robber.expect import expect
 
 from data.constants import PERCENTILE_ALLEGATION
-from data.models import Officer
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
-    OfficerAllegationFactory, AwardFactory
+    OfficerAllegationFactory, AwardFactory,
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory
 )
+from data.models import Officer
 from trr.factories import TRRFactory
 
 
@@ -74,8 +74,10 @@ class OfficerTestCase(TestCase):
     def test_last_unit(self):
         officer = OfficerFactory()
         expect(officer.last_unit).to.equal(None)
-        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
-        expect(officer.last_unit).to.eq('CAND')
+
+        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'), end_date=date(2000, 1, 1))
+        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='BDCH'), end_date=date(2002, 1, 1))
+        expect(officer.last_unit).to.eq('BDCH')
 
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
@@ -369,3 +371,213 @@ class OfficerTestCase(TestCase):
                 'percentile_allegation': 0.0,
             }
         ])
+
+    def test_get_unit_by_date(self):
+        officer = OfficerFactory()
+        unit_100 = PoliceUnitFactory()
+        unit_101 = PoliceUnitFactory()
+        OfficerHistoryFactory(
+            officer=officer,
+            unit=unit_100,
+            effective_date=date(2000, 1, 1),
+            end_date=date(2005, 12, 31),
+        )
+        OfficerHistoryFactory(
+            officer=officer,
+            unit=unit_101,
+            effective_date=date(2006, 1, 1),
+            end_date=date(2010, 12, 31),
+        )
+        expect(officer.get_unit_by_date(date(1999, 1, 1))).to.be.none()
+        expect(officer.get_unit_by_date(date(2001, 1, 1))).to.eq(unit_100)
+        expect(officer.get_unit_by_date(date(2007, 1, 1))).to.eq(unit_101)
+        expect(officer.get_unit_by_date(date(2011, 1, 1))).to.be.none()
+
+    def test_complaint_category_aggregation(self):
+        officer = OfficerFactory()
+
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=None,
+            final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=date(
+                2010, 1, 1),
+            final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer,
+            allegation=AllegationFactory(),
+            allegation_category=allegation_category,
+            start_date=date(
+                2011, 1, 1),
+            final_finding='SU'
+        )
+
+        expect(officer.complaint_category_aggregation).to.eq([
+            {
+                'name': 'Use of Force',
+                'count': 3,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Use of Force'
+                    }, {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'Use of Force'
+                    }
+                ]
+            }
+        ])
+
+    def test_complainant_race_aggregation(self):
+        officer = OfficerFactory()
+
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        allegation3 = AllegationFactory()
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation3, start_date=None, final_finding='NS'
+        )
+        ComplainantFactory(allegation=allegation1, race='White')
+        ComplainantFactory(allegation=allegation2, race='')
+        ComplainantFactory(allegation=allegation3, race='White')
+
+        expect(officer.complainant_race_aggregation).to.eq([
+            {
+                'name': 'White',
+                'count': 2,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'White'
+                    }
+                ]
+            },
+            {
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
+            }
+        ])
+
+    def test_complainant_race_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_race_aggregation).to.eq([])
+
+    def test_complainant_age_aggregation(self):
+        officer = OfficerFactory()
+
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
+        ComplainantFactory(allegation=allegation1, age=23)
+        ComplainantFactory(allegation=allegation2, age=None)
+
+        expect(officer.complainant_age_aggregation).to.eq([
+            {
+                'name': '21-30',
+                'count': 1,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': '21-30'
+                    }
+                ]
+            },
+            {
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
+            }
+        ])
+
+    def test_complainant_gender_aggregation(self):
+        officer = OfficerFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation1, start_date=date(2010, 1, 1), final_finding='SU'
+        )
+        OfficerAllegationFactory(
+            officer=officer, allegation=allegation2, start_date=date(2011, 1, 1), final_finding='NS'
+        )
+        ComplainantFactory(allegation=allegation1, gender='F')
+        ComplainantFactory(allegation=allegation2, gender='')
+        expect(officer.complainant_gender_aggregation).to.eq([
+            {
+                'name': 'Female',
+                'count': 1,
+                'sustained_count': 1,
+                'items': [
+                    {
+                        'year': 2010,
+                        'count': 1,
+                        'sustained_count': 1,
+                        'name': 'Female'
+                    }
+                ]
+            },
+            {
+                'name': 'Unknown',
+                'count': 1,
+                'sustained_count': 0,
+                'items': [
+                    {
+                        'year': 2011,
+                        'count': 1,
+                        'sustained_count': 0,
+                        'name': 'Unknown'
+                    }
+                ]
+            }
+        ])
+
+    def test_complainant_gender_aggregation_no_complainant(self):
+        officer = OfficerFactory()
+        expect(officer.complainant_gender_aggregation).to.eq([])

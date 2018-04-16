@@ -1,19 +1,18 @@
 from datetime import date, datetime
-import pytz
 
+import pytz
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
 from django.utils.timezone import now
-
 from mock import Mock, patch
 from robber import expect
 
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
 from data.models import Officer
 from officers.indexers import (
-    OfficersIndexer, CRTimelineEventIndexer, UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer, SocialGraphIndexer, OfficerMetricsIndexer,
-    OfficerPercentileIndexer
+    OfficersIndexer, SocialGraphIndexer, OfficerPercentileIndexer,
+    CRNewTimelineEventIndexer, UnitChangeNewTimelineEventIndexer, JoinedNewTimelineEventIndexer,
+    TRRNewTimelineEventIndexer, AwardNewTimelineEventIndexer
 )
 
 
@@ -40,6 +39,55 @@ class OfficersIndexerTestCase(SimpleTestCase):
             appointed_date=date(2017, 2, 27),
             resignation_date=date(2017, 12, 27),
             get_active_display=Mock(return_value='Active'),
+
+            allegation_count=2,
+            complaint_percentile=99.8,
+            honorable_mention_count=1,
+            sustained_count=1,
+            discipline_count=1,
+            civilian_compliment_count=0,
+            percentiles=[],
+            total_complaints_aggregation=[{'year': 2000, 'count': 1, 'sustained_count': 0}],
+            complaint_category_aggregation=[
+                {
+                    'name': 'Illegal Search',
+                    'count': 1,
+                    'sustained_count': 0,
+                    'items': [
+                        {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                    ]
+                }
+            ],
+            complainant_race_aggregation=[
+                {
+                    'name': 'White',
+                    'count': 1,
+                    'sustained_count': 0,
+                    'items': [
+                        {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                    ]
+                }
+            ],
+            complainant_age_aggregation=[
+                {
+                    'name': '<20',
+                    'count': 1,
+                    'sustained_count': 0,
+                    'items': [
+                        {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                    ]
+                }
+            ],
+            complainant_gender_aggregation=[
+                {
+                    'name': 'Male',
+                    'count': 1,
+                    'sustained_count': 0,
+                    'items': [
+                        {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                    ]
+                }
+            ]
         )
 
         expect(OfficersIndexer().extract_datum(officer)).to.eq({
@@ -54,122 +102,44 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
             'birth_year': 1910,
-        })
-
-
-class OfficerMetricsIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(OfficerMetricsIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock(
-            id=123,
-            full_name='Alex Mack',
-            appointed_date=date(2017, 2, 27),
-            get_active_display=Mock(return_value='Active'),
-            allegation_count=1,
-            complaint_percentile=90.0,
-            honorable_mention_count=2,
-            sustained_count=1,
-            discipline_count=2,
-            civilian_compliment_count=2,
-        )
-
-        expect(OfficerMetricsIndexer().extract_datum(officer)).to.eq({
-            'id': 123,
-            'allegation_count': 1,
-            'complaint_percentile': 90.0,
-            'honorable_mention_count': 2,
+            'complaint_records': {
+                'count': 2,
+                'sustained_count': 1,
+                'items': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
+                'facets': [
+                    {
+                        'name': 'category',
+                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant race',
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant age',
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant gender',
+                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0, 'items': [
+                            {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
+                        ]}]
+                    }
+                ]
+            },
+            'allegation_count': 2,
+            'complaint_percentile': 99.8,
+            'honorable_mention_count': 1,
             'sustained_count': 1,
-            'discipline_count': 2,
-            'civilian_compliment_count': 2
-        })
-
-
-class CRTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_allegation = Mock()
-
-        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[officer_allegation]):
-            expect(CRTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
-
-    def test_extract_datum(self):
-        officer_allegation = Mock(
-            officer_id=123,
-            start_date=date(2012, 1, 1),
-            crid='123456',
-            category='Illegal Search',
-            subcategory='Search of premise/vehicle without warrant',
-            final_finding_display='Unfounded',
-            coaccused_count=4,
-            allegation=Mock(
-                complainant_races=['White', 'Unknown'],
-                complainant_age_groups=['21-30', '51+'],
-                complainant_genders=['Male'],
-            )
-        )
-
-        expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 40,
-            'kind': 'CR',
-            'crid': '123456',
-            'category': 'Illegal Search',
-            'subcategory': 'Search of premise/vehicle without warrant',
-            'finding': 'Unfounded',
-            'coaccused': 4,
-            'race': ['White', 'Unknown'],
-            'age': ['21-30', '51+'],
-            'gender': ['Male']
-        })
-
-
-class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_history = Mock()
-
-        with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[officer_history]):
-            expect(UnitChangeTimelineEventIndexer().get_queryset()).to.eq([officer_history])
-
-    def test_extract_datum(self):
-        officer_history = Mock()
-        officer_history.officer_id = 123
-        officer_history.effective_date = date(2010, 3, 4)
-        officer_history.unit_name = '003'
-        expect(UnitChangeTimelineEventIndexer().extract_datum(officer_history)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'date': '2010-03-04',
-            'kind': 'UNIT_CHANGE',
-            'unit_name': '003',
-            'year_sort': 2010,
-            'priority_sort': 30,
-        })
-
-
-class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
-            expect(JoinedTimelineEventIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock()
-        officer.id = 123
-        officer.appointed_date = date(2012, 1, 1)
-        expect(JoinedTimelineEventIndexer().extract_datum(officer)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'kind': 'JOINED',
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 10,
+            'discipline_count': 1,
+            'civilian_compliment_count': 0,
+            'percentiles': []
         })
 
 
@@ -340,10 +310,211 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'percentile_allegation_civilian': 0
         }
         expect(self.indexer.extract_datum(data)).to.eq({
-            'officer_id': 1,
+            'id': 1,
             'year': 2016,
             'percentile_allegation': '66.667',
             'percentile_allegation_internal': '50.000',
             'percentile_allegation_civilian': '0.000',
             'percentile_trr': '0.000',
+        })
+
+
+class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer = Mock()
+        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
+            expect(JoinedNewTimelineEventIndexer().get_queryset()).to.eq([officer])
+
+    def test_extract_datum(self):
+        officer = Mock(
+            id=123,
+            appointed_date=date(2012, 1, 1),
+            get_unit_by_date=Mock(return_value=Mock(
+                unit_name='001',
+                description='Unit_001',
+            )),
+            rank='Police Officer',
+        )
+        expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2012, 1, 1),
+            'priority_sort': 10,
+            'date': '2012-01-01',
+            'kind': 'JOINED',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
+            'rank': 'Police Officer',
+        })
+
+
+class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        officer_history = OfficerHistoryFactory(
+            effective_date=date(2010, 1, 1),
+            officer=OfficerFactory(appointed_date=date(2001, 2, 2))
+        )
+        OfficerHistoryFactory(
+            effective_date=date(2010, 1, 1),
+            officer=OfficerFactory(appointed_date=date(2010, 1, 1))
+        )
+        OfficerHistoryFactory(
+            effective_date=None,
+        )
+        expect(list(UnitChangeNewTimelineEventIndexer().get_queryset())).to.eq([officer_history])
+
+    def test_extract_datum(self):
+        officer_history = Mock(
+            officer_id=123,
+            effective_date=date(2010, 3, 4),
+            unit_name='003',
+            unit_description='Unit_003',
+            officer=Mock(rank='Police Officer')
+        )
+        expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 20,
+            'date': '2010-03-04',
+            'kind': 'UNIT_CHANGE',
+            'unit_name': '003',
+            'unit_description': 'Unit_003',
+            'rank': 'Police Officer',
+        })
+
+
+class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer_allegation = Mock()
+
+        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[officer_allegation]):
+            expect(CRNewTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
+
+    def test_extract_datum(self):
+        officer_allegation = Mock(
+            officer_id=123,
+            start_date=date(2012, 1, 1),
+            crid='123456',
+            category='Illegal Search',
+            subcategory='Search of premise/vehicle without warrant',
+            final_finding_display='Unfounded',
+            final_outcome_display='Unknown',
+            coaccused_count=4,
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
+            allegation=Mock(
+                documents=[
+                    Mock(
+                        title='doc_1',
+                        url='url_1',
+                        preview_image_url='image_url_1',
+                    ),
+                    Mock(
+                        title='doc_2',
+                        url='url_2',
+                        preview_image_url='image_url_2',
+                    )
+                ]
+            ),
+        )
+
+        expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2012, 1, 1),
+            'priority_sort': 30,
+            'date': '2012-01-01',
+            'kind': 'CR',
+            'crid': '123456',
+            'category': 'Illegal Search',
+            'subcategory': 'Search of premise/vehicle without warrant',
+            'finding': 'Unfounded',
+            'outcome': 'Unknown',
+            'coaccused': 4,
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
+            'rank': 'Police Officer',
+            'attachments': [
+                {
+                    'title': 'doc_1',
+                    'url': 'url_1',
+                    'preview_image_url': 'image_url_1',
+                },
+                {
+                    'title': 'doc_2',
+                    'url': 'url_2',
+                    'preview_image_url': 'image_url_2',
+                },
+            ]
+        })
+
+
+class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        award = Mock()
+
+        with patch('officers.indexers.Award.objects.filter', return_value=[award]):
+            expect(AwardNewTimelineEventIndexer().get_queryset()).to.eq([award])
+
+    def test_extract_datum(self):
+        award = Mock(
+            officer_id=123,
+            start_date=date(2010, 3, 4),
+            award_type='Honorable Mention',
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
+        )
+        expect(AwardNewTimelineEventIndexer().extract_datum(award)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 40,
+            'date': '2010-03-04',
+            'kind': 'AWARD',
+            'award_type': 'Honorable Mention',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
+            'rank': 'Police Officer',
+        })
+
+
+class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        trr = Mock()
+
+        with patch('officers.indexers.TRR.objects.all', return_value=[trr]):
+            expect(TRRNewTimelineEventIndexer().get_queryset()).to.eq([trr])
+
+    def test_extract_datum(self):
+        trr = Mock(
+            officer_id=123,
+            trr_datetime=datetime(2010, 3, 4),
+            firearm_used=False,
+            taser=False,
+            officer=Mock(
+                rank='Police Officer',
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
+        )
+        expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2010, 3, 4),
+            'priority_sort': 50,
+            'date': '2010-03-04',
+            'kind': 'FORCE',
+            'taser': False,
+            'firearm_used': False,
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
+            'rank': 'Police Officer',
         })
