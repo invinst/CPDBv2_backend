@@ -11,7 +11,7 @@ from robber import expect
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory
 )
-from .mixins import CRTestCaseMixin
+from cr.tests.mixins import CRTestCaseMixin
 
 
 class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):

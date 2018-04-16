@@ -189,8 +189,6 @@ class PoliceWitnessFactory(factory.django.DjangoModelFactory):
         model = PoliceWitness
 
     allegation = factory.SubFactory(AllegationFactory)
-    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
-    race = 'Black'
     officer = factory.SubFactory(OfficerFactory)
 
 
