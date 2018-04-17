@@ -656,6 +656,12 @@ class Officer(TaggableModel):
             aggregate_sustained_count += item['sustained_count']
         return results
 
+    @property
+    def coaccusals(self):
+        return Officer.objects.filter(
+            officerallegation__allegation__officerallegation__officer=self
+        ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id'))
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)

@@ -12,12 +12,13 @@ from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
     OfficerNewTimelineEventDocType,
-    OfficerInfoDocType
+    OfficerInfoDocType,
+    OfficerCoaccusalsDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
     CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
-    AwardNewTimelineSerializer, TRRNewTimelineSerializer,
+    AwardNewTimelineSerializer, TRRNewTimelineSerializer, OfficerCoaccusalsSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -163,3 +164,15 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, trrs):
         return TRRNewTimelineSerializer(trrs).data
+
+
+@register_indexer(app_name)
+class OfficerCoaccusalsIndexer(BaseIndexer):
+    doc_type_klass = OfficerCoaccusalsDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Officer.objects.all()
+
+    def extract_datum(self, officer):
+        return OfficerCoaccusalsSerializer(officer).data

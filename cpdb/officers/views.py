@@ -6,7 +6,10 @@ from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from officers.serializers import NewTimelineSerializer
 from .doc_types import (
-    OfficerInfoDocType, OfficerNewTimelineEventDocType, OfficerSocialGraphDocType
+    OfficerInfoDocType,
+    OfficerNewTimelineEventDocType,
+    OfficerSocialGraphDocType,
+    OfficerCoaccusalsDocType
 )
 
 _ALLOWED_FILTERS = [
@@ -54,3 +57,12 @@ class OfficersViewSet(viewsets.ViewSet):
         top_officers = OfficerInfoDocType.get_top_officers(percentile=99.0, size=limit)
 
         return Response(OfficerCardSerializer(top_officers, many=True).data)
+
+    @detail_route(methods=['get'])
+    def coaccusals(self, _, pk):
+        query = OfficerCoaccusalsDocType().search().query('term', id=pk)
+        result = query.execute()
+        try:
+            return Response(result[0].to_dict())
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)

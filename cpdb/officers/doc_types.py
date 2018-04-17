@@ -12,6 +12,11 @@ class OfficerNewTimelineEventDocType(DocType):
 
 
 @officers_index_alias.doc_type
+class OfficerCoaccusalsDocType(DocType):
+    officer_id = Integer()
+
+
+@officers_index_alias.doc_type
 class OfficerTimelineMinimapDocType(DocType):
     officer_id = Integer()
 
