@@ -18,6 +18,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'first_name': 'Roberto',
             'last_name': 'Last Name',
             'race': 'Asian',
+            'trr_count': 2,
         })
         expect(OfficerMetricsSerializer(obj).data).to.eq({
             'id': 123,
@@ -26,5 +27,6 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'honorable_mention_count': 3,
             'sustained_count': 4,
             'discipline_count': 5,
-            'civilian_compliment_count': 6
+            'civilian_compliment_count': 6,
+            'trr_count': 2,
         })

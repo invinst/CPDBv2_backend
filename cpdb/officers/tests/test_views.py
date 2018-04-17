@@ -20,13 +20,14 @@ from data.constants import ACTIVE_YES_CHOICE
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_summary(self):
         officer = OfficerFactory(
+            tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1910
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
-        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
+        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND', description=''))
         ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
@@ -44,6 +45,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq({
             'id': 123,
             'unit': 'CAND',
+            'unit_description': '',
             'date_of_appt': '2017-02-27',
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
@@ -88,7 +90,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'civilian_compliment_count': 2,
             'allegation_count': 1,
             'discipline_count': 1,
-            'honorable_mention_count': 1
+            'honorable_mention_count': 1,
+            'trr_count': 0,
+            'to': '/officer/123/',
+            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123'
         })
 
     def test_summary_no_match(self):

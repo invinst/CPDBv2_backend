@@ -25,22 +25,56 @@ class OfficerFormatter(SimpleFormatter):
         return {
             'text': serialized_doc['full_name'],
             'payload': {
+                'result_text': serialized_doc['full_name'],
                 'name': serialized_doc['full_name'],
-                'to': '/officer/{}'.format(serialized_doc['id']),
+                'to': serialized_doc['to'],
+                'tags': serialized_doc.get('tags', []),
                 'birth_year': serialized_doc['birth_year'],
                 'race': serialized_doc['race'],
                 'gender': serialized_doc['gender'],
                 'badge': serialized_doc.get('badge'),
                 'rank': serialized_doc['rank'],
-                'unit': serialized_doc['unit'],
+                'unit': serialized_doc.get('unit_description') or serialized_doc.get('unit'),
                 'appointed_date': serialized_doc['date_of_appt'],
                 'resignation_date': serialized_doc.get('date_of_resignation'),
                 'allegation_count': serialized_doc.get('allegation_count', 0),
                 'sustained_count': serialized_doc.get('sustained_count', 0),
                 'trr_count': serialized_doc.get('trr_count', 0),
                 'discipline_count': serialized_doc.get('discipline_count', 0),
-                'civilian_compliment_count': serialized_doc.get('civilian_compliment_count'),
-                'percentiles': serialized_doc.get('percentiles'),
+                'civilian_compliment_count': serialized_doc.get('civilian_compliment_count', 0),
+                'percentiles': serialized_doc.get('percentiles', []),
+            }
+        }
+
+
+class UnitOfficerFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        tags = serialized_doc.get('tags', [])
+
+        unit_description = serialized_doc.get('unit_description', None)
+        if unit_description is not None:
+            extra_info = unit_description
+        else:
+            extra_info = serialized_doc['badge'] and 'Badge # {badge}'.format(badge=serialized_doc['badge']) or ''
+
+        return {
+            'text': serialized_doc['full_name'],
+            'payload': {
+                'result_reason': ', '.join(tags),
+                'result_text': serialized_doc['full_name'],
+                'result_extra_information': extra_info,
+                'to': serialized_doc['to'],
+                'visual_token_background_color': serialized_doc['visual_token_background_color'],
+                'tags': tags,
+                'unit': serialized_doc.get('unit', None),
+                'rank': serialized_doc.get('rank', None),
+                'salary': None,
+                'race': serialized_doc['race'],
+                'sex': serialized_doc['sex'],
+                'birth_year': serialized_doc['birth_year'],
+                'allegation_count': serialized_doc.get('allegation_count', 0),
+                'sustained_count': serialized_doc.get('sustained_count', 0)
             }
         }
 

@@ -52,18 +52,21 @@ class SimpleFormatterTestCase(SimpleTestCase):
 class OfficerFormatterTestCase(SimpleTestCase):
     def test_officer_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
+            'id': 1,
             'full_name': 'name',
             'badge': '123',
             'to': 'to',
             'tags': ['tag1', 'tag2'],
             'allegation_count': 10,
             'sustained_count': 2,
+            'date_of_appt': '1998-01-01',
             'visual_token_background_color': '#ffffff',
             'unit': '001',
             'rank': 'some rank',
             'birth_year': 1972,
             'race': 'White',
-            'sex': 'Male'
+            'gender': 'Male',
+            'trr_count': 1,
         }))
 
         expect(
@@ -72,29 +75,33 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'text': 'name',
             'payload': {
                 'result_text': 'name',
-                'result_extra_information': 'Badge # 123',
+                'name': 'name',
+                'badge': '123',
                 'to': 'to',
-                'result_reason': 'tag1, tag2',
                 'tags': ['tag1', 'tag2'],
-                'visual_token_background_color': '#ffffff',
                 'unit': '001',
+                'appointed_date': '1998-01-01',
+                'resignation_date': None,
+                'trr_count': 1,
                 'rank': 'some rank',
                 'allegation_count': 10,
                 'sustained_count': 2,
+                'discipline_count': 0,
+                'civilian_compliment_count': 0,
                 'race': 'White',
                 'birth_year': 1972,
-                'sex': 'Male',
-                'salary': None  # no data yet so always return None here
+                'gender': 'Male',
+                'percentiles': [],
             }
         })
 
     def test_unit_officer_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
             'full_name': 'name',
+            'date_of_appt': '1998-01-01',
             'badge': '123',
             'to': 'to',
             'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#ffffff',
             'unit': '001',
             'allegation_count': 10,
             'sustained_count': 2,
@@ -102,7 +109,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'rank': 'some rank',
             'birth_year': 1972,
             'race': 'White',
-            'sex': 'Male'
+            'gender': 'Male'
         }))
 
         expect(
@@ -111,19 +118,23 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'text': 'name',
             'payload': {
                 'result_text': 'name',
-                'result_extra_information': 'foo bar',
+                'name': 'name',
                 'to': 'to',
-                'result_reason': 'tag1, tag2',
                 'tags': ['tag1', 'tag2'],
-                'visual_token_background_color': '#ffffff',
-                'unit': '001',
-                'allegation_count': 10,
-                'sustained_count': 2,
-                'rank': 'some rank',
                 'birth_year': 1972,
                 'race': 'White',
-                'sex': 'Male',
-                'salary': None  # no data yet so always return None here
+                'gender': 'Male',
+                'badge': '123',
+                'rank': 'some rank',
+                'unit': 'foo bar',
+                'appointed_date': '1998-01-01',
+                'resignation_date': None,
+                'allegation_count': 10,
+                'sustained_count': 2,
+                'trr_count': 0,
+                'discipline_count': 0,
+                'civilian_compliment_count': 0,
+                'percentiles': [],
             }
         })
 

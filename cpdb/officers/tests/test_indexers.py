@@ -28,9 +28,12 @@ class OfficersIndexerTestCase(SimpleTestCase):
 
     def test_extract_datum(self):
         officer = Mock(
+            v2_to='',
+            v1_url='',
+            tags=[],
             id=123,
             full_name='Alex Mack',
-            last_unit='4',
+            last_unit=Mock(unit_name='4', description=''),
             rank='5',
             race='White',
             current_badge='123456',
@@ -39,7 +42,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             appointed_date=date(2017, 2, 27),
             resignation_date=date(2017, 12, 27),
             get_active_display=Mock(return_value='Active'),
-
+            trr_count=2,
             allegation_count=2,
             complaint_percentile=99.8,
             honorable_mention_count=1,
@@ -138,8 +141,13 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'honorable_mention_count': 1,
             'sustained_count': 1,
             'discipline_count': 1,
+            'trr_count': 2,
             'civilian_compliment_count': 0,
-            'percentiles': []
+            'percentiles': [],
+            'tags': [],
+            'to': '',
+            'url': '',
+            'unit_description': '',
         })
 
 

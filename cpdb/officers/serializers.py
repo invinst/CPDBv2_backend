@@ -5,7 +5,8 @@ from cr.serializers import AttachmentFileSerializer
 
 class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    unit = serializers.CharField(source='last_unit')
+    unit = serializers.CharField(source='last_unit.unit_name')
+    unit_description = serializers.CharField(source='last_unit.description')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
     active = serializers.SerializerMethodField()
@@ -59,6 +60,9 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
+    to = serializers.CharField(source='v2_to')
+    url = serializers.CharField(source='v1_url')
+    tags = serializers.ListField(child=serializers.CharField())
 
 
 class NewTimelineSerializer(serializers.Serializer):
