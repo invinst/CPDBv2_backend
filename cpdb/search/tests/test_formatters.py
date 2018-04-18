@@ -66,6 +66,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'birth_year': 1972,
             'race': 'White',
             'gender': 'Male',
+            'honorable_mention_count': 3,
             'trr_count': 1,
         }))
 
@@ -87,6 +88,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'allegation_count': 10,
                 'sustained_count': 2,
                 'discipline_count': 0,
+                'honorable_mention_count': 3,
                 'civilian_compliment_count': 0,
                 'race': 'White',
                 'birth_year': 1972,
@@ -109,6 +111,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
             },
             'allegation_count': 10,
             'sustained_count': 2,
+            'honorable_mention_count': 3,
             'unit_description': 'foo bar',
             'rank': 'some rank',
             'birth_year': 1972,
@@ -141,6 +144,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'sustained_count': 2,
                 'trr_count': 0,
                 'discipline_count': 0,
+                'honorable_mention_count': 3,
                 'civilian_compliment_count': 0,
                 'percentiles': [],
             }
