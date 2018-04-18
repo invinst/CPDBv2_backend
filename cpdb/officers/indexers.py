@@ -17,8 +17,12 @@ from .doc_types import (
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
-    AwardNewTimelineSerializer, TRRNewTimelineSerializer, OfficerCoaccusalsSerializer
+    CRNewTimelineSerializer,
+    UnitChangeNewTimelineSerializer,
+    JoinedNewTimelineSerializer,
+    AwardNewTimelineSerializer,
+    TRRNewTimelineSerializer,
+    OfficerCoaccusalsSerializer
 )
 
 app_name = __name__.split('.')[0]

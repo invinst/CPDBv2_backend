@@ -332,3 +332,63 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 },
             }
         ])
+
+    def test_coaccusals_not_found(self):
+        response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 999}))
+        expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_coaccusals(self):
+        officer0 = OfficerFactory()
+        officer1 = OfficerFactory(
+            first_name='Officer',
+            last_name='1',
+            complaint_percentile=95.0,
+            race='White',
+            gender='M',
+            birth_year=1950,
+        )
+        officer2 = OfficerFactory(
+            first_name='Officer',
+            last_name='2',
+            complaint_percentile=99.0,
+            race='Black',
+            gender='M',
+            birth_year=1970,
+        )
+        allegation0 = AllegationFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer0, allegation=allegation0, final_finding='SU')
+        OfficerAllegationFactory(officer=officer0, allegation=allegation1, final_finding='NS')
+        OfficerAllegationFactory(officer=officer0, allegation=allegation2, final_finding='NS')
+        OfficerAllegationFactory(officer=officer1, allegation=allegation0, final_finding='SU')
+        OfficerAllegationFactory(officer=officer1, allegation=allegation1, final_finding='NS')
+        OfficerAllegationFactory(officer=officer2, allegation=allegation2, final_finding='SU')
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer0.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': officer0.id,
+            'coaccusals': [{
+                'id': officer1.id,
+                'full_name': 'Officer 1',
+                'allegation_count': 2,
+                'sustained_count': 1,
+                'complaint_percentile': 95.0,
+                'race': 'White',
+                'gender': 'Male',
+                'birth_year': 1950,
+                'coaccusal_count': 2,
+            }, {
+                'id': officer2.id,
+                'full_name': 'Officer 2',
+                'allegation_count': 1,
+                'sustained_count': 1,
+                'complaint_percentile': 99.0,
+                'race': 'Black',
+                'gender': 'Male',
+                'birth_year': 1970,
+                'coaccusal_count': 1,
+            }]
+        })

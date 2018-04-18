@@ -10,9 +10,15 @@ from robber import expect
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
 from data.models import Officer
 from officers.indexers import (
-    OfficersIndexer, SocialGraphIndexer, OfficerPercentileIndexer,
-    CRNewTimelineEventIndexer, UnitChangeNewTimelineEventIndexer, JoinedNewTimelineEventIndexer,
-    TRRNewTimelineEventIndexer, AwardNewTimelineEventIndexer
+    OfficersIndexer,
+    SocialGraphIndexer,
+    OfficerPercentileIndexer,
+    CRNewTimelineEventIndexer,
+    UnitChangeNewTimelineEventIndexer,
+    JoinedNewTimelineEventIndexer,
+    TRRNewTimelineEventIndexer,
+    AwardNewTimelineEventIndexer,
+    OfficerCoaccusalsIndexer,
 )
 
 
@@ -517,4 +523,62 @@ class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+        })
+
+
+class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        officer = Mock()
+
+        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
+            expect(OfficerCoaccusalsIndexer().get_queryset()).to.eq([officer])
+
+    def test_extract_datum(self):
+        officer = Mock(
+            id=123,
+            coaccusals=[Mock(
+                id=456,
+                full_name='Officer 456',
+                allegation_count=2,
+                sustained_count=1,
+                complaint_percentile=95.0,
+                race='White',
+                gender_display='Male',
+                birth_year=1950,
+                coaccusal_count=3,
+            ), Mock(
+                id=789,
+                full_name='Officer 789',
+                allegation_count=3,
+                sustained_count=2,
+                complaint_percentile=99.0,
+                race='Black',
+                gender_display='Male',
+                birth_year=1970,
+                coaccusal_count=5,
+            )],
+        )
+        expect(OfficerCoaccusalsIndexer().extract_datum(officer)).to.eq({
+            'id': 123,
+            'coaccusals': [{
+                'id': 456,
+                'full_name': 'Officer 456',
+                'allegation_count': 2,
+                'sustained_count': 1,
+                'complaint_percentile': 95.0,
+                'race': 'White',
+                'gender': 'Male',
+                'birth_year': 1950,
+                'coaccusal_count': 3,
+            }, {
+                'id': 789,
+                'full_name': 'Officer 789',
+                'allegation_count': 3,
+                'sustained_count': 2,
+                'complaint_percentile': 99.0,
+                'race': 'Black',
+                'gender': 'Male',
+                'birth_year': 1970,
+                'coaccusal_count': 5,
+            }]
         })

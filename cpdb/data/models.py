@@ -660,7 +660,7 @@ class Officer(TaggableModel):
     def coaccusals(self):
         return Officer.objects.filter(
             officerallegation__allegation__officerallegation__officer=self
-        ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id'))
+        ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
 
 class OfficerBadgeNumber(models.Model):

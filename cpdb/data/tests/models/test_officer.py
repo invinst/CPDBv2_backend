@@ -581,3 +581,25 @@ class OfficerTestCase(TestCase):
     def test_complainant_gender_aggregation_no_complainant(self):
         officer = OfficerFactory()
         expect(officer.complainant_gender_aggregation).to.eq([])
+
+    def test_coaccusals(self):
+        officer0 = OfficerFactory()
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        allegation0 = AllegationFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer0, allegation=allegation0)
+        OfficerAllegationFactory(officer=officer0, allegation=allegation1)
+        OfficerAllegationFactory(officer=officer0, allegation=allegation2)
+        OfficerAllegationFactory(officer=officer1, allegation=allegation0)
+        OfficerAllegationFactory(officer=officer1, allegation=allegation1)
+        OfficerAllegationFactory(officer=officer2, allegation=allegation2)
+
+        coaccusals = list(officer0.coaccusals)
+        expect(coaccusals).to.have.length(2)
+        expect(coaccusals).to.contain(officer1)
+        expect(coaccusals).to.contain(officer2)
+
+        expect(coaccusals[coaccusals.index(officer1)].coaccusal_count).to.eq(2)
+        expect(coaccusals[coaccusals.index(officer2)].coaccusal_count).to.eq(1)
