@@ -33,7 +33,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             tags=[],
             id=123,
             full_name='Alex Mack',
-            last_unit=Mock(unit_name='4', description=''),
+            last_unit=Mock(id=1, unit_name='4', description=''),
             rank='5',
             race='White',
             current_badge='123456',
@@ -96,7 +96,11 @@ class OfficersIndexerTestCase(SimpleTestCase):
         expect(OfficersIndexer().extract_datum(officer)).to.eq({
             'id': 123,
             'full_name': 'Alex Mack',
-            'unit': '4',
+            'unit': {
+                'id': 1,
+                'unit_name': '4',
+                'description': '',
+            },
             'rank': '5',
             'race': 'White',
             'badge': '123456',
@@ -147,7 +151,6 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'tags': [],
             'to': '',
             'url': '',
-            'unit_description': '',
         })
 
 

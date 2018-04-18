@@ -1,12 +1,18 @@
 from rest_framework import serializers
 
 from cr.serializers import AttachmentFileSerializer
+from data.models import PoliceUnit
+
+
+class PoliceUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PoliceUnit
+        fields = ['id', 'unit_name', 'description']
 
 
 class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    unit = serializers.CharField(source='last_unit.unit_name')
-    unit_description = serializers.CharField(source='last_unit.description')
+    unit = PoliceUnitSerializer(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
     active = serializers.SerializerMethodField()

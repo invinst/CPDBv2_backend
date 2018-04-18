@@ -34,7 +34,7 @@ class OfficerFormatter(SimpleFormatter):
                 'gender': serialized_doc['gender'],
                 'badge': serialized_doc.get('badge'),
                 'rank': serialized_doc['rank'],
-                'unit': serialized_doc.get('unit_description') or serialized_doc.get('unit'),
+                'unit': serialized_doc.get('unit'),
                 'appointed_date': serialized_doc['date_of_appt'],
                 'resignation_date': serialized_doc.get('date_of_resignation'),
                 'allegation_count': serialized_doc.get('allegation_count', 0),
