@@ -5,7 +5,7 @@ from time import time
 per_run_uuid = str(uuid.uuid4())
 
 
-def timeit(message):
+def timing_validate(message):
     def real_decorator(func):
         def wrapper(*args, **kwargs):
             print message
