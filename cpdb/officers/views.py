@@ -63,6 +63,6 @@ class OfficersViewSet(viewsets.ViewSet):
         query = OfficerCoaccusalsDocType().search().query('term', id=pk)
         result = query.execute()
         try:
-            return Response(result[0].to_dict())
+            return Response(result[0].to_dict()['coaccusals'])
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)

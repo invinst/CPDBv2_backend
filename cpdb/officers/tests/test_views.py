@@ -1,12 +1,12 @@
-import pytz
 from datetime import date, datetime
 
+import pytz
 from django.core.urlresolvers import reverse
-
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 from robber import expect
 
+from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory
@@ -14,7 +14,6 @@ from data.factories import (
 from officers.doc_types import OfficerInfoDocType
 from trr.factories import TRRFactory
 from .mixins import OfficerSummaryTestCaseMixin
-from data.constants import ACTIVE_YES_CHOICE
 
 
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
@@ -368,27 +367,24 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer0.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': officer0.id,
-            'coaccusals': [{
-                'id': officer1.id,
-                'full_name': 'Officer 1',
-                'allegation_count': 2,
-                'sustained_count': 1,
-                'complaint_percentile': 95.0,
-                'race': 'White',
-                'gender': 'Male',
-                'birth_year': 1950,
-                'coaccusal_count': 2,
-            }, {
-                'id': officer2.id,
-                'full_name': 'Officer 2',
-                'allegation_count': 1,
-                'sustained_count': 1,
-                'complaint_percentile': 99.0,
-                'race': 'Black',
-                'gender': 'Male',
-                'birth_year': 1970,
-                'coaccusal_count': 1,
-            }]
-        })
+        expect(response.data).to.eq([{
+            'id': officer1.id,
+            'full_name': 'Officer 1',
+            'allegation_count': 2,
+            'sustained_count': 1,
+            'complaint_percentile': 95.0,
+            'race': 'White',
+            'gender': 'Male',
+            'birth_year': 1950,
+            'coaccusal_count': 2,
+        }, {
+            'id': officer2.id,
+            'full_name': 'Officer 2',
+            'allegation_count': 1,
+            'sustained_count': 1,
+            'complaint_percentile': 99.0,
+            'race': 'Black',
+            'gender': 'Male',
+            'birth_year': 1970,
+            'coaccusal_count': 1,
+        }])
