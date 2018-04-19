@@ -4,7 +4,7 @@ from django.conf import settings
 
 from . import es_client
 from .indices import Index
-from .utils import per_run_uuid
+from .utils import per_run_uuid, timeit
 
 
 class IndexAlias:
@@ -20,6 +20,7 @@ class IndexAlias:
     def doc_type(self, doc_type):
         return self.read_index.doc_type(doc_type)
 
+    @timeit('Start migrating...')
     def migrate(self, migrate_doc_types=[]):
         if not migrate_doc_types:
             return
