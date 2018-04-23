@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import ExtractYear
+from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
+from django.db.models.functions import Concat, ExtractYear
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -686,6 +686,30 @@ class Area(TaggableModel):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
+
+    def get_most_common_complaint(self):
+        query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
+        query = query.values('allegation_category__category').annotate(
+            id=F('allegation_category__id'),
+            name=F('allegation_category__category'),
+            count=Count('allegation', distinct=True)
+        )
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
+
+    def get_officers_most_complaints(self):
+        query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
+        query = query.values('officer').annotate(
+            id=F('officer__id'),
+            name=Concat('officer__first_name', Value(' '), 'officer__last_name'),
+            count=Count('allegation', distinct=True)
+        )
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
+
+    @property
+    def allegation_count(self):
+        return self.allegation_set.distinct().count()
 
     @property
     def v1_url(self):

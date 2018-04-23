@@ -8,6 +8,7 @@ from search.doc_types import (
     UnitOfficerDocType, CrDocType
 )
 from search.indices import autocompletes_alias
+from search.serializers import RacePopulationSerializer
 
 
 def extract_text_from_value(value):
@@ -164,10 +165,20 @@ class AreaTypeIndexer(BaseIndexer):
         return Area.objects.filter(area_type=self.area_type)
 
     def extract_datum(self, datum):
+        tags = list(datum.tags)
+        if self.area_type and self.area_type not in tags:
+            tags.append(self.area_type)
         return {
             'name': datum.name,
             'url': datum.v1_url,
-            'tags': datum.tags
+            'tags': tags,
+            'allegation_count': datum.allegation_count,
+            'officers_most_complaint': list(datum.get_officers_most_complaints()),
+            'most_common_complaint': list(datum.get_most_common_complaint()),
+            'race_count': RacePopulationSerializer(
+                datum.racepopulation_set.order_by('-count'),
+                many=True).data,
+            'median_income': datum.median_income
         }
 
 
