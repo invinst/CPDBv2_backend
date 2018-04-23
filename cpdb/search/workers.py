@@ -1,6 +1,8 @@
+from elasticsearch_dsl.query import Q
+
 from search.doc_types import CrDocType
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
+    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, AreaDocType
 )
 
 
@@ -94,14 +96,41 @@ class UnitWorker(Worker):
     fields = ['name', 'description', 'tags']
 
 
-class NeighborhoodsWorker(Worker):
-    doc_type_klass = NeighborhoodsDocType
+class AreaWorker(Worker):
+    doc_type_klass = AreaDocType
+    area_type = None
     fields = ['name', 'tags']
 
+    def query(self, term):
+        filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')
+        q = Q('bool',
+              must=[Q('multi_match', query=term, operator='and', fields=self.fields)],
+              filter=filter)
+        return self._searcher.query(q).sort(*self.sort_order)
 
-class CommunityWorker(Worker):
-    doc_type_klass = CommunityDocType
-    fields = ['name', 'tags']
+
+class NeighborhoodsWorker(AreaWorker):
+    area_type = 'neighborhood'
+
+
+class CommunityWorker(AreaWorker):
+    area_type = 'community'
+
+
+class PoliceDistrictWorker(AreaWorker):
+    area_type = 'police-district'
+
+
+class SchoolGroundWorker(AreaWorker):
+    area_type = 'school-ground'
+
+
+class WardWorker(AreaWorker):
+    area_type = 'ward'
+
+
+class BeatWorker(AreaWorker):
+    area_type = 'beat'
 
 
 class UnitOfficerWorker(Worker):

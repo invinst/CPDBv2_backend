@@ -8,8 +8,7 @@ from search.workers import (
 )
 from search.doc_types import (
     FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType,
-    NeighborhoodsDocType, CommunityDocType, CrDocType
-)
+    CrDocType, AreaDocType)
 from search.tests.utils import IndexMixin
 
 
@@ -120,7 +119,7 @@ class UnitWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = NeighborhoodsDocType(name='name')
+        doc = AreaDocType(name='name', area_type='neighborhood')
         doc.save()
 
         self.refresh_index()
@@ -131,7 +130,7 @@ class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = CommunityDocType(name='name')
+        doc = AreaDocType(name='name', area_type='community')
         doc.save()
 
         self.refresh_index()

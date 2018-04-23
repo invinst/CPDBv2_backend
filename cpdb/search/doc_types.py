@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Long
+from elasticsearch_dsl import DocType, Text, Long, Keyword
 
 from .indices import autocompletes_alias
 
@@ -48,21 +48,13 @@ class UnitDocType(DocType):
 
 
 @autocompletes_alias.doc_type
-class NeighborhoodsDocType(DocType):
+class AreaDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    area_type = Keyword()
 
     class Meta:
-        doc_type = 'neighborhood'
-
-
-@autocompletes_alias.doc_type
-class CommunityDocType(DocType):
-    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-
-    class Meta:
-        doc_type = 'community'
+        doc_type = 'area'
 
 
 @autocompletes_alias.doc_type

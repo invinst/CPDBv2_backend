@@ -5,8 +5,8 @@ from django.test import SimpleTestCase, TestCase
 
 from search.search_indexers import CrIndexer
 from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
-    CommunityIndexer, IndexerManager, UnitOfficerIndexer
+    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaIndexer,
+    IndexerManager, UnitOfficerIndexer
 )
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
@@ -187,17 +187,20 @@ class UnitIndexerTestCase(TestCase):
         })
 
 
-class AreaTypeIndexerTestCase(TestCase):
+class AreaIndexerTestCase(TestCase):
+    def setUp(self):
+        self.area = AreaFactory(name='name', tags=['tag'], median_income=343, area_type='police-districts')
+        RacePopulationFactory(area=self.area, race='Asian', count=101)
+
     def test_extract_datum(self):
-        datum = AreaFactory(name='name', tags=['tag'], median_income=343)
-        RacePopulationFactory(area=datum, race='Asian', count=101)
 
         expect(
-            AreaTypeIndexer().extract_datum(datum)
+            AreaIndexer().extract_datum(self.area)
         ).to.be.eq({
             'name': 'name',
-            'url': datum.v1_url,
-            'tags': ['tag'],
+            'url': self.area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -208,37 +211,8 @@ class AreaTypeIndexerTestCase(TestCase):
             'median_income': 343,
         })
 
-
-class NeighborhoodsIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(NeighborhoodsIndexer().get_queryset()).to.have.length(1)
-        expect(NeighborhoodsIndexer().get_queryset().first().area_type).to.be.eq('neighborhoods')
-
-
-class CommunityIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(CommunityIndexer().get_queryset()).to.have.length(1)
-        expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
-
-    def test_extract_datum(self):
-        datum = AreaFactory(name='name', area_type='community', median_income=200)
-
-        expect(CommunityIndexer().extract_datum(datum)).to.be.eq({
-            'name': 'name',
-            'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=name',
-            'tags': ['community'],
-            'allegation_count': 0,
-            'officers_most_complaint': [],
-            'most_common_complaint': [],
-            'race_count': [],
-            'median_income': 200,
-        })
+        expect(AreaIndexer().get_queryset()).to.have.length(1)
 
 
 class UnitOfficerIndexerTestCase(TestCase):

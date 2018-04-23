@@ -4,7 +4,7 @@ from cms.models import FAQPage, ReportPage
 from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
 from search.doc_types import (
     FAQDocType, ReportDocType, OfficerDocType,
-    UnitDocType, NeighborhoodsDocType, CommunityDocType,
+    UnitDocType, AreaDocType,
     UnitOfficerDocType, CrDocType
 )
 from search.indices import autocompletes_alias
@@ -157,19 +157,24 @@ class UnitOfficerIndexer(BaseIndexer):
         }
 
 
-class AreaTypeIndexer(BaseIndexer):
-    doc_type_klass = None
-    area_type = None
+class AreaIndexer(BaseIndexer):
+    doc_type_klass = AreaDocType
 
     def get_queryset(self):
-        return Area.objects.filter(area_type=self.area_type)
+        return Area.objects.all()
+
+    def _reformat_area(self, area_type):
+        return Area.AREA_MAPPING.get(area_type, area_type)
 
     def extract_datum(self, datum):
         tags = list(datum.tags)
-        if self.area_type and self.area_type not in tags:
-            tags.append(self.area_type)
+        area_type = self._reformat_area(datum.area_type)
+        if area_type and area_type not in tags:
+            tags.append(area_type.replace('-', ' '))
+
         return {
             'name': datum.name,
+            'area_type': area_type,
             'url': datum.v1_url,
             'tags': tags,
             'allegation_count': datum.allegation_count,
@@ -180,16 +185,6 @@ class AreaTypeIndexer(BaseIndexer):
                 many=True).data,
             'median_income': datum.median_income
         }
-
-
-class NeighborhoodsIndexer(AreaTypeIndexer):
-    doc_type_klass = NeighborhoodsDocType
-    area_type = 'neighborhoods'
-
-
-class CommunityIndexer(AreaTypeIndexer):
-    doc_type_klass = CommunityDocType
-    area_type = 'community'
 
 
 class IndexerManager(object):

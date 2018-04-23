@@ -682,6 +682,15 @@ class OfficerHistory(models.Model):
 
 
 class Area(TaggableModel):
+    AREA_MAPPING = {
+        'neighborhoods': 'neighborhood',
+        'community': 'community',
+        'school-grounds': 'school-ground',
+        'wards': 'ward',
+        'police-districts': 'police-district',
+        'beat': 'beat',
+    }
+
     name = models.CharField(max_length=100)
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
@@ -713,15 +722,15 @@ class Area(TaggableModel):
 
     @property
     def v1_url(self):
-        if self.area_type == 'neighborhoods':
-            return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
-                                                                                      name=self.name)
+        base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
 
-        if self.area_type == 'community':
-            return '{domain}/url-mediator/session-builder?community={name}'.format(domain=settings.V1_URL,
-                                                                                   name=self.name)
-
-        return settings.V1_URL
+        if self.area_type not in self.AREA_MAPPING:
+            return settings.V1_URL
+        return '{base_url}?{keyword}={name}'.format(
+            base_url=base_url,
+            keyword=self.AREA_MAPPING[self.area_type],
+            name=self.name
+        )
 
 
 class RacePopulation(models.Model):
