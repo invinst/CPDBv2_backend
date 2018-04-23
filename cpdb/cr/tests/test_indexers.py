@@ -181,3 +181,22 @@ class CRIndexerTestCase(TestCase):
                 }
             ]
         })
+
+    def test_extract_datum_ignore_officers_not_in_top_percentile(self):
+        indexer = CRIndexer()
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation)
+        InvestigatorAllegationFactory(allegation=allegation)
+        result = indexer.extract_datum(allegation)
+        expect(result['coaccused'][0]).to.exclude(
+            'percentile_allegation_civilian',
+            'percentile_allegation_internal',
+            'percentile_trr',
+            'percentile_allegation'
+        )
+        expect(result['involvements'][0]).to.exclude(
+            'percentile_allegation_civilian',
+            'percentile_allegation_internal',
+            'percentile_trr',
+            'percentile_allegation'
+        )

@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -320,6 +320,10 @@ class Officer(TaggableModel):
             return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit.unit_name
         except IndexError:
             return None
+
+    @property
+    def current_age(self):
+        return datetime.now().year - self.birth_year
 
     @staticmethod
     def get_dataset_range():
