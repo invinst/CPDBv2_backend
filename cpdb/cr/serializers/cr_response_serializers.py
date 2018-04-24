@@ -17,6 +17,7 @@ class CoaccusedDesktopSerializer(CherryPickSerializer):
             'allegation_count',
             'sustained_count',
             'final_outcome',
+            'final_finding',
             'category',
             'percentile_allegation',
             'percentile_allegation_civilian',

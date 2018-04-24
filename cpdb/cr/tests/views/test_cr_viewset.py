@@ -98,6 +98,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'rank': 'Officer',
                     'age': 25,
                     'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
                     'allegation_count': 1,
                     'sustained_count': 1,
