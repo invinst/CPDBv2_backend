@@ -95,6 +95,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation,
             title='CR document',
             url='http://cr-document.com/',
+            original_url='http://cr-document.com/',
             file_type=MEDIA_TYPE_DOCUMENT
         )
 
@@ -102,6 +103,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation,
             title='audio',
             url='http://audio.hear',
+            original_url='http://audio.hear',
             file_type=MEDIA_TYPE_AUDIO
         )
 
@@ -109,6 +111,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation,
             title='video',
             url='http://video.see',
+            original_url='http://video.see',
             file_type=MEDIA_TYPE_VIDEO
         )
 
