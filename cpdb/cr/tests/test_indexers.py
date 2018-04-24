@@ -115,6 +115,7 @@ class CRIndexerTestCase(TestCase):
                 {
                     'id': 1,
                     'full_name': 'Foo Bar',
+                    'abbr_name': 'F. Bar',
                     'gender': 'Male',
                     'race': 'White',
                     'rank': 'Officer',

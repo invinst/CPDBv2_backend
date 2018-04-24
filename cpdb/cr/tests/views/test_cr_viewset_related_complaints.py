@@ -247,7 +247,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
             'results': [{
                 'crid': str(complaint.allegation.crid),
                 'coaccused': [
-                    'John Hurley'
+                    'J. Hurley'
                 ],
                 'category_names': [
                     'False Arrest',

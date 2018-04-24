@@ -231,7 +231,7 @@ class CRRelatedComplaintSerializer(serializers.Serializer):
 
     def get_coaccused(self, obj):
         try:
-            return [coaccused.full_name for coaccused in obj.coaccused]
+            return [coaccused.abbr_name for coaccused in obj.coaccused]
         except AttributeError:
             return []
 
