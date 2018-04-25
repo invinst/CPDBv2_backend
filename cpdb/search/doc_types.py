@@ -40,7 +40,7 @@ class OfficerDocType(DocType):
 
 @autocompletes_alias.doc_type
 class UnitDocType(DocType):
-    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
@@ -49,7 +49,7 @@ class UnitDocType(DocType):
 
 @autocompletes_alias.doc_type
 class AreaDocType(DocType):
-    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     area_type = Keyword()
 
