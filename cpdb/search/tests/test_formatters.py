@@ -7,7 +7,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
     NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
-    AreaFormatter)
+    AreaFormatter, UnitOfficerFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -97,56 +97,83 @@ class OfficerFormatterTestCase(SimpleTestCase):
             }
         })
 
+
+class UnitOfficerFormatterTestCase(SimpleTestCase):
     def test_unit_officer_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
             'full_name': 'name',
-            'date_of_appt': '1998-01-01',
             'badge': '123',
             'to': 'to',
             'tags': ['tag1', 'tag2'],
-            'unit': {
-                'id': 1,
-                'unit_name': '018',
-                'description': 'district 018',
-            },
+            'visual_token_background_color': '#ffffff',
+            'unit': '001',
             'allegation_count': 10,
             'sustained_count': 2,
-            'honorable_mention_count': 3,
             'unit_description': 'foo bar',
             'rank': 'some rank',
             'birth_year': 1972,
             'race': 'White',
-            'gender': 'Male'
+            'sex': 'Male'
         }))
 
         expect(
-            OfficerFormatter().doc_format(doc)
+            UnitOfficerFormatter().doc_format(doc)
         ).to.be.eq({
             'text': 'name',
             'payload': {
                 'result_text': 'name',
-                'name': 'name',
+                'result_extra_information': 'foo bar',
                 'to': 'to',
+                'result_reason': 'tag1, tag2',
                 'tags': ['tag1', 'tag2'],
-                'birth_year': 1972,
-                'race': 'White',
-                'gender': 'Male',
-                'badge': '123',
-                'rank': 'some rank',
-                'unit': {
-                    'id': 1,
-                    'unit_name': '018',
-                    'description': 'district 018',
-                },
-                'appointed_date': '1998-01-01',
-                'resignation_date': None,
+                'visual_token_background_color': '#ffffff',
+                'unit': '001',
                 'allegation_count': 10,
                 'sustained_count': 2,
-                'trr_count': 0,
-                'discipline_count': 0,
-                'honorable_mention_count': 3,
-                'civilian_compliment_count': 0,
-                'percentiles': [],
+                'rank': 'some rank',
+                'birth_year': 1972,
+                'race': 'White',
+                'sex': 'Male',
+                'salary': None  # no data yet so always return None here
+            }
+        })
+
+    def test_unit_officer_doc_format_without_unit_description(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'full_name': 'name',
+            'badge': '123',
+            'to': 'to',
+            'tags': ['tag1', 'tag2'],
+            'visual_token_background_color': '#ffffff',
+            'unit': '001',
+            'allegation_count': 10,
+            'sustained_count': 2,
+            'unit_description': None,
+            'rank': 'some rank',
+            'birth_year': 1972,
+            'race': 'White',
+            'sex': 'Male'
+        }))
+
+        expect(
+            UnitOfficerFormatter().doc_format(doc)
+        ).to.be.eq({
+            'text': 'name',
+            'payload': {
+                'result_text': 'name',
+                'result_extra_information': 'Badge # 123',
+                'to': 'to',
+                'result_reason': 'tag1, tag2',
+                'tags': ['tag1', 'tag2'],
+                'visual_token_background_color': '#ffffff',
+                'unit': '001',
+                'allegation_count': 10,
+                'sustained_count': 2,
+                'rank': 'some rank',
+                'birth_year': 1972,
+                'race': 'White',
+                'sex': 'Male',
+                'salary': None  # no data yet so always return None here
             }
         })
 
