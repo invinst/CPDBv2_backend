@@ -87,13 +87,13 @@ class AreaTestCase(TestCase):
     @override_settings(V1_URL='domain')
     def test_v1_url_for_police_district_area(self):
         area = AreaFactory.build(area_type='police-districts', name='abc')
-        url = 'domain/url-mediator/session-builder?police-district=abc'
+        url = 'domain/url-mediator/session-builder?police_district=abc'
         expect(area.v1_url).to.eq(url)
 
     @override_settings(V1_URL='domain')
     def test_v1_url_for_school_ground_area(self):
         area = AreaFactory.build(area_type='school-grounds', name='abc')
-        url = 'domain/url-mediator/session-builder?school-ground=abc'
+        url = 'domain/url-mediator/session-builder?school_ground=abc'
         expect(area.v1_url).to.eq(url)
 
     @override_settings(V1_URL='domain')

@@ -682,12 +682,12 @@ class OfficerHistory(models.Model):
 
 
 class Area(TaggableModel):
-    AREA_MAPPING = {
+    SESSION_BUILDER_MAPPING = {
         'neighborhoods': 'neighborhood',
         'community': 'community',
-        'school-grounds': 'school-ground',
+        'school-grounds': 'school_ground',
         'wards': 'ward',
-        'police-districts': 'police-district',
+        'police-districts': 'police_district',
         'beat': 'beat',
     }
 
@@ -724,11 +724,11 @@ class Area(TaggableModel):
     def v1_url(self):
         base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
 
-        if self.area_type not in self.AREA_MAPPING:
+        if self.area_type not in self.SESSION_BUILDER_MAPPING:
             return settings.V1_URL
         return '{base_url}?{keyword}={name}'.format(
             base_url=base_url,
-            keyword=self.AREA_MAPPING[self.area_type],
+            keyword=self.SESSION_BUILDER_MAPPING[self.area_type],
             name=self.name
         )
 

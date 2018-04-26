@@ -176,19 +176,19 @@ class AreaIndexer(BaseIndexer):
             aldermen = {row[0].strip(): row[1].strip() for row in rows}
         return aldermen
 
-    def _reformat_area(self, area_type):
-        return Area.AREA_MAPPING.get(area_type, area_type)
+    def _get_area_tag(self, area_type):
+        return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
 
     def extract_datum(self, datum):
         tags = list(datum.tags)
-        area_type = self._reformat_area(datum.area_type)
-        if area_type and area_type not in tags:
-            tags.append(area_type.replace('-', ' '))
-        alderman = self.alderman_list.get(datum.name) if area_type == 'ward' else ''
+        area_tag = self._get_area_tag(datum.area_type)
+        if area_tag and area_tag not in tags:
+            tags.append(area_tag)
+        alderman = self.alderman_list.get(datum.name) if datum.area_type == 'ward' else ''
 
         return {
             'name': datum.name,
-            'area_type': area_type,
+            'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
             'allegation_count': datum.allegation_count,
