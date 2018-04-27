@@ -43,7 +43,7 @@ class CalculationsTestCase(SimpleTestCase):
             {'id': '3', 'value': 0.4},
             {'id': '1', 'value': 0.1}
         ]
-        result = percentile(data, percentile_rank=50, inline=True)
+        result = percentile(data, percentile_rank=50)
         expect(result).to.be.eq([
             {'id': '1', 'value': 0.1},
             {'id': '2', 'value': 0.2},

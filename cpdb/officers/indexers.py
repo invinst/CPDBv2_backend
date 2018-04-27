@@ -29,7 +29,7 @@ class OfficersIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return Officer.objects.all()
+        return Officer.annotate_honorable_mention_percentile_officers()
 
     def extract_datum(self, datum):
         return OfficerInfoSerializer(datum).data
@@ -90,11 +90,11 @@ class OfficerPercentileIndexer(BaseIndexer):
     def get_queryset(self):
         results = []
         for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
-            result = Officer.top_complaint_officers(100, yr)
-            if result and result[0]['year'] < yr:
+            officers = Officer.top_complaint_officers(100, yr)
+            if officers and officers[0].year < yr:
                 # we have no more data to calculate, should break here
                 break
-            results.extend(result)
+            results.extend(officers)
         return results
 
     def extract_datum(self, datum):

@@ -39,21 +39,21 @@ class OfficerMetricsSerializer(serializers.Serializer):
     allegation_count = serializers.IntegerField()
     complaint_percentile = serializers.FloatField()
     honorable_mention_count = serializers.IntegerField()
+    honorable_mention_percentile = serializers.IntegerField(source='percentile_honorable_mention')
     sustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
+    trr_count = serializers.IntegerField()
+    major_award_count = serializers.IntegerField()
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
-    id = serializers.SerializerMethodField()
+    id = serializers.IntegerField()
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=3)
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
-
-    def get_id(self, obj):
-        return obj.get('officer_id', obj.get('id', None))
 
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
