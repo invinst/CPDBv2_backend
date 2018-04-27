@@ -7,7 +7,8 @@ from django.db.models import F
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer
+from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer, \
+    OfficerSinglePercentileSerializer
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
@@ -29,7 +30,7 @@ class OfficersIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return Officer.annotate_honorable_mention_percentile_officers()
+        return Officer.objects.all()
 
     def extract_datum(self, datum):
         return OfficerInfoSerializer(datum).data
@@ -99,6 +100,19 @@ class OfficerPercentileIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerYearlyPercentileSerializer(datum).data
+
+
+@register_indexer(app_name)
+class OfficerSinglePercentileIndexer(BaseIndexer):
+    index_alias = officers_index_alias
+    doc_type_klass = OfficerInfoDocType
+    parent_doc_type_property = 'single_percentiles'
+
+    def get_queryset(self):
+        return Officer.annotate_honorable_mention_percentile_officers()
+
+    def extract_datum(self, datum):
+        return OfficerSinglePercentileSerializer(datum).data
 
 
 @register_indexer(app_name)

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q
+from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q, Object
 
 from .index_aliases import officers_index_alias
 
@@ -33,15 +33,26 @@ class OfficerYearlyPercentile(InnerObjectWrapper):
         }
 
 
+class OfficerSinglePercentile(InnerObjectWrapper):
+    @staticmethod
+    def mapping():
+        return {
+            'percentile_honorable_mention': Float(),
+        }
+
+
 @officers_index_alias.doc_type
 class OfficerInfoDocType(DocType):
     id = Integer()
     percentiles = Nested(
         doc_class=OfficerYearlyPercentile,
         properties=OfficerYearlyPercentile.mapping())
+    single_percentiles = Object(
+        doc_class=OfficerSinglePercentile,
+        properties=OfficerSinglePercentile.mapping())
 
     @staticmethod
-    def _get_lastest_year():
+    def _get_latest_year():
         query = OfficerInfoDocType.search()
         query.aggs.bucket('percentiles', 'nested', path='percentiles') \
             .metric('max_year', 'max', field='percentiles.year')
@@ -51,8 +62,7 @@ class OfficerInfoDocType(DocType):
 
     @staticmethod
     def get_top_officers(percentile=99.0, size=40):
-
-        lastest_year = OfficerInfoDocType._get_lastest_year()
+        lastest_year = OfficerInfoDocType._get_latest_year()
         query = OfficerInfoDocType.search().query('nested', path='percentiles', query=Q(
             'bool',
             filter=[

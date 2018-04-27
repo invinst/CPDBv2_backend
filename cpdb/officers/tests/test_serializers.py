@@ -12,13 +12,17 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'allegation_count': 1,
             'complaint_percentile': 2,
             'honorable_mention_count': 3,
+            'percentile_honorable_mention': 7,
             'sustained_count': 4,
             'discipline_count': 5,
             'civilian_compliment_count': 6,
             'first_name': 'Roberto',
             'last_name': 'Last Name',
             'race': 'Asian',
+            'trr_count': 8,
+            'major_award_count': 9,
         })
+
         expect(OfficerMetricsSerializer(obj).data).to.eq({
             'id': 123,
             'allegation_count': 1,
@@ -26,5 +30,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'honorable_mention_count': 3,
             'sustained_count': 4,
             'discipline_count': 5,
-            'civilian_compliment_count': 6
+            'civilian_compliment_count': 6,
+            'trr_count': 8,
+            'major_award_count': 9,
         })

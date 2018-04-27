@@ -14,7 +14,6 @@ def percentile(objects, percentile_rank=0.0, key='value', decimal_places=0):
         return []
     if not hasattr(objects[0], key):
         raise ValueError('Can not find the corresponding {}'.format(key))
-
     sorted_scores = sorted(objects, key=lambda x: getattr(x, key))
     scores_length = len(sorted_scores)
     previous_score = getattr(sorted_scores[0], key)

@@ -484,7 +484,7 @@ class Officer(TaggableModel):
         # STEP 2: count the allegation (internal/civil), TRR and major award
         query = Officer._annotate_honorable_mention(query, dataset_max_date)
 
-        # STEP 4: calculate the metric
+        # STEP 3: calculate the metric
         query = query.annotate(
             metric_honorable_mention=models.ExpressionWrapper(
                 Round(F('num_honorable_mention') / F('service_year')),

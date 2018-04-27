@@ -39,7 +39,6 @@ class OfficerMetricsSerializer(serializers.Serializer):
     allegation_count = serializers.IntegerField()
     complaint_percentile = serializers.FloatField()
     honorable_mention_count = serializers.IntegerField()
-    honorable_mention_percentile = serializers.IntegerField(source='percentile_honorable_mention')
     sustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
@@ -56,8 +55,14 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
+class OfficerSinglePercentileSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    honorable_mention_percentile = serializers.IntegerField(source='percentile_honorable_mention')
+
+
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
+    single_percentiles = OfficerSinglePercentileSerializer(many=False, read_only=True)
 
 
 class NewTimelineSerializer(serializers.Serializer):
