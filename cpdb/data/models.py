@@ -283,6 +283,11 @@ class Officer(TaggableModel):
         return '%s %s' % (self.first_name, self.last_name,)
 
     @property
+    def historic_badges(self):
+        # old not current badge
+        return self.officerbadgenumber_set.exclude(current=True).values_list('star', flat=True)
+
+    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star

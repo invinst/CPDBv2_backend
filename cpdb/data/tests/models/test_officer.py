@@ -43,6 +43,13 @@ class OfficerTestCase(TestCase):
         OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
         expect(officer.current_badge).to.eq('123')
 
+    def test_historic_badges(self):
+        officer = OfficerFactory()
+        expect(officer.historic_badges).to.be.empty()
+        OfficerBadgeNumberFactory(officer=officer, star='123', current=False)
+        OfficerBadgeNumberFactory(officer=officer, star='456', current=False)
+        expect(list(officer.historic_badges)).to.eq(['123', '456'])
+
     def test_gender_display(self):
         expect(OfficerFactory(gender='M').gender_display).to.equal('Male')
         expect(OfficerFactory(gender='F').gender_display).to.equal('Female')
