@@ -6,69 +6,77 @@ from django.utils.timezone import now
 
 from rest_framework.test import APITestCase
 from rest_framework import status
-
 from robber import expect
 import pytz
+from freezegun import freeze_time
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory, InvolvementFactory,
-    AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory,
+    PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory,
+    AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
-from data.constants import (MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO)
-from .mixins import CRTestCaseMixin
+from data.constants import MEDIA_TYPE_DOCUMENT
+from cr.tests.mixins import CRTestCaseMixin
 
 
-class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
+    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def setUp(self):
-        super(OfficersViewSetTestCase, self).setUp()
+        super(CRViewSetTestCase, self).setUp()
         self.maxDiff = None
 
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
-        officer1 = OfficerFactory(id=123, first_name='Mr', last_name='Foo', gender='M', race='White')
+        officer1 = OfficerFactory(
+            id=123,
+            first_name='Mr',
+            last_name='Foo',
+            gender='M',
+            race='White',
+            rank='Officer',
+            appointed_date=date(2001, 1, 1),
+            birth_year=1993
+        )
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
-        officer2 = OfficerFactory(id=456, first_name='Mrs', last_name='Bar', gender='F', race='Black')
-        OfficerBadgeNumberFactory(officer=officer2, star='45678', current=True)
         allegation = AllegationFactory(
             crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
-            add2='Michigan Ave', city='Chicago', location='09', beat=area
+            add2='Michigan Ave', city='Chicago', location='09', beat=area, is_officer_complaint=False,
+            summary='Summary'
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
-        ComplainantFactory(allegation=allegation, gender='F', race='White', age='20')
+        VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', recc_outcome='100',
-            final_outcome='400', start_date=date(2003, 2, 28), end_date=date(2004, 2, 28),
-            allegation_category=AllegationCategoryFactory(
-                category='Operation/Personnel Violations',
-                allegation_name='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY')
+            officer=officer1, allegation=allegation, final_finding='SU',
+            final_outcome='400', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            allegation_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+        )
+        officer = OfficerFactory(id=3, first_name='Raymond', last_name='Piwinicki', appointed_date=date(2001, 5, 1))
+        OfficerAllegationFactory(
+            officer=officer,
+            final_finding='SU',
+            start_date=date(2003, 2, 28),
+            allegation__incident_date=date(2002, 2, 28),
+            allegation__is_officer_complaint=False
+        )
+        PoliceWitnessFactory(officer=officer, allegation=allegation)
+        investigator = OfficerFactory(
+            id=1,
+            first_name='Ellis',
+            last_name='Skol',
+            appointed_date=date(2001, 5, 1)
         )
         OfficerAllegationFactory(
-            officer=officer2, allegation=allegation, final_finding='UN', recc_outcome='400',
-            final_outcome='800', start_date=date(2005, 2, 28), end_date=date(2006, 2, 28),
-            allegation_category=AllegationCategoryFactory(
-                category='Use of Force',
-                allegation_name='UNNECESSARY PHYSICAL CONTACT - ON DUTY')
+            officer=investigator,
+            final_finding='NS',
+            start_date=date(2003, 2, 28),
+            allegation__incident_date=date(2002, 2, 28),
+            allegation__is_officer_complaint=False
         )
-        involvedOfficer1 = OfficerFactory(id=1, first_name='Lee', last_name='Skol', gender='F', race='White')
-        involvedOfficer2 = OfficerFactory(id=2, first_name='Richard', last_name='Piwinicki', gender='M', race='White')
-        involvedOfficer3 = OfficerFactory(id=3, first_name='Jack', last_name='Ipsum', gender='M', race='Black')
-        OfficerBadgeNumberFactory(officer=involvedOfficer1, star='11111', current=True)
-        OfficerBadgeNumberFactory(officer=involvedOfficer2, star='22222', current=True)
-        OfficerBadgeNumberFactory(officer=involvedOfficer3, star='33333', current=True)
-
-        InvolvementFactory(
-            allegation=allegation, involved_type='investigator', officer=involvedOfficer1)
-        InvolvementFactory(
-            allegation=allegation, involved_type='police witnesses', officer=involvedOfficer2)
-        InvolvementFactory(
-            allegation=allegation, involved_type='police witnesses', officer=involvedOfficer3)
-
-        AttachmentFileFactory(
-            allegation=allegation, title='CR audio', url='http://cr-audio.com/', file_type=MEDIA_TYPE_AUDIO
-        )
-
-        AttachmentFileFactory(
-            allegation=allegation, title='CR video', url='http://cr-video.com/', file_type=MEDIA_TYPE_VIDEO
+        investigator = InvestigatorFactory(officer=investigator)
+        InvestigatorAllegationFactory(
+            allegation=allegation,
+            investigator=investigator,
+            current_rank='IPRA investigator'
         )
 
         AttachmentFileFactory(
@@ -81,36 +89,23 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             'crid': '12345',
-            'category_names': ['Operation/Personnel Violations', 'Use of Force'],
-            'summary': '',
             'coaccused': [
                 {
                     'id': 123,
                     'full_name': 'Mr Foo',
                     'gender': 'Male',
                     'race': 'White',
-                    'final_finding': 'Sustained',
-                    'recc_outcome': 'Reprimand',
+                    'rank': 'Officer',
+                    'age': 25,
                     'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
-                    'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
-                    'start_date': '2003-02-28',
-                    'end_date': '2004-02-28',
-                    'badge': '12345',
-                },
-                {
-                    'id': 456,
-                    'full_name': 'Mrs Bar',
-                    'gender': 'Female',
-                    'race': 'Black',
-                    'final_finding': 'Unfounded',
-                    'recc_outcome': 'Separation',
-                    'final_outcome': 'Resigned',
-                    'category': 'Use of Force',
-                    'subcategory': 'UNNECESSARY PHYSICAL CONTACT - ON DUTY',
-                    'start_date': '2005-02-28',
-                    'end_date': '2006-02-28',
-                    'badge': '45678',
+                    'allegation_count': 1,
+                    'sustained_count': 1,
+                    'percentile_allegation': 0,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0
                 }
             ],
             'complainants': [
@@ -118,51 +113,51 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'Black',
                     'gender': 'Male',
                     'age': 18
-                },
+                }
+            ],
+            'victims': [
                 {
-                    'race': 'White',
-                    'gender': 'Female',
-                    'age': 20
+                    'race': 'Black',
+                    'gender': 'Male',
+                    'age': 53
                 }
             ],
             'point': {
-                'long': 12.0,
+                'lon': 12.0,
                 'lat': 21.0
             },
+            'summary': 'Summary',
             'incident_date': '2002-02-28',
+            'start_date': '2003-03-20',
+            'end_date': '2006-05-26',
             'address': '3510 Michigan Ave, Chicago',
             'location': 'Police Communications System',
-            'beat': {'name': 'Lincoln Square'},
+            'beat': 'Lincoln Square',
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'officers': [
-                        {
-                            'id': 1,
-                            'abbr_name': 'L. Skol',
-                            'extra_info': 'Badge 11111'
-                        }
-                    ]
+                    'officer_id': 1,
+                    'full_name': 'Ellis Skol',
+                    'current_rank': 'IPRA investigator',
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
                 },
                 {
-                    'involved_type': 'police witnesses',
-                    'officers': [
-                        {
-                            'id': 3,
-                            'abbr_name': 'J. Ipsum',
-                            'extra_info': 'Badge 33333'
-                        },
-                        {
-                            'id': 2,
-                            'abbr_name': 'R. Piwinicki',
-                            'extra_info': 'Badge 22222'
-                        }
-                    ]
+                    'involved_type': 'police_witness',
+                    'officer_id': 3,
+                    'full_name': 'Raymond Piwinicki',
+                    'allegation_count': 1,
+                    'sustained_count': 1,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
                 }
             ],
-            'documents': [
+            'attachments': [
                 {
                     'title': 'CR document',
+                    'file_type': 'document',
                     'url': 'http://cr-document.com/',
                     'preview_image_url': None
                 }
@@ -228,8 +223,13 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
                                        incident_date=datetime(2002, 2, 28),
                                        summary='Summary')
         category = AllegationCategoryFactory(category='Use of Force')
-        OfficerAllegationFactory(allegation=allegation,
-                                 allegation_category=category)
+        OfficerAllegationFactory(
+            allegation=allegation,
+            officer=OfficerFactory(appointed_date=date(2001, 1, 1)),
+            start_date=date(2003, 2, 28),
+            end_date=date(2004, 4, 28),
+            allegation_category=category
+        )
         self.refresh_index()
         response = self.client.get(reverse('api-v2:cr-complaint-summaries'))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -277,21 +277,21 @@ class OfficersViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
-                "crid": "111",
-                "latest_document": {
-                    "title": "CR document 1",
-                    "url": "http://cr-document.com/1",
-                    "preview_image_url": "http://preview.com/url"
+                'crid': '111',
+                'latest_document': {
+                    'title': 'CR document 1',
+                    'url': 'http://cr-document.com/1',
+                    'preview_image_url': 'http://preview.com/url'
                 },
-                "num_recent_documents": 2
+                'num_recent_documents': 2
             },
             {
-                "crid": "112",
-                "latest_document": {
-                    "title": "CR document 3",
-                    "url": "http://cr-document.com/3",
-                    "preview_image_url": "http://preview.com/url3"
+                'crid': '112',
+                'latest_document': {
+                    'title': 'CR document 3',
+                    'url': 'http://cr-document.com/3',
+                    'preview_image_url': 'http://preview.com/url3'
                 },
-                "num_recent_documents": 1
+                'num_recent_documents': 1
             },
         ])

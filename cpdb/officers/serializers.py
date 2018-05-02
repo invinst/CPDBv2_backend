@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from cr.serializers import AttachmentFileSerializer
+
+class AttachmentFileSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
 
 
 class OfficerSummarySerializer(serializers.Serializer):
@@ -129,7 +133,7 @@ class CRNewTimelineSerializer(serializers.Serializer):
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
-    attachments = serializers.SerializerMethodField()
+    attachments = AttachmentFileSerializer(source='allegation.attachment_files', many=True)
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -150,12 +154,6 @@ class CRNewTimelineSerializer(serializers.Serializer):
 
     def get_rank(self, obj):
         return obj.officer.rank
-
-    def get_attachments(self, obj):
-        if obj.allegation.documents:
-            return [AttachmentFileSerializer(document).data for document in obj.allegation.documents]
-        else:
-            return None
 
 
 class AwardNewTimelineSerializer(serializers.Serializer):
