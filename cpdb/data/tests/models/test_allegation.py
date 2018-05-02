@@ -130,5 +130,9 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory()
         AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=None)
         AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2011, 1, 1))
-        file = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2012, 1, 1))
+        file = AttachmentFileFactory(
+            allegation=allegation,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            created_at=datetime(2012, 1, 1)
+        )
         expect(allegation.get_newest_added_document().pk).to.eq(file.pk)

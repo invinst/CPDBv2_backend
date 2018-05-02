@@ -12,7 +12,7 @@ class InvestigatorTestCase(TestCase):
 
     def test_full_name(self):
         investigator = InvestigatorFactory(first_name='John', last_name='Doe')
-        expect(investigator.abbr_name).to.eq('John Doe')
+        expect(investigator.full_name).to.eq('John Doe')
 
     def test_num_cases(self):
         investigator = InvestigatorFactory()
