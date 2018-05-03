@@ -143,7 +143,7 @@ DISCHARGE_POSITION_CHOICES = (
     (DS_STANDING, 'Standing'),
     (DS_SITTING, 'Sitting'),
     (DS_OTHER, 'Other (Specify)'),
-    (DS_KNEELING, 'kneeling'),
+    (DS_KNEELING, 'Kneeling'),
     (DS_LYING_DOWN, 'Lying Down')
 )
 
