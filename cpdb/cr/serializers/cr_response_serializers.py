@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .base import CherryPickSerializer
+from data.models import AttachmentRequest
 from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
 
 
@@ -16,6 +17,7 @@ class CoaccusedDesktopSerializer(CherryPickSerializer):
             'allegation_count',
             'sustained_count',
             'final_outcome',
+            'final_finding',
             'category',
             'percentile_allegation',
             'percentile_allegation_civilian',
@@ -181,3 +183,67 @@ class CRMobileSerializer(serializers.Serializer):
             InvestigatorMobileSerializer(obj).data,
             PoliceWitnessMobileSerializer(obj).data
         ]
+
+
+class LatestDocumentSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
+
+
+class CRSummarySerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    category_names = serializers.ListField(child=serializers.CharField())
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    summary = serializers.CharField()
+
+
+class AttachmentRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttachmentRequest
+        fields = '__all__'
+
+
+class AttachmentFileSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
+
+
+class AllegationWithNewDocumentsSerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    latest_document = AttachmentFileSerializer(source='get_newest_added_document')
+    num_recent_documents = serializers.IntegerField()
+
+
+class CRRelatedComplaintRequestSerializer(serializers.Serializer):
+    match = serializers.ChoiceField(choices=['categories', 'officers'], required=True)
+    distance = serializers.ChoiceField(choices=['0.5mi', '1mi', '2.5mi', '5mi', '10mi'], required=True)
+    offset = serializers.IntegerField(default=0)
+    limit = serializers.IntegerField(default=20)
+
+
+class CRRelatedComplaintSerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    complainants = serializers.SerializerMethodField()
+    coaccused = serializers.SerializerMethodField()
+    category_names = serializers.ListField(child=serializers.CharField())
+    point = serializers.SerializerMethodField()
+
+    def get_coaccused(self, obj):
+        try:
+            return [coaccused.abbr_name for coaccused in obj.coaccused]
+        except AttributeError:
+            return []
+
+    def get_complainants(self, obj):
+        try:
+            return [complainant.to_dict() for complainant in obj.complainants]
+        except AttributeError:
+            return []
+
+    def get_point(self, obj):
+        try:
+            return obj.point.to_dict()
+        except AttributeError:  # pragma: no cover
+            return None

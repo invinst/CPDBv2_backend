@@ -12,7 +12,7 @@ class OfficerAllegationTestCase(TestCase):
         expect(officer_allegation.crid).to.eq('123456')
 
     def test_category(self):
-        officer_allegation = OfficerAllegationFactory()
+        officer_allegation = OfficerAllegationFactory(allegation_category=None)
         expect(officer_allegation.category).to.eq(None)
 
         allegation_category = AllegationCategoryFactory(category='category')
@@ -20,7 +20,7 @@ class OfficerAllegationTestCase(TestCase):
         expect(officer_allegation.category).to.eq('category')
 
     def test_subcategory(self):
-        officer_allegation = OfficerAllegationFactory()
+        officer_allegation = OfficerAllegationFactory(allegation_category=None)
         expect(officer_allegation.subcategory).to.eq(None)
 
         allegation_category = AllegationCategoryFactory(allegation_name='subcategory')
