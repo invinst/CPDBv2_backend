@@ -408,7 +408,7 @@ class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
                 )),
             ),
             allegation=Mock(
-                documents=[
+                attachment_files=[
                     Mock(
                         title='doc_1',
                         url='url_1',
