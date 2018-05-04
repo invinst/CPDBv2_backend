@@ -85,6 +85,9 @@ class Command(BaseCommand):
                 for indexer_instance in indexer_klass_instances:
                     indexer_instance.create_mapping()
 
+                for indexer_klass in migrating_indexers:
+                    indexer_klass().create_mapping()
+
                 alias.migrate(list_migrate_doc_types)
 
                 for indexer_instance in indexer_klass_instances:

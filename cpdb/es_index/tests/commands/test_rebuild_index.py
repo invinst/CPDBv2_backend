@@ -110,6 +110,7 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer1.index_alias.indexing.return_value.__enter__.assert_called_once()
 
         Indexer2.add_new_data.assert_not_called()
+        Indexer2.create_mapping.assert_called()
         Indexer2.index_alias.migrate.assert_not_called()
 
     def test_call_alias_indexing_with_multiple_doc_type_and_another_alias(self):
