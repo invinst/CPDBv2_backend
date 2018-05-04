@@ -2,8 +2,9 @@ from django.test.testcases import TestCase, override_settings
 
 from robber.expect import expect
 
-from data.factories import AreaFactory, AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory, \
-    OfficerFactory
+from data.factories import (AreaFactory, AllegationFactory, OfficerAllegationFactory,
+                            AllegationCategoryFactory, OfficerFactory, RacePopulationFactory)
+from data.models import Area
 
 
 class AreaTestCase(TestCase):
@@ -106,3 +107,20 @@ class AreaTestCase(TestCase):
     def test_v1_url_default(self):
         area = AreaFactory.build(area_type='whatever', name='abc')
         expect(area.v1_url).to.eq('domain')
+
+
+class AreaObjectManagerTestCase(TestCase):
+    def test_with_allegation_per_capita(self):
+        area = AreaFactory(area_type='police-district', name='abc')
+        RacePopulationFactory(race='White', count=150, area=area)
+        RacePopulationFactory(race='Black', count=50, area=area)
+        AllegationFactory.create_batch(4, areas=[area])
+
+        results = Area.objects.with_allegation_per_capita() \
+            .values('id', 'complaint_count', 'population', 'allegation_per_capita')
+        expect(list(results)).to.eq([{
+            'id': area.id,
+            'population': 200,
+            'complaint_count': 4,
+            'allegation_per_capita': 0.02
+        }])

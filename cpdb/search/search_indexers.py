@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
 from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
+from data.utils.calculations import percentile
 from search.doc_types import (
     FAQDocType, ReportDocType, OfficerDocType,
     UnitDocType, AreaDocType,
@@ -159,9 +160,24 @@ class UnitOfficerIndexer(BaseIndexer):
 
 class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
+    _percentiles = {}
+
+    def _compute_police_district_percentiles(self, query):
+        new_query = query.filter(area_type='police-districts').order_by('allegation_per_capita')
+        scores = new_query.values('id', 'allegation_per_capita')
+        return {
+            district['id']: district['percentile_allegation_per_capita']
+            for district in percentile(
+                scores,
+                0,
+                key='allegation_per_capita',
+                inline=True)
+        }
 
     def get_queryset(self):
-        return Area.objects.all()
+        queryset = Area.objects.with_allegation_per_capita()
+        self._percentiles = self._compute_police_district_percentiles(queryset)
+        return queryset
 
     def _get_area_tag(self, area_type):
         return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
@@ -185,7 +201,12 @@ class AreaIndexer(BaseIndexer):
                 many=True).data,
             'median_income': datum.median_income,
             'alderman': datum.alderman,
-            'commander': datum.commander
+            'allegation_percentile': self._percentiles.get(datum.id, None),
+            'commander': {
+                'id': datum.commander.id,
+                'full_name': datum.commander.full_name,
+                'allegation_count': datum.commander.allegation_count,
+            } if datum.commander else None
         }
 
 

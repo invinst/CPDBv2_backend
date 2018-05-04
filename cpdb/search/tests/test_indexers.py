@@ -189,17 +189,36 @@ class UnitIndexerTestCase(TestCase):
 
 class AreaIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        expect(AreaIndexer().get_queryset().count()).to.eq(0)
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(0)
         AreaFactory()
-        expect(AreaIndexer().get_queryset().count()).to.eq(1)
+        expect(area_indexer.get_queryset().count()).to.eq(1)
+        expect(area_indexer._percentiles).to.have.length(0)
+
+    def test_get_queryset_with_police_district(self):
+        area1 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='White', count=1000, area=area1)
+        AllegationFactory.create_batch(2, areas=[area1])
+
+        area2 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='Black', count=100, area=area2)
+        AllegationFactory.create_batch(1, areas=[area2])
+
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(2)
+        expect(area_indexer._percentiles).to.eq({
+            area1.id: 0.0,
+            area2.id: 50.0
+        })
 
     def test_extract_datum(self):
+        commander = OfficerFactory(first_name='Captain', last_name='America')
         area = AreaFactory(
             name='name',
             tags=['tag'],
             median_income=343,
             area_type='police-districts',
-            commander='Captain',
+            commander=commander,
             description='Other Name'
         )
         RacePopulationFactory(
@@ -207,9 +226,11 @@ class AreaIndexerTestCase(TestCase):
             race='Asian',
             count=101
         )
+        area_indexer = AreaIndexer()
+        area_indexer._percentiles = {area.id: 0}
 
         expect(
-            AreaIndexer().extract_datum(area)
+            area_indexer.extract_datum(area)
         ).to.be.eq({
             'name': 'Other Name',
             'url': area.v1_url,
@@ -222,8 +243,13 @@ class AreaIndexerTestCase(TestCase):
                 'race': 'Asian',
                 'count': 101
             }],
+            'allegation_percentile': 0,
             'median_income': 343,
-            'commander': 'Captain',
+            'commander': {
+                'id': commander.id,
+                'full_name': 'Captain America',
+                'allegation_count': 0,
+            },
             'alderman': None,
         })
 
@@ -258,7 +284,8 @@ class AreaIndexerTestCase(TestCase):
             }],
             'median_income': 343,
             'alderman': 'IronMan',
-            'commander': None
+            'commander': None,
+            'allegation_percentile': None,
         })
 
 

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Long, Keyword
+from elasticsearch_dsl import DocType, Text, Long, Keyword, Float
 
 from .indices import autocompletes_alias
 
@@ -52,6 +52,7 @@ class AreaDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     area_type = Keyword()
+    allegation_percentile = Float()
 
     class Meta:
         doc_type = 'area'

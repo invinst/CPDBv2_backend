@@ -7,7 +7,7 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import Concat, ExtractYear
+from django.db.models.functions import Concat, ExtractYear, Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -681,6 +681,20 @@ class OfficerHistory(models.Model):
         return self.unit.description
 
 
+class AreaObjectManager(models.Manager):
+    def with_allegation_per_capita(self):
+        racepopulation = RacePopulation.objects.filter(area=models.OuterRef('pk')).values('area')
+        population = racepopulation.annotate(s=models.Sum('count')).values('s')
+        query = Area.objects.annotate(
+            population=models.Subquery(population),
+            complaint_count=Count('allegation', distinct=True))
+        query = query.annotate(
+            allegation_per_capita=models.ExpressionWrapper(
+                Cast(F('complaint_count'), models.FloatField()) / F('population'),
+                output_field=models.FloatField()))
+        return query
+
+
 class Area(TaggableModel):
     SESSION_BUILDER_MAPPING = {
         'neighborhoods': 'neighborhood',
@@ -696,8 +710,10 @@ class Area(TaggableModel):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
-    commander = models.CharField(max_length=255, null=True, blank=True, help_text="Police District Commander")
+    commander = models.ForeignKey(Officer, null=True, blank=True)
     alderman = models.CharField(max_length=255, null=True, blank=True, help_text="Alderman of Ward")
+
+    objects = AreaObjectManager()
 
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
