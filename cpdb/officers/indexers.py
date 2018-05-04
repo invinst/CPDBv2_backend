@@ -11,13 +11,20 @@ from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoS
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
+    OfficerTimelineEventDocType,
     OfficerNewTimelineEventDocType,
     OfficerInfoDocType
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
-    CRNewTimelineSerializer, UnitChangeNewTimelineSerializer, JoinedNewTimelineSerializer,
-    AwardNewTimelineSerializer, TRRNewTimelineSerializer,
+    CRTimelineSerializer,
+    UnitChangeTimelineSerializer,
+    JoinedTimelineSerializer,
+    CRNewTimelineSerializer,
+    UnitChangeNewTimelineSerializer,
+    JoinedNewTimelineSerializer,
+    AwardNewTimelineSerializer,
+    TRRNewTimelineSerializer,
 )
 
 app_name = __name__.split('.')[0]
@@ -33,6 +40,42 @@ class OfficersIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerInfoSerializer(datum).data
+
+
+@register_indexer(app_name)
+class CRTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return OfficerAllegation.objects.filter(start_date__isnull=False)
+
+    def extract_datum(self, datum):
+        return CRTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
+class UnitChangeTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return OfficerHistory.objects.filter(effective_date__isnull=False)
+
+    def extract_datum(self, datum):
+        return UnitChangeTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
+class JoinedTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Officer.objects.filter(appointed_date__isnull=False)
+
+    def extract_datum(self, officer):
+        return JoinedTimelineSerializer(officer).data
 
 
 @register_indexer(app_name)
@@ -159,7 +202,7 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return TRR.objects.all()
+        return TRR.objects.filter(officer__isnull=False)
 
     def extract_datum(self, trrs):
         return TRRNewTimelineSerializer(trrs).data
