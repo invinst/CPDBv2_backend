@@ -5,14 +5,14 @@ from django.test import SimpleTestCase, TestCase
 
 from search.search_indexers import CrIndexer
 from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, OfficerIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
+    BaseIndexer, FAQIndexer, ReportIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
     CommunityIndexer, IndexerManager, UnitOfficerIndexer
 )
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
-    AreaFactory, OfficerFactory, OfficerBadgeNumberFactory, PoliceUnitFactory,
+    AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
-    OfficerAllegationFactory)
+    OfficerAllegationFactory, RacePopulationFactory)
 
 from search.search_indexers import autocompletes_alias
 
@@ -111,7 +111,6 @@ class ReportIndexerTestCase(TestCase):
             title='title', excerpt=['excerpt1', 'excerpt2'],
             publish_date='2017-12-20'
         )
-
         expect(
             ReportIndexer().extract_datum(datum)
         ).to.be.eq({
@@ -121,45 +120,6 @@ class ReportIndexerTestCase(TestCase):
             'title': 'title',
             'publish_date': '2017-12-20',
             'tags': [],
-        })
-
-
-class OfficerIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        expect(OfficerIndexer().get_queryset().count()).to.eq(0)
-        OfficerFactory()
-        expect(OfficerIndexer().get_queryset().count()).to.eq(1)
-
-    def test_extract_datum(self):
-        datum = OfficerFactory(
-            first_name='first',
-            last_name='last',
-            tags=['tag1', 'tag2'],
-            rank='some rank',
-            race='some race',
-            birth_year=1980,
-            gender='M'
-        )
-        OfficerAllegationFactory.create_batch(10, final_finding='NS', officer=datum)
-        unit = PoliceUnitFactory(unit_name='011')
-        OfficerHistoryFactory(officer=datum, unit=unit)
-        OfficerBadgeNumberFactory(officer=datum, star='123', current=True)
-
-        expect(
-            OfficerIndexer().extract_datum(datum)
-        ).to.be.eq({
-            'allegation_count': 10,
-            'sustained_count': 0,
-            'birth_year': 1980,
-            'full_name': 'first last',
-            'badge': '123',
-            'to': datum.v2_to,
-            'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#c6d4ec',
-            'unit': '011',
-            'rank': 'some rank',
-            'race': 'some race',
-            'sex': 'Male'
         })
 
 
@@ -190,14 +150,23 @@ class UnitIndexerTestCase(TestCase):
 
 class AreaTypeIndexerTestCase(TestCase):
     def test_extract_datum(self):
-        datum = AreaFactory(name='name', tags=['tag'])
+        datum = AreaFactory(name='name', tags=['tag'], median_income=343)
+        RacePopulationFactory(area=datum, race='Asian', count=101)
 
         expect(
             AreaTypeIndexer().extract_datum(datum)
         ).to.be.eq({
             'name': 'name',
             'url': datum.v1_url,
-            'tags': ['tag']
+            'tags': ['tag'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [{
+                'race': 'Asian',
+                'count': 101
+            }],
+            'median_income': 343,
         })
 
 
@@ -217,6 +186,20 @@ class CommunityIndexerTestCase(TestCase):
 
         expect(CommunityIndexer().get_queryset()).to.have.length(1)
         expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
+
+    def test_extract_datum(self):
+        datum = AreaFactory(name='name', area_type='community', median_income=200)
+
+        expect(CommunityIndexer().extract_datum(datum)).to.be.eq({
+            'name': 'name',
+            'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=name',
+            'tags': ['community'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 200,
+        })
 
 
 class UnitOfficerIndexerTestCase(TestCase):
