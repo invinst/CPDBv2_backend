@@ -1,4 +1,4 @@
-from mock import Mock, patch, mock_open
+from mock import Mock, patch
 
 from robber import expect
 from django.test import SimpleTestCase, TestCase
@@ -188,16 +188,31 @@ class UnitIndexerTestCase(TestCase):
 
 
 class AreaIndexerTestCase(TestCase):
-    def setUp(self):
-        self.area = AreaFactory(name='name', tags=['tag'], median_income=343, area_type='police-districts')
-        RacePopulationFactory(area=self.area, race='Asian', count=101)
+    def test_get_queryset(self):
+        expect(AreaIndexer().get_queryset().count()).to.eq(0)
+        AreaFactory()
+        expect(AreaIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            commander='Captain',
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+
         expect(
-            AreaIndexer().extract_datum(self.area)
+            AreaIndexer().extract_datum(area)
         ).to.be.eq({
-            'name': 'name',
-            'url': self.area.v1_url,
+            'name': 'Other Name',
+            'url': area.v1_url,
             'area_type': 'police-district',
             'tags': ['tag', 'police district'],
             'allegation_count': 0,
@@ -208,18 +223,30 @@ class AreaIndexerTestCase(TestCase):
                 'count': 101
             }],
             'median_income': 343,
-            'alderman': ''
+            'commander': 'Captain',
+            'alderman': None,
         })
 
-    def test_extract_datum_ward_area(self):
-        self.area.area_type = 'ward'
-        indexer = AreaIndexer()
-        indexer.alderman_list = {'name': 'Alderman'}
+    def test_extract_datum_with_ward_name(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='wards',
+            alderman='IronMan',
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+
         expect(
-            indexer.extract_datum(self.area)
+            AreaIndexer().extract_datum(area)
         ).to.be.eq({
             'name': 'name',
-            'url': self.area.v1_url,
+            'url': area.v1_url,
             'area_type': 'ward',
             'tags': ['tag', 'ward'],
             'allegation_count': 0,
@@ -230,16 +257,9 @@ class AreaIndexerTestCase(TestCase):
                 'count': 101
             }],
             'median_income': 343,
-            'alderman': 'Alderman'
+            'alderman': 'IronMan',
+            'commander': None
         })
-
-    @patch("__builtin__.open", mock_open(read_data="100, a\n200, b"))
-    @patch("csv.reader", return_value=[['100', 'a'], ['200', 'b']])
-    def test_get_queryset(self, _):
-        indexer = AreaIndexer()
-        with patch("__builtin__.open", mock_open(read_data="100, a\n200, b")):
-            expect(indexer.get_queryset()).to.have.length(1)
-            expect(indexer.alderman_list).to.have.length(2)
 
 
 class UnitOfficerIndexerTestCase(TestCase):

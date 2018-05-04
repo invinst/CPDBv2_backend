@@ -692,9 +692,12 @@ class Area(TaggableModel):
     }
 
     name = models.CharField(max_length=100)
+    description = models.CharField(max_length=255, null=True, blank=True, help_text="Another name for area")
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
+    commander = models.CharField(max_length=255, null=True, blank=True, help_text="Police District Commander")
+    alderman = models.CharField(max_length=255, null=True, blank=True, help_text="Alderman of Ward")
 
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])

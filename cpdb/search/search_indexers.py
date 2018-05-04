@@ -1,5 +1,4 @@
 from tqdm import tqdm
-import csv
 
 from cms.models import FAQPage, ReportPage
 from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
@@ -10,7 +9,6 @@ from search.doc_types import (
 )
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
-from django.conf import settings
 
 
 def extract_text_from_value(value):
@@ -161,20 +159,9 @@ class UnitOfficerIndexer(BaseIndexer):
 
 class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
-    alderman_list = {}
 
     def get_queryset(self):
-        if not self.alderman_list:
-            self.alderman_list = AreaIndexer.get_alderman_list_from_file()
         return Area.objects.all()
-
-    @staticmethod
-    def get_alderman_list_from_file():
-        file_name = str(settings.APPS_DIR.path('search/csv_data/aldermen.csv'))
-        with open(file_name, 'rb') as csv_file:
-            rows = csv.reader(csv_file)
-            aldermen = {row[0].strip(): row[1].strip() for row in rows}
-        return aldermen
 
     def _get_area_tag(self, area_type):
         return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
@@ -184,10 +171,9 @@ class AreaIndexer(BaseIndexer):
         area_tag = self._get_area_tag(datum.area_type)
         if area_tag and area_tag not in tags:
             tags.append(area_tag)
-        alderman = self.alderman_list.get(datum.name) if datum.area_type == 'ward' else ''
 
         return {
-            'name': datum.name,
+            'name': datum.name if datum.area_type != 'police-districts' else datum.description,
             'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
@@ -198,7 +184,8 @@ class AreaIndexer(BaseIndexer):
                 datum.racepopulation_set.order_by('-count'),
                 many=True).data,
             'median_income': datum.median_income,
-            'alderman': alderman,
+            'alderman': datum.alderman,
+            'commander': datum.commander
         }
 
 
