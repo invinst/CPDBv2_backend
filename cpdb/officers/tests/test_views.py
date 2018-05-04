@@ -345,6 +345,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             race='White',
             gender='M',
             birth_year=1950,
+            rank='Police Officer',
         )
         officer2 = OfficerFactory(
             first_name='Officer',
@@ -353,6 +354,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             race='Black',
             gender='M',
             birth_year=1970,
+            rank='Police Officer',
         )
         allegation0 = AllegationFactory()
         allegation1 = AllegationFactory()
@@ -377,6 +379,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Male',
             'birth_year': 1950,
             'coaccusal_count': 2,
+            'rank': 'Police Officer',
         }, {
             'id': officer2.id,
             'full_name': 'Officer 2',
@@ -387,4 +390,5 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Male',
             'birth_year': 1970,
             'coaccusal_count': 1,
+            'rank': 'Police Officer',
         }])

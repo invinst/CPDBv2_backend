@@ -233,6 +233,7 @@ class OfficerCoaccusalSerializer(serializers.Serializer):
     gender = serializers.CharField(source='gender_display')
     birth_year = serializers.IntegerField()
     coaccusal_count = serializers.IntegerField()
+    rank = serializers.CharField()
 
 
 class OfficerCoaccusalsSerializer(serializers.Serializer):

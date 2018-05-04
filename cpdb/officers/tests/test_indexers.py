@@ -546,6 +546,7 @@ class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
                 gender_display='Male',
                 birth_year=1950,
                 coaccusal_count=3,
+                rank='Police Officer',
             ), Mock(
                 id=789,
                 full_name='Officer 789',
@@ -556,6 +557,7 @@ class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
                 gender_display='Male',
                 birth_year=1970,
                 coaccusal_count=5,
+                rank='Po As Detective',
             )],
         )
         expect(OfficerCoaccusalsIndexer().extract_datum(officer)).to.eq({
@@ -570,6 +572,7 @@ class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
                 'gender': 'Male',
                 'birth_year': 1950,
                 'coaccusal_count': 3,
+                'rank': 'Police Officer',
             }, {
                 'id': 789,
                 'full_name': 'Officer 789',
@@ -580,5 +583,6 @@ class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
                 'gender': 'Male',
                 'birth_year': 1970,
                 'coaccusal_count': 5,
+                'rank': 'Po As Detective',
             }]
         })
