@@ -103,6 +103,11 @@ class InvestigatorAllegationFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
 
 
+class AllegationCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AllegationCategory
+
+
 class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = OfficerAllegation
@@ -112,6 +117,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
     final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
+    allegation_category = factory.SubFactory(AllegationCategoryFactory)
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
@@ -139,11 +145,6 @@ class ComplainantFactory(factory.django.DjangoModelFactory):
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'Black'
     age = FuzzyInteger(18, 60)
-
-
-class AllegationCategoryFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AllegationCategory
 
 
 class OfficerHistoryFactory(factory.django.DjangoModelFactory):
@@ -196,8 +197,6 @@ class PoliceWitnessFactory(factory.django.DjangoModelFactory):
         model = PoliceWitness
 
     allegation = factory.SubFactory(AllegationFactory)
-    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
-    race = 'Black'
     officer = factory.SubFactory(OfficerFactory)
 
 
