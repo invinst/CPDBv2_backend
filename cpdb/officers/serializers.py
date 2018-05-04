@@ -25,6 +25,7 @@ class OfficerSummarySerializer(serializers.Serializer):
     full_name = serializers.CharField()
     race = serializers.CharField()
     badge = serializers.CharField(source='current_badge')
+    historic_badges = serializers.ListField(child=serializers.CharField())
     gender = serializers.CharField(source='gender_display')
     complaint_records = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField()
