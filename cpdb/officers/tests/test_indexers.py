@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from mock import Mock, patch
 from robber import expect
 
+from trr.factories import TRRFactory
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
 from data.models import Officer
 from officers.indexers import (
@@ -499,7 +500,7 @@ class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
                 )),
             ),
             allegation=Mock(
-                documents=[
+                attachment_files=[
                     Mock(
                         title='doc_1',
                         url='url_1',
@@ -577,12 +578,12 @@ class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
         })
 
 
-class TRRNewTimelineEventIndexerTestCase(SimpleTestCase):
+class TRRNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        trr = Mock()
+        trr = TRRFactory()
+        TRRFactory(officer=None)
 
-        with patch('officers.indexers.TRR.objects.all', return_value=[trr]):
-            expect(TRRNewTimelineEventIndexer().get_queryset()).to.eq([trr])
+        expect([obj.id for obj in TRRNewTimelineEventIndexer().get_queryset()]).to.eq([trr.id])
 
     def test_extract_datum(self):
         trr = Mock(

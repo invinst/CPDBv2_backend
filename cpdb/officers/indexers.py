@@ -202,7 +202,7 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return TRR.objects.all()
+        return TRR.objects.filter(officer__isnull=False)
 
     def extract_datum(self, trrs):
         return TRRNewTimelineSerializer(trrs).data

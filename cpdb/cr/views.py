@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import OrderedDict
 
 from elasticsearch_dsl import Q
 from rest_framework import viewsets, status
@@ -9,7 +10,20 @@ from django.shortcuts import get_object_or_404
 
 from .doc_types import CRDocType
 from data.models import Allegation
-from cr.serializers import AttachmentRequestSerializer, CRSummarySerializer, AllegationWithNewDocumentsSerializer
+from cr.serializers.cr_response_serializers import (
+    AttachmentRequestSerializer, CRSummarySerializer,
+    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
+    CRRelatedComplaintSerializer, CRDesktopSerializer, CRMobileSerializer
+)
+from es_index.pagination import ESQueryPagination
+
+
+class NoCategoryError(Exception):
+    pass
+
+
+class NoOfficerError(Exception):
+    pass
 
 
 class CRViewSet(viewsets.ViewSet):
@@ -17,7 +31,7 @@ class CRViewSet(viewsets.ViewSet):
         query = CRDocType().search().query('term', crid=pk)
         search_result = query.execute()
         try:
-            return Response(search_result[0].to_dict())
+            return Response(CRDesktopSerializer(search_result[0].to_dict()).data)
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -55,3 +69,91 @@ class CRViewSet(viewsets.ViewSet):
         query = query.sort('-incident_date', '-crid')
         results = query[0:40].execute()
         return Response(CRSummarySerializer(results, many=True).data, status=status.HTTP_200_OK)
+
+    @detail_route(methods=['GET'], url_path='related-complaints')
+    def related_complaints(self, request, pk):
+        allegation = get_object_or_404(Allegation, crid=pk)
+
+        request_serializer = CRRelatedComplaintRequestSerializer(data=request.GET)
+        if not request_serializer.is_valid():
+            return Response({'message': request_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            query_filter = {
+                'geo_distance': {
+                    'distance': request_serializer.validated_data['distance'],
+                    'point': {
+                        'lat': allegation.point.y,
+                        'lon': allegation.point.x
+                    }
+                }
+            }
+
+            if request_serializer.validated_data['match'] == 'categories':
+                categories = filter(None, [
+                    obj.category
+                    for obj in allegation.officerallegation_set.all()
+                ])
+                if len(categories) == 0:
+                    raise NoCategoryError()
+
+                query = CRDocType().search().query(
+                    'bool',
+                    must={
+                        'terms': {
+                            'category_names': categories
+                        }
+                    },
+                    must_not={
+                        "terms": {"crid": [pk]}
+                    },
+                    filter=query_filter
+                )
+            elif request_serializer.validated_data['match'] == 'officers':
+                officers = filter(None, [
+                    obj.officer_id
+                    for obj in allegation.officerallegation_set.all()
+                ])
+                if len(officers) == 0:
+                    raise NoOfficerError()
+
+                query = CRDocType().search().query(
+                    'bool',
+                    must={
+                        'nested': {
+                            'path': 'coaccused',
+                            'query': {
+                                'terms': {
+                                    'coaccused.id': officers
+                                }
+                            }
+                        }
+                    },
+                    must_not={
+                        "terms": {"crid": [pk]}
+                    },
+                    filter=query_filter
+                )
+
+            paginator = ESQueryPagination()
+            paginated_query = paginator.paginate_es_query(query, request)
+            related_complaint_serializer = CRRelatedComplaintSerializer(paginated_query, many=True)
+            return paginator.get_paginated_response(related_complaint_serializer.data)
+
+        except (NoCategoryError, NoOfficerError, AttributeError):
+            return Response(OrderedDict([
+                ('count', 0),
+                ('next', None),
+                ('previous', None),
+                ('results', [])
+            ]))
+
+
+class CRMobileViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk):
+        query = CRDocType().search().query('term', crid=pk)
+        search_result = query.execute()
+        try:
+            return Response(CRMobileSerializer(search_result[0].to_dict()).data)
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
