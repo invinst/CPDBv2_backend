@@ -46,6 +46,7 @@ class OfficerTestCase(TestCase):
     def test_historic_badges(self):
         officer = OfficerFactory()
         expect(officer.historic_badges).to.be.empty()
+        OfficerBadgeNumberFactory(officer=officer, star='000', current=True)
         OfficerBadgeNumberFactory(officer=officer, star='123', current=False)
         OfficerBadgeNumberFactory(officer=officer, star='456', current=False)
         expect(list(officer.historic_badges)).to.eq(['123', '456'])
