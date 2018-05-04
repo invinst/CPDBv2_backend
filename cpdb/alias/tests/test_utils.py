@@ -1,11 +1,11 @@
 from robber import expect
 from django.test import TestCase
 
+from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 from data.factories import OfficerFactory
-from search.search_indexers import OfficerIndexer
+from officers.indexers import OfficersIndexer
 from data.models import Officer
-from search.doc_types import OfficerDocType
 from cpdb.alias.utils import set_aliases
 
 
@@ -15,11 +15,11 @@ class AliasUtilsTestCase(IndexMixin, TestCase):
     def setUp(self):
         super(AliasUtilsTestCase, self).setUp()
         self.officer = OfficerFactory(id=1)
-        self.officer_doc = OfficerDocType(meta={'id': '1'})
+        self.officer_doc = OfficerInfoDocType(meta={'id': '1'})
         self.officer_doc.save()
         self.refresh_index()
 
     def test_set_officer_aliases(self):
-        set_aliases(OfficerIndexer, '1', ['alias1', 'alias2'])
-        expect(OfficerDocType.get('1').tags).to.eq(['alias1', 'alias2'])
+        set_aliases(OfficersIndexer, '1', ['alias1', 'alias2'])
+        expect(OfficerInfoDocType.get('1').tags).to.eq(['alias1', 'alias2'])
         expect(Officer.objects.get(pk=1).tags).to.eq(['alias1', 'alias2'])

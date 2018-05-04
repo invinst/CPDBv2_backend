@@ -1,9 +1,10 @@
 from search.search_indexers import (
-    OfficerIndexer, NeighborhoodsIndexer, FAQIndexer, ReportIndexer, CommunityIndexer, UnitIndexer
+    NeighborhoodsIndexer, FAQIndexer, ReportIndexer, CommunityIndexer, UnitIndexer
 )
+from officers.indexers import OfficersIndexer
 
 INDEXER_MAPPINGS = {
-    'officer': OfficerIndexer,
+    'officer': OfficersIndexer,
     'neighborhood': NeighborhoodsIndexer,
     'community': CommunityIndexer,
     'faq': FAQIndexer,

@@ -7,14 +7,14 @@ from robber import expect
 from search.tests.utils import IndexMixin
 from authentication.factories import AdminUserFactory
 from data.factories import OfficerFactory
-from search.doc_types import OfficerDocType
+from officers.doc_types import OfficerInfoDocType
 
 
 class AliasViewSetTestCase(IndexMixin, APITestCase):
     def setUp(self):
         super(AliasViewSetTestCase, self).setUp()
         self.officer = OfficerFactory(id=1)
-        self.officer_doc = OfficerDocType(meta={'id': '1'})
+        self.officer_doc = OfficerInfoDocType(meta={'id': '1'})
         self.officer_doc.save()
         self.refresh_index()
 

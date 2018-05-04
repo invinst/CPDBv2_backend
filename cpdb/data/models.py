@@ -288,6 +288,10 @@ class Officer(TaggableModel):
         return self.officerbadgenumber_set.exclude(current=True).values_list('star', flat=True)
 
     @property
+    def trr_count(self):
+        return self.trr_set.count()
+
+    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star
@@ -324,7 +328,7 @@ class Officer(TaggableModel):
     @property
     def last_unit(self):
         try:
-            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit.unit_name
+            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
         except IndexError:
             return None
 

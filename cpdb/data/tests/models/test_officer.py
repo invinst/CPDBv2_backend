@@ -85,7 +85,7 @@ class OfficerTestCase(TestCase):
 
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'), end_date=date(2000, 1, 1))
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='BDCH'), end_date=date(2002, 1, 1))
-        expect(officer.last_unit).to.eq('BDCH')
+        expect(officer.last_unit.unit_name).to.eq('BDCH')
 
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')

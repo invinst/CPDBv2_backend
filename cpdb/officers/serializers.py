@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from data.models import PoliceUnit
+
 
 class AttachmentFileSerializer(serializers.Serializer):
     title = serializers.CharField()
@@ -7,9 +9,15 @@ class AttachmentFileSerializer(serializers.Serializer):
     preview_image_url = serializers.CharField()
 
 
+class PoliceUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PoliceUnit
+        fields = ['id', 'unit_name', 'description']
+
+
 class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    unit = serializers.CharField(source='last_unit')
+    unit = PoliceUnitSerializer(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
     active = serializers.SerializerMethodField()
@@ -47,6 +55,7 @@ class OfficerMetricsSerializer(serializers.Serializer):
     sustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
+    trr_count = serializers.IntegerField()
 
 
 class CRTimelineSerializer(serializers.Serializer):
@@ -139,6 +148,9 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
+    to = serializers.CharField(source='v2_to')
+    url = serializers.CharField(source='v1_url')
+    tags = serializers.ListField(child=serializers.CharField())
 
 
 class NewTimelineSerializer(serializers.Serializer):

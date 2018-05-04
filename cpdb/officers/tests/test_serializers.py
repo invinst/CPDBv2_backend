@@ -22,6 +22,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'first_name': 'Roberto',
             'last_name': 'Last Name',
             'race': 'Asian',
+            'trr_count': 2,
         })
         expect(OfficerMetricsSerializer(obj).data).to.eq({
             'id': 123,
@@ -30,7 +31,8 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'honorable_mention_count': 3,
             'sustained_count': 4,
             'discipline_count': 5,
-            'civilian_compliment_count': 6
+            'civilian_compliment_count': 6,
+            'trr_count': 2,
         })
 
 
@@ -38,7 +40,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
     def test_serialization(self):
         obj = Mock(**{
             'id': 789,
-            'last_unit': '',
+            'last_unit': Mock(id=1, unit_name='', description=''),
             'appointed_date': '01-01-2010',
             'resignation_date': '01-01-2000',
             'get_active_display': Mock(return_value=True),
@@ -59,7 +61,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
         })
         expect(OfficerSummarySerializer(obj).data).to.eq({
             'id': 789,
-            'unit': '',
+            'unit': {
+                'id': 1,
+                'unit_name': '',
+                'description': ''
+            },
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2000',
             'active': True,
