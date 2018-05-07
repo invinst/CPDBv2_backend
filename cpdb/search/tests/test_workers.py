@@ -7,8 +7,10 @@ from search.workers import (
     NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker
 )
 from search.doc_types import (
-    FAQDocType, ReportDocType, OfficerDocType, UnitDocType, UnitOfficerDocType,
-    CrDocType, AreaDocType)
+    FAQDocType, ReportDocType, UnitDocType, UnitOfficerDocType,
+    AreaDocType, CrDocType
+)
+from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 
 
@@ -38,10 +40,10 @@ class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search_prioritizing_allegation_count(self):
-        doc = OfficerDocType(
+        doc = OfficerInfoDocType(
             full_name='full name', badge='123', allegation_count=10)
         doc.save()
-        doc = OfficerDocType(
+        doc = OfficerInfoDocType(
             full_name='funny naga', badge='456', allegation_count=20)
         doc.save()
 
@@ -54,10 +56,10 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.hits[1]['_source']['full_name']).to.eq('full name')
 
     def test_search_prioritizing_tags(self):
-        doc = OfficerDocType(
+        doc = OfficerInfoDocType(
             full_name='some dude', badge='123', allegation_count=10)
         doc.save()
-        doc = OfficerDocType(
+        doc = OfficerInfoDocType(
             full_name='another guy', badge='456', allegation_count=10, tags='somersault')
         doc.save()
 
@@ -70,9 +72,9 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.hits[1]['_source']['full_name']).to.eq('some dude')
 
     def test_search_by_officer_id(self):
-        doc = OfficerDocType(full_name='some dude', badge='123', meta={'_id': '456'})
+        doc = OfficerInfoDocType(full_name='some dude', badge='123', meta={'_id': '456'})
         doc.save()
-        doc2 = OfficerDocType(full_name='another guy', badge='789', meta={'_id': '012'})
+        doc2 = OfficerInfoDocType(full_name='another guy', badge='789', meta={'_id': '012'})
         doc2.save()
 
         self.refresh_index()
@@ -83,7 +85,7 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.hits[0]['_source']['full_name']).to.eq('some dude')
 
     def test_search_officer_badge(self):
-        OfficerDocType(full_name='John Doe', badge='100123').save()
+        OfficerInfoDocType(full_name='John Doe', badge='100123').save()
 
         self.refresh_index()
 

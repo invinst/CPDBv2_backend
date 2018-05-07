@@ -2,8 +2,9 @@ from elasticsearch_dsl.query import Q
 
 from search.doc_types import CrDocType
 from .doc_types import (
-    OfficerDocType, UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, AreaDocType
+    UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, AreaDocType
 )
+from officers.doc_types import OfficerInfoDocType
 
 
 class Worker(object):
@@ -49,7 +50,7 @@ class ReportWorker(Worker):
 
 
 class OfficerWorker(Worker):
-    doc_type_klass = OfficerDocType
+    doc_type_klass = OfficerInfoDocType
 
     def query(self, term):
         _query = self._searcher.query(

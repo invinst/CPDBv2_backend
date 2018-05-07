@@ -4,6 +4,7 @@ import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
 from robber.expect import expect
+from freezegun import freeze_time
 
 from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
@@ -32,6 +33,10 @@ class OfficerTestCase(TestCase):
     def test_get_absolute_url(self):
         expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
 
+    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
+    def test_current_age(self):
+        expect(OfficerFactory(birth_year=1968).current_age).to.eq(49)
+
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
         expect(officer.current_badge).to.equal('')
@@ -42,6 +47,14 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
         expect(officer.current_badge).to.eq('123')
+
+    def test_historic_badges(self):
+        officer = OfficerFactory()
+        expect(officer.historic_badges).to.be.empty()
+        OfficerBadgeNumberFactory(officer=officer, star='000', current=True)
+        OfficerBadgeNumberFactory(officer=officer, star='123', current=False)
+        OfficerBadgeNumberFactory(officer=officer, star='456', current=False)
+        expect(list(officer.historic_badges)).to.eq(['123', '456'])
 
     def test_gender_display(self):
         expect(OfficerFactory(gender='M').gender_display).to.equal('Male')
@@ -77,7 +90,7 @@ class OfficerTestCase(TestCase):
 
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'), end_date=date(2000, 1, 1))
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='BDCH'), end_date=date(2002, 1, 1))
-        expect(officer.last_unit).to.eq('BDCH')
+        expect(officer.last_unit.unit_name).to.eq('BDCH')
 
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')

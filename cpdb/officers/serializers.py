@@ -1,11 +1,23 @@
 from rest_framework import serializers
 
-from cr.serializers import AttachmentFileSerializer
+from data.models import PoliceUnit
+
+
+class AttachmentFileSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
+
+
+class PoliceUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PoliceUnit
+        fields = ['id', 'unit_name', 'description']
 
 
 class OfficerSummarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    unit = serializers.CharField(source='last_unit')
+    unit = PoliceUnitSerializer(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
     date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
     active = serializers.SerializerMethodField()
@@ -13,6 +25,7 @@ class OfficerSummarySerializer(serializers.Serializer):
     full_name = serializers.CharField()
     race = serializers.CharField()
     badge = serializers.CharField(source='current_badge')
+    historic_badges = serializers.ListField(child=serializers.CharField())
     gender = serializers.CharField(source='gender_display')
     complaint_records = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField()
@@ -42,6 +55,83 @@ class OfficerMetricsSerializer(serializers.Serializer):
     sustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
+    trr_count = serializers.IntegerField()
+
+
+class CRTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='start_date', format=None)
+    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='start_date.year')
+    priority_sort = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+    crid = serializers.CharField()
+    category = serializers.SerializerMethodField()
+    subcategory = serializers.CharField()
+    finding = serializers.CharField(source='final_finding_display')
+    coaccused = serializers.IntegerField(source='coaccused_count')
+    race = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    gender = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        return obj.category if obj.category else 'Unknown'
+
+    def get_kind(self, obj):
+        return 'CR'
+
+    def get_priority_sort(self, obj):
+        return 40
+
+    def get_race(self, obj):
+        return obj.allegation.complainant_races
+
+    def get_age(self, obj):
+        return obj.allegation.complainant_age_groups
+
+    def get_gender(self, obj):
+        return obj.allegation.complainant_genders
+
+
+class UnitChangeTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='effective_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='effective_date.year')
+    kind = serializers.SerializerMethodField()
+    unit_name = serializers.CharField()
+
+    def get_kind(self, obj):
+        return 'UNIT_CHANGE'
+
+    def get_priority_sort(self, obj):
+        return 30
+
+
+class JoinedTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField(source='id')
+    date_sort = serializers.DateField(source='appointed_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
+    year_sort = serializers.IntegerField(source='appointed_date.year')
+    kind = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'JOINED'
+
+    def get_priority_sort(self, obj):
+        return 10
+
+
+class TimelineSerializer(serializers.Serializer):
+    def to_representation(self, obj):
+        result = obj.to_dict()
+        result.pop('officer_id')
+        result.pop('date_sort')
+        result.pop('year_sort')
+        result.pop('priority_sort')
+        return result
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
@@ -58,6 +148,9 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
+    to = serializers.CharField(source='v2_to')
+    url = serializers.CharField(source='v1_url')
+    tags = serializers.ListField(child=serializers.CharField())
 
 
 class NewTimelineSerializer(serializers.Serializer):
@@ -129,7 +222,7 @@ class CRNewTimelineSerializer(serializers.Serializer):
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
-    attachments = serializers.SerializerMethodField()
+    attachments = AttachmentFileSerializer(source='documents', many=True)
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -150,12 +243,6 @@ class CRNewTimelineSerializer(serializers.Serializer):
 
     def get_rank(self, obj):
         return obj.officer.rank
-
-    def get_attachments(self, obj):
-        if obj.allegation.documents:
-            return [AttachmentFileSerializer(document).data for document in obj.allegation.documents]
-        else:
-            return None
 
 
 class AwardNewTimelineSerializer(serializers.Serializer):
