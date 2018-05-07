@@ -222,7 +222,7 @@ class CRNewTimelineSerializer(serializers.Serializer):
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
-    attachments = AttachmentFileSerializer(source='allegation.attachment_files', many=True)
+    attachments = AttachmentFileSerializer(source='documents', many=True)
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'

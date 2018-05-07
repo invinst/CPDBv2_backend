@@ -36,13 +36,13 @@ class CRIndexer(BaseIndexer):
         for coaccused in result['coaccused']:
             try:
                 coaccused.update(self.top_percentile_dict[coaccused['id']])
-            except KeyError:  # pragma: no cover
+            except KeyError:
                 pass
 
         for involvement in result['involvements']:
             try:
                 involvement.update(self.top_percentile_dict[involvement['officer_id']])
-            except KeyError:  # pragma: no cover
+            except KeyError:
                 pass
 
         return result

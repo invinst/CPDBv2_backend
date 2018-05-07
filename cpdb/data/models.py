@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 from itertools import groupby
 
 from django.conf import settings
@@ -331,6 +331,10 @@ class Officer(TaggableModel):
             return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
         except IndexError:
             return None
+
+    @property
+    def current_age(self):
+        return datetime.now().year - self.birth_year
 
     @staticmethod
     def get_dataset_range():
@@ -865,6 +869,10 @@ class Allegation(models.Model):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
             .exclude(created_at__isnull=True).latest('created_at')
 
+    @property
+    def documents(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
+
     @staticmethod
     def get_cr_with_new_documents(limit):
         start_datetime = now() - timedelta(weeks=24)
@@ -994,6 +1002,10 @@ class OfficerAllegation(models.Model):
             return OUTCOMES_DICT[self.recc_outcome]
         except KeyError:
             return 'Unknown'
+
+    @property
+    def documents(self):
+        return self.allegation.documents
 
 
 class PoliceWitness(models.Model):

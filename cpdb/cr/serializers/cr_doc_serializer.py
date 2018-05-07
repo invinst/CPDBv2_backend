@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from rest_framework import serializers
 
 
@@ -17,15 +15,9 @@ class CoaccusedSerializer(serializers.Serializer):
     subcategory = serializers.CharField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
-    age = serializers.SerializerMethodField()
+    age = serializers.IntegerField(source='officer.current_age')
     allegation_count = serializers.IntegerField(source='officer.allegation_count')
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
-
-    def get_age(self, obj):
-        try:
-            return datetime.now().year - obj.officer.birth_year
-        except AttributeError:
-            return None
 
 
 class ComplainantSerializer(serializers.Serializer):

@@ -8,8 +8,12 @@ from mock import Mock, patch
 from robber import expect
 
 from trr.factories import TRRFactory
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory
+from data.factories import (
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
+    AllegationCategoryFactory
+)
 from data.models import Officer
+from data.constants import MEDIA_TYPE_DOCUMENT
 from officers.indexers import (
     OfficersIndexer,
     CRTimelineEventIndexer,
@@ -488,7 +492,7 @@ class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
         })
 
 
-class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
+class CRNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
         officer_allegation = Mock()
 
@@ -496,37 +500,45 @@ class CRNewTimelineEventIndexerTestCase(SimpleTestCase):
             expect(CRNewTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
 
     def test_extract_datum(self):
-        officer_allegation = Mock(
-            officer_id=123,
-            start_date=date(2012, 1, 1),
+        allegation = AllegationFactory(
             crid='123456',
-            category='Illegal Search',
-            subcategory='Search of premise/vehicle without warrant',
-            final_finding_display='Unfounded',
-            final_outcome_display='Unknown',
-            coaccused_count=4,
-            officer=Mock(
-                rank='Police Officer',
-                get_unit_by_date=Mock(return_value=Mock(
-                    unit_name='001',
-                    description='Unit_001',
-                )),
-            ),
-            allegation=Mock(
-                attachment_files=[
-                    Mock(
-                        title='doc_1',
-                        url='url_1',
-                        preview_image_url='image_url_1',
-                    ),
-                    Mock(
-                        title='doc_2',
-                        url='url_2',
-                        preview_image_url='image_url_2',
-                    )
-                ]
-            ),
         )
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='doc_2',
+            url='url_2',
+            preview_image_url='image_url_2',
+            file_type=MEDIA_TYPE_DOCUMENT
+        )
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='doc_1',
+            url='url_1',
+            preview_image_url='image_url_1',
+            file_type=MEDIA_TYPE_DOCUMENT
+        )
+        officer = OfficerFactory(
+            id=123,
+            rank='Police Officer'
+        )
+        OfficerHistoryFactory(
+            officer=officer,
+            unit__unit_name='001',
+            unit__description='Unit_001',
+            effective_date=date(2011, 1, 1),
+            end_date=date(2013, 1, 1))
+        officer_allegation = OfficerAllegationFactory(
+            allegation=allegation,
+            officer=officer,
+            start_date=date(2012, 1, 1),
+            allegation_category=AllegationCategoryFactory(
+                category='Illegal Search',
+                allegation_name='Search of premise/vehicle without warrant',
+            ),
+            final_finding='UN',
+            final_outcome=''
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,

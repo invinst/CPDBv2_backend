@@ -4,6 +4,7 @@ import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
 from robber.expect import expect
+from freezegun import freeze_time
 
 from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
@@ -31,6 +32,10 @@ class OfficerTestCase(TestCase):
 
     def test_get_absolute_url(self):
         expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
+
+    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
+    def test_current_age(self):
+        expect(OfficerFactory(birth_year=1968).current_age).to.eq(49)
 
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
