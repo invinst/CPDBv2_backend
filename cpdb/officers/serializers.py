@@ -57,12 +57,12 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
 
 class OfficerSinglePercentileSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    honorable_mention_percentile = serializers.IntegerField(source='percentile_honorable_mention')
+    honorable_mention_percentile = serializers.FloatField(source='percentile_honorable_mention')
 
 
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
-    single_percentiles = OfficerSinglePercentileSerializer(many=False, read_only=True)
+    single_percentiles = OfficerSinglePercentileSerializer(read_only=True)
 
 
 class NewTimelineSerializer(serializers.Serializer):

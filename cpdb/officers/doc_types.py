@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q, Object
+from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q
 
 from .index_aliases import officers_index_alias
 
@@ -33,23 +33,12 @@ class OfficerYearlyPercentile(InnerObjectWrapper):
         }
 
 
-class OfficerSinglePercentile(InnerObjectWrapper):
-    @staticmethod
-    def mapping():
-        return {
-            'percentile_honorable_mention': Float(),
-        }
-
-
 @officers_index_alias.doc_type
 class OfficerInfoDocType(DocType):
     id = Integer()
     percentiles = Nested(
         doc_class=OfficerYearlyPercentile,
         properties=OfficerYearlyPercentile.mapping())
-    single_percentiles = Object(
-        doc_class=OfficerSinglePercentile,
-        properties=OfficerSinglePercentile.mapping())
 
     @staticmethod
     def _get_latest_year():

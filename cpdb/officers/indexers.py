@@ -106,7 +106,7 @@ class OfficerPercentileIndexer(BaseIndexer):
 class OfficerSinglePercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
     doc_type_klass = OfficerInfoDocType
-    parent_doc_type_property = 'single_percentiles'
+    op_type = 'update'
 
     def get_queryset(self):
         return Officer.annotate_honorable_mention_percentile_officers()

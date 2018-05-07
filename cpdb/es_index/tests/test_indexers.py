@@ -33,7 +33,8 @@ class IndexersTestCase(SimpleTestCase):
         expect(list(indexer.docs())).to.eq([{
             '_type': 'my_doc_type',
             '_source': {'a': 'b'},
-            '_index': 'new_index_name'
+            '_index': 'new_index_name',
+            '_op_type': 'index'
         }])
 
     def test_docs_when_extract_datum_return_single_value(self):
@@ -54,7 +55,32 @@ class IndexersTestCase(SimpleTestCase):
         expect(list(indexer.docs())).to.eq([{
             '_type': 'my_doc_type',
             '_source': {'a': 'b'},
-            '_index': 'new_index_name'
+            '_index': 'new_index_name',
+            '_op_type': 'index'
+        }])
+
+    def test_docs_when_op_type_is_update(self):
+        class MyDocType(DocType):
+            pass
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = Mock(new_index_name='new_index_name')
+            op_type = 'update'
+
+            def get_queryset(self):
+                return [1]
+
+            def extract_datum(self, datum):
+                return {'id': 1, 'a': 'b'}
+
+        indexer = ConcreteIndexer()
+        expect(list(indexer.docs())).to.eq([{
+            '_id': 1,
+            '_type': 'my_doc_type',
+            '_source': {'doc': {'a': 'b'}},
+            '_index': 'new_index_name',
+            '_op_type': 'update'
         }])
 
     def test_add_meta_id_when_there_is_id_in_raw_doc(self):
@@ -76,7 +102,8 @@ class IndexersTestCase(SimpleTestCase):
             '_type': 'my_doc_type',
             '_source': {'a': 'b', 'id': 1},
             '_index': 'new_index_name',
-            '_id': 1
+            '_id': 1,
+            '_op_type': 'index'
         }])
 
     def test_add_meta_and_script_when_parent_doc_type_property_is_set(self):
