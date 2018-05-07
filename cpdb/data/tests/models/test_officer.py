@@ -428,6 +428,35 @@ class OfficerTestCase(TestCase):
             'percentile_trr': 0.0
         })
 
+    def test_annotate_honorable_mention_percentile_officers(self):
+        self._create_dataset_for_honorable_mention_percentile()
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
+
+        # current year
+        annotated_officers = Officer.annotate_honorable_mention_percentile_officers()
+        expect(annotated_officers).to.have.length(4)
+        self.validate_object(annotated_officers[0], {
+            'id': 3,
+            'metric_honorable_mention': 0,
+            'percentile_honorable_mention': 0,
+        })
+        self.validate_object(annotated_officers[1], {
+            'id': 4,
+            'metric_honorable_mention': 0,
+            'percentile_honorable_mention': 0,
+        })
+        self.validate_object(annotated_officers[2], {
+            'id': 1,
+            'metric_honorable_mention': 0.625,
+            'percentile_honorable_mention': 50.0,
+        })
+        self.validate_object(annotated_officers[3], {
+            'id': 2,
+            'metric_honorable_mention': 1.875,
+            'percentile_honorable_mention': 75.0,
+        })
+
     def test_top_complaint_officers_type_not_found(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2016, 1, 1))
         OfficerAllegationFactory(officer=officer1,
@@ -666,3 +695,11 @@ class OfficerTestCase(TestCase):
     def test_complainant_gender_aggregation_no_complainant(self):
         officer = OfficerFactory()
         expect(officer.complainant_gender_aggregation).to.eq([])
+
+    def test_major_award_count(self):
+        officer = OfficerFactory()
+        AwardFactory(officer=officer, award_type='HONORED POLICE STAR')
+        AwardFactory(officer=officer, award_type='POLICE MEDAL')
+        AwardFactory(officer=officer, award_type='PIPE BAND AWARD')
+        AwardFactory(officer=officer, award_type='LIFE SAVING AWARD')
+        expect(officer.major_award_count).to.eq(2)
