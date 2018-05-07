@@ -1,13 +1,13 @@
 import os
-from datetime import date
+from datetime import date, datetime
 from itertools import groupby
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import ExtractYear
+from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
+from django.db.models.functions import Concat, ExtractYear
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -283,6 +283,15 @@ class Officer(TaggableModel):
         return '%s %s' % (self.first_name, self.last_name,)
 
     @property
+    def historic_badges(self):
+        # old not current badge
+        return self.officerbadgenumber_set.exclude(current=True).values_list('star', flat=True)
+
+    @property
+    def trr_count(self):
+        return self.trr_set.count()
+
+    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star
@@ -319,9 +328,13 @@ class Officer(TaggableModel):
     @property
     def last_unit(self):
         try:
-            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit.unit_name
+            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
         except IndexError:
             return None
+
+    @property
+    def current_age(self):
+        return datetime.now().year - self.birth_year
 
     @staticmethod
     def get_dataset_range():
@@ -693,6 +706,30 @@ class Area(TaggableModel):
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
 
+    def get_most_common_complaint(self):
+        query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
+        query = query.values('allegation_category__category').annotate(
+            id=F('allegation_category__id'),
+            name=F('allegation_category__category'),
+            count=Count('allegation', distinct=True)
+        )
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
+
+    def get_officers_most_complaints(self):
+        query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
+        query = query.values('officer').annotate(
+            id=F('officer__id'),
+            name=Concat('officer__first_name', Value(' '), 'officer__last_name'),
+            count=Count('allegation', distinct=True)
+        )
+        query = query.order_by('-count')[:3]
+        return query.values('id', 'name', 'count')
+
+    @property
+    def allegation_count(self):
+        return self.allegation_set.distinct().count()
+
     @property
     def v1_url(self):
         if self.area_type == 'neighborhoods':
@@ -725,6 +762,18 @@ class Investigator(models.Model):
     suffix_name = models.CharField(max_length=5, null=True)
     appointed_date = models.DateField(null=True)
     officer = models.ForeignKey(Officer, null=True)
+
+    @property
+    def num_cases(self):
+        return self.investigatorallegation_set.all().count()
+
+    @property
+    def full_name(self):
+        return '%s %s' % (self.first_name, self.last_name,)
+
+    @property
+    def abbr_name(self):
+        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
 
 
 class Allegation(models.Model):
@@ -774,6 +823,10 @@ class Allegation(models.Model):
         return self.complainant_set.all()
 
     @property
+    def victims(self):
+        return self.victim_set.all()
+
+    @property
     def complainant_races(self):
         query = self.complainant_set.annotate(
             name=models.Case(
@@ -803,40 +856,40 @@ class Allegation(models.Model):
         return results if results else ['Unknown']
 
     @property
-    def videos(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide all videos
-        return self.attachment_files.none()
+    def first_start_date(self):
+        try:
+            return self.officerallegation_set.filter(start_date__isnull=False)\
+                .values_list('start_date', flat=True)[0]
+        except IndexError:
+            return None
 
     @property
-    def audios(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide all audios
-        return self.attachment_files.none()
+    def first_end_date(self):
+        try:
+            return self.officerallegation_set.filter(end_date__isnull=False)\
+                .values_list('end_date', flat=True)[0]
+        except IndexError:
+            return None
+
+    def get_newest_added_document(self):
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
+            .exclude(created_at__isnull=True).latest('created_at')
 
     @property
     def documents(self):
-        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
-        # We need to hide those documents
-        tag_query = Q(tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
-        type_query = Q(file_type=MEDIA_TYPE_DOCUMENT)
-        return self.attachment_files.filter(type_query & ~tag_query)
-
-    def get_newest_added_document(self):
-        return self.documents.exclude(created_at__isnull=True).latest('created_at')
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
     @staticmethod
     def get_cr_with_new_documents(limit):
         start_datetime = now() - timedelta(weeks=24)
         query = Allegation.objects.all()
-        tag_query = Q(attachment_files__tag__in=['TRR', 'OBR', 'OCIR', 'AR'])
         type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
 
         # get 40 allegations which has newest documents
         query = query.annotate(
             new_document_added=Max(
                 Case(
-                    When(type_query & ~tag_query, then='attachment_files__created_at'),
+                    When(type_query, then='attachment_files__created_at'),
                     output_field=DateTimeField()
                 )
             )
@@ -851,8 +904,7 @@ class Allegation(models.Model):
             num_recent_documents=Count(
                 Case(
                     When(
-                        type_query & ~tag_query &
-                        Q(attachment_files__created_at__gte=start_datetime),
+                        type_query & Q(attachment_files__created_at__gte=start_datetime),
                         then=1),
                     output_field=IntegerField(),
                 )
@@ -957,6 +1009,10 @@ class OfficerAllegation(models.Model):
         except KeyError:
             return 'Unknown'
 
+    @property
+    def documents(self):
+        return self.allegation.documents
+
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
@@ -1039,6 +1095,13 @@ class Victim(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+
+    @property
+    def gender_display(self):
+        try:
+            return GENDER_DICT[self.gender]
+        except KeyError:
+            return self.gender
 
 
 class AttachmentRequest(models.Model):

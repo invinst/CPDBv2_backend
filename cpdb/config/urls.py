@@ -31,7 +31,7 @@ from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
 from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
 from officers.views import OfficersViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
-from cr.views import CRViewSet
+from cr.views import CRViewSet, CRMobileViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from visual_token.views import VisualTokenView
@@ -59,6 +59,7 @@ router_v2.register(
     base_name='report-bottomsheet-officer-search')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')

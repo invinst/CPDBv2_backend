@@ -19,13 +19,14 @@ from .mixins import OfficerSummaryTestCaseMixin
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_summary(self):
         officer = OfficerFactory(
+            tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1910
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
-        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'))
+        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(id=1, unit_name='CAND', description=''))
         ComplainantFactory(allegation=allegation, race='White', age=18, gender='F')
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
@@ -42,7 +43,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
             'id': 123,
-            'unit': 'CAND',
+            'unit': {
+                'id': 1,
+                'unit_name': 'CAND',
+                'description': '',
+            },
             'date_of_appt': '2017-02-27',
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
@@ -87,12 +92,166 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'civilian_compliment_count': 2,
             'allegation_count': 1,
             'discipline_count': 1,
-            'honorable_mention_count': 1
+            'honorable_mention_count': 1,
+            'trr_count': 0,
+            'to': '/officer/123/',
+            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123'
         })
 
     def test_summary_no_match(self):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_timeline_items(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory(crid='123456')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 3,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                },
+                {
+                    'kind': 'CR',
+                    'date': '2016-08-23',
+                    'crid': '123456',
+                    'category': 'category',
+                    'subcategory': 'sub category',
+                    'finding': 'Unfounded',
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
+                },
+                {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
+                }
+            ]
+        })
+
+    def test_timeline_items_filter_params(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory(crid='123456')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='Illegal Search', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+
+        allegation2 = AllegationFactory(crid='654321')
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2017, 8, 23), allegation=allegation2,
+            allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
+        )
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}),
+                                   data={'category': 'Illegal Search', 'finding': 'Unfounded', 'invalid': 'X'})
+        # NOTE: 'finding' and 'invalid' should drop since this is not in ALLOWED LIST
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 3,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                }, {
+                    'kind': 'CR',
+                    'date': '2016-08-23',
+                    'crid': '123456',
+                    'category': 'Illegal Search',
+                    'subcategory': 'sub category',
+                    'finding': 'Unfounded',
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
+                }, {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
+                }
+            ]
+        })
+
+    def test_timeline_no_data(self):
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 456}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_timeline_next_request_url(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        OfficerHistoryFactory.create_batch(40, officer=officer, effective_date=date(2017, 1, 1))
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'offset': 10})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(41)
+        expect(response.data['next']).to.match(r'.+\?limit=20\&offset=30$')
+        expect(response.data['previous']).to.match(r'.+\?limit=20$')
+        expect(len(response.data['results'])).to.eq(20)
+
+    def test_timeline_items_sort_asc(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
+        allegation = AllegationFactory(crid='123456')
+        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
+        OfficerAllegationFactory(
+            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'sort': 'asc'})
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 3,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'kind': 'JOINED',
+                    'date': '2000-01-01'
+                },
+                {
+                    'kind': 'CR',
+                    'date': '2016-08-23',
+                    'crid': '123456',
+                    'category': 'category',
+                    'subcategory': 'sub category',
+                    'finding': 'Unfounded',
+                    'coaccused': 4,
+                    'race': ['Unknown'],
+                    'gender': ['Unknown'],
+                    'age': ['Unknown']
+                },
+                {
+                    'kind': 'UNIT_CHANGE',
+                    'date': '2017-02-27',
+                    'unit_name': 'A'
+                }
+            ]
+        })
 
     def test_new_timeline_items_no_match(self):
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 456}))
