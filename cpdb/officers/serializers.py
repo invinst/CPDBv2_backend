@@ -308,3 +308,21 @@ class TRRNewTimelineSerializer(serializers.Serializer):
 
     def get_date(self, obj):
         return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+
+
+class OfficerCoaccusalSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    allegation_count = serializers.IntegerField()
+    sustained_count = serializers.IntegerField()
+    complaint_percentile = serializers.FloatField()
+    race = serializers.CharField()
+    gender = serializers.CharField(source='gender_display')
+    birth_year = serializers.IntegerField()
+    coaccusal_count = serializers.IntegerField()
+    rank = serializers.CharField()
+
+
+class OfficerCoaccusalsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    coaccusals = OfficerCoaccusalSerializer(many=True)

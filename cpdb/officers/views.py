@@ -11,7 +11,8 @@ from .doc_types import (
     OfficerTimelineEventDocType,
     OfficerInfoDocType,
     OfficerNewTimelineEventDocType,
-    OfficerSocialGraphDocType
+    OfficerSocialGraphDocType,
+    OfficerCoaccusalsDocType
 )
 
 _ALLOWED_FILTERS = [
@@ -90,3 +91,12 @@ class OfficersViewSet(viewsets.ViewSet):
         top_officers = OfficerInfoDocType.get_top_officers(percentile=99.0, size=limit)
 
         return Response(OfficerCardSerializer(top_officers, many=True).data)
+
+    @detail_route(methods=['get'])
+    def coaccusals(self, _, pk):
+        query = OfficerCoaccusalsDocType().search().query('term', id=pk)
+        result = query.execute()
+        try:
+            return Response(result[0].to_dict()['coaccusals'])
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
