@@ -24,3 +24,6 @@ class CRDocType(DocType):
             'percentile_trr': Float(),
             'id': Integer()
         })
+
+    class Meta:
+        doc_type = 'cr_doc_type'
