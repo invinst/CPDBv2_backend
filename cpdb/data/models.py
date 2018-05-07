@@ -14,8 +14,8 @@ from django.utils.timezone import now, timedelta
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
     LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
-    DISCIPLINE_CODES, PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, PERCENTILE_ALLEGATION,
+    DISCIPLINE_CODES, PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.calculations import percentile
@@ -345,6 +345,17 @@ class Officer(TaggableModel):
         return [min(all_date), max(all_date)]
 
     @staticmethod
+    def get_award_dataset_range():
+        award_date = Award.objects.aggregate(
+            models.Min('start_date'),
+            models.Max('start_date'),
+        ).values()
+        award_date = [x.date() if hasattr(x, 'date') else x for x in award_date if x is not None]
+        if not award_date:
+            return []
+        return [min(award_date), max(award_date)]
+
+    @staticmethod
     def _annotate_officer_working_range(query, dataset_min_date, dataset_max_date):
         query = query.annotate(
             end_date=models.Case(
@@ -408,6 +419,7 @@ class Officer(TaggableModel):
                 models.Case(
                     models.When(
                         award__start_date__lte=dataset_max_date,
+                        award__award_type='Honorable Mention',
                         then='award'
                     ), output_field=models.CharField(),
                 ), distinct=True
@@ -445,7 +457,7 @@ class Officer(TaggableModel):
             metric_trr=models.ExpressionWrapper(
                 Round(F('num_trr') / F('service_year')),
                 output_field=models.FloatField())
-        ).order_by('metric_allegation', 'metric_trr', 'officer_id')
+        ).order_by(PERCENTILE_ALLEGATION, PERCENTILE_TRR, 'officer_id')
 
         return query
 
@@ -469,7 +481,7 @@ class Officer(TaggableModel):
 
     @staticmethod
     def compute_honorable_mention_metric(year_end=now().year):
-        dataset_range = Officer.get_dataset_range()
+        dataset_range = Officer.get_award_dataset_range()
         if not dataset_range:
             return []
         [dataset_min_date, dataset_max_date] = dataset_range
