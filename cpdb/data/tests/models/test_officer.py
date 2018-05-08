@@ -10,8 +10,8 @@ from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory
-)
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory,
+    SalaryFactory)
 from data.models import Officer
 from trr.factories import TRRFactory
 
@@ -616,3 +616,12 @@ class OfficerTestCase(TestCase):
 
         expect(coaccusals[coaccusals.index(officer1)].coaccusal_count).to.eq(2)
         expect(coaccusals[coaccusals.index(officer2)].coaccusal_count).to.eq(1)
+
+    def test_current_salary(self):
+        officer = OfficerFactory()
+        SalaryFactory(officer=officer, year=2010, salary=5000)
+        SalaryFactory(officer=officer, year=2012, salary=10000)
+        SalaryFactory(officer=officer, year=2015, salary=15000)
+        current_salary = SalaryFactory(officer=officer, year=2017, salary=20000)
+
+        expect(officer.current_salary).to.eq(current_salary)

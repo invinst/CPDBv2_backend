@@ -11,7 +11,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation, Award)
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -212,3 +212,19 @@ class AwardFactory(factory.django.DjangoModelFactory):
     rank = factory.LazyFunction(lambda: fake.word())
     last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+
+
+class SalaryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Salary
+
+    pay_grade = factory.LazyFunction(lambda: random.choice(['SR|9796', 'EX|9782', 'D|1]']))
+    rank = factory.LazyFunction(lambda: fake.word())
+    salary = factory.LazyAttribute(lambda _: fake.pyint())
+    employee_status = factory.LazyFunction(lambda: fake.word())
+    org_hire_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    spp_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    start_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    year = factory.LazyFunction(lambda: fake.year())
+    age_at_hire = factory.LazyAttribute(lambda _: fake.pyint())
+    officer = factory.SubFactory(OfficerFactory)
