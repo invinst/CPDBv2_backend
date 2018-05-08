@@ -34,6 +34,11 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.get_active_display()
 
 
+class OfficerSinglePercentileSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    honorable_mention_percentile = serializers.FloatField(source='percentile_honorable_mention')
+
+
 class OfficerMetricsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     allegation_count = serializers.IntegerField()
@@ -44,6 +49,7 @@ class OfficerMetricsSerializer(serializers.Serializer):
     civilian_compliment_count = serializers.IntegerField()
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
+    single_percentiles = OfficerSinglePercentileSerializer(read_only=True)
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
@@ -55,14 +61,8 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
-class OfficerSinglePercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(source='percentile_honorable_mention')
-
-
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
-    single_percentiles = OfficerSinglePercentileSerializer(read_only=True)
 
 
 class NewTimelineSerializer(serializers.Serializer):
