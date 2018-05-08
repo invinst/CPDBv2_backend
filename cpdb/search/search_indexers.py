@@ -1,13 +1,14 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import Officer, PoliceUnit, Area, OfficerHistory, Allegation
+from data.models import PoliceUnit, Area, OfficerHistory, Allegation
 from search.doc_types import (
-    FAQDocType, ReportDocType, OfficerDocType,
+    FAQDocType, ReportDocType,
     UnitDocType, NeighborhoodsDocType, CommunityDocType,
     UnitOfficerDocType, CrDocType
 )
 from search.indices import autocompletes_alias
+from search.serializers import RacePopulationSerializer
 
 
 def extract_text_from_value(value):
@@ -92,29 +93,6 @@ class ReportIndexer(BaseIndexer):
         }
 
 
-class OfficerIndexer(BaseIndexer):
-    doc_type_klass = OfficerDocType
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def extract_datum(self, datum):
-        return {
-            'allegation_count': datum.allegation_count,
-            'full_name': datum.full_name,
-            'badge': datum.current_badge,
-            'to': datum.v2_to,
-            'visual_token_background_color': datum.visual_token_background_color,
-            'tags': datum.tags,
-            'sustained_count': datum.sustained_count,
-            'birth_year': datum.birth_year,
-            'unit': datum.last_unit,
-            'rank': datum.rank,
-            'race': datum.race,
-            'sex': datum.gender_display
-        }
-
-
 class UnitIndexer(BaseIndexer):
     doc_type_klass = UnitDocType
 
@@ -149,7 +127,7 @@ class UnitOfficerIndexer(BaseIndexer):
             'unit_description': datum.unit.description,
             'sustained_count': datum.officer.sustained_count,
             'birth_year': datum.officer.birth_year,
-            'unit': datum.officer.last_unit,
+            'unit': datum.officer.last_unit.unit_name,
             'rank': datum.officer.rank,
             'race': datum.officer.race,
             'sex': datum.officer.gender_display
@@ -164,10 +142,20 @@ class AreaTypeIndexer(BaseIndexer):
         return Area.objects.filter(area_type=self.area_type)
 
     def extract_datum(self, datum):
+        tags = list(datum.tags)
+        if self.area_type and self.area_type not in tags:
+            tags.append(self.area_type)
         return {
             'name': datum.name,
             'url': datum.v1_url,
-            'tags': datum.tags
+            'tags': tags,
+            'allegation_count': datum.allegation_count,
+            'officers_most_complaint': list(datum.get_officers_most_complaints()),
+            'most_common_complaint': list(datum.get_most_common_complaint()),
+            'race_count': RacePopulationSerializer(
+                datum.racepopulation_set.order_by('-count'),
+                many=True).data,
+            'median_income': datum.median_income
         }
 
 

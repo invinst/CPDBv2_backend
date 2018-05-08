@@ -4,10 +4,11 @@ from django.test import TestCase
 
 from robber import expect
 
-from search.doc_types import OfficerDocType, FAQDocType
+from search.doc_types import FAQDocType
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
 from search.workers import OfficerWorker, FAQWorker
+from officers.doc_types import OfficerInfoDocType
 
 
 class SearchManagerTestCase(IndexMixin, TestCase):
@@ -19,10 +20,9 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         })
 
     def test_search(self):
-        doc = OfficerDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
+        doc = OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
         doc.save()
         self.refresh_index()
-
         response = SearchManager().search('fu na')
 
         expect(response).to.eq({
@@ -37,7 +37,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
             'COMMUNITY': []})
 
     def test_suggest_sample(self):
-        taglessOfficerDoc = OfficerDocType(
+        taglessOfficerDoc = OfficerInfoDocType(
             meta={'id': '1'},
             full_name='this should not be returned',
             badge='123',
@@ -45,7 +45,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         )
         taglessOfficerDoc.save()
 
-        officerDoc = OfficerDocType(
+        officerDoc = OfficerInfoDocType(
             meta={'id': '2'},
             full_name='full name',
             badge='123',
