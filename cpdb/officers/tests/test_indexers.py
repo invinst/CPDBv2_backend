@@ -65,6 +65,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
+            current_salary=Mock(**{'salary': 9000}),
             total_complaints_aggregation=[{'year': 2000, 'count': 1, 'sustained_count': 0}],
             complaint_category_aggregation=[
                 {
@@ -167,6 +168,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'tags': [],
             'to': '',
             'url': '',
+            'current_salary': 9000,
         })
 
 

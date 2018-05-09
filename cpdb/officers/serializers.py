@@ -48,7 +48,10 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.get_active_display()
 
     def get_current_salary(self, obj):
-        return obj.current_salary.salary
+        try:
+            return obj.current_salary.salary
+        except AttributeError:
+            return 0
 
 
 class OfficerMetricsSerializer(serializers.Serializer):

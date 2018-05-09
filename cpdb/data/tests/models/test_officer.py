@@ -619,6 +619,8 @@ class OfficerTestCase(TestCase):
 
     def test_current_salary(self):
         officer = OfficerFactory()
+        expect(officer.current_salary).to.be.none()
+
         SalaryFactory(officer=officer, year=2010, salary=5000)
         SalaryFactory(officer=officer, year=2012, salary=10000)
         SalaryFactory(officer=officer, year=2015, salary=15000)

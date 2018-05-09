@@ -678,7 +678,10 @@ class Officer(TaggableModel):
     @property
     def current_salary(self):
         latest_year = self.salary_set.all().aggregate(Max('year'))['year__max']
-        return self.salary_set.filter(year=latest_year)[0]
+        try:
+            return self.salary_set.filter(year=latest_year)[0]
+        except IndexError:
+            return None
 
 
 class OfficerBadgeNumber(models.Model):

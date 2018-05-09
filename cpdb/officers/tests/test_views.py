@@ -9,7 +9,8 @@ from robber import expect
 from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory
+    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
+    SalaryFactory
 )
 from officers.doc_types import OfficerInfoDocType
 from trr.factories import TRRFactory
@@ -36,6 +37,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Honorable Mention')
+        SalaryFactory(officer=officer, salary=50000, year=2015)
+        SalaryFactory(officer=officer, salary=90000, year=2017)
 
         self.refresh_index()
 
@@ -95,7 +98,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'honorable_mention_count': 1,
             'trr_count': 0,
             'to': '/officer/123/',
-            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123'
+            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123',
+            'current_salary': 90000,
         })
 
     def test_summary_no_match(self):
