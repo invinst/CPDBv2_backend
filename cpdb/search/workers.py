@@ -1,6 +1,8 @@
+from elasticsearch_dsl import Q
+
 from search.doc_types import CrDocType
 from .doc_types import (
-    UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
+    UnitDocType, FAQDocType, ReportDocType, NeighborhoodsDocType, CommunityDocType
 )
 from officers.doc_types import OfficerInfoDocType
 
@@ -106,12 +108,17 @@ class CommunityWorker(Worker):
 
 
 class UnitOfficerWorker(Worker):
-    doc_type_klass = UnitOfficerDocType
-    fields = ['unit_name', 'unit_description']
-    sort_order = ['-allegation_count']
+    doc_type_klass = OfficerInfoDocType
+    fields = ['unit_name', 'description']
+    sort_order = '-allegation_count'
 
     def query(self, term):
-        return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
+        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+            'multi_match',
+            operator='and',
+            fields=['historic_units.{}'.format(field) for field in self.fields],
+            query=term
+        ))
 
 
 class CrWorker(Worker):

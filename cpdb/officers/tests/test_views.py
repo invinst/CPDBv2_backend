@@ -55,6 +55,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'full_name': 'Kevin Kerl',
             'race': 'White',
             'badge': '123456',
+            'historic_units': [{
+                'id': 1,
+                'unit_name': 'CAND',
+                'description': '',
+            }],
             'gender': 'Male',
             'complaint_records': {
                 'count': 1,

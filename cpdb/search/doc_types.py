@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Long
+from elasticsearch_dsl import DocType, Text
 
 from .indices import autocompletes_alias
 
@@ -52,17 +52,6 @@ class CommunityDocType(DocType):
 
     class Meta:
         doc_type = 'community'
-
-
-@autocompletes_alias.doc_type
-class UnitOfficerDocType(DocType):
-    allegation_count = Long()
-    unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    unit_description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-
-    class Meta:
-        doc_type = 'unitofficer'
 
 
 @autocompletes_alias.doc_type

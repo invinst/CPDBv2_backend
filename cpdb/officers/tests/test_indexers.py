@@ -52,6 +52,17 @@ class OfficersIndexerTestCase(SimpleTestCase):
             race='White',
             current_badge='123456',
             historic_badges=['123', '456'],
+            historic_units=[
+                Mock(**{
+                    'id': 1,
+                    'unit_name': '1',
+                    'description': 'Unit 001'
+                }),
+                Mock(**{
+                    'id': 2,
+                    'unit_name': '2',
+                    'description': 'Unit 002'
+                })],
             gender_display='Male',
             birth_year=1910,
             appointed_date=date(2017, 2, 27),
@@ -120,6 +131,17 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'race': 'White',
             'badge': '123456',
             'historic_badges': ['123', '456'],
+            'historic_units': [
+                {
+                    'id': 1,
+                    'unit_name': '1',
+                    'description': 'Unit 001'
+                }, {
+                    'id': 2,
+                    'unit_name': '2',
+                    'description': 'Unit 002'
+                }
+            ],
             'gender': 'Male',
             'date_of_appt': '2017-02-27',
             'date_of_resignation': '2017-12-27',

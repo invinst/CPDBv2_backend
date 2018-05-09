@@ -288,6 +288,10 @@ class Officer(TaggableModel):
         return self.officerbadgenumber_set.exclude(current=True).values_list('star', flat=True)
 
     @property
+    def historic_units(self):
+        return [o.unit for o in self.officerhistory_set.all().order_by('-effective_date')]
+
+    @property
     def trr_count(self):
         return self.trr_set.count()
 

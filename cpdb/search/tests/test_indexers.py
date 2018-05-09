@@ -6,7 +6,7 @@ from django.test import SimpleTestCase, TestCase
 from search.search_indexers import CrIndexer
 from ..search_indexers import (
     BaseIndexer, FAQIndexer, ReportIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
-    CommunityIndexer, IndexerManager, UnitOfficerIndexer
+    CommunityIndexer, IndexerManager
 )
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
@@ -199,36 +199,6 @@ class CommunityIndexerTestCase(TestCase):
             'most_common_complaint': [],
             'race_count': [],
             'median_income': 200,
-        })
-
-
-class UnitOfficerIndexerTestCase(TestCase):
-    def setUp(self):
-        unit = PoliceUnitFactory(unit_name='001', description='Something')
-        officer = OfficerFactory(
-            first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M', birth_year=1944
-        )
-        OfficerAllegationFactory.create_batch(10, final_finding='NS', officer=officer)
-        self.history = OfficerHistoryFactory(unit=unit, officer=officer)
-
-    def test_get_queryset(self):
-        expect(UnitOfficerIndexer().get_queryset()).to.have.length(1)
-
-    def test_extract_datum(self):
-        expect(UnitOfficerIndexer().extract_datum(self.history)).to.eq({
-            'full_name': 'Kevin Osborn',
-            'badge': '',
-            'to': self.history.officer.v2_to,
-            'allegation_count': 10,
-            'sustained_count': 0,
-            'birth_year': 1944,
-            'unit_name': '001',
-            'unit_description': 'Something',
-            'unit': '001',
-            'rank': 'somebody',
-            'race': 'White',
-            'sex': 'Male',
-            'visual_token_background_color': '#c6d4ec'
         })
 
 
