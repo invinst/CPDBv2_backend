@@ -7,13 +7,12 @@ from django.utils.timezone import now
 from mock import Mock, patch
 from robber import expect
 
-from trr.factories import TRRFactory
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
     AllegationCategoryFactory
 )
 from data.models import Officer
-from data.constants import MEDIA_TYPE_DOCUMENT
 from officers.indexers import (
     OfficersIndexer,
     SocialGraphIndexer,
@@ -28,6 +27,47 @@ from officers.indexers import (
     UnitChangeTimelineEventIndexer,
     JoinedTimelineEventIndexer,
 )
+from officers.serializers import OfficerMetricsSerializer
+from trr.factories import TRRFactory
+
+
+class OfficerMetricsSerializerTestCase(SimpleTestCase):
+    def test_serialization(self):
+        obj = Mock(**{
+            'id': 123,
+            'allegation_count': 1,
+            'complaint_percentile': 2,
+            'honorable_mention_count': 3,
+            'percentile_honorable_mention': 7,
+            'sustained_count': 4,
+            'discipline_count': 5,
+            'civilian_compliment_count': 6,
+            'first_name': 'Roberto',
+            'last_name': 'Last Name',
+            'race': 'Asian',
+            'trr_count': 8,
+            'major_award_count': 9,
+            'single_percentiles': {
+                'id': 123,
+                'percentile_honorable_mention': 98.000,
+            },
+        })
+
+        expect(OfficerMetricsSerializer(obj).data).to.eq({
+            'id': 123,
+            'allegation_count': 1,
+            'complaint_percentile': 2.0,
+            'honorable_mention_count': 3,
+            'sustained_count': 4,
+            'discipline_count': 5,
+            'civilian_compliment_count': 6,
+            'trr_count': 8,
+            'major_award_count': 9,
+            'single_percentiles': {
+                'id': 123,
+                'honorable_mention_percentile': 98.000,
+            }
+        })
 
 
 class OfficersIndexerTestCase(SimpleTestCase):
@@ -60,7 +100,6 @@ class OfficersIndexerTestCase(SimpleTestCase):
             allegation_count=2,
             complaint_percentile=99.8,
             honorable_mention_count=1,
-            percentile_honorable_mention=98,
             sustained_count=1,
             discipline_count=1,
             civilian_compliment_count=0,

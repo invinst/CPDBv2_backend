@@ -13,6 +13,7 @@ from data.factories import (
     AllegationFactory, ComplainantFactory, AllegationCategoryFactory
 )
 from data.models import Officer
+from officers.tests.ultils import validate_object
 from trr.factories import TRRFactory
 
 
@@ -127,10 +128,6 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory(id=90)
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
 
-    def validate_object(self, obj, data):
-        for key, value in data.iteritems():
-            expect(getattr(obj, key, None)).to.eq(value)
-
     def test_compute_metric_percentile(self):
         self._create_dataset_for_percentile()
         OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
@@ -173,22 +170,22 @@ class OfficerTestCase(TestCase):
         metric_percentile_2017 = Officer.compute_metric_percentile(2017)
 
         expect(metric_percentile_2017.count()).to.eq(4)
-        self.validate_object(metric_percentile_2017[0], expected_result_yr2017[0])
-        self.validate_object(metric_percentile_2017[1], expected_result_yr2017[1])
-        self.validate_object(metric_percentile_2017[2], expected_result_yr2017[2])
-        self.validate_object(metric_percentile_2017[3], expected_result_yr2017[3])
+        validate_object(metric_percentile_2017[0], expected_result_yr2017[0])
+        validate_object(metric_percentile_2017[1], expected_result_yr2017[1])
+        validate_object(metric_percentile_2017[2], expected_result_yr2017[2])
+        validate_object(metric_percentile_2017[3], expected_result_yr2017[3])
 
         # we have no data of 2018, then percentile metric should return value of 2017 instead
         metric_percentile_2018 = Officer.compute_metric_percentile(2018)
         expect(metric_percentile_2018.count()).to.eq(4)
-        self.validate_object(metric_percentile_2018[0], expected_result_yr2017[0])
-        self.validate_object(metric_percentile_2018[1], expected_result_yr2017[1])
-        self.validate_object(metric_percentile_2018[2], expected_result_yr2017[2])
-        self.validate_object(metric_percentile_2018[3], expected_result_yr2017[3])
+        validate_object(metric_percentile_2018[0], expected_result_yr2017[0])
+        validate_object(metric_percentile_2018[1], expected_result_yr2017[1])
+        validate_object(metric_percentile_2018[2], expected_result_yr2017[2])
+        validate_object(metric_percentile_2018[3], expected_result_yr2017[3])
 
         metric_percentile_2015 = Officer.compute_metric_percentile(2015)
         expect(metric_percentile_2015.count()).to.eq(1)
-        self.validate_object(metric_percentile_2015[0], {
+        validate_object(metric_percentile_2015[0], {
             'year': 2015,
             'officer_id': 1,
             'service_year': 2.9973,  # ~1094 days / 365.0
@@ -204,7 +201,7 @@ class OfficerTestCase(TestCase):
         # expect officer2 to be excluded cause he service less than 1 year
         metric_percentile_2016 = Officer.compute_metric_percentile(2016)
         expect(metric_percentile_2016.count()).to.eq(1)
-        self.validate_object(metric_percentile_2016[0], {
+        validate_object(metric_percentile_2016[0], {
             'year': 2016,
             'officer_id': 1,
             'service_year': 4.0,  # ~ 1460.0 / 365.0,
@@ -216,7 +213,7 @@ class OfficerTestCase(TestCase):
 
         metric_percentile_2017 = Officer.compute_metric_percentile(2017)
         expect(metric_percentile_2017.count()).to.eq(2)
-        self.validate_object(metric_percentile_2017[0], {
+        validate_object(metric_percentile_2017[0], {
             'year': 2017,
             'officer_id': 1,
             'service_year': 4.8,
@@ -225,7 +222,7 @@ class OfficerTestCase(TestCase):
             'metric_allegation_internal': 0.0,
             'metric_trr': 0.0
         })
-        self.validate_object(metric_percentile_2017[1], {
+        validate_object(metric_percentile_2017[1], {
             'year': 2017,
             'officer_id': 2,
             'service_year': 1.6,
@@ -257,23 +254,23 @@ class OfficerTestCase(TestCase):
         honorable_mention_metric_2017 = Officer.compute_honorable_mention_metric(2017)
 
         expect(honorable_mention_metric_2017.count()).to.eq(4)
-        self.validate_object(honorable_mention_metric_2017[0], expected_result_yr2017[0])
-        self.validate_object(honorable_mention_metric_2017[1], expected_result_yr2017[1])
-        self.validate_object(honorable_mention_metric_2017[2], expected_result_yr2017[2])
-        self.validate_object(honorable_mention_metric_2017[3], expected_result_yr2017[3])
+        validate_object(honorable_mention_metric_2017[0], expected_result_yr2017[0])
+        validate_object(honorable_mention_metric_2017[1], expected_result_yr2017[1])
+        validate_object(honorable_mention_metric_2017[2], expected_result_yr2017[2])
+        validate_object(honorable_mention_metric_2017[3], expected_result_yr2017[3])
 
         # we have no data of 2018, then percentile metric should return value of 2017 instead
         honorable_mention_metric_2018 = Officer.compute_honorable_mention_metric(2018)
 
         expect(honorable_mention_metric_2018.count()).to.eq(4)
-        self.validate_object(honorable_mention_metric_2018[0], expected_result_yr2017[0])
-        self.validate_object(honorable_mention_metric_2018[1], expected_result_yr2017[1])
-        self.validate_object(honorable_mention_metric_2018[2], expected_result_yr2017[2])
-        self.validate_object(honorable_mention_metric_2018[3], expected_result_yr2017[3])
+        validate_object(honorable_mention_metric_2018[0], expected_result_yr2017[0])
+        validate_object(honorable_mention_metric_2018[1], expected_result_yr2017[1])
+        validate_object(honorable_mention_metric_2018[2], expected_result_yr2017[2])
+        validate_object(honorable_mention_metric_2018[3], expected_result_yr2017[3])
 
         honorable_mention_metric_2015 = Officer.compute_honorable_mention_metric(2015)
         expect(honorable_mention_metric_2015.count()).to.eq(1)
-        self.validate_object(honorable_mention_metric_2015[0], {
+        validate_object(honorable_mention_metric_2015[0], {
             'id': 1,
             'metric_honorable_mention': 0.6673
         })
@@ -284,18 +281,18 @@ class OfficerTestCase(TestCase):
         # expect officer2 to be excluded cause he service less than 1 year
         honorable_mention_metric_2016 = Officer.compute_honorable_mention_metric(2016)
         expect(honorable_mention_metric_2016.count()).to.eq(1)
-        self.validate_object(honorable_mention_metric_2016[0], {
+        validate_object(honorable_mention_metric_2016[0], {
             'id': 1,
             'metric_honorable_mention': 0.75
         })
 
         honorable_mention_metric_2017 = Officer.compute_honorable_mention_metric(2017)
         expect(honorable_mention_metric_2017.count()).to.eq(2)
-        self.validate_object(honorable_mention_metric_2017[0], {
+        validate_object(honorable_mention_metric_2017[0], {
             'id': 1,
             'metric_honorable_mention': 0.625
         })
-        self.validate_object(honorable_mention_metric_2017[1], {
+        validate_object(honorable_mention_metric_2017[1], {
             'id': 2,
             'metric_honorable_mention': 1.875
         })
@@ -372,7 +369,7 @@ class OfficerTestCase(TestCase):
         # current year
         top_100_complaint_officers = Officer.top_complaint_officers(100)
         expect(top_100_complaint_officers).to.have.length(4)
-        self.validate_object(top_100_complaint_officers[0], {
+        validate_object(top_100_complaint_officers[0], {
             'year': 2017,
             'officer_id': 3,
             'service_year': 2.6,
@@ -385,7 +382,7 @@ class OfficerTestCase(TestCase):
             'percentile_allegation_civilian': 0,
             'percentile_trr': 0
         })
-        self.validate_object(top_100_complaint_officers[1], {
+        validate_object(top_100_complaint_officers[1], {
             'year': 2017,
             'officer_id': 4,
             'service_year': 2.8,
@@ -398,7 +395,7 @@ class OfficerTestCase(TestCase):
             'percentile_allegation_civilian': 0,
             'percentile_trr': 0
         })
-        self.validate_object(top_100_complaint_officers[2], {
+        validate_object(top_100_complaint_officers[2], {
             'year': 2017,
             'officer_id': 1,
             'service_year': 4.8,
@@ -411,7 +408,7 @@ class OfficerTestCase(TestCase):
             'percentile_allegation_civilian': 50.0,
             'percentile_trr': 0
         })
-        self.validate_object(top_100_complaint_officers[3], {
+        validate_object(top_100_complaint_officers[3], {
             'year': 2017,
             'officer_id': 2,
             'service_year': 1.6,
@@ -427,7 +424,7 @@ class OfficerTestCase(TestCase):
 
         top_100_complaint_officers_2015 = Officer.top_complaint_officers(100, year=2015)
         expect(top_100_complaint_officers_2015).to.have.length(1)
-        self.validate_object(top_100_complaint_officers_2015[0], {
+        validate_object(top_100_complaint_officers_2015[0], {
             'year': 2015,
             'officer_id': 1,
             'service_year': 2.9973,  # ~1094 days / 365.0
@@ -449,22 +446,22 @@ class OfficerTestCase(TestCase):
         # current year
         annotated_officers = Officer.annotate_honorable_mention_percentile_officers()
         expect(annotated_officers).to.have.length(4)
-        self.validate_object(annotated_officers[0], {
+        validate_object(annotated_officers[0], {
             'id': 3,
             'metric_honorable_mention': 0,
             'percentile_honorable_mention': 0,
         })
-        self.validate_object(annotated_officers[1], {
+        validate_object(annotated_officers[1], {
             'id': 4,
             'metric_honorable_mention': 0,
             'percentile_honorable_mention': 0,
         })
-        self.validate_object(annotated_officers[2], {
+        validate_object(annotated_officers[2], {
             'id': 1,
             'metric_honorable_mention': 0.625,
             'percentile_honorable_mention': 50.0,
         })
-        self.validate_object(annotated_officers[3], {
+        validate_object(annotated_officers[3], {
             'id': 2,
             'metric_honorable_mention': 1.875,
             'percentile_honorable_mention': 75.0,
@@ -488,7 +485,7 @@ class OfficerTestCase(TestCase):
         top_100_complaint_officers_with_type = Officer.top_complaint_officers(100, year=2015,
                                                                               percentile_types=[PERCENTILE_ALLEGATION])
         expect(top_100_complaint_officers_with_type).to.have.length(1)
-        self.validate_object(top_100_complaint_officers_with_type[0], {
+        validate_object(top_100_complaint_officers_with_type[0], {
             'year': 2015,
             'officer_id': 1,
             'service_year': 2.9973,  # ~1094 days / 365.0
