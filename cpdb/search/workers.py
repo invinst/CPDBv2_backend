@@ -110,7 +110,7 @@ class CommunityWorker(Worker):
 class UnitOfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
     fields = ['unit_name', 'description']
-    sort_order = '-allegation_count'
+    sort_order = ['-allegation_count']
 
     def query(self, term):
         return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
@@ -118,7 +118,7 @@ class UnitOfficerWorker(Worker):
             operator='and',
             fields=['historic_units.{}'.format(field) for field in self.fields],
             query=term
-        ))
+        )).sort(*self.sort_order)
 
 
 class CrWorker(Worker):
