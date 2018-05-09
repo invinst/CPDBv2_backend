@@ -1551,6 +1551,44 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## Officer coaccusals [/officers/{officer_id}/coaccusals]
+
+### Get Officer coaccusals [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "id": "8562",
+            "coaccusals": [
+                {
+                    "id": 1,
+                    "full_name": "Officer 1",
+                    "allegation_count": 2,
+                    "sustained_count": 1,
+                    "complaint_percentile": 95.0,
+                    "race": "White",
+                    "gender": "Male",
+                    "birth_year": 1950,
+                    "coaccusal_count": 2,
+                    "rank": "Police Officer"
+                }, {
+                    "id": 2,
+                    "full_name": "Officer 2",
+                    "allegation_count": 1,
+                    "sustained_count": 1,
+                    "complaint_percentile": 99.0,
+                    "race": "Black",
+                    "gender": "Male",
+                    "birth_year": 1970,
+                    "coaccusal_count": 1,
+                    "rank": "Police Officer"
+                }
+            ]
+        }
+
 ## Officer timeline items list [/officers/{officer_id}/timeline-items/{?offset,limit}]
 
 ### Get Officer timeline items list [GET]
