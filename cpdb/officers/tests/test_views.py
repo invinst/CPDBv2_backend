@@ -1,12 +1,12 @@
-import pytz
 from datetime import date, datetime
 
+import pytz
 from django.core.urlresolvers import reverse
-
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 from robber import expect
 
+from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory
@@ -14,7 +14,6 @@ from data.factories import (
 from officers.doc_types import OfficerInfoDocType
 from trr.factories import TRRFactory
 from .mixins import OfficerSummaryTestCaseMixin
-from data.constants import ACTIVE_YES_CHOICE
 
 
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
@@ -35,8 +34,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             final_finding='SU', start_date=date(2000, 1, 1), final_outcome='027'
         )
         AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honored Police Star')
         AwardFactory(officer=officer, award_type='Honorable Mention')
+        TRRFactory(officer=officer)
 
         self.refresh_index()
 
@@ -90,13 +90,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
             'birth_year': 1910,
             'sustained_count': 1,
-            'civilian_compliment_count': 2,
+            'civilian_compliment_count': 1,
             'allegation_count': 1,
             'discipline_count': 1,
             'honorable_mention_count': 1,
-            'trr_count': 0,
             'to': '/officer/123/',
-            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123'
+            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123',
+            'trr_count': 1,
+            'major_award_count': 1,
         })
 
     def test_summary_no_match(self):
@@ -491,3 +492,64 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 },
             }
         ])
+
+    def test_coaccusals_not_found(self):
+        response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 999}))
+        expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_coaccusals(self):
+        officer0 = OfficerFactory()
+        officer1 = OfficerFactory(
+            first_name='Officer',
+            last_name='1',
+            complaint_percentile=95.0,
+            race='White',
+            gender='M',
+            birth_year=1950,
+            rank='Police Officer',
+        )
+        officer2 = OfficerFactory(
+            first_name='Officer',
+            last_name='2',
+            complaint_percentile=99.0,
+            race='Black',
+            gender='M',
+            birth_year=1970,
+            rank='Police Officer',
+        )
+        allegation0 = AllegationFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer0, allegation=allegation0, final_finding='SU')
+        OfficerAllegationFactory(officer=officer0, allegation=allegation1, final_finding='NS')
+        OfficerAllegationFactory(officer=officer0, allegation=allegation2, final_finding='NS')
+        OfficerAllegationFactory(officer=officer1, allegation=allegation0, final_finding='SU')
+        OfficerAllegationFactory(officer=officer1, allegation=allegation1, final_finding='NS')
+        OfficerAllegationFactory(officer=officer2, allegation=allegation2, final_finding='SU')
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer0.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([{
+            'id': officer1.id,
+            'full_name': 'Officer 1',
+            'allegation_count': 2,
+            'sustained_count': 1,
+            'complaint_percentile': 95.0,
+            'race': 'White',
+            'gender': 'Male',
+            'birth_year': 1950,
+            'coaccusal_count': 2,
+            'rank': 'Police Officer',
+        }, {
+            'id': officer2.id,
+            'full_name': 'Officer 2',
+            'allegation_count': 1,
+            'sustained_count': 1,
+            'complaint_percentile': 99.0,
+            'race': 'Black',
+            'gender': 'Male',
+            'birth_year': 1970,
+            'coaccusal_count': 1,
+            'rank': 'Police Officer',
+        }])
