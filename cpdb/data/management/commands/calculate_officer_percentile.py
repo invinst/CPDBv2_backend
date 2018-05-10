@@ -11,9 +11,9 @@ class Command(BaseCommand):
         if percentile_values:
             Officer.objects.all().update(complaint_percentile=None)
             for data in percentile_values:
-                officer = Officer.objects.get(pk=data['officer_id'])
+                officer = Officer.objects.get(pk=data.officer_id)
                 if officer:
-                    officer.complaint_percentile = data['percentile_allegation']
+                    officer.complaint_percentile = data.percentile_allegation
                     officer.save()
 
     def handle(self, *args, **kwargs):
