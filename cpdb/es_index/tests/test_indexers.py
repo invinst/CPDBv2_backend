@@ -8,6 +8,7 @@ from es_index.indexers import BaseIndexer, es_client
 
 
 class IndexersTestCase(SimpleTestCase):
+
     def test_get_queryset(self):
         expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
 
@@ -32,7 +33,8 @@ class IndexersTestCase(SimpleTestCase):
         expect(list(indexer.docs())).to.eq([{
             '_type': 'my_doc_type',
             '_source': {'a': 'b'},
-            '_index': 'new_index_name'
+            '_index': 'new_index_name',
+            '_op_type': 'index'
         }])
 
     def test_docs_when_extract_datum_return_single_value(self):
@@ -53,8 +55,106 @@ class IndexersTestCase(SimpleTestCase):
         expect(list(indexer.docs())).to.eq([{
             '_type': 'my_doc_type',
             '_source': {'a': 'b'},
-            '_index': 'new_index_name'
+            '_index': 'new_index_name',
+            '_op_type': 'index'
         }])
+
+    def test_docs_when_op_type_is_update(self):
+        class MyDocType(DocType):
+            pass
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = Mock(new_index_name='new_index_name')
+            op_type = 'update'
+
+            def get_queryset(self):
+                return [1]
+
+            def extract_datum(self, datum):
+                return {'id': 1, 'a': 'b'}
+
+        indexer = ConcreteIndexer()
+        expect(list(indexer.docs())).to.eq([{
+            '_id': 1,
+            '_type': 'my_doc_type',
+            '_source': {'doc': {'a': 'b'}},
+            '_index': 'new_index_name',
+            '_op_type': 'update'
+        }])
+
+    def test_add_meta_id_when_there_is_id_in_raw_doc(self):
+        class MyDocType(DocType):
+            pass
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = Mock(new_index_name='new_index_name')
+
+            def get_queryset(self):
+                return [1]
+
+            def extract_datum(self, datum):
+                return {'a': 'b', 'id': 1}
+
+        indexer = ConcreteIndexer()
+        expect(list(indexer.docs())).to.eq([{
+            '_type': 'my_doc_type',
+            '_source': {'a': 'b', 'id': 1},
+            '_index': 'new_index_name',
+            '_id': 1,
+            '_op_type': 'index'
+        }])
+
+    def test_add_meta_and_script_when_parent_doc_type_property_is_set(self):
+        class MyDocType(DocType):
+            pass
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = Mock(new_index_name='new_index_name')
+            parent_doc_type_property = 'children'
+
+            def get_queryset(self):
+                return [1]
+
+            def extract_datum(self, datum):
+                return {'a': 'b', 'id': 1}
+
+        indexer = ConcreteIndexer()
+        expect(list(indexer.docs())).to.eq([{
+            '_type': 'my_doc_type', '_id': 1,
+            '_source': {
+                'upsert': {'id': 1, 'children': [{'a': 'b', 'id': 1}]},
+                'script': {
+                    'lang': 'painless',
+                    'inline': "if (!ctx._source.containsKey('children')) { ctx._source.children = [] } "
+                              "ctx._source.children.add(params.new_doc)",
+                    'params': {'new_doc': {'a': 'b', 'id': 1}}
+                }},
+            '_op_type': 'update', '_index': 'new_index_name'
+        }])
+
+    def test_init_doc_type_when_create_mapping(self):
+        init_mock = Mock()
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = Mock(init=init_mock)
+            index_alias = Mock(new_index_name='new_index_name')
+
+        ConcreteIndexer().create_mapping()
+        expect(init_mock).to.be.called()
+
+    def test_dont_init_doc_type_when_parent_doc_type_property_is_set(self):
+        init_mock = Mock()
+
+        class ConcreteIndexer(BaseIndexer):
+            doc_type_klass = Mock(init=init_mock)
+            index_alias = Mock(new_index_name='new_index_name')
+            parent_doc_type_property = 'children'
+
+        ConcreteIndexer().create_mapping()
+        expect(init_mock).not_to.be.called()
 
     @patch('es_index.indexers.bulk')
     def test_reindex(self, mock_bulk):

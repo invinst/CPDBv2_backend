@@ -1,11 +1,14 @@
+from datetime import date, datetime
+
 from django.test.testcases import TestCase
 
 from robber.expect import expect
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AttachmentFileFactory,
-    AllegationCategoryFactory)
-from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory,
+    AllegationCategoryFactory, VictimFactory, AttachmentFileFactory
+)
 
 
 class AllegationTestCase(TestCase):
@@ -41,46 +44,11 @@ class AllegationTestCase(TestCase):
         expect(allegation.complainants.count()).to.eq(1)
         expect(allegation.complainants[0].id).to.eq(1)
 
-    def test_videos(self):
+    def test_victims(self):
         allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_VIDEO)
-        expect(allegation.videos.count()).to.eq(0)
-
-    def test_audios(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_AUDIO)
-        expect(allegation.audios.count()).to.eq(0)
-
-    def test_documents(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        expect(allegation.documents.count()).to.eq(1)
-        expect(allegation.documents[0].id).to.eq(1)
-
-    def test_exclude_ipra_documents(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(
-            id=1, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TRR',
-            original_url='original_url_1'
-        )
-        AttachmentFileFactory(
-            id=2, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OBR',
-            original_url='original_url_2'
-        )
-        AttachmentFileFactory(
-            id=3, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='OCIR',
-            original_url='original_url_3'
-        )
-        AttachmentFileFactory(
-            id=4, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='AR',
-            original_url='original_url_4'
-        )
-        AttachmentFileFactory(
-            id=5, allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, tag='TAG',
-            original_url='original_url_5'
-        )
-        expect(allegation.documents.count()).to.eq(1)
-        expect(allegation.documents[0].id).to.eq(5)
+        VictimFactory(id=1, allegation=allegation)
+        expect(allegation.victims.count()).to.eq(1)
+        expect(allegation.victims[0].id).to.eq(1)
 
     def test_get_category_names(self):
         allegation = AllegationFactory()
@@ -91,7 +59,7 @@ class AllegationTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
         expect(allegation.category_names).to.eq(['Illegal Search', 'Use of Force'])
 
-        OfficerAllegationFactory(allegation=allegation)
+        OfficerAllegationFactory(allegation=allegation, allegation_category=None)
         expect(allegation.category_names).to.eq(['Illegal Search', 'Unknown', 'Use of Force'])
 
     def test_complainant_races(self):
@@ -141,3 +109,30 @@ class AllegationTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, officer=None)
 
         expect(allegation.v2_to).to.eq('/complaint/456/')
+
+    def test_first_start_date(self):
+        allegation1 = AllegationFactory()
+        expect(allegation1.first_start_date).to.equal(None)
+
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation2, start_date=date(2002, 2, 2))
+        expect(allegation2.first_start_date).to.eq(date(2002, 2, 2))
+
+    def test_first_end_date(self):
+        allegation1 = AllegationFactory()
+        expect(allegation1.first_end_date).to.equal(None)
+
+        allegation2 = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation2, end_date=date(2012, 1, 1))
+        expect(allegation2.first_end_date).to.eq(date(2012, 1, 1))
+
+    def test_get_newest_added_document(self):
+        allegation = AllegationFactory()
+        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=None)
+        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2011, 1, 1))
+        file = AttachmentFileFactory(
+            allegation=allegation,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            created_at=datetime(2012, 1, 1)
+        )
+        expect(allegation.get_newest_added_document().pk).to.eq(file.pk)

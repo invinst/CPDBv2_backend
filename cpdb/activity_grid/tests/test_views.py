@@ -43,7 +43,13 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             allegation__incident_date=datetime(2016, 1, 1),
             start_date=date(2016, 1, 1)
         )
-        OfficerAllegationFactory.create_batch(4, officer=officer, final_finding='NS')
+        OfficerAllegationFactory.create_batch(
+            4,
+            officer=officer,
+            final_finding='NS',
+            start_date=date(2015, 1, 1),
+            allegation__incident_date=datetime(2015, 2, 20)
+        )
 
         self.refresh_index()
         url = reverse('api-v2:activity-grid-list')
@@ -54,15 +60,14 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             {
                 'id': 1,
                 'full_name': 'Jerome Finnigan',
-                'visual_token_background_color': '#d4e2f4',
                 'complaint_count': 6,
                 'sustained_count': 2,
                 'birth_year': 1950,
+                'complaint_percentile': '0.000',
                 'race': 'Asian',
                 'gender': 'Male',
-                'complaint_percentile': None,
                 'percentile': {
-                    'officer_id': 1,
+                    'id': 1,
                     'year': 2016,
                     'percentile_trr': '0.000',
                     'percentile_allegation': '0.000',

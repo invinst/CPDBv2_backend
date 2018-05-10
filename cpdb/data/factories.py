@@ -86,6 +86,14 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         tzinfo=pytz.utc
     ))
 
+    @factory.post_generation
+    def areas(self, create, extracted, **kwargs):
+        if not create:  # Simple build, do nothing.
+            return
+        if extracted:   # A list of groups were passed in, use them
+            for area in extracted:
+                self.areas.add(area)
+
 
 class InvestigatorAllegationFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -93,6 +101,11 @@ class InvestigatorAllegationFactory(factory.django.DjangoModelFactory):
 
     investigator = factory.SubFactory(InvestigatorFactory)
     allegation = factory.SubFactory(AllegationFactory)
+
+
+class AllegationCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AllegationCategory
 
 
 class OfficerAllegationFactory(factory.django.DjangoModelFactory):
@@ -104,6 +117,7 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
     final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
+    allegation_category = factory.SubFactory(AllegationCategoryFactory)
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):
@@ -131,11 +145,6 @@ class ComplainantFactory(factory.django.DjangoModelFactory):
     gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     race = 'Black'
     age = FuzzyInteger(18, 60)
-
-
-class AllegationCategoryFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AllegationCategory
 
 
 class OfficerHistoryFactory(factory.django.DjangoModelFactory):
@@ -188,8 +197,6 @@ class PoliceWitnessFactory(factory.django.DjangoModelFactory):
         model = PoliceWitness
 
     allegation = factory.SubFactory(AllegationFactory)
-    gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
-    race = 'Black'
     officer = factory.SubFactory(OfficerFactory)
 
 
@@ -198,7 +205,7 @@ class AwardFactory(factory.django.DjangoModelFactory):
         model = Award
 
     officer = factory.SubFactory(OfficerFactory)
-    award_type = factory.LazyFunction(lambda: random.choice(['Honorable Mention', 'Complimentary Letter']))
+    award_type = factory.LazyFunction(lambda: random.choice(['Life Saving Award', 'Complimentary Letter']))
     start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     request_date = factory.LazyFunction(lambda: fake.date_time_this_decade())

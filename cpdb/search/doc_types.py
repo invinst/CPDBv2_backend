@@ -1,11 +1,11 @@
 from elasticsearch_dsl import DocType, Text, Long
 
-from .indices import autocompletes
+from .indices import autocompletes_alias
 
 from search.analyzers import autocomplete, autocomplete_search
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class FAQDocType(DocType):
     question = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     answer = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -15,7 +15,7 @@ class FAQDocType(DocType):
         doc_type = 'faq'
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class ReportDocType(DocType):
     publication = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     author = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -27,18 +27,7 @@ class ReportDocType(DocType):
         doc_type = 'report'
 
 
-@autocompletes.doc_type
-class OfficerDocType(DocType):
-    full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    badge = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    allegation_count = Long()
-
-    class Meta:
-        doc_type = 'officer'
-
-
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class UnitDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -47,7 +36,7 @@ class UnitDocType(DocType):
         doc_type = 'unit'
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class NeighborhoodsDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -56,7 +45,7 @@ class NeighborhoodsDocType(DocType):
         doc_type = 'neighborhood'
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class CommunityDocType(DocType):
     name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -65,7 +54,7 @@ class CommunityDocType(DocType):
         doc_type = 'community'
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class UnitOfficerDocType(DocType):
     allegation_count = Long()
     unit_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
@@ -76,7 +65,7 @@ class UnitOfficerDocType(DocType):
         doc_type = 'unitofficer'
 
 
-@autocompletes.doc_type
+@autocompletes_alias.doc_type
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 

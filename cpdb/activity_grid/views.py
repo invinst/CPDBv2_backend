@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from activity_grid.models import ActivityCard
-from activity_grid.serializers import ActivityCardSerializer
-from officers.workers import PercentileWorker
+from activity_grid.serializers import OfficerCardSerializer
+from officers.doc_types import OfficerInfoDocType
 
 
 class ActivityGridViewSet(viewsets.ViewSet):
@@ -15,14 +15,8 @@ class ActivityGridViewSet(viewsets.ViewSet):
 
         ids = list(queryset.values_list('officer', flat=True))
 
-        es_results = PercentileWorker().search(ids, size=40)
-        percentile_data = {h.officer_id: h for h in es_results.hits}
+        results = OfficerInfoDocType.search().query('terms', id=ids)[0:40].execute()
+        results = sorted(results, cmp=lambda x, y: ids.index(x.id) - ids.index(y.id))
 
-        results = []
-        for obj in queryset:
-            if obj.officer.id in percentile_data:
-                obj.officer.percentile = percentile_data[obj.officer.id].to_dict()
-            results.append(obj)
-
-        serializer = ActivityCardSerializer(results, many=True)
+        serializer = OfficerCardSerializer(results, many=True)
         return Response(serializer.data)
