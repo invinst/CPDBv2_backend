@@ -723,8 +723,8 @@ class Area(TaggableModel):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
-    commander = models.ForeignKey(Officer, null=True, blank=True)
-    alderman = models.CharField(max_length=255, null=True, blank=True, help_text="Alderman of Ward")
+    commander = models.ForeignKey(Officer, null=True)
+    alderman = models.CharField(max_length=255, null=True, help_text="Alderman of Ward")
 
     objects = AreaObjectManager()
 
