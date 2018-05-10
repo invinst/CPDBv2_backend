@@ -34,8 +34,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             final_finding='SU', start_date=date(2000, 1, 1), final_outcome='027'
         )
         AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
+        AwardFactory(officer=officer, award_type='Honored Police Star')
         AwardFactory(officer=officer, award_type='Honorable Mention')
+        TRRFactory(officer=officer)
 
         self.refresh_index()
 
@@ -89,13 +90,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
             'birth_year': 1910,
             'sustained_count': 1,
-            'civilian_compliment_count': 2,
+            'civilian_compliment_count': 1,
             'allegation_count': 1,
             'discipline_count': 1,
             'honorable_mention_count': 1,
-            'trr_count': 0,
             'to': '/officer/123/',
-            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123'
+            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123',
+            'trr_count': 1,
+            'major_award_count': 1,
         })
 
     def test_summary_no_match(self):
