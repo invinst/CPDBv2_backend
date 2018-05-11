@@ -679,7 +679,7 @@ class Officer(TaggableModel):
     def current_salary(self):
         latest_year = self.salary_set.all().aggregate(Max('year'))['year__max']
         try:
-            return self.salary_set.filter(year=latest_year)[0]
+            return self.salary_set.filter(year=latest_year)[0].salary
         except IndexError:
             return None
 

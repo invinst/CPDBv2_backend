@@ -624,6 +624,6 @@ class OfficerTestCase(TestCase):
         SalaryFactory(officer=officer, year=2010, salary=5000)
         SalaryFactory(officer=officer, year=2012, salary=10000)
         SalaryFactory(officer=officer, year=2015, salary=15000)
-        current_salary = SalaryFactory(officer=officer, year=2017, salary=20000)
+        SalaryFactory(officer=officer, year=2017, salary=20000)
 
-        expect(officer.current_salary).to.eq(current_salary)
+        expect(officer.current_salary).to.eq(20000)

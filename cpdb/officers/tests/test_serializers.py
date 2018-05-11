@@ -58,7 +58,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'complainant_age_aggregation': [],
             'complainant_gender_aggregation': [],
             'total_complaints_aggregation': [],
-            'current_salary': Mock(**{'salary': 90000}),
+            'current_salary': 90000,
         })
         expect(OfficerSummarySerializer(obj).data).to.eq({
             'id': 789,
@@ -142,7 +142,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
                 'items': [],
             },
             'birth_year': 1950,
-            'current_salary': 0,
+            'current_salary': None,
         })
 
 

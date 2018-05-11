@@ -29,7 +29,7 @@ class OfficerSummarySerializer(serializers.Serializer):
     gender = serializers.CharField(source='gender_display')
     complaint_records = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField()
-    current_salary = serializers.SerializerMethodField()
+    current_salary = serializers.IntegerField()
 
     def get_complaint_records(self, obj):
         return {
@@ -46,12 +46,6 @@ class OfficerSummarySerializer(serializers.Serializer):
 
     def get_active(self, obj):
         return obj.get_active_display()
-
-    def get_current_salary(self, obj):
-        try:
-            return obj.current_salary.salary
-        except AttributeError:
-            return 0
 
 
 class OfficerMetricsSerializer(serializers.Serializer):
