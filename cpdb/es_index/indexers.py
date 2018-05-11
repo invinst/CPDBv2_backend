@@ -1,3 +1,4 @@
+import copy
 import types
 
 from tqdm import tqdm
@@ -10,6 +11,7 @@ class BaseIndexer(object):
     doc_type_klass = None
     index_alias = None
     parent_doc_type_property = None
+    op_type = 'index'
 
     def get_queryset(self):
         raise NotImplementedError
@@ -18,31 +20,36 @@ class BaseIndexer(object):
         raise NotImplementedError
 
     def _embed_update_script(self, doc):
-        raw_doc = doc['_source']
+        raw_doc = copy.deepcopy(doc['_source'])
         doc['_op_type'] = 'update'
-        doc['_source'] = {
-            'upsert': {
-                "id": raw_doc['id'],
-                self.parent_doc_type_property: [raw_doc]
+        if self.parent_doc_type_property:
+            doc['_source'] = {
+                'upsert': {
+                    "id": raw_doc['id'],
+                    self.parent_doc_type_property: [raw_doc]
+                }
             }
-        }
-        doc['_source']['script'] = {
-            "inline": "if (!ctx._source.containsKey('{property}')) {{ ctx._source.{property} = [] }} "
-                      "ctx._source.{property}.add(params.new_doc)".format(property=self.parent_doc_type_property),
-            "lang": "painless",
-            "params": {"new_doc": raw_doc}
-        }
+            doc['_source']['script'] = {
+                "inline": "if (!ctx._source.containsKey('{property}')) {{ ctx._source.{property} = [] }} "
+                          "ctx._source.{property}.add(params.new_doc)".format(property=self.parent_doc_type_property),
+                "lang": "painless",
+                "params": {"new_doc": raw_doc}
+            }
+        else:
+            raw_doc.pop('id')
+            doc['_source'] = {'doc': raw_doc}
         return doc
 
     def doc_dict(self, raw_doc):
         doc = self.doc_type_klass(**raw_doc).to_dict(include_meta=True)
         doc['_index'] = self.index_alias.new_index_name
+        doc['_op_type'] = self.op_type
 
         if 'id' in raw_doc:
             doc['_id'] = raw_doc['id']
 
-        # if this is children indexers, we update instead of creating
-        if self.parent_doc_type_property:
+        # if op_type is update, we update instead of creating
+        if self.parent_doc_type_property or self.op_type == 'update':
             doc = self._embed_update_script(doc)
         return doc
 

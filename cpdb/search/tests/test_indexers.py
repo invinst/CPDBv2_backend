@@ -5,8 +5,8 @@ from django.test import SimpleTestCase, TestCase
 
 from search.search_indexers import CrIndexer
 from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
-    CommunityIndexer, IndexerManager
+    BaseIndexer, FAQIndexer, ReportIndexer, UnitIndexer, AreaIndexer,
+    IndexerManager
 )
 from cms.factories import FAQPageFactory, ReportPageFactory
 from data.factories import (
@@ -148,17 +148,94 @@ class UnitIndexerTestCase(TestCase):
         })
 
 
-class AreaTypeIndexerTestCase(TestCase):
+class AreaIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(0)
+        AreaFactory()
+        expect(area_indexer.get_queryset().count()).to.eq(1)
+        expect(area_indexer._percentiles).to.have.length(0)
+
+    def test_get_queryset_with_police_district(self):
+        area1 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='White', count=1000, area=area1)
+        AllegationFactory.create_batch(2, areas=[area1])
+
+        area2 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='Black', count=100, area=area2)
+        AllegationFactory.create_batch(1, areas=[area2])
+
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(2)
+        expect(area_indexer._percentiles).to.eq({
+            area1.id: 0.0,
+            area2.id: 50.0
+        })
+
     def test_extract_datum(self):
-        datum = AreaFactory(name='name', tags=['tag'], median_income=343)
-        RacePopulationFactory(area=datum, race='Asian', count=101)
+        commander = OfficerFactory(first_name='Captain', last_name='America')
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            commander=commander,
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+        area_indexer = AreaIndexer()
+        area_indexer._percentiles = {area.id: 0}
 
         expect(
-            AreaTypeIndexer().extract_datum(datum)
+            area_indexer.extract_datum(area)
+        ).to.be.eq({
+            'name': 'Other Name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [{
+                'race': 'Asian',
+                'count': 101
+            }],
+            'allegation_percentile': 0,
+            'median_income': 343,
+            'commander': {
+                'id': commander.id,
+                'full_name': 'Captain America',
+                'allegation_count': 0,
+            },
+            'alderman': None,
+        })
+
+    def test_extract_datum_with_ward_name(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='wards',
+            alderman='IronMan',
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+
+        expect(
+            AreaIndexer().extract_datum(area)
         ).to.be.eq({
             'name': 'name',
-            'url': datum.v1_url,
-            'tags': ['tag'],
+            'url': area.v1_url,
+            'area_type': 'ward',
+            'tags': ['tag', 'ward'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -167,38 +244,9 @@ class AreaTypeIndexerTestCase(TestCase):
                 'count': 101
             }],
             'median_income': 343,
-        })
-
-
-class NeighborhoodsIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(NeighborhoodsIndexer().get_queryset()).to.have.length(1)
-        expect(NeighborhoodsIndexer().get_queryset().first().area_type).to.be.eq('neighborhoods')
-
-
-class CommunityIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(CommunityIndexer().get_queryset()).to.have.length(1)
-        expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
-
-    def test_extract_datum(self):
-        datum = AreaFactory(name='name', area_type='community', median_income=200)
-
-        expect(CommunityIndexer().extract_datum(datum)).to.be.eq({
-            'name': 'name',
-            'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=name',
-            'tags': ['community'],
-            'allegation_count': 0,
-            'officers_most_complaint': [],
-            'most_common_complaint': [],
-            'race_count': [],
-            'median_income': 200,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
         })
 
 

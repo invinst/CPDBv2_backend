@@ -11,7 +11,8 @@ from officers.indexers import (
     AwardNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer,
     OfficerPercentileIndexer,
-    OfficerCoaccusalsIndexer
+    OfficerCoaccusalsIndexer,
+    OfficerSinglePercentileIndexer
 )
 
 
@@ -33,6 +34,7 @@ class OfficerSummaryTestCaseMixin(object):
             TRRNewTimelineEventIndexer().reindex()
             SocialGraphIndexer().reindex()
             OfficerPercentileIndexer().reindex()
+            OfficerSinglePercentileIndexer().reindex()
             OfficerCoaccusalsIndexer().reindex()
 
         officers_index_alias.write_index.refresh()
