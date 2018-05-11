@@ -7,7 +7,7 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import Concat, ExtractYear, Lower
+from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
@@ -764,11 +764,39 @@ class OfficerHistory(models.Model):
         return self.unit.description
 
 
+class AreaObjectManager(models.Manager):
+    def with_allegation_per_capita(self):
+        racepopulation = RacePopulation.objects.filter(area=models.OuterRef('pk')).values('area')
+        population = racepopulation.annotate(s=models.Sum('count')).values('s')
+        query = Area.objects.annotate(
+            population=models.Subquery(population),
+            complaint_count=Count('allegation', distinct=True))
+        query = query.annotate(
+            allegation_per_capita=models.ExpressionWrapper(
+                Cast(F('complaint_count'), models.FloatField()) / F('population'),
+                output_field=models.FloatField()))
+        return query
+
+
 class Area(TaggableModel):
+    SESSION_BUILDER_MAPPING = {
+        'neighborhoods': 'neighborhood',
+        'community': 'community',
+        'school-grounds': 'school_ground',
+        'wards': 'ward',
+        'police-districts': 'police_district',
+        'beat': 'beat',
+    }
+
     name = models.CharField(max_length=100)
+    description = models.CharField(max_length=255, null=True, blank=True, help_text="Another name for area")
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
+    commander = models.ForeignKey(Officer, null=True)
+    alderman = models.CharField(max_length=255, null=True, help_text="Alderman of Ward")
+
+    objects = AreaObjectManager()
 
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
@@ -796,15 +824,15 @@ class Area(TaggableModel):
 
     @property
     def v1_url(self):
-        if self.area_type == 'neighborhoods':
-            return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
-                                                                                      name=self.name)
+        base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
 
-        if self.area_type == 'community':
-            return '{domain}/url-mediator/session-builder?community={name}'.format(domain=settings.V1_URL,
-                                                                                   name=self.name)
-
-        return settings.V1_URL
+        if self.area_type not in self.SESSION_BUILDER_MAPPING:
+            return settings.V1_URL
+        return '{base_url}?{keyword}={name}'.format(
+            base_url=base_url,
+            keyword=self.SESSION_BUILDER_MAPPING[self.area_type],
+            name=self.name
+        )
 
 
 class RacePopulation(models.Model):

@@ -4,11 +4,11 @@ from robber import expect
 
 from search.workers import (
     FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-    NeighborhoodsWorker, CommunityWorker, CrWorker
+    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker
 )
 from search.doc_types import (
     FAQDocType, ReportDocType, UnitDocType, UnitOfficerDocType,
-    NeighborhoodsDocType, CommunityDocType, CrDocType
+    AreaDocType, CrDocType
 )
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
@@ -121,7 +121,7 @@ class UnitWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = NeighborhoodsDocType(name='name')
+        doc = AreaDocType(name='name', area_type='neighborhood')
         doc.save()
 
         self.refresh_index()
@@ -132,13 +132,28 @@ class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = CommunityDocType(name='name')
+        doc = AreaDocType(name='name', area_type='community')
         doc.save()
 
         self.refresh_index()
 
         response = CommunityWorker().search('name')
         expect(response.hits.total).to.be.equal(1)
+
+
+class AreaWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search_sort_by_name(self):
+        doc = AreaDocType(name='name1', area_type='community')
+        doc.save()
+        doc = AreaDocType(name='name2')
+        doc.save()
+
+        self.refresh_index()
+
+        response = AreaWorker().search('name')
+        expect(response.hits.total).to.be.equal(2)
+        expect(response[0].name).to.be.eq('name1')
+        expect(response[1].name).to.be.eq('name2')
 
 
 class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
