@@ -212,6 +212,33 @@ class AreaIndexerTestCase(TestCase):
                 'allegation_count': 0,
             },
             'alderman': None,
+            'police_hq': None
+        })
+
+    def test_extract_datum_with_police_hq(self):
+        police_district_area = AreaFactory(area_type='police_district', name='22nd')
+        beat_area = AreaFactory(
+            name='1',
+            tags=['tag'],
+            median_income=343,
+            area_type='beat',
+            police_hq=police_district_area)
+        expect(
+            AreaIndexer().extract_datum(beat_area)
+        ).to.be.eq({
+            'name': '1',
+            'url': beat_area.v1_url,
+            'area_type': 'beat',
+            'tags': ['tag', 'beat'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [],
+            'allegation_percentile': None,
+            'median_income': 343,
+            'commander': None,
+            'alderman': None,
+            'police_hq': '22nd'
         })
 
     def test_extract_datum_with_ward_name(self):
@@ -247,6 +274,7 @@ class AreaIndexerTestCase(TestCase):
             'alderman': 'IronMan',
             'commander': None,
             'allegation_percentile': None,
+            'police_hq': None
         })
 
 

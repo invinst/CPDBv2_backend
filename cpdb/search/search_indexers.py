@@ -174,6 +174,7 @@ class AreaIndexer(BaseIndexer):
             'median_income': datum.median_income,
             'alderman': datum.alderman,
             'allegation_percentile': self._percentiles.get(datum.id, None),
+            'police_hq': datum.police_hq.name if datum.police_hq else None,
             'commander': {
                 'id': datum.commander.id,
                 'full_name': datum.commander.full_name,
