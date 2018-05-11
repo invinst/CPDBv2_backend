@@ -28,6 +28,7 @@ django_settings_module: "config.settings.production"
 django_debug: false
 
 extra_rebuild_index: ''
+run_rebuild_index: no
 extra_rebuild_search_index: ''
 run_django_db_migrations: yes
 run_django_collectstatic: yes
