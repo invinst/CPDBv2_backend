@@ -74,7 +74,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'birth_year': 1950,
             'current_salary': 90000,
         })
-        
+
 
 class TimelineSerializerTestCase(SimpleTestCase):
     def test_serialization(self):

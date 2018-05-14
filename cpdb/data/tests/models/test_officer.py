@@ -10,8 +10,8 @@ from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory,
-    SalaryFactory)
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory
+)
 from data.models import Officer
 from officers.tests.ultils import validate_object
 from trr.factories import TRRFactory
