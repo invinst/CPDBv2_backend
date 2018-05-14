@@ -7,7 +7,8 @@ from django.db.models import F
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer
+from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer, \
+    OfficerSinglePercentileSerializer
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
@@ -135,15 +136,28 @@ class OfficerPercentileIndexer(BaseIndexer):
     def get_queryset(self):
         results = []
         for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
-            result = Officer.top_complaint_officers(100, yr)
-            if result and result[0]['year'] < yr:
+            officers = Officer.top_complaint_officers(100, yr)
+            if officers and officers[0].year < yr:
                 # we have no more data to calculate, should break here
                 break
-            results.extend(result)
+            results.extend(officers)
         return results
 
     def extract_datum(self, datum):
         return OfficerYearlyPercentileSerializer(datum).data
+
+
+@register_indexer(app_name)
+class OfficerSinglePercentileIndexer(BaseIndexer):
+    index_alias = officers_index_alias
+    doc_type_klass = OfficerInfoDocType
+    op_type = 'update'
+
+    def get_queryset(self):
+        return Officer.annotate_honorable_mention_percentile_officers()
+
+    def extract_datum(self, datum):
+        return OfficerSinglePercentileSerializer(datum).data
 
 
 @register_indexer(app_name)

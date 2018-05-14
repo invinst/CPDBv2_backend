@@ -194,9 +194,25 @@ PERCENTILE_ALLEGATION = 'metric_allegation'
 PERCENTILE_ALLEGATION_INTERNAL = 'metric_allegation_internal'
 PERCENTILE_ALLEGATION_CIVILIAN = 'metric_allegation_civilian'
 PERCENTILE_TRR = 'metric_trr'
+PERCENTILE_HONORABLE_MENTION = 'metric_honorable_mention'
 PERCENTILE_TYPES = [
     PERCENTILE_ALLEGATION,
     PERCENTILE_ALLEGATION_INTERNAL,
     PERCENTILE_ALLEGATION_CIVILIAN,
-    PERCENTILE_TRR
+    PERCENTILE_TRR,
+]
+
+MAJOR_AWARDS = [
+    'honored police star',
+    'carter harrison',
+    'lambert tree medal',
+    'lambert tree',
+    'richard j. daley police medal of honor',
+    'police medal',
+    'superintendents award of valor',
+    "superintendent's award of valor",
+    '100 club of chicago valor award',
+    'hundred club of cook county medal of valor',
+    'superintendents award of merit',
+    "superintendent's award of merit",
 ]

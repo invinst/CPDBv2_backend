@@ -60,8 +60,14 @@ class OfficerInfoDocType(DocType):
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     allegation_count = Long()
 
+    historic_units = Nested(properties={
+        "id": Integer(),
+        "unit_name": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        "description": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+    })
+
     @staticmethod
-    def _get_lastest_year():
+    def _get_latest_year():
         query = OfficerInfoDocType.search()
         query.aggs.bucket('percentiles', 'nested', path='percentiles') \
             .metric('max_year', 'max', field='percentiles.year')
@@ -71,8 +77,7 @@ class OfficerInfoDocType(DocType):
 
     @staticmethod
     def get_top_officers(percentile=99.0, size=40):
-
-        lastest_year = OfficerInfoDocType._get_lastest_year()
+        lastest_year = OfficerInfoDocType._get_latest_year()
         query = OfficerInfoDocType.search().query('nested', path='percentiles', query=Q(
             'bool',
             filter=[

@@ -1,11 +1,12 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import PoliceUnit, Area, OfficerHistory, Allegation
+from data.models import PoliceUnit, Area, Allegation
+from data.utils.calculations import percentile
 from search.doc_types import (
     FAQDocType, ReportDocType,
-    UnitDocType, NeighborhoodsDocType, CommunityDocType,
-    UnitOfficerDocType, CrDocType
+    UnitDocType, AreaDocType,
+    CrDocType
 )
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
@@ -110,43 +111,34 @@ class UnitIndexer(BaseIndexer):
         }
 
 
-class UnitOfficerIndexer(BaseIndexer):
-    doc_type_klass = UnitOfficerDocType
+class AreaIndexer(BaseIndexer):
+    doc_type_klass = AreaDocType
+    _percentiles = {}
 
-    def get_queryset(self):
-        return OfficerHistory.objects.all()
-
-    def extract_datum(self, datum):
+    def _compute_police_district_percentiles(self, query):
+        scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')
         return {
-            'full_name': datum.officer.full_name,
-            'badge': datum.officer.current_badge,
-            'to': datum.officer.v2_to,
-            'allegation_count': datum.officer.allegation_count,
-            'visual_token_background_color': datum.officer.visual_token_background_color,
-            'unit_name': datum.unit.unit_name,
-            'unit_description': datum.unit.description,
-            'sustained_count': datum.officer.sustained_count,
-            'birth_year': datum.officer.birth_year,
-            'unit': datum.officer.last_unit.unit_name,
-            'rank': datum.officer.rank,
-            'race': datum.officer.race,
-            'sex': datum.officer.gender_display
+            district.id: district.percentile_allegation_per_capita
+            for district in percentile(scores, 0, key='allegation_per_capita')
         }
 
-
-class AreaTypeIndexer(BaseIndexer):
-    doc_type_klass = None
-    area_type = None
-
     def get_queryset(self):
-        return Area.objects.filter(area_type=self.area_type)
+        queryset = Area.objects.with_allegation_per_capita()
+        self._percentiles = self._compute_police_district_percentiles(queryset)
+        return queryset
+
+    def _get_area_tag(self, area_type):
+        return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
 
     def extract_datum(self, datum):
         tags = list(datum.tags)
-        if self.area_type and self.area_type not in tags:
-            tags.append(self.area_type)
+        area_tag = self._get_area_tag(datum.area_type)
+        if area_tag and area_tag not in tags:
+            tags.append(area_tag)
+
         return {
-            'name': datum.name,
+            'name': datum.name if datum.area_type != 'police-districts' else datum.description,
+            'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
             'allegation_count': datum.allegation_count,
@@ -155,18 +147,15 @@ class AreaTypeIndexer(BaseIndexer):
             'race_count': RacePopulationSerializer(
                 datum.racepopulation_set.order_by('-count'),
                 many=True).data,
-            'median_income': datum.median_income
+            'median_income': datum.median_income,
+            'alderman': datum.alderman,
+            'allegation_percentile': self._percentiles.get(datum.id, None),
+            'commander': {
+                'id': datum.commander.id,
+                'full_name': datum.commander.full_name,
+                'allegation_count': datum.commander.allegation_count,
+            } if datum.commander else None
         }
-
-
-class NeighborhoodsIndexer(AreaTypeIndexer):
-    doc_type_klass = NeighborhoodsDocType
-    area_type = 'neighborhoods'
-
-
-class CommunityIndexer(AreaTypeIndexer):
-    doc_type_klass = CommunityDocType
-    area_type = 'community'
 
 
 class IndexerManager(object):

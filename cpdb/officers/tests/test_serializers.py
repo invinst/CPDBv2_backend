@@ -1,3 +1,4 @@
+
 from datetime import datetime, date
 
 from django.test import SimpleTestCase
@@ -5,35 +6,8 @@ from mock import Mock
 from robber import expect
 
 from officers.serializers import (
-    TimelineSerializer, CRTimelineSerializer, OfficerMetricsSerializer, OfficerSummarySerializer
+    TimelineSerializer, CRTimelineSerializer, OfficerSummarySerializer
 )
-
-
-class OfficerMetricsSerializerTestCase(SimpleTestCase):
-    def test_serialization(self):
-        obj = Mock(**{
-            'id': 123,
-            'allegation_count': 1,
-            'complaint_percentile': 2,
-            'honorable_mention_count': 3,
-            'sustained_count': 4,
-            'discipline_count': 5,
-            'civilian_compliment_count': 6,
-            'first_name': 'Roberto',
-            'last_name': 'Last Name',
-            'race': 'Asian',
-            'trr_count': 2,
-        })
-        expect(OfficerMetricsSerializer(obj).data).to.eq({
-            'id': 123,
-            'allegation_count': 1,
-            'complaint_percentile': 2,
-            'honorable_mention_count': 3,
-            'sustained_count': 4,
-            'discipline_count': 5,
-            'civilian_compliment_count': 6,
-            'trr_count': 2,
-        })
 
 
 class OfficerSummarySerializerTestCase(SimpleTestCase):
@@ -49,6 +23,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'race': 'Asian',
             'current_badge': '789',
             'historic_badges': ['123', '456'],
+            'historic_units': [Mock(**{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            })],
             'gender_display': 'Male',
             'birth_year': '1950',
             'allegation_count': 2,
@@ -67,6 +46,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
                 'unit_name': '',
                 'description': ''
             },
+            'historic_units': [{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            }],
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2000',
             'active': True,
@@ -103,6 +87,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'race': 'Asian',
             'current_badge': '789',
             'historic_badges': ['123', '456'],
+            'historic_units': [Mock(**{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            })],
             'gender_display': 'Male',
             'birth_year': '1950',
             'allegation_count': 2,
@@ -129,6 +118,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'race': 'Asian',
             'badge': '789',
             'historic_badges': ['123', '456'],
+            'historic_units': [{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            }],
             'gender': 'Male',
             'complaint_records': {
                 'count': 2,

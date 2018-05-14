@@ -18,13 +18,14 @@ class CRIndexer(BaseIndexer):
     def __init__(self, *args, **kwargs):
         super(CRIndexer, self).__init__(*args, **kwargs)
         top_percentile = Officer.top_complaint_officers(100, percentile_types=PERCENTILE_TYPES)
+
         self.top_percentile_dict = {
-            data['officer_id']: {k: v for k, v in data.items() if k in [
-                'percentile_allegation',
-                'percentile_allegation_civilian',
-                'percentile_allegation_internal',
-                'percentile_trr'
-            ]}
+            data.officer_id: {
+                'percentile_allegation': data.percentile_allegation,
+                'percentile_allegation_civilian': data.percentile_allegation_civilian,
+                'percentile_allegation_internal': data.percentile_allegation_internal,
+                'percentile_trr': data.percentile_trr,
+            }
             for data in top_percentile
         }
 
