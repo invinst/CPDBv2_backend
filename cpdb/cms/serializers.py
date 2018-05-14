@@ -11,7 +11,7 @@ from data.models import Officer
 from cms.fields import (
     DateField, StringField, RichTextField, BaseCMSField
 )
-from cms.models import ReportPage, SlugPage, FAQPage
+from cms.models import ReportPage, SlugPage
 
 
 class BaseCMSPageSerializer(serializers.Serializer):
@@ -211,47 +211,6 @@ class ReportPageSerializer(IdPageSerializer):
 
     class Meta:
         model = ReportPage
-
-
-class FAQPageListSerializer(serializers.ListSerializer):
-    def update(self, instance, validated_data):
-        data_mapping = {item['id']: item for item in validated_data}
-        result = []
-        for faq in instance:
-            if faq.id in data_mapping:
-                result.append(self.child.update(faq, data_mapping[faq.id]))
-
-        return result
-
-
-class FAQPageSerializer(IdPageSerializer):
-    question = RichTextField(source='fields')
-    answer = RichTextField(source='fields')
-    order = serializers.IntegerField()
-    starred = serializers.BooleanField()
-
-    class Meta:
-        model = FAQPage
-        fields = ('question', 'answer')
-        meta_fields = ('order', 'starred')
-        list_serializer_class = FAQPageListSerializer
-
-
-class CreateFAQPageSerializer(IdPageSerializer):
-    question = RichTextField(source='fields')
-    answer = RichTextField(source='fields')
-    order = serializers.IntegerField(default=lambda: FAQPage.objects.count())
-    starred = serializers.BooleanField()
-
-    class Meta:
-        model = FAQPage
-        fields = ('question', 'answer')
-        meta_fields = ('order', 'starred')
-
-    def validate(self, data):
-        if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated:
-            raise serializers.ValidationError("Unauthorized user cannot add answer.")
-        return data
 
 
 class LandingPageSerializer(SlugPageSerializer):

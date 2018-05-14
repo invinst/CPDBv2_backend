@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from authentication.factories import AdminUserFactory
-from cms.serializers import SlugPageSerializer, ReportPageSerializer, FAQPageSerializer
+from cms.serializers import SlugPageSerializer, ReportPageSerializer
 from cms.models import SlugPage
 from cms.fields import RichTextField
 
@@ -33,10 +33,6 @@ class CMSPageViewSetTestCase(APITestCase):
                 report_serializer = ReportPageSerializer(data=ReportPageSerializer().fake_data())
                 report_serializer.is_valid()
                 report_serializer.save()
-
-                faq_serializer = FAQPageSerializer(data=FAQPageSerializer().fake_data())
-                faq_serializer.is_valid()
-                faq_serializer.save()
 
         self.maxDiff = None
 

@@ -1,9 +1,7 @@
 from elasticsearch_dsl.query import Q
 
 from search.doc_types import CrDocType
-from .doc_types import (
-    UnitDocType, FAQDocType, ReportDocType, AreaDocType
-)
+from .doc_types import UnitDocType, ReportDocType, AreaDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -37,11 +35,6 @@ class Worker(object):
             field='tags'
         )
         return self._limit(query, 0, 1).execute()
-
-
-class FAQWorker(Worker):
-    doc_type_klass = FAQDocType
-    fields = ['question', 'answer', 'tags']
 
 
 class ReportWorker(Worker):

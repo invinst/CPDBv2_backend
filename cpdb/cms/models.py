@@ -14,10 +14,3 @@ class ReportPage(TaggableModel):
     fields = JSONField()
     created = models.DateTimeField(auto_now_add=True)
     officers = models.ManyToManyField(Officer)
-
-
-class FAQPage(TaggableModel):
-    fields = JSONField()
-    created = models.DateTimeField(auto_now_add=True)
-    order = models.PositiveIntegerField(default=0)
-    starred = models.BooleanField(default=False)

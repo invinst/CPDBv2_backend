@@ -1,10 +1,10 @@
 from tqdm import tqdm
 
-from cms.models import FAQPage, ReportPage
+from cms.models import ReportPage
 from data.models import PoliceUnit, Area, Allegation
 from data.utils.calculations import percentile
 from search.doc_types import (
-    FAQDocType, ReportDocType,
+    ReportDocType,
     UnitDocType, AreaDocType,
     CrDocType
 )
@@ -57,22 +57,6 @@ class BaseIndexer(object):
             desc='Indexing {doc_type_name}'.format(
                 doc_type_name=self.doc_type_klass._doc_type.name)):
             self.index_datum(datum)
-
-
-class FAQIndexer(BaseIndexer):
-    doc_type_klass = FAQDocType
-
-    def get_queryset(self):
-        return FAQPage.objects.all()
-
-    def extract_datum(self, datum):
-        fields = datum.fields
-
-        return {
-            'question': extract_text_from_value(fields['question_value']),
-            'answer': extract_text_from_value(fields['answer_value']),
-            'tags': datum.tags
-        }
 
 
 class ReportIndexer(BaseIndexer):

@@ -2,7 +2,7 @@ import factory
 from factory.helpers import lazy_attribute
 from faker import Faker
 
-from cms.models import FAQPage as FAQ, ReportPage as Report
+from cms.models import ReportPage as Report
 
 
 fake = Faker()
@@ -54,24 +54,6 @@ class RichTextFieldFactory(factory.Factory):
 
     class Params:
         texts = factory.LazyFunction(lambda: fake.sentences())
-
-
-class FAQPageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = FAQ
-
-    @lazy_attribute
-    def fields(self):
-        return {
-            'question_type': 'plain_text',
-            'answer_type': 'multiline_text',
-            'question_value': RichTextFieldFactory(texts=[self.question]),
-            'answer_value': RichTextFieldFactory(texts=self.answer)
-        }
-
-    class Params:
-        question = factory.LazyFunction(lambda: fake.sentence())
-        answer = factory.LazyFunction(lambda: fake.sentences())
 
 
 class ReportPageFactory(factory.django.DjangoModelFactory):

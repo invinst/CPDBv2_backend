@@ -1,16 +1,13 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status
-from rest_framework.decorators import list_route
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.pagination import LimitOffsetPagination
 
-from cms.models import SlugPage, ReportPage, FAQPage
-from cms.permissions import IsAuthenticatedOrReadOnlyOrCreate
-from cms.serializers import (
-    ReportPageSerializer, FAQPageSerializer, get_slug_page_serializer, CreateFAQPageSerializer)
+from cms.models import SlugPage, ReportPage
+from cms.serializers import ReportPageSerializer, get_slug_page_serializer
 
 
 class CMSPageViewSet(viewsets.ViewSet):
@@ -70,30 +67,5 @@ class ReportPageViewSet(BaseIdPageViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class FAQPageViewSet(BaseIdPageViewSet):
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticatedOrReadOnlyOrCreate,)
-    queryset = FAQPage.objects.filter(fields__has_key='answer_value').order_by('-order')
-    serializer_class = FAQPageSerializer
-    pagination_class = LimitOffsetPagination
-
-    def create(self, request):
-        serializer = CreateFAQPageSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    @list_route(methods=['patch'], url_path='bulk-update')
-    def bulk_update(self, request):
-        serializer = self.serializer_class(self.get_queryset(), many=True, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
         else:
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
