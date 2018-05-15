@@ -47,7 +47,7 @@ class RichTextFieldFactory(factory.Factory):
     entityMap = {}
 
     @lazy_attribute
-    def blocks(self):
+    def blocks(self):  # pragma: no cover
         return [BlockFactory(text=text) for text in self.texts]
 
     class Params:

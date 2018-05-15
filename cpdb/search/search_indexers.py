@@ -7,10 +7,6 @@ from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 
 
-def extract_text_from_value(value):
-    return '\n'.join([block['text'] for block in value['blocks']])
-
-
 class BaseIndexer(object):
     doc_type_klass = None
 

@@ -30,25 +30,3 @@ class CMSPageViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         else:
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class BaseIdPageViewSet(viewsets.GenericViewSet):
-    def retrieve(self, request, pk=None):
-        cms_page = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = self.serializer_class(cms_page)
-        return Response(serializer.data)
-
-    def list(self, request):
-        paginator = self.pagination_class()
-        paginated_queryset = paginator.paginate_queryset(self.get_queryset(), request, view=self)
-        serializer = self.serializer_class(paginated_queryset, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
-    def partial_update(self, request, pk=None):
-        cms_page = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = self.serializer_class(cms_page, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
