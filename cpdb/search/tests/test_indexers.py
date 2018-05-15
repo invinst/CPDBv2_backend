@@ -4,8 +4,7 @@ from robber import expect
 from django.test import SimpleTestCase, TestCase
 
 from search.search_indexers import CrIndexer
-from ..search_indexers import BaseIndexer, ReportIndexer, UnitIndexer, AreaIndexer, IndexerManager
-from cms.factories import ReportPageFactory
+from ..search_indexers import BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
@@ -73,30 +72,6 @@ class BaseIndexerTestCase(SimpleTestCase):
         indexer.index_data()
 
         indexer.index_datum.assert_called_once_with(1)
-
-
-class ReportIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        expect(ReportIndexer().get_queryset().count()).to.eq(0)
-        ReportPageFactory()
-        expect(ReportIndexer().get_queryset().count()).to.eq(1)
-
-    def test_extract_datum(self):
-        datum = ReportPageFactory(
-            publication='publication', author='author',
-            title='title', excerpt=['excerpt1', 'excerpt2'],
-            publish_date='2017-12-20'
-        )
-        expect(
-            ReportIndexer().extract_datum(datum)
-        ).to.be.eq({
-            'publication': 'publication',
-            'author': 'author',
-            'excerpt': 'excerpt1\nexcerpt2',
-            'title': 'title',
-            'publish_date': '2017-12-20',
-            'tags': [],
-        })
 
 
 class UnitIndexerTestCase(TestCase):

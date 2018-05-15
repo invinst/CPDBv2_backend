@@ -8,10 +8,8 @@ from rest_framework import serializers
 from rest_framework.fields import SkipField
 
 from data.models import Officer
-from cms.fields import (
-    DateField, StringField, RichTextField, BaseCMSField
-)
-from cms.models import ReportPage, SlugPage
+from cms.fields import RichTextField, BaseCMSField
+from cms.models import SlugPage
 
 
 class BaseCMSPageSerializer(serializers.Serializer):
@@ -198,19 +196,6 @@ class OfficerSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         return self.get_queryset().get(pk=data['id'])
-
-
-class ReportPageSerializer(IdPageSerializer):
-    title = RichTextField(source='fields')
-    excerpt = RichTextField(source='fields')
-    publication = StringField(source='fields')
-    publish_date = DateField(source='fields')
-    author = StringField(source='fields')
-    article_link = RichTextField(source='fields')
-    officers = OfficerSerializer(many=True)
-
-    class Meta:
-        model = ReportPage
 
 
 class LandingPageSerializer(SlugPageSerializer):

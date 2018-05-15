@@ -2,8 +2,6 @@ import factory
 from factory.helpers import lazy_attribute
 from faker import Faker
 
-from cms.models import ReportPage as Report
-
 
 fake = Faker()
 
@@ -54,29 +52,3 @@ class RichTextFieldFactory(factory.Factory):
 
     class Params:
         texts = factory.LazyFunction(lambda: fake.sentences())
-
-
-class ReportPageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Report
-
-    @lazy_attribute
-    def fields(self):
-        return {
-            'publication_type': 'string',
-            'publication_value': self.publication,
-            'author_type': 'string',
-            'author_value': self.author,
-            'title_type': 'plain_text',
-            'title_value': RichTextFieldFactory(texts=[self.title]),
-            'excerpt_type': 'multiline_text',
-            'excerpt_value': RichTextFieldFactory(texts=self.excerpt),
-            'publish_date_value': self.publish_date,
-        }
-
-    class Params:
-        publication = factory.LazyFunction(lambda: fake.sentence())
-        author = factory.LazyFunction(lambda: fake.name())
-        title = factory.LazyFunction(lambda: fake.sentence())
-        excerpt = factory.LazyFunction(lambda: fake.sentences())
-        publish_date = factory.LazyFunction(lambda: fake.date(pattern='%Y-%m-%d'))

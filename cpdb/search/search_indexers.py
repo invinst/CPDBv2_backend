@@ -1,13 +1,8 @@
 from tqdm import tqdm
 
-from cms.models import ReportPage
 from data.models import PoliceUnit, Area, Allegation
 from data.utils.calculations import percentile
-from search.doc_types import (
-    ReportDocType,
-    UnitDocType, AreaDocType,
-    CrDocType
-)
+from search.doc_types import UnitDocType, AreaDocType, CrDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 
@@ -57,25 +52,6 @@ class BaseIndexer(object):
             desc='Indexing {doc_type_name}'.format(
                 doc_type_name=self.doc_type_klass._doc_type.name)):
             self.index_datum(datum)
-
-
-class ReportIndexer(BaseIndexer):
-    doc_type_klass = ReportDocType
-
-    def get_queryset(self):
-        return ReportPage.objects.all()
-
-    def extract_datum(self, datum):
-        fields = datum.fields
-
-        return {
-            'publication': fields['publication_value'],
-            'author': fields['author_value'],
-            'excerpt': extract_text_from_value(fields['excerpt_value']),
-            'title': extract_text_from_value(fields['title_value']),
-            'publish_date': fields['publish_date_value'],
-            'tags': datum.tags
-        }
 
 
 class UnitIndexer(BaseIndexer):

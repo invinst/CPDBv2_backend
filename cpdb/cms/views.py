@@ -4,10 +4,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.pagination import LimitOffsetPagination
 
-from cms.models import SlugPage, ReportPage
-from cms.serializers import ReportPageSerializer, get_slug_page_serializer
+from cms.models import SlugPage
+from cms.serializers import get_slug_page_serializer
 
 
 class CMSPageViewSet(viewsets.ViewSet):
@@ -51,21 +50,5 @@ class BaseIdPageViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        else:
-            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ReportPageViewSet(BaseIdPageViewSet):
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    queryset = ReportPage.objects.order_by('-created')
-    serializer_class = ReportPageSerializer
-    pagination_class = LimitOffsetPagination
-
-    def create(self, request):
-        serializer = ReportPageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
