@@ -64,10 +64,10 @@ urlpatterns = [
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
-        r'collaborate|reporting(/\d+)?|search(?:/terms)?|'
+        r'collaborate|search(?:/terms)?|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'unit/\d+|'
-        r'edit(?:/(?:reporting|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
+        r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(
         r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
