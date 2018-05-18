@@ -301,6 +301,7 @@ class AreaIndexerTestCase(TestCase):
             'alderman': 'IronMan',
             'commander': None,
             'allegation_percentile': None,
+            'police_hq': None,
         })
 
 
