@@ -1,7 +1,5 @@
 from search.indices import autocompletes_alias
 from search import es_client
-from search.search_indexers import UnitOfficerIndexer
-
 from officers.index_aliases import officers_index_alias
 from officers.indexers import OfficersIndexer
 
@@ -16,7 +14,6 @@ class IndexMixin(object):
         officers_index_alias.read_index.create(ignore=400)
 
     def rebuild_index(self):
-        UnitOfficerIndexer(index_name='test_autocompletes').index_data()
         with officers_index_alias.indexing():
             OfficersIndexer().reindex()
 
