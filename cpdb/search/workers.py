@@ -2,7 +2,7 @@ from elasticsearch_dsl.query import Q
 
 from search.doc_types import CrDocType
 from .doc_types import (
-    UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, AreaDocType
+    UnitDocType, FAQDocType, ReportDocType, AreaDocType
 )
 from officers.doc_types import OfficerInfoDocType
 
@@ -101,7 +101,7 @@ class AreaWorker(Worker):
     doc_type_klass = AreaDocType
     area_type = None
     fields = ['name', 'tags']
-    sort_order = ['name.keyword', '_score']
+    sort_order = ['-allegation_count', 'name.keyword', '_score']
 
     def query(self, term):
         filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')
@@ -136,12 +136,17 @@ class BeatWorker(AreaWorker):
 
 
 class UnitOfficerWorker(Worker):
-    doc_type_klass = UnitOfficerDocType
-    fields = ['unit_name', 'unit_description']
+    doc_type_klass = OfficerInfoDocType
+    fields = ['unit_name', 'description']
     sort_order = ['-allegation_count']
 
     def query(self, term):
-        return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
+        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+            'multi_match',
+            operator='and',
+            fields=['historic_units.{}'.format(field) for field in self.fields],
+            query=term
+        )).sort(*self.sort_order)
 
 
 class CrWorker(Worker):

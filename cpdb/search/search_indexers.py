@@ -1,12 +1,12 @@
 from tqdm import tqdm
 
 from cms.models import FAQPage, ReportPage
-from data.models import PoliceUnit, Area, OfficerHistory, Allegation
+from data.models import PoliceUnit, Area, Allegation
 from data.utils.calculations import percentile
 from search.doc_types import (
     FAQDocType, ReportDocType,
     UnitDocType, AreaDocType,
-    UnitOfficerDocType, CrDocType
+    CrDocType
 )
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
@@ -111,30 +111,6 @@ class UnitIndexer(BaseIndexer):
         }
 
 
-class UnitOfficerIndexer(BaseIndexer):
-    doc_type_klass = UnitOfficerDocType
-
-    def get_queryset(self):
-        return OfficerHistory.objects.all()
-
-    def extract_datum(self, datum):
-        return {
-            'full_name': datum.officer.full_name,
-            'badge': datum.officer.current_badge,
-            'to': datum.officer.v2_to,
-            'allegation_count': datum.officer.allegation_count,
-            'visual_token_background_color': datum.officer.visual_token_background_color,
-            'unit_name': datum.unit.unit_name,
-            'unit_description': datum.unit.description,
-            'sustained_count': datum.officer.sustained_count,
-            'birth_year': datum.officer.birth_year,
-            'unit': datum.officer.last_unit.unit_name,
-            'rank': datum.officer.rank,
-            'race': datum.officer.race,
-            'sex': datum.officer.gender_display
-        }
-
-
 class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
     _percentiles = {}
@@ -160,8 +136,12 @@ class AreaIndexer(BaseIndexer):
         if area_tag and area_tag not in tags:
             tags.append(area_tag)
 
+        name = datum.name
+        if datum.area_type == 'police-districts':
+            name = datum.description if datum.description else datum.name
+
         return {
-            'name': datum.name if datum.area_type != 'police-districts' else datum.description,
+            'name': name,
             'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
