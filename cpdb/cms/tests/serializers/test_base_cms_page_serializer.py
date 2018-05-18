@@ -195,7 +195,6 @@ class BaseCMSPageSerializerTestCase(TransactionTestCase):
 
         self.assertTrue(serializer.is_valid())
         serializer.save()
-        # import ipdb; ipdb.set_trace();
         expect(self.mock_fields.add).to.be.called_with({'name': 'a'})
 
     def test_create_empty(self):

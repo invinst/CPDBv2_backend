@@ -129,9 +129,9 @@ class BaseCMSPageSerializer(serializers.Serializer):
         relation_fields = []
         for field in self.fields.values():
             if hasattr(field, 'child') and isinstance(field.child, serializers.ModelSerializer):
-                    value = validated_data.pop(field.source, None)
-                    if value is not None:
-                        relation_fields.append((field.source, value))
+                value = validated_data.pop(field.source, None)
+                if value is not None:
+                    relation_fields.append((field.source, value))
 
         instance = self.Meta.model.objects.create(**validated_data)
         for key, value in relation_fields:
