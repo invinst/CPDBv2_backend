@@ -101,7 +101,7 @@ class AreaWorker(Worker):
     doc_type_klass = AreaDocType
     area_type = None
     fields = ['name', 'tags']
-    sort_order = ['name.keyword', '_score']
+    sort_order = ['-allegation_count', 'name.keyword', '_score']
 
     def query(self, term):
         filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')

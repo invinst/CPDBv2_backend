@@ -249,6 +249,32 @@ class AreaIndexerTestCase(TestCase):
             'allegation_percentile': None,
         })
 
+    def test_extract_datum_police_district_has_no_description(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            alderman='IronMan',
+        )
+
+        expect(
+            AreaIndexer().extract_datum(area)
+        ).to.be.eq({
+            'name': 'name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+        })
+
 
 class IndexerManagerTestCase(SimpleTestCase):
     @patch('cpdb.search.search_indexers.autocompletes_alias')
