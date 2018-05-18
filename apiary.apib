@@ -1428,7 +1428,11 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         {
             "id": 1,
-            "unit": "003",
+            "unit": {
+                "id": 1,
+                "unit_name": "001",
+                "description": "Unit 001"
+            },
             "date_of_appt": "2015-09-23",
             "date_of_resignation": "2017-09-23",
             "active": "Active",
@@ -1436,6 +1440,18 @@ This api require an api access token set in `Authorization` header. To get an ap
             "race": "White",
             "badge": "12345",
             "historic_badges": ["22", "33"],
+            "historic_units": [
+              {
+                "id": 1,
+                "unit_name": "001",
+                "description": "Unit 001"
+              },
+              {
+                "id": 2,
+                "unit_name": "002",
+                "description": "Unit 002"
+              }
+            ],
             "gender": "Male",
             "birth_year": 1951,
             "allegation_count": 90,

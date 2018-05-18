@@ -61,6 +61,12 @@ class OfficerInfoDocType(DocType):
     historic_badges = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     allegation_count = Long()
 
+    historic_units = Nested(properties={
+        "id": Integer(),
+        "unit_name": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        "description": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+    })
+
     @staticmethod
     def _get_latest_year():
         query = OfficerInfoDocType.search()

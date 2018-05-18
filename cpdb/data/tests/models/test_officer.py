@@ -49,6 +49,14 @@ class OfficerTestCase(TestCase):
         OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
         expect(officer.current_badge).to.eq('123')
 
+    def test_historic_units(self):
+        officer = OfficerFactory()
+        unithistory1 = OfficerHistoryFactory(officer=officer, unit__unit_name='1',
+                                             unit__description='Unit 1', effective_date=date(2000, 1, 1))
+        unithistory2 = OfficerHistoryFactory(officer=officer, unit__unit_name='2',
+                                             unit__description='Unit 2', effective_date=date(2000, 1, 2))
+        expect(officer.historic_units).to.eq([unithistory2.unit, unithistory1.unit])
+
     def test_historic_badges(self):
         officer = OfficerFactory()
         expect(officer.historic_badges).to.be.empty()
