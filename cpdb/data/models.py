@@ -748,6 +748,14 @@ class Officer(TaggableModel):
         current_salary_object = self.salary_set.all().order_by('-year').first()
         return current_salary_object.salary if current_salary_object else None
 
+    # @property
+    # def allegations(self):
+    #     return Allegation.objects.filter(officerallegation__officer__id=self.id)
+    #
+    # @property
+    # def allegations_with_attachments(self):
+    #     return self.allegations.filter(attachment_files__isnull=False)
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
@@ -1118,6 +1126,10 @@ class OfficerAllegation(models.Model):
     @property
     def documents(self):
         return self.allegation.documents
+
+    @property
+    def attachments(self):
+        return self.allegation.attachment_files.all()
 
 
 class PoliceWitness(models.Model):

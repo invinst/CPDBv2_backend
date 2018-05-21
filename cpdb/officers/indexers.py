@@ -1,14 +1,19 @@
 from itertools import combinations
+
+from django.db.models import F
+from django.utils.timezone import now
 from tqdm import tqdm
 
-from django.utils.timezone import now
-from django.db.models import F
-
+from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer, \
-    OfficerSinglePercentileSerializer
+from officers.doc_types import OfficerAttachmentsDocType
+from officers.serializers import (
+    OfficerYearlyPercentileSerializer,
+    OfficerInfoSerializer,
+    OfficerSinglePercentileSerializer,
+    OfficerAllegationSerializer
+)
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
@@ -234,3 +239,18 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
 
     def extract_datum(self, officer):
         return OfficerCoaccusalsSerializer(officer).data
+
+
+@register_indexer(app_name)
+class OfficerAttachmentsIndexer(BaseIndexer):
+    doc_type_klass = OfficerAttachmentsDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return OfficerAllegation.objects.filter(
+            start_date__isnull=False,
+            allegation__attachment_files__isnull=False
+        ).filter(officer_id=8562)
+
+    def extract_datum(self, officer):
+        return OfficerAllegationSerializer(officer).data
