@@ -115,6 +115,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
+            current_salary=9000,
             single_percentiles={
                 'id': 123,
                 'percentile_honorable_mention': 98,
@@ -239,6 +240,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'tags': [],
             'to': '',
             'url': '',
+            'current_salary': 9000,
         })
 
 

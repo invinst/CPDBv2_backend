@@ -743,6 +743,11 @@ class Officer(TaggableModel):
             officerallegation__allegation__officerallegation__officer=self
         ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
+    @property
+    def current_salary(self):
+        current_salary_object = self.salary_set.all().order_by('-year').first()
+        return current_salary_object.salary if current_salary_object else None
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
