@@ -107,7 +107,7 @@ docker push cpdbdev/postgis:9.4-alpine
 
 # Removed apps
 
-The following apps are removed: `landing_page`, `faq`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `faq_` or `story_`, it should be safe to remove them.
+The following apps are removed: `landing_page`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `story_`, it should be safe to remove them.
 
 # Infrastructure changes
 
