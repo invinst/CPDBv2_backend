@@ -136,8 +136,12 @@ class AreaIndexer(BaseIndexer):
         if area_tag and area_tag not in tags:
             tags.append(area_tag)
 
+        name = datum.name
+        if datum.area_type == 'police-districts':
+            name = datum.description if datum.description else datum.name
+
         return {
-            'name': datum.name if datum.area_type != 'police-districts' else datum.description,
+            'name': name,
             'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
@@ -150,6 +154,7 @@ class AreaIndexer(BaseIndexer):
             'median_income': datum.median_income,
             'alderman': datum.alderman,
             'allegation_percentile': self._percentiles.get(datum.id, None),
+            'police_hq': datum.police_hq.name if datum.police_hq else None,
             'commander': {
                 'id': datum.commander.id,
                 'full_name': datum.commander.full_name,

@@ -804,6 +804,11 @@ class Area(TaggableModel):
     median_income = models.CharField(max_length=100, null=True)
     commander = models.ForeignKey(Officer, null=True)
     alderman = models.CharField(max_length=255, null=True, help_text="Alderman of Ward")
+    police_hq = models.ForeignKey(
+        'data.Area',
+        null=True,
+        help_text="This beat contains police-district HQ"
+    )
 
     objects = AreaObjectManager()
 
