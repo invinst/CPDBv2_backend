@@ -28,35 +28,36 @@ def csv_from_azure(filename):
 
 
 def import_data(apps, schema_editor):
-    with csv_from_azure('20180518_officerbadgenumber.csv') as reader:
+    with csv_from_azure('20180518_officerhistory.csv') as reader:
         pks = []
 
-        OfficerBadgeNumber = apps.get_model('data', 'OfficerBadgeNumber')
+        OfficerHistory = apps.get_model('data', 'OfficerHistory')
         blank_or_null = {
             field.name: None if field.null else ''
-            for field in OfficerBadgeNumber._meta.get_fields()
+            for field in OfficerHistory._meta.get_fields()
         }
         for row in reader:
             for key, val in row.iteritems():
                 if val == '':
                     row[key] = blank_or_null[key]
             pks.append(int(row['pk']))
-            obj, created = OfficerBadgeNumber.objects.update_or_create(
+            obj, created = OfficerHistory.objects.update_or_create(
                 id=int(row['pk']),
                 defaults={
                     'officer_id': row['officer_id'],
-                    'star': row['star'],
-                    'current': row['current']
+                    'unit_id': row['unit_id'],
+                    'effective_date': row['effective_date'],
+                    'end_date': row['end_date']
                 }
             )
 
-    OfficerBadgeNumber.objects.exclude(pk__in=pks).delete()
+    OfficerHistory.objects.exclude(pk__in=pks).delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0038_import_officerhistory_data'),
+        ('data', '0040_import_salary_data'),
     ]
 
     operations = [

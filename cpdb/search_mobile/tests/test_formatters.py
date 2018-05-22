@@ -4,9 +4,7 @@ from django.test import SimpleTestCase
 
 from robber import expect
 
-from search_mobile.formatters import (
-    OfficerV2Formatter, FAQFormatter, ReportFormatter, UnitFormatter
-)
+from search_mobile.formatters import OfficerV2Formatter, ReportFormatter, UnitFormatter
 
 
 class OfficerV2FormatterTestCase(SimpleTestCase):
@@ -25,18 +23,6 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
             'name': 'name',
             'extra_info': 'Badge # 123',
             'url': 'url',
-        })
-
-
-class FAQFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(question='question', meta=Mock(id='111'))
-
-        expect(
-            FAQFormatter().doc_format(doc)
-        ).to.be.eq({
-            'question': 'question',
-            'id': 111,
         })
 
 

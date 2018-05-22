@@ -1,19 +1,10 @@
 from tqdm import tqdm
 
-from cms.models import FAQPage, ReportPage
 from data.models import PoliceUnit, Area, Allegation
 from data.utils.calculations import percentile
-from search.doc_types import (
-    FAQDocType, ReportDocType,
-    UnitDocType, AreaDocType,
-    CrDocType
-)
+from search.doc_types import UnitDocType, AreaDocType, CrDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
-
-
-def extract_text_from_value(value):
-    return '\n'.join([block['text'] for block in value['blocks']])
 
 
 class BaseIndexer(object):
@@ -59,41 +50,6 @@ class BaseIndexer(object):
             self.index_datum(datum)
 
 
-class FAQIndexer(BaseIndexer):
-    doc_type_klass = FAQDocType
-
-    def get_queryset(self):
-        return FAQPage.objects.all()
-
-    def extract_datum(self, datum):
-        fields = datum.fields
-
-        return {
-            'question': extract_text_from_value(fields['question_value']),
-            'answer': extract_text_from_value(fields['answer_value']),
-            'tags': datum.tags
-        }
-
-
-class ReportIndexer(BaseIndexer):
-    doc_type_klass = ReportDocType
-
-    def get_queryset(self):
-        return ReportPage.objects.all()
-
-    def extract_datum(self, datum):
-        fields = datum.fields
-
-        return {
-            'publication': fields['publication_value'],
-            'author': fields['author_value'],
-            'excerpt': extract_text_from_value(fields['excerpt_value']),
-            'title': extract_text_from_value(fields['title_value']),
-            'publish_date': fields['publish_date_value'],
-            'tags': datum.tags
-        }
-
-
 class UnitIndexer(BaseIndexer):
     doc_type_klass = UnitDocType
 
@@ -136,8 +92,12 @@ class AreaIndexer(BaseIndexer):
         if area_tag and area_tag not in tags:
             tags.append(area_tag)
 
+        name = datum.name
+        if datum.area_type == 'police-districts':
+            name = datum.description if datum.description else datum.name
+
         return {
-            'name': datum.name if datum.area_type != 'police-districts' else datum.description,
+            'name': name,
             'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
@@ -150,6 +110,7 @@ class AreaIndexer(BaseIndexer):
             'median_income': datum.median_income,
             'alderman': datum.alderman,
             'allegation_percentile': self._percentiles.get(datum.id, None),
+            'police_hq': datum.police_hq.name if datum.police_hq else None,
             'commander': {
                 'id': datum.commander.id,
                 'full_name': datum.commander.full_name,

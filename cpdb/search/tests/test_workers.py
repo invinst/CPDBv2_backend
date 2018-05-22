@@ -4,26 +4,12 @@ from robber import expect
 
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
-    FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
+    ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker
 )
-from search.doc_types import (
-    FAQDocType, ReportDocType, UnitDocType,
-    AreaDocType, CrDocType
-)
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
-
-
-class FAQWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
-        doc = FAQDocType(question='question', answer='answer')
-        doc.save()
-
-        self.refresh_index()
-
-        response = FAQWorker().search('question')
-        expect(response.hits.total).to.be.equal(1)
 
 
 class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
@@ -155,6 +141,23 @@ class AreaWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.be.equal(2)
         expect(response[0].name).to.be.eq('name1')
         expect(response[1].name).to.be.eq('name2')
+
+    def test_search_sort_by_allegation_count(self):
+        doc1 = AreaDocType(name='name1', area_type='community', allegation_count=101)
+        doc2 = AreaDocType(name='name2', area_type='community', allegation_count=201)
+        doc3 = AreaDocType(name='name3', area_type='community', allegation_count=201)
+
+        doc1.save()
+        doc2.save()
+        doc3.save()
+
+        self.refresh_index()
+
+        response = AreaWorker().search('name')
+        expect(response.hits.total).to.be.equal(3)
+        expect(response[0].name).to.be.eq('name2')
+        expect(response[1].name).to.be.eq('name3')
+        expect(response[2].name).to.be.eq('name1')
 
 
 class UnitOfficerWorkerTestCase(IndexMixin, TestCase):

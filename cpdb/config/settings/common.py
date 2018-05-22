@@ -46,7 +46,6 @@ LOCAL_APPS = (
     'vftg',
     'cms',
     'es_index',
-    'report_bottomsheet',
     'analytics',
     'officers',
     'cr',
