@@ -17,7 +17,7 @@ def percentile(objects, percentile_rank=0.0, key='value', decimal_places=0):
     sorted_scores = sorted(objects, key=lambda x: getattr(x, key))
     scores_length = len(sorted_scores)
     previous_score = getattr(sorted_scores[0], key)
-    current_rank = 0
+    current_rank = 0.0
     results = sorted_scores
 
     for i, item in enumerate(sorted_scores):

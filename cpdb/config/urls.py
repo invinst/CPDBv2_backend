@@ -22,6 +22,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
+from trr.views import TRRViewSet
 from vftg.views import VFTGViewSet
 from .views import index_view, officer_view, complaint_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
@@ -52,6 +53,7 @@ router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'trr', TRRViewSet, base_name='trr')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
