@@ -333,26 +333,3 @@ class OfficerCoaccusalSerializer(serializers.Serializer):
 class OfficerCoaccusalsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     coaccusals = OfficerCoaccusalSerializer(many=True)
-
-
-class AttachmentSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    file_type = serializers.CharField()
-    title = serializers.CharField()
-    url = serializers.CharField()
-    preview_image_url = serializers.CharField()
-
-
-class OfficerAllegationSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    officer_id = serializers.IntegerField()
-    attachments = AttachmentSerializer(many=True)
-    category = serializers.SerializerMethodField()
-    subcategory = serializers.CharField()
-    coaccused = serializers.IntegerField(source='coaccused_count')
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
-    finding = serializers.CharField(source='final_finding_display')
-    outcome = serializers.CharField(source='final_outcome_display')
-
-    def get_category(self, obj):
-        return obj.category if obj.category else 'Unknown'

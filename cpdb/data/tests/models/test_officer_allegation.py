@@ -2,7 +2,7 @@ from django.test.testcases import TestCase
 
 from robber.expect import expect
 
-from data.factories import AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory
+from data.factories import AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory, AttachmentFileFactory
 
 
 class OfficerAllegationTestCase(TestCase):
@@ -61,3 +61,14 @@ class OfficerAllegationTestCase(TestCase):
 
         officer_allegation = OfficerAllegationFactory(recc_outcome='100')
         expect(officer_allegation.recc_outcome_display).to.eq('Reprimand')
+
+    def test_attachments(self):
+        allegation = AllegationFactory()
+        officer_allegation = OfficerAllegationFactory(allegation=allegation)
+        attachment_1 = AttachmentFileFactory(allegation=allegation)
+        attachment_2 = AttachmentFileFactory(allegation=allegation)
+
+        result = list(officer_allegation.attachments)
+        expect(result).to.have.length(2)
+        expect(result).to.contain(attachment_1)
+        expect(result).to.contain(attachment_2)

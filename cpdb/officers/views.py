@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
-from officers.doc_types import OfficerAttachmentsDocType
 from officers.serializers import NewTimelineSerializer, TimelineSerializer
 from .doc_types import (
     OfficerTimelineEventDocType,
@@ -99,14 +98,5 @@ class OfficersViewSet(viewsets.ViewSet):
         result = query.execute()
         try:
             return Response(result[0].to_dict()['coaccusals'])
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @detail_route(methods=['get'])
-    def attachments(self, _, pk):
-        query = OfficerAttachmentsDocType().search().query('term', officer_id=pk)
-        results = query[:10000].execute()
-        try:
-            return Response([result.to_dict() for result in results])
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
