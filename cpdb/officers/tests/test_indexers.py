@@ -10,7 +10,7 @@ from robber import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory
+    AllegationCategoryFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -719,63 +719,71 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
         })
 
 
-class OfficerCoaccusalsIndexerTestCase(SimpleTestCase):
+class OfficerCoaccusalsIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        officer = Mock()
-
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(OfficerCoaccusalsIndexer().get_queryset()).to.eq([officer])
+        officer = OfficerFactory()
+        expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
 
     def test_extract_datum(self):
-        officer = Mock(
-            id=123,
-            coaccusals=[Mock(
-                id=456,
-                full_name='Officer 456',
-                allegation_count=2,
-                sustained_count=1,
-                complaint_percentile=95.0,
-                race='White',
-                gender_display='Male',
-                birth_year=1950,
-                coaccusal_count=3,
-                rank='Police Officer',
-            ), Mock(
-                id=789,
-                full_name='Officer 789',
-                allegation_count=3,
-                sustained_count=2,
-                complaint_percentile=99.0,
-                race='Black',
-                gender_display='Male',
-                birth_year=1970,
-                coaccusal_count=5,
-                rank='Po As Detective',
-            )],
+        allegation = AllegationFactory()
+        officer = OfficerFactory(appointed_date=date(2002, 1, 1))
+        officer_1 = OfficerFactory(
+            first_name='Officer',
+            last_name='456',
+            race='White',
+            gender='M',
+            birth_year=1950,
+            rank='Police Officer',
+            complaint_percentile='95.0',
+            appointed_date=date(2000, 1, 1)
         )
-        expect(OfficerCoaccusalsIndexer().extract_datum(officer)).to.eq({
-            'id': 123,
+        officer_2 = OfficerFactory(
+            first_name='Officer',
+            last_name='789',
+            race='Black',
+            gender='M',
+            birth_year=1970,
+            rank='Po As Detective',
+            complaint_percentile='99.0',
+            appointed_date=date(2001, 1, 1)
+        )
+        OfficerAllegationFactory(officer=officer, allegation=allegation, final_finding='SU')
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation, final_finding='SU')
+        OfficerAllegationFactory(officer=officer_2, allegation=allegation, final_finding='NS')
+        TRRFactory(officer=officer_1, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
+        TRRFactory(officer=officer_2, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
+
+        expect(dict(OfficerCoaccusalsIndexer().extract_datum(officer))).to.eq({
+            'id': officer.id,
             'coaccusals': [{
-                'id': 456,
+                'id': officer_1.id,
                 'full_name': 'Officer 456',
-                'allegation_count': 2,
+                'allegation_count': 1,
                 'sustained_count': 1,
                 'complaint_percentile': 95.0,
                 'race': 'White',
                 'gender': 'Male',
                 'birth_year': 1950,
-                'coaccusal_count': 3,
+                'coaccusal_count': 1,
                 'rank': 'Police Officer',
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 0,
             }, {
-                'id': 789,
+                'id': officer_2.id,
                 'full_name': 'Officer 789',
-                'allegation_count': 3,
-                'sustained_count': 2,
+                'allegation_count': 1,
+                'sustained_count': 0,
                 'complaint_percentile': 99.0,
                 'race': 'Black',
                 'gender': 'Male',
                 'birth_year': 1970,
-                'coaccusal_count': 5,
+                'coaccusal_count': 1,
                 'rank': 'Po As Detective',
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 33.3333,
             }]
         })

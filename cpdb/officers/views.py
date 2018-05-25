@@ -6,7 +6,7 @@ from rest_framework.decorators import detail_route, list_route
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from es_index.pagination import ESQueryPagination
-from officers.serializers import (NewTimelineSerializer, TimelineSerializer)
+from officers.serializers import NewTimelineSerializer, TimelineSerializer
 from .doc_types import (
     OfficerTimelineEventDocType,
     OfficerInfoDocType,
