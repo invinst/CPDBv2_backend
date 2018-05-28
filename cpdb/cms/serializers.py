@@ -1,17 +1,12 @@
 import inspect
 import sys
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
 from rest_framework import serializers
 from rest_framework.fields import SkipField
 
-from data.models import Officer
-from cms.fields import (
-    DateField, StringField, RichTextField, BaseCMSField
-)
-from cms.models import ReportPage, SlugPage, FAQPage
+from cms.fields import RichTextField, BaseCMSField
+from cms.models import SlugPage
 
 
 class BaseCMSPageSerializer(serializers.Serializer):
@@ -73,31 +68,28 @@ class BaseCMSPageSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         result = dict()
         field_values = []
-        for field in self._non_meta_fields:
-            if 'fields' not in data:
-                break
-            if field.read_only:
-                continue
-            try:
-                field_data = [
-                    obj['value'] for obj in data['fields']
-                    if obj['name'] == field.field_name
-                ][0]
-                internal_value = field.to_internal_value(field_data)
-            except (IndexError, NotImplementedError):
-                continue
-            field_values.append((field, internal_value))
-
-        for field in self._meta_fields:
-            if 'meta' not in data:
-                break
-            if field.read_only:
-                continue
-            try:
-                internal_value = field.to_internal_value(data['meta'][field.field_name])
-            except (KeyError, NotImplementedError):
-                continue
-            field_values.append((field, internal_value))
+        if 'fields' in data:
+            for field in self._non_meta_fields:
+                if field.read_only:
+                    continue
+                try:
+                    field_data = [
+                        obj['value'] for obj in data['fields']
+                        if obj['name'] == field.field_name
+                    ][0]
+                    internal_value = field.to_internal_value(field_data)
+                except (IndexError, NotImplementedError):
+                    continue
+                field_values.append((field, internal_value))
+        if 'meta' in data:
+            for field in self._meta_fields:
+                if field.read_only:
+                    continue
+                try:
+                    internal_value = field.to_internal_value(data['meta'][field.field_name])
+                except (KeyError, NotImplementedError):
+                    continue
+                field_values.append((field, internal_value))
 
         supplied_fields = [field for field, _ in field_values]
         for field in self._writable_fields:
@@ -142,7 +134,6 @@ class BaseCMSPageSerializer(serializers.Serializer):
                     relation_fields.append((field.source, value))
 
         instance = self.Meta.model.objects.create(**validated_data)
-
         for key, value in relation_fields:
             attr = getattr(instance, key)
             attr.add(*value)
@@ -163,95 +154,6 @@ class IdPageSerializer(BaseCMSPageSerializer):
         representation = super(IdPageSerializer, self).to_representation(obj, *args, **kwargs)
         representation['id'] = obj.id
         return representation
-
-
-class OfficerListSerializer(serializers.ListSerializer):
-    _type = 'officers_list'
-
-    def to_representation(self, obj):
-        value = super(OfficerListSerializer, self).to_representation(obj)
-        return {
-            'name': self.field_name,
-            'type': self._type,
-            'value': value
-        }
-
-    def to_internal_value(self, data):
-        try:
-            return super(OfficerListSerializer, self).to_internal_value(data)
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError({self.field_name: 'Officer does not exist'})
-        except (TypeError, ValueError):
-            raise serializers.ValidationError({self.field_name: 'Incorrect type. Expected officer pk'})
-
-
-class OfficerSerializer(serializers.ModelSerializer):
-    gender = serializers.CharField(source='gender_display')
-
-    class Meta:
-        model = Officer
-        fields = ('id', 'allegation_count', 'full_name', 'v1_url', 'race', 'gender')
-        list_serializer_class = OfficerListSerializer
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def to_internal_value(self, data):
-        return self.get_queryset().get(pk=data['id'])
-
-
-class ReportPageSerializer(IdPageSerializer):
-    title = RichTextField(source='fields')
-    excerpt = RichTextField(source='fields')
-    publication = StringField(source='fields')
-    publish_date = DateField(source='fields')
-    author = StringField(source='fields')
-    article_link = RichTextField(source='fields')
-    officers = OfficerSerializer(many=True)
-
-    class Meta:
-        model = ReportPage
-
-
-class FAQPageListSerializer(serializers.ListSerializer):
-    def update(self, instance, validated_data):
-        data_mapping = {item['id']: item for item in validated_data}
-        result = []
-        for faq in instance:
-            if faq.id in data_mapping:
-                result.append(self.child.update(faq, data_mapping[faq.id]))
-
-        return result
-
-
-class FAQPageSerializer(IdPageSerializer):
-    question = RichTextField(source='fields')
-    answer = RichTextField(source='fields')
-    order = serializers.IntegerField()
-    starred = serializers.BooleanField()
-
-    class Meta:
-        model = FAQPage
-        fields = ('question', 'answer')
-        meta_fields = ('order', 'starred')
-        list_serializer_class = FAQPageListSerializer
-
-
-class CreateFAQPageSerializer(IdPageSerializer):
-    question = RichTextField(source='fields')
-    answer = RichTextField(source='fields')
-    order = serializers.IntegerField(default=lambda: FAQPage.objects.count())
-    starred = serializers.BooleanField()
-
-    class Meta:
-        model = FAQPage
-        fields = ('question', 'answer')
-        meta_fields = ('order', 'starred')
-
-    def validate(self, data):
-        if 'answer_value' in data['fields'] and not self.context['request'].user.is_authenticated:
-            raise serializers.ValidationError("Unauthorized user cannot add answer.")
-        return data
 
 
 class LandingPageSerializer(SlugPageSerializer):

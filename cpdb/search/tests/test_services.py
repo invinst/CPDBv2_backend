@@ -4,10 +4,9 @@ from django.test import TestCase
 
 from robber import expect
 
-from search.doc_types import FAQDocType
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
-from search.workers import OfficerWorker, FAQWorker
+from search.workers import OfficerWorker
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -54,37 +53,15 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         )
         officerDoc.save()
 
-        faqDoc = FAQDocType(
-            meta={'id': '11'},
-            question='I dont care',
-            answer='-eh-eh-eh-eh-eh',
-            tags=['sample']
-        )
-        faqDoc.save()
-
-        taglessFaqDoc = FAQDocType(
-            meta={'id': '22'},
-            question='this should not be returned',
-            answer='nope'
-        )
-        taglessFaqDoc.save()
-
         self.refresh_index()
 
         response = SearchManager(
             workers={
                 'OFFICER': OfficerWorker(),
-                'FAQ': FAQWorker()
             }
         ).suggest_sample()
 
         expect(response).to.eq({
-            'FAQ': [{
-                'id': '11',
-                'question': 'I dont care',
-                'answer': '-eh-eh-eh-eh-eh',
-                'tags': ['sample']
-            }],
             'OFFICER': [{
                 'id': '2',
                 'url': 'url',

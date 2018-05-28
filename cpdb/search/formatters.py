@@ -103,15 +103,6 @@ class NameV2Formatter(SimpleFormatter):
         }
 
 
-class FAQFormatter(SimpleFormatter):
-    def doc_format(self, doc):
-        return {
-            'question': doc.question,
-            'answer': doc.answer,
-            'tags': getattr(doc, 'tags', []),
-        }
-
-
 class ReportFormatter(SimpleFormatter):
     def doc_format(self, doc):
         return {

@@ -1,17 +1,21 @@
-from django.test import SimpleTestCase
-
+from django.db.models import ManyToManyField, CharField, Model
+from django.test import TransactionTestCase
 from mock import Mock
 from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+from robber import expect
 
-from cms.serializers import BaseCMSPageSerializer
 from cms.fields import StringField
+from cms.serializers import BaseCMSPageSerializer
 
 
-class BaseCMSPageSerializerTestCase(SimpleTestCase):
+class BaseCMSPageSerializerTestCase(TransactionTestCase):
     def setUp(self):
+        self.mock_fields = Mock()
+        self.mock_fields.add = Mock()
         self.page_model = Mock()
         self.page_model.objects = Mock()
-        self.page_model.objects.create = Mock()
+        self.page_model.objects.create = Mock(return_value=Mock(**{'fields': self.mock_fields}))
 
         class SerializerA(BaseCMSPageSerializer):
             a = StringField(source='fields')
@@ -40,21 +44,48 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
                 model = self.page_model
                 meta_fields = ('a', 'b', 'c', 'd')
 
+        class DummyModel(Model):
+            name = CharField(max_length=256)
+
+            class Meta:
+                app_label = 'cms'
+
+        class ChildSerializer(ModelSerializer):
+            class Meta:
+                model = DummyModel
+                fields = '__all__'
+
+        class SerializerD(BaseCMSPageSerializer):
+            a = ChildSerializer(source='fields', many=True)
+
+            class Meta:
+                model = self.page_model
+                meta_fields = ('a',)
+
+        class SerializerEmpty(BaseCMSPageSerializer):
+            pass
+
         self.serializer_class_a = SerializerA
         self.serializer_class_b = SerializerB
         self.serializer_class_c = SerializerC
+        self.serializer_class_d = SerializerD
+        self.serializer_class_empty = SerializerEmpty
 
     def test_serialize(self):
         page = Mock()
         page.fields = {
             'a_value': 'b'
         }
+
         serializer = self.serializer_class_a(page)
         self.assertDictEqual(serializer.data['fields'][0], {
             'name': 'a',
             'type': 'string',
             'value': 'b'
         })
+
+        serializer_empty = self.serializer_class_empty(page)
+        expect(serializer_empty.data['fields']).to.be.empty()
 
     def test_serialize_meta_fields(self):
         page = Mock()
@@ -93,18 +124,24 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
 
     def test_update_meta_fields(self):
         page = Mock()
+        mock_b = Mock()
         page.fields = {
             'c_value': 'd'
         }
         page.a = 3
+        page.b = mock_b
         page.d = 1
         page.save = Mock()
+        page._meta.get_field = lambda x: ManyToManyField(Mock()) if x is 'b' else None
         serializer = self.serializer_class_b(page, data={
             'fields': [{'name': 'c', 'type': 'string', 'value': 'd'}],
-            'meta': {'a': 4}
+            'meta': {'a': 4, 'b': 5}
         })
+
         self.assertTrue(serializer.is_valid())
+
         serializer.save()
+
         self.assertDictEqual(serializer.data['fields'][0], {
             'name': 'c',
             'type': 'string',
@@ -113,6 +150,27 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
         page.save.assert_called()
         self.assertEqual(page.fields['c_value'], 'd')
         self.assertEqual(page.a, 4)
+        expect(mock_b.set).to.be.called_with(5)
+
+    def test_no_update(self):
+        page = Mock()
+        page.fields = {
+            'c_value': 'd'
+        }
+        page.a = 3
+        page.d = 1
+        page.save = Mock()
+        serializer = self.serializer_class_b(page, data={'id': 0})
+        expect(serializer.is_valid()).to.be.true()
+        serializer.save()
+        expect(serializer.data['fields'][0]).to.eq({
+            'name': 'c',
+            'type': 'string',
+            'value': 'd'
+        })
+        page.save.assert_called()
+        expect(page.fields['c_value']).to.eq('d')
+        expect(page.a).to.eq(3)
 
     def test_create(self):
         serializer = self.serializer_class_a(data={'fields': [{'name': 'a', 'type': 'string', 'value': 'c'}]})
@@ -129,6 +187,21 @@ class BaseCMSPageSerializerTestCase(SimpleTestCase):
         self.page_model.objects.create.assert_called_with(
             fields={'c_type': 'string', 'c_value': 'f'},
             a=10)
+
+    def test_create_meta_relation_field(self):
+        serializer = self.serializer_class_d(data={
+            'meta': {'a': [{'name': 'a'}]},
+        })
+
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        expect(self.mock_fields.add).to.be.called_with({'name': 'a'})
+
+    def test_create_empty(self):
+        serializer = self.serializer_class_b(data={})
+        expect(serializer.is_valid()).to.be.true()
+        serializer.save()
+        self.page_model.objects.create.assert_called_with()
 
     def test_fake_data(self):
         fake_data = self.serializer_class_b().fake_data(c='d', d=1, a=4)

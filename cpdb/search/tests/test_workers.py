@@ -4,26 +4,12 @@ from robber import expect
 
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
-    FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
+    ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker
 )
-from search.doc_types import (
-    FAQDocType, ReportDocType, UnitDocType,
-    AreaDocType, CrDocType
-)
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
-
-
-class FAQWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
-        doc = FAQDocType(question='question', answer='answer')
-        doc.save()
-
-        self.refresh_index()
-
-        response = FAQWorker().search('question')
-        expect(response.hits.total).to.be.equal(1)
 
 
 class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
@@ -87,6 +73,16 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
 
     def test_search_officer_badge(self):
         OfficerInfoDocType(full_name='John Doe', badge='100123').save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('100')
+
+        expect(response.hits.total).to.equal(1)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
+
+    def test_search_officer_historic_badge(self):
+        OfficerInfoDocType(full_name='John Doe', historic_badges=['100123', '123456']).save()
 
         self.refresh_index()
 

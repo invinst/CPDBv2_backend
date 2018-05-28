@@ -6,7 +6,7 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
+    NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
     AreaFormatter)
 
 
@@ -193,19 +193,6 @@ class NameV2FormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'result_text': 'name',
             'url': 'url',
-            'tags': ['t1', 't2']
-        })
-
-
-class FAQFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(question='question', answer='answer', tags=['t1', 't2'])
-
-        expect(
-            FAQFormatter().doc_format(doc)
-        ).to.be.eq({
-            'question': 'question',
-            'answer': 'answer',
             'tags': ['t1', 't2']
         })
 
