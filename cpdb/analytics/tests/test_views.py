@@ -23,13 +23,13 @@ class EventsViewTestCase(APITestCase):
 
         url = reverse('api-v2:event-list')
         response = self.client.post(url, {
-            'name': 'faq-click',
+            'name': 'some-click',
             'data': data
         }, format='json')
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
 
         event = Event.objects.first()
-        expect(event.name).to.eq('faq-click')
+        expect(event.name).to.eq('some-click')
         expect(event.data).to.eq(data)
         expect(event.created).to.eq(datetime.datetime(2017, 1, 14, 12, 0, 1, tzinfo=pytz.utc))
 

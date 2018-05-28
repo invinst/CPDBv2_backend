@@ -2,8 +2,6 @@ import factory
 from factory.helpers import lazy_attribute
 from faker import Faker
 
-from cms.models import FAQPage as FAQ, ReportPage as Report
-
 
 fake = Faker()
 
@@ -49,52 +47,8 @@ class RichTextFieldFactory(factory.Factory):
     entityMap = {}
 
     @lazy_attribute
-    def blocks(self):
+    def blocks(self):  # pragma: no cover
         return [BlockFactory(text=text) for text in self.texts]
 
     class Params:
         texts = factory.LazyFunction(lambda: fake.sentences())
-
-
-class FAQPageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = FAQ
-
-    @lazy_attribute
-    def fields(self):
-        return {
-            'question_type': 'plain_text',
-            'answer_type': 'multiline_text',
-            'question_value': RichTextFieldFactory(texts=[self.question]),
-            'answer_value': RichTextFieldFactory(texts=self.answer)
-        }
-
-    class Params:
-        question = factory.LazyFunction(lambda: fake.sentence())
-        answer = factory.LazyFunction(lambda: fake.sentences())
-
-
-class ReportPageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Report
-
-    @lazy_attribute
-    def fields(self):
-        return {
-            'publication_type': 'string',
-            'publication_value': self.publication,
-            'author_type': 'string',
-            'author_value': self.author,
-            'title_type': 'plain_text',
-            'title_value': RichTextFieldFactory(texts=[self.title]),
-            'excerpt_type': 'multiline_text',
-            'excerpt_value': RichTextFieldFactory(texts=self.excerpt),
-            'publish_date_value': self.publish_date,
-        }
-
-    class Params:
-        publication = factory.LazyFunction(lambda: fake.sentence())
-        author = factory.LazyFunction(lambda: fake.name())
-        title = factory.LazyFunction(lambda: fake.sentence())
-        excerpt = factory.LazyFunction(lambda: fake.sentences())
-        publish_date = factory.LazyFunction(lambda: fake.date(pattern='%Y-%m-%d'))

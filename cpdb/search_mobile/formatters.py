@@ -11,14 +11,6 @@ class OfficerV2Formatter(SimpleFormatter):
         }
 
 
-class FAQFormatter(SimpleFormatter):
-    def doc_format(self, doc):
-        return {
-            'id': int(doc.meta.id),
-            'question': doc.question
-        }
-
-
 class ReportFormatter(SimpleFormatter):
     def doc_format(self, doc):
         return {

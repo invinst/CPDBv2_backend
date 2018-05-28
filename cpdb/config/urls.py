@@ -27,8 +27,7 @@ from .views import index_view, officer_view, complaint_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
-from cms.views import CMSPageViewSet, ReportPageViewSet, FAQPageViewSet
-from report_bottomsheet.views import ReportBottomSheetOfficerSearchViewSet
+from cms.views import CMSPageViewSet
 from officers.views import OfficersViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
@@ -46,17 +45,11 @@ router_v1.register(r'suggestion', SearchV1ViewSet, base_name='suggestion')
 
 router_v2 = routers.SimpleRouter()
 router_v2.register(r'cms-pages', CMSPageViewSet, base_name='cms-page')
-router_v2.register(r'reports', ReportPageViewSet, base_name='report')
-router_v2.register(r'faqs', FAQPageViewSet, base_name='faq')
 router_v2.register(r'users', UserViewSet, base_name='user')
 router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
-router_v2.register(
-    r'report-bottomsheet-officer-search',
-    ReportBottomSheetOfficerSearchViewSet,
-    base_name='report-bottomsheet-officer-search')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
@@ -71,10 +64,10 @@ urlpatterns = [
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
-        r'collaborate|faq(/\d+)?|reporting(/\d+)?|search(?:/terms)?|'
+        r'collaborate|search(?:/terms)?|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'unit/\d+|'
-        r'edit(?:/(?:reporting|faq|search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
+        r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(
         r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',

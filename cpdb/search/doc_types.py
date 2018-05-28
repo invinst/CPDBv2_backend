@@ -6,16 +6,6 @@ from search.analyzers import autocomplete, autocomplete_search
 
 
 @autocompletes_alias.doc_type
-class FAQDocType(DocType):
-    question = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    answer = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
-
-    class Meta:
-        doc_type = 'faq'
-
-
-@autocompletes_alias.doc_type
 class ReportDocType(DocType):
     publication = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     author = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
