@@ -194,6 +194,14 @@ class TRR(models.Model):
     subject_gender = models.CharField(max_length=1, null=True, choices=GENDER)
     subject_race = models.CharField(max_length=32, null=True)
 
+    @property
+    def force_category(self):
+        return 'Taser' if self.taser else 'Firearm' if self.firearm_used else 'Other'
+
+    @property
+    def actions(self):
+        return self.actionresponse_set.order_by('-id').values_list('action', flat=True)
+
 
 class ActionResponse(models.Model):
     trr = models.ForeignKey(TRR)
@@ -252,3 +260,19 @@ class SubjectWeapon(models.Model):
     weapon_type = models.CharField(max_length=64, null=True)
     firearm_caliber = models.CharField(max_length=16, null=True)
     weapon_description = models.CharField(max_length=64, null=True)
+
+
+class TRRAttachmentRequest(models.Model):
+    trr = models.ForeignKey(TRR)
+    email = models.EmailField(max_length=255)
+    status = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (('trr', 'email'),)
+
+    def __str__(self):
+        return '%s - %s' % (self.email, self.trr.id)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(TRRAttachmentRequest, self).save(*args, **kwargs)

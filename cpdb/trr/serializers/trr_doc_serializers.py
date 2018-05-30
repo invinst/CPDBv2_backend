@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from data.constants import GENDER_DICT
 from data.models import Officer, PoliceUnit
 
 
@@ -27,3 +28,29 @@ class TRRDocSerializer(serializers.Serializer):
     officer_in_uniform = serializers.BooleanField(default=False)
     officer_assigned_beat = serializers.CharField(max_length=16, allow_null=True)
     officer_duty_status = serializers.BooleanField(default=False)
+
+    subject_race = serializers.CharField(max_length=32)
+    subject_gender = serializers.SerializerMethodField()
+    subject_age = serializers.IntegerField()
+    force_category = serializers.CharField(max_length=255)
+    actions = serializers.SerializerMethodField()
+
+    date_of_incident = serializers.SerializerMethodField()
+    location_type = serializers.CharField(source='location_recode')
+    address = serializers.SerializerMethodField()
+    beat = serializers.IntegerField()
+
+    def get_subject_gender(self, obj):
+        try:
+            return GENDER_DICT[obj.subject_gender]
+        except KeyError:
+            return obj.subject_gender
+
+    def get_address(self, obj):
+        return ' '.join(filter(None, [obj.block, obj.street]))
+
+    def get_date_of_incident(self, obj):
+        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+
+    def get_actions(self, obj):
+        return [action.title() for action in obj.actions if action]
