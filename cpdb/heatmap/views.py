@@ -4,14 +4,13 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
 from data.models import OfficerAllegation
-from data.constants import DISCIPLINE_CODES
 
 
 class CitySummaryViewSet(ViewSet):
     def list(self, request):
         city_summary = {
             'allegation_count': OfficerAllegation.objects.count(),
-            'discipline_count': OfficerAllegation.objects.filter(final_outcome__in=DISCIPLINE_CODES).distinct().count(),
+            'discipline_count': OfficerAllegation.objects.filter(disciplined=True).distinct().count(),
             'most_common_complaints': [
                 {
                     'name': obj['allegation_category__category'],

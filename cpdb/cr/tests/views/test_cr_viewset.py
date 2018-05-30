@@ -40,14 +40,14 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         allegation = AllegationFactory(
             crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
-            add2='Michigan Ave', city='Chicago', location='09', beat=area, is_officer_complaint=False,
-            summary='Summary'
+            add2='Michigan Ave', city='Chicago', location='Police Communications System', beat=area,
+            is_officer_complaint=False, summary='Summary'
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU',
-            final_outcome='400', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
         )
         officer = OfficerFactory(id=3, first_name='Raymond', last_name='Piwinicki', appointed_date=date(2001, 5, 1))
@@ -87,7 +87,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': '12345'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
+        expect(dict(response.data)).to.eq({
             'crid': '12345',
             'coaccused': [
                 {
