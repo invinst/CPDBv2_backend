@@ -929,10 +929,6 @@ class Allegation(models.Model):
         return self.complainant_set.all()
 
     @property
-    def victims(self):
-        return self.victim_set.all()
-
-    @property
     def complainant_races(self):
         query = self.complainant_set.annotate(
             name=models.Case(
@@ -1119,6 +1115,10 @@ class OfficerAllegation(models.Model):
     def documents(self):
         return self.allegation.documents
 
+    @property
+    def victims(self):
+        return self.allegation.victims
+
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
@@ -1197,7 +1197,7 @@ class Award(models.Model):
 
 
 class Victim(models.Model):
-    allegation = models.ForeignKey(Allegation)
+    allegation = models.ForeignKey(Allegation, related_name='victims')
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)

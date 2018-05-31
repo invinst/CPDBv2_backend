@@ -213,6 +213,12 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
         return obj.officer.rank
 
 
+class VictimSerializer(serializers.Serializer):
+    gender = serializers.CharField(source='gender_display')
+    race = serializers.CharField()
+    age = serializers.IntegerField()
+
+
 class CRNewTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='start_date', format=None)
@@ -229,6 +235,8 @@ class CRNewTimelineSerializer(serializers.Serializer):
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
     attachments = AttachmentFileSerializer(source='documents', many=True)
+    point = serializers.SerializerMethodField()
+    victims = VictimSerializer(many=True)
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -249,6 +257,15 @@ class CRNewTimelineSerializer(serializers.Serializer):
 
     def get_rank(self, obj):
         return obj.officer.rank
+
+    def get_point(self, obj):
+        try:
+            return {
+                'lon': obj.allegation.point.x,
+                'lat': obj.allegation.point.y
+            }
+        except AttributeError:
+            return None
 
 
 class AwardNewTimelineSerializer(serializers.Serializer):
@@ -291,6 +308,7 @@ class TRRNewTimelineSerializer(serializers.Serializer):
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
+    point = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'FORCE'
@@ -314,6 +332,15 @@ class TRRNewTimelineSerializer(serializers.Serializer):
 
     def get_date(self, obj):
         return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+
+    def get_point(self, obj):
+        try:
+            return {
+                'lon': obj.allegation.point.x,
+                'lat': obj.allegation.point.y
+            }
+        except AttributeError:
+            return None
 
 
 class OfficerCoaccusalSerializer(serializers.Serializer):
