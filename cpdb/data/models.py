@@ -1118,6 +1118,7 @@ class Complainant(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):
@@ -1189,6 +1190,7 @@ class Victim(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):
