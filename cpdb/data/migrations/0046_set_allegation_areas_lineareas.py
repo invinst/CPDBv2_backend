@@ -8,15 +8,12 @@ from django.db import migrations
 def alter_data(apps, schema_editor):
     Allegation = apps.get_model('data', 'Allegation')
     Area = apps.get_model('data', 'Area')
-    LineArea = apps.get_model('data', 'LineArea')
 
     for allegation in Allegation.objects.all():
         if allegation.point is None:
             allegation.areas.set([])
-            allegation.line_areas.set([])
         else:
             allegation.areas.set(Area.objects.filter(polygon__covers=allegation.point))
-            allegation.line_areas.set(LineArea.objects.filter(geom__covers=allegation.point))
 
 
 class Migration(migrations.Migration):

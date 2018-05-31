@@ -53,7 +53,7 @@ def import_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0054_import_policewitness_data'),
+        ('data', '0055_import_allegationcategory_data'),
     ]
 
     operations = [
