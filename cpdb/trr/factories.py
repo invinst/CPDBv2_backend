@@ -22,18 +22,13 @@ class TRRFactory(factory.django.DjangoModelFactory):
     subject_gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     subject_birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
 
-    location_recode = 'Factory'
-    block = '34XX'
-    street = 'Douglas Blvd'
-    beat = 1021
-
 
 class ActionResponseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ActionResponse
 
     trr = factory.SubFactory(TRRFactory)
-    action = 'Verbal Commands'
+    person = 'Member Action'
 
 
 class TRRAttachmentRequestFactory(factory.django.DjangoModelFactory):

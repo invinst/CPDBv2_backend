@@ -31,13 +31,18 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             trr_datetime=datetime(2001, 1, 1),
             subject_gender='M',
             subject_age=37,
-            officer=officer)
+            officer=officer,
+            location_recode='Factory',
+            block='34XX',
+            street='Douglas Blvd',
+            beat=1021,
+        )
         OfficerAllegationFactory(
             officer=officer,
             allegation__incident_date=datetime(2003, 1, 1),
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1), final_finding='SU')
-        ActionResponseFactory(trr=trr)
+        ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category=1)
 
         self.refresh_index()
 
@@ -65,7 +70,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             'subject_gender': 'Male',
             'subject_age': 37,
             'force_category': 'Other',
-            'actions': ['Verbal Commands'],
+            'force_types': ['Verbal Commands'],
             'date_of_incident': '2001-01-01',
             'location_type': 'Factory',
             'address': '34XX Douglas Blvd',

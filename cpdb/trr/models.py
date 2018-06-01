@@ -199,8 +199,9 @@ class TRR(models.Model):
         return 'Taser' if self.taser else 'Firearm' if self.firearm_used else 'Other'
 
     @property
-    def actions(self):
-        return self.actionresponse_set.order_by('-id').values_list('action', flat=True)
+    def force_types(self):
+        return self.actionresponse_set.filter(person='Member Action').\
+            order_by('-action_sub_category', 'force_type').values_list('force_type', flat=True).distinct()
 
 
 class ActionResponse(models.Model):

@@ -33,7 +33,7 @@ class TRRDocSerializer(serializers.Serializer):
     subject_gender = serializers.SerializerMethodField()
     subject_age = serializers.IntegerField()
     force_category = serializers.CharField(max_length=255)
-    actions = serializers.SerializerMethodField()
+    force_types = serializers.ListField(child=serializers.CharField(max_length=255))
 
     date_of_incident = serializers.SerializerMethodField()
     location_type = serializers.CharField(source='location_recode')
@@ -51,6 +51,3 @@ class TRRDocSerializer(serializers.Serializer):
 
     def get_date_of_incident(self, obj):
         return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
-
-    def get_actions(self, obj):
-        return [action.title() for action in obj.actions if action]

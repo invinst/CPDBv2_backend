@@ -5,7 +5,7 @@ from django.test import TestCase
 from robber import expect
 
 from trr.serializers.trr_doc_serializers import TRRDocSerializer
-from trr.factories import (TRRFactory, ActionResponseFactory)
+from trr.factories import TRRFactory
 
 
 class TRRDocSerializerTestCase(TestCase):
@@ -27,9 +27,9 @@ class TRRDocSerializerTestCase(TestCase):
         expect(result['address']).to.eq('34XX Douglas Blvd')
 
     def test_get_address_missing_data(self):
-        trr_no_street = TRRFactory(block='34XX', street=None)
+        trr_no_street = TRRFactory(block='34XX')
         trr_no_block = TRRFactory(block=None, street='Douglas Blvd')
-        trr_no_address = TRRFactory(block=None, street=None)
+        trr_no_address = TRRFactory()
 
         expect(TRRDocSerializer(trr_no_street).data['address']).to.eq('34XX')
         expect(TRRDocSerializer(trr_no_block).data['address']).to.eq('Douglas Blvd')
@@ -38,17 +38,3 @@ class TRRDocSerializerTestCase(TestCase):
     def test_get_date_of_incident(self):
         trr = TRRFactory(trr_datetime=datetime(2012, 1, 23))
         expect(TRRDocSerializer(trr).data['date_of_incident']).to.eq('2012-01-23')
-
-    def test_get_actions(self):
-        trr = TRRFactory()
-        ActionResponseFactory(trr=trr, action='TAKE DOWN/EMERGENCY HANDCUFFING')
-        ActionResponseFactory(trr=trr, action='Armbar')
-        ActionResponseFactory(trr=trr, action='Member Presence')
-        ActionResponseFactory(trr=trr, action='other (specify)')
-
-        expect(TRRDocSerializer(trr).data['actions']).to.eq([
-            'Other (Specify)',
-            'Member Presence',
-            'Armbar',
-            'Take Down/Emergency Handcuffing'
-        ])

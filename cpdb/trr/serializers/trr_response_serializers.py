@@ -33,7 +33,7 @@ class TRRDesktopSerializer(serializers.Serializer):
     subject_gender = serializers.CharField(read_only=True, max_length=32, allow_null=True)
     subject_age = serializers.IntegerField(allow_null=True, read_only=True)
     force_category = serializers.CharField(max_length=255)
-    actions = serializers.ListField(read_only=True, child=serializers.CharField(max_length=255))
+    force_types = serializers.ListField(read_only=True, child=serializers.CharField(max_length=255))
 
     date_of_incident = serializers.CharField(max_length=10)
 
