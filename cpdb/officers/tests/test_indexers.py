@@ -10,7 +10,8 @@ from robber import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory
+    AllegationCategoryFactory,
+    VictimFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -620,6 +621,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             final_outcome=''
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        VictimFactory(allegation=allegation, gender='M', race='White', age=34)
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -636,6 +638,14 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'victims': [
+                {
+                    'race': 'White',
+                    'age': 34,
+                    'gender': 'Male',
+                }
+            ],
+            'point': None,
             'attachments': [
                 {
                     'title': 'doc_1',
@@ -704,7 +714,14 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
                     description='Unit_001',
                 )),
             ),
+            allegation=Mock(
+                point=Mock(
+                    x=34.5,
+                    y=67.8
+                )
+            )
         )
+
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
             'officer_id': 123,
             'date_sort': date(2010, 3, 4),
@@ -716,6 +733,10 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'point': {
+                'lat': 67.8,
+                'lon': 34.5
+            },
         })
 
 
