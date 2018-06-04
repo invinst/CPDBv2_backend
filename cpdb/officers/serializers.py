@@ -60,6 +60,7 @@ class OfficerMetricsSerializer(serializers.Serializer):
     complaint_percentile = serializers.FloatField()
     honorable_mention_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
+    unsustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
     trr_count = serializers.IntegerField()

@@ -107,6 +107,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
+            'unsustained_count': 0,
         })
 
     def test_summary_no_match(self):

@@ -318,6 +318,10 @@ class Officer(TaggableModel):
         return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
+    def unsustained_count(self):
+        return self.officerallegation_set.filter(final_finding='NS').distinct().count()
+
+    @property
     def honorable_mention_count(self):
         return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
 

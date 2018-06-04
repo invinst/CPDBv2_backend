@@ -52,6 +52,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
                 'id': 123,
                 'percentile_honorable_mention': 98.000,
             },
+            'unsustained_count': 24,
         })
 
         expect(OfficerMetricsSerializer(obj).data).to.eq({
@@ -67,7 +68,8 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'single_percentiles': {
                 'id': 123,
                 'honorable_mention_percentile': 98.000,
-            }
+            },
+            'unsustained_count': 24,
         })
 
 
@@ -113,6 +115,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             complaint_percentile=99.8,
             honorable_mention_count=1,
             sustained_count=1,
+            unsustained_count=2,
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
@@ -242,6 +245,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'to': '',
             'url': '',
             'current_salary': 9000,
+            'unsustained_count': 2,
         })
 
 
