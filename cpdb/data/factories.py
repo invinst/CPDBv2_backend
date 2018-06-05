@@ -116,7 +116,9 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
-    final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
+    final_outcome = factory.LazyFunction(
+        lambda: random.choice(['27 Day Suspension', '28 Day Suspension', 'No Action Taken'])
+    )
     allegation_category = factory.SubFactory(AllegationCategoryFactory)
 
 

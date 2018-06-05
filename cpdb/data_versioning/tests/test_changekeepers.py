@@ -15,6 +15,10 @@ from data_versioning.changekeepers import PostgreSQLChangeKeeper
 class PostgreSQLChangeKeeperTestCase(TestCase):
     changekeeper = PostgreSQLChangeKeeper()
 
+    def __init__(self, *args, **kwargs):
+        super(PostgreSQLChangeKeeperTestCase, self).__init__(*args, **kwargs)
+        self.maxDiff = None
+
     def test_create(self):
         area1 = AreaFactory(name='abc')
         area2 = AreaFactory(name='edf')
@@ -126,7 +130,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         with freeze_time('2012-01-14 12:21:34', tz_offset=0):
             allegation = Allegation.objects.create(
                 crid='456123',
-                add1=103,
+                add1='103',
                 beat=areas[0],
                 city='abc',
                 add2='def',
@@ -156,7 +160,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         self.assertEqual(dict(changelog.content.items()), {
             'id': old_pk,
             'crid': '456123',
-            'add1': 103,
+            'add1': '103',
             'beat': areas[0].pk,
             'areas': [area.pk for area in areas[1:]],
             'city': 'abc',

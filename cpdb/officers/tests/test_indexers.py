@@ -622,7 +622,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
                 allegation_name='Search of premise/vehicle without warrant',
             ),
             final_finding='UN',
-            final_outcome=''
+            final_outcome='Unknown'
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
