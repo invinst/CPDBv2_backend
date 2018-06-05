@@ -51,7 +51,7 @@ class OfficerWorker(Worker):
             query={
                 'multi_match': {
                     'query': term,
-                    'fields': ['badge', 'full_name', 'tags', '_id']
+                    'fields': ['badge', 'historic_badges', 'full_name', 'tags', '_id']
                 }
             },
             functions=[

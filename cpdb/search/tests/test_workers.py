@@ -81,6 +81,16 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.equal(1)
         expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
 
+    def test_search_officer_historic_badge(self):
+        OfficerInfoDocType(full_name='John Doe', historic_badges=['100123', '123456']).save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('100')
+
+        expect(response.hits.total).to.equal(1)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
+
     # Note: We've found that scoring of elasticsearch is incredibly complex and could not
     # be easily replicated in unit tests. Therefore we decided to stop adding tests to this
     # particular test case and instead rely more on manual testing.
