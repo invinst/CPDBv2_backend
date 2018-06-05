@@ -71,9 +71,15 @@ class PoliceWitnessSerializer(serializers.Serializer):
         return 'police_witness'
 
 
+class AllegationCategorySerializer(serializers.Serializer):
+    category = serializers.CharField()
+    allegation_name = serializers.CharField()
+
+
 class CRDocSerializer(serializers.Serializer):
     crid = serializers.CharField()
     category_names = serializers.ListField(child=serializers.CharField())
+    most_common_category = AllegationCategorySerializer(source='get_most_common_category')
     coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
     complainants = ComplainantSerializer(many=True)
     victims = VictimSerializer(many=True)

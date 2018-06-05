@@ -898,6 +898,13 @@ class Allegation(models.Model):
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
 
+    def get_most_common_category(self):
+        return self.officerallegation_set.values(
+            category_id=F('allegation_category__id'),
+            category=F('allegation_category__category'),
+            allegation_name=F('allegation_category__allegation_name')
+        ).annotate(cat_count=Count('category_id')).order_by('-cat_count').first()
+
     @property
     def category_names(self):
         query = self.officer_allegations.annotate(
