@@ -641,11 +641,13 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
                     'title': 'doc_1',
                     'url': 'url_1',
                     'preview_image_url': 'image_url_1',
+                    'file_type': 'document',
                 },
                 {
                     'title': 'doc_2',
                     'url': 'url_2',
                     'preview_image_url': 'image_url_2',
+                    'file_type': 'document',
                 },
             ]
         })
