@@ -1,6 +1,7 @@
 from tqdm import tqdm
 
-from data.models import PoliceUnit, Area, Allegation
+from data.constants import PERCENTILE_TYPES
+from data.models import PoliceUnit, Area, Allegation, Officer
 from data.utils.calculations import percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType
 from search.indices import autocompletes_alias
@@ -71,6 +72,20 @@ class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
     _percentiles = {}
 
+    def __init__(self, *args, **kwargs):
+        super(AreaIndexer, self).__init__(*args, **kwargs)
+        top_percentile = Officer.top_complaint_officers(100, percentile_types=PERCENTILE_TYPES)
+
+        self.top_percentile_dict = {
+            data.officer_id: {
+                'percentile_allegation': data.percentile_allegation,
+                'percentile_allegation_civilian': data.percentile_allegation_civilian,
+                'percentile_allegation_internal': data.percentile_allegation_internal,
+                'percentile_trr': data.percentile_trr,
+            }
+            for data in top_percentile
+        }
+
     def _compute_police_district_percentiles(self, query):
         scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')
         return {
@@ -96,13 +111,21 @@ class AreaIndexer(BaseIndexer):
         if datum.area_type == 'police-districts':
             name = datum.description if datum.description else datum.name
 
+        officers_most_complaint = list(datum.get_officers_most_complaints())
+
+        for officer in officers_most_complaint:
+            try:
+                officer.update(self.top_percentile_dict[officer['id']])
+            except KeyError:
+                pass
+
         return {
             'name': name,
             'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
             'allegation_count': datum.allegation_count,
-            'officers_most_complaint': list(datum.get_officers_most_complaints()),
+            'officers_most_complaint': officers_most_complaint,
             'most_common_complaint': list(datum.get_most_common_complaint()),
             'race_count': RacePopulationSerializer(
                 datum.racepopulation_set.order_by('-count'),
