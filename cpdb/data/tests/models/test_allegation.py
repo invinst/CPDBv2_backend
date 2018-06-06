@@ -151,3 +151,9 @@ class AllegationTestCase(TestCase):
             'allegation_name': category1.allegation_name,
             'cat_count': 2
         })
+        
+    def test_documents(self):
+        allegation = AllegationFactory()
+        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        expect(allegation.documents).to.contain(attachment1, attachment2)
