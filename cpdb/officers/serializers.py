@@ -337,8 +337,8 @@ class TRRNewTimelineSerializer(serializers.Serializer):
     def get_point(self, obj):
         try:
             return {
-                'lon': obj.allegation.point.x,
-                'lat': obj.allegation.point.y
+                'lon': obj.point.x,
+                'lat': obj.point.y
             }
         except AttributeError:
             return None
