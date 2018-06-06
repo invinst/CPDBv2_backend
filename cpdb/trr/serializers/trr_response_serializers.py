@@ -27,7 +27,7 @@ class TRRDesktopSerializer(serializers.Serializer):
     officer = OfficerSerializer(read_only=True)
     officer_in_uniform = serializers.BooleanField(read_only=True, default=False)
     officer_assigned_beat = serializers.CharField(read_only=True, max_length=16, allow_null=True)
-    officer_duty_status = serializers.BooleanField(read_only=True, default=False)
+    officer_on_duty = serializers.BooleanField(read_only=True, default=False)
 
     subject_race = serializers.CharField(read_only=True, max_length=32, allow_null=True)
     subject_gender = serializers.CharField(read_only=True, max_length=32, allow_null=True)

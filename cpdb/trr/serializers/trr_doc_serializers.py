@@ -27,7 +27,7 @@ class TRRDocSerializer(serializers.Serializer):
     officer = OfficerSerializer()
     officer_in_uniform = serializers.BooleanField(default=False)
     officer_assigned_beat = serializers.CharField(max_length=16, allow_null=True)
-    officer_duty_status = serializers.BooleanField(default=False)
+    officer_on_duty = serializers.BooleanField(default=False)
 
     subject_race = serializers.CharField(max_length=32)
     subject_gender = serializers.SerializerMethodField()

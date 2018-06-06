@@ -224,7 +224,7 @@ class CRNewTimelineSerializer(serializers.Serializer):
     category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
-    outcome = serializers.CharField(source='final_outcome_display')
+    outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()

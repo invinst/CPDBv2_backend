@@ -27,7 +27,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             firearm_used=False,
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
-            officer_duty_status=False,
+            officer_on_duty=False,
             trr_datetime=datetime(2001, 1, 1),
             subject_gender='M',
             subject_age=37,
@@ -53,7 +53,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             'id': trr.id,
             'officer_assigned_beat': 'Beat 1',
             'officer_in_uniform': True,
-            'officer_duty_status': False,
+            'officer_on_duty': False,
             'officer': {
                 'id': officer.id,
                 'gender': 'Male',
