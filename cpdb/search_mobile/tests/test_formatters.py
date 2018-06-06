@@ -50,7 +50,7 @@ class UnitFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock(
             meta=Mock(id='11'),
-            url='https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            url='https://data.cpdp.co/url-mediator/session-builder?unit=011',
             active_member_count=2,
             member_count=20
         )
@@ -61,7 +61,7 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'id': 11,
             'text': '011',
-            'url': 'https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            'url': 'https://data.cpdp.co/url-mediator/session-builder?unit=011',
             'active_member_count': 2,
             'member_count': 20
         })
