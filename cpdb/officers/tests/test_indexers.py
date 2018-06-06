@@ -718,12 +718,10 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
                     description='Unit_001',
                 )),
             ),
-            allegation=Mock(
-                point=Mock(
-                    x=34.5,
-                    y=67.8
-                )
-            )
+            point=Mock(
+                x=34.5,
+                y=67.8
+            ),
         )
 
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
