@@ -40,6 +40,17 @@ class TRRDesktopSerializer(serializers.Serializer):
     location_type = serializers.CharField(max_length=255)
     address = serializers.CharField(max_length=255, allow_null=True)
     beat = serializers.IntegerField(allow_null=True)
+    point = serializers.SerializerMethodField(required=False)
+
+    def get_point(self, obj):
+        point = obj.get('point', {
+            'lng': None,
+            'lat': None
+        })
+        return {
+            'lng': point['lng'],
+            'lat': point['lat']
+        }
 
 
 class AttachmentRequestSerializer(serializers.ModelSerializer):

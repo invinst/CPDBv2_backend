@@ -39,6 +39,7 @@ class TRRDocSerializer(serializers.Serializer):
     location_type = serializers.CharField(source='location_recode')
     address = serializers.SerializerMethodField()
     beat = serializers.IntegerField()
+    point = serializers.SerializerMethodField()
 
     def get_subject_gender(self, obj):
         try:
@@ -51,3 +52,9 @@ class TRRDocSerializer(serializers.Serializer):
 
     def get_date_of_incident(self, obj):
         return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+
+    def get_point(self, obj):
+        if obj.point is not None:
+            return {'lng': obj.point.x, 'lat': obj.point.y}
+        else:
+            return None
