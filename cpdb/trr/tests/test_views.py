@@ -42,7 +42,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             allegation__incident_date=datetime(2003, 1, 1),
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1), final_finding='SU')
-        ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category=1)
+        ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category='1')
 
         self.refresh_index()
 

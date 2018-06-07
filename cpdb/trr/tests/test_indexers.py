@@ -45,13 +45,12 @@ class TRRIndexerTestCase(TestCase):
             beat=1021,
         )
 
-        # TODO: action_sub_category will be string soon, so we need to adjust all the related tests
-        ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category=4)
-        ActionResponseFactory(trr=trr, force_type='Taser', action_sub_category=5)
+        ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
+        ActionResponseFactory(trr=trr, force_type='Taser', action_sub_category='5.1')
         ActionResponseFactory(trr=trr, force_type='Other', action_sub_category=None, person='Subject Action')
-        ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category=5)
-        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category=3)
-        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category=3)
+        ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
+        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
+        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
 
         indexer = TRRIndexer()
         expect(indexer.extract_datum(trr)).to.eq({
