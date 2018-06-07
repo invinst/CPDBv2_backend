@@ -1107,6 +1107,10 @@ class OfficerAllegation(models.Model):
     def documents(self):
         return self.allegation.documents
 
+    @property
+    def attachments(self):
+        return self.allegation.attachment_files.all()
+
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
