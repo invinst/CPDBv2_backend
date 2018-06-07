@@ -1,8 +1,8 @@
 from tqdm import tqdm
 
-from data.constants import PERCENTILE_TYPES
-from data.models import PoliceUnit, Area, Allegation, Officer
-from data.utils.calculations import percentile
+from data.models import PoliceUnit, Area, Allegation
+from data.utils.percentile import percentile
+from data.utils.calculations import calculate_top_percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
@@ -74,17 +74,7 @@ class AreaIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(AreaIndexer, self).__init__(*args, **kwargs)
-        top_percentile = Officer.top_complaint_officers(100, percentile_types=PERCENTILE_TYPES)
-
-        self.top_percentile_dict = {
-            data.officer_id: {
-                'percentile_allegation': data.percentile_allegation,
-                'percentile_allegation_civilian': data.percentile_allegation_civilian,
-                'percentile_allegation_internal': data.percentile_allegation_internal,
-                'percentile_trr': data.percentile_trr,
-            }
-            for data in top_percentile
-        }
+        self.top_percentile_dict = calculate_top_percentile()
 
     def _compute_police_district_percentiles(self, query):
         scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')

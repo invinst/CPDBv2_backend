@@ -18,10 +18,10 @@ from data.constants import (
     DISCIPLINE_CODES, PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.calculations import percentile
+from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.calculations import Round
+from data.utils.percentile import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
