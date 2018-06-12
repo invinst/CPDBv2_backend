@@ -274,9 +274,5 @@ class TRRAttachmentRequest(models.Model):
     class Meta:
         unique_together = (('trr', 'email'),)
 
-    def __str__(self):
+    def __unicode__(self):
         return '%s - %s' % (self.email, self.trr.id)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super(TRRAttachmentRequest, self).save(*args, **kwargs)

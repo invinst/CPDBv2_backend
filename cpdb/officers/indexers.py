@@ -2,6 +2,7 @@ from itertools import combinations
 
 from django.db.models import F
 from django.utils.timezone import now
+
 from tqdm import tqdm
 
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
