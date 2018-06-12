@@ -148,10 +148,6 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             'location_type': 'Factory',
             'address': '34XX Douglas Blvd',
             'beat': 1021,
-            'point': {
-                'lng': None,
-                'lat': None,
-            },
         })
 
     def test_retrieve_not_found(self):
