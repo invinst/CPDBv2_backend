@@ -212,8 +212,14 @@ class AttachmentFileSerializer(serializers.Serializer):
 
 class AllegationWithNewDocumentsSerializer(serializers.Serializer):
     crid = serializers.CharField()
-    latest_document = AttachmentFileSerializer(source='get_newest_added_document')
-    num_recent_documents = serializers.IntegerField()
+    latest_document = serializers.SerializerMethodField()
+    num_recent_documents = serializers.SerializerMethodField()
+
+    def get_latest_document(self, obj):
+        return AttachmentFileSerializer(obj.latest_documents[-1]).data if obj.latest_documents else None
+
+    def get_num_recent_documents(self, obj):
+        return len(obj.latest_documents)
 
 
 class CRRelatedComplaintRequestSerializer(serializers.Serializer):
