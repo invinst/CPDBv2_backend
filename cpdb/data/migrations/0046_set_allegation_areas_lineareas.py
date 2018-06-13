@@ -3,17 +3,22 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+from django.contrib.gis.measure import D
 
 
 def alter_data(apps, schema_editor):
     Allegation = apps.get_model('data', 'Allegation')
     Area = apps.get_model('data', 'Area')
+    LineArea = apps.get_model('data', 'LineArea')
+    distance = D(m=10)
 
     for allegation in Allegation.objects.all():
         if allegation.point is None:
             allegation.areas.set([])
+            allegation.line_areas.set([])
         else:
             allegation.areas.set(Area.objects.filter(polygon__covers=allegation.point))
+            allegation.line_areas.set(LineArea.objects.filter(geom__distance_lte=(allegation.point, distance)))
 
 
 class Migration(migrations.Migration):

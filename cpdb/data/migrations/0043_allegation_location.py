@@ -12,12 +12,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(model_name='allegation', name='add1'),
+        migrations.AddField(
             model_name='allegation',
             name='add1',
             field=models.CharField(max_length=16, null=True),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(model_name='allegation', name='location'),
+        migrations.AddField(
             model_name='allegation',
             name='location',
             field=models.CharField(blank=True, max_length=64),
