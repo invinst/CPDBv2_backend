@@ -19,6 +19,9 @@ class OfficerCardSerializer(serializers.Serializer):
         return obj.percentiles[-1].to_dict() if obj.percentiles else []
 
 
-class OfficerPairCardSerializer(serializers.Serializer):
-    officer1 = OfficerCardSerializer()
-    officer2 = OfficerCardSerializer()
+class SimpleCardSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    birth_year = serializers.IntegerField()
+    race = serializers.CharField()
+    gender = serializers.CharField()

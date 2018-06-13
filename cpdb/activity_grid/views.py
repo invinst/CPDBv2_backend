@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from activity_grid.models import ActivityCard, ActivityPairCard
-from activity_grid.serializers import OfficerCardSerializer
+from activity_grid.serializers import OfficerCardSerializer, SimpleCardSerializer
 from officers.doc_types import OfficerInfoDocType
 from twitterbot.models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR
 
@@ -40,8 +40,8 @@ class ActivityGridViewSet(viewsets.ViewSet):
             officer1 = OfficerInfoDocType.search().query('terms', id=[pair.officer1.id]).execute()[0]
             officer2 = OfficerInfoDocType.search().query('terms', id=[pair.officer2.id]).execute()[0]
             results.append({
-                'officer1': OfficerCardSerializer(officer1).data,
-                'officer2': OfficerCardSerializer(officer2).data,
+                'officer1': SimpleCardSerializer(officer1).data,
+                'officer2': SimpleCardSerializer(officer2).data,
                 'id': pair.id,
                 'important': pair.important,
                 'null_position': pair.null_position,
