@@ -130,3 +130,9 @@ class AllegationTestCase(TestCase):
             created_at=datetime(2012, 1, 1)
         )
         expect(allegation.get_newest_added_document().pk).to.eq(file.pk)
+
+    def test_documents(self):
+        allegation = AllegationFactory()
+        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        expect(allegation.documents).to.contain(attachment1, attachment2)

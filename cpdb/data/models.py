@@ -1111,6 +1111,10 @@ class OfficerAllegation(models.Model):
     def victims(self):
         return self.allegation.victims
 
+    @property
+    def attachments(self):
+        return self.allegation.attachment_files.all()
+
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
