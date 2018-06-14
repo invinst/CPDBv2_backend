@@ -34,7 +34,7 @@ class CRIndexerTestCase(TestCase):
             add1='3510',
             add2='Michigan Ave',
             city='Chicago',
-            location='04',
+            location='Police Building',
             beat=AreaFactory(name='23'),
             is_officer_complaint=False
         )
@@ -53,8 +53,8 @@ class CRIndexerTestCase(TestCase):
             officer=coaccused,
             allegation=allegation,
             final_finding='SU',
-            recc_outcome='400',
-            final_outcome='100',
+            recc_outcome='Separation',
+            final_outcome='Reprimand',
             start_date=date(2003, 3, 28),
             end_date=date(2003, 4, 28),
             allegation_category=AllegationCategoryFactory(

@@ -71,6 +71,7 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
     tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
+    complaint_percentile = factory.LazyFunction(lambda: fake.pyfloat(left_digits=2, right_digits=1, positive=True))
 
 
 class AllegationFactory(factory.django.DjangoModelFactory):
@@ -116,7 +117,9 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
-    final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
+    final_outcome = factory.LazyFunction(
+        lambda: random.choice(['27 Day Suspension', '28 Day Suspension', 'No Action Taken'])
+    )
     allegation_category = factory.SubFactory(AllegationCategoryFactory)
 
 

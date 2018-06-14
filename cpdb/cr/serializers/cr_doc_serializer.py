@@ -8,9 +8,9 @@ class CoaccusedSerializer(serializers.Serializer):
     gender = serializers.CharField(source='officer.gender_display')
     race = serializers.CharField(source='officer.race')
     rank = serializers.CharField(source='officer.rank')
-    final_outcome = serializers.CharField(source='final_outcome_display')
+    final_outcome = serializers.CharField()
     final_finding = serializers.CharField(source='final_finding_display')
-    recc_outcome = serializers.CharField(source='recc_outcome_display')
+    recc_outcome = serializers.CharField()
     category = serializers.CharField()
     subcategory = serializers.CharField()
     start_date = serializers.DateField()
@@ -89,7 +89,7 @@ class CRDocSerializer(serializers.Serializer):
     start_date = serializers.DateTimeField(source='first_start_date', format='%Y-%m-%d')
     end_date = serializers.DateTimeField(source='first_end_date', format='%Y-%m-%d')
     address = serializers.CharField()
-    location = serializers.SerializerMethodField()
+    location = serializers.CharField()
     beat = serializers.SerializerMethodField()
     involvements = serializers.SerializerMethodField()
     attachments = AttachmentFileSerializer(source='attachment_files', many=True)
@@ -99,9 +99,6 @@ class CRDocSerializer(serializers.Serializer):
             return {'lon': obj.point.x, 'lat': obj.point.y}
         else:
             return None
-
-    def get_location(self, obj):
-        return obj.get_location_display()
 
     def get_involvements(self, obj):
         return (
