@@ -32,7 +32,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
             officer=officer, allegation=allegation, allegation_category=allegation_category,
-            final_finding='SU', start_date=date(2000, 1, 1), final_outcome='027'
+            final_finding='SU', start_date=date(2000, 1, 1), disciplined=True
         )
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Honored Police Star')
@@ -281,7 +281,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         allegation = AllegationFactory(crid='123456')
         OfficerAllegationFactory(
-            final_finding='UN', final_outcome='',
+            final_finding='UN', final_outcome='Unknown',
             officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
             allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
         )
@@ -289,7 +289,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         allegation2 = AllegationFactory(crid='654321')
         OfficerAllegationFactory(
-            final_finding='UN', final_outcome='009',
+            final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
