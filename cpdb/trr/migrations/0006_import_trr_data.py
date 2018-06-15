@@ -7,7 +7,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
-from django.db import migrations
+from django.db import migrations, models
 
 from azure.storage.blob import BlockBlobService
 
@@ -34,6 +34,14 @@ def import_data(apps, schema_editor):
         for field in TRR._meta.get_fields()
         if hasattr(field, 'get_attname')
     }
+    boolean_fields = [
+        field.name for field in TRR._meta.get_fields()
+        if type(field) in [models.fields.BooleanField, models.fields.NullBooleanField]
+    ]
+    boolean_map = {
+        'False': False,
+        'True': True
+    }
     pks = []
 
     with csv_from_azure('20180518_trr.csv') as reader:
@@ -41,6 +49,8 @@ def import_data(apps, schema_editor):
             for key, val in row.iteritems():
                 if val == '':
                     row[key] = blank_or_null[key]
+                elif key in boolean_fields:
+                    row[key] = boolean_map[val]
             pk = int(row.pop('pk'))
             pks.append(pk)
             obj, created = TRR.objects.update_or_create(
