@@ -147,11 +147,17 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
+class CoaccusalSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    coaccusal_count = serializers.IntegerField()
+
+
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
     to = serializers.CharField(source='v2_to')
     url = serializers.CharField(source='v1_url')
     tags = serializers.ListField(child=serializers.CharField())
+    coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
 
 class NewTimelineSerializer(serializers.Serializer):

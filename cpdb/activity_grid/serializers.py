@@ -25,3 +25,7 @@ class SimpleCardSerializer(serializers.Serializer):
     birth_year = serializers.IntegerField()
     race = serializers.CharField()
     gender = serializers.CharField()
+    percentile = serializers.SerializerMethodField()
+
+    def get_percentile(self, obj):
+        return obj.percentiles[-1].to_dict() if obj.percentiles else []

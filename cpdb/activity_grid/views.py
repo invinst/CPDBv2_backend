@@ -39,10 +39,12 @@ class ActivityGridViewSet(viewsets.ViewSet):
         for pair in queryset:
             officer1 = OfficerInfoDocType.search().query('terms', id=[pair.officer1.id]).execute()[0]
             officer2 = OfficerInfoDocType.search().query('terms', id=[pair.officer2.id]).execute()[0]
+            filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)
             results.append({
                 'officer1': SimpleCardSerializer(officer1).data,
                 'officer2': SimpleCardSerializer(officer2).data,
                 'id': pair.id,
+                'coaccusal_count': filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)[0]['coaccusal_count'],
                 'important': pair.important,
                 'null_position': pair.null_position,
                 'last_activity': pair.last_activity,
