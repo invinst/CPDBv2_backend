@@ -32,7 +32,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerBadgeNumberFactory(officer=officer, star='123456', current=True)
         OfficerAllegationFactory(
             officer=officer, allegation=allegation, allegation_category=allegation_category,
-            final_finding='SU', start_date=date(2000, 1, 1), final_outcome='027'
+            final_finding='SU', start_date=date(2000, 1, 1), disciplined=True
         )
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Honored Police Star')
@@ -281,7 +281,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         allegation = AllegationFactory(crid='123456')
         OfficerAllegationFactory(
-            final_finding='UN', final_outcome='',
+            final_finding='UN', final_outcome='Unknown',
             officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
             allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
         )
@@ -289,13 +289,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         allegation2 = AllegationFactory(crid='654321')
         OfficerAllegationFactory(
-            final_finding='UN', final_outcome='009',
+            final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
 
-        TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
-        TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+        trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
+        trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
 
         self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
@@ -303,6 +303,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
+                'trr_id': trr2015.id,
                 'date': '2015-09-23',
                 'kind': 'FORCE',
                 'taser': False,
@@ -336,6 +337,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
+                'trr_id': trr2011.id,
                 'date': '2011-09-23',
                 'kind': 'FORCE',
                 'taser': True,
