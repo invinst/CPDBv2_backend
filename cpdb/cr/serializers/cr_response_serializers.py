@@ -55,6 +55,7 @@ class PoliceWitnessDesktopSerializer(CherryPickSerializer):
 
 class CRDesktopSerializer(serializers.Serializer):
     crid = serializers.CharField()
+    most_common_category = serializers.JSONField()
     coaccused = CoaccusedDesktopSerializer(many=True, default=[])
     complainants = serializers.JSONField(default=[])
     victims = serializers.JSONField(default=[])

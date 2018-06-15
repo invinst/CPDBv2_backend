@@ -37,11 +37,9 @@ class TRRIndexer(BaseIndexer):
     def extract_datum(self, datum):
         result = TRRDocSerializer(datum).data
 
-        officer = result['officer']
-        if officer:
-            try:
-                officer.update(self.top_percentile_dict[officer['id']])
-            except KeyError:
-                pass
+        try:
+            result['officer'].update(self.top_percentile_dict[result['officer']['id']])
+        except (AttributeError, KeyError):
+            pass
 
         return result
