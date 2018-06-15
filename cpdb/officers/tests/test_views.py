@@ -294,8 +294,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
 
-        TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
-        TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+        trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
+        trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
 
         self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
@@ -303,6 +303,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
+                'trr_id': trr2015.id,
                 'date': '2015-09-23',
                 'kind': 'FORCE',
                 'taser': False,
@@ -336,6 +337,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
+                'trr_id': trr2011.id,
                 'date': '2011-09-23',
                 'kind': 'FORCE',
                 'taser': True,
