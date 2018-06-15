@@ -48,7 +48,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU',
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
-            allegation_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            allegation_category=AllegationCategoryFactory(
+                category='Operation/Personnel Violations',
+                allegation_name='Secondary/Special Employment'
+            )
         )
         officer = OfficerFactory(id=3, first_name='Raymond', last_name='Piwinicki', appointed_date=date(2001, 5, 1))
         OfficerAllegationFactory(
@@ -89,6 +92,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(dict(response.data)).to.eq({
             'crid': '12345',
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'Secondary/Special Employment'
+            },
             'coaccused': [
                 {
                     'id': 123,

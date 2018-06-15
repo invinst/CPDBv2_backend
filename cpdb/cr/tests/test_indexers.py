@@ -110,6 +110,10 @@ class CRIndexerTestCase(TestCase):
         result = CRIndexer().extract_datum(allegation)
         expect(dict(result)).to.eq({
             'crid': '12345',
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+            },
             'category_names': ['Operation/Personnel Violations'],
             'coaccused': [
                 {

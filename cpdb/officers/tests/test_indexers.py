@@ -695,6 +695,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
 
     def test_extract_datum(self):
         trr = Mock(
+            id=2,
             officer_id=123,
             trr_datetime=datetime(2010, 3, 4),
             firearm_used=False,
@@ -708,6 +709,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             ),
         )
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
+            'trr_id': 2,
             'officer_id': 123,
             'date_sort': date(2010, 3, 4),
             'priority_sort': 50,
