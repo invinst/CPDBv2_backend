@@ -104,10 +104,7 @@ class AreaIndexer(BaseIndexer):
         officers_most_complaint = list(datum.get_officers_most_complaints())
 
         for officer in officers_most_complaint:
-            try:
-                officer.update(self.top_percentile_dict[officer['id']])
-            except KeyError:
-                pass
+            officer.update(self.top_percentile_dict[officer['id']])
 
         return {
             'name': name,
