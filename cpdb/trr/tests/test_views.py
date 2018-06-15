@@ -17,7 +17,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
         officer = OfficerFactory(first_name='Vinh', last_name='Vu', race='White', gender='M',
                                  appointed_date=date(2000, 1, 1), birth_year=1980)
         OfficerHistoryFactory(officer=officer, unit=unit)
-        trr = TRRFactory(officer_assigned_beat='Beat 1', officer_in_uniform=True, officer_duty_status=False,
+        trr = TRRFactory(officer_assigned_beat='Beat 1', officer_in_uniform=True, officer_on_duty=False,
                          officer=officer)
         OfficerAllegationFactory(officer=officer, allegation__incident_date=datetime(2003, 1, 1),
                                  start_date=date(2004, 1, 1), end_date=date(2005, 1, 1), final_finding='SU')
@@ -31,7 +31,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             'id': trr.id,
             'officer_assigned_beat': 'Beat 1',
             'officer_in_uniform': True,
-            'officer_duty_status': False,
+            'officer_on_duty': False,
             'officer': {
                 'id': officer.id,
                 'gender': 'Male',

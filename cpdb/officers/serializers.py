@@ -3,12 +3,6 @@ from rest_framework import serializers
 from data.models import PoliceUnit
 
 
-class AttachmentFileSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    url = serializers.CharField()
-    preview_image_url = serializers.CharField()
-
-
 class PoliceUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoliceUnit
@@ -213,6 +207,13 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
         return obj.officer.rank
 
 
+class AttachmentFileSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
+    file_type = serializers.CharField()
+
+
 class CRNewTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='start_date', format=None)
@@ -223,12 +224,12 @@ class CRNewTimelineSerializer(serializers.Serializer):
     category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
-    outcome = serializers.CharField(source='final_outcome_display')
+    outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
-    attachments = AttachmentFileSerializer(source='documents', many=True)
+    attachments = AttachmentFileSerializer(many=True)
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
