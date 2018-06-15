@@ -1,6 +1,3 @@
-from django.db.models import Func
-
-
 def percentile(objects, percentile_rank=0.0, key='value', decimal_places=0):
     """
     :param objects: list of objects
@@ -29,8 +26,3 @@ def percentile(objects, percentile_rank=0.0, key='value', decimal_places=0):
             setattr(item, 'percentile_{}'.format(key.replace('metric_', '')), current_rank)
 
     return results
-
-
-class Round(Func):
-    function = 'ROUND'
-    template = '%(function)s(CAST(%(expressions)s as numeric), 4)'

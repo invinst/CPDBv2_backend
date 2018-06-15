@@ -21,7 +21,7 @@ from data.utils.aggregation import get_num_range_case
 from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.percentile import Round
+from data.utils.round import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
