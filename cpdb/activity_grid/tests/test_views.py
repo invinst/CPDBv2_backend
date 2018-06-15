@@ -74,7 +74,8 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'percentile_allegation_internal': '0.000',
                     'percentile_allegation_civilian': '0.000'
 
-                }
+                },
+                'type': 'single_officer',
             }
         ])
 
