@@ -37,7 +37,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             add1=3510,
             add2='Michigan Ave',
             city='Chicago',
-            location='09',
+            location='Police Communications System',
             beat=area,
             is_officer_complaint=False,
             summary='Summary'
@@ -46,8 +46,8 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU',
-            final_outcome='100',
-            recc_outcome='400',
+            final_outcome='Reprimand',
+            recc_outcome='Separation',
             start_date=date(2003, 3, 20),
             end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
@@ -119,7 +119,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:cr-mobile-detail', kwargs={'pk': '12345'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
+        expect(dict(response.data)).to.eq({
             'crid': '12345',
             'coaccused': [
                 {

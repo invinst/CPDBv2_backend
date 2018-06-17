@@ -49,20 +49,6 @@ class OfficerAllegationTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(recc_finding='UN')
         expect(officer_allegation.recc_finding_display).to.eq('Unfounded')
 
-    def test_final_outcome_display(self):
-        officer_allegation = OfficerAllegationFactory(final_outcome='?')
-        expect(officer_allegation.final_outcome_display).to.eq('Unknown')
-
-        officer_allegation = OfficerAllegationFactory(final_outcome='100')
-        expect(officer_allegation.final_outcome_display).to.eq('Reprimand')
-
-    def test_recc_outcome_display(self):
-        officer_allegation = OfficerAllegationFactory(recc_outcome='?')
-        expect(officer_allegation.recc_outcome_display).to.eq('Unknown')
-
-        officer_allegation = OfficerAllegationFactory(recc_outcome='100')
-        expect(officer_allegation.recc_outcome_display).to.eq('Reprimand')
-
     def test_attachments(self):
         allegation = AllegationFactory()
         officer_allegation = OfficerAllegationFactory(allegation=allegation)

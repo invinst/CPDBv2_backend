@@ -61,8 +61,8 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
 
     def test_get_community_discipline_count(self):
         area = AreaFactory(area_type=COMMUNITY_AREA_CHOICE)
-        self.create_officer_allegation(5, area, final_outcome='100')
-        self.create_officer_allegation(5, area, final_outcome='900')
+        self.create_officer_allegation(5, area, disciplined=True)
+        self.create_officer_allegation(5, area, disciplined=False)
         result = json.loads(self.command.get_community_data())
         expect(result['features']).to.have.length(1)
         expect(result['features'][0]['properties']['allegation_count']).to.eq(10)
