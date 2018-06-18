@@ -300,6 +300,7 @@ class AwardNewTimelineSerializer(serializers.Serializer):
 
 
 class TRRNewTimelineSerializer(serializers.Serializer):
+    trr_id = serializers.IntegerField(source='id')
     officer_id = serializers.IntegerField()
     date_sort = serializers.SerializerMethodField()
     priority_sort = serializers.SerializerMethodField()

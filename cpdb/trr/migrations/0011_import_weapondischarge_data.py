@@ -7,7 +7,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
-from django.db import migrations
+from django.db import migrations, models
 
 from azure.storage.blob import BlockBlobService
 
@@ -33,6 +33,14 @@ def import_data(apps, schema_editor):
         '%s_id' % field.name if field.is_relation else field.name: None if field.null else ''
         for field in WeaponDischarge._meta.get_fields()
     }
+    boolean_fields = [
+        field.name for field in WeaponDischarge._meta.get_fields()
+        if type(field) in [models.fields.BooleanField, models.fields.NullBooleanField]
+    ]
+    boolean_map = {
+        'False': False,
+        'True': True
+    }
     pks = []
 
     with csv_from_azure('20180518_weapondischarge.csv') as reader:
@@ -40,6 +48,8 @@ def import_data(apps, schema_editor):
             for key, val in row.iteritems():
                 if val == '':
                     row[key] = blank_or_null[key]
+                elif key in boolean_fields:
+                    row[key] = boolean_map[val]
             pk = int(row.pop('pk'))
             pks.append(pk)
             obj, created = WeaponDischarge.objects.update_or_create(

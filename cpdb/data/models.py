@@ -18,10 +18,10 @@ from data.constants import (
     PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.calculations import percentile
+from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.calculations import Round
+from data.utils.round import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -903,6 +903,13 @@ class Allegation(models.Model):
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
+
+    def get_most_common_category(self):
+        return self.officerallegation_set.values(
+            category_id=F('allegation_category__id'),
+            category=F('allegation_category__category'),
+            allegation_name=F('allegation_category__allegation_name')
+        ).annotate(cat_count=Count('category_id')).order_by('-cat_count').first()
 
     @property
     def category_names(self):

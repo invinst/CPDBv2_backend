@@ -7,7 +7,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
-from django.db import migrations
+from django.db import migrations, models
 
 from azure.storage.blob import BlockBlobService
 
@@ -36,10 +36,20 @@ def import_data(apps, schema_editor):
             field.name: None if field.null else ''
             for field in OfficerBadgeNumber._meta.get_fields()
         }
+        boolean_fields = [
+            field.name for field in OfficerBadgeNumber._meta.get_fields()
+            if type(field) in [models.fields.BooleanField, models.fields.NullBooleanField]
+        ]
+        boolean_map = {
+            'False': False,
+            'True': True
+        }
         for row in reader:
             for key, val in row.iteritems():
                 if val == '':
                     row[key] = blank_or_null[key]
+                elif key in boolean_fields:
+                    row[key] = boolean_map[val]
             pks.append(int(row['pk']))
             obj, created = OfficerBadgeNumber.objects.update_or_create(
                 id=int(row['pk']),

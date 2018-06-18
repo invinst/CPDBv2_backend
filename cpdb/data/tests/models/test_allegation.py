@@ -131,6 +131,21 @@ class AllegationTestCase(TestCase):
         )
         expect(allegation.get_newest_added_document().pk).to.eq(file.pk)
 
+    def test_most_common_category(self):
+        allegation = AllegationFactory()
+        category1, category2 = AllegationCategoryFactory.create_batch(2)
+
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
+        OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
+        OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
+
+        expect(allegation.get_most_common_category()).to.eq({
+            'category_id': category1.id,
+            'category': category1.category,
+            'allegation_name': category1.allegation_name,
+            'cat_count': 2
+        })
+
     def test_documents(self):
         allegation = AllegationFactory()
         attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)

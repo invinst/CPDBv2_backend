@@ -708,6 +708,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
 
     def test_extract_datum(self):
         trr = Mock(
+            id=2,
             officer_id=123,
             trr_datetime=datetime(2010, 3, 4),
             firearm_used=False,
@@ -726,6 +727,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
         )
 
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
+            'trr_id': 2,
             'officer_id': 123,
             'date_sort': date(2010, 3, 4),
             'priority_sort': 50,
@@ -749,9 +751,8 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
 
     def test_extract_datum(self):
-        allegation = AllegationFactory()
-        officer = OfficerFactory(appointed_date=date(2002, 1, 1))
-        officer_1 = OfficerFactory(
+        officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
+        officer2 = OfficerFactory(
             first_name='Officer',
             last_name='456',
             race='White',
@@ -759,9 +760,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
             birth_year=1950,
             rank='Police Officer',
             complaint_percentile='95.0',
-            appointed_date=date(2000, 1, 1)
+            appointed_date=date(2002, 1, 1)
         )
-        officer_2 = OfficerFactory(
+        officer3 = OfficerFactory(
             first_name='Officer',
             last_name='789',
             race='Black',
@@ -769,20 +770,42 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
             birth_year=1970,
             rank='Po As Detective',
             complaint_percentile='99.0',
-            appointed_date=date(2001, 1, 1)
+            appointed_date=date(2003, 1, 1)
         )
-        OfficerAllegationFactory(officer=officer, allegation=allegation, final_finding='SU')
-        OfficerAllegationFactory(officer=officer_1, allegation=allegation, final_finding='SU')
-        OfficerAllegationFactory(officer=officer_2, allegation=allegation, final_finding='NS')
-        TRRFactory(officer=officer_1, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
-        TRRFactory(officer=officer_2, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
 
-        expect(dict(OfficerCoaccusalsIndexer().extract_datum(officer))).to.eq({
-            'id': officer.id,
+        allegation1 = AllegationFactory(incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc))
+        allegation2 = AllegationFactory(incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc))
+        allegation3 = AllegationFactory(incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        allegation4 = AllegationFactory(incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
+
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation1, final_finding='SU', start_date=date(2003, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation2, final_finding='SU', start_date=date(2004, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation3, final_finding='NS', start_date=date(2005, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer1, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
+
+        expect(dict(OfficerCoaccusalsIndexer().extract_datum(officer1))).to.eq({
+            'id': officer1.id,
             'coaccusals': [{
-                'id': officer_1.id,
+                'id': officer2.id,
                 'full_name': 'Officer 456',
-                'allegation_count': 1,
+                'allegation_count': 2,
                 'sustained_count': 1,
                 'complaint_percentile': 95.0,
                 'race': 'White',
@@ -790,24 +813,24 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'birth_year': 1950,
                 'coaccusal_count': 1,
                 'rank': 'Police Officer',
-                'percentile_allegation_civilian': 0,
+                'percentile_allegation_civilian': 33.3333,
                 'percentile_allegation_internal': 0,
                 'percentile_trr': 33.3333,
-                'percentile_allegation': 0,
+                'percentile_allegation': 33.3333,
             }, {
-                'id': officer_2.id,
+                'id': officer3.id,
                 'full_name': 'Officer 789',
-                'allegation_count': 1,
-                'sustained_count': 0,
+                'allegation_count': 3,
+                'sustained_count': 1,
                 'complaint_percentile': 99.0,
                 'race': 'Black',
                 'gender': 'Male',
                 'birth_year': 1970,
                 'coaccusal_count': 1,
                 'rank': 'Po As Detective',
-                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_civilian': 66.6667,
                 'percentile_allegation_internal': 0,
                 'percentile_trr': 66.6667,
-                'percentile_allegation': 33.3333,
+                'percentile_allegation': 66.6667,
             }]
         })

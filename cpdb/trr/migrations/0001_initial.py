@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('firearm_used', models.NullBooleanField()),
                 ('number_of_officers_using_firearm', models.PositiveSmallIntegerField(null=True)),
                 ('officer_assigned_beat', models.CharField(max_length=16, null=True)),
-                ('officer_duty_status', models.NullBooleanField()),
+                ('officer_on_duty', models.NullBooleanField()),
                 ('officer_in_uniform', models.NullBooleanField()),
                 ('officer_injured', models.NullBooleanField()),
                 ('officer_rank', models.CharField(max_length=32, null=True)),
