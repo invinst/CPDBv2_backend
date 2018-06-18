@@ -28,7 +28,7 @@ from officers.indexers import (
     UnitChangeTimelineEventIndexer,
     JoinedTimelineEventIndexer,
 )
-from officers.serializers import OfficerMetricsSerializer
+from officers.serializers.doc_serializers import OfficerMetricsSerializer
 from trr.factories import TRRFactory
 
 
