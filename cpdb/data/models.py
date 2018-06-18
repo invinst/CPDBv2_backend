@@ -1116,7 +1116,7 @@ class OfficerAllegation(models.Model):
 
     @property
     def victims(self):
-        return self.allegation.victims
+        return self.allegation.victims.all()
 
     @property
     def attachments(self):

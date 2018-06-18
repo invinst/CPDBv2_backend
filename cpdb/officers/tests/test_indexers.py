@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 import pytz
+from django.contrib.gis.geos import Point
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
 from django.utils.timezone import now
@@ -587,6 +588,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='123456',
+            point=Point(35.5, 68.9),
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -648,7 +650,10 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
                     'gender': 'Male',
                 }
             ],
-            'point': None,
+            'point': {
+                'lon': 35.5,
+                'lat': 68.9
+            },
             'attachments': [
                 {
                     'title': 'doc_1',

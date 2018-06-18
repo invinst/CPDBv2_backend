@@ -86,6 +86,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         datetime_end=timezone.datetime(2016, 12, 31),
         tzinfo=pytz.utc
     ))
+    point = None
 
     @factory.post_generation
     def areas(self, create, extracted, **kwargs):
