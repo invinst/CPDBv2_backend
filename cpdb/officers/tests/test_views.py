@@ -510,8 +510,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_coaccusals(self):
-        officer0 = OfficerFactory(appointed_date=date(2002, 1, 1))
-        officer1 = OfficerFactory(
+        officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
+        officer2 = OfficerFactory(
             first_name='Officer',
             last_name='1',
             complaint_percentile=95.0,
@@ -519,9 +519,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             gender='M',
             birth_year=1950,
             rank='Police Officer',
-            appointed_date=date(2000, 1, 1)
+            appointed_date=date(2002, 1, 1)
         )
-        officer2 = OfficerFactory(
+        officer3 = OfficerFactory(
             first_name='Officer',
             last_name='2',
             complaint_percentile=99.0,
@@ -529,25 +529,39 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             gender='M',
             birth_year=1970,
             rank='Police Officer',
-            appointed_date=date(2001, 1, 1)
+            appointed_date=date(2003, 1, 1)
         )
-        allegation0 = AllegationFactory()
-        allegation1 = AllegationFactory()
-        allegation2 = AllegationFactory()
-        OfficerAllegationFactory(officer=officer0, allegation=allegation0, final_finding='SU')
-        OfficerAllegationFactory(officer=officer0, allegation=allegation1, final_finding='NS')
-        OfficerAllegationFactory(officer=officer0, allegation=allegation2, final_finding='NS')
-        OfficerAllegationFactory(officer=officer1, allegation=allegation0, final_finding='SU')
-        OfficerAllegationFactory(officer=officer1, allegation=allegation1, final_finding='NS')
-        OfficerAllegationFactory(officer=officer2, allegation=allegation2, final_finding='SU')
-        TRRFactory(officer=officer1, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
-        TRRFactory(officer=officer2, trr_datetime=datetime(2017, 1, 3, tzinfo=pytz.utc))
+        allegation1 = AllegationFactory(incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc))
+        allegation2 = AllegationFactory(incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc))
+        allegation3 = AllegationFactory(incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        allegation4 = AllegationFactory(incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation1, final_finding='SU', start_date=date(2003, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation2, final_finding='SU', start_date=date(2004, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation3, final_finding='NS', start_date=date(2005, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer1, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
+        )
+        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
         self.refresh_index()
 
-        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer0.id}))
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([{
-            'id': officer1.id,
+            'id': officer2.id,
             'full_name': 'Officer 1',
             'allegation_count': 2,
             'sustained_count': 1,
@@ -555,16 +569,16 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1950,
-            'coaccusal_count': 2,
+            'coaccusal_count': 1,
             'rank': 'Police Officer',
             'percentile_trr': 33.3333,
             'percentile_allegation_civilian': 33.3333,
             'percentile_allegation_internal': 0,
             'percentile_allegation': 33.3333,
         }, {
-            'id': officer2.id,
+            'id': officer3.id,
             'full_name': 'Officer 2',
-            'allegation_count': 1,
+            'allegation_count': 3,
             'sustained_count': 1,
             'complaint_percentile': 99.0,
             'race': 'Black',
@@ -573,7 +587,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'coaccusal_count': 1,
             'rank': 'Police Officer',
             'percentile_trr': 66.6667,
-            'percentile_allegation_civilian': 0,
+            'percentile_allegation_civilian': 66.6667,
             'percentile_allegation_internal': 0,
-            'percentile_allegation': 0,
+            'percentile_allegation': 66.6667,
         }])

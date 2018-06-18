@@ -1,11 +1,10 @@
+from data.models import Allegation
+from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.models import Allegation, Officer
-from data.constants import PERCENTILE_TYPES
 from .doc_types import CRDocType
 from .index_aliases import cr_index_alias
 from .serializers.cr_doc_serializer import CRDocSerializer
-
 
 app_name = __name__.split('.')[0]
 
@@ -17,17 +16,7 @@ class CRIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(CRIndexer, self).__init__(*args, **kwargs)
-        top_percentile = Officer.top_complaint_officers(100, percentile_types=PERCENTILE_TYPES)
-
-        self.top_percentile_dict = {
-            data.officer_id: {
-                'percentile_allegation': data.percentile_allegation,
-                'percentile_allegation_civilian': data.percentile_allegation_civilian,
-                'percentile_allegation_internal': data.percentile_allegation_internal,
-                'percentile_trr': data.percentile_trr,
-            }
-            for data in top_percentile
-        }
+        self.top_percentile_dict = calculate_top_percentile()
 
     def get_queryset(self):
         return Allegation.objects.all()
