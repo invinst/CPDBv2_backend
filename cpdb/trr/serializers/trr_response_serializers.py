@@ -40,6 +40,7 @@ class TRRDesktopSerializer(serializers.Serializer):
     location_type = serializers.CharField(max_length=255)
     address = serializers.CharField(max_length=255, allow_null=True)
     beat = serializers.IntegerField(allow_null=True)
+    point = serializers.DictField(read_only=True, child=serializers.FloatField())
 
 
 class AttachmentRequestSerializer(serializers.ModelSerializer):

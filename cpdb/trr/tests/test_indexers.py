@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 from django.test import TestCase
+from django.contrib.gis.geos import Point
 from robber import expect
 
 from data.factories import OfficerFactory, PoliceUnitFactory, OfficerHistoryFactory, OfficerAllegationFactory
@@ -43,6 +44,7 @@ class TRRIndexerTestCase(TestCase):
             block='34XX',
             street='Douglas Blvd',
             beat=1021,
+            point=Point(1.0, 1.0),
         )
 
         ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
@@ -87,6 +89,10 @@ class TRRIndexerTestCase(TestCase):
             'location_type': 'Factory',
             'address': '34XX Douglas Blvd',
             'beat': 1021,
+            'point': {
+                'lng': 1.0,
+                'lat': 1.0,
+            },
         })
 
     def test_extract_datum_without_officer(self):
@@ -115,6 +121,7 @@ class TRRIndexerTestCase(TestCase):
             'location_type': None,
             'address': '',
             'beat': None,
+            'point': None,
         })
 
     def test_extract_datum_officer_without_percentile(self):
@@ -169,4 +176,5 @@ class TRRIndexerTestCase(TestCase):
             'location_type': 'Factory',
             'address': '34XX Douglas Blvd',
             'beat': 1021,
+            'point': None,
         })

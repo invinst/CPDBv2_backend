@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.contrib.gis.geos import Point
 
 from robber import expect
 
@@ -38,3 +39,12 @@ class TRRDocSerializerTestCase(TestCase):
     def test_get_date_of_incident(self):
         trr = TRRFactory(trr_datetime=datetime(2012, 1, 23))
         expect(TRRDocSerializer(trr).data['date_of_incident']).to.eq('2012-01-23')
+
+    def test_get_point(self):
+        trr = TRRFactory(point=None)
+        result = TRRDocSerializer(trr).data
+        expect(result['point']).to.eq(None)
+
+        trr = TRRFactory(point=Point(1.0, 1.0))
+        result = TRRDocSerializer(trr).data
+        expect(result['point']).to.eq({'lng': 1.0, 'lat': 1.0})
