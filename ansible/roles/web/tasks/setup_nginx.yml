@@ -16,19 +16,22 @@
   template: src={{ nginx_template }}.j2
             dest=/etc/nginx/sites-available/{{ nginx_configuration_name }}
             backup=yes
-  tags: deploy
   notify: reload nginx
+  tags: update-nginx-config, deploy
 
 - name: Ensure that the default site is disabled
   file: path=/etc/nginx/sites-enabled/default
         state=absent
   notify: reload nginx
+  tags: update-nginx-config
 
 - name: Ensure that the application site is enabled
   file: src=/etc/nginx/sites-available/{{ nginx_configuration_name }}
         dest=/etc/nginx/sites-enabled/{{ nginx_configuration_name }}
         state=link
   notify: reload nginx
+  tags: update-nginx-config
 
 - name: Ensure Nginx service is started
   service: name=nginx state=started enabled=yes
+  tags: update-nginx-config
