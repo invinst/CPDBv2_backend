@@ -1090,10 +1090,6 @@ class OfficerAllegation(models.Model):
             return 'Unknown'
 
     @property
-    def documents(self):
-        return self.allegation.documents
-
-    @property
     def attachments(self):
         return self.allegation.attachment_files.all()
 
