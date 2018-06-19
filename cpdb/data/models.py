@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
+from django.db.models import F, Q, Value, Max, IntegerField, Count, Func, Prefetch
 from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
@@ -986,46 +986,25 @@ class Allegation(models.Model):
         except IndexError:
             return None
 
-    def get_newest_added_document(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
-            .exclude(created_at__isnull=True).latest('created_at')
-
     @property
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
     @staticmethod
     def get_cr_with_new_documents(limit):
-        start_datetime = now() - timedelta(weeks=24)
-        query = Allegation.objects.all()
-        type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
-
-        # get 40 allegations which has newest documents
-        query = query.annotate(
-            new_document_added=Max(
-                Case(
-                    When(type_query, then='attachment_files__created_at'),
-                    output_field=DateTimeField()
-                )
+        return Allegation.objects.prefetch_related(
+            Prefetch(
+                'attachment_files',
+                queryset=AttachmentFile.objects.annotate(
+                    last_created_at=Max('created_at')
+                ).filter(file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))),
+                to_attr='latest_documents'
             )
-        )
-        query = query.filter(
-            new_document_added__gte=start_datetime,
-            new_document_added__isnull=False
-        ).order_by('-new_document_added')[:limit]
-
-        # count number of recent documents for each above allegation
-        query = query.annotate(
-            num_recent_documents=Count(
-                Case(
-                    When(
-                        type_query & Q(attachment_files__created_at__gte=start_datetime),
-                        then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        return query
+        ).annotate(
+            latest_document_created_at=Max('attachment_files__created_at')
+        ).filter(
+            latest_document_created_at__isnull=False
+        ).order_by('-latest_document_created_at')[:limit]
 
     @property
     def v2_to(self):
