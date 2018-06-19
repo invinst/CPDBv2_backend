@@ -840,7 +840,11 @@ This api require an api access token set in `Authorization` header. To get an ap
                     "gender": "Male",
                     "birth_year": 1950,
                     "coaccusal_count": 2,
-                    "rank": "Police Officer"
+                    "rank": "Police Officer",
+                    "percentile_trr": 94.0,
+                    "percentile_allegation_internal": 95.0,
+                    "percentile_allegation_civilian": 91.0,
+                    "percentile_allegation": 94.0,
                 }, {
                     "id": 2,
                     "full_name": "Officer 2",
@@ -851,7 +855,11 @@ This api require an api access token set in `Authorization` header. To get an ap
                     "gender": "Male",
                     "birth_year": 1970,
                     "coaccusal_count": 1,
-                    "rank": "Police Officer"
+                    "rank": "Police Officer",
+                    "percentile_trr": 82.0,
+                    "percentile_allegation_internal": 71.0,
+                    "percentile_allegation_civilian": 98.0,
+                    "percentile_allegation": 82.0,
                 }
             ]
         }
@@ -1026,6 +1034,41 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+
+
+## TRR [/trr/{trr_id}/]
+
+### Get TRR [GET]
+
++ Parameters
+    + trr_id (number) - number ID of Use of Force Report
+
++ Response 200 (application/json)
+
+        {
+            "id": "781",
+            "officer": {
+                "id": 583,
+                "full_name": "Robert Anderson",
+                "gender": "Male",
+                "race": "White",
+                "appointed_date": "2000-10-10",
+                "birth_year": 1973,
+                "resignation_date": "2008-03-26",
+                "unit": {
+                    "unit_name": "253",
+                    "description": "Targeted Response Unit"
+                },
+                "percentile_allegation_civilian": 91.4179,
+                "percentile_allegation_internal": 0.0,
+                "percentile_trr": 60.5503
+            },
+            "officer_in_uniform": true,
+            "officer_assigned_beat": "4682E",
+            "officer_on_duty": true
+        }
+
+
 ## Complaint summaries [/cr/complaint-summaries/]
 
 ### List recent updated Summary of CR [GET]
@@ -1158,6 +1201,10 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         {
             "crid": "12345",
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+            },
             "coaccused": [
                 {
                     "id": 123,

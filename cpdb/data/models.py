@@ -12,16 +12,16 @@ from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
 from data.constants import (
-    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
+    LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, PERCENTILE_ALLEGATION,
-    DISCIPLINE_CODES, PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
+    PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.calculations import percentile
+from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.calculations import Round
+from data.utils.round import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -37,6 +37,7 @@ class TaggableModel(models.Model):
 class PoliceUnit(TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
+    active = models.NullBooleanField()
 
     def __str__(self):
         return self.unit_name
@@ -545,7 +546,7 @@ class Officer(TaggableModel):
 
     @property
     def discipline_count(self):
-        return self.officerallegation_set.filter(final_outcome__in=DISCIPLINE_CODES).count()
+        return self.officerallegation_set.filter(disciplined=True).count()
 
     @property
     def visual_token_background_color(self):
@@ -868,6 +869,8 @@ class Investigator(models.Model):
     suffix_name = models.CharField(max_length=5, null=True)
     appointed_date = models.DateField(null=True)
     officer = models.ForeignKey(Officer, null=True)
+    gender = models.CharField(max_length=1, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
 
     @property
     def num_cases(self):
@@ -885,9 +888,8 @@ class Investigator(models.Model):
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
-    location = models.CharField(
-        max_length=20, blank=True, choices=LOCATION_CHOICES)
-    add1 = models.IntegerField(null=True)
+    location = models.CharField(max_length=64, blank=True)
+    add1 = models.CharField(max_length=16, blank=True)
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
     incident_date = models.DateTimeField(null=True)
@@ -898,6 +900,13 @@ class Allegation(models.Model):
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
 
+    def get_most_common_category(self):
+        return self.officerallegation_set.values(
+            category_id=F('allegation_category__id'),
+            category=F('allegation_category__category'),
+            allegation_name=F('allegation_category__allegation_name')
+        ).annotate(cat_count=Count('category_id')).order_by('-cat_count').first()
+
     @property
     def category_names(self):
         query = self.officer_allegations.annotate(
@@ -906,7 +915,7 @@ class Allegation(models.Model):
                 default='allegation_category__category',
                 output_field=models.CharField()))
         query = query.values('name').distinct()
-        results = [result['name'] for result in query]
+        results = sorted([result['name'] for result in query])
         return results if results else ['Unknown']
 
     @property
@@ -1037,6 +1046,7 @@ class InvestigatorAllegation(models.Model):
     current_star = models.CharField(max_length=10, null=True)
     current_rank = models.CharField(max_length=100, null=True)
     current_unit = models.ForeignKey(PoliceUnit, null=True)
+    investigator_type = models.CharField(max_length=32, null=True)
 
 
 class AllegationCategory(models.Model):
@@ -1057,13 +1067,12 @@ class OfficerAllegation(models.Model):
 
     recc_finding = models.CharField(
         choices=FINDINGS, max_length=2, blank=True)
-    recc_outcome = models.CharField(
-        choices=OUTCOMES, max_length=3, blank=True)
+    recc_outcome = models.CharField(max_length=32, blank=True)
     final_finding = models.CharField(
         choices=FINDINGS, max_length=2, blank=True)
-    final_outcome = models.CharField(
-        choices=OUTCOMES, max_length=3, blank=True)
+    final_outcome = models.CharField(max_length=32, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
+    disciplined = models.NullBooleanField()
 
     @property
     def crid(self):
@@ -1102,22 +1111,12 @@ class OfficerAllegation(models.Model):
             return 'Unknown'
 
     @property
-    def final_outcome_display(self):
-        try:
-            return OUTCOMES_DICT[self.final_outcome]
-        except KeyError:
-            return 'Unknown'
-
-    @property
-    def recc_outcome_display(self):
-        try:
-            return OUTCOMES_DICT[self.recc_outcome]
-        except KeyError:
-            return 'Unknown'
-
-    @property
     def documents(self):
         return self.allegation.documents
+
+    @property
+    def attachments(self):
+        return self.allegation.attachment_files.all()
 
 
 class PoliceWitness(models.Model):
@@ -1130,6 +1129,7 @@ class Complainant(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):
@@ -1201,6 +1201,7 @@ class Victim(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):
