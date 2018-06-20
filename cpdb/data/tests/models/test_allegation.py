@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from django.test.testcases import TestCase
 
@@ -17,19 +17,19 @@ class AllegationTestCase(TestCase):
         expect(allegation.address).to.eq('3000 Michigan Ave, Chicago IL')
 
     def test_address_missing_sub_address(self):
-        allegation = AllegationFactory(add1=None, add2='', city='')
+        allegation = AllegationFactory(add1='', add2='', city='')
         expect(allegation.address).to.eq('')
         allegation = AllegationFactory(add1=15, add2='', city='')
         expect(allegation.address).to.eq('15')
-        allegation = AllegationFactory(add1=None, add2='abc', city='')
+        allegation = AllegationFactory(add1='', add2='abc', city='')
         expect(allegation.address).to.eq('abc')
-        allegation = AllegationFactory(add1=None, add2='', city='Chicago')
+        allegation = AllegationFactory(add1='', add2='', city='Chicago')
         expect(allegation.address).to.eq('Chicago')
         allegation = AllegationFactory(add1=15, add2='abc', city='')
         expect(allegation.address).to.eq('15 abc')
         allegation = AllegationFactory(add1=15, add2='', city='Chicago')
         expect(allegation.address).to.eq('15, Chicago')
-        allegation = AllegationFactory(add1=None, add2='abc', city='Chicago')
+        allegation = AllegationFactory(add1='', add2='abc', city='Chicago')
         expect(allegation.address).to.eq('abc, Chicago')
 
     def test_officer_allegations(self):
@@ -126,13 +126,23 @@ class AllegationTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation2, end_date=date(2012, 1, 1))
         expect(allegation2.first_end_date).to.eq(date(2012, 1, 1))
 
-    def test_get_newest_added_document(self):
+    def test_most_common_category(self):
         allegation = AllegationFactory()
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=None)
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2011, 1, 1))
-        file = AttachmentFileFactory(
-            allegation=allegation,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=datetime(2012, 1, 1)
-        )
-        expect(allegation.get_newest_added_document().pk).to.eq(file.pk)
+        category1, category2 = AllegationCategoryFactory.create_batch(2)
+
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
+        OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
+        OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
+
+        expect(allegation.get_most_common_category()).to.eq({
+            'category_id': category1.id,
+            'category': category1.category,
+            'allegation_name': category1.allegation_name,
+            'cat_count': 2
+        })
+
+    def test_documents(self):
+        allegation = AllegationFactory()
+        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        expect(allegation.documents).to.contain(attachment1, attachment2)

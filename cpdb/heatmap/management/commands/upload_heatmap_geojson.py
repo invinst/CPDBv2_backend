@@ -13,7 +13,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
 
 from data.models import Area, OfficerAllegation, Officer
-from data.constants import COMMUNITY_AREA_CHOICE, DISCIPLINE_CODES
+from data.constants import COMMUNITY_AREA_CHOICE
 
 
 # pragma: no cover
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                         allegation__areas__id=area.id).distinct().count(),
                     'discipline_count': OfficerAllegation.objects.filter(
                         allegation__areas__id=area.id,
-                        final_outcome__in=DISCIPLINE_CODES).distinct().count(),
+                        disciplined=True).distinct().count(),
                     'most_complaints_officers': [
                         {
                             'full_name': officer.full_name,

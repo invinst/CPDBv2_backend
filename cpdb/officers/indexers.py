@@ -1,21 +1,26 @@
 from itertools import combinations
+
+from django.db.models import F
+from django.utils.timezone import now
+
 from tqdm import tqdm
 
-from django.utils.timezone import now
-from django.db.models import F
-
+from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
+from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from officers.serializers import OfficerYearlyPercentileSerializer, OfficerInfoSerializer, \
-    OfficerSinglePercentileSerializer
+from officers.serializers import (
+    OfficerYearlyPercentileSerializer,
+    OfficerInfoSerializer,
+    OfficerSinglePercentileSerializer,
+)
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
     OfficerTimelineEventDocType,
     OfficerNewTimelineEventDocType,
     OfficerInfoDocType,
-    OfficerCoaccusalsDocType
+    OfficerCoaccusalsDocType,
 )
 from .index_aliases import officers_index_alias
 from .serializers import (
@@ -27,7 +32,7 @@ from .serializers import (
     JoinedNewTimelineSerializer,
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
-    OfficerCoaccusalsSerializer
+    OfficerCoaccusalsSerializer,
 )
 
 app_name = __name__.split('.')[0]
@@ -229,8 +234,19 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
     doc_type_klass = OfficerCoaccusalsDocType
     index_alias = officers_index_alias
 
+    def __init__(self, *args, **kwargs):
+        super(OfficerCoaccusalsIndexer, self).__init__(*args, **kwargs)
+        self.top_percentile_dict = calculate_top_percentile()
+
     def get_queryset(self):
         return Officer.objects.all()
 
     def extract_datum(self, officer):
-        return OfficerCoaccusalsSerializer(officer).data
+        result = OfficerCoaccusalsSerializer(officer).data
+        for coaccusals in result['coaccusals']:
+            try:
+                coaccusals.update(self.top_percentile_dict[coaccusals['id']])
+            except KeyError:
+                pass
+
+        return result

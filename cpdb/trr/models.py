@@ -179,9 +179,12 @@ class TRR(models.Model):
     total_number_of_shots = models.PositiveSmallIntegerField(null=True)
     firearm_used = models.NullBooleanField()
     number_of_officers_using_firearm = models.PositiveSmallIntegerField(null=True)
+    point = models.PointField(srid=4326, null=True)
     officer = models.ForeignKey('data.Officer', null=True)
     officer_assigned_beat = models.CharField(max_length=16, null=True)
-    officer_duty_status = models.NullBooleanField()
+    officer_unit = models.ForeignKey('data.PoliceUnit', null=True)
+    officer_unit_detail = models.ForeignKey('data.PoliceUnit', null=True, related_name='trr_unit_detail_reverse')
+    officer_on_duty = models.NullBooleanField()
     officer_in_uniform = models.NullBooleanField()
     officer_injured = models.NullBooleanField()
     officer_rank = models.CharField(max_length=32, null=True)
@@ -194,6 +197,15 @@ class TRR(models.Model):
     subject_gender = models.CharField(max_length=1, null=True, choices=GENDER)
     subject_race = models.CharField(max_length=32, null=True)
 
+    @property
+    def force_category(self):
+        return 'Taser' if self.taser else 'Firearm' if self.firearm_used else 'Other'
+
+    @property
+    def force_types(self):
+        return self.actionresponse_set.filter(person='Member Action').\
+            order_by('-action_sub_category', 'force_type').values_list('force_type', flat=True).distinct()
+
 
 class ActionResponse(models.Model):
     trr = models.ForeignKey(TRR)
@@ -203,8 +215,8 @@ class ActionResponse(models.Model):
     other_description = models.CharField(max_length=64, null=True)
     member_action = models.CharField(max_length=64, null=True)
     force_type = models.CharField(max_length=64, null=True)
-    action_sub_category = models.SmallIntegerField(null=True)
-    action_category = models.SmallIntegerField(null=True)
+    action_sub_category = models.CharField(max_length=3, null=True)
+    action_category = models.CharField(max_length=1, null=True)
     resistance_level = models.CharField(max_length=16, null=True, choices=RESISTANCE_LEVEL_CHOICES)
 
 
@@ -252,3 +264,15 @@ class SubjectWeapon(models.Model):
     weapon_type = models.CharField(max_length=64, null=True)
     firearm_caliber = models.CharField(max_length=16, null=True)
     weapon_description = models.CharField(max_length=64, null=True)
+
+
+class TRRAttachmentRequest(models.Model):
+    trr = models.ForeignKey(TRR)
+    email = models.EmailField(max_length=255)
+    status = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (('trr', 'email'),)
+
+    def __unicode__(self):
+        return '%s - %s' % (self.email, self.trr.id)

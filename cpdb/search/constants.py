@@ -1,9 +1,7 @@
 from search.search_indexers import (
-    UnitIndexer, NeighborhoodsIndexer, UnitOfficerIndexer, CommunityIndexer, FAQIndexer, ReportIndexer,
-    CrIndexer
+    UnitIndexer, AreaIndexer, CrIndexer
 )
 
 DEFAULT_INDEXERS = [
-    UnitIndexer, NeighborhoodsIndexer, CommunityIndexer, FAQIndexer, ReportIndexer, UnitOfficerIndexer,
-    CrIndexer
+    UnitIndexer, AreaIndexer, CrIndexer
 ]

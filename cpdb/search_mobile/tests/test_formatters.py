@@ -4,9 +4,7 @@ from django.test import SimpleTestCase
 
 from robber import expect
 
-from search_mobile.formatters import (
-    OfficerV2Formatter, FAQFormatter, ReportFormatter, UnitFormatter
-)
+from search_mobile.formatters import OfficerV2Formatter, ReportFormatter, UnitFormatter
 
 
 class OfficerV2FormatterTestCase(SimpleTestCase):
@@ -25,18 +23,6 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
             'name': 'name',
             'extra_info': 'Badge # 123',
             'url': 'url',
-        })
-
-
-class FAQFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(question='question', meta=Mock(id='111'))
-
-        expect(
-            FAQFormatter().doc_format(doc)
-        ).to.be.eq({
-            'question': 'question',
-            'id': 111,
         })
 
 
@@ -64,7 +50,7 @@ class UnitFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock(
             meta=Mock(id='11'),
-            url='https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            url='https://data.cpdp.co/url-mediator/session-builder?unit=011',
             active_member_count=2,
             member_count=20
         )
@@ -75,7 +61,7 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'id': 11,
             'text': '011',
-            'url': 'https://beta.cpdb.co/url-mediator/session-builder?unit=011',
+            'url': 'https://data.cpdp.co/url-mediator/session-builder?unit=011',
             'active_member_count': 2,
             'member_count': 20
         })

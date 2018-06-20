@@ -6,22 +6,22 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
-from django.db.models.functions import Concat, ExtractYear, Lower
+from django.db.models import F, Q, Value, Max, IntegerField, Count, Func, Prefetch
+from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
 from data.constants import (
-    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, LOCATION_CHOICES, AREA_CHOICES,
-    LINE_AREA_CHOICES, OUTCOMES, FINDINGS, GENDER_DICT, FINDINGS_DICT, OUTCOMES_DICT,
+    ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
+    LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
     MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, PERCENTILE_ALLEGATION,
-    DISCIPLINE_CODES, PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
+    PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.calculations import percentile
+from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.calculations import Round
+from data.utils.round import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -37,6 +37,7 @@ class TaggableModel(models.Model):
 class PoliceUnit(TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
+    active = models.NullBooleanField()
 
     def __str__(self):
         return self.unit_name
@@ -286,6 +287,10 @@ class Officer(TaggableModel):
     def historic_badges(self):
         # old not current badge
         return self.officerbadgenumber_set.exclude(current=True).values_list('star', flat=True)
+
+    @property
+    def historic_units(self):
+        return [o.unit for o in self.officerhistory_set.all().order_by('-effective_date')]
 
     @property
     def trr_count(self):
@@ -541,7 +546,7 @@ class Officer(TaggableModel):
 
     @property
     def discipline_count(self):
-        return self.officerallegation_set.filter(final_outcome__in=DISCIPLINE_CODES).count()
+        return self.officerallegation_set.filter(disciplined=True).count()
 
     @property
     def visual_token_background_color(self):
@@ -739,6 +744,11 @@ class Officer(TaggableModel):
             officerallegation__allegation__officerallegation__officer=self
         ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
+    @property
+    def current_salary(self):
+        current_salary_object = self.salary_set.all().order_by('-year').first()
+        return current_salary_object.salary if current_salary_object else None
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
@@ -764,11 +774,44 @@ class OfficerHistory(models.Model):
         return self.unit.description
 
 
+class AreaObjectManager(models.Manager):
+    def with_allegation_per_capita(self):
+        racepopulation = RacePopulation.objects.filter(area=models.OuterRef('pk')).values('area')
+        population = racepopulation.annotate(s=models.Sum('count')).values('s')
+        query = Area.objects.annotate(
+            population=models.Subquery(population),
+            complaint_count=Count('allegation', distinct=True))
+        query = query.annotate(
+            allegation_per_capita=models.ExpressionWrapper(
+                Cast(F('complaint_count'), models.FloatField()) / F('population'),
+                output_field=models.FloatField()))
+        return query
+
+
 class Area(TaggableModel):
+    SESSION_BUILDER_MAPPING = {
+        'neighborhoods': 'neighborhood',
+        'community': 'community',
+        'school-grounds': 'school_ground',
+        'wards': 'ward',
+        'police-districts': 'police_district',
+        'beat': 'beat',
+    }
+
     name = models.CharField(max_length=100)
+    description = models.CharField(max_length=255, null=True, blank=True, help_text="Another name for area")
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
+    commander = models.ForeignKey(Officer, null=True)
+    alderman = models.CharField(max_length=255, null=True, help_text="Alderman of Ward")
+    police_hq = models.ForeignKey(
+        'data.Area',
+        null=True,
+        help_text="This beat contains police-district HQ"
+    )
+
+    objects = AreaObjectManager()
 
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
@@ -796,15 +839,15 @@ class Area(TaggableModel):
 
     @property
     def v1_url(self):
-        if self.area_type == 'neighborhoods':
-            return '{domain}/url-mediator/session-builder?neighborhood={name}'.format(domain=settings.V1_URL,
-                                                                                      name=self.name)
+        base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
 
-        if self.area_type == 'community':
-            return '{domain}/url-mediator/session-builder?community={name}'.format(domain=settings.V1_URL,
-                                                                                   name=self.name)
-
-        return settings.V1_URL
+        if self.area_type not in self.SESSION_BUILDER_MAPPING:
+            return settings.V1_URL
+        return '{base_url}?{keyword}={name}'.format(
+            base_url=base_url,
+            keyword=self.SESSION_BUILDER_MAPPING[self.area_type],
+            name=self.name
+        )
 
 
 class RacePopulation(models.Model):
@@ -826,6 +869,8 @@ class Investigator(models.Model):
     suffix_name = models.CharField(max_length=5, null=True)
     appointed_date = models.DateField(null=True)
     officer = models.ForeignKey(Officer, null=True)
+    gender = models.CharField(max_length=1, blank=True)
+    race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
 
     @property
     def num_cases(self):
@@ -843,9 +888,8 @@ class Investigator(models.Model):
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
-    location = models.CharField(
-        max_length=20, blank=True, choices=LOCATION_CHOICES)
-    add1 = models.IntegerField(null=True)
+    location = models.CharField(max_length=64, blank=True)
+    add1 = models.CharField(max_length=16, blank=True)
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
     incident_date = models.DateTimeField(null=True)
@@ -856,6 +900,13 @@ class Allegation(models.Model):
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
 
+    def get_most_common_category(self):
+        return self.officerallegation_set.values(
+            category_id=F('allegation_category__id'),
+            category=F('allegation_category__category'),
+            allegation_name=F('allegation_category__allegation_name')
+        ).annotate(cat_count=Count('category_id')).order_by('-cat_count').first()
+
     @property
     def category_names(self):
         query = self.officer_allegations.annotate(
@@ -864,7 +915,7 @@ class Allegation(models.Model):
                 default='allegation_category__category',
                 output_field=models.CharField()))
         query = query.values('name').distinct()
-        results = [result['name'] for result in query]
+        results = sorted([result['name'] for result in query])
         return results if results else ['Unknown']
 
     @property
@@ -935,46 +986,25 @@ class Allegation(models.Model):
         except IndexError:
             return None
 
-    def get_newest_added_document(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
-            .exclude(created_at__isnull=True).latest('created_at')
-
     @property
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
     @staticmethod
     def get_cr_with_new_documents(limit):
-        start_datetime = now() - timedelta(weeks=24)
-        query = Allegation.objects.all()
-        type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
-
-        # get 40 allegations which has newest documents
-        query = query.annotate(
-            new_document_added=Max(
-                Case(
-                    When(type_query, then='attachment_files__created_at'),
-                    output_field=DateTimeField()
-                )
+        return Allegation.objects.prefetch_related(
+            Prefetch(
+                'attachment_files',
+                queryset=AttachmentFile.objects.annotate(
+                    last_created_at=Max('created_at')
+                ).filter(file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))),
+                to_attr='latest_documents'
             )
-        )
-        query = query.filter(
-            new_document_added__gte=start_datetime,
-            new_document_added__isnull=False
-        ).order_by('-new_document_added')[:limit]
-
-        # count number of recent documents for each above allegation
-        query = query.annotate(
-            num_recent_documents=Count(
-                Case(
-                    When(
-                        type_query & Q(attachment_files__created_at__gte=start_datetime),
-                        then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        return query
+        ).annotate(
+            latest_document_created_at=Max('attachment_files__created_at')
+        ).filter(
+            latest_document_created_at__isnull=False
+        ).order_by('-latest_document_created_at')[:limit]
 
     @property
     def v2_to(self):
@@ -995,6 +1025,7 @@ class InvestigatorAllegation(models.Model):
     current_star = models.CharField(max_length=10, null=True)
     current_rank = models.CharField(max_length=100, null=True)
     current_unit = models.ForeignKey(PoliceUnit, null=True)
+    investigator_type = models.CharField(max_length=32, null=True)
 
 
 class AllegationCategory(models.Model):
@@ -1015,13 +1046,12 @@ class OfficerAllegation(models.Model):
 
     recc_finding = models.CharField(
         choices=FINDINGS, max_length=2, blank=True)
-    recc_outcome = models.CharField(
-        choices=OUTCOMES, max_length=3, blank=True)
+    recc_outcome = models.CharField(max_length=32, blank=True)
     final_finding = models.CharField(
         choices=FINDINGS, max_length=2, blank=True)
-    final_outcome = models.CharField(
-        choices=OUTCOMES, max_length=3, blank=True)
+    final_outcome = models.CharField(max_length=32, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
+    disciplined = models.NullBooleanField()
 
     @property
     def crid(self):
@@ -1060,22 +1090,8 @@ class OfficerAllegation(models.Model):
             return 'Unknown'
 
     @property
-    def final_outcome_display(self):
-        try:
-            return OUTCOMES_DICT[self.final_outcome]
-        except KeyError:
-            return 'Unknown'
-
-    @property
-    def recc_outcome_display(self):
-        try:
-            return OUTCOMES_DICT[self.recc_outcome]
-        except KeyError:
-            return 'Unknown'
-
-    @property
-    def documents(self):
-        return self.allegation.documents
+    def attachments(self):
+        return self.allegation.attachment_files.all()
 
 
 class PoliceWitness(models.Model):
@@ -1088,6 +1104,7 @@ class Complainant(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):
@@ -1159,6 +1176,7 @@ class Victim(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    birth_year = models.IntegerField(null=True)
 
     @property
     def gender_display(self):

@@ -11,7 +11,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation, Award)
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -71,6 +71,7 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
     tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
+    complaint_percentile = factory.LazyFunction(lambda: fake.pyfloat(left_digits=2, right_digits=1, positive=True))
 
 
 class AllegationFactory(factory.django.DjangoModelFactory):
@@ -116,7 +117,9 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
     final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
-    final_outcome = factory.LazyFunction(lambda: random.choice(['027', '028', '600']))
+    final_outcome = factory.LazyFunction(
+        lambda: random.choice(['27 Day Suspension', '28 Day Suspension', 'No Action Taken'])
+    )
     allegation_category = factory.SubFactory(AllegationCategoryFactory)
 
 
@@ -212,3 +215,19 @@ class AwardFactory(factory.django.DjangoModelFactory):
     rank = factory.LazyFunction(lambda: fake.word())
     last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
     ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+
+
+class SalaryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Salary
+
+    pay_grade = factory.LazyFunction(lambda: random.choice(['SR|9796', 'EX|9782', 'D|1]']))
+    rank = factory.LazyFunction(lambda: fake.word())
+    salary = factory.LazyAttribute(lambda _: fake.pyint())
+    employee_status = factory.LazyFunction(lambda: fake.word())
+    org_hire_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    spp_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    start_date = factory.LazyFunction(lambda: fake.date_this_decade())
+    year = factory.LazyFunction(lambda: fake.year())
+    age_at_hire = factory.LazyAttribute(lambda _: fake.pyint())
+    officer = factory.SubFactory(OfficerFactory)

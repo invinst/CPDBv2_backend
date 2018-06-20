@@ -10,7 +10,7 @@ from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory
 )
 from data.models import Officer
 from officers.tests.ultils import validate_object
@@ -48,6 +48,14 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
         expect(officer.current_badge).to.eq('123')
+
+    def test_historic_units(self):
+        officer = OfficerFactory()
+        unithistory1 = OfficerHistoryFactory(officer=officer, unit__unit_name='1',
+                                             unit__description='Unit 1', effective_date=date(2000, 1, 1))
+        unithistory2 = OfficerHistoryFactory(officer=officer, unit__unit_name='2',
+                                             unit__description='Unit 2', effective_date=date(2000, 1, 2))
+        expect(officer.historic_units).to.eq([unithistory2.unit, unithistory1.unit])
 
     def test_historic_badges(self):
         officer = OfficerFactory()
@@ -99,9 +107,8 @@ class OfficerTestCase(TestCase):
 
     def test_discipline_count(self):
         officer = OfficerFactory()
-        OfficerAllegationFactory(officer=officer, final_outcome='100')
-        OfficerAllegationFactory(officer=officer, final_outcome='600')
-        OfficerAllegationFactory(officer=officer, final_outcome='')
+        OfficerAllegationFactory(officer=officer, disciplined=True)
+        OfficerAllegationFactory(officer=officer, disciplined=False)
         expect(officer.discipline_count).to.eq(1)
 
     def test_visual_token_background_color(self):
@@ -735,3 +742,14 @@ class OfficerTestCase(TestCase):
 
         expect(coaccusals[coaccusals.index(officer1)].coaccusal_count).to.eq(2)
         expect(coaccusals[coaccusals.index(officer2)].coaccusal_count).to.eq(1)
+
+    def test_current_salary(self):
+        officer = OfficerFactory()
+        expect(officer.current_salary).to.be.none()
+
+        SalaryFactory(officer=officer, year=2010, salary=5000)
+        SalaryFactory(officer=officer, year=2012, salary=10000)
+        SalaryFactory(officer=officer, year=2015, salary=15000)
+        SalaryFactory(officer=officer, year=2017, salary=20000)
+
+        expect(officer.current_salary).to.eq(20000)

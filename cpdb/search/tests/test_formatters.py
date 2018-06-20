@@ -6,8 +6,8 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
-    NameV2Formatter, FAQFormatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
-    AreaFormatter, UnitOfficerFormatter)
+    NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter,
+    AreaFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -94,86 +94,6 @@ class OfficerFormatterTestCase(SimpleTestCase):
                 'birth_year': 1972,
                 'gender': 'Male',
                 'percentiles': [],
-            }
-        })
-
-
-class UnitOfficerFormatterTestCase(SimpleTestCase):
-    def test_unit_officer_doc_format(self):
-        doc = Mock(to_dict=Mock(return_value={
-            'full_name': 'name',
-            'badge': '123',
-            'to': 'to',
-            'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#ffffff',
-            'unit': '001',
-            'allegation_count': 10,
-            'sustained_count': 2,
-            'unit_description': 'foo bar',
-            'rank': 'some rank',
-            'birth_year': 1972,
-            'race': 'White',
-            'sex': 'Male'
-        }))
-
-        expect(
-            UnitOfficerFormatter().doc_format(doc)
-        ).to.be.eq({
-            'text': 'name',
-            'payload': {
-                'result_text': 'name',
-                'result_extra_information': 'foo bar',
-                'to': 'to',
-                'result_reason': 'tag1, tag2',
-                'tags': ['tag1', 'tag2'],
-                'visual_token_background_color': '#ffffff',
-                'unit': '001',
-                'allegation_count': 10,
-                'sustained_count': 2,
-                'rank': 'some rank',
-                'birth_year': 1972,
-                'race': 'White',
-                'sex': 'Male',
-                'salary': None  # no data yet so always return None here
-            }
-        })
-
-    def test_unit_officer_doc_format_without_unit_description(self):
-        doc = Mock(to_dict=Mock(return_value={
-            'full_name': 'name',
-            'badge': '123',
-            'to': 'to',
-            'tags': ['tag1', 'tag2'],
-            'visual_token_background_color': '#ffffff',
-            'unit': '001',
-            'allegation_count': 10,
-            'sustained_count': 2,
-            'unit_description': None,
-            'rank': 'some rank',
-            'birth_year': 1972,
-            'race': 'White',
-            'sex': 'Male'
-        }))
-
-        expect(
-            UnitOfficerFormatter().doc_format(doc)
-        ).to.be.eq({
-            'text': 'name',
-            'payload': {
-                'result_text': 'name',
-                'result_extra_information': 'Badge # 123',
-                'to': 'to',
-                'result_reason': 'tag1, tag2',
-                'tags': ['tag1', 'tag2'],
-                'visual_token_background_color': '#ffffff',
-                'unit': '001',
-                'allegation_count': 10,
-                'sustained_count': 2,
-                'rank': 'some rank',
-                'birth_year': 1972,
-                'race': 'White',
-                'sex': 'Male',
-                'salary': None  # no data yet so always return None here
             }
         })
 
@@ -273,19 +193,6 @@ class NameV2FormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'result_text': 'name',
             'url': 'url',
-            'tags': ['t1', 't2']
-        })
-
-
-class FAQFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(question='question', answer='answer', tags=['t1', 't2'])
-
-        expect(
-            FAQFormatter().doc_format(doc)
-        ).to.be.eq({
-            'question': 'question',
-            'answer': 'answer',
             'tags': ['t1', 't2']
         })
 

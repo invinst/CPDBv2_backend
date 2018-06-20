@@ -4,17 +4,23 @@ from robber import expect
 from django.test import SimpleTestCase, TestCase
 
 from search.search_indexers import CrIndexer
-from ..search_indexers import (
-    BaseIndexer, FAQIndexer, ReportIndexer, UnitIndexer, AreaTypeIndexer, NeighborhoodsIndexer,
-    CommunityIndexer, IndexerManager, UnitOfficerIndexer
-)
-from cms.factories import FAQPageFactory, ReportPageFactory
+from ..search_indexers import BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory)
 
 from search.search_indexers import autocompletes_alias
+
+
+def mock_object(**kwargs):
+    class MyObject(object):
+        pass
+
+    obj = MyObject()
+    for key, val in kwargs.items():
+        setattr(obj, key, val)
+    return obj
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -78,51 +84,6 @@ class BaseIndexerTestCase(SimpleTestCase):
         indexer.index_datum.assert_called_once_with(1)
 
 
-class FAQIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        expect(FAQIndexer().get_queryset().count()).to.eq(0)
-        FAQPageFactory()
-        expect(FAQIndexer().get_queryset().count()).to.eq(1)
-
-    def test_extract_datum(self):
-        datum = FAQPageFactory(
-            question='question',
-            answer=['answer1', 'answer2']
-        )
-
-        expect(
-            FAQIndexer().extract_datum(datum)
-        ).to.be.eq({
-            'question': 'question',
-            'answer': 'answer1\nanswer2',
-            'tags': []
-        })
-
-
-class ReportIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        expect(ReportIndexer().get_queryset().count()).to.eq(0)
-        ReportPageFactory()
-        expect(ReportIndexer().get_queryset().count()).to.eq(1)
-
-    def test_extract_datum(self):
-        datum = ReportPageFactory(
-            publication='publication', author='author',
-            title='title', excerpt=['excerpt1', 'excerpt2'],
-            publish_date='2017-12-20'
-        )
-        expect(
-            ReportIndexer().extract_datum(datum)
-        ).to.be.eq({
-            'publication': 'publication',
-            'author': 'author',
-            'excerpt': 'excerpt1\nexcerpt2',
-            'title': 'title',
-            'publish_date': '2017-12-20',
-            'tags': [],
-        })
-
-
 class UnitIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(UnitIndexer().get_queryset().count()).to.eq(0)
@@ -148,17 +109,121 @@ class UnitIndexerTestCase(TestCase):
         })
 
 
-class AreaTypeIndexerTestCase(TestCase):
+class AreaIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(0)
+        AreaFactory()
+        expect(area_indexer.get_queryset().count()).to.eq(1)
+        expect(area_indexer._percentiles).to.have.length(0)
+
+    def test_get_queryset_with_police_district(self):
+        area1 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='White', count=1000, area=area1)
+        AllegationFactory.create_batch(2, areas=[area1])
+
+        area2 = AreaFactory(area_type='police-districts')
+        RacePopulationFactory(race='Black', count=100, area=area2)
+        AllegationFactory.create_batch(1, areas=[area2])
+
+        area_indexer = AreaIndexer()
+        expect(area_indexer.get_queryset().count()).to.eq(2)
+        expect(area_indexer._percentiles).to.eq({
+            area1.id: 0.0,
+            area2.id: 50.0
+        })
+
     def test_extract_datum(self):
-        datum = AreaFactory(name='name', tags=['tag'], median_income=343)
-        RacePopulationFactory(area=datum, race='Asian', count=101)
+        commander = OfficerFactory(first_name='Captain', last_name='America')
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            commander=commander,
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+        area_indexer = AreaIndexer()
+        area_indexer._percentiles = {area.id: 0}
 
         expect(
-            AreaTypeIndexer().extract_datum(datum)
+            area_indexer.extract_datum(area)
+        ).to.be.eq({
+            'name': 'Other Name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [{
+                'race': 'Asian',
+                'count': 101
+            }],
+            'allegation_percentile': 0,
+            'median_income': 343,
+            'commander': {
+                'id': commander.id,
+                'full_name': 'Captain America',
+                'allegation_count': 0,
+            },
+            'alderman': None,
+            'police_hq': None
+        })
+
+    def test_extract_datum_with_police_hq(self):
+        police_district_area = AreaFactory(area_type='police_district', name='22nd')
+        beat_area = AreaFactory(
+            name='1',
+            tags=['tag'],
+            median_income=343,
+            area_type='beat',
+            police_hq=police_district_area)
+        expect(
+            AreaIndexer().extract_datum(beat_area)
+        ).to.be.eq({
+            'name': '1',
+            'url': beat_area.v1_url,
+            'area_type': 'beat',
+            'tags': ['tag', 'beat'],
+            'allegation_count': 0,
+            'officers_most_complaint': [],
+            'most_common_complaint': [],
+            'race_count': [],
+            'allegation_percentile': None,
+            'median_income': 343,
+            'commander': None,
+            'alderman': None,
+            'police_hq': '22nd'
+        })
+
+    def test_extract_datum_with_ward_name(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='wards',
+            alderman='IronMan',
+            description='Other Name'
+        )
+        RacePopulationFactory(
+            area=area,
+            race='Asian',
+            count=101
+        )
+
+        expect(
+            AreaIndexer().extract_datum(area)
         ).to.be.eq({
             'name': 'name',
-            'url': datum.v1_url,
-            'tags': ['tag'],
+            'url': area.v1_url,
+            'area_type': 'ward',
+            'tags': ['tag', 'ward'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -167,68 +232,124 @@ class AreaTypeIndexerTestCase(TestCase):
                 'count': 101
             }],
             'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+            'police_hq': None
         })
 
+    def test_extract_datum_police_district_has_no_description(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            alderman='IronMan',
+        )
 
-class NeighborhoodsIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(NeighborhoodsIndexer().get_queryset()).to.have.length(1)
-        expect(NeighborhoodsIndexer().get_queryset().first().area_type).to.be.eq('neighborhoods')
-
-
-class CommunityIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AreaFactory(area_type='neighborhoods')
-        AreaFactory(area_type='community')
-
-        expect(CommunityIndexer().get_queryset()).to.have.length(1)
-        expect(CommunityIndexer().get_queryset().first().area_type).to.be.eq('community')
-
-    def test_extract_datum(self):
-        datum = AreaFactory(name='name', area_type='community', median_income=200)
-
-        expect(CommunityIndexer().extract_datum(datum)).to.be.eq({
+        expect(
+            AreaIndexer().extract_datum(area)
+        ).to.be.eq({
             'name': 'name',
-            'url': 'https://beta.cpdb.co/url-mediator/session-builder?community=name',
-            'tags': ['community'],
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
             'race_count': [],
-            'median_income': 200,
+            'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+            'police_hq': None,
         })
 
-
-class UnitOfficerIndexerTestCase(TestCase):
-    def setUp(self):
-        unit = PoliceUnitFactory(unit_name='001', description='Something')
-        officer = OfficerFactory(
-            first_name='Kevin', last_name='Osborn', rank='somebody', race='White', gender='M', birth_year=1944
+    def test_extract_datum_with_officers_most_complaint(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            alderman='IronMan',
         )
-        OfficerAllegationFactory.create_batch(10, final_finding='NS', officer=officer)
-        self.history = OfficerHistoryFactory(unit=unit, officer=officer)
+        area.get_officers_most_complaints = Mock(return_value=[
+            {
+                'id': 123,
+                'name': 'A B',
+                'count': 5
+            }, {
+                'id': 456,
+                'name': 'E F',
+                'count': 3
+            }, {
+                'id': 789,
+                'name': 'C D',
+                'count': 2
+            }
+        ])
+        area_indexer = AreaIndexer()
+        area_indexer.top_percentile_dict = {
+            123: {
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 0,
+                'percentile_allegation': 0,
+            },
+            456: {
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 33.3333,
+            },
+            789: {
+                'percentile_allegation_civilian': 66.6667,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 66.6667,
+            },
+        }
 
-    def test_get_queryset(self):
-        expect(UnitOfficerIndexer().get_queryset()).to.have.length(1)
-
-    def test_extract_datum(self):
-        expect(UnitOfficerIndexer().extract_datum(self.history)).to.eq({
-            'full_name': 'Kevin Osborn',
-            'badge': '',
-            'to': self.history.officer.v2_to,
-            'allegation_count': 10,
-            'sustained_count': 0,
-            'birth_year': 1944,
-            'unit_name': '001',
-            'unit_description': 'Something',
-            'unit': '001',
-            'rank': 'somebody',
-            'race': 'White',
-            'sex': 'Male',
-            'visual_token_background_color': '#c6d4ec'
+        expect(area_indexer.extract_datum(area)).to.be.eq({
+            'name': 'name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+            'police_hq': None,
+            'officers_most_complaint': [
+                {
+                    'id': 123,
+                    'name': 'A B',
+                    'count': 5,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
+                    'percentile_allegation': 0,
+                }, {
+                    'id': 456,
+                    'name': 'E F',
+                    'count': 3,
+                    'percentile_allegation_civilian': 33.3333,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 33.3333,
+                    'percentile_allegation': 33.3333,
+                }, {
+                    'id': 789,
+                    'name': 'C D',
+                    'count': 2,
+                    'percentile_allegation_civilian': 66.6667,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 66.6667,
+                    'percentile_allegation': 66.6667,
+                }
+            ],
         })
 
 

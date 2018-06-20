@@ -2,16 +2,16 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
-from search.formatters import AreaFormatter, UnitOfficerFormatter
+from search.formatters import AreaFormatter
 from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter,
-    FAQFormatter, ReportFormatter, CrFormatter
+    ReportFormatter, CrFormatter
 )
 from .workers import (
-    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, FAQWorker, ReportWorker,
-    UnitOfficerWorker, CrWorker
+    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
+    UnitOfficerWorker, CrWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -72,9 +72,13 @@ class SearchV1ViewSet(SearchViewSet):
     formatters = {
         'OFFICER': OfficerFormatter,
         'UNIT': UnitFormatter,
-        'NEIGHBORHOOD': AreaFormatter,
         'COMMUNITY': AreaFormatter,
-        'UNIT > OFFICERS': UnitOfficerFormatter,
+        'NEIGHBORHOOD': AreaFormatter,
+        'POLICE-DISTRICT': AreaFormatter,
+        'SCHOOL-GROUND': AreaFormatter,
+        'WARD': AreaFormatter,
+        'BEAT': AreaFormatter,
+        'UNIT > OFFICERS': OfficerFormatter,
         'CR': CrFormatter
     }
     workers = {
@@ -82,6 +86,10 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
+        'POLICE-DISTRICT': PoliceDistrictWorker(),
+        'SCHOOL-GROUND': SchoolGroundWorker(),
+        'WARD': WardWorker(),
+        'BEAT': BeatWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker(),
         'CR': CrWorker()
     }
@@ -94,7 +102,6 @@ class SearchV2ViewSet(SearchViewSet):
         'UNIT': NameV2Formatter,
         'NEIGHBORHOOD': NameV2Formatter,
         'COMMUNITY': NameV2Formatter,
-        'FAQ': FAQFormatter,
         'REPORT': ReportFormatter
     }
     workers = {
@@ -102,6 +109,5 @@ class SearchV2ViewSet(SearchViewSet):
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
         'NEIGHBORHOOD': NeighborhoodsWorker(),
-        'FAQ': FAQWorker(),
         'REPORT': ReportWorker()
     }

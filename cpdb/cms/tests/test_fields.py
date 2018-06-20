@@ -1,8 +1,9 @@
 from django.test import SimpleTestCase
 
-from mock import patch
+from mock import patch, Mock
 from rest_framework import serializers
 from freezegun import freeze_time
+from robber import expect
 
 from cms.factories import LinkEntityFactory
 from cms.fields import (
@@ -24,6 +25,16 @@ class StringFieldTestCase(SimpleTestCase):
                 'type': 'string',
                 'value': 'abc'
             })
+
+    @patch('cms.fields.Faker')
+    def test_fake_value(self, patch_faker):
+        expect(self.string_field.fake_value(value='some value')).to.eq('some value')
+
+        patch_faker.return_value = Mock(**{'word': Mock(return_value='some string')})
+        string_field_none = StringField()
+        expect(string_field_none.fake_value()).to.eq('some string')
+
+        expect(self.string_field.fake_value()).to.eq('CPDB')
 
     def test_fake_data(self):
         self.assertDictEqual(
@@ -114,6 +125,13 @@ class DateFieldTestCase(SimpleTestCase):
                 'value': '2016-01-01'
             })
 
+    @freeze_time('2018-5-15 15:00:00', tz_offset=0)
+    def test_fake_value(self):
+        date_field = DateField(fake_value='some fake date')
+        expect(self.date_field.fake_value(value='some date')).to.eq('some date')
+        expect(self.date_field.fake_value()).to.eq('2018-05-15')
+        expect(date_field.fake_value()).to.eq('some fake date')
+
     @freeze_time('2012-01-14')
     def test_fake_data(self):
         self.assertDictEqual(
@@ -152,7 +170,7 @@ class DateFieldTestCase(SimpleTestCase):
             })
 
 
-class RichTestFieldTestCase(SimpleTestCase):
+class RichTextFieldTestCase(SimpleTestCase):
     _type = 'rich_text'
 
     def setUp(self):
@@ -203,6 +221,16 @@ class RichTestFieldTestCase(SimpleTestCase):
                         'entityMap': {}
                     }
                 })
+
+    @patch('cms.fields.Faker')
+    def test_fake_value(self, patch_faker):
+        expect(self.field.fake_value('some text')).to.eq(['some text'])
+        expect(self.field.fake_value(9)).to.eq(9)
+
+        patch_faker.return_value = Mock(**{'sentence': Mock(return_value='some sentence')})
+        field = RichTextField()
+        expect(field.fake_value()).to.eq(['some sentence'])
+        expect(self.field.fake_value()).to.eq(['abc', 'xyz'])
 
     def test_to_internal_value(self):
         self.assertDictEqual(

@@ -1,28 +1,15 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 from robber import expect
 
+from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
-    FAQWorker, ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-    NeighborhoodsWorker, CommunityWorker, CrWorker
+    ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
+    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker
 )
-from search.doc_types import (
-    FAQDocType, ReportDocType, UnitDocType, UnitOfficerDocType,
-    NeighborhoodsDocType, CommunityDocType, CrDocType
-)
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
-
-
-class FAQWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search(self):
-        doc = FAQDocType(question='question', answer='answer')
-        doc.save()
-
-        self.refresh_index()
-
-        response = FAQWorker().search('question')
-        expect(response.hits.total).to.be.equal(1)
 
 
 class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
@@ -94,6 +81,16 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.equal(1)
         expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
 
+    def test_search_officer_historic_badge(self):
+        OfficerInfoDocType(full_name='John Doe', historic_badges=['100123', '123456']).save()
+
+        self.refresh_index()
+
+        response = OfficerWorker().search('100')
+
+        expect(response.hits.total).to.equal(1)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
+
     # Note: We've found that scoring of elasticsearch is incredibly complex and could not
     # be easily replicated in unit tests. Therefore we decided to stop adding tests to this
     # particular test case and instead rely more on manual testing.
@@ -121,7 +118,7 @@ class UnitWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = NeighborhoodsDocType(name='name')
+        doc = AreaDocType(name='name', area_type='neighborhood')
         doc.save()
 
         self.refresh_index()
@@ -132,7 +129,7 @@ class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = CommunityDocType(name='name')
+        doc = AreaDocType(name='name', area_type='community')
         doc.save()
 
         self.refresh_index()
@@ -141,32 +138,59 @@ class CommunityWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.be.equal(1)
 
 
-class UnitOfficerWorkerTestCase(IndexMixin, SimpleTestCase):
-    def test_search_by_unit_name(self):
-        doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Osborn', allegation_count=1)
+class AreaWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search_sort_by_name(self):
+        doc = AreaDocType(name='name1', area_type='community')
         doc.save()
-        doc = UnitOfficerDocType(unit_name='001', full_name='Kevin Cascone', allegation_count=0)
-        doc.save()
-        doc = UnitOfficerDocType(unit_name='002', full_name='Cristiano Cascone', allegation_count=0)
+        doc = AreaDocType(name='name2')
         doc.save()
 
         self.refresh_index()
 
+        response = AreaWorker().search('name')
+        expect(response.hits.total).to.be.equal(2)
+        expect(response[0].name).to.be.eq('name1')
+        expect(response[1].name).to.be.eq('name2')
+
+    def test_search_sort_by_allegation_count(self):
+        doc1 = AreaDocType(name='name1', area_type='community', allegation_count=101)
+        doc2 = AreaDocType(name='name2', area_type='community', allegation_count=201)
+        doc3 = AreaDocType(name='name3', area_type='community', allegation_count=201)
+
+        doc1.save()
+        doc2.save()
+        doc3.save()
+
+        self.refresh_index()
+
+        response = AreaWorker().search('name')
+        expect(response.hits.total).to.be.equal(3)
+        expect(response[0].name).to.be.eq('name2')
+        expect(response[1].name).to.be.eq('name3')
+        expect(response[2].name).to.be.eq('name1')
+
+
+class UnitOfficerWorkerTestCase(IndexMixin, TestCase):
+    def setUp(self):
+        super(UnitOfficerWorkerTestCase, self).setUp()
+        officer1 = OfficerFactory(first_name='Kevin', last_name='Osborn')
+        officer2 = OfficerFactory(first_name='Kevin', last_name='Cascone')
+        officer3 = OfficerFactory(first_name='Cristiano', last_name='Cascone')
+        OfficerAllegationFactory(officer=officer1)
+        unit1 = PoliceUnitFactory(unit_name='001', description='foo')
+        OfficerHistoryFactory(officer=officer1, unit=unit1)
+        OfficerHistoryFactory(officer=officer2, unit=unit1)
+        OfficerHistoryFactory(officer=officer3, unit__unit_name='002', unit__description='bar')
+        self.rebuild_index()
+        self.refresh_index()
+
+    def test_search_by_unit_name(self):
         response = UnitOfficerWorker().search('001')
         expect(response.hits.total).to.be.equal(2)
         expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')
         expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')
 
     def test_search_by_unit_description(self):
-        doc = UnitOfficerDocType(unit_description='foo', full_name='Kevin Osborn', allegation_count=1)
-        doc.save()
-        doc = UnitOfficerDocType(unit_description='foo', full_name='Kevin Cascone', allegation_count=0)
-        doc.save()
-        doc = UnitOfficerDocType(unit_description='bar', full_name='Cristiano Cascone', allegation_count=0)
-        doc.save()
-
-        self.refresh_index()
-
         response = UnitOfficerWorker().search('foo')
         expect(response.hits.total).to.be.equal(2)
         expect(response.hits[0].full_name).to.be.eq('Kevin Osborn')

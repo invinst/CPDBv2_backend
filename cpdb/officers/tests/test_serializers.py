@@ -23,6 +23,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'race': 'Asian',
             'current_badge': '789',
             'historic_badges': ['123', '456'],
+            'historic_units': [Mock(**{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            })],
             'gender_display': 'Male',
             'birth_year': '1950',
             'allegation_count': 2,
@@ -32,6 +37,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'complainant_age_aggregation': [],
             'complainant_gender_aggregation': [],
             'total_complaints_aggregation': [],
+            'current_salary': 90000,
         })
         expect(OfficerSummarySerializer(obj).data).to.eq({
             'id': 789,
@@ -40,6 +46,11 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
                 'unit_name': '',
                 'description': ''
             },
+            'historic_units': [{
+                'id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            }],
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2000',
             'active': True,
@@ -61,6 +72,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
                 'items': [],
             },
             'birth_year': 1950,
+            'current_salary': 90000,
         })
 
 

@@ -1,7 +1,7 @@
+from elasticsearch_dsl.query import Q
+
 from search.doc_types import CrDocType
-from .doc_types import (
-    UnitDocType, FAQDocType, ReportDocType, UnitOfficerDocType, NeighborhoodsDocType, CommunityDocType
-)
+from .doc_types import UnitDocType, ReportDocType, AreaDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -37,11 +37,6 @@ class Worker(object):
         return self._limit(query, 0, 1).execute()
 
 
-class FAQWorker(Worker):
-    doc_type_klass = FAQDocType
-    fields = ['question', 'answer', 'tags']
-
-
 class ReportWorker(Worker):
     doc_type_klass = ReportDocType
     fields = ['excerpt', 'title', 'publication', 'author', 'tags']
@@ -56,7 +51,7 @@ class OfficerWorker(Worker):
             query={
                 'multi_match': {
                     'query': term,
-                    'fields': ['badge', 'full_name', 'tags', '_id']
+                    'fields': ['badge', 'historic_badges', 'full_name', 'tags', '_id']
                 }
             },
             functions=[
@@ -95,23 +90,56 @@ class UnitWorker(Worker):
     fields = ['name', 'description', 'tags']
 
 
-class NeighborhoodsWorker(Worker):
-    doc_type_klass = NeighborhoodsDocType
+class AreaWorker(Worker):
+    doc_type_klass = AreaDocType
+    area_type = None
     fields = ['name', 'tags']
+    sort_order = ['-allegation_count', 'name.keyword', '_score']
+
+    def query(self, term):
+        filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')
+        q = Q('bool',
+              must=[Q('multi_match', query=term, operator='and', fields=self.fields)],
+              filter=filter)
+        return self._searcher.query(q).sort(*self.sort_order)
 
 
-class CommunityWorker(Worker):
-    doc_type_klass = CommunityDocType
-    fields = ['name', 'tags']
+class NeighborhoodsWorker(AreaWorker):
+    area_type = 'neighborhood'
+
+
+class CommunityWorker(AreaWorker):
+    area_type = 'community'
+
+
+class PoliceDistrictWorker(AreaWorker):
+    area_type = 'police-district'
+
+
+class SchoolGroundWorker(AreaWorker):
+    area_type = 'school-ground'
+
+
+class WardWorker(AreaWorker):
+    area_type = 'ward'
+
+
+class BeatWorker(AreaWorker):
+    area_type = 'beat'
 
 
 class UnitOfficerWorker(Worker):
-    doc_type_klass = UnitOfficerDocType
-    fields = ['unit_name', 'unit_description']
+    doc_type_klass = OfficerInfoDocType
+    fields = ['unit_name', 'description']
     sort_order = ['-allegation_count']
 
     def query(self, term):
-        return super(UnitOfficerWorker, self).query(term).sort('-allegation_count')
+        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+            'multi_match',
+            operator='and',
+            fields=['historic_units.{}'.format(field) for field in self.fields],
+            query=term
+        )).sort(*self.sort_order)
 
 
 class CrWorker(Worker):

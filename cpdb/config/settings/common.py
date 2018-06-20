@@ -46,7 +46,6 @@ LOCAL_APPS = (
     'vftg',
     'cms',
     'es_index',
-    'report_bottomsheet',
     'analytics',
     'officers',
     'cr',
@@ -236,7 +235,7 @@ TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
 TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
 TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
-V1_URL = 'https://beta.cpdb.co'
+V1_URL = 'https://data.cpdp.co'
 
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
@@ -298,3 +297,5 @@ RUNNING_PORT = '80'
 
 DOCUMENTCLOUD_USER = env.str('DOCUMENTCLOUD_USER', '')
 DOCUMENTCLOUD_PASSWORD = env.str('DOCUMENTCLOUD_PASSWORD', '')
+
+GOOGLE_GEOCODE_APIKEY = env.str('GOOGLE_GEOCODE_APIKEY', '')
