@@ -89,28 +89,30 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
         obj = Mock(**{
             'id': 789,
             'last_unit': Mock(id=1, unit_name='', description=''),
-            'appointed_date': '01-01-2010',
-            'resignation_date': '01-01-2000',
-            'get_active_display': Mock(return_value=True),
+            'date_of_appt': '01-01-2010',
+            'date_of_resignation': '01-01-2015',
+            'active': True,
             'rank': '',
             'full_name': 'Full Name',
             'race': 'Asian',
-            'current_badge': '789',
+            'badge': '789',
             'historic_badges': ['123', '456'],
-            'historic_units': [Mock(**{
+            'unit': Mock(**{
                 'id': 1,
                 'unit_name': '1',
                 'description': "Unit 1"
-            })],
-            'gender_display': 'Male',
-            'birth_year': '1950',
+            }),
+            'gender': 'Male',
+            'birth_year': 1950,
             'allegation_count': 2,
+            'complaint_percentile': 32.5,
+            'honorable_mention_count': 1,
             'sustained_count': 1,
-            'complaint_category_aggregation': [],
-            'complainant_race_aggregation': [],
-            'complainant_age_aggregation': [],
-            'complainant_gender_aggregation': [],
-            'total_complaints_aggregation': [],
+            'discipline_count': 1,
+            'civilian_compliment_count': 6,
+            'honorable_mention_percentile': 0.99,
+            'trr_count': 1,
+            'major_award_count': 1,
             'current_salary': 90000,
             'percentiles': [
                 Mock(**{
@@ -151,5 +153,48 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
                     'percentile_allegation_civilian': '98.434',
                     'percentile_allegation_internal': '99.784',
                 },
-            ]
+            ],
+            'unit': {
+                'unit_id': 1,
+                'unit_name': '1',
+                'description': "Unit 1"
+            },
+            'date_of_appt': '01-01-2010',
+            'date_of_resignation': '01-01-2015',
+            'active': True,
+            'rank': '',
+            'race': 'Asian',
+            'badge': '789',
+            'birth_year': 1950,
+            'historic_badges': ['123', '456'],
+            'gender': 'Male',
+            'allegation_count': 2,
+            'complaint_percentile': 32.5,
+            'honorable_mention_count': 1,
+            'sustained_count': 1,
+            'discipline_count': 1,
+            'civilian_compliment_count': 6,
+            'trr_count': 1,
+            'major_award_count': 1,
+            'honorable_mention_percentile': 0.99,
         })
+
+    def test_serialization_missing_data(self):
+        data_dict = {
+            'id': 789,
+            'active': True,
+            'rank': '',
+            'full_name': 'Full Name',
+            'race': 'Asian',
+            'gender': 'Male',
+        }
+        obj = Mock(spec=data_dict.keys(), **data_dict)
+        expected_response = {
+            'officer_id': 789,
+            'full_name': 'Full Name',
+            'active': True,
+            'rank': '',
+            'race': 'Asian',
+            'gender': 'Male',
+        }
+        expect(OfficerMobileSerializer(obj).data).to.eq(expected_response)
