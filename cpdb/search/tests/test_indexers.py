@@ -286,6 +286,10 @@ class AreaIndexerTestCase(TestCase):
                 'id': 789,
                 'name': 'C D',
                 'count': 2
+            }, {
+                'id': 999,
+                'name': 'X Y',
+                'count': 2
             }
         ])
         area_indexer = AreaIndexer()
@@ -348,6 +352,10 @@ class AreaIndexerTestCase(TestCase):
                     'percentile_allegation_internal': 0,
                     'percentile_trr': 66.6667,
                     'percentile_allegation': 66.6667,
+                }, {
+                    'id': 999,
+                    'name': 'X Y',
+                    'count': 2
                 }
             ],
         })
