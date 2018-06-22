@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 import pytz
+from django.contrib.gis.geos import Point
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
 from django.utils.timezone import now
@@ -10,7 +11,7 @@ from robber import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory,
+    AllegationCategoryFactory, VictimFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -51,6 +52,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
                 'id': 123,
                 'percentile_honorable_mention': 98.000,
             },
+            'unsustained_count': 24,
         })
 
         expect(OfficerMetricsSerializer(obj).data).to.eq({
@@ -66,7 +68,8 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'single_percentiles': {
                 'id': 123,
                 'honorable_mention_percentile': 98.000,
-            }
+            },
+            'unsustained_count': 24,
         })
 
 
@@ -112,6 +115,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             complaint_percentile=99.8,
             honorable_mention_count=1,
             sustained_count=1,
+            unsustained_count=2,
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
@@ -241,6 +245,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'to': '',
             'url': '',
             'current_salary': 9000,
+            'unsustained_count': 2,
         })
 
 
@@ -583,6 +588,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='123456',
+            point=Point(35.5, 68.9),
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -620,6 +626,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             final_outcome='Unknown'
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        VictimFactory(allegation=allegation, gender='M', race='White', age=34)
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -636,6 +643,17 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'victims': [
+                {
+                    'race': 'White',
+                    'age': 34,
+                    'gender': 'Male',
+                }
+            ],
+            'point': {
+                'lon': 35.5,
+                'lat': 68.9
+            },
             'attachments': [
                 {
                     'title': 'doc_1',
@@ -707,7 +725,12 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
                     description='Unit_001',
                 )),
             ),
+            point=Mock(
+                x=34.5,
+                y=67.8
+            ),
         )
+
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
             'trr_id': 2,
             'officer_id': 123,
@@ -720,6 +743,10 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'point': {
+                'lat': 67.8,
+                'lon': 34.5
+            },
         })
 
 

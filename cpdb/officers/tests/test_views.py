@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 import pytz
+from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -10,7 +11,8 @@ from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
-    SalaryFactory
+    SalaryFactory,
+    VictimFactory,
 )
 from officers.doc_types import OfficerInfoDocType
 from trr.factories import TRRFactory
@@ -107,6 +109,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
+            'unsustained_count': 0,
             'complaint_percentile': 32.5,
         })
 
@@ -280,6 +283,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         allegation = AllegationFactory(crid='123456')
+        VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
             officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
@@ -287,7 +291,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
-        allegation2 = AllegationFactory(crid='654321')
+        allegation2 = AllegationFactory(crid='654321', point=Point(35.5, 68.9))
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
@@ -323,6 +327,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '002',
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
+                'point': {
+                    'lon': 35.5,
+                    'lat': 68.9
+                },
             }, {
                 'date': '2015-03-23',
                 'kind': 'AWARD',
@@ -357,6 +365,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
+                'victims': [
+                    {
+                        'race': 'White',
+                        'age': 34,
+                        'gender': 'Male',
+                    }
+                ],
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',

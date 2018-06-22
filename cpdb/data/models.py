@@ -319,6 +319,10 @@ class Officer(TaggableModel):
         return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
+    def unsustained_count(self):
+        return self.officerallegation_set.filter(final_finding='NS').distinct().count()
+
+    @property
     def honorable_mention_count(self):
         return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
 
@@ -938,10 +942,6 @@ class Allegation(models.Model):
         return self.complainant_set.all()
 
     @property
-    def victims(self):
-        return self.victim_set.all()
-
-    @property
     def complainant_races(self):
         query = self.complainant_set.annotate(
             name=models.Case(
@@ -1090,6 +1090,10 @@ class OfficerAllegation(models.Model):
             return 'Unknown'
 
     @property
+    def victims(self):
+        return self.allegation.victims.all()
+
+    @property
     def attachments(self):
         return self.allegation.attachment_files.all()
 
@@ -1172,7 +1176,7 @@ class Award(models.Model):
 
 
 class Victim(models.Model):
-    allegation = models.ForeignKey(Allegation)
+    allegation = models.ForeignKey(Allegation, related_name='victims')
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)

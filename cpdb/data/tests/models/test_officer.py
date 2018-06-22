@@ -753,3 +753,17 @@ class OfficerTestCase(TestCase):
         SalaryFactory(officer=officer, year=2017, salary=20000)
 
         expect(officer.current_salary).to.eq(20000)
+
+    def test_unsustained_count(self):
+        allegation = AllegationFactory()
+        officer = OfficerFactory()
+        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
+        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
+        expect(officer.unsustained_count).to.eq(2)
+
+    def test_sustained_count(self):
+        allegation = AllegationFactory()
+        officer = OfficerFactory()
+        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
+        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
+        expect(officer.sustained_count).to.eq(2)
