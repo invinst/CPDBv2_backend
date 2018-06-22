@@ -7,7 +7,7 @@ from robber.expect import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory,
-    AllegationCategoryFactory, VictimFactory, AttachmentFileFactory
+    AllegationCategoryFactory, AttachmentFileFactory
 )
 
 
@@ -47,12 +47,6 @@ class AllegationTestCase(TestCase):
         ComplainantFactory(id=1, allegation=allegation)
         expect(allegation.complainants.count()).to.eq(1)
         expect(allegation.complainants[0].id).to.eq(1)
-
-    def test_victims(self):
-        allegation = AllegationFactory()
-        VictimFactory(id=1, allegation=allegation)
-        expect(allegation.victims.count()).to.eq(1)
-        expect(allegation.victims[0].id).to.eq(1)
 
     def test_get_category_names(self):
         allegation = AllegationFactory()
