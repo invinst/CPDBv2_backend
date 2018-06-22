@@ -32,6 +32,10 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory(add1='', add2='abc', city='Chicago')
         expect(allegation.address).to.eq('abc, Chicago')
 
+    def test_address_old_complaint_address(self):
+        allegation = AllegationFactory(old_complaint_address='3XX W. 58TH ST.')
+        expect(allegation.address).to.eq('3XX W. 58TH ST.')
+
     def test_officer_allegations(self):
         allegation = AllegationFactory()
         OfficerAllegationFactory(id=1, allegation=allegation, officer=OfficerFactory())
