@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from .base import CherryPickSerializer
 from data.models import AttachmentRequest
-from data.constants import MEDIA_TYPE_VIDEO, MEDIA_TYPE_AUDIO, MEDIA_TYPE_DOCUMENT
 
 
 class CoaccusedDesktopSerializer(CherryPickSerializer):

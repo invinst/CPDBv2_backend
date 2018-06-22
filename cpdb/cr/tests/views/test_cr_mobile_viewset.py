@@ -13,7 +13,7 @@ from data.factories import (
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory,
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
-from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
+from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
 
 

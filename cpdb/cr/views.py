@@ -157,7 +157,7 @@ class CRMobileViewSet(viewsets.ViewSet):
             return Response(CRMobileSerializer(search_result[0].to_dict()).data)
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     @detail_route(methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
         allegation = get_object_or_404(Allegation, crid=pk)
