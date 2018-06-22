@@ -105,7 +105,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'discipline_count': 1,
             'honorable_mention_count': 1,
             'to': '/officer/123/',
-            'url': 'https://beta.cpdb.co/officer/kevin-kerl/123',
+            'url': 'https://data.cpdp.co/officer/kevin-kerl/123',
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
@@ -546,10 +546,21 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             rank='Police Officer',
             appointed_date=date(2003, 1, 1)
         )
+        officer4 = OfficerFactory(
+            first_name='Officer',
+            last_name='No Percentile',
+            complaint_percentile=55.0,
+            race='White',
+            gender='F',
+            birth_year=1950,
+            rank='Police Officer',
+            appointed_date=None
+        )
         allegation1 = AllegationFactory(incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc))
         allegation2 = AllegationFactory(incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc))
         allegation3 = AllegationFactory(incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc))
         allegation4 = AllegationFactory(incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
+        allegation5 = AllegationFactory(incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(
             officer=officer2, allegation=allegation1, final_finding='SU', start_date=date(2003, 1, 1)
         )
@@ -568,6 +579,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerAllegationFactory(
             officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
         )
+        OfficerAllegationFactory(
+            officer=officer4, allegation=allegation5, final_finding='NS', start_date=date(2007, 1, 1)
+        )
+        OfficerAllegationFactory(
+            officer=officer1, allegation=allegation5, final_finding='NS', start_date=date(2007, 1, 1)
+        )
         TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
@@ -575,7 +592,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([{
+        expected_response_data = [{
             'id': officer2.id,
             'full_name': 'Officer 1',
             'allegation_count': 2,
@@ -587,9 +604,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'coaccusal_count': 1,
             'rank': 'Police Officer',
             'percentile_trr': 33.3333,
-            'percentile_allegation_civilian': 33.3333,
-            'percentile_allegation_internal': 0,
-            'percentile_allegation': 33.3333,
+            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_allegation': 0.0,
         }, {
             'id': officer3.id,
             'full_name': 'Officer 2',
@@ -603,6 +620,18 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'rank': 'Police Officer',
             'percentile_trr': 66.6667,
             'percentile_allegation_civilian': 66.6667,
-            'percentile_allegation_internal': 0,
+            'percentile_allegation_internal': 0.0,
             'percentile_allegation': 66.6667,
-        }])
+        }, {
+            'id': officer4.id,
+            'full_name': 'Officer No Percentile',
+            'allegation_count': 1,
+            'sustained_count': 0,
+            'complaint_percentile': 55.0,
+            'race': 'White',
+            'gender': 'Female',
+            'birth_year': 1950,
+            'coaccusal_count': 1,
+            'rank': 'Police Officer',
+        }]
+        expect(response.data).to.eq(expected_response_data)

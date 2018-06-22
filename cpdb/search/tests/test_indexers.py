@@ -13,6 +13,16 @@ from data.factories import (
 from search.search_indexers import autocompletes_alias
 
 
+def mock_object(**kwargs):
+    class MyObject(object):
+        pass
+
+    obj = MyObject()
+    for key, val in kwargs.items():
+        setattr(obj, key, val)
+    return obj
+
+
 class BaseIndexerTestCase(SimpleTestCase):
     def test_get_queryset(self):
         expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
@@ -253,6 +263,101 @@ class AreaIndexerTestCase(TestCase):
             'commander': None,
             'allegation_percentile': None,
             'police_hq': None,
+        })
+
+    def test_extract_datum_with_officers_most_complaint(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            alderman='IronMan',
+        )
+        area.get_officers_most_complaints = Mock(return_value=[
+            {
+                'id': 123,
+                'name': 'A B',
+                'count': 5
+            }, {
+                'id': 456,
+                'name': 'E F',
+                'count': 3
+            }, {
+                'id': 789,
+                'name': 'C D',
+                'count': 2
+            }, {
+                'id': 999,
+                'name': 'X Y',
+                'count': 2
+            }
+        ])
+        area_indexer = AreaIndexer()
+        area_indexer.top_percentile_dict = {
+            123: {
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 0,
+                'percentile_allegation': 0,
+            },
+            456: {
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 33.3333,
+            },
+            789: {
+                'percentile_allegation_civilian': 66.6667,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 66.6667,
+            },
+        }
+
+        expect(area_indexer.extract_datum(area)).to.be.eq({
+            'name': 'name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+            'police_hq': None,
+            'officers_most_complaint': [
+                {
+                    'id': 123,
+                    'name': 'A B',
+                    'count': 5,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
+                    'percentile_allegation': 0,
+                }, {
+                    'id': 456,
+                    'name': 'E F',
+                    'count': 3,
+                    'percentile_allegation_civilian': 33.3333,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 33.3333,
+                    'percentile_allegation': 33.3333,
+                }, {
+                    'id': 789,
+                    'name': 'C D',
+                    'count': 2,
+                    'percentile_allegation_civilian': 66.6667,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 66.6667,
+                    'percentile_allegation': 66.6667,
+                }, {
+                    'id': 999,
+                    'name': 'X Y',
+                    'count': 2
+                }
+            ],
         })
 
 

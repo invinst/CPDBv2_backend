@@ -2,7 +2,6 @@ from django.test.testcases import TestCase
 
 from robber.expect import expect
 
-from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory,
     AttachmentFileFactory, VictimFactory,
@@ -62,13 +61,6 @@ class OfficerAllegationTestCase(TestCase):
         expect(result).to.have.length(2)
         expect(result).to.contain(attachment_1)
         expect(result).to.contain(attachment_2)
-
-    def test_documents(self):
-        allegation = AllegationFactory()
-        officer_allegation = OfficerAllegationFactory(allegation=allegation)
-        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        expect(officer_allegation.documents).to.contain(attachment1, attachment2)
 
     def test_victims(self):
         allegation = AllegationFactory()

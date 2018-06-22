@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from django.test.testcases import TestCase
 
@@ -119,17 +119,6 @@ class AllegationTestCase(TestCase):
         allegation2 = AllegationFactory()
         OfficerAllegationFactory(allegation=allegation2, end_date=date(2012, 1, 1))
         expect(allegation2.first_end_date).to.eq(date(2012, 1, 1))
-
-    def test_get_newest_added_document(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=None)
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2011, 1, 1))
-        file = AttachmentFileFactory(
-            allegation=allegation,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=datetime(2012, 1, 1)
-        )
-        expect(allegation.get_newest_added_document().pk).to.eq(file.pk)
 
     def test_most_common_category(self):
         allegation = AllegationFactory()
