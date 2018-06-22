@@ -26,7 +26,7 @@ class CoaccusedDesktopSerializer(CherryPickSerializer):
         )
 
 
-class InvestigatorDesktopSerializer(CherryPickSerializer):
+class InvestigatorSerializer(CherryPickSerializer):
     class Meta(object):
         fields = (
             'involved_type',
@@ -39,7 +39,7 @@ class InvestigatorDesktopSerializer(CherryPickSerializer):
         )
 
 
-class PoliceWitnessDesktopSerializer(CherryPickSerializer):
+class PoliceWitnessSerializer(CherryPickSerializer):
     class Meta(object):
         fields = (
             'involved_type',
@@ -72,8 +72,8 @@ class CRDesktopSerializer(serializers.Serializer):
 
     def get_involvements(self, obj):
         serializer_map = {
-            'investigator': InvestigatorDesktopSerializer,
-            'police_witness': PoliceWitnessDesktopSerializer
+            'investigator': InvestigatorSerializer,
+            'police_witness': PoliceWitnessSerializer
         }
         return [
             serializer_map[involvement['involved_type']](involvement).data
@@ -86,15 +86,14 @@ class CoaccusedMobileSerializer(CherryPickSerializer):
         fields = (
             'id',
             'full_name',
-            'gender',
-            'race',
-            'final_finding',
-            'recc_outcome',
+            'rank',
             'final_outcome',
+            'final_finding',
             'category',
-            'subcategory',
-            'start_date',
-            'end_date'
+            'percentile_allegation',
+            'percentile_allegation_civilian',
+            'percentile_allegation_internal',
+            'percentile_trr'
         )
 
 
@@ -112,77 +111,31 @@ class AttachmentField(serializers.Field):
         ]
 
 
-class InvestigatorMobileSerializer(serializers.Serializer):
-    involved_type = serializers.SerializerMethodField()
-    officers = serializers.SerializerMethodField()
-
-    def get_involved_type(self, obj):
-        return 'investigator'
-
-    def get_officers(self, obj):
-        return [
-            {
-                'id': involvement['officer_id'],
-                'abbr_name': involvement['abbr_name'],
-                'extra_info': '%d case(s)' % involvement['num_cases']
-            }
-            for involvement in obj.get('involvements', [])
-            if involvement['involved_type'] == 'investigator'
-        ]
-
-
-class PoliceWitnessMobileSerializer(serializers.Serializer):
-    involved_type = serializers.SerializerMethodField()
-    officers = serializers.SerializerMethodField()
-
-    def get_involved_type(self, obj):
-        return 'police witnesses'
-
-    def get_officers(self, obj):
-        return [
-            {
-                'id': involvement['officer_id'],
-                'abbr_name': involvement['abbr_name'],
-                'extra_info': ', '.join([involvement['gender'], involvement['race']])
-            }
-            for involvement in obj.get('involvements', [])
-            if involvement['involved_type'] == 'police_witness'
-        ]
-
-
 class CRMobileSerializer(serializers.Serializer):
     crid = serializers.CharField()
+    most_common_category = serializers.JSONField()
     coaccused = CoaccusedMobileSerializer(many=True)
     complainants = serializers.JSONField(default=[])
-    point = serializers.SerializerMethodField(required=False)
+    victims = serializers.JSONField(default=[])
+    summary = serializers.CharField(required=False)
+    point = serializers.JSONField(required=False)
     incident_date = serializers.CharField(required=False)
+    start_date = serializers.CharField(required=False)
+    end_date = serializers.CharField(required=False)
     address = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
-    beat = serializers.SerializerMethodField()
+    beat = serializers.CharField(required=False)
     involvements = serializers.SerializerMethodField()
-    audios = AttachmentField(source='attachments', type=MEDIA_TYPE_AUDIO, default=[])
-    videos = AttachmentField(source='attachments', type=MEDIA_TYPE_VIDEO, default=[])
-    documents = AttachmentField(source='attachments', type=MEDIA_TYPE_DOCUMENT, default=[])
-
-    def get_point(self, obj):
-        point = obj.get('point', {
-            'lon': None,
-            'lat': None
-        })
-        return {
-            'long': point['lon'],
-            'lat': point['lat']
-        }
-
-    def get_beat(self, obj):
-        return {
-            'name': obj.get('beat', '')
-        }
+    attachments = serializers.JSONField(default=[])
 
     def get_involvements(self, obj):
+        serializer_map = {
+            'investigator': InvestigatorSerializer,
+            'police_witness': PoliceWitnessSerializer
+        }
         return [
-            InvestigatorMobileSerializer(obj).data,
-            PoliceWitnessMobileSerializer(obj).data
+            serializer_map[involvement['involved_type']](involvement).data
+            for involvement in obj.get('involvements', [])
         ]
 
 
