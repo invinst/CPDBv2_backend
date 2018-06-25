@@ -17,8 +17,9 @@ class ActivityGridUpdater():
             officer1 = response['officer1']
             officer2 = response['officer2']
 
+            # Make sure we don't create duplicated pair card with the same members
             try:
-                activity_pair_card, _ = ActivityPairCard.objects.get(officer1=officer2, officer2=officer1)
+                activity_pair_card = ActivityPairCard.objects.get(officer1=officer2, officer2=officer1)
             except ObjectDoesNotExist:
                 activity_pair_card, _ = ActivityPairCard.objects.get_or_create(officer1=officer1, officer2=officer2)
 

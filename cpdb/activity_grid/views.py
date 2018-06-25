@@ -39,12 +39,15 @@ class ActivityGridViewSet(viewsets.ViewSet):
         for pair in queryset:
             officer1 = OfficerInfoDocType.search().query('terms', id=[pair.officer1.id]).execute()[0]
             officer2 = OfficerInfoDocType.search().query('terms', id=[pair.officer2.id]).execute()[0]
-            filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)
+            try:
+                coaccusal_count = filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)[0]['coaccusal_count']
+            except (IndexError, AttributeError):
+                coaccusal_count = 0
+
             results.append({
                 'officer1': SimpleCardSerializer(officer1).data,
                 'officer2': SimpleCardSerializer(officer2).data,
-                'id': pair.id,
-                'coaccusal_count': filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)[0]['coaccusal_count'],
+                'coaccusal_count': coaccusal_count,
                 'important': pair.important,
                 'null_position': pair.null_position,
                 'last_activity': pair.last_activity,
@@ -58,8 +61,6 @@ class ActivityGridViewSet(viewsets.ViewSet):
         results.sort(key=itemgetter('important', 'null_position', 'last_activity'), reverse=True)
 
         for result in results:
-            if result['type'] == TYPE_COACCUSED_PAIR:
-                result.pop('id')
             result.pop('important')
             result.pop('null_position')
             result.pop('last_activity')
