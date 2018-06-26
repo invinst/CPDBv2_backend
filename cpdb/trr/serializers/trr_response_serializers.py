@@ -22,7 +22,7 @@ class OfficerSerializer(serializers.Serializer):
     percentile_trr = serializers.FloatField(allow_null=True)
 
 
-class TRRDesktopSerializer(serializers.Serializer):
+class TRRSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     officer = OfficerSerializer(read_only=True)
     officer_in_uniform = serializers.BooleanField(read_only=True, default=False)
