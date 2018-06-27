@@ -3,65 +3,43 @@ from mock import Mock
 from django.test import SimpleTestCase
 
 from robber import expect
+from freezegun import freeze_time
 
-from search_mobile.formatters import OfficerV2Formatter, ReportFormatter, UnitFormatter
+from search_mobile.formatters import OfficerV2Formatter
 
 
+@freeze_time("2018-03-20")
 class OfficerV2FormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(
-            full_name='name',
-            badge='123',
-            to='url',
-            meta=Mock(id='333'),
-        )
+        officer_dict = {
+            'full_name': 'name',
+            'badge': '123',
+            'id': '333',
+            'percentiles': [
+                {
+                    'a': 1,
+                    'year': 2001,
+                },
+                {
+                    'b': 2,
+                    'year': 2018
+                },
+                {
+                    'c': 3,
+                    'year': 2019
+                }
+            ]
+        }
+        doc = Mock(to_dict=Mock(return_value=officer_dict))
 
         expect(
             OfficerV2Formatter().doc_format(doc)
         ).to.be.eq({
             'id': 333,
             'name': 'name',
-            'extra_info': 'Badge # 123',
-            'url': 'url',
-        })
-
-
-class ReportFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(
-            meta=Mock(id='9'),
-            publication='publication',
-            author='author',
-            title='title',
-            publish_date='2017-01-21',
-        )
-
-        expect(
-            ReportFormatter().doc_format(doc)
-        ).to.be.eq({
-            'id': 9,
-            'publication': 'publication',
-            'title': 'title',
-            'publish_date': '2017-01-21',
-        })
-
-
-class UnitFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(
-            meta=Mock(id='11'),
-            url='https://data.cpdp.co/url-mediator/session-builder?unit=011',
-            active_member_count=2,
-            member_count=20
-        )
-        doc.name = '011'
-
-        expect(
-            UnitFormatter().doc_format(doc)
-        ).to.be.eq({
-            'id': 11,
-            'text': '011',
-            'url': 'https://data.cpdp.co/url-mediator/session-builder?unit=011',
-            'active_member_count': 2,
-            'member_count': 20
+            'badge': '123',
+            'percentile': {
+                'b': 2,
+                'year': 2018
+            }
         })
