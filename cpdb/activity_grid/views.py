@@ -40,7 +40,8 @@ class ActivityGridViewSet(viewsets.ViewSet):
             officer1 = OfficerInfoDocType.search().query('terms', id=[pair.officer1.id]).execute()[0]
             officer2 = OfficerInfoDocType.search().query('terms', id=[pair.officer2.id]).execute()[0]
             try:
-                coaccusal_count = filter(lambda x: x['id'] == officer2.id, officer1.coaccusals)[0]['coaccusal_count']
+                coaccusals = [x for x in officer1.coaccusals if x['id'] == officer2.id]
+                coaccusal_count = coaccusals[0]['coaccusal_count']
             except (IndexError, AttributeError):
                 coaccusal_count = 0
 

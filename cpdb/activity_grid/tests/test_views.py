@@ -31,7 +31,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             birth_year=1950,
             race='Asian',
             gender='M',
-            appointed_date=datetime(2011, 1, 1)
+            appointed_date=datetime(2011, 1, 1, tzinfo=pytz.utc)
         )
         officer2 = OfficerFactory(
             first_name='Raymond',
@@ -39,9 +39,9 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             birth_year=1960,
             race='White',
             gender='M',
-            appointed_date=datetime(2012, 1, 1)
+            appointed_date=datetime(2012, 1, 1, tzinfo=pytz.utc)
         )
-        allegation = AllegationFactory(incident_date=datetime(2014, 1, 1))
+        allegation = AllegationFactory(incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(
             officer=officer1,
             allegation=allegation,
@@ -57,7 +57,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerAllegationFactory(
             officer=officer1,
             final_finding='SU',
-            allegation__incident_date=datetime(2016, 1, 1),
+            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             start_date=date(2016, 1, 1)
         )
         OfficerAllegationFactory.create_batch(
@@ -65,7 +65,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             officer=officer1,
             final_finding='NS',
             start_date=date(2015, 1, 1),
-            allegation__incident_date=datetime(2015, 2, 20)
+            allegation__incident_date=datetime(2015, 2, 20, tzinfo=pytz.utc)
         )
         ActivityCardFactory(officer=officer1)
         ActivityCardFactory(officer=officer2)

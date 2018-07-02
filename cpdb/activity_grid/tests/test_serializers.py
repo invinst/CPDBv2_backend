@@ -75,7 +75,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'complaint_count': 2,
             'complaint_percentile': None,
             'sustained_count': 1,
-            'percentile': []
+            'percentile': None
         })
 
 
@@ -141,5 +141,5 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1910,
-            'percentile': []
+            'percentile': None
         })
