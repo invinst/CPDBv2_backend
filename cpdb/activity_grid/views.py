@@ -21,15 +21,15 @@ class ActivityGridViewSet(viewsets.ViewSet):
         ids = list(cards.values_list('officer_id', flat=True))
 
         # Sort the cards by ids
-        # cards = list(cards)
-        # cards.sort(key=lambda x: x.officer.id)
+        cards = list(cards)
+        cards.sort(key=lambda x: x.officer.id)
 
         # Get officers' info from ES, and sort them by ids
-        officers = OfficerInfoDocType.search().query('terms', id=ids)[:40].execute()
+        officers = OfficerInfoDocType.search().query('terms', id=ids)[:40].sort('id').execute()
 
         # This loop is possible as 1 card is linked to 1 officer with the same id
         results = []
-        for card in cards:
+        for card, officer in zip(cards, officers):
             officer = [o for o in officers if o.id == card.officer.id][0]
             result = OfficerCardSerializer(officer).data
             result['important'] = card.important
