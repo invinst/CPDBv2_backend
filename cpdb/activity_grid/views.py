@@ -12,35 +12,56 @@ from twitterbot.models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR
 
 class ActivityGridViewSet(viewsets.ViewSet):
     def get_activity_cards(self):
-        queryset = ActivityCard.objects.all()
-        queryset = queryset.annotate(null_position=Count('last_activity'))
-        queryset = queryset[:40]
+        # Get cards from database
+        cards = ActivityCard.objects.all()
+        cards = cards.annotate(null_position=Count('last_activity'))
+        cards = cards.order_by('-important', '-null_position', '-last_activity')[:40]
 
+        # Get cards' officer ids
+        ids = list(cards.values_list('officer_id', flat=True))
+
+        # Sort the cards by ids
+        # cards = list(cards)
+        # cards.sort(key=lambda x: x.officer.id)
+
+        # Get officers' info from ES, and sort them by ids
+        officers = OfficerInfoDocType.search().query('terms', id=ids)[:40].execute()
+
+        # This loop is possible as 1 card is linked to 1 officer with the same id
         results = []
-
-        for card in queryset:
-            officer = OfficerInfoDocType.search().query('terms', id=[card.officer.id]).execute()[0]
+        for card in cards:
+            officer = [o for o in officers if o.id == card.officer.id][0]
             result = OfficerCardSerializer(officer).data
             result['important'] = card.important
             result['null_position'] = card.null_position
             result['last_activity'] = card.last_activity
             result['type'] = TYPE_SINGLE_OFFICER
             results.append(result)
-
         return results
 
     def get_activity_pair_cards(self):
-        queryset = ActivityPairCard.objects.all()
-        queryset = queryset.annotate(null_position=Count('last_activity'))
-        queryset = queryset[:40]
+        # Get cards from database
+        pair_cards = ActivityPairCard.objects.all()
+        pair_cards = pair_cards.annotate(null_position=Count('last_activity'))
+        pair_cards = pair_cards.order_by('-important', '-null_position', '-last_activity')[:40]
+
+        # Get all the ids without duplicates
+        officer1_ids = list(pair_cards.values_list('officer1__id', flat=True))
+        officer1_ids = list(set(officer1_ids))
+        officer2_ids = list(pair_cards.values_list('officer2__id', flat=True))
+        officer2_ids = list(set(officer2_ids))
+        ids = officer1_ids + list(set(officer2_ids) - set(officer1_ids))
+
+        # Get the officers from ES
+        officers = OfficerInfoDocType.search().query('terms', id=ids)[:80].execute()
 
         results = []
 
-        for pair in queryset:
-            officer1 = OfficerInfoDocType.search().query('terms', id=[pair.officer1.id]).execute()[0]
-            officer2 = OfficerInfoDocType.search().query('terms', id=[pair.officer2.id]).execute()[0]
+        for pair in pair_cards:
+            officer1 = [o for o in officers if o.id == pair.officer1.id][0]
+            officer2 = [o for o in officers if o.id == pair.officer2.id][0]
             try:
-                coaccusals = [x for x in officer1.coaccusals if x['id'] == officer2.id]
+                coaccusals = [c for c in officer1.coaccusals if c['id'] == officer2.id]
                 coaccusal_count = coaccusals[0]['coaccusal_count']
             except (IndexError, AttributeError):
                 coaccusal_count = 0
@@ -54,7 +75,6 @@ class ActivityGridViewSet(viewsets.ViewSet):
                 'last_activity': pair.last_activity,
                 'type': TYPE_COACCUSED_PAIR
             })
-
         return results
 
     def list(self, request):

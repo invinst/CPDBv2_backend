@@ -14,7 +14,7 @@ from officers.tests.mixins import OfficerSummaryTestCaseMixin
 
 
 class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
-    def test_list_return_exactly_40_items(self):
+    def test_list_return_exactly_80_items(self):
         ActivityCardFactory.create_batch(50)
         ActivityPairCardFactory.create_batch(50)
         self.refresh_index()
@@ -67,9 +67,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             start_date=date(2015, 1, 1),
             allegation__incident_date=datetime(2015, 2, 20, tzinfo=pytz.utc)
         )
-        ActivityCardFactory(officer=officer1)
-        ActivityCardFactory(officer=officer2)
-        ActivityPairCardFactory(officer1=officer1, officer2=officer2)
+        ActivityCardFactory(officer=officer1, last_activity=datetime(2018, 12, 22, tzinfo=pytz.utc))
+        ActivityCardFactory(officer=officer2, last_activity=datetime(2018, 10, 15, tzinfo=pytz.utc))
+        ActivityPairCardFactory(
+            officer1=officer1, officer2=officer2, last_activity=datetime(2018, 5, 20, tzinfo=pytz.utc)
+        )
 
         self.refresh_index()
         url = reverse('api-v2:activity-grid-list')
