@@ -100,7 +100,7 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
             'unit': Mock(**{
                 'id': 1,
                 'unit_name': '1',
-                'description': "Unit 1"
+                'description': 'Unit 1'
             }),
             'gender': 'Male',
             'birth_year': 1950,
@@ -157,7 +157,7 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
             'unit': {
                 'unit_id': 1,
                 'unit_name': '1',
-                'description': "Unit 1"
+                'description': 'Unit 1'
             },
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2015',
