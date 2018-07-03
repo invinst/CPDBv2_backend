@@ -9,7 +9,7 @@ from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, 
 from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from officers.serializers import (
+from officers.serializers.doc_serializers import (
     OfficerYearlyPercentileSerializer,
     OfficerInfoSerializer,
     OfficerSinglePercentileSerializer,
@@ -23,7 +23,7 @@ from .doc_types import (
     OfficerCoaccusalsDocType,
 )
 from .index_aliases import officers_index_alias
-from .serializers import (
+from officers.serializers.doc_serializers import (
     CRTimelineSerializer,
     UnitChangeTimelineSerializer,
     JoinedTimelineSerializer,
