@@ -30,7 +30,6 @@ class ActivityGridViewSet(viewsets.ViewSet):
         # This loop is possible as 1 card is linked to 1 officer with the same id
         results = []
         for card, officer in zip(cards, officers):
-            officer = [o for o in officers if o.id == card.officer.id][0]
             result = OfficerCardSerializer(officer).data
             result['important'] = card.important
             result['null_position'] = card.null_position
