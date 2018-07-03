@@ -1,12 +1,12 @@
 
-from datetime import datetime, date
+from datetime import date
 
 from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
 
-from officers.serializers import (
-    TimelineSerializer, CRTimelineSerializer, OfficerSummarySerializer
+from officers.serializers.doc_serializers import (
+    CRTimelineSerializer, OfficerSummarySerializer
 )
 
 
@@ -74,48 +74,6 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'birth_year': 1950,
             'current_salary': 90000,
         })
-
-
-class TimelineSerializerTestCase(SimpleTestCase):
-    def test_serialization(self):
-        obj = Mock()
-        obj.to_dict = Mock(return_value={
-            'a': 'b',
-            'c': 'd',
-            'date_sort': datetime.now(),
-            'year_sort': 2000,
-            'priority_sort': 40,
-            'officer_id': 123
-
-        })
-        expect(TimelineSerializer(obj).data).to.eq({
-            'a': 'b',
-            'c': 'd'
-        })
-
-    def test_serialize_multiple(self):
-        obj1 = Mock()
-        obj1.to_dict = Mock(return_value={
-            'a': 'b',
-            'date_sort': datetime.now(),
-            'year_sort': 2000,
-            'priority_sort': 40,
-            'officer_id': 123
-        })
-        obj2 = Mock()
-        obj2.to_dict = Mock(return_value={
-            'c': 'd',
-            'date_sort': datetime.now(),
-            'year_sort': 2000,
-            'priority_sort': 40,
-            'officer_id': 456
-        })
-        expect(TimelineSerializer([
-            obj1, obj2
-        ], many=True).data).to.eq([
-            {'a': 'b'},
-            {'c': 'd'}
-        ])
 
 
 class CRTimelineSerializerTestCase(SimpleTestCase):

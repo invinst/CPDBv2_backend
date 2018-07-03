@@ -1050,6 +1050,38 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## Officer Mobile [/mobile/officers/{officer_id}/]
+
+### Get Officer Summary (include yearly percentiles) [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "officer_id": 1,
+            "full_name": "Robert Anderson",
+            "percentiles": [
+                {
+                    "officer_id": 1,
+                    "year": 2016,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "76.282",
+                    "percentile_allegation_civilian": "79.479",
+                    "percentile_allegation_internal": "0.000"
+                },
+                {
+                    "officer_id": 1,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "58.446",
+                    "percentile_allegation_civilian": "63.044",
+                    "percentile_allegation_internal": "0.000"
+                }
+            ]
+        }
+
 
 
 ## TRR [/trr/{trr_id}/]
