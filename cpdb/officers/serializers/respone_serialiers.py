@@ -3,21 +3,14 @@ from rest_framework import serializers
 
 class TimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
-        result = obj.to_dict()
-        result.pop('officer_id')
-        result.pop('date_sort')
-        result.pop('year_sort')
-        result.pop('priority_sort')
-        return result
+        remove_keys = ['officer_id', 'date_sort', 'year_sort', 'priority_sort']
+        return {key: value for key, value in obj.to_dict().iteritems() if key not in remove_keys}
 
 
 class NewTimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
-        result = obj.to_dict()
-        result.pop('officer_id')
-        result.pop('date_sort')
-        result.pop('priority_sort')
-        return result
+        remove_keys = ['officer_id', 'date_sort', 'priority_sort']
+        return {key: value for key, value in obj.to_dict().iteritems() if key not in remove_keys}
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
