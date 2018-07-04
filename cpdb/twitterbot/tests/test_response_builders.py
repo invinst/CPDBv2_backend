@@ -36,6 +36,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'type': 'single_officer',
             'media_path': '',
             'entity': None,
+            'coaccused': 0,
+            'officer1': None,
+            'officer2': None
         }])
         expect(list(builder.build(extra_variables={'user_name': 'def'}))).to.eq([{
             'source': (),
@@ -44,6 +47,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'type': 'single_officer',
             'media_path': '',
             'entity': None,
+            'coaccused': 0,
+            'officer1': None,
+            'officer2': None
         }])
         expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([{
             'source': (),
@@ -52,6 +58,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'type': 'single_officer',
             'media_path': '',
             'entity': None,
+            'coaccused': 0,
+            'officer1': None,
+            'officer2': None
         }])
         expect(list(builder.build(extra_variables={'user_name': 'abc'}))).to.eq([{
             'source': (),
@@ -60,6 +69,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'type': 'single_officer',
             'media_path': '',
             'entity': None,
+            'coaccused': 0,
+            'officer1': None,
+            'officer2': None
         }])
 
     def test_build_with_syntax_depend_on_right_response_type(self):
@@ -77,6 +89,9 @@ class BaseResponseBuilderTestCase(TestCase):
             'type': 'single_officer',
             'media_path': '',
             'entity': None,
+            'coaccused': 0,
+            'officer1': None,
+            'officer2': None
         }])
 
         expect(context['responses_count']).to.eq(1)
@@ -121,6 +136,9 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'type': 'single_officer',
                 'media_path': 'media_folder/officer_1.png',
                 'entity': officer1,
+                'officer1': None,
+                'officer2': None,
+                'coaccused': 0,
             }, {
                 'source': ('source2',),
                 'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
@@ -128,6 +146,9 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'type': 'single_officer',
                 'media_path': 'media_folder/officer_2.png',
                 'entity': officer2,
+                'officer1': None,
+                'officer2': None,
+                'coaccused': 0,
             }])
 
 
@@ -166,6 +187,9 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
             'type': 'coaccused_pair',
             'media_path': '',
             'entity': None,
+            'officer1': officer1,
+            'officer2': officer2,
+            'coaccused': 1,
         }])
 
 
@@ -194,6 +218,9 @@ class NotFoundResponseBuilderTestCase(TestCase):
                 'type': 'not_found',
                 'media_path': '',
                 'entity': None,
+                'officer1': None,
+                'officer2': None,
+                'coaccused': 0
             }])
 
     def test_build_with_response(self):

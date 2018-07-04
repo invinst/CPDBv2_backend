@@ -128,16 +128,6 @@ class JoinedTimelineSerializer(serializers.Serializer):
         return 10
 
 
-class TimelineSerializer(serializers.Serializer):
-    def to_representation(self, obj):
-        result = obj.to_dict()
-        result.pop('officer_id')
-        result.pop('date_sort')
-        result.pop('year_sort')
-        result.pop('priority_sort')
-        return result
-
-
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     year = serializers.IntegerField()
@@ -147,20 +137,17 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
+class CoaccusalSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    coaccusal_count = serializers.IntegerField()
+
+
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
     to = serializers.CharField(source='v2_to')
     url = serializers.CharField(source='v1_url')
     tags = serializers.ListField(child=serializers.CharField())
-
-
-class NewTimelineSerializer(serializers.Serializer):
-    def to_representation(self, obj):
-        result = obj.to_dict()
-        result.pop('officer_id')
-        result.pop('date_sort')
-        result.pop('priority_sort')
-        return result
+    coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
