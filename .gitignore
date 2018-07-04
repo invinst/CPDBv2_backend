@@ -56,3 +56,4 @@ cpdb/data_importer/original_data/
 Output/
 .vscode
 Pipfile*
+/htmlcov/
