@@ -5,9 +5,7 @@ from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
 
-from officers.serializers.doc_serializers import (
-    CRTimelineSerializer, OfficerSummarySerializer
-)
+from officers.serializers.doc_serializers import OfficerSummarySerializer
 
 
 class OfficerSummarySerializerTestCase(SimpleTestCase):
@@ -73,70 +71,4 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             },
             'birth_year': 1950,
             'current_salary': 90000,
-        })
-
-
-class CRTimelineSerializerTestCase(SimpleTestCase):
-    def test_serialization(self):
-        obj = Mock(**{
-            'officer_id': 123,
-            'start_date': date(2016, 1, 1),
-            'crid': '123456',
-            'category': 'Illegal Search',
-            'subcategory': 'XXX',
-            'final_finding_display': 'Unfounded',
-            'coaccused_count': 0,
-            'allegation': Mock(**{
-                'complainant_races': ['White'],
-                'complainant_age_groups': ['31-40'],
-                'complainant_genders': ['Female', 'Male']
-            })
-        })
-        expect(CRTimelineSerializer(obj).data).to.eq({
-            'officer_id': 123,
-            'date': '2016-01-01',
-            'date_sort': date(2016, 1, 1),
-            'year_sort': 2016,
-            'priority_sort': 40,
-            'kind': 'CR',
-            'crid': '123456',
-            'category': 'Illegal Search',
-            'subcategory': 'XXX',
-            'finding': 'Unfounded',
-            'coaccused': 0,
-            'race': ['White'],
-            'age': ['31-40'],
-            'gender': ['Female', 'Male']
-        })
-
-    def test_unknown_category(self):
-        obj = Mock(**{
-            'category': None,
-            'subcategory': None,
-            'officer_id': 123,
-            'start_date': date(2016, 1, 1),
-            'crid': '123456',
-            'final_finding_display': 'Unfounded',
-            'coaccused_count': 0,
-            'allegation': Mock(**{
-                'complainant_races': ['White'],
-                'complainant_age_groups': ['31-40'],
-                'complainant_genders': ['Female', 'Male']
-            })
-        })
-        expect(CRTimelineSerializer(obj).data).to.eq({
-            'category': 'Unknown',
-            'subcategory': None,
-            'officer_id': 123,
-            'date': '2016-01-01',
-            'date_sort': date(2016, 1, 1),
-            'year_sort': 2016,
-            'priority_sort': 40,
-            'kind': 'CR',
-            'crid': '123456',
-            'finding': 'Unfounded',
-            'coaccused': 0,
-            'race': ['White'],
-            'age': ['31-40'],
-            'gender': ['Female', 'Male']
         })
