@@ -1,6 +1,3 @@
-
-from datetime import date
-
 from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
