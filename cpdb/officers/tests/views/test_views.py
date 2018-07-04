@@ -16,7 +16,7 @@ from data.factories import (
 )
 from officers.doc_types import OfficerInfoDocType
 from trr.factories import TRRFactory
-from .mixins import OfficerSummaryTestCaseMixin
+from officers.tests.mixins import OfficerSummaryTestCaseMixin
 
 
 class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
