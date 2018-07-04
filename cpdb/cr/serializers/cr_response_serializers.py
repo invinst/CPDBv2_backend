@@ -54,7 +54,7 @@ class PoliceWitnessSerializer(CherryPickSerializer):
 
 class CRDesktopSerializer(serializers.Serializer):
     crid = serializers.CharField()
-    most_common_category = serializers.JSONField()
+    most_common_category = serializers.JSONField(required=False)
     coaccused = CoaccusedDesktopSerializer(many=True, default=[])
     complainants = serializers.JSONField(default=[])
     victims = serializers.JSONField(default=[])
@@ -112,7 +112,7 @@ class AttachmentField(serializers.Field):
 
 class CRMobileSerializer(serializers.Serializer):
     crid = serializers.CharField()
-    most_common_category = serializers.JSONField()
+    most_common_category = serializers.JSONField(required=False)
     coaccused = CoaccusedMobileSerializer(many=True)
     complainants = serializers.JSONField(default=[])
     victims = serializers.JSONField(default=[])
