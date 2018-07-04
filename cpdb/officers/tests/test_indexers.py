@@ -116,6 +116,10 @@ class OfficersIndexerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
+            coaccusals=[{
+                'id': 1,
+                'coaccusal_count': 5
+            }],
             current_salary=9000,
             single_percentiles={
                 'id': 123,
@@ -243,6 +247,10 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'url': '',
             'current_salary': 9000,
             'unsustained_count': 2,
+            'coaccusals': [{
+                'id': 1,
+                'coaccusal_count': 5,
+            }],
         })
 
 
