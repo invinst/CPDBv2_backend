@@ -44,6 +44,24 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
             }
         })
 
+    def test_doc_format_with_no_percentiles(self):
+        officer_dict = {
+            'full_name': 'name',
+            'badge': '123',
+            'id': '333',
+            'percentiles': []
+        }
+        doc = Mock(to_dict=Mock(return_value=officer_dict))
+
+        expect(
+            OfficerV2Formatter().doc_format(doc)
+        ).to.be.eq({
+            'id': 333,
+            'name': 'name',
+            'badge': '123',
+            'percentile': []
+        })
+
 
 class CRFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):

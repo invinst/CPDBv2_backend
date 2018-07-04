@@ -11,7 +11,7 @@ class OfficerV2Formatter(SimpleFormatter):
         if len(percentiles_from_now) > 0:
             return min(percentiles_from_now, key=lambda x: x['year'])
 
-        return None
+        return []
 
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
