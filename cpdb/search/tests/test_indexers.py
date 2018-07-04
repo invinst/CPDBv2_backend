@@ -3,12 +3,12 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from search.search_indexers import CrIndexer
-from ..search_indexers import BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+from search.search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory)
+from trr.factories import TRRFactory
 
 from search.search_indexers import autocompletes_alias
 
@@ -395,4 +395,20 @@ class CrIndexerTestCase(TestCase):
         ).to.eq({
             'crid': '123456',
             'to': '/complaint/123456/10/'
+        })
+
+
+class TRRIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(TRRIndexer().get_queryset().count()).to.eq(0)
+        TRRFactory()
+        expect(TRRIndexer().get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        trr = TRRFactory(id='123456')
+
+        expect(
+            TRRIndexer().extract_datum(trr)
+        ).to.eq({
+            'id': '123456'
         })

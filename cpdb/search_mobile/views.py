@@ -1,6 +1,6 @@
-from search.workers import OfficerWorker
+from search.workers import OfficerWorker, TRRWorker, CrWorker
 from search.views import SearchViewSet
-from .formatters import OfficerV2Formatter
+from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter
 
 
 class SearchMobileV2ViewSet(SearchViewSet):
@@ -8,8 +8,12 @@ class SearchMobileV2ViewSet(SearchViewSet):
 
     formatters = {
         'OFFICER': OfficerV2Formatter,
+        'CR': CRFormatter,
+        'TRR': TRRFormatter
     }
 
     workers = {
-        'OFFICER': OfficerWorker()
+        'OFFICER': OfficerWorker(),
+        'CR': CrWorker(),
+        'TRR': TRRWorker()
     }
