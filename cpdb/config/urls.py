@@ -22,14 +22,14 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
-from trr.views import TRRViewSet
+from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
 from .views import index_view, officer_view, complaint_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
-from officers.views import OfficersViewSet
+from officers.views import OfficersViewSet, OfficersMobileViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from units.views import UnitsViewSet
@@ -52,9 +52,11 @@ router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
+router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
-router_v2.register(r'trr', TRRViewSet, base_name='trr')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
+router_v2.register(r'trr', TRRDesktopViewSet, base_name='trr')
+router_v2.register(r'mobile/trr', TRRMobileViewSet, base_name='trr-mobile')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')

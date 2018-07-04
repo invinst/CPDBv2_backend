@@ -1050,7 +1050,61 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## Officer Mobile [/mobile/officers/{officer_id}/]
 
+### Get Officer Summary (include yearly percentiles) [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "officer_id": 1,
+            "full_name": "Robert Anderson",
+            "percentiles": [
+                {
+                    "officer_id": 1,
+                    "year": 2016,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "76.282",
+                    "percentile_allegation_civilian": "79.479",
+                    "percentile_allegation_internal": "0.000"
+                },
+                {
+                    "officer_id": 1,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "58.446",
+                    "percentile_allegation_civilian": "63.044",
+                    "percentile_allegation_internal": "0.000"
+                }
+            ],
+            "unit": {
+              "unit_id": 2,
+              "unit_name": "001",
+              "description": "District 001"
+            },
+            "date_of_appt": "1992-01-02",
+            "active": true,
+            "rank": "Police Officer",
+            "race": "White",
+            "birth_year": 1965,
+            "badge": "19675",
+            "historic_badges": [
+              "8137"
+            ],
+            "gender": "Male",
+            "allegation_count": 125,
+            "complaint_percentile": 99.892,
+            "honorable_mention_count": 29,
+            "sustained_count": 0,
+            "discipline_count": 0,
+            "civilian_compliment_count": 8,
+            "trr_count": 24,
+            "major_award_count": 0,
+            "honorable_mention_percentile": 75.5604
+        }
 
 ## TRR [/trr/{trr_id}/]
 
@@ -1145,6 +1199,98 @@ This api require an api access token set in `Authorization` header. To get an ap
             "message": "Please enter a valid email"
         }
 
+## TRR Mobile [/mobile/trr/{trr_id}/]
+
+### Get TRR [GET]
+
++ Parameters
+    + trr_id (number) - number ID of Use of Force Report
+
++ Response 200 (application/json)
+        {
+            "id": 781,
+            "officer": {
+                "id": 583,
+                "full_name": "Robert Anderson",
+                "gender": "Male",
+                "race": "White",
+                "appointed_date": "2000-10-10",
+                "birth_year": 1973,
+                "resignation_date": "2008-03-26",
+                "unit": {
+                    "unit_name": "253",
+                    "description": "Targeted Response Unit"
+                },
+                "percentile_allegation_civilian": 92.7014,
+                "percentile_allegation_internal": 0.0,
+                "percentile_trr": 76.9689
+            },
+            "officer_in_uniform": true,
+            "officer_assigned_beat": "4682E",
+            "officer_on_duty": true,
+            "subject_race": "BLACK",
+            "subject_gender": "Male",
+            "subject_age": 27,
+            "force_category": "Other",
+            "force_types": [
+                "Physical Force - Stunning",
+                "Verbal Commands",
+                "Member Presence"
+            ],
+            "date_of_incident": "2004-04-23",
+            "location_type": "Street",
+            "address": "11XX 79Th St",
+            "beat": 612,
+            "point": {
+                "lat": 41.7508596,
+                "lng": -87.6533166
+            }
+        }
+
+## Mobile TRR Documents [/mobile/trr/{trr_id}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + trr_id (number) - number ID of TRR
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "trr_id": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "trr_id": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
+        }
 
 ## Complaint summaries [/cr/complaint-summaries/]
 
