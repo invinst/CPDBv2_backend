@@ -903,6 +903,7 @@ class Allegation(models.Model):
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
+    old_complaint_address = models.CharField(max_length=255, null=True)
 
     def get_most_common_category(self):
         return self.officerallegation_set.values(
@@ -924,6 +925,8 @@ class Allegation(models.Model):
 
     @property
     def address(self):
+        if self.old_complaint_address:
+            return self.old_complaint_address
         result = ''
         if self.add1 is not None:
             result = str(self.add1)
