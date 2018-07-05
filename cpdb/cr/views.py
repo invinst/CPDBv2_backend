@@ -105,7 +105,7 @@ class CRViewSet(viewsets.ViewSet):
                         }
                     },
                     must_not={
-                        "terms": {"crid": [pk]}
+                        'terms': {'crid': [pk]}
                     },
                     filter=query_filter
                 )
@@ -130,7 +130,7 @@ class CRViewSet(viewsets.ViewSet):
                         }
                     },
                     must_not={
-                        "terms": {"crid": [pk]}
+                        'terms': {'crid': [pk]}
                     },
                     filter=query_filter
                 )
