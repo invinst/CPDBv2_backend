@@ -96,6 +96,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'rank': 'Officer',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
+                    'allegation_count': 1,
                     'category': 'Operation/Personnel Violations',
                     'percentile_allegation': 0,
                     'percentile_allegation_civilian': 0,

@@ -89,25 +89,12 @@ class CoaccusedMobileSerializer(CherryPickSerializer):
             'final_outcome',
             'final_finding',
             'category',
+            'allegation_count',
             'percentile_allegation',
             'percentile_allegation_civilian',
             'percentile_allegation_internal',
             'percentile_trr'
         )
-
-
-class AttachmentField(serializers.Field):
-    def __init__(self, type, *args, **kwargs):
-        super(AttachmentField, self).__init__(*args, **kwargs)
-        self.type = type
-
-    def to_representation(self, obj):
-        return [
-            {
-                'title': attachment['title'],
-                'url': attachment['url']
-            } for attachment in obj if attachment['file_type'] == self.type
-        ]
 
 
 class CRMobileSerializer(serializers.Serializer):
