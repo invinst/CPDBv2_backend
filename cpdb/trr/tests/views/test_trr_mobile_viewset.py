@@ -104,7 +104,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             reverse('api-v2:trr-mobile-request-document', kwargs={'pk': trr.id}),
             {'email': 'valid_email@example.com'}
         )
-        expect(response2.status_code).to.eq(status.HTTP_200_OK)
+        expect(response2.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response2.data).to.eq({
             'message': 'Email already added',
             'trr_id': 112233
