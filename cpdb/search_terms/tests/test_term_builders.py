@@ -21,10 +21,10 @@ class AreaTermBuilderTestCase(TestCase):
         expect(MyAreaTermBuilder.build_terms()).to.eq([
             {
                 'name': '1st',
-                'link': 'https://beta.cpdb.co/url-mediator/session-builder?my_query_key=1st'
+                'link': 'https://data.cpdp.co/url-mediator/session-builder?my_query_key=1st'
             }, {
                 'name': '2nd',
-                'link': 'https://beta.cpdb.co/url-mediator/session-builder?my_query_key=2nd'
+                'link': 'https://data.cpdp.co/url-mediator/session-builder?my_query_key=2nd'
             }
         ])
 
@@ -44,7 +44,7 @@ class OfficerRankTermBuilderTestCase(TestCase):
         OfficerFactory(rank='my-custom-rank')
         expect(OfficerRankTermBuilder.build_terms()).to.eq([{
             'name': 'my-custom-rank',
-            'link': 'https://beta.cpdb.co/url-mediator/session-builder?officer__rank=my-custom-rank'
+            'link': 'https://data.cpdp.co/url-mediator/session-builder?officer__rank=my-custom-rank'
         }])
 
 
@@ -53,5 +53,5 @@ class PoliceUnitTermBuilderTestCase(TestCase):
         PoliceUnitFactory(unit_name='001', description='my unit description')
         expect(PoliceUnitTermBuilder.build_terms()).to.eq([{
             'name': 'my unit description',
-            'link': 'https://beta.cpdb.co/url-mediator/session-builder?officer__unit=001'
+            'link': 'https://data.cpdp.co/url-mediator/session-builder?officer__unit=001'
         }])

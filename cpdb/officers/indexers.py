@@ -2,13 +2,14 @@ from itertools import combinations
 
 from django.db.models import F
 from django.utils.timezone import now
+
 from tqdm import tqdm
 
-from data.constants import PERCENTILE_TYPES
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
+from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from officers.serializers import (
+from officers.serializers.doc_serializers import (
     OfficerYearlyPercentileSerializer,
     OfficerInfoSerializer,
     OfficerSinglePercentileSerializer,
@@ -16,16 +17,12 @@ from officers.serializers import (
 from trr.models import TRR
 from .doc_types import (
     OfficerSocialGraphDocType,
-    OfficerTimelineEventDocType,
     OfficerNewTimelineEventDocType,
     OfficerInfoDocType,
     OfficerCoaccusalsDocType,
 )
 from .index_aliases import officers_index_alias
-from .serializers import (
-    CRTimelineSerializer,
-    UnitChangeTimelineSerializer,
-    JoinedTimelineSerializer,
+from officers.serializers.doc_serializers import (
     CRNewTimelineSerializer,
     UnitChangeNewTimelineSerializer,
     JoinedNewTimelineSerializer,
@@ -47,42 +44,6 @@ class OfficersIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return OfficerInfoSerializer(datum).data
-
-
-@register_indexer(app_name)
-class CRTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return OfficerAllegation.objects.filter(start_date__isnull=False)
-
-    def extract_datum(self, datum):
-        return CRTimelineSerializer(datum).data
-
-
-@register_indexer(app_name)
-class UnitChangeTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return OfficerHistory.objects.filter(effective_date__isnull=False)
-
-    def extract_datum(self, datum):
-        return UnitChangeTimelineSerializer(datum).data
-
-
-@register_indexer(app_name)
-class JoinedTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.filter(appointed_date__isnull=False)
-
-    def extract_datum(self, officer):
-        return JoinedTimelineSerializer(officer).data
 
 
 @register_indexer(app_name)
@@ -235,17 +196,7 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(OfficerCoaccusalsIndexer, self).__init__(*args, **kwargs)
-        top_percentile = Officer.top_complaint_officers(100, percentile_types=PERCENTILE_TYPES)
-
-        self.top_percentile_dict = {
-            data.officer_id: {
-                'percentile_allegation': data.percentile_allegation,
-                'percentile_allegation_civilian': data.percentile_allegation_civilian,
-                'percentile_allegation_internal': data.percentile_allegation_internal,
-                'percentile_trr': data.percentile_trr,
-            }
-            for data in top_percentile
-        }
+        self.top_percentile_dict = calculate_top_percentile()
 
     def get_queryset(self):
         return Officer.objects.all()

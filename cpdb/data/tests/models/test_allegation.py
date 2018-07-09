@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from django.test.testcases import TestCase
 
@@ -7,7 +7,7 @@ from robber.expect import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory,
-    AllegationCategoryFactory, VictimFactory, AttachmentFileFactory
+    AllegationCategoryFactory, AttachmentFileFactory
 )
 
 
@@ -32,6 +32,10 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory(add1='', add2='abc', city='Chicago')
         expect(allegation.address).to.eq('abc, Chicago')
 
+    def test_address_old_complaint_address(self):
+        allegation = AllegationFactory(old_complaint_address='3XX W. 58TH ST.')
+        expect(allegation.address).to.eq('3XX W. 58TH ST.')
+
     def test_officer_allegations(self):
         allegation = AllegationFactory()
         OfficerAllegationFactory(id=1, allegation=allegation, officer=OfficerFactory())
@@ -43,12 +47,6 @@ class AllegationTestCase(TestCase):
         ComplainantFactory(id=1, allegation=allegation)
         expect(allegation.complainants.count()).to.eq(1)
         expect(allegation.complainants[0].id).to.eq(1)
-
-    def test_victims(self):
-        allegation = AllegationFactory()
-        VictimFactory(id=1, allegation=allegation)
-        expect(allegation.victims.count()).to.eq(1)
-        expect(allegation.victims[0].id).to.eq(1)
 
     def test_get_category_names(self):
         allegation = AllegationFactory()
@@ -125,17 +123,6 @@ class AllegationTestCase(TestCase):
         allegation2 = AllegationFactory()
         OfficerAllegationFactory(allegation=allegation2, end_date=date(2012, 1, 1))
         expect(allegation2.first_end_date).to.eq(date(2012, 1, 1))
-
-    def test_get_newest_added_document(self):
-        allegation = AllegationFactory()
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=None)
-        AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, created_at=datetime(2011, 1, 1))
-        file = AttachmentFileFactory(
-            allegation=allegation,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=datetime(2012, 1, 1)
-        )
-        expect(allegation.get_newest_added_document().pk).to.eq(file.pk)
 
     def test_most_common_category(self):
         allegation = AllegationFactory()

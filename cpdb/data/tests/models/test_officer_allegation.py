@@ -2,8 +2,10 @@ from django.test.testcases import TestCase
 
 from robber.expect import expect
 
-from data.constants import MEDIA_TYPE_DOCUMENT
-from data.factories import AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory, AttachmentFileFactory
+from data.factories import (
+    AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory,
+    AttachmentFileFactory, VictimFactory,
+)
 
 
 class OfficerAllegationTestCase(TestCase):
@@ -60,9 +62,10 @@ class OfficerAllegationTestCase(TestCase):
         expect(result).to.contain(attachment_1)
         expect(result).to.contain(attachment_2)
 
-    def test_documents(self):
+    def test_victims(self):
         allegation = AllegationFactory()
+        victim1 = VictimFactory(allegation=allegation)
+        victim2 = VictimFactory(allegation=allegation)
+
         officer_allegation = OfficerAllegationFactory(allegation=allegation)
-        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        expect(officer_allegation.documents).to.contain(attachment1, attachment2)
+        expect(list(officer_allegation.victims)).to.eq([victim1, victim2])

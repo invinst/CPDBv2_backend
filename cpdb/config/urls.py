@@ -22,13 +22,14 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
+from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
 from .views import index_view, officer_view, complaint_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
-from officers.views import OfficersViewSet
+from officers.views import OfficersViewSet, OfficersMobileViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from units.views import UnitsViewSet
@@ -51,8 +52,11 @@ router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
+router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
+router_v2.register(r'trr', TRRDesktopViewSet, base_name='trr')
+router_v2.register(r'mobile/trr', TRRMobileViewSet, base_name='trr-mobile')
 router_v2.register(r'search-tracking', SearchTrackingViewSet, base_name='search-tracking')
 router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
@@ -67,12 +71,13 @@ urlpatterns = [
         r'collaborate|search(?:/terms)?|'
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'unit/\d+|'
+        r'trr/\d+|'
         r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(
         r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
         ensure_csrf_cookie(officer_view), name='officer'),
-    url(r'^complaint/(?P<crid>\d+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
+    url(r'^complaint/(?P<crid>\w+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),

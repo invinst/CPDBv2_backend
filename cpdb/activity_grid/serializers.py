@@ -16,4 +16,16 @@ class OfficerCardSerializer(serializers.Serializer):
         return obj.percentiles[-1].to_dict()['percentile_allegation'] if obj.percentiles else None
 
     def get_percentile(self, obj):
-        return obj.percentiles[-1].to_dict() if obj.percentiles else []
+        return obj.percentiles[-1].to_dict() if obj.percentiles else None
+
+
+class SimpleCardSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    birth_year = serializers.IntegerField()
+    race = serializers.CharField()
+    gender = serializers.CharField()
+    percentile = serializers.SerializerMethodField()
+
+    def get_percentile(self, obj):
+        return obj.percentiles[-1].to_dict() if obj.percentiles else None

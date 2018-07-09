@@ -1,7 +1,6 @@
 from elasticsearch_dsl.query import Q
 
-from search.doc_types import CrDocType
-from .doc_types import UnitDocType, ReportDocType, AreaDocType
+from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -145,3 +144,8 @@ class UnitOfficerWorker(Worker):
 class CrWorker(Worker):
     doc_type_klass = CrDocType
     fields = ['crid']
+
+
+class TRRWorker(Worker):
+    doc_type_klass = TRRDocType
+    fields = ['_id']

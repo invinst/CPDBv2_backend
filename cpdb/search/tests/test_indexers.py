@@ -3,14 +3,25 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from search.search_indexers import CrIndexer
-from ..search_indexers import BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+# FIXME: Be careful on this, switching this to an absolute import could failed a test
+from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory)
+from trr.factories import TRRFactory
 
 from search.search_indexers import autocompletes_alias
+
+
+def mock_object(**kwargs):
+    class MyObject(object):
+        pass
+
+    obj = MyObject()
+    for key, val in kwargs.items():
+        setattr(obj, key, val)
+    return obj
 
 
 class BaseIndexerTestCase(SimpleTestCase):
@@ -255,6 +266,101 @@ class AreaIndexerTestCase(TestCase):
             'police_hq': None,
         })
 
+    def test_extract_datum_with_officers_most_complaint(self):
+        area = AreaFactory(
+            name='name',
+            tags=['tag'],
+            median_income=343,
+            area_type='police-districts',
+            alderman='IronMan',
+        )
+        area.get_officers_most_complaints = Mock(return_value=[
+            {
+                'id': 123,
+                'name': 'A B',
+                'count': 5
+            }, {
+                'id': 456,
+                'name': 'E F',
+                'count': 3
+            }, {
+                'id': 789,
+                'name': 'C D',
+                'count': 2
+            }, {
+                'id': 999,
+                'name': 'X Y',
+                'count': 2
+            }
+        ])
+        area_indexer = AreaIndexer()
+        area_indexer.top_percentile_dict = {
+            123: {
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 0,
+                'percentile_allegation': 0,
+            },
+            456: {
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 33.3333,
+            },
+            789: {
+                'percentile_allegation_civilian': 66.6667,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 66.6667,
+            },
+        }
+
+        expect(area_indexer.extract_datum(area)).to.be.eq({
+            'name': 'name',
+            'url': area.v1_url,
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
+            'allegation_count': 0,
+            'most_common_complaint': [],
+            'race_count': [],
+            'median_income': 343,
+            'alderman': 'IronMan',
+            'commander': None,
+            'allegation_percentile': None,
+            'police_hq': None,
+            'officers_most_complaint': [
+                {
+                    'id': 123,
+                    'name': 'A B',
+                    'count': 5,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
+                    'percentile_allegation': 0,
+                }, {
+                    'id': 456,
+                    'name': 'E F',
+                    'count': 3,
+                    'percentile_allegation_civilian': 33.3333,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 33.3333,
+                    'percentile_allegation': 33.3333,
+                }, {
+                    'id': 789,
+                    'name': 'C D',
+                    'count': 2,
+                    'percentile_allegation_civilian': 66.6667,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 66.6667,
+                    'percentile_allegation': 66.6667,
+                }, {
+                    'id': 999,
+                    'name': 'X Y',
+                    'count': 2
+                }
+            ],
+        })
+
 
 class IndexerManagerTestCase(SimpleTestCase):
     @patch('cpdb.search.search_indexers.autocompletes_alias')
@@ -290,4 +396,20 @@ class CrIndexerTestCase(TestCase):
         ).to.eq({
             'crid': '123456',
             'to': '/complaint/123456/10/'
+        })
+
+
+class TRRIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(TRRIndexer().get_queryset().count()).to.eq(0)
+        TRRFactory()
+        expect(TRRIndexer().get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        trr = TRRFactory(id='123456')
+
+        expect(
+            TRRIndexer().extract_datum(trr)
+        ).to.eq({
+            'id': '123456'
         })

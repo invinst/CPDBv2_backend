@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Value, Max, Case, When, IntegerField, DateTimeField, Count, Func
+from django.db.models import F, Q, Value, Max, IntegerField, Count, Func, Prefetch
 from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
@@ -18,10 +18,10 @@ from data.constants import (
     PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.calculations import percentile
+from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.calculations import Round
+from data.utils.round import Round
 from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
@@ -317,6 +317,10 @@ class Officer(TaggableModel):
     @property
     def sustained_count(self):
         return self.officerallegation_set.filter(final_finding='SU').distinct().count()
+
+    @property
+    def unsustained_count(self):
+        return self.officerallegation_set.filter(final_finding='NS').distinct().count()
 
     @property
     def honorable_mention_count(self):
@@ -899,6 +903,7 @@ class Allegation(models.Model):
     beat = models.ForeignKey(Area, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
+    old_complaint_address = models.CharField(max_length=255, null=True)
 
     def get_most_common_category(self):
         return self.officerallegation_set.values(
@@ -920,6 +925,8 @@ class Allegation(models.Model):
 
     @property
     def address(self):
+        if self.old_complaint_address:
+            return self.old_complaint_address
         result = ''
         if self.add1 is not None:
             result = str(self.add1)
@@ -936,10 +943,6 @@ class Allegation(models.Model):
     @property
     def complainants(self):
         return self.complainant_set.all()
-
-    @property
-    def victims(self):
-        return self.victim_set.all()
 
     @property
     def complainant_races(self):
@@ -986,46 +989,25 @@ class Allegation(models.Model):
         except IndexError:
             return None
 
-    def get_newest_added_document(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)\
-            .exclude(created_at__isnull=True).latest('created_at')
-
     @property
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
     @staticmethod
     def get_cr_with_new_documents(limit):
-        start_datetime = now() - timedelta(weeks=24)
-        query = Allegation.objects.all()
-        type_query = Q(attachment_files__file_type=MEDIA_TYPE_DOCUMENT)
-
-        # get 40 allegations which has newest documents
-        query = query.annotate(
-            new_document_added=Max(
-                Case(
-                    When(type_query, then='attachment_files__created_at'),
-                    output_field=DateTimeField()
-                )
+        return Allegation.objects.prefetch_related(
+            Prefetch(
+                'attachment_files',
+                queryset=AttachmentFile.objects.annotate(
+                    last_created_at=Max('created_at')
+                ).filter(file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))),
+                to_attr='latest_documents'
             )
-        )
-        query = query.filter(
-            new_document_added__gte=start_datetime,
-            new_document_added__isnull=False
-        ).order_by('-new_document_added')[:limit]
-
-        # count number of recent documents for each above allegation
-        query = query.annotate(
-            num_recent_documents=Count(
-                Case(
-                    When(
-                        type_query & Q(attachment_files__created_at__gte=start_datetime),
-                        then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        return query
+        ).annotate(
+            latest_document_created_at=Max('attachment_files__created_at')
+        ).filter(
+            latest_document_created_at__isnull=False
+        ).order_by('-latest_document_created_at')[:limit]
 
     @property
     def v2_to(self):
@@ -1111,8 +1093,8 @@ class OfficerAllegation(models.Model):
             return 'Unknown'
 
     @property
-    def documents(self):
-        return self.allegation.documents
+    def victims(self):
+        return self.allegation.victims.all()
 
     @property
     def attachments(self):
@@ -1197,7 +1179,7 @@ class Award(models.Model):
 
 
 class Victim(models.Model):
-    allegation = models.ForeignKey(Allegation)
+    allegation = models.ForeignKey(Allegation, related_name='victims')
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
