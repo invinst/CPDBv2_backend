@@ -13,7 +13,7 @@ from data.factories import (
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory,
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
-from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
+from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
 
 
@@ -26,43 +26,27 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             last_name='Foo',
             gender='M',
             race='White',
+            rank='Officer',
             appointed_date=date(2001, 1, 1),
             birth_year=1993
         )
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         allegation = AllegationFactory(
-            crid='12345',
-            point=Point(12, 21),
-            incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
-            add1=3510,
-            add2='Michigan Ave',
-            city='Chicago',
-            location='Police Communications System',
-            beat=area,
-            is_officer_complaint=False,
-            summary='Summary'
+            crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
+            add2='Michigan Ave', city='Chicago', location='Police Communications System', beat=area,
+            is_officer_complaint=False, summary='Summary'
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU',
-            final_outcome='Reprimand',
-            recc_outcome='Separation',
-            start_date=date(2003, 3, 20),
-            end_date=date(2006, 5, 26),
+            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
-                allegation_name='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+                allegation_name='Secondary/Special Employment'
             )
         )
-        officer = OfficerFactory(
-            id=3,
-            first_name='Raymond',
-            last_name='Piwinicki',
-            gender='M',
-            race='White',
-            appointed_date=date(2001, 5, 1)
-        )
+        officer = OfficerFactory(id=3, first_name='Raymond', last_name='Piwinicki', appointed_date=date(2001, 5, 1))
         OfficerAllegationFactory(
             officer=officer,
             final_finding='SU',
@@ -92,27 +76,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation,
-            title='CR document',
-            url='http://cr-document.com/',
-            original_url='http://cr-document.com/',
-            file_type=MEDIA_TYPE_DOCUMENT
-        )
-
-        AttachmentFileFactory(
-            allegation=allegation,
-            title='audio',
-            url='http://audio.hear',
-            original_url='http://audio.hear',
-            file_type=MEDIA_TYPE_AUDIO
-        )
-
-        AttachmentFileFactory(
-            allegation=allegation,
-            title='video',
-            url='http://video.see',
-            original_url='http://video.see',
-            file_type=MEDIA_TYPE_VIDEO
+            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
 
         self.refresh_index()
@@ -121,19 +85,23 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(dict(response.data)).to.eq({
             'crid': '12345',
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'Secondary/Special Employment'
+            },
             'coaccused': [
                 {
                     'id': 123,
                     'full_name': 'Mr Foo',
-                    'gender': 'Male',
-                    'race': 'White',
+                    'rank': 'Officer',
+                    'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
-                    'recc_outcome': 'Separation',
-                    'final_outcome': 'Reprimand',
+                    'allegation_count': 1,
                     'category': 'Operation/Personnel Violations',
-                    'subcategory': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY',
-                    'start_date': '2003-03-20',
-                    'end_date': '2006-05-26'
+                    'percentile_allegation': 0,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0
                 }
             ],
             'complainants': [
@@ -143,52 +111,105 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'age': 18
                 }
             ],
+            'victims': [
+                {
+                    'race': 'Black',
+                    'gender': 'Male',
+                    'age': 53
+                }
+            ],
             'point': {
-                'long': 12.0,
+                'lon': 12.0,
                 'lat': 21.0
             },
+            'summary': 'Summary',
             'incident_date': '2002-02-28',
+            'start_date': '2003-03-20',
+            'end_date': '2006-05-26',
             'address': '3510 Michigan Ave, Chicago',
             'location': 'Police Communications System',
-            'beat': {'name': 'Lincoln Square'},
+            'beat': 'Lincoln Square',
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'officers': [{
-                        'id': 1,
-                        'abbr_name': 'E. Skol',
-                        'extra_info': '1 case(s)'
-                    }]
+                    'officer_id': 1,
+                    'full_name': 'Ellis Skol',
+                    'current_rank': 'IPRA investigator',
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
                 },
                 {
-                    'involved_type': 'police witnesses',
-                    'officers': [{
-                        'id': 3,
-                        'abbr_name': 'R. Piwinicki',
-                        'extra_info': 'Male, White'
-                    }]
+                    'involved_type': 'police_witness',
+                    'officer_id': 3,
+                    'full_name': 'Raymond Piwinicki',
+                    'allegation_count': 1,
+                    'sustained_count': 1,
+                    'percentile_allegation_civilian': 0,
+                    'percentile_allegation_internal': 0,
+                    'percentile_trr': 0,
                 }
             ],
-            'videos': [
-                {
-                    'title': 'video',
-                    'url': 'http://video.see'
-                }
-            ],
-            'audios': [
-                {
-                    'title': 'audio',
-                    'url': 'http://audio.hear'
-                }
-            ],
-            'documents': [
+            'attachments': [
                 {
                     'title': 'CR document',
-                    'url': 'http://cr-document.com/'
+                    'file_type': 'document',
+                    'url': 'http://cr-document.com/',
+                    'preview_image_url': None
                 }
             ]
         })
 
     def test_retrieve_not_found(self):
         response = self.client.get(reverse('api-v2:cr-mobile-detail', kwargs={'pk': '45678'}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_request_document(self):
+        AllegationFactory(crid='112233')
+        response = self.client.post(
+            reverse('api-v2:cr-mobile-request-document', kwargs={'pk': '112233'}),
+            {'email': 'valid_email@example.com'}
+        )
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'message': 'Thanks for subscribing',
+            'crid': '112233'
+        })
+
+    def test_request_same_document_twice(self):
+        allegation = AllegationFactory(crid='112233')
+        self.client.post(
+            reverse('api-v2:cr-mobile-request-document', kwargs={'pk': allegation.crid}),
+            {'email': 'valid_email@example.com'}
+        )
+
+        response2 = self.client.post(
+            reverse('api-v2:cr-mobile-request-document', kwargs={'pk': allegation.crid}),
+            {'email': 'valid_email@example.com'}
+        )
+        expect(response2.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response2.data).to.eq({
+            'message': 'Email already added',
+            'crid': '112233'
+        })
+
+    def test_request_document_without_email(self):
+        AllegationFactory(crid='321')
+        response = self.client.post(reverse('api-v2:cr-mobile-request-document', kwargs={'pk': 321}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'message': 'Please enter a valid email'
+        })
+
+    def test_request_document_with_invalid_email(self):
+        AllegationFactory(crid='321')
+        response = self.client.post(reverse('api-v2:cr-mobile-request-document', kwargs={'pk': 321}),
+                                    {'email': 'invalid@email'})
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq({
+            'message': 'Please enter a valid email'
+        })
+
+    def test_request_document_with_invalid_allegation(self):
+        response = self.client.post(reverse('api-v2:cr-mobile-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)

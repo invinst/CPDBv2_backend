@@ -1328,19 +1328,32 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         {
             "crid": "12345",
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+            },
             "coaccused": [
                 {
                     "id": 123,
                     "full_name": "Robert O‚ÄôNiell",
-                    "gender": "Male",
-                    "race": "White",
+                    "final_outcome": "Reprimand",
                     "final_finding": "Sustained",
-                    "recc_outcome": "Separation",
-                    "final_outcome": "Repriment",
                     "category": "Operation/Personnel Violations",
-                    "subcategory": "NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY",
-                    "start_date": "2003-12-12",
-                    "end_date": "2004-12-12"
+                    "percentile_allegation": 99.861,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
+                },
+                {
+                    "id": 456,
+                    "full_name": "Alex Foo",
+                    "final_outcome": "Unknown",
+                    "final_finding": "Sustained",
+                    "category": "Operation/Personnel Violations",
+                    "percentile_allegation": 99.861,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 }
             ],
             "complainants": [
@@ -1355,61 +1368,126 @@ This api require an api access token set in `Authorization` header. To get an ap
                     "age": 20
                 }
             ],
+            "victims": [
+                {
+                    "race": "Black",
+                    "gender": "Male",
+                    "age": 53
+                },
+                {
+                    "race": "Black",
+                    "gender": "Female",
+                    "age": 20
+                }
+            ],
+            "summary": "Lorem ipsum dolor.",
             "point": {
                 "lon": -87.664606,
                 "lat": 41.68731
             },
             "incident_date": "2002-02-28",
+            "start_date": "2002-02-30",
+            "end_date": "2002-04-21",
             "address": "3510 Michigan Ave, Chicago, IL 60653",
             "location": "Police Building",
-            "beat": {
-                "name": "23"
-            },
+            "beat": "23",
             "involvements": [
                 {
+                    "officer_id": 1,
                     "involved_type": "investigator",
-                    "officers": [
-                        {
-                            "id": 1,
-                            "abbr_name": "L. Skol",
-                            "extra_info": "126 cases"
-                        }
-                    ]
+                    "full_name": "Lauren Skol",
+                    "current_rank": "IPRA investigator",
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 },
                 {
-                    "involved_type": "police witnesses",
-                    "officers": [
-                        {
-                            "id": 2,
-                            "abbr_name": "R. Piwinicki",
-                            "extra_info": "male, white"
-                        },
-                        {
-                            "id": 3,
-                            "abbr_name": "J. Ipsum",
-                            "extra_info": "male, black"
-                        }
-                    ]
+                    "officer_id": 2,
+                    "involved_type": "police_witness",
+                    "full_name": "Raymond Piwinicki",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
+                },
+                {
+                    "officer_id": 3,
+                    "involved_type": "police_witness",
+                    "full_name": "German Felix",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 }
             ],
-            "audios": [
+            "attachments": [
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
-                }
-            ],
-            "videos": [
+                    "file_type": "video",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
+                },
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
-                }
-            ],
-            "documents": [
+                    "file_type": "audio",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
+                },
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
+                    "file_type": "document",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
                 }
             ]
+        }
+
+
+## CR Documents [/mobile/cr/{crid}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + crid (number) - number ID of Allegation
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
         }
 
 
