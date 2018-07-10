@@ -1,0 +1,25 @@
+---
+
+- name: Install cairo
+  apt:
+    name: libcairo2-dev
+
+- name: Add mc3man repository
+  apt_repository:
+    repo: ppa:mc3man/trusty-media
+
+- name: Upgrade apt dist
+  apt:
+    upgrade: dist
+
+- name: Install ffmpeg
+  apt:
+    name: ffmpeg
+    update_cache: yes
+
+- name: Install pycairo
+  pip:
+    virtualenv: "{{ virtualenv_path }}"
+    name: pycairo
+  become: yes
+  become_user: "{{ deploy_user }}"
