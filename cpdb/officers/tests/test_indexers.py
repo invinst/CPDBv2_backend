@@ -11,7 +11,7 @@ from robber import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory, VictimFactory,
+    AllegationCategoryFactory, VictimFactory, AwardFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -592,12 +592,18 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         })
 
 
-class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
+class AwardNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        award = Mock()
-
-        with patch('officers.indexers.Award.objects.filter', return_value=[award]):
-            expect(AwardNewTimelineEventIndexer().get_queryset()).to.eq([award])
+        AwardFactory(award_type='Honorable Mention')
+        AwardFactory(award_type='Honorable Mention Ribbon Award')
+        AwardFactory(award_type="Superintendent'S Honorable Mention")
+        AwardFactory(award_type='Special Honorable Mention')
+        AwardFactory(award_type='Complimentary Letter')
+        AwardFactory(award_type='Department Commendation')
+        award1 = AwardFactory(award_type='Life Saving Award')
+        award2 = AwardFactory(award_type='Award Of Appreciation')
+        award3 = AwardFactory(award_type='Problem Solving Award')
+        expect(list(AwardNewTimelineEventIndexer().get_queryset())).to.eq([award1, award2, award3])
 
     def test_extract_datum(self):
         award = Mock(
