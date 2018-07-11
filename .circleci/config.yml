@@ -31,7 +31,7 @@ jobs:
       - run: ansible-galaxy install azavea.postgresql
       - run:
           command: bin/circleci_deploy_staging
-            timeout: 60m
+          no_output_timeout: 60m
 
 workflows:
   version: 2
