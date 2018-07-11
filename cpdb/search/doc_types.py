@@ -44,3 +44,11 @@ class CrDocType(DocType):
 
     class Meta:
         doc_type = 'cr'
+
+
+@autocompletes_alias.doc_type
+class TRRDocType(DocType):
+    id = Integer()
+
+    class Meta:
+        doc_type = 'trr'

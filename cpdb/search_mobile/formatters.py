@@ -1,32 +1,42 @@
+import datetime
+
 from search.formatters import SimpleFormatter
 
 
 class OfficerV2Formatter(SimpleFormatter):
+    def get_latest_percentile(self, percentiles):
+        current_year = datetime.datetime.now().year
+        percentiles_from_now = filter(lambda x: x['year'] >= current_year, percentiles)
+
+        if len(percentiles_from_now) > 0:
+            return min(percentiles_from_now, key=lambda x: x['year'])
+
+        return []
+
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+
         return {
-            'id': int(doc.meta.id),
-            'name': doc.full_name,
-            'extra_info': doc.badge and 'Badge # {badge}'.format(badge=doc.badge) or '',
-            'url': doc.to
+            'id': int(serialized_doc['id']),
+            'name': serialized_doc['full_name'],
+            'badge': serialized_doc['badge'],
+            'percentile': self.get_latest_percentile(serialized_doc.get('percentiles', []))
         }
 
 
-class ReportFormatter(SimpleFormatter):
+class CRFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+
         return {
-            'id': int(doc.meta.id),
-            'publication': doc.publication,
-            'title': doc.title,
-            'publish_date': doc.publish_date
+            'crid': serialized_doc['crid']
         }
 
 
-class UnitFormatter(SimpleFormatter):
+class TRRFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+
         return {
-            'id': int(doc.meta.id),
-            'text': doc.name,
-            'url': doc.url,
-            'active_member_count': doc.active_member_count,
-            'member_count': doc.member_count
+            'id': serialized_doc['id']
         }

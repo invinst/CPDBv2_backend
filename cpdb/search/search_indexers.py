@@ -3,9 +3,10 @@ from tqdm import tqdm
 from data.models import PoliceUnit, Area, Allegation
 from data.utils.percentile import percentile
 from data.utils.calculations import calculate_top_percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType
+from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
+from trr.models import TRR
 
 
 class BaseIndexer(object):
@@ -164,4 +165,16 @@ class CrIndexer(BaseIndexer):
         return {
             'crid': datum.crid,
             'to': datum.v2_to
+        }
+
+
+class TRRIndexer(BaseIndexer):
+    doc_type_klass = TRRDocType
+
+    def get_queryset(self):
+        return TRR.objects.all()
+
+    def extract_datum(self, datum):
+        return {
+            'id': datum.id
         }
