@@ -1,6 +1,6 @@
 from itertools import combinations
 
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils.timezone import now
 
 from tqdm import tqdm
@@ -171,7 +171,11 @@ class AwardNewTimelineEventIndexer(BaseIndexer):
     index_alias = officers_index_alias
 
     def get_queryset(self):
-        return Award.objects.filter(start_date__isnull=False)
+        return Award.objects.filter(
+            Q(start_date__isnull=False),
+            ~Q(award_type__contains='Honorable Mention'),
+            ~Q(award_type__in=['Complimentary Letter', 'Department Commendation'])
+        )
 
     def extract_datum(self, awards):
         return AwardNewTimelineSerializer(awards).data

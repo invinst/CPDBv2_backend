@@ -137,6 +137,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
+        AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
         allegation = AllegationFactory(crid='123456')
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
@@ -182,13 +183,6 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
             }, {
-                'date': '2015-03-23',
-                'kind': 'AWARD',
-                'unit_name': '002',
-                'unit_description': 'unit_002',
-                'award_type': 'Complimentary Letter',
-                'rank': 'Police Officer',
-            }, {
                 'date': '2012-01-01',
                 'kind': 'UNIT_CHANGE',
                 'unit_name': '002',
@@ -218,7 +212,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
-                'award_type': 'Honorable Mention',
+                'award_type': 'Life Saving Award',
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',

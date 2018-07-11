@@ -131,6 +131,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
+        AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
         allegation = AllegationFactory(crid='123456')
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
@@ -181,13 +182,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'lat': 68.9
                 },
             }, {
-                'date': '2015-03-23',
-                'kind': 'AWARD',
-                'unit_name': '002',
-                'unit_description': 'unit_002',
-                'award_type': 'Complimentary Letter',
-                'rank': 'Police Officer',
-            }, {
                 'date': '2012-01-01',
                 'kind': 'UNIT_CHANGE',
                 'unit_name': '002',
@@ -224,7 +218,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
-                'award_type': 'Honorable Mention',
+                'award_type': 'Life Saving Award',
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
