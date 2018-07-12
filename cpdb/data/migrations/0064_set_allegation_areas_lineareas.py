@@ -28,4 +28,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            alter_data,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True),
     ]
