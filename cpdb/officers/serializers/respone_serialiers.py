@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
 
-class TimelineSerializer(serializers.Serializer):
-    def to_representation(self, obj):
-        remove_keys = ['officer_id', 'date_sort', 'year_sort', 'priority_sort']
-        return {key: value for key, value in obj.to_dict().iteritems() if key not in remove_keys}
-
-
 class NewTimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
         remove_keys = ['officer_id', 'date_sort', 'priority_sort']

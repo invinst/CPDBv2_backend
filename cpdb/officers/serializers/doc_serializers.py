@@ -62,72 +62,6 @@ class OfficerMetricsSerializer(serializers.Serializer):
     single_percentiles = OfficerSinglePercentileSerializer(read_only=True)
 
 
-class CRTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.DateField(source='start_date', format=None)
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
-    year_sort = serializers.IntegerField(source='start_date.year')
-    priority_sort = serializers.SerializerMethodField()
-    kind = serializers.SerializerMethodField()
-    crid = serializers.CharField()
-    category = serializers.SerializerMethodField()
-    subcategory = serializers.CharField()
-    finding = serializers.CharField(source='final_finding_display')
-    coaccused = serializers.IntegerField(source='coaccused_count')
-    race = serializers.SerializerMethodField()
-    age = serializers.SerializerMethodField()
-    gender = serializers.SerializerMethodField()
-
-    def get_category(self, obj):
-        return obj.category if obj.category else 'Unknown'
-
-    def get_kind(self, obj):
-        return 'CR'
-
-    def get_priority_sort(self, obj):
-        return 40
-
-    def get_race(self, obj):
-        return obj.allegation.complainant_races
-
-    def get_age(self, obj):
-        return obj.allegation.complainant_age_groups
-
-    def get_gender(self, obj):
-        return obj.allegation.complainant_genders
-
-
-class UnitChangeTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.DateField(source='effective_date', format=None)
-    priority_sort = serializers.SerializerMethodField()
-    date = serializers.DateField(source='effective_date', format='%Y-%m-%d')
-    year_sort = serializers.IntegerField(source='effective_date.year')
-    kind = serializers.SerializerMethodField()
-    unit_name = serializers.CharField()
-
-    def get_kind(self, obj):
-        return 'UNIT_CHANGE'
-
-    def get_priority_sort(self, obj):
-        return 30
-
-
-class JoinedTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField(source='id')
-    date_sort = serializers.DateField(source='appointed_date', format=None)
-    priority_sort = serializers.SerializerMethodField()
-    date = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
-    year_sort = serializers.IntegerField(source='appointed_date.year')
-    kind = serializers.SerializerMethodField()
-
-    def get_kind(self, obj):
-        return 'JOINED'
-
-    def get_priority_sort(self, obj):
-        return 10
-
-
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     year = serializers.IntegerField()
@@ -137,11 +71,17 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=3)
 
 
+class CoaccusalSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    coaccusal_count = serializers.IntegerField()
+
+
 class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
     to = serializers.CharField(source='v2_to')
     url = serializers.CharField(source='v1_url')
     tags = serializers.ListField(child=serializers.CharField())
+    coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):

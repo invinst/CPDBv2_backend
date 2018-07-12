@@ -1,54 +1,76 @@
 from datetime import datetime, date
+
 import pytz
-
 from django.core.urlresolvers import reverse
-
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 from robber import expect
 
-from activity_grid.factories import OfficerActivityCardFactory
+from activity_grid.factories import ActivityCardFactory, ActivityPairCardFactory
+from activity_grid.models import ActivityPairCard
+from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 from data.models import Officer
-from data.factories import OfficerFactory, OfficerAllegationFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 
 
 class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
-    def test_list_return_exactly_40_items(self):
-        OfficerActivityCardFactory.create_batch(50)
-        url = reverse('api-v2:activity-grid-list')
+    def test_list_return_exactly_80_items(self):
+        ActivityCardFactory.create_batch(50)
+        ActivityPairCardFactory.create_batch(50)
         self.refresh_index()
-        response = self.client.get(url)
+
+        response = self.client.get(reverse('api-v2:activity-grid-list'))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.have.length(40)
+        expect(response.data).to.have.length(80)
 
     def test_list_item_content(self):
-        officer = OfficerFactory(
-            id=1,
+        officer1 = OfficerFactory(
             first_name='Jerome',
             last_name='Finnigan',
             birth_year=1950,
             race='Asian',
             gender='M',
-            appointed_date=datetime(2011, 1, 1)
+            appointed_date=datetime(2011, 1, 1, tzinfo=pytz.utc)
         )
-        OfficerActivityCardFactory(officer=officer)
+        officer2 = OfficerFactory(
+            first_name='Raymond',
+            last_name='Piwinicki',
+            birth_year=1960,
+            race='White',
+            gender='M',
+            appointed_date=datetime(2012, 1, 1, tzinfo=pytz.utc)
+        )
+        allegation = AllegationFactory(incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(
-            officer=officer, final_finding='SU',
+            officer=officer1,
+            allegation=allegation,
+            final_finding='SU',
             start_date=date(2014, 1, 1),
-            allegation__incident_date=datetime(2014, 1, 1))
+        )
         OfficerAllegationFactory(
-            officer=officer, final_finding='SU',
-            allegation__incident_date=datetime(2016, 1, 1),
+            officer=officer2,
+            allegation=allegation,
+            final_finding='SU',
+            start_date=date(2014, 1, 1),
+        )
+        OfficerAllegationFactory(
+            officer=officer1,
+            final_finding='SU',
+            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             start_date=date(2016, 1, 1)
         )
         OfficerAllegationFactory.create_batch(
             4,
-            officer=officer,
+            officer=officer1,
             final_finding='NS',
             start_date=date(2015, 1, 1),
-            allegation__incident_date=datetime(2015, 2, 20)
+            allegation__incident_date=datetime(2015, 2, 20, tzinfo=pytz.utc)
+        )
+        ActivityCardFactory(officer=officer1, last_activity=datetime(2018, 12, 22, tzinfo=pytz.utc))
+        ActivityCardFactory(officer=officer2, last_activity=datetime(2018, 10, 15, tzinfo=pytz.utc))
+        ActivityPairCardFactory(
+            officer1=officer1, officer2=officer2, last_activity=datetime(2018, 5, 20, tzinfo=pytz.utc)
         )
 
         self.refresh_index()
@@ -56,49 +78,120 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(url)
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
-            {
-                'id': 1,
+        expect(response.data).to.eq([{
+            'id': officer1.id,
+            'full_name': 'Jerome Finnigan',
+            'complaint_count': 6,
+            'sustained_count': 2,
+            'birth_year': 1950,
+            'complaint_percentile': '50.000',
+            'race': 'Asian',
+            'gender': 'Male',
+            'percentile': {
+                'id': officer1.id,
+                'year': 2016,
+                'percentile_trr': '0.000',
+                'percentile_allegation': '50.000',
+                'percentile_allegation_internal': '0.000',
+                'percentile_allegation_civilian': '50.000'
+            },
+            'type': 'single_officer',
+        }, {
+            'id': officer2.id,
+            'full_name': 'Raymond Piwinicki',
+            'complaint_count': 1,
+            'sustained_count': 1,
+            'birth_year': 1960,
+            'complaint_percentile': '0.000',
+            'race': 'White',
+            'gender': 'Male',
+            'percentile': {
+                'id': officer2.id,
+                'year': 2016,
+                'percentile_trr': '0.000',
+                'percentile_allegation': '0.000',
+                'percentile_allegation_internal': '0.000',
+                'percentile_allegation_civilian': '0.000'
+            },
+            'type': 'single_officer',
+        }, {
+            'officer1': {
+                'id': officer1.id,
                 'full_name': 'Jerome Finnigan',
-                'complaint_count': 6,
-                'sustained_count': 2,
                 'birth_year': 1950,
-                'complaint_percentile': '0.000',
                 'race': 'Asian',
                 'gender': 'Male',
                 'percentile': {
-                    'id': 1,
+                    'id': officer1.id,
+                    'year': 2016,
+                    'percentile_trr': '0.000',
+                    'percentile_allegation': '50.000',
+                    'percentile_allegation_internal': '0.000',
+                    'percentile_allegation_civilian': '50.000'
+                },
+            },
+            'officer2': {
+                'id': officer2.id,
+                'full_name': 'Raymond Piwinicki',
+                'birth_year': 1960,
+                'race': 'White',
+                'gender': 'Male',
+                'percentile': {
+                    'id': officer2.id,
                     'year': 2016,
                     'percentile_trr': '0.000',
                     'percentile_allegation': '0.000',
                     'percentile_allegation_internal': '0.000',
                     'percentile_allegation_civilian': '0.000'
-
-                }
-            }
-        ])
+                },
+            },
+            'coaccusal_count': 1,
+            'type': 'coaccused_pair',
+        }])
 
     def test_list_order(self):
-        OfficerActivityCardFactory.create_batch(3, important=True)
-        OfficerActivityCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
-        OfficerActivityCardFactory.create_batch(10)
-        OfficerActivityCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
+        ActivityCardFactory.create_batch(3, important=True)
+        ActivityCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
+        ActivityCardFactory.create_batch(10)
+        ActivityCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
+        ActivityPairCardFactory.create_batch(3, important=True)
+        ActivityPairCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
+        ActivityPairCardFactory.create_batch(10)
+        ActivityPairCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
         url = reverse('api-v2:activity-grid-list')
 
         self.refresh_index()
         response = self.client.get(url)
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.have.length(40)
+        expect(response.data).to.have.length(80)
 
         for item in response.data[:3]:
-            is_important = Officer.objects.get(pk=item['id']).activity_card.important
-            expect(is_important).to.be.true()
+            activity_card = Officer.objects.get(pk=item['id']).activity_card
+            expect(activity_card.important).to.be.true()
 
-        for item in response.data[3:20]:
+        for item in response.data[3:6]:
+            pair_card = ActivityPairCard.objects.get(
+                officer1_id=item['officer1']['id'], officer2_id=item['officer2']['id']
+            )
+            expect(pair_card.important).to.be.true()
+
+        for item in response.data[6:23]:
             activity_card = Officer.objects.get(pk=item['id']).activity_card
             expect(activity_card.last_activity).to.eq(datetime(2017, 7, 20, tzinfo=pytz.utc))
 
-        for item in response.data[20:30]:
+        for item in response.data[23:40]:
+            pair_card = ActivityPairCard.objects.get(
+                officer1_id=item['officer1']['id'], officer2_id=item['officer2']['id']
+            )
+            expect(pair_card.last_activity).to.eq(datetime(2017, 7, 20, tzinfo=pytz.utc))
+
+        for item in response.data[40:50]:
             activity_card = Officer.objects.get(pk=item['id']).activity_card
             expect(activity_card.last_activity).to.eq(datetime(2017, 5, 20, tzinfo=pytz.utc))
+
+        for item in response.data[50:60]:
+            pair_card = ActivityPairCard.objects.get(
+                officer1_id=item['officer1']['id'], officer2_id=item['officer2']['id']
+            )
+            expect(pair_card.last_activity).to.eq(datetime(2017, 5, 20, tzinfo=pytz.utc))

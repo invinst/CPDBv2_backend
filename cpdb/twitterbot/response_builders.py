@@ -18,11 +18,16 @@ class BaseResponseBuilder:
             if context is not None:
                 context.setdefault('responses_count', 0)
                 context['responses_count'] += 1
+
             source = variables_set.get('source', ())
             url = variables_set.get('_url', '')
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
             media_path = variables_set.get('_media_path', '')
             entity = variables_set.get('_entity', None)
+            officer1 = variables_set.get('officer1', None)
+            officer2 = variables_set.get('officer2', None)
+            coaccused = variables_set.get('coaccused', 0)
+
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
             yield {
@@ -32,6 +37,9 @@ class BaseResponseBuilder:
                 'url': url,
                 'type': self.response_type,
                 'media_path': media_path,
+                'officer1': officer1,
+                'officer2': officer2,
+                'coaccused': coaccused,
             }
 
 

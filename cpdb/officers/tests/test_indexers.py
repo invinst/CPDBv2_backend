@@ -11,7 +11,7 @@ from robber import expect
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory, VictimFactory,
+    AllegationCategoryFactory, VictimFactory, AwardFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -24,9 +24,6 @@ from officers.indexers import (
     TRRNewTimelineEventIndexer,
     AwardNewTimelineEventIndexer,
     OfficerCoaccusalsIndexer,
-    CRTimelineEventIndexer,
-    UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer,
 )
 from officers.serializers.doc_serializers import OfficerMetricsSerializer
 from trr.factories import TRRFactory
@@ -119,6 +116,10 @@ class OfficersIndexerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
+            coaccusals=[{
+                'id': 1,
+                'coaccusal_count': 5
+            }],
             current_salary=9000,
             single_percentiles={
                 'id': 123,
@@ -246,90 +247,10 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'url': '',
             'current_salary': 9000,
             'unsustained_count': 2,
-        })
-
-
-class CRTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_allegation = Mock()
-
-        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[officer_allegation]):
-            expect(CRTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
-
-    def test_extract_datum(self):
-        officer_allegation = Mock(
-            officer_id=123,
-            start_date=date(2012, 1, 1),
-            crid='123456',
-            category='Illegal Search',
-            subcategory='Search of premise/vehicle without warrant',
-            final_finding_display='Unfounded',
-            coaccused_count=4,
-            allegation=Mock(
-                complainant_races=['White', 'Unknown'],
-                complainant_age_groups=['21-30', '51+'],
-                complainant_genders=['Male'],
-            )
-        )
-
-        expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 40,
-            'kind': 'CR',
-            'crid': '123456',
-            'category': 'Illegal Search',
-            'subcategory': 'Search of premise/vehicle without warrant',
-            'finding': 'Unfounded',
-            'coaccused': 4,
-            'race': ['White', 'Unknown'],
-            'age': ['21-30', '51+'],
-            'gender': ['Male']
-        })
-
-
-class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_history = Mock()
-
-        with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[officer_history]):
-            expect(UnitChangeTimelineEventIndexer().get_queryset()).to.eq([officer_history])
-
-    def test_extract_datum(self):
-        officer_history = Mock()
-        officer_history.officer_id = 123
-        officer_history.effective_date = date(2010, 3, 4)
-        officer_history.unit_name = '003'
-        expect(UnitChangeTimelineEventIndexer().extract_datum(officer_history)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'date': '2010-03-04',
-            'kind': 'UNIT_CHANGE',
-            'unit_name': '003',
-            'year_sort': 2010,
-            'priority_sort': 30,
-        })
-
-
-class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
-            expect(JoinedTimelineEventIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock()
-        officer.id = 123
-        officer.appointed_date = date(2012, 1, 1)
-        expect(JoinedTimelineEventIndexer().extract_datum(officer)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'kind': 'JOINED',
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 10,
+            'coaccusals': [{
+                'id': 1,
+                'coaccusal_count': 5,
+            }],
         })
 
 
@@ -671,12 +592,18 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         })
 
 
-class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
+class AwardNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        award = Mock()
-
-        with patch('officers.indexers.Award.objects.filter', return_value=[award]):
-            expect(AwardNewTimelineEventIndexer().get_queryset()).to.eq([award])
+        AwardFactory(award_type='Honorable Mention')
+        AwardFactory(award_type='Honorable Mention Ribbon Award')
+        AwardFactory(award_type="Superintendent'S Honorable Mention")
+        AwardFactory(award_type='Special Honorable Mention')
+        AwardFactory(award_type='Complimentary Letter')
+        AwardFactory(award_type='Department Commendation')
+        award1 = AwardFactory(award_type='Life Saving Award')
+        award2 = AwardFactory(award_type='Award Of Appreciation')
+        award3 = AwardFactory(award_type='Problem Solving Award')
+        expect(list(AwardNewTimelineEventIndexer().get_queryset())).to.eq([award1, award2, award3])
 
     def test_extract_datum(self):
         award = Mock(
