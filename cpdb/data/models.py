@@ -459,7 +459,9 @@ class Officer(TaggableModel):
 
         if year_end:
             dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-            dataset_min_date = min(dataset_min_date, date(year_end, 12, 31))
+
+        if dataset_min_date + timedelta(days=365) > dataset_max_date:
+            return []
 
         # STEP 1: compute the service time of all officers
         query = Officer.objects.filter(appointed_date__isnull=False)
@@ -513,7 +515,9 @@ class Officer(TaggableModel):
 
         if year_end:
             dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-            dataset_min_date = min(dataset_min_date, date(year_end, 12, 31))
+
+        if dataset_min_date + timedelta(days=365) > dataset_max_date:
+            return []
 
         # STEP 1: compute the service time of all officers
         query = Officer.objects.filter(appointed_date__isnull=False)
