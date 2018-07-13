@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
+from mock import patch
 
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
@@ -17,6 +18,9 @@ from trr.factories import TRRFactory
 
 
 class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
+
+    @patch('officers.indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.MAX_VISUAL_TOKEN_YEAR', 2002)
     def test_retrieve_data_range_too_small_cause_no_percentiles(self):
 
         officer = OfficerFactory(
@@ -100,6 +104,14 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         }
         expect(response.data).to.eq(expected_response)
 
+    @patch('officers.indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.MAX_VISUAL_TOKEN_YEAR', 2004)
+    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2004, 12, 31, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2004, 12, 31, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 3, 1, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MAX_DATETIME', datetime(2004, 12, 31, tzinfo=pytz.utc))
     def test_retrieve(self):
 
         # main officer

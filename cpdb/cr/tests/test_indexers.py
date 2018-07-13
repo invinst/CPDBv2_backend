@@ -4,8 +4,9 @@ from django.test import TestCase
 from django.contrib.gis.geos import Point
 
 from robber import expect
-import pytz
 from freezegun import freeze_time
+from mock import patch
+import pytz
 
 from cr.indexers import CRIndexer
 from data.factories import (
@@ -25,6 +26,12 @@ class CRIndexerTestCase(TestCase):
         allegation = AllegationFactory()
         expect(list(CRIndexer().get_queryset())).to.eq([allegation])
 
+    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
+    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='12345',
@@ -75,7 +82,7 @@ class CRIndexerTestCase(TestCase):
             officer=officer,
             final_finding='SU',
             start_date=date(2003, 2, 28),
-            allegation__incident_date=date(2002, 2, 28),
+            allegation__incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
         )
         PoliceWitnessFactory(officer=officer, allegation=allegation)
@@ -89,7 +96,7 @@ class CRIndexerTestCase(TestCase):
             officer=investigator,
             final_finding='NS',
             start_date=date(2003, 2, 28),
-            allegation__incident_date=date(2002, 2, 28),
+            allegation__incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
         )
         investigator = InvestigatorFactory(officer=investigator)

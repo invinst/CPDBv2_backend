@@ -1,10 +1,10 @@
 from itertools import combinations
 
 from django.db.models import F, Q
-from django.utils.timezone import now
 
 from tqdm import tqdm
 
+from data.constants import MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
@@ -100,11 +100,8 @@ class OfficerPercentileIndexer(BaseIndexer):
 
     def get_queryset(self):
         results = []
-        for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
-            officers = Officer.top_complaint_officers(100, yr)
-            if officers and officers[0].year < yr:
-                # we have no more data to calculate, should break here
-                break
+        for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
+            officers = Officer.top_percentile(yr)
             results.extend(officers)
         return results
 

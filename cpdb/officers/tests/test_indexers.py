@@ -4,7 +4,6 @@ import pytz
 from django.contrib.gis.geos import Point
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
-from django.utils.timezone import now
 from mock import Mock, patch
 from robber import expect
 
@@ -13,7 +12,7 @@ from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
     AllegationCategoryFactory, VictimFactory, AwardFactory,
 )
-from data.models import Officer
+from officers.tests.utils import validate_object
 from officers.indexers import (
     OfficersIndexer,
     SocialGraphIndexer,
@@ -311,6 +310,13 @@ class SocialGraphIndexerTestCase(TestCase):
 
 
 class OfficerPercentileIndexerTestCase(TestCase):
+
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
+    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
     def setUp(self):
         self.indexer = OfficerPercentileIndexer()
 
@@ -319,7 +325,7 @@ class OfficerPercentileIndexerTestCase(TestCase):
 
     def _prepare_data_up_to_2017(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
-        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
 
         OfficerAllegationFactory(
             officer=officer1,
@@ -337,7 +343,8 @@ class OfficerPercentileIndexerTestCase(TestCase):
             allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False)
         OfficerAllegationFactory.create_batch(
-            2, officer=officer2,
+            2,
+            officer=officer2,
             start_date=date(2017, 10, 19),
             allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
@@ -348,6 +355,20 @@ class OfficerPercentileIndexerTestCase(TestCase):
             allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
             allegation__is_officer_complaint=True
         )
+        OfficerAllegationFactory(
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2017, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2017, 3, 15, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2016, 3, 15, tzinfo=pytz.utc),
+        )
 
     def validate_object(self, obj, data):
         for key, value in data.iteritems():
@@ -356,61 +377,57 @@ class OfficerPercentileIndexerTestCase(TestCase):
     def test_get_queryset(self):
         self._prepare_data_up_to_2017()
         # expect officer 2 not have year 2017 since less than 1 year
-        # expect no year 2018, since dataset only up to 2017
+        # expect no year 2017, since dataset only up to 2016
         queryset = self.indexer.get_queryset()
-        expect(queryset).to.have.length(3)
-        self.validate_object(queryset[0], {
+        expect(queryset).to.have.length(4)
+        validate_object(queryset[0], {
             'percentile_trr': 0,
             'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 1.5,
-            'service_year': 2.0,
+            'metric_allegation_civilian': 0.0,
             'metric_trr': 0.0,
             'metric_allegation_internal': 0.0,
-            'metric_allegation': 1.5,
+            'metric_allegation': 0.0,
+            'year': 2014,
+            'officer_id': 1,
+            'percentile_allegation': 0.0,
+            'percentile_allegation_internal': 0.0
+        })
+        validate_object(queryset[1], {
+            'percentile_trr': 0,
+            'percentile_allegation_civilian': 0,
+            'metric_allegation_civilian': 0.6673,
+            'metric_trr': 0.0,
+            'metric_allegation_internal': 0.0,
+            'metric_allegation': 0.6673,
+            'year': 2015,
+            'officer_id': 1,
+            'percentile_allegation': 0,
+            'percentile_allegation_internal': 0
+        })
+        validate_object(queryset[2], {
+            'percentile_trr': 50.0,
+            'percentile_allegation_civilian': 0.0,
+            'metric_allegation_civilian': 0.8575,
+            'metric_trr': 0.3049,
+            'metric_allegation_internal': 0.0,
+            'metric_allegation': 0.8575,
             'year': 2016,
             'officer_id': 1,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
+            'percentile_allegation': 0.0,
+            'percentile_allegation_internal': 0.0
         })
-        self.validate_object(queryset[1], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 1.0714,
-            'service_year': 2.8,
-            'metric_trr': 0.0,
-            'metric_allegation_internal': 0.0,
-            'metric_allegation': 1.0714,
-            'year': 2017,
-            'officer_id': 1,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
-        })
-        self.validate_object(queryset[2], {
-            'percentile_trr': 0,
+        validate_object(queryset[3], {
+            'percentile_trr': 0.0,
             'percentile_allegation_civilian': 50.0,
-            'metric_allegation_civilian': 1.25,
-            'service_year': 1.6,
+            'metric_allegation_civilian': 1.5368,
             'metric_trr': 0.0,
-            'metric_allegation_internal': 0.625,
-            'metric_allegation': 1.875,
-            'year': 2017,
+            'metric_allegation_internal': 0.7684,
+            'metric_allegation': 2.3052,
+            'year': 2016,
             'officer_id': 2,
             'percentile_allegation': 50.0,
             'percentile_allegation_internal': 50.0
         })
-
-    def test_get_queryset_with_dataset_up_to_now(self):
-        self._prepare_data_up_to_2017()
-        current_year = now().year
-        officer1 = Officer.objects.get(id=1)
-        OfficerAllegationFactory(
-            officer=officer1,
-            start_date=date(current_year, 1, 2),
-            allegation__incident_date=datetime(current_year, 1, 2, tzinfo=pytz.utc)
-        )
-        results = self.indexer.get_queryset()
-        expect(results).to.have.length(3 + (current_year - 2017) * 2)
-        expect(results[-1].year).to.eq(current_year)
 
     def test_extract_datum(self):
         data = {
@@ -682,6 +699,12 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         officer = OfficerFactory()
         expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
 
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
+    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
     def test_extract_datum(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
         officer2 = OfficerFactory(
@@ -728,7 +751,7 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         OfficerAllegationFactory(
             officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
         )
-        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 8, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
 

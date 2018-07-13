@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Point
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+from mock import patch
 import pytz
 
 from data.factories import (
@@ -18,6 +19,13 @@ from cr.tests.mixins import CRTestCaseMixin
 
 
 class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
+
+    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2006, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2006, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
+    @patch('data.models.TRR_MAX_DATETIME', datetime(2007, 1, 1, tzinfo=pytz.utc))
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(
