@@ -59,6 +59,7 @@ LOCAL_APPS = (
     'heatmap',
     'data_pipeline',
     'trr',
+    'popup',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
