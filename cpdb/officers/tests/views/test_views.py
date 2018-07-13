@@ -117,157 +117,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_timeline_items(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
-        allegation = AllegationFactory(crid='123456')
-        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
-        OfficerAllegationFactory(
-            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
-            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
-        )
-        OfficerAllegationFactory.create_batch(3, allegation=allegation)
-        self.refresh_index()
-
-        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}))
-
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'count': 3,
-            'next': None,
-            'previous': None,
-            'results': [
-                {
-                    'kind': 'UNIT_CHANGE',
-                    'date': '2017-02-27',
-                    'unit_name': 'A'
-                },
-                {
-                    'kind': 'CR',
-                    'date': '2016-08-23',
-                    'crid': '123456',
-                    'category': 'category',
-                    'subcategory': 'sub category',
-                    'finding': 'Unfounded',
-                    'coaccused': 4,
-                    'race': ['Unknown'],
-                    'gender': ['Unknown'],
-                    'age': ['Unknown']
-                },
-                {
-                    'kind': 'JOINED',
-                    'date': '2000-01-01'
-                }
-            ]
-        })
-
-    def test_timeline_items_filter_params(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
-        allegation = AllegationFactory(crid='123456')
-        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
-        OfficerAllegationFactory(
-            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
-            allegation_category=AllegationCategoryFactory(category='Illegal Search', allegation_name='sub category')
-        )
-        OfficerAllegationFactory.create_batch(3, allegation=allegation)
-
-        allegation2 = AllegationFactory(crid='654321')
-        OfficerAllegationFactory(
-            final_finding='UN', officer=officer, start_date=date(2017, 8, 23), allegation=allegation2,
-            allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
-        )
-        self.refresh_index()
-
-        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}),
-                                   data={'category': 'Illegal Search', 'finding': 'Unfounded', 'invalid': 'X'})
-        # NOTE: 'finding' and 'invalid' should drop since this is not in ALLOWED LIST
-
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'count': 3,
-            'next': None,
-            'previous': None,
-            'results': [
-                {
-                    'kind': 'UNIT_CHANGE',
-                    'date': '2017-02-27',
-                    'unit_name': 'A'
-                }, {
-                    'kind': 'CR',
-                    'date': '2016-08-23',
-                    'crid': '123456',
-                    'category': 'Illegal Search',
-                    'subcategory': 'sub category',
-                    'finding': 'Unfounded',
-                    'coaccused': 4,
-                    'race': ['Unknown'],
-                    'gender': ['Unknown'],
-                    'age': ['Unknown']
-                }, {
-                    'kind': 'JOINED',
-                    'date': '2000-01-01'
-                }
-            ]
-        })
-
-    def test_timeline_no_data(self):
-        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 456}))
-        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
-
-    def test_timeline_next_request_url(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
-        OfficerHistoryFactory.create_batch(40, officer=officer, effective_date=date(2017, 1, 1))
-        self.refresh_index()
-
-        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'offset': 10})
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data['count']).to.eq(41)
-        expect(response.data['next']).to.match(r'.+\?limit=20\&offset=30$')
-        expect(response.data['previous']).to.match(r'.+\?limit=20$')
-        expect(len(response.data['results'])).to.eq(20)
-
-    def test_timeline_items_sort_asc(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1))
-        allegation = AllegationFactory(crid='123456')
-        OfficerHistoryFactory(officer=officer, effective_date=date(2017, 2, 27), unit=PoliceUnitFactory(unit_name='A'))
-        OfficerAllegationFactory(
-            final_finding='UN', officer=officer, start_date=date(2016, 8, 23), allegation=allegation,
-            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
-        )
-        OfficerAllegationFactory.create_batch(3, allegation=allegation)
-        self.refresh_index()
-
-        response = self.client.get(reverse('api-v2:officers-timeline-items', kwargs={'pk': 123}), {'sort': 'asc'})
-
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'count': 3,
-            'next': None,
-            'previous': None,
-            'results': [
-                {
-                    'kind': 'JOINED',
-                    'date': '2000-01-01'
-                },
-                {
-                    'kind': 'CR',
-                    'date': '2016-08-23',
-                    'crid': '123456',
-                    'category': 'category',
-                    'subcategory': 'sub category',
-                    'finding': 'Unfounded',
-                    'coaccused': 4,
-                    'race': ['Unknown'],
-                    'gender': ['Unknown'],
-                    'age': ['Unknown']
-                },
-                {
-                    'kind': 'UNIT_CHANGE',
-                    'date': '2017-02-27',
-                    'unit_name': 'A'
-                }
-            ]
-        })
-
     def test_new_timeline_items_no_match(self):
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
@@ -282,6 +131,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
+        AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
         allegation = AllegationFactory(crid='123456')
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
@@ -332,13 +182,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'lat': 68.9
                 },
             }, {
-                'date': '2015-03-23',
-                'kind': 'AWARD',
-                'unit_name': '002',
-                'unit_description': 'unit_002',
-                'award_type': 'Complimentary Letter',
-                'rank': 'Police Officer',
-            }, {
                 'date': '2012-01-01',
                 'kind': 'UNIT_CHANGE',
                 'unit_name': '002',
@@ -375,7 +218,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
-                'award_type': 'Honorable Mention',
+                'award_type': 'Life Saving Award',
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',

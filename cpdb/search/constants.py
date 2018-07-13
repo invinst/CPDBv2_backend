@@ -1,7 +1,7 @@
 from search.search_indexers import (
-    UnitIndexer, AreaIndexer, CrIndexer
+    UnitIndexer, AreaIndexer, CrIndexer, TRRIndexer
 )
 
 DEFAULT_INDEXERS = [
-    UnitIndexer, AreaIndexer, CrIndexer
+    UnitIndexer, AreaIndexer, CrIndexer, TRRIndexer
 ]
