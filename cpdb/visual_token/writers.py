@@ -6,8 +6,8 @@ import tempfile
 from tqdm import tqdm
 
 
-def make_frame(draw_func, ind, width, height):
-    frame = draw_func(ind, width, height)
+def make_frame(draw_func, data, frame_count, ind, width, height):
+    frame = draw_func(data, frame_count, ind, width, height)
     f, path = tempfile.mkstemp('.png')
     os.close(f)
     frame.write_to_png(path)
@@ -23,7 +23,7 @@ class FFMpegWriter(object):
         self.width = width
         self.height = height
 
-    def run(self, draw_func, frame_count, out_path):
+    def run(self, draw_func, data, frame_count, out_path):
         command = [
             self.bin_path,
             '-y',
@@ -35,11 +35,12 @@ class FFMpegWriter(object):
             '-vcodec', 'libx264',
             '-r', str(self.frame_rate),
             '-pix_fmt', 'yuv420p',
+            '-loglevel', 'quiet',
             out_path]
 
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         frames = [
-            pool.apply_async(make_frame, (draw_func, ind, self.width, self.height))
+            pool.apply_async(make_frame, (draw_func, data, frame_count, ind, self.width, self.height))
             for ind in range(frame_count)]
 
         proc = subprocess.Popen(
