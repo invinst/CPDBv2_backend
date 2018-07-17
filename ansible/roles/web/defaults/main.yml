@@ -28,6 +28,7 @@ nginx_error_log_file: "{{ application_log_dir }}/nginx_error.log"
 nginx_static_dir: "{{ project_path }}/staticfiles/"
 nginx_media_dir: "{{ project_path }}/media/"
 nginx_template: "nginx_site_config"
+nginx_dhparams_file: /etc/nginx/dhparams.pem
 
 pyenv_environments:
   PYENV_ROOT: "{{ pyenv_root }}"
