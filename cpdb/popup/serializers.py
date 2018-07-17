@@ -7,4 +7,3 @@ class PopupSerializer(Serializer):
     page = CharField(max_length=255)
     title = CharField(max_length=255)
     text = CharField()
-
