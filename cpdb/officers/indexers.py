@@ -4,6 +4,7 @@ from django.db.models import F, Q
 
 from tqdm import tqdm
 
+from data import officer_percentile
 from data.constants import MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from data.utils.calculations import calculate_top_percentile
@@ -101,7 +102,7 @@ class OfficerPercentileIndexer(BaseIndexer):
     def get_queryset(self):
         results = []
         for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
-            officers = Officer.top_percentile(yr)
+            officers = officer_percentile.top_percentile(yr)
             results.extend(officers)
         return results
 
@@ -116,7 +117,7 @@ class OfficerSinglePercentileIndexer(BaseIndexer):
     op_type = 'update'
 
     def get_queryset(self):
-        return Officer.annotate_honorable_mention_percentile_officers()
+        return officer_percentile.annotate_honorable_mention_percentile_officers()
 
     def extract_datum(self, datum):
         return OfficerSinglePercentileSerializer(datum).data

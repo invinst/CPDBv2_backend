@@ -5,7 +5,6 @@ from django.contrib.gis.geos import Point
 
 from robber import expect
 from freezegun import freeze_time
-from mock import patch
 import pytz
 
 from cr.indexers import CRIndexer
@@ -14,6 +13,7 @@ from data.factories import (
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
+from data.tests.officer_percentile_utils import mock_percentile_map_range
 
 
 class CRIndexerTestCase(TestCase):
@@ -26,12 +26,14 @@ class CRIndexerTestCase(TestCase):
         allegation = AllegationFactory()
         expect(list(CRIndexer().get_queryset())).to.eq([allegation])
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 2, 28, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2003, 4, 28, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
+        allegation_max=datetime(2003, 4, 28, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2003, 4, 28, tzinfo=pytz.utc),
+        trr_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
+        trr_max=datetime(2003, 4, 28, tzinfo=pytz.utc)
+    )
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='12345',

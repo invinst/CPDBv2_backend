@@ -6,7 +6,6 @@ from django.contrib.gis.geos import Point
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
-from mock import patch
 import pytz
 
 from data.factories import (
@@ -16,16 +15,19 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
+from data.tests.officer_percentile_utils import mock_percentile_map_range
 
 
 class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2006, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2006, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2007, 1, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        trr_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2007, 1, 1, tzinfo=pytz.utc)
+    )
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(

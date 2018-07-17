@@ -1,6 +1,6 @@
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.models import Officer
+from data import officer_percentile
 from trr.models import TRR
 from .doc_types import TRRDocType
 from .index_aliases import trr_index_alias
@@ -17,7 +17,7 @@ class TRRIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(TRRIndexer, self).__init__(*args, **kwargs)
-        top_percentile = Officer.top_visual_token_percentile()
+        top_percentile = officer_percentile.top_visual_token_percentile()
 
         self.top_percentile_dict = {
             data.officer_id: {

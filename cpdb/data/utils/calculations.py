@@ -1,8 +1,8 @@
-from data.models import Officer
+from data import officer_percentile
 
 
 def calculate_top_percentile():
-    top_percentile = Officer.top_percentile()
+    top_percentile = officer_percentile.top_percentile()
 
     return {
         data.officer_id: {

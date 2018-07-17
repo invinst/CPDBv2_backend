@@ -8,24 +8,24 @@ from mock import patch
 from robber.expect import expect
 
 from data.constants import (
-    PERCENTILE_ALLEGATION,
-    PERCENTILE_ALLEGATION_INTERNAL,
-    PERCENTILE_ALLEGATION_CIVILIAN,
-    PERCENTILE_TRR
+    PERCENTILE_ALLEGATION_GROUP,
+    PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+    PERCENTILE_TRR_GROUP
 )
-from data.factories import (OfficerFactory, OfficerAllegationFactory)
-from data.models import Officer
+from data.factories import OfficerFactory, OfficerAllegationFactory, AwardFactory
+from data.tests.officer_percentile_utils import mock_percentile_map_range
 from officers.tests.utils import validate_object
 from trr.factories import TRRFactory
+from data import officer_percentile
 
 
-class PercentileTestCase(TestCase):
+class OfficerPercentileTestCase(TestCase):
 
     def test_officer_service_year_filter_no_appointed_date(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=None)
 
-        officers = Officer._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
+        officers = officer_percentile._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
         expect(officers).to.have.length(1)
         expect(officers[0].id).to.equal(1)
 
@@ -34,7 +34,7 @@ class PercentileTestCase(TestCase):
         OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2015, 12, 31))
 
-        officers = Officer._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
+        officers = officer_percentile._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
         expect(officers).to.have.length(1)
         expect(officers[0].id).to.equal(1)
 
@@ -44,7 +44,7 @@ class PercentileTestCase(TestCase):
         OfficerFactory(id=3, appointed_date=date(2010, 3, 1), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 1), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
+        officers = officer_percentile._officer_service_year(date(2015, 2, 1), date(2016, 7, 1))
 
         expect(officers).to.have.length(4)
 
@@ -77,30 +77,36 @@ class PercentileTestCase(TestCase):
         for officer in officers:
             validate_object(officer, expected_dict[officer.id])
 
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2014, 12, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        trr_min=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2014, 12, 1, tzinfo=pytz.utc)
+    )
     def test_compute_trr_metric_return_empty_if_date_range_smaller_than_1_year(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_trr_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_TRR_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2014, 3, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        trr_min=datetime(2014, 3, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_trr_metric_return_empty_if_not_enough_data(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_trr_metric(2014)
+        officers = officer_percentile._compute_metric(2014, PERCENTILE_TRR_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        trr_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_trr_metric(self):
         officer = OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
 
@@ -110,7 +116,7 @@ class PercentileTestCase(TestCase):
         TRRFactory(officer=officer, trr_datetime=datetime(2016, 2, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer, trr_datetime=datetime(2017, 2, 1, tzinfo=pytz.utc))
 
-        officers = Officer._compute_trr_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_TRR_GROUP)
         expect(officers).to.have.length(1)
         validate_object(officers[0], {
             'officer_id': 1,
@@ -122,30 +128,36 @@ class PercentileTestCase(TestCase):
             'metric_trr': 2.0019
         })
 
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2014, 12, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        internal_civilian_min=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2014, 12, 1, tzinfo=pytz.utc)
+    )
     def test_compute_internal_civilian_allegation_metric_date_range_smaller_than_1_year(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_internal_civilian_allegation_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2014, 3, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        internal_civilian_min=datetime(2014, 3, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_internal_civilian_allegation_metric_return_empty_if_not_enough_data(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_internal_civilian_allegation_metric(2014)
+        officers = officer_percentile._compute_metric(2014, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        internal_civilian_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_internal_civilian_allegation_metric(self):
         officer = OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
 
@@ -183,7 +195,7 @@ class PercentileTestCase(TestCase):
             allegation__is_officer_complaint=True
         )
 
-        officers = Officer._compute_internal_civilian_allegation_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP)
         expect(officers).to.have.length(1)
         validate_object(officers[0], {
             'officer_id': 1,
@@ -197,30 +209,36 @@ class PercentileTestCase(TestCase):
             'metric_allegation_internal': 4.0037
         })
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2014, 12, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2014, 12, 1, tzinfo=pytz.utc)
+    )
     def test_compute_allegation_metric_date_range_smaller_than_1_year(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_allegation_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_ALLEGATION_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2014, 3, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2014, 3, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_allegation_metric_return_empty_if_not_enough_data(self):
         OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
         OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
         OfficerFactory(id=3, appointed_date=date(2010, 3, 14), resignation_date=date(2016, 2, 1))
         OfficerFactory(id=4, appointed_date=date(2010, 3, 14), resignation_date=date(2017, 12, 31))
 
-        officers = Officer._compute_allegation_metric(2014)
+        officers = officer_percentile._compute_metric(2014, PERCENTILE_ALLEGATION_GROUP)
         expect(officers).to.have.length(0)
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2016, 7, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2016, 7, 1, tzinfo=pytz.utc)
+    )
     def test_compute_allegation_metric(self):
         officer = OfficerFactory(id=1, appointed_date=date(2010, 3, 14))
 
@@ -238,7 +256,7 @@ class PercentileTestCase(TestCase):
             allegation__incident_date=datetime(2016, 7, 2, tzinfo=pytz.utc),
         )
 
-        officers = Officer._compute_allegation_metric(2016)
+        officers = officer_percentile._compute_metric(2016, PERCENTILE_ALLEGATION_GROUP)
         expect(officers).to.have.length(1)
         validate_object(officers[0], {
             'officer_id': 1,
@@ -250,12 +268,14 @@ class PercentileTestCase(TestCase):
             'metric_allegation': 2.0019,
         })
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2013, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2016, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 1, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2013, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2016, 1, 1, tzinfo=pytz.utc),
+        trr_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 1, 1, tzinfo=pytz.utc)
+    )
     def test_top_percentile(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(1990, 3, 14))
         officer2 = OfficerFactory(id=2, appointed_date=date(1990, 3, 14))
@@ -359,16 +379,18 @@ class PercentileTestCase(TestCase):
             }
         }
 
-        officers = Officer.top_percentile(2016)
+        officers = officer_percentile.top_percentile(2016)
         for officer in officers:
             validate_object(officer, expected_dict[officer.id])
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2013, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2016, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 1, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2013, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2016, 1, 1, tzinfo=pytz.utc),
+        trr_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 1, 1, tzinfo=pytz.utc)
+    )
     def test_top_percentile_with_types(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(1990, 3, 14))
         officer2 = OfficerFactory(id=2, appointed_date=date(1990, 3, 14))
@@ -493,21 +515,22 @@ class PercentileTestCase(TestCase):
             }
         }
 
-        visual_token_percentile_types = [
-            PERCENTILE_ALLEGATION_INTERNAL,
-            PERCENTILE_ALLEGATION_CIVILIAN,
-            PERCENTILE_TRR
+        visual_token_percentile_groups = [
+            PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+            PERCENTILE_TRR_GROUP
         ]
-        officers = Officer.top_percentile(2016, percentile_types=visual_token_percentile_types)
+        officers = officer_percentile.top_percentile(2016, percentile_groups=visual_token_percentile_groups)
         for officer in officers:
             validate_object(officer, expected_dict[officer.id])
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2013, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2014, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2015, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 1, 1, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2013, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2014, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        trr_min=datetime(2015, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 1, 1, tzinfo=pytz.utc)
+    )
     def test_top_percentile_not_enough_service_year(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(1990, 3, 14))
         officer2 = OfficerFactory(id=2, appointed_date=date(1990, 3, 14), resignation_date=date(2014, 5, 1))
@@ -636,7 +659,7 @@ class PercentileTestCase(TestCase):
             }
         }
 
-        officers = Officer.top_percentile(2016)
+        officers = officer_percentile.top_percentile(2016)
         for officer in officers:
             validate_object(officer, expected_dict[officer.id])
 
@@ -649,19 +672,133 @@ class PercentileTestCase(TestCase):
             allegation__is_officer_complaint=False
         )
         with self.assertRaisesRegex(ValueError, 'type is invalid'):
-            Officer.top_percentile(year=2017, percentile_types=['not_exist'])
+            officer_percentile.top_percentile(2017, percentile_groups=['not_exist'])
 
     def test_top_visual_token_percentile(self):
-        with patch('data.models.Officer.top_percentile', return_value=150) as mock_top_percentile:
-            Officer.top_visual_token_percentile(2016)
-            visual_token_percentile_types = [
-                PERCENTILE_ALLEGATION_INTERNAL,
-                PERCENTILE_ALLEGATION_CIVILIAN,
-                PERCENTILE_TRR
+        with patch('data.officer_percentile.top_percentile', return_value=[]) as mock_top_percentile:
+            officer_percentile.top_visual_token_percentile(2016)
+            visual_token_percentile_groups = [
+                PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+                PERCENTILE_TRR_GROUP
             ]
-            mock_top_percentile.assert_called_with(2016, percentile_types=visual_token_percentile_types)
+            mock_top_percentile.assert_called_with(2016, percentile_groups=visual_token_percentile_groups)
 
     def test_top_allegation_percentile(self):
-        with patch('data.models.Officer.top_percentile', return_value=[]) as mock_top_percentile:
-            Officer.top_allegation_percentile(2016)
-            mock_top_percentile.assert_called_with(2016, percentile_types=[PERCENTILE_ALLEGATION])
+        with patch('data.officer_percentile.top_percentile', return_value=[]) as mock_top_percentile:
+            officer_percentile.top_allegation_percentile(2016)
+            mock_top_percentile.assert_called_with(2016, percentile_groups=[PERCENTILE_ALLEGATION_GROUP])
+
+    def test_compute_honorable_mention_metric(self):
+        self._create_dataset_for_honorable_mention_percentile()
+
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
+
+        expected_result_yr2017 = [{
+            'id': 3,
+            'metric_honorable_mention': 0
+        }, {
+            'id': 4,
+            'metric_honorable_mention': 0
+        }, {
+            'id': 1,
+            'metric_honorable_mention': 0.625
+        }, {
+            'id': 2,
+            'metric_honorable_mention': 1.875
+        }]
+        honorable_mention_metric_2017 = officer_percentile._compute_honorable_mention_metric(2017)
+
+        expect(honorable_mention_metric_2017.count()).to.eq(4)
+        validate_object(honorable_mention_metric_2017[0], expected_result_yr2017[0])
+        validate_object(honorable_mention_metric_2017[1], expected_result_yr2017[1])
+        validate_object(honorable_mention_metric_2017[2], expected_result_yr2017[2])
+        validate_object(honorable_mention_metric_2017[3], expected_result_yr2017[3])
+
+        # we have no data of 2018, then percentile metric should return value of 2017 instead
+        honorable_mention_metric_2018 = officer_percentile._compute_honorable_mention_metric(2018)
+
+        expect(honorable_mention_metric_2018.count()).to.eq(4)
+        validate_object(honorable_mention_metric_2018[0], expected_result_yr2017[0])
+        validate_object(honorable_mention_metric_2018[1], expected_result_yr2017[1])
+        validate_object(honorable_mention_metric_2018[2], expected_result_yr2017[2])
+        validate_object(honorable_mention_metric_2018[3], expected_result_yr2017[3])
+
+        honorable_mention_metric_2015 = officer_percentile._compute_honorable_mention_metric(2015)
+        expect(honorable_mention_metric_2015.count()).to.eq(1)
+        validate_object(honorable_mention_metric_2015[0], {
+            'id': 1,
+            'metric_honorable_mention': 0.6673
+        })
+
+    def test_honorable_mention_metric_less_than_one_year(self):
+        self._create_dataset_for_honorable_mention_percentile()
+
+        # expect officer2 to be excluded cause he service less than 1 year
+        honorable_mention_metric_2016 = officer_percentile._compute_honorable_mention_metric(2016)
+        expect(honorable_mention_metric_2016.count()).to.eq(1)
+        validate_object(honorable_mention_metric_2016[0], {
+            'id': 1,
+            'metric_honorable_mention': 0.75
+        })
+
+        honorable_mention_metric_2017 = officer_percentile._compute_honorable_mention_metric(2017)
+        expect(honorable_mention_metric_2017.count()).to.eq(2)
+        validate_object(honorable_mention_metric_2017[0], {
+            'id': 1,
+            'metric_honorable_mention': 0.625
+        })
+        validate_object(honorable_mention_metric_2017[1], {
+            'id': 2,
+            'metric_honorable_mention': 1.875
+        })
+
+    def _create_dataset_for_honorable_mention_percentile(self):
+        officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
+        AwardFactory(officer=officer1, award_type='Complimentary Letter', start_date=datetime(2013, 1, 1))
+        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=datetime(2014, 1, 1))
+        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=date(2015, 1, 1))
+        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=date(2016, 1, 22))
+        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
+        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
+        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
+
+    def test_get_award_dataset_range(self):
+        expect(officer_percentile._get_award_dataset_range()).to.be.empty()
+
+        self._create_dataset_for_honorable_mention_percentile()
+
+        expect(officer_percentile._get_award_dataset_range()).to.be.eq([
+            date(2013, 1, 1),
+            date(2017, 10, 19)
+        ])
+
+    def test_annotate_honorable_mention_percentile_officers(self):
+        self._create_dataset_for_honorable_mention_percentile()
+        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
+        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
+
+        # current year
+        annotated_officers = officer_percentile.annotate_honorable_mention_percentile_officers()
+        expect(annotated_officers).to.have.length(4)
+        validate_object(annotated_officers[0], {
+            'id': 3,
+            'metric_honorable_mention': 0,
+            'percentile_honorable_mention': 0,
+        })
+        validate_object(annotated_officers[1], {
+            'id': 4,
+            'metric_honorable_mention': 0,
+            'percentile_honorable_mention': 0,
+        })
+        validate_object(annotated_officers[2], {
+            'id': 1,
+            'metric_honorable_mention': 0.625,
+            'percentile_honorable_mention': 50.0,
+        })
+        validate_object(annotated_officers[3], {
+            'id': 2,
+            'metric_honorable_mention': 1.875,
+            'percentile_honorable_mention': 75.0,
+        })

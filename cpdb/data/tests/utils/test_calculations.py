@@ -3,21 +3,23 @@ from datetime import date, datetime
 import pytz
 from django.test import TestCase
 from robber import expect
-from mock import patch
 
 from data.factories import AllegationFactory, OfficerFactory, OfficerAllegationFactory
+from data.tests.officer_percentile_utils import mock_percentile_map_range
 from data.utils.calculations import calculate_top_percentile
 from trr.factories import TRRFactory
 
 
 class CalculateTopPercentileTestCase(TestCase):
 
-    @patch('data.models.ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.ALLEGATION_MAX_DATETIME', datetime(2016, 12, 31, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME', datetime(2016, 12, 31, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MIN_DATETIME', datetime(2002, 1, 1, tzinfo=pytz.utc))
-    @patch('data.models.TRR_MAX_DATETIME', datetime(2016, 12, 31, tzinfo=pytz.utc))
+    @mock_percentile_map_range(
+        allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2016, 12, 31, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2016, 12, 31, tzinfo=pytz.utc),
+        trr_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2016, 12, 31, tzinfo=pytz.utc)
+    )
     def test_calculate_top_percentile(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
         officer2 = OfficerFactory(appointed_date=date(2002, 1, 1))

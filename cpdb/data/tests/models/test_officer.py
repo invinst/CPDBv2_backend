@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.test.testcases import TestCase, override_settings
-from django.utils.timezone import datetime
 
 from robber.expect import expect
 from freezegun import freeze_time
@@ -12,7 +11,6 @@ from data.factories import (
     AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory
 )
 from data.models import Officer
-from officers.tests.utils import validate_object
 
 
 class OfficerTestCase(TestCase):
@@ -132,121 +130,6 @@ class OfficerTestCase(TestCase):
     def test_visual_token_png_path(self):
         officer = OfficerFactory(id=90)
         expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
-
-    def test_compute_honorable_mention_metric(self):
-        self._create_dataset_for_honorable_mention_percentile()
-
-        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
-        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
-
-        expected_result_yr2017 = [{
-            'id': 3,
-            'metric_honorable_mention': 0
-        }, {
-            'id': 4,
-            'metric_honorable_mention': 0
-        }, {
-            'id': 1,
-            'metric_honorable_mention': 0.625
-        }, {
-            'id': 2,
-            'metric_honorable_mention': 1.875
-        }]
-        honorable_mention_metric_2017 = Officer._compute_honorable_mention_metric(2017)
-
-        expect(honorable_mention_metric_2017.count()).to.eq(4)
-        validate_object(honorable_mention_metric_2017[0], expected_result_yr2017[0])
-        validate_object(honorable_mention_metric_2017[1], expected_result_yr2017[1])
-        validate_object(honorable_mention_metric_2017[2], expected_result_yr2017[2])
-        validate_object(honorable_mention_metric_2017[3], expected_result_yr2017[3])
-
-        # we have no data of 2018, then percentile metric should return value of 2017 instead
-        honorable_mention_metric_2018 = Officer._compute_honorable_mention_metric(2018)
-
-        expect(honorable_mention_metric_2018.count()).to.eq(4)
-        validate_object(honorable_mention_metric_2018[0], expected_result_yr2017[0])
-        validate_object(honorable_mention_metric_2018[1], expected_result_yr2017[1])
-        validate_object(honorable_mention_metric_2018[2], expected_result_yr2017[2])
-        validate_object(honorable_mention_metric_2018[3], expected_result_yr2017[3])
-
-        honorable_mention_metric_2015 = Officer._compute_honorable_mention_metric(2015)
-        expect(honorable_mention_metric_2015.count()).to.eq(1)
-        validate_object(honorable_mention_metric_2015[0], {
-            'id': 1,
-            'metric_honorable_mention': 0.6673
-        })
-
-    def test_honorable_mention_metric_less_than_one_year(self):
-        self._create_dataset_for_honorable_mention_percentile()
-
-        # expect officer2 to be excluded cause he service less than 1 year
-        honorable_mention_metric_2016 = Officer._compute_honorable_mention_metric(2016)
-        expect(honorable_mention_metric_2016.count()).to.eq(1)
-        validate_object(honorable_mention_metric_2016[0], {
-            'id': 1,
-            'metric_honorable_mention': 0.75
-        })
-
-        honorable_mention_metric_2017 = Officer._compute_honorable_mention_metric(2017)
-        expect(honorable_mention_metric_2017.count()).to.eq(2)
-        validate_object(honorable_mention_metric_2017[0], {
-            'id': 1,
-            'metric_honorable_mention': 0.625
-        })
-        validate_object(honorable_mention_metric_2017[1], {
-            'id': 2,
-            'metric_honorable_mention': 1.875
-        })
-
-    def _create_dataset_for_honorable_mention_percentile(self):
-        officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
-        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
-        AwardFactory(officer=officer1, award_type='Complimentary Letter', start_date=datetime(2013, 1, 1))
-        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=datetime(2014, 1, 1))
-        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=date(2015, 1, 1))
-        AwardFactory(officer=officer1, award_type='Honorable Mention', start_date=date(2016, 1, 22))
-        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
-        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
-        AwardFactory(officer=officer2, award_type='Honorable Mention', start_date=date(2017, 10, 19))
-
-    def test_get_award_dataset_range(self):
-        expect(Officer._get_award_dataset_range()).to.be.empty()
-
-        self._create_dataset_for_honorable_mention_percentile()
-
-        expect(Officer._get_award_dataset_range()).to.be.eq([
-            date(2013, 1, 1),
-            date(2017, 10, 19)
-        ])
-
-    def test_annotate_honorable_mention_percentile_officers(self):
-        self._create_dataset_for_honorable_mention_percentile()
-        OfficerFactory(id=3, appointed_date=date(2015, 3, 15))
-        OfficerFactory(id=4, appointed_date=date(2015, 1, 1))
-
-        # current year
-        annotated_officers = Officer.annotate_honorable_mention_percentile_officers()
-        expect(annotated_officers).to.have.length(4)
-        validate_object(annotated_officers[0], {
-            'id': 3,
-            'metric_honorable_mention': 0,
-            'percentile_honorable_mention': 0,
-        })
-        validate_object(annotated_officers[1], {
-            'id': 4,
-            'metric_honorable_mention': 0,
-            'percentile_honorable_mention': 0,
-        })
-        validate_object(annotated_officers[2], {
-            'id': 1,
-            'metric_honorable_mention': 0.625,
-            'percentile_honorable_mention': 50.0,
-        })
-        validate_object(annotated_officers[3], {
-            'id': 2,
-            'metric_honorable_mention': 1.875,
-            'percentile_honorable_mention': 75.0,
-        })
 
     def test_get_unit_by_date(self):
         officer = OfficerFactory()
