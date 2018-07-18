@@ -821,5 +821,6 @@ class OfficerTestCase(TestCase):
             start_date=date(2005, 1, 1)
         )
         expect(officer.get_rank_by_date(date(2007, 1, 1))).to.eq('Police Officer')
+        expect(officer.get_rank_by_date(datetime(2007, 1, 1, tzinfo=pytz.utc))).to.eq('Police Officer')
         expect(officer.get_rank_by_date(date(2009, 1, 1))).to.eq('Sergeant')
         expect(officer.get_rank_by_date(date(2004, 1, 1))).to.be.none()

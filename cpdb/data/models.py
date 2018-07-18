@@ -764,7 +764,10 @@ class Officer(TaggableModel):
     @property
     def rank_histories(self):
         salaries = self.salary_set.all().order_by('year')
-        first_salary = salaries[0]
+        try:
+            first_salary = salaries[0]
+        except IndexError:
+            return []
         current_rank = first_salary.rank
         rank_histories = [{'date': first_salary.spp_date, 'rank': first_salary.rank}]
         for salary in salaries:
@@ -774,8 +777,15 @@ class Officer(TaggableModel):
         return rank_histories
 
     def get_rank_by_date(self, query_date):
+        if type(query_date) is datetime:
+            query_date = query_date.date()
         rank_histories = self.rank_histories
-        first_history = rank_histories[0]
+
+        try:
+            first_history = rank_histories[0]
+        except IndexError:
+            return None
+
         last_history = rank_histories[len(rank_histories)-1]
         if query_date < first_history['date']:
             return None

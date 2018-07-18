@@ -12,6 +12,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
     AllegationCategoryFactory, VictimFactory, AwardFactory,
+    SalaryFactory,
 )
 from data.models import Officer
 from officers.indexers import (
@@ -450,7 +451,7 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
                 unit_name='001',
                 description='Unit_001',
             )),
-            rank='Police Officer',
+            get_rank_by_date=Mock(return_value='Police Officer'),
         )
         expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
             'officer_id': 123,
@@ -485,7 +486,7 @@ class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
             effective_date=date(2010, 3, 4),
             unit_name='003',
             unit_description='Unit_003',
-            officer=Mock(rank='Police Officer')
+            officer=Mock(get_rank_by_date=Mock(return_value='Police Officer'))
         )
         expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
             'officer_id': 123,
@@ -548,6 +549,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
+        SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(2012, 1, 1))
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -611,7 +613,7 @@ class AwardNewTimelineEventIndexerTestCase(TestCase):
             start_date=date(2010, 3, 4),
             award_type='Honorable Mention',
             officer=Mock(
-                rank='Police Officer',
+                get_rank_by_date=Mock(return_value='Police Officer'),
                 get_unit_by_date=Mock(return_value=Mock(
                     unit_name='001',
                     description='Unit_001',
@@ -646,7 +648,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             firearm_used=False,
             taser=False,
             officer=Mock(
-                rank='Police Officer',
+                get_rank_by_date=Mock(return_value='Police Officer'),
                 get_unit_by_date=Mock(return_value=Mock(
                     unit_name='001',
                     description='Unit_001',
