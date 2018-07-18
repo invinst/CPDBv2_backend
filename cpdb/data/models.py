@@ -761,6 +761,32 @@ class Officer(TaggableModel):
         current_salary_object = self.salary_set.all().order_by('-year').first()
         return current_salary_object.salary if current_salary_object else None
 
+    @property
+    def rank_histories(self):
+        salaries = self.salary_set.all().order_by('year')
+        first_salary = salaries[0]
+        current_rank = first_salary.rank
+        rank_histories = [{'date': first_salary.spp_date, 'rank': first_salary.rank}]
+        for salary in salaries:
+            if salary.rank != current_rank:
+                rank_histories.append({'date': salary.spp_date, 'rank': salary.rank})
+                current_rank = salary.rank
+        return rank_histories
+
+    def get_rank_by_date(self, query_date):
+        rank_histories = self.rank_histories
+        first_history = rank_histories[0]
+        last_history = rank_histories[len(rank_histories)-1]
+        if query_date < first_history['date']:
+            return None
+        if query_date >= last_history['date']:
+            return last_history['rank']
+        for i in range(len(rank_histories)):
+            if rank_histories[i]['date'] > query_date:
+                return rank_histories[i-1]['rank']
+            if rank_histories[i]['date'] == query_date:
+                return rank_histories[i]['rank']
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)

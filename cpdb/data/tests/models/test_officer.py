@@ -1,16 +1,16 @@
 from datetime import date
-import pytz
 
+import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
-from robber.expect import expect
 from freezegun import freeze_time
+from robber.expect import expect
 
 from data.constants import PERCENTILE_ALLEGATION
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
 from data.models import Officer
 from officers.tests.ultils import validate_object
@@ -767,3 +767,59 @@ class OfficerTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
         OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
         expect(officer.sustained_count).to.eq(2)
+
+    def test_rank_histories(self):
+        officer = OfficerFactory()
+        SalaryFactory(
+            officer=officer, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=15000, year=2007, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=20000, year=2008, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=25000, year=2009, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(officer.rank_histories).to.eq([{
+            'date': date(2005, 1, 1),
+            'rank': 'Police Officer'
+        }, {
+            'date': date(2008, 1, 1),
+            'rank': 'Sergeant'
+        }])
+
+    def test_get_rank_by_date(self):
+        officer = OfficerFactory()
+        SalaryFactory(
+            officer=officer, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=15000, year=2007, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=20000, year=2008, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=25000, year=2009, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(officer.get_rank_by_date(date(2007, 1, 1))).to.eq('Police Officer')
+        expect(officer.get_rank_by_date(date(2009, 1, 1))).to.eq('Sergeant')
+        expect(officer.get_rank_by_date(date(2004, 1, 1))).to.be.none()
