@@ -21,9 +21,9 @@ class TRRIndexer(BaseIndexer):
 
         self.top_percentile_dict = {
             data.officer_id: {
-                'percentile_allegation_civilian': data.percentile_allegation_civilian,
-                'percentile_allegation_internal': data.percentile_allegation_internal,
-                'percentile_trr': data.percentile_trr,
+                'percentile_allegation_civilian': getattr(data, 'percentile_allegation_civilian', None),
+                'percentile_allegation_internal': getattr(data, 'percentile_allegation_internal', None),
+                'percentile_trr': getattr(data, 'percentile_trr', None),
             }
             for data in top_percentile
         }
