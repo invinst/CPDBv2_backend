@@ -42,23 +42,26 @@ class ChartFigure:
             if key != '00'\
             else OIG_EXTRA_BLUE_COLOR_SCHEME[str(self.scale_percentile(internal_percentile))]
 
+    def triangle_vertices(self, lengths):
+        return [
+            (
+                self.center['x'] - lengths[0] * math.sin(math.pi/3),
+                self.center['y'] - lengths[0] * math.cos(math.pi/3)
+            ),
+            (
+                self.center['x'] + lengths[1] * math.sin(math.pi/3),
+                self.center['y'] - lengths[1] * math.cos(math.pi/3)
+            ),
+            (self.center['x'], self.center['y'] + lengths[2]),
+            (
+                self.center['x'] - lengths[0] * math.sin(math.pi/3),
+                self.center['y'] - lengths[0] * math.cos(math.pi/3)
+            )
+        ]
+
     def draw_triangle(self, lengths, fill, stroke, stroke_width=1):
         gizeh.polyline(
-            points=[
-                (
-                    self.center['x'] - lengths[0] * math.sin(math.pi/3),
-                    self.center['y'] - lengths[0] * math.cos(math.pi/3)
-                ),
-                (
-                    self.center['x'] + lengths[1] * math.sin(math.pi/3),
-                    self.center['y'] - lengths[1] * math.cos(math.pi/3)
-                ),
-                (self.center['x'], self.center['y'] + lengths[2]),
-                (
-                    self.center['x'] - lengths[0] * math.sin(math.pi/3),
-                    self.center['y'] - lengths[0] * math.cos(math.pi/3)
-                )
-            ],
+            points=self.triangle_vertices(lengths),
             fill=fill,
             stroke=stroke,
             stroke_width=stroke_width
@@ -73,7 +76,7 @@ class ChartFigure:
 
     def draw(self, data):
         chart_color = self.get_visual_token_oig_background(*data)
-        data_color = (0.137, 0.121, 0.125)
+        soft_black_color = (0.137, 0.121, 0.125)
 
         gizeh.rectangle(
             xy=(self.center['x'], self.center['y']),
@@ -83,12 +86,24 @@ class ChartFigure:
         ).draw(self.surface)
         self.draw_triangle([self.spine_length] * 3, (1, 1, 1, 0.6), None, None)
 
+        spines = [value * self.spine_length / 100 for value in data]
         self.draw_triangle(
-            [value * self.spine_length / 100 for value in data],
-            data_color,
-            data_color
+            spines,
+            soft_black_color,
+            soft_black_color
         )
 
         self.draw_chart_grid(4, chart_color)
+
+        vertices = self.triangle_vertices(spines)
+        for vertex in vertices:
+            gizeh.polyline(
+                points=[vertex, (self.center['x'], self.center['y'])],
+                stroke_width=1,
+                stroke=(1, 1, 1)
+            ).draw(self.surface)
+        for vertex in vertices:
+            gizeh.circle(r=4, xy=vertex, fill=(1, 1, 1)).draw(self.surface)
+            gizeh.circle(r=3, xy=vertex, fill=soft_black_color).draw(self.surface)
 
         return self.surface

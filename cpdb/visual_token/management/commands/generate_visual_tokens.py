@@ -13,15 +13,16 @@ class Command(BaseCommand):
         clear_folder(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER)
         fps = 40
         frame_per_year = 20
-        index = 0
 
-        for officer in OfficerInfoDocType().search().scan():
+        for officer in OfficerInfoDocType().search().query(
+                'bool',
+                should=[
+                    {'range': {'allegation_count': {'gt': 0}}},
+                    {'range': {'trr_count': {'gt': 0}}}
+                ]).scan():
             officer_dict = officer.to_dict()
             officer_percentiles = officer_dict.get('percentiles', [])
             if len(officer_percentiles) > 0:
-                if index == 10:
-                    break
-                index += 1
                 chart_data = [
                     {
                         'percentile_allegation_civilian': float(data['percentile_allegation_civilian']),
