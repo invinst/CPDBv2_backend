@@ -18,8 +18,11 @@ class PercentileTestCase(SimpleTestCase):
         object4 = create_object({'id': 4, 'metric_value': 0.5})
 
         data = [object2, object4, object3, object1]
-        percentile(data, percentile_type='value')
+        results = percentile(data, percentile_type='value')
 
+        expect(results).to.have.length(4)
+        expect(object1.percentile_value).to.eq(0)
+        expect(object2.percentile_value).to.eq(25)
         expect(object3.percentile_value).to.eq(50)
         expect(object4.percentile_value).to.eq(75)
 
@@ -30,8 +33,9 @@ class PercentileTestCase(SimpleTestCase):
         object4 = create_object({'id': 4, 'value': 0.4, 'metric_custom_value': 0.4})
 
         data = [object1, object2, object3, object4]
-        percentile(data, percentile_type='custom_value')
+        results = percentile(data, percentile_type='custom_value')
 
+        expect(results).to.have.length(4)
         expect(object1.percentile_custom_value).to.eq(0)
         expect(object2.percentile_custom_value).to.eq(0)
         expect(object3.percentile_custom_value).to.eq(50)
@@ -43,10 +47,24 @@ class PercentileTestCase(SimpleTestCase):
         object3 = create_object({'id': 3, 'value': 0.4})
 
         data = [object1, object2, object3]
-        percentile(data, percentile_type='custom_value')
+        results = percentile(data, percentile_type='custom_value')
 
+        expect(results).to.have.length(3)
         expect(object1.percentile_custom_value).to.eq(0)
         expect(object2.percentile_custom_value).to.eq(50)
+        expect(hasattr(object3, 'percentile_custom_value')).to.be.false()
+
+    def test_percentile_with_missing_field(self):
+        object1 = create_object({'id': 1, 'value': 0.1})
+        object2 = create_object({'id': 2, 'value': 0.2})
+        object3 = create_object({'id': 3, 'value': 0.4})
+
+        data = [object1, object2, object3]
+        results = percentile(data, percentile_type='custom_value')
+
+        expect(results).to.have.length(3)
+        expect(hasattr(object1, 'percentile_custom_value')).to.be.false()
+        expect(hasattr(object2, 'percentile_custom_value')).to.be.false()
         expect(hasattr(object3, 'percentile_custom_value')).to.be.false()
 
     def test_merge_percentile(self):

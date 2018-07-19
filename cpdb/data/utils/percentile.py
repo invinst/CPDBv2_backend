@@ -13,7 +13,7 @@ def percentile(objects, percentile_type='', key=None, percentile_rank=0.0, decim
 
     in_ranking = [obj for obj in objects if hasattr(obj, metric_key)]
     if not in_ranking:
-        return []
+        return objects
 
     sorted_scores = sorted(in_ranking, key=lambda x: getattr(x, metric_key))
     scores_length = len(sorted_scores)
