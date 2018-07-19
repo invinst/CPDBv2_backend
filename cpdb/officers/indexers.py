@@ -5,7 +5,7 @@ from django.utils.timezone import now
 
 from tqdm import tqdm
 
-from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
+from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award, Salary
 from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
@@ -29,6 +29,7 @@ from officers.serializers.doc_serializers import (
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer,
+    RankChangeNewTimelineSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -191,6 +192,18 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, trrs):
         return TRRNewTimelineSerializer(trrs).data
+
+
+@register_indexer(app_name)
+class RankChangeNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Salary.objects.rank_histories()
+
+    def extract_datum(self, datum):
+        return RankChangeNewTimelineSerializer(datum).data
 
 
 @register_indexer(app_name)

@@ -1253,6 +1253,21 @@ class AttachmentRequest(models.Model):
         super(AttachmentRequest, self).save(*args, **kwargs)
 
 
+class SalaryManager(models.Manager):
+    def rank_histories(self):
+        salaries = self.all().order_by('officer_id', 'year')
+        last_salary = salaries.first()
+        result = [salaries.first()]
+        for salary in salaries:
+            if salary.officer_id == last_salary.officer_id:
+                if salary.rank != last_salary.rank:
+                    result.append(salary)
+            else:
+                result.append(salary)
+            last_salary = salary
+        return result
+
+
 class Salary(models.Model):
     pay_grade = models.CharField(max_length=16)
     rank = models.CharField(max_length=64, null=True)
@@ -1264,3 +1279,5 @@ class Salary(models.Model):
     year = models.PositiveSmallIntegerField()
     age_at_hire = models.PositiveSmallIntegerField(null=True)
     officer = models.ForeignKey(Officer)
+
+    objects = SalaryManager()
