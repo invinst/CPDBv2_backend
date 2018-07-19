@@ -60,7 +60,8 @@ class CRIndexerTestCase(TestCase):
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
-            )
+            ),
+            disciplined=True
         )
 
         ComplainantFactory(allegation=allegation, gender='M', race='White', age=30)
@@ -136,7 +137,8 @@ class CRIndexerTestCase(TestCase):
                     'percentile_allegation': 0,
                     'percentile_allegation_civilian': 0,
                     'percentile_allegation_internal': 0,
-                    'percentile_trr': 0
+                    'percentile_trr': 0,
+                    'disciplined': True
                 }
             ],
             'complainants': [{'gender': 'Male', 'race': 'White', 'age': 30}],
