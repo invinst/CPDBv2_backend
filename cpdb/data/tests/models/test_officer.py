@@ -12,7 +12,7 @@ from data.factories import (
     OfficerAllegationFactory, AwardFactory,
     AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
-from data.models import Officer
+from data.models import Officer, Salary
 from officers.tests.ultils import validate_object
 from trr.factories import TRRFactory
 
@@ -798,6 +798,10 @@ class OfficerTestCase(TestCase):
             'rank': 'Sergeant'
         }])
 
+    def test_rank_histories_with_no_salary(self):
+        officer = OfficerFactory()
+        expect(officer.rank_histories).to.eq([])
+
     def test_get_rank_by_date(self):
         officer = OfficerFactory()
         SalaryFactory(
@@ -824,3 +828,38 @@ class OfficerTestCase(TestCase):
         expect(officer.get_rank_by_date(datetime(2007, 1, 1, tzinfo=pytz.utc))).to.eq('Police Officer')
         expect(officer.get_rank_by_date(date(2009, 1, 1))).to.eq('Sergeant')
         expect(officer.get_rank_by_date(date(2004, 1, 1))).to.be.none()
+
+    def test_get_rank_by_date_with_empty_rank_histories(self):
+        officer = OfficerFactory()
+        expect(officer.get_rank_by_date(date(2007, 1, 1))).to.be.none()
+
+
+class SalaryManagerTestCase(TestCase):
+    def test_rank_histories(self):
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        salary1 = SalaryFactory(
+            officer=officer1, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary2 = SalaryFactory(
+            officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary3 = SalaryFactory(
+            officer=officer2, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary4 = SalaryFactory(
+            officer=officer2, salary=15000, year=2006, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(Salary.objects.rank_histories()).to.eq([salary1, salary2, salary3, salary4])
