@@ -100,10 +100,13 @@ class OfficerPercentileIndexer(BaseIndexer):
     parent_doc_type_property = 'percentiles'
 
     def get_queryset(self):
+        def _not_retired(officer):
+            return not officer.resignation_date or officer.year <= officer.resignation_date.year
+
         results = []
         for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
             officers = officer_percentile.top_percentile(yr)
-            results.extend(officers)
+            results.extend(filter(_not_retired, officers))
         return results
 
     def extract_datum(self, datum):

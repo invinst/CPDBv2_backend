@@ -326,6 +326,7 @@ class OfficerPercentileIndexerTestCase(TestCase):
     def _prepare_data_up_to_2017(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
         officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
+        OfficerFactory(id=3, appointed_date=date(2014, 3, 1), resignation_date=date(2015, 4, 14))
 
         OfficerAllegationFactory(
             officer=officer1,
@@ -379,54 +380,66 @@ class OfficerPercentileIndexerTestCase(TestCase):
         # expect officer 2 not have year 2017 since less than 1 year
         # expect no year 2017, since dataset only up to 2016
         queryset = self.indexer.get_queryset()
-        expect(queryset).to.have.length(4)
+        expect(queryset).to.have.length(5)
         validate_object(queryset[0], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 0.0,
-            'metric_trr': 0.0,
-            'metric_allegation_internal': 0.0,
-            'metric_allegation': 0.0,
-            'year': 2014,
             'officer_id': 1,
+            'year': 2014,
+            'metric_allegation': 0.0,
+            'metric_allegation_civilian': 0.0,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.0,
             'percentile_allegation': 0.0,
-            'percentile_allegation_internal': 0.0
+            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
         })
         validate_object(queryset[1], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 0.6673,
-            'metric_trr': 0.0,
-            'metric_allegation_internal': 0.0,
-            'metric_allegation': 0.6673,
-            'year': 2015,
             'officer_id': 1,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
+            'year': 2015,
+            'metric_allegation': 0.6673,
+            'metric_allegation_civilian': 0.6673,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.0,
+            'percentile_allegation': 50.0,
+            'percentile_allegation_civilian': 50.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
         })
         validate_object(queryset[2], {
-            'percentile_trr': 50.0,
-            'percentile_allegation_civilian': 0.0,
-            'metric_allegation_civilian': 0.8575,
-            'metric_trr': 0.3049,
+            'officer_id': 3,
+            'year': 2015,
+            'metric_allegation': 0.0,
+            'metric_allegation_civilian': 0.0,
             'metric_allegation_internal': 0.0,
-            'metric_allegation': 0.8575,
-            'year': 2016,
-            'officer_id': 1,
+            'metric_trr': 0.0,
             'percentile_allegation': 0.0,
-            'percentile_allegation_internal': 0.0
+            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
         })
         validate_object(queryset[3], {
-            'percentile_trr': 0.0,
-            'percentile_allegation_civilian': 50.0,
-            'metric_allegation_civilian': 1.5368,
-            'metric_trr': 0.0,
-            'metric_allegation_internal': 0.7684,
-            'metric_allegation': 2.3052,
+            'officer_id': 1,
             'year': 2016,
+            'metric_allegation': 0.8575,
+            'metric_allegation_civilian': 0.8575,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.3049,
+            'percentile_allegation': 33.3333,
+            'percentile_allegation_civilian': 33.3333,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 66.6667,
+        })
+        validate_object(queryset[4], {
             'officer_id': 2,
-            'percentile_allegation': 50.0,
-            'percentile_allegation_internal': 50.0
+            'year': 2016,
+            'metric_allegation': 2.3052,
+            'metric_allegation_civilian': 1.5368,
+            'metric_allegation_internal': 0.7684,
+            'metric_trr': 0.0,
+            'percentile_allegation': 66.6667,
+            'percentile_allegation_civilian': 66.6667,
+            'percentile_allegation_internal': 66.6667,
+            'percentile_trr': 0.0,
         })
 
     def test_extract_datum(self):
@@ -434,14 +447,14 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'year': 2016,
             'id': 1,
             'service_year': 2.2,
-            'metric_trr': 0,
-            'metric_allegation': 0,
-            'metric_allegation_internal': 0,
-            'metric_allegation_civilian': 0,
+            'metric_trr': 0.0,
+            'metric_allegation': 0.0,
+            'metric_allegation_internal': 0.0,
+            'metric_allegation_civilian': 0.0,
             'percentile_allegation': 66.6667,
             'percentile_allegation_internal': 50,
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0
+            'percentile_trr': 0.0,
+            'percentile_allegation_civilian': 0.0
         }
         expect(self.indexer.extract_datum(data)).to.eq({
             'id': 1,
