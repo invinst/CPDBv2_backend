@@ -1,8 +1,6 @@
 import json
 import gzip
 from tempfile import NamedTemporaryFile
-from datetime import datetime
-import pytz
 
 from django.core.management import BaseCommand
 from django.conf import settings
@@ -15,7 +13,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
 
 from data.models import Area, OfficerAllegation, Officer
-from data.constants import COMMUNITY_AREA_CHOICE
+from data.constants import COMMUNITY_AREA_CHOICE, ALLEGATION_MIN_DATETIME
 
 
 # pragma: no cover
@@ -39,11 +37,10 @@ class Command(BaseCommand):
             FROM data_allegation
             WHERE
                 incident_date >= \'%s 00:00:00\'
-                AND incident_date <= \'%s 23:59:59\'
                 AND point IS NOT NULL
             GROUP BY
                 ST_SnapToGrid( ST_SetSRID(point, 4326), %s, %s)
-            ''' % (settings.ALLEGATION_MIN_DATE, settings.ALLEGATION_MAX_DATE, grid_size, grid_size)
+            ''' % (settings.ALLEGATION_MIN_DATE, grid_size, grid_size)
             )
         kclusters = kursor.fetchall()
         ret = {'features': [], 'type': 'FeatureCollection'}
@@ -67,9 +64,6 @@ class Command(BaseCommand):
         return json.dumps(ret)
 
     def get_community_data(self):
-        min_incident_date = datetime.strptime(settings.ALLEGATION_MIN_DATE, '%Y-%m-%d').replace(tzinfo=pytz.utc)
-        max_incident_date = datetime.strptime(settings.ALLEGATION_MAX_DATE, '%Y-%m-%d').replace(tzinfo=pytz.utc)
-
         areas = Area.objects.filter(area_type=COMMUNITY_AREA_CHOICE, polygon__isnull=False)
 
         area_dict = {
@@ -86,13 +80,11 @@ class Command(BaseCommand):
                     'name': area.name,
                     'allegation_count': OfficerAllegation.objects.filter(
                         allegation__areas__id=area.id,
-                        allegation__incident_date__gte=min_incident_date,
-                        allegation__incident_date__lte=max_incident_date,
+                        allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
                     ).distinct().count(),
                     'discipline_count': OfficerAllegation.objects.filter(
                         allegation__areas__id=area.id,
-                        allegation__incident_date__gte=min_incident_date,
-                        allegation__incident_date__lte=max_incident_date,
+                        allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
                         disciplined=True
                     ).distinct().count(),
                     'most_complaints_officers': [
@@ -103,8 +95,7 @@ class Command(BaseCommand):
                         }
                         for officer in Officer.objects.filter(
                             officerallegation__allegation__areas__id=area.id,
-                            officerallegation__allegation__incident_date__gte=min_incident_date,
-                            officerallegation__allegation__incident_date__lte=max_incident_date
+                            officerallegation__allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
                         ).annotate(
                             complaints_count=Count('officerallegation__allegation_id')
                         ).order_by('-complaints_count')[:3]

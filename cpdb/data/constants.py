@@ -1,3 +1,10 @@
+from datetime import datetime
+
+from django.conf import settings
+
+import pytz
+
+
 ACTIVE_YES_CHOICE = 'Yes'
 ACTIVE_NO_CHOICE = 'No'
 ACTIVE_UNKNOWN_CHOICE = 'Unknown'
@@ -138,3 +145,5 @@ MAJOR_AWARDS = [
     'superintendents award of merit',
     "superintendent's award of merit",
 ]
+
+ALLEGATION_MIN_DATETIME = datetime.strptime(settings.ALLEGATION_MIN_DATE, '%Y-%m-%d').replace(tzinfo=pytz.utc)
