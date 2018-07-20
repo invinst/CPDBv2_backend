@@ -65,7 +65,8 @@ class OfficerMetricsSerializer(serializers.Serializer):
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     year = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(allow_null=True, read_only=True, max_digits=6, decimal_places=3)
+    percentile_trr = serializers.DecimalField(
+        allow_null=True, read_only=True, max_digits=6, decimal_places=3)
     percentile_allegation = serializers.DecimalField(
         allow_null=True, read_only=True, max_digits=6, decimal_places=3)
     percentile_allegation_civilian = serializers.DecimalField(

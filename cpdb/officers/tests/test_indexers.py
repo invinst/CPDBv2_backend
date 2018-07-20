@@ -452,6 +452,26 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'percentile_trr': '0.000',
         })
 
+    def test_extract_datum_missing_percentile(self):
+        data = {
+            'year': 2016,
+            'id': 1,
+            'service_year': 2.2,
+            'metric_allegation': 0,
+            'metric_allegation_internal': 0,
+            'metric_allegation_civilian': 0,
+            'percentile_allegation': 66.6667,
+            'percentile_allegation_internal': 50,
+            'percentile_allegation_civilian': 0
+        }
+        expect(self.indexer.extract_datum(data)).to.eq({
+            'id': 1,
+            'year': 2016,
+            'percentile_allegation': '66.667',
+            'percentile_allegation_internal': '50.000',
+            'percentile_allegation_civilian': '0.000',
+        })
+
 
 class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
     def test_get_queryset(self):
