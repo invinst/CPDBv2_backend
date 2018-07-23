@@ -55,7 +55,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU',
+            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
@@ -121,7 +121,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'percentile_allegation': 0,
                     'percentile_allegation_civilian': 0,
                     'percentile_allegation_internal': 0,
-                    'percentile_trr': 0
+                    'percentile_trr': 0,
+                    'disciplined': True
                 }
             ],
             'complainants': [
