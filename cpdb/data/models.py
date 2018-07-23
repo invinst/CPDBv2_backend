@@ -270,14 +270,18 @@ class Officer(TaggableModel):
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
-    complaint_percentile = models.DecimalField(max_digits=6, decimal_places=3, null=True)
+    complaint_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    civilian_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    internal_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    trr_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    honorable_mention_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
 
     def __str__(self):
         return self.full_name
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name,)
+        return '%s %s' % (self.first_name, self.last_name)
 
     @property
     def historic_badges(self):
@@ -635,6 +639,10 @@ class Area(TaggableModel):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
         query = query.values('officer').annotate(
             id=F('officer__id'),
+            percentile_allegation=F('officer__complaint_percentile'),
+            percentile_allegation_civilian=F('officer__civilian_allegation_percentile'),
+            percentile_allegation_internal=F('officer__internal_allegation_percentile'),
+            percentile_trr=F('officer__trr_percentile'),
             name=Concat('officer__first_name', Value(' '), 'officer__last_name'),
             count=Count('allegation', distinct=True)
         )

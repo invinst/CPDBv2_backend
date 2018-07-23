@@ -1,5 +1,4 @@
 from data.models import Allegation
-from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from .doc_types import CRDocType
@@ -14,25 +13,8 @@ class CRIndexer(BaseIndexer):
     doc_type_klass = CRDocType
     index_alias = cr_index_alias
 
-    def __init__(self, *args, **kwargs):
-        super(CRIndexer, self).__init__(*args, **kwargs)
-        self.top_percentile_dict = calculate_top_percentile()
-
     def get_queryset(self):
         return Allegation.objects.all()
 
     def extract_datum(self, datum):
-        result = CRDocSerializer(datum).data
-        for coaccused in result['coaccused']:
-            try:
-                coaccused.update(self.top_percentile_dict[coaccused['id']])
-            except KeyError:
-                pass
-
-        for involvement in result['involvements']:
-            try:
-                involvement.update(self.top_percentile_dict[involvement['officer_id']])
-            except KeyError:
-                pass
-
-        return result
+        return CRDocSerializer(datum).data

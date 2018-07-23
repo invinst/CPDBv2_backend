@@ -5,15 +5,16 @@ from django.db.models import F, Q
 from tqdm import tqdm
 
 from data import officer_percentile
-from data.constants import MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR
+from data.constants import (
+    MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR,
+    PERCENTILE_TRR_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_ALLEGATION_GROUP
+)
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
-from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from officers.serializers.doc_serializers import (
     OfficerYearlyPercentileSerializer,
     OfficerInfoSerializer,
-    OfficerSinglePercentileSerializer,
 )
 from trr.models import TRR
 from .doc_types import (
@@ -98,6 +99,11 @@ class OfficerPercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
     doc_type_klass = OfficerInfoDocType
     parent_doc_type_property = 'percentiles'
+    percentile_groups = [
+        PERCENTILE_ALLEGATION_GROUP,
+        PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+        PERCENTILE_TRR_GROUP
+    ]
 
     def get_queryset(self):
         def _not_retired(officer):
@@ -105,25 +111,12 @@ class OfficerPercentileIndexer(BaseIndexer):
 
         results = []
         for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
-            officers = officer_percentile.top_percentile(yr)
+            officers = officer_percentile.top_percentile(yr, percentile_groups=self.percentile_groups)
             results.extend(filter(_not_retired, officers))
         return results
 
     def extract_datum(self, datum):
         return OfficerYearlyPercentileSerializer(datum).data
-
-
-@register_indexer(app_name)
-class OfficerSinglePercentileIndexer(BaseIndexer):
-    index_alias = officers_index_alias
-    doc_type_klass = OfficerInfoDocType
-    op_type = 'update'
-
-    def get_queryset(self):
-        return officer_percentile.annotate_honorable_mention_percentile_officers()
-
-    def extract_datum(self, datum):
-        return OfficerSinglePercentileSerializer(datum).data
 
 
 @register_indexer(app_name)
@@ -199,19 +192,8 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
     doc_type_klass = OfficerCoaccusalsDocType
     index_alias = officers_index_alias
 
-    def __init__(self, *args, **kwargs):
-        super(OfficerCoaccusalsIndexer, self).__init__(*args, **kwargs)
-        self.top_percentile_dict = calculate_top_percentile()
-
     def get_queryset(self):
         return Officer.objects.all()
 
     def extract_datum(self, officer):
-        result = OfficerCoaccusalsSerializer(officer).data
-        for coaccusals in result['coaccusals']:
-            try:
-                coaccusals.update(self.top_percentile_dict[coaccusals['id']])
-            except KeyError:
-                pass
-
-        return result
+        return OfficerCoaccusalsSerializer(officer).data

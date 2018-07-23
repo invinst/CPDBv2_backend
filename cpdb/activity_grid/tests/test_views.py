@@ -84,16 +84,16 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 6,
             'sustained_count': 2,
             'birth_year': 1950,
-            'complaint_percentile': '50.000',
+            'complaint_percentile': '50.0000',
             'race': 'Asian',
             'gender': 'Male',
             'percentile': {
                 'id': officer1.id,
                 'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '50.000',
-                'percentile_allegation_internal': '0.000',
-                'percentile_allegation_civilian': '50.000'
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '50.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_allegation_civilian': '50.0000'
             },
             'type': 'single_officer',
         }, {
@@ -102,16 +102,16 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 1,
             'sustained_count': 1,
             'birth_year': 1960,
-            'complaint_percentile': '0.000',
+            'complaint_percentile': '0.0000',
             'race': 'White',
             'gender': 'Male',
             'percentile': {
                 'id': officer2.id,
                 'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '0.000',
-                'percentile_allegation_internal': '0.000',
-                'percentile_allegation_civilian': '0.000'
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_allegation_civilian': '0.0000'
             },
             'type': 'single_officer',
         }, {
@@ -124,10 +124,10 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile': {
                     'id': officer1.id,
                     'year': 2016,
-                    'percentile_trr': '0.000',
-                    'percentile_allegation': '50.000',
-                    'percentile_allegation_internal': '0.000',
-                    'percentile_allegation_civilian': '50.000'
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '50.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_allegation_civilian': '50.0000'
                 },
             },
             'officer2': {
@@ -139,10 +139,10 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile': {
                     'id': officer2.id,
                     'year': 2016,
-                    'percentile_trr': '0.000',
-                    'percentile_allegation': '0.000',
-                    'percentile_allegation_internal': '0.000',
-                    'percentile_allegation_civilian': '0.000'
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '0.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_allegation_civilian': '0.0000'
                 },
             },
             'coaccusal_count': 1,

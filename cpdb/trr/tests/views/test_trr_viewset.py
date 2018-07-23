@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Point
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+import pytz
 
 from data.factories import PoliceUnitFactory, OfficerFactory, OfficerHistoryFactory, OfficerAllegationFactory
 from trr.factories import TRRFactory, ActionResponseFactory
@@ -21,7 +22,11 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             race='White',
             gender='M',
             appointed_date=date(2000, 1, 1),
-            birth_year=1980)
+            birth_year=1980,
+            civilian_allegation_percentile=11.1111,
+            internal_allegation_percentile=22.2222,
+            trr_percentile=33.3333
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             taser=False,
@@ -29,7 +34,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
             officer_on_duty=False,
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             subject_gender='M',
             subject_age=37,
             officer=officer,
@@ -37,11 +42,11 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             block='34XX',
             street='Douglas Blvd',
             beat=1021,
-            point=Point(1.0, 1.0),
+            point=Point(1.0, 1.0)
         )
         OfficerAllegationFactory(
             officer=officer,
-            allegation__incident_date=datetime(2003, 1, 1),
+            allegation__incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1),
             final_finding='SU'
@@ -66,9 +71,9 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
                 'appointed_date': '2000-01-01',
                 'unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'birth_year': 1980,
-                'percentile_trr': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation_internal': 22.2222,
+                'percentile_allegation_civilian': 11.1111,
             },
             'subject_race': 'White',
             'subject_gender': 'Male',
@@ -93,7 +98,11 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             race='White',
             gender='M',
             appointed_date=date(2000, 1, 1),
-            birth_year=1980)
+            birth_year=1980,
+            civilian_allegation_percentile=11.1111,
+            internal_allegation_percentile=22.2222,
+            trr_percentile=33.3333,
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             taser=False,
@@ -101,7 +110,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
             officer_on_duty=False,
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             subject_gender='M',
             subject_age=37,
             officer=officer,
@@ -112,7 +121,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory(
             officer=officer,
-            allegation__incident_date=datetime(2003, 1, 1),
+            allegation__incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1), final_finding='SU')
         ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category=1)
@@ -135,9 +144,9 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
                 'appointed_date': '2000-01-01',
                 'unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'birth_year': 1980,
-                'percentile_trr': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation_internal': 22.2222,
+                'percentile_allegation_civilian': 11.1111,
             },
             'subject_race': 'White',
             'subject_gender': 'Male',
