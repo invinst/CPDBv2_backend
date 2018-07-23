@@ -155,6 +155,18 @@ class UnitChangeNewTimelineEventIndexer(BaseIndexer):
 
 
 @register_indexer(app_name)
+class RankChangeNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Salary.objects.rank_histories_without_joined()
+
+    def extract_datum(self, datum):
+        return RankChangeNewTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
 class JoinedNewTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerNewTimelineEventDocType
     index_alias = officers_index_alias
@@ -192,18 +204,6 @@ class TRRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, trrs):
         return TRRNewTimelineSerializer(trrs).data
-
-
-@register_indexer(app_name)
-class RankChangeNewTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerNewTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Salary.objects.rank_histories()
-
-    def extract_datum(self, datum):
-        return RankChangeNewTimelineSerializer(datum).data
 
 
 @register_indexer(app_name)

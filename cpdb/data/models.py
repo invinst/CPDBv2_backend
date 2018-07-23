@@ -1254,8 +1254,10 @@ class AttachmentRequest(models.Model):
 
 
 class SalaryManager(models.Manager):
-    def rank_histories(self):
-        salaries = self.all().order_by('officer_id', 'year')
+    def rank_histories_without_joined(self):
+        salaries = self.exclude(
+            spp_date=F('officer__appointed_date')
+        ).order_by('officer_id', 'year')
         last_salary = salaries.first()
         result = [salaries.first()]
         for salary in salaries:
