@@ -114,11 +114,11 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             officer1 = Mock(
-                full_name='Jerome Finnigan', complaints=3, visual_token_video_path='media_folder/officer_1.mp4'
+                full_name='Jerome Finnigan', complaints=3, visual_token_png_path='media_folder/officer_1.png'
             )
             officer1.get_absolute_url = Mock(return_value='/officer/1/')
             officer2 = Mock(
-                full_name='Raymond Piwnicki', complaints=0, visual_token_video_path='media_folder/officer_2.mp4'
+                full_name='Raymond Piwnicki', complaints=0, visual_token_png_path='media_folder/officer_2.png'
             )
             officer2.get_absolute_url = Mock(return_value='/officer/2/', )
 
@@ -134,7 +134,7 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'tweet_content': '@abc Jerome Finnigan has 3 complaints',
                 'url': 'http://foo.co/officer/1/',
                 'type': 'single_officer',
-                'media_path': 'media_folder/officer_1.mp4',
+                'media_path': 'media_folder/officer_1.png',
                 'entity': officer1,
                 'officer1': None,
                 'officer2': None,
@@ -144,7 +144,7 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
                 'url': 'http://foo.co/officer/2/',
                 'type': 'single_officer',
-                'media_path': 'media_folder/officer_2.mp4',
+                'media_path': 'media_folder/officer_2.png',
                 'entity': officer2,
                 'officer1': None,
                 'officer2': None,

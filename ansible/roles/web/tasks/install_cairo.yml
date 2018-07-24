@@ -16,10 +16,3 @@
   apt:
     name: ffmpeg
     update_cache: yes
-
-- name: Install pycairo
-  pip:
-    virtualenv: "{{ virtualenv_path }}"
-    name: pycairo
-  become: yes
-  become_user: "{{ deploy_user }}"

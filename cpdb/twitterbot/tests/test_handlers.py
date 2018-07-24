@@ -30,7 +30,7 @@ def namepaser_returns(value):
     return _decorator
 
 
-@override_settings(DOMAIN='http://foo.com', VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='visual_token_media')
+@override_settings(DOMAIN='http://foo.com')
 class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def setUp(self):
         super(OfficerTweetHandlerTestCase, self).setUp()
@@ -65,7 +65,6 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.outgoing_tweet = Mock(id=10, user=self.client.get_current_user())
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.handler = OfficerTweetHandler(client=self.client)
-        self.handler.video_tweet = Mock(tweet=Mock())
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @freeze_time('2017-08-03 12:00:01', tz_offset=0)
@@ -78,7 +77,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(ActivityCard.objects.get(officer=self.officer).last_activity).to.eq(
                 datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
@@ -97,7 +98,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     @namepaser_returns([('#jeromeFinnigan', 'Jerome Finnigan')])
@@ -110,7 +113,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     @namepaser_returns([('http://fakeurl.com', 'Jerome Finnigan')])
@@ -124,7 +129,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
                 self.handler.on_tweet(self.tweet)
                 expect(self.client.tweet).to.be.called_with(
                     '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                    in_reply_to=1
+                    in_reply_to=1,
+                    filename='officer_1.png',
+                    file=_mock_open()
                 )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
@@ -137,11 +144,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(self.client.tweet).to.be.any_call(
                 '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     @namepaser_returns([('text', 'Jerome Finnigan'), ('text', 'Raymond Piwnicki')])
@@ -221,11 +232,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(self.client.tweet).to.be.any_call(
                 '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
@@ -248,11 +263,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=2
+                in_reply_to=2,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(self.client.tweet).to.be.any_call(
                 '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
-                in_reply_to=2
+                in_reply_to=2,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     @namepaser_returns([('text', 'Jerome Finnigan')])
@@ -277,11 +296,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(self.client.tweet).to.be.any_call(
                 '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=20',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
             self.client.tweet.reset_mock()
@@ -291,25 +314,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             self.handler.on_tweet(self.tweet)
             expect(self.client.tweet).to.be.any_call(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=30',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
             expect(self.client.tweet).to.be.any_call(
                 '@def Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=40',
-                in_reply_to=1
-            )
-
-    @namepaser_returns([('text', 'Jerome Finnigan')])
-    @patch('os.path.isfile', return_value=True)
-    def test_tweet_with_video(self, _):
-        _mock_open = mock_open()
-        with patch('twitterbot.handlers.open', _mock_open, create=True):
-            self.tweet.text = '@CPDPbot Jerome Finnigan'
-            self.refresh_index()
-            self.handler.on_tweet(self.tweet)
-            expect(self.handler.video_tweet.tweet).to.be.called_with(
-                '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=5',
-                'visual_token_media/officer_1.mp4',
-                in_reply_to=1
+                in_reply_to=1,
+                filename='officer_1.png',
+                file=_mock_open()
             )
 
     def test_filter_tweets_from_other_bots(self):

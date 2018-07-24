@@ -47,6 +47,7 @@ class OfficersIndexer(BaseIndexer):
         return OfficerInfoSerializer(datum).data
 
 
+@register_indexer(app_name)
 class SocialGraphIndexer(BaseIndexer):
     doc_type_klass = OfficerSocialGraphDocType
     index_alias = officers_index_alias
