@@ -28,7 +28,7 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
                 **kwargs
             )
 
-    @patch('django.conf.settings.ALLEGATION_MIN_DATE', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
     def test_get_heatmap_cluster_data(self):
         AllegationFactory(point=Point([20, 22]), incident_date=datetime(1988, 1, 1, tzinfo=pytz.utc))
         AllegationFactory(point=Point([21, 22]), incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc))

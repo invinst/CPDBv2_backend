@@ -1,10 +1,11 @@
 from itertools import combinations
 
 from django.db.models import F, Q
-from django.utils.timezone import now
 
 from tqdm import tqdm
 
+from data import officer_percentile
+from data.constants import MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR
 from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award
 from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
@@ -99,13 +100,13 @@ class OfficerPercentileIndexer(BaseIndexer):
     parent_doc_type_property = 'percentiles'
 
     def get_queryset(self):
+        def _not_retired(officer):
+            return not officer.resignation_date or officer.year <= officer.resignation_date.year
+
         results = []
-        for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
-            officers = Officer.top_complaint_officers(100, yr)
-            if officers and officers[0].year < yr:
-                # we have no more data to calculate, should break here
-                break
-            results.extend(officers)
+        for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
+            officers = officer_percentile.top_percentile(yr)
+            results.extend(filter(_not_retired, officers))
         return results
 
     def extract_datum(self, datum):
@@ -119,7 +120,7 @@ class OfficerSinglePercentileIndexer(BaseIndexer):
     op_type = 'update'
 
     def get_queryset(self):
-        return Officer.annotate_honorable_mention_percentile_officers()
+        return officer_percentile.annotate_honorable_mention_percentile_officers()
 
     def extract_datum(self, datum):
         return OfficerSinglePercentileSerializer(datum).data

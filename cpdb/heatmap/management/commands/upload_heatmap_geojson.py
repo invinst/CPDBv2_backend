@@ -40,7 +40,7 @@ class Command(BaseCommand):
                 AND point IS NOT NULL
             GROUP BY
                 ST_SnapToGrid( ST_SetSRID(point, 4326), %s, %s)
-            ''' % (settings.ALLEGATION_MIN_DATE, grid_size, grid_size)
+            ''' % (settings.ALLEGATION_MIN, grid_size, grid_size)
             )
         kclusters = kursor.fetchall()
         ret = {'features': [], 'type': 'FeatureCollection'}

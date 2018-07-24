@@ -4,7 +4,11 @@ from django.test import SimpleTestCase
 from mock import Mock
 from robber import expect
 
-from officers.serializers.respone_serialiers import NewTimelineSerializer, OfficerMobileSerializer
+from officers.serializers.respone_serialiers import (
+    NewTimelineSerializer,
+    OfficerMobileSerializer,
+    OfficerYearlyPercentileSerializer
+)
 
 
 class NewTimelineSerializerTestCase(SimpleTestCase):
@@ -158,3 +162,24 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
             'gender': 'Male',
         }
         expect(OfficerMobileSerializer(obj).data).to.eq(expected_response)
+
+
+class OfficerYearlyPercentileSerializerTestCase(SimpleTestCase):
+
+    def test_serialization_missing_percentile(self):
+        data = {
+            'id': 1,
+            'year': 2016,
+            'percentile_allegation': '66.667',
+            'percentile_allegation_internal': '50.000',
+            'percentile_allegation_civilian': '0.000',
+        }
+        obj = Mock(spec=data.keys(), **data)
+        expected_response = {
+            'id': 1,
+            'year': 2016,
+            'percentile_allegation': '66.667',
+            'percentile_allegation_internal': '50.000',
+            'percentile_allegation_civilian': '0.000',
+        }
+        expect(OfficerYearlyPercentileSerializer(obj).data).to.eq(expected_response)
