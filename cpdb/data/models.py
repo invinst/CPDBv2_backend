@@ -792,9 +792,9 @@ class Officer(TaggableModel):
         if query_date >= last_history['date']:
             return last_history['rank']
         for i in range(len(rank_histories)):
-            if rank_histories[i]['date'] > query_date:
+            if query_date < rank_histories[i]['date']:
                 return rank_histories[i-1]['rank']
-            if rank_histories[i]['date'] == query_date:
+            if query_date == rank_histories[i]['date']:
                 return rank_histories[i]['rank']
 
 
