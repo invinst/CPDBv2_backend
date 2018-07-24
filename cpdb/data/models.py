@@ -1,12 +1,12 @@
 import os
-from datetime import date, datetime
+from datetime import datetime
 from itertools import groupby
 
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models import F, Q, Value, Max, IntegerField, Count, Func, Prefetch
+from django.db.models import F, Q, Value, Max, Count, Prefetch
 from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
@@ -14,15 +14,11 @@ from django.utils.timezone import now, timedelta
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, PERCENTILE_ALLEGATION,
-    PERCENTILE_TYPES, MAJOR_AWARDS, PERCENTILE_TRR, PERCENTILE_HONORABLE_MENTION,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, MAJOR_AWARDS,
 )
 from data.utils.aggregation import get_num_range_case
-from data.utils.percentile import percentile
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
-from data.utils.round import Round
-from trr.models import TRR
 
 AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
@@ -344,198 +340,6 @@ class Officer(TaggableModel):
     @property
     def current_age(self):
         return datetime.now().year - self.birth_year
-
-    @staticmethod
-    def get_dataset_range():
-        allegation_date = Allegation.objects.aggregate(
-            models.Min('incident_date'),
-            models.Max('incident_date'),
-            models.Min('officerallegation__start_date'),
-            models.Max('officerallegation__start_date'),
-            models.Max('officerallegation__end_date'),
-        ).values()
-        trr_date = TRR.objects.aggregate(
-            models.Min('trr_datetime'),
-            models.Max('trr_datetime')
-        ).values()
-        all_date = allegation_date[:]
-        all_date.extend(trr_date)
-        all_date = [x.date() if hasattr(x, 'date') else x for x in all_date
-                    if x is not None]
-        if not all_date:
-            return []
-        return [min(all_date), max(all_date)]
-
-    @staticmethod
-    def get_award_dataset_range():
-        award_date = Award.objects.aggregate(
-            models.Min('start_date'),
-            models.Max('start_date'),
-        ).values()
-        award_date = [x.date() if hasattr(x, 'date') else x for x in award_date if x is not None]
-        if not award_date:
-            return []
-        return [min(award_date), max(award_date)]
-
-    @staticmethod
-    def _annotate_officer_working_range(query, dataset_min_date, dataset_max_date):
-        query = query.annotate(
-            end_date=models.Case(
-                models.When(resignation_date__isnull=True, then=models.Value(dataset_max_date)),
-                default='resignation_date',
-                output_field=models.DateField()),
-            start_date=models.Case(
-                models.When(appointed_date__lt=dataset_min_date, then=models.Value(dataset_min_date)),
-                default='appointed_date',
-                output_field=models.DateField()),
-        )
-        # filter-out officer has service time smaller than 1 year
-        query = query.filter(end_date__gt=F('start_date') + timedelta(days=365))
-        return query.annotate(
-            service_year=(
-                Func(
-                    F('end_date') - F('start_date'),
-                    template="ROUND(CAST(%(function)s('day', %(expressions)s) / 365.0 as numeric), 4)",
-                    function='DATE_PART',
-                    output_field=models.FloatField()
-                )  # in order to easy to test and calculate, we only get 4 decimal points
-            )
-        )
-
-    @staticmethod
-    def _annotate_num_complaint_n_trr(query, dataset_max_date):
-        return query.annotate(
-            officer_id=F('id'),
-            year=models.Value(dataset_max_date.year, output_field=IntegerField()),
-            num_allegation=models.Count(
-                models.Case(
-                    models.When(
-                        officerallegation__start_date__lte=dataset_max_date,
-                        then='officerallegation'
-                    ), output_field=models.CharField(),
-                ), distinct=True
-            ),
-            num_allegation_internal=models.Count(
-                models.Case(
-                    models.When(
-                        Q(officerallegation__allegation__is_officer_complaint=True) &
-                        Q(officerallegation__start_date__lte=dataset_max_date),
-                        then='officerallegation'
-                    )
-                ), distinct=True
-            ),
-            num_trr=models.Count(
-                models.Case(
-                    models.When(
-                        trr__trr_datetime__date__lte=dataset_max_date,
-                        then='trr'
-                    ), output_field=models.CharField(),
-                ), distinct=True
-            ),
-        )
-
-    @staticmethod
-    def _annotate_honorable_mention(query, dataset_max_date):
-        return query.annotate(
-            num_honorable_mention=models.Count(
-                models.Case(
-                    models.When(
-                        award__start_date__lte=dataset_max_date,
-                        award__award_type='Honorable Mention',
-                        then='award'
-                    ), output_field=models.CharField(),
-                ), distinct=True
-            )
-        )
-
-    @staticmethod
-    def compute_metric_percentile(year_end=now().year):
-        dataset_range = Officer.get_dataset_range()
-        if not dataset_range:
-            return []
-        [dataset_min_date, dataset_max_date] = dataset_range
-
-        if year_end:
-            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-
-        # STEP 1: compute the service time of all officers
-        query = Officer.objects.filter(appointed_date__isnull=False)
-        query = Officer._annotate_officer_working_range(query, dataset_min_date, dataset_max_date)
-
-        # STEP 2: count the allegation (internal/civil) and TRR
-        query = Officer._annotate_num_complaint_n_trr(query, dataset_max_date)
-
-        # STEP 3: calculate the metric
-        query = query.annotate(
-            metric_allegation=models.ExpressionWrapper(
-                Round(F('num_allegation') / F('service_year')),
-                output_field=models.FloatField()),
-            metric_allegation_internal=models.ExpressionWrapper(
-                Round(F('num_allegation_internal') / F('service_year')),
-                output_field=models.FloatField()),
-            metric_allegation_civilian=models.ExpressionWrapper(
-                Round((F('num_allegation') - F('num_allegation_internal')) / F('service_year')),
-                output_field=models.FloatField()),
-            metric_trr=models.ExpressionWrapper(
-                Round(F('num_trr') / F('service_year')),
-                output_field=models.FloatField())
-        ).order_by(PERCENTILE_ALLEGATION, PERCENTILE_TRR, 'officer_id')
-
-        return query
-
-    @staticmethod
-    def top_complaint_officers(top_percentile_value, year=now().year, percentile_types=PERCENTILE_TYPES):
-        """ This is calculate top percentile of top_percentile_value
-        :return: list of (officer_id, percentile_value)
-        """
-        computed_data = list(Officer.compute_metric_percentile(year))
-
-        if any(t not in PERCENTILE_TYPES for t in percentile_types):
-            raise ValueError("percentile_type is invalid")
-
-        for percentile_type in percentile_types:
-            computed_data = percentile(
-                computed_data,
-                100.0 - top_percentile_value,
-                key=percentile_type,
-                decimal_places=4)
-        return computed_data
-
-    @staticmethod
-    def compute_honorable_mention_metric(year_end=now().year):
-        dataset_range = Officer.get_award_dataset_range()
-        if not dataset_range:
-            return []
-        [dataset_min_date, dataset_max_date] = dataset_range
-
-        if year_end:
-            dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-
-        # STEP 1: compute the service time of all officers
-        query = Officer.objects.filter(appointed_date__isnull=False)
-        query = Officer._annotate_officer_working_range(query, dataset_min_date, dataset_max_date)
-
-        # STEP 2: count the allegation (internal/civil), TRR and major award
-        query = Officer._annotate_honorable_mention(query, dataset_max_date)
-
-        # STEP 3: calculate the metric
-        query = query.annotate(
-            metric_honorable_mention=models.ExpressionWrapper(
-                Round(F('num_honorable_mention') / F('service_year')),
-                output_field=models.FloatField()),
-        ).order_by(PERCENTILE_HONORABLE_MENTION, 'id')
-
-        return query
-
-    @staticmethod
-    def annotate_honorable_mention_percentile_officers():
-        officer_metrics = list(Officer.compute_honorable_mention_metric())
-        officer_metrics_with_honorable_mention_percentile = percentile(
-            officer_metrics,
-            key=PERCENTILE_HONORABLE_MENTION,
-            decimal_places=4
-        )
-        return officer_metrics_with_honorable_mention_percentile
 
     @property
     def v2_to(self):

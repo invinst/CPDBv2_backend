@@ -120,18 +120,6 @@ Regarding to the nginx changes, please update both files: with and without https
 # Documentation
 - [API standards](docs/api-standards.md)
 
-# Data pipeline
-
-Going forward the only recommended way to import new data is to follow the following steps:
-
-- Write database migrations as necessary. Do not write data migration.
-- Produce fixtures to either insert new data or change existing data. A couple things:
-    - Fixture file should be named like this: `<id>_<table_name>.json` (i.e. 001_investigator.json). `id` starts from "001" and increase each time a new fixture file is written. `id` should not collide with old ones of course, otherwise the fixture won't be applied.
-    - You could produce the fixture file in any number of ways. But the recommended way for now is to create a notebook on http://cpdp-notebooks.southeastasia.cloudapp.azure.com/. Ask your teammate for credentials. Notebooks kept there must be named like this: `<date>_<name>.ipynb` (i.e. 20180109_Import_CMAP_data.ipynb)
-- Test your fixture by running `cpdb/manage.py apply_fixtures` on local. It should only applied fixtures that haven't been applied.
-- When you deploy to production or staging `apply_fixtures` is ran automatically.
-- The applied fixtures can be checked by visiting admin page `/admin/data_pipeline/appliedfixture/`
-
 # Miscelaneous
 
 - [Snapshot test](docs/snapshot-test.md)

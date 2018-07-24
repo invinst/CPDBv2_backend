@@ -81,7 +81,7 @@ class AreaIndexer(BaseIndexer):
         scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')
         return {
             district.id: district.percentile_allegation_per_capita
-            for district in percentile(scores, 0, key='allegation_per_capita')
+            for district in percentile(scores, key='allegation_per_capita')
         }
 
     def get_queryset(self):
