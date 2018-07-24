@@ -1,5 +1,6 @@
 import itertools
 import logging
+import os
 
 from responsebot.handlers import BaseTweetHandler, BaseEventHandler, register_handler
 from responsebot.models import TweetFilter
@@ -16,11 +17,16 @@ from .models import TwitterBotResponseLog
 from .utils.web_parsing import add_params
 from .constants import IDS_OF_OTHER_BOTS
 from .post_processors import ActivityGridUpdater
+from .utils.video_tweet import VideoTweet
 
 logger = logging.getLogger(__name__)
 
 
 class BaseOfficerTweetHandler(BaseTweetHandler):
+    def __init__(self, client=None, *args, **kwargs):
+        super(BaseOfficerTweetHandler, self).__init__(client, *args, **kwargs)
+        self.video_tweet = VideoTweet(self.client.config)
+
     def reset_context(self):
         self._context = {'client': self.client}
 
@@ -47,12 +53,12 @@ class BaseOfficerTweetHandler(BaseTweetHandler):
             tweet_content = '%s %s' % (tweet_content, entity_url)
 
         try:
-            if media_path:
-                file_name = media_path.split('/')[-1]
-                with open(media_path) as media_file:
-                    outgoing_tweet = self.client.tweet(
-                        tweet_content, in_reply_to=self._context['first_non_retweet'].id,
-                        filename=file_name, file=media_file)
+            if media_path and os.path.isfile(media_path):
+                outgoing_tweet = self.video_tweet.tweet(
+                    tweet_content,
+                    media_path,
+                    in_reply_to=self._context['first_non_retweet'].id
+                )
             else:
                 outgoing_tweet = self.client.tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id)
         except CharacterLimitError:

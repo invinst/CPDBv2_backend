@@ -53,7 +53,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
                 '_entity': officer,
                 '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
                 'source': (source, ),
-                '_media_path': officer.visual_token_png_path
+                '_media_path': officer.visual_token_video_path
             }
 
 

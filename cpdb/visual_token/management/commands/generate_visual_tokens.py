@@ -38,6 +38,6 @@ class Command(BaseCommand):
                     duration=duration
                 )
                 clip.write_videofile(
-                    '%s/%s.mp4' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, officer_dict['id']),
+                    '%s/officer_%s.mp4' % (settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, officer_dict['id']),
                     fps=fps
                 )

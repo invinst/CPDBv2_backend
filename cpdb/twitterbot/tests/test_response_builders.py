@@ -114,11 +114,11 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
             officer1 = Mock(
-                full_name='Jerome Finnigan', complaints=3, visual_token_png_path='media_folder/officer_1.png'
+                full_name='Jerome Finnigan', complaints=3, visual_token_video_path='media_folder/officer_1.mp4'
             )
             officer1.get_absolute_url = Mock(return_value='/officer/1/')
             officer2 = Mock(
-                full_name='Raymond Piwnicki', complaints=0, visual_token_png_path='media_folder/officer_2.png'
+                full_name='Raymond Piwnicki', complaints=0, visual_token_video_path='media_folder/officer_2.mp4'
             )
             officer2.get_absolute_url = Mock(return_value='/officer/2/', )
 

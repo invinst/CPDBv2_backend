@@ -131,9 +131,9 @@ class OfficerTestCase(TestCase):
         expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
 
     @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='media_folder')
-    def test_visual_token_png_path(self):
+    def test_visual_token_video_path(self):
         officer = OfficerFactory(id=90)
-        expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
+        expect(officer.visual_token_video_path).to.eq('media_folder/officer_90.mp4')
 
     def test_compute_metric_percentile(self):
         self._create_dataset_for_percentile()

@@ -569,8 +569,8 @@ class Officer(TaggableModel):
         )
 
     @property
-    def visual_token_png_path(self):
-        file_name = 'officer_{id}.png'.format(
+    def visual_token_video_path(self):
+        file_name = 'officer_{id}.mp4'.format(
             account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
         )
         return os.path.join(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, file_name)
