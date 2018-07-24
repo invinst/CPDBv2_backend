@@ -9,6 +9,11 @@ from officers.doc_types import OfficerInfoDocType
 
 
 class Command(BaseCommand):
+    def has_enough_data(self, data):
+        percentile_keys_set = set(['percentile_allegation_civilian', 'percentile_allegation_internal', 'percentile_trr'])
+        data_key_set = set(data.keys())
+        return len(data_key_set & percentile_keys_set) >= 2
+
     def handle(self, *args, **options):
         clear_folder(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER)
         fps = 40
@@ -25,11 +30,12 @@ class Command(BaseCommand):
             if len(officer_percentiles) > 0:
                 chart_data = [
                     {
-                        'percentile_allegation_civilian': float(data['percentile_allegation_civilian']),
-                        'percentile_allegation_internal': float(data['percentile_allegation_internal']),
-                        'percentile_trr': float(data['percentile_trr'])
+                        'percentile_allegation_civilian': float(data.get('percentile_allegation_civilian', 0)),
+                        'percentile_allegation_internal': float(data.get('percentile_allegation_internal', 0)),
+                        'percentile_trr': float(data.get('percentile_trr', 0))
                     }
                     for data in officer_percentiles
+                    if self.has_enough_data(data)
                 ]
 
                 duration = float(frame_per_year) * (len(chart_data) - 1) / fps
