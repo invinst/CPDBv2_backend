@@ -10,7 +10,9 @@ from officers.doc_types import OfficerInfoDocType
 
 class Command(BaseCommand):
     def has_enough_data(self, data):
-        percentile_keys_set = set(['percentile_allegation_civilian', 'percentile_allegation_internal', 'percentile_trr'])
+        percentile_keys_set = set(
+            ['percentile_allegation_civilian', 'percentile_allegation_internal', 'percentile_trr']
+        )
         data_key_set = set(data.keys())
         return len(data_key_set & percentile_keys_set) >= 2
 
