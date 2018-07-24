@@ -3,7 +3,7 @@ import time
 from django.core.management import BaseCommand
 
 from data.models import Officer
-from data.constants import PERCENTILE_ALLEGATION
+from data import officer_percentile
 
 
 class Command(BaseCommand):
@@ -20,7 +20,7 @@ class Command(BaseCommand):
         start_time = time.time()
 
         # calculate all percentile and only calculate percentile_allegation
-        top_percentile = Officer.top_complaint_officers(100, percentile_types=[PERCENTILE_ALLEGATION])
+        top_percentile = officer_percentile.top_allegation_percentile()
         self.update_percentile_to_db(top_percentile)
 
         self.stdout.write("Finished on --- %s seconds ---" % (time.time() - start_time))

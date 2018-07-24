@@ -1,4 +1,5 @@
 from robber import expect
+from mock import Mock
 
 
 def validate_object(obj, data):
@@ -17,9 +18,5 @@ class Object(object):
     __repr__ = __str__
 
 
-def create_object(props):
-    obj = Object()
-    for key, value in props.iteritems():
-        setattr(obj, key, value)
-
-    return obj
+def create_object(dict_object):
+    return Mock(spec=dict_object.keys(), **dict_object)
