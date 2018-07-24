@@ -371,6 +371,16 @@ class Officer(TaggableModel):
         )]
 
     @property
+    def has_visual_token(self):
+        return all([
+            percentile is not None for percentile in [
+                self.civilian_allegation_percentile,
+                self.internal_allegation_percentile,
+                self.trr_percentile
+            ]
+        ])
+
+    @property
     def visual_token_png_url(self):
         return 'https://{account_name}.blob.core.windows.net/visual-token/officer_{id}.png'.format(
             account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id

@@ -30,6 +30,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             sustained_count=1,
             discipline_count=1,
             civilian_compliment_count=0,
+            complaint_percentile='0.088',
             percentiles=[percentile_mock]
         )
 
@@ -40,7 +41,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'gender': 'Male',
             'birth_year': 1910,
             'complaint_count': 2,
-            'complaint_percentile': '0.088',
+            'complaint_percentile': 0.088,
             'sustained_count': 1,
             'percentile': {
                 'id': 123,
@@ -73,7 +74,6 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'gender': 'Male',
             'birth_year': 1910,
             'complaint_count': 2,
-            'complaint_percentile': None,
             'sustained_count': 1,
             'percentile': None
         })

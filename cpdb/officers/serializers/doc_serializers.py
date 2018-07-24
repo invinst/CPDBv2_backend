@@ -81,6 +81,9 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     url = serializers.CharField(source='v1_url')
     tags = serializers.ListField(child=serializers.CharField())
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
+    current_allegation_percentile = serializers.DecimalField(
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4, source='percentile_allegation')
+    has_visual_token = serializers.BooleanField()
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
