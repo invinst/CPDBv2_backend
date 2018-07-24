@@ -22,6 +22,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
+from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
 from .views import index_view, officer_view, complaint_view
@@ -62,6 +63,7 @@ router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
 router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_name='search-term-categories')
 router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary')
+router_v2.register(r'popup', PopupViewSet, base_name='popup')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
