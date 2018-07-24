@@ -1,11 +1,13 @@
 from datetime import date, datetime
 
-import pytz
 from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
 from robber import expect
+from mock import patch
+import pytz
 
 from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
@@ -367,6 +369,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 999}))
         expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
+    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
     def test_coaccusals(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
         officer2 = OfficerFactory(
@@ -428,7 +436,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation5, final_finding='NS', start_date=date(2007, 1, 1)
         )
-        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 8, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
         self.refresh_index()
@@ -447,9 +455,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'coaccusal_count': 1,
             'rank': 'Police Officer',
             'percentile_trr': 33.3333,
-            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_civilian': 33.3333,
             'percentile_allegation_internal': 0.0,
-            'percentile_allegation': 0.0,
+            'percentile_allegation': 33.3333,
         }, {
             'id': officer3.id,
             'full_name': 'Officer 2',
