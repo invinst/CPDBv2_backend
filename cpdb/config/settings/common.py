@@ -57,7 +57,6 @@ LOCAL_APPS = (
     'document_cloud',
     'search_terms',
     'heatmap',
-    'data_pipeline',
     'trr',
     'popup',
 )

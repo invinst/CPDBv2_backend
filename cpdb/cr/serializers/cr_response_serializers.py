@@ -21,7 +21,8 @@ class CoaccusedDesktopSerializer(CherryPickSerializer):
             'percentile_allegation',
             'percentile_allegation_civilian',
             'percentile_allegation_internal',
-            'percentile_trr'
+            'percentile_trr',
+            'disciplined'
         )
 
 

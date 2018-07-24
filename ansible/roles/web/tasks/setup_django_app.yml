@@ -17,28 +17,6 @@
   become: yes
   become_user: "{{ deploy_user }}"
 
-- name: Clear tables
-  django_manage:
-    command: "cleartable {{ tables_to_be_cleared }}"
-    app_path: "{{ project_path }}"
-    virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_module }}"
-  environment: "{{ django_environment }}"
-  when: tables_to_be_cleared is defined
-  tags: django.cleartable
-  become: yes
-  become_user: "{{ deploy_user }}"
-
-- name: Apply latest fixtures
-  django_manage:
-    command: apply_fixtures
-    app_path: "{{ project_path }}"
-    virtualenv: "{{ virtualenv_path }}"
-    settings: "{{ django_settings_module }}"
-  environment: "{{ django_environment }}"
-  become: yes
-  become_user: "{{ deploy_user }}"
-
 - name: Compute essential data
   django_manage:
     command: calculate_officer_percentile

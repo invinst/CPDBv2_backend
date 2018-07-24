@@ -18,6 +18,7 @@ class CoaccusedSerializer(serializers.Serializer):
     age = serializers.IntegerField(source='officer.current_age')
     allegation_count = serializers.IntegerField(source='officer.allegation_count')
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
+    disciplined = serializers.NullBooleanField()
 
 
 class ComplainantSerializer(serializers.Serializer):
