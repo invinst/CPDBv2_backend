@@ -58,6 +58,7 @@
       priv={{numeracy_postgres_priv}}
     become: true
     become_user: postgres
+    ignore_errors: yes
 
   - name: Ensure notebook user has access to cpdb database on data tables
     postgresql_user:
@@ -65,3 +66,4 @@
       priv={{notebook_postgres_priv}}
     become: true
     become_user: postgres
+    ignore_errors: yes
