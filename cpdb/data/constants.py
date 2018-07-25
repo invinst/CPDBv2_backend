@@ -1,7 +1,8 @@
 from datetime import datetime
 
-import pytz
 from django.conf import settings
+
+import pytz
 
 
 ACTIVE_YES_CHOICE = 'Yes'
