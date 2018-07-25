@@ -763,7 +763,7 @@ class Officer(TaggableModel):
 
     @property
     def rank_histories(self):
-        salaries = self.salary_set.all().order_by('year')
+        salaries = self.salary_set.exclude(spp_date__isnull=True).order_by('year')
         try:
             first_salary = salaries[0]
         except IndexError:
@@ -777,6 +777,9 @@ class Officer(TaggableModel):
         return rank_histories
 
     def get_rank_by_date(self, query_date):
+        if query_date is None:
+            return None
+
         if type(query_date) is datetime:
             query_date = query_date.date()
         rank_histories = self.rank_histories

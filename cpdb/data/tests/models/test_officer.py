@@ -779,6 +779,10 @@ class OfficerTestCase(TestCase):
             start_date=date(2005, 1, 1)
         )
         SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=None,
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
             officer=officer, salary=15000, year=2007, rank='Police Officer', spp_date=date(2005, 1, 1),
             start_date=date(2005, 1, 1)
         )
@@ -824,6 +828,7 @@ class OfficerTestCase(TestCase):
             officer=officer, salary=25000, year=2009, rank='Sergeant', spp_date=date(2008, 1, 1),
             start_date=date(2005, 1, 1)
         )
+        expect(officer.get_rank_by_date(None)).to.eq(None)
         expect(officer.get_rank_by_date(date(2007, 1, 1))).to.eq('Police Officer')
         expect(officer.get_rank_by_date(datetime(2007, 1, 1, tzinfo=pytz.utc))).to.eq('Police Officer')
         expect(officer.get_rank_by_date(date(2005, 1, 1))).to.eq('Police Officer')
