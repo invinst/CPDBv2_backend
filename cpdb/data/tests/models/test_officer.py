@@ -852,6 +852,10 @@ class SalaryManagerTestCase(TestCase):
             officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
             start_date=date(2005, 1, 1)
         )
+        SalaryFactory(
+            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=None,
+            start_date=date(2005, 1, 1)
+        )
         salary1 = SalaryFactory(
             officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
             start_date=date(2005, 1, 1)
