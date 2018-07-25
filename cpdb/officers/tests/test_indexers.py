@@ -1,18 +1,18 @@
 from datetime import date, datetime
 
 import pytz
+from django.contrib.gis.geos import Point
 from django.test import SimpleTestCase
 from django.test.testcases import TestCase
-from django.utils.timezone import now
 from mock import Mock, patch
 from robber import expect
 
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
-    AllegationCategoryFactory,
+    AllegationCategoryFactory, VictimFactory, AwardFactory,
 )
-from data.models import Officer
+from officers.tests.utils import validate_object
 from officers.indexers import (
     OfficersIndexer,
     SocialGraphIndexer,
@@ -23,11 +23,8 @@ from officers.indexers import (
     TRRNewTimelineEventIndexer,
     AwardNewTimelineEventIndexer,
     OfficerCoaccusalsIndexer,
-    CRTimelineEventIndexer,
-    UnitChangeTimelineEventIndexer,
-    JoinedTimelineEventIndexer,
 )
-from officers.serializers import OfficerMetricsSerializer
+from officers.serializers.doc_serializers import OfficerMetricsSerializer
 from trr.factories import TRRFactory
 
 
@@ -51,6 +48,7 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
                 'id': 123,
                 'percentile_honorable_mention': 98.000,
             },
+            'unsustained_count': 24,
         })
 
         expect(OfficerMetricsSerializer(obj).data).to.eq({
@@ -66,7 +64,8 @@ class OfficerMetricsSerializerTestCase(SimpleTestCase):
             'single_percentiles': {
                 'id': 123,
                 'honorable_mention_percentile': 98.000,
-            }
+            },
+            'unsustained_count': 24,
         })
 
 
@@ -112,9 +111,14 @@ class OfficersIndexerTestCase(SimpleTestCase):
             complaint_percentile=99.8,
             honorable_mention_count=1,
             sustained_count=1,
+            unsustained_count=2,
             discipline_count=1,
             civilian_compliment_count=0,
             percentiles=[],
+            coaccusals=[{
+                'id': 1,
+                'coaccusal_count': 5
+            }],
             current_salary=9000,
             single_percentiles={
                 'id': 123,
@@ -241,90 +245,11 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'to': '',
             'url': '',
             'current_salary': 9000,
-        })
-
-
-class CRTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_allegation = Mock()
-
-        with patch('officers.indexers.OfficerAllegation.objects.filter', return_value=[officer_allegation]):
-            expect(CRTimelineEventIndexer().get_queryset()).to.eq([officer_allegation])
-
-    def test_extract_datum(self):
-        officer_allegation = Mock(
-            officer_id=123,
-            start_date=date(2012, 1, 1),
-            crid='123456',
-            category='Illegal Search',
-            subcategory='Search of premise/vehicle without warrant',
-            final_finding_display='Unfounded',
-            coaccused_count=4,
-            allegation=Mock(
-                complainant_races=['White', 'Unknown'],
-                complainant_age_groups=['21-30', '51+'],
-                complainant_genders=['Male'],
-            )
-        )
-
-        expect(CRTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 40,
-            'kind': 'CR',
-            'crid': '123456',
-            'category': 'Illegal Search',
-            'subcategory': 'Search of premise/vehicle without warrant',
-            'finding': 'Unfounded',
-            'coaccused': 4,
-            'race': ['White', 'Unknown'],
-            'age': ['21-30', '51+'],
-            'gender': ['Male']
-        })
-
-
-class UnitChangeTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer_history = Mock()
-
-        with patch('officers.indexers.OfficerHistory.objects.filter', return_value=[officer_history]):
-            expect(UnitChangeTimelineEventIndexer().get_queryset()).to.eq([officer_history])
-
-    def test_extract_datum(self):
-        officer_history = Mock()
-        officer_history.officer_id = 123
-        officer_history.effective_date = date(2010, 3, 4)
-        officer_history.unit_name = '003'
-        expect(UnitChangeTimelineEventIndexer().extract_datum(officer_history)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'date': '2010-03-04',
-            'kind': 'UNIT_CHANGE',
-            'unit_name': '003',
-            'year_sort': 2010,
-            'priority_sort': 30,
-        })
-
-
-class JoinedTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
-            expect(JoinedTimelineEventIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock()
-        officer.id = 123
-        officer.appointed_date = date(2012, 1, 1)
-        expect(JoinedTimelineEventIndexer().extract_datum(officer)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'kind': 'JOINED',
-            'date': '2012-01-01',
-            'year_sort': 2012,
-            'priority_sort': 10,
+            'unsustained_count': 2,
+            'coaccusals': [{
+                'id': 1,
+                'coaccusal_count': 5,
+            }],
         })
 
 
@@ -385,6 +310,13 @@ class SocialGraphIndexerTestCase(TestCase):
 
 
 class OfficerPercentileIndexerTestCase(TestCase):
+
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
+    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
     def setUp(self):
         self.indexer = OfficerPercentileIndexer()
 
@@ -393,7 +325,8 @@ class OfficerPercentileIndexerTestCase(TestCase):
 
     def _prepare_data_up_to_2017(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
-        officer2 = OfficerFactory(id=2, appointed_date=date(2016, 3, 14))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
+        OfficerFactory(id=3, appointed_date=date(2014, 3, 1), resignation_date=date(2015, 4, 14))
 
         OfficerAllegationFactory(
             officer=officer1,
@@ -411,7 +344,8 @@ class OfficerPercentileIndexerTestCase(TestCase):
             allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False)
         OfficerAllegationFactory.create_batch(
-            2, officer=officer2,
+            2,
+            officer=officer2,
             start_date=date(2017, 10, 19),
             allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
@@ -422,6 +356,20 @@ class OfficerPercentileIndexerTestCase(TestCase):
             allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
             allegation__is_officer_complaint=True
         )
+        OfficerAllegationFactory(
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2017, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2017, 3, 15, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2016, 3, 15, tzinfo=pytz.utc),
+        )
 
     def validate_object(self, obj, data):
         for key, value in data.iteritems():
@@ -430,75 +378,83 @@ class OfficerPercentileIndexerTestCase(TestCase):
     def test_get_queryset(self):
         self._prepare_data_up_to_2017()
         # expect officer 2 not have year 2017 since less than 1 year
-        # expect no year 2018, since dataset only up to 2017
+        # expect no year 2017, since dataset only up to 2016
         queryset = self.indexer.get_queryset()
-        expect(queryset).to.have.length(3)
-        self.validate_object(queryset[0], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 1.5,
-            'service_year': 2.0,
-            'metric_trr': 0.0,
-            'metric_allegation_internal': 0.0,
-            'metric_allegation': 1.5,
-            'year': 2016,
+        expect(queryset).to.have.length(5)
+        validate_object(queryset[0], {
             'officer_id': 1,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
-        })
-        self.validate_object(queryset[1], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0,
-            'metric_allegation_civilian': 1.0714,
-            'service_year': 2.8,
-            'metric_trr': 0.0,
+            'year': 2014,
+            'metric_allegation': 0.0,
+            'metric_allegation_civilian': 0.0,
             'metric_allegation_internal': 0.0,
-            'metric_allegation': 1.0714,
-            'year': 2017,
-            'officer_id': 1,
-            'percentile_allegation': 0,
-            'percentile_allegation_internal': 0
-        })
-        self.validate_object(queryset[2], {
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 50.0,
-            'metric_allegation_civilian': 1.25,
-            'service_year': 1.6,
             'metric_trr': 0.0,
-            'metric_allegation_internal': 0.625,
-            'metric_allegation': 1.875,
-            'year': 2017,
-            'officer_id': 2,
+            'percentile_allegation': 0.0,
+            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
+        })
+        validate_object(queryset[1], {
+            'officer_id': 1,
+            'year': 2015,
+            'metric_allegation': 0.6673,
+            'metric_allegation_civilian': 0.6673,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.0,
             'percentile_allegation': 50.0,
-            'percentile_allegation_internal': 50.0
+            'percentile_allegation_civilian': 50.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
         })
-
-    def test_get_queryset_with_dataset_up_to_now(self):
-        self._prepare_data_up_to_2017()
-        current_year = now().year
-        officer1 = Officer.objects.get(id=1)
-        OfficerAllegationFactory(
-            officer=officer1,
-            start_date=date(current_year, 1, 2),
-            allegation__incident_date=datetime(current_year, 1, 2, tzinfo=pytz.utc)
-        )
-        results = self.indexer.get_queryset()
-        expect(results).to.have.length(3 + (current_year - 2017) * 2)
-        expect(results[-1].year).to.eq(current_year)
+        validate_object(queryset[2], {
+            'officer_id': 3,
+            'year': 2015,
+            'metric_allegation': 0.0,
+            'metric_allegation_civilian': 0.0,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.0,
+            'percentile_allegation': 0.0,
+            'percentile_allegation_civilian': 0.0,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 0.0,
+        })
+        validate_object(queryset[3], {
+            'officer_id': 1,
+            'year': 2016,
+            'metric_allegation': 0.8575,
+            'metric_allegation_civilian': 0.8575,
+            'metric_allegation_internal': 0.0,
+            'metric_trr': 0.3049,
+            'percentile_allegation': 33.3333,
+            'percentile_allegation_civilian': 33.3333,
+            'percentile_allegation_internal': 0.0,
+            'percentile_trr': 66.6667,
+        })
+        validate_object(queryset[4], {
+            'officer_id': 2,
+            'year': 2016,
+            'metric_allegation': 2.3052,
+            'metric_allegation_civilian': 1.5368,
+            'metric_allegation_internal': 0.7684,
+            'metric_trr': 0.0,
+            'percentile_allegation': 66.6667,
+            'percentile_allegation_civilian': 66.6667,
+            'percentile_allegation_internal': 66.6667,
+            'percentile_trr': 0.0,
+        })
 
     def test_extract_datum(self):
         data = {
             'year': 2016,
             'id': 1,
             'service_year': 2.2,
-            'metric_trr': 0,
-            'metric_allegation': 0,
-            'metric_allegation_internal': 0,
-            'metric_allegation_civilian': 0,
+            'metric_trr': 0.0,
+            'metric_allegation': 0.0,
+            'metric_allegation_internal': 0.0,
+            'metric_allegation_civilian': 0.0,
             'percentile_allegation': 66.6667,
             'percentile_allegation_internal': 50,
-            'percentile_trr': 0,
-            'percentile_allegation_civilian': 0
+            'percentile_trr': 0.0,
+            'percentile_allegation_civilian': 0.0
         }
         expect(self.indexer.extract_datum(data)).to.eq({
             'id': 1,
@@ -507,6 +463,26 @@ class OfficerPercentileIndexerTestCase(TestCase):
             'percentile_allegation_internal': '50.000',
             'percentile_allegation_civilian': '0.000',
             'percentile_trr': '0.000',
+        })
+
+    def test_extract_datum_missing_percentile(self):
+        data = {
+            'year': 2016,
+            'id': 1,
+            'service_year': 2.2,
+            'metric_allegation': 0,
+            'metric_allegation_internal': 0,
+            'metric_allegation_civilian': 0,
+            'percentile_allegation': 66.6667,
+            'percentile_allegation_internal': 50,
+            'percentile_allegation_civilian': 0
+        }
+        expect(self.indexer.extract_datum(data)).to.eq({
+            'id': 1,
+            'year': 2016,
+            'percentile_allegation': '66.667',
+            'percentile_allegation_internal': '50.000',
+            'percentile_allegation_civilian': '0.000',
         })
 
 
@@ -583,6 +559,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='123456',
+            point=Point(35.5, 68.9),
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -620,6 +597,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             final_outcome='Unknown'
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        VictimFactory(allegation=allegation, gender='M', race='White', age=34)
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -636,6 +614,17 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'victims': [
+                {
+                    'race': 'White',
+                    'age': 34,
+                    'gender': 'Male',
+                }
+            ],
+            'point': {
+                'lon': 35.5,
+                'lat': 68.9
+            },
             'attachments': [
                 {
                     'title': 'doc_1',
@@ -653,12 +642,18 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         })
 
 
-class AwardNewTimelineEventIndexerTestCase(SimpleTestCase):
+class AwardNewTimelineEventIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        award = Mock()
-
-        with patch('officers.indexers.Award.objects.filter', return_value=[award]):
-            expect(AwardNewTimelineEventIndexer().get_queryset()).to.eq([award])
+        AwardFactory(award_type='Honorable Mention')
+        AwardFactory(award_type='Honorable Mention Ribbon Award')
+        AwardFactory(award_type="Superintendent'S Honorable Mention")
+        AwardFactory(award_type='Special Honorable Mention')
+        AwardFactory(award_type='Complimentary Letter')
+        AwardFactory(award_type='Department Commendation')
+        award1 = AwardFactory(award_type='Life Saving Award')
+        award2 = AwardFactory(award_type='Award Of Appreciation')
+        award3 = AwardFactory(award_type='Problem Solving Award')
+        expect(list(AwardNewTimelineEventIndexer().get_queryset())).to.eq([award1, award2, award3])
 
     def test_extract_datum(self):
         award = Mock(
@@ -707,7 +702,12 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
                     description='Unit_001',
                 )),
             ),
+            point=Mock(
+                x=34.5,
+                y=67.8
+            ),
         )
+
         expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
             'trr_id': 2,
             'officer_id': 123,
@@ -720,6 +720,10 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',
+            'point': {
+                'lat': 67.8,
+                'lon': 34.5
+            },
         })
 
 
@@ -728,6 +732,12 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         officer = OfficerFactory()
         expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
 
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
+    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
+    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
+    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
     def test_extract_datum(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
         officer2 = OfficerFactory(
@@ -774,7 +784,7 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         OfficerAllegationFactory(
             officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
         )
-        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(officer=officer2, trr_datetime=datetime(2004, 1, 8, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc))
         TRRFactory(officer=officer3, trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc))
 

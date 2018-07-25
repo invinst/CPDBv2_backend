@@ -3,12 +3,13 @@ from mock import Mock, patch
 from robber import expect
 from django.test import SimpleTestCase, TestCase
 
-from search.search_indexers import CrIndexer
-from ..search_indexers import BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+# FIXME: Be careful on this, switching this to an absolute import could failed a test
+from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory)
+from trr.factories import TRRFactory
 
 from search.search_indexers import autocompletes_alias
 
@@ -124,7 +125,7 @@ class AreaIndexerTestCase(TestCase):
 
         area2 = AreaFactory(area_type='police-districts')
         RacePopulationFactory(race='Black', count=100, area=area2)
-        AllegationFactory.create_batch(1, areas=[area2])
+        AllegationFactory(areas=[area2])
 
         area_indexer = AreaIndexer()
         expect(area_indexer.get_queryset().count()).to.eq(2)
@@ -286,6 +287,10 @@ class AreaIndexerTestCase(TestCase):
                 'id': 789,
                 'name': 'C D',
                 'count': 2
+            }, {
+                'id': 999,
+                'name': 'X Y',
+                'count': 2
             }
         ])
         area_indexer = AreaIndexer()
@@ -348,6 +353,10 @@ class AreaIndexerTestCase(TestCase):
                     'percentile_allegation_internal': 0,
                     'percentile_trr': 66.6667,
                     'percentile_allegation': 66.6667,
+                }, {
+                    'id': 999,
+                    'name': 'X Y',
+                    'count': 2
                 }
             ],
         })
@@ -387,4 +396,20 @@ class CrIndexerTestCase(TestCase):
         ).to.eq({
             'crid': '123456',
             'to': '/complaint/123456/10/'
+        })
+
+
+class TRRIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(TRRIndexer().get_queryset().count()).to.eq(0)
+        TRRFactory()
+        expect(TRRIndexer().get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        trr = TRRFactory(id='123456')
+
+        expect(
+            TRRIndexer().extract_datum(trr)
+        ).to.eq({
+            'id': '123456'
         })

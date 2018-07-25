@@ -918,43 +918,59 @@ This api require an api access token set in `Authorization` header. To get an ap
     + officer_id (number) - number ID of the officer
 
 + Response 200 (application/json)
-    [
-        {
-                'date': '2011-09-23',
-                'kind': 'FORCE',
-                'taser': True,
-                'firearm_used': False,
-                'unit_name': '001',
-                'rank': 'Police Officer',
-            }, {
-                'date': '2011-08-23',
-                'kind': 'CR',
-                'crid': '123456',
-                'category': 'category',
-                'subcategory': 'sub category',
-                'finding': 'Unfounded',
-                'outcome': 'Unknown',
-                'coaccused': 4,
-                'unit_name': '001',
-                'rank': 'Police Officer',
-            }, {
-                'date': '2011-03-23',
-                'kind': 'AWARD',
-                'award_type': 'Honorable Mention',
-                'unit_name': '001',
-                'rank': 'Police Officer',
-            }, {
-                'date': '2010-01-01',
-                'kind': 'UNIT_CHANGE',
-                'unit_name': '001',
-                'rank': 'Police Officer',
-            }, {
-                'date': '2000-01-01',
-                'kind': 'JOINED',
-                'unit_name': '',
-                'rank': 'Police Officer',
+
+        [{
+            "date": "2011-09-23",
+            "kind": "FORCE",
+            "taser": "true",
+            "firearm_used": "false",
+            "unit_name": "001",
+            "rank": "Police Officer",
+            "point": {
+                "lon": 16.5,
+                "lat": 67.8
+            }
+        }, {
+            "date": "2011-08-23",
+            "kind": "CR",
+            "crid": "123456",
+            "category": "category",
+            "subcategory": "sub category",
+            "finding": "Unfounded",
+            "outcome": "Unknown",
+            "coaccused": 4,
+            "unit_name": "001",
+            "rank": "Police Officer",
+            "point": {
+                "lon": 35.8,
+                "lat": 76.8
             },
-    ]
+            "victims": [{
+                "gender": "Male",
+                "race": "White",
+                "age": 34
+            }, {
+                "gender": "Female",
+                "race": "Black",
+                "age": 42
+            }]
+        }, {
+            "date": "2011-03-23",
+            "kind": "AWARD",
+            "award_type": "Honorable Mention",
+            "unit_name": "001",
+            "rank": "Police Officer"
+        }, {
+            "date": "2010-01-01",
+            "kind": "UNIT_CHANGE",
+            "unit_name": "001",
+            "rank": "Police Officer"
+        }, {
+            "date": "2000-01-01",
+            "kind": "JOINED",
+            "unit_name": "",
+            "rank": "Police Officer"
+        }]
 
 ## Officer social graph [/officers/{officer_id}/social-graph]
 
@@ -1034,7 +1050,61 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## Officer Mobile [/mobile/officers/{officer_id}/]
 
+### Get Officer Summary (include yearly percentiles) [GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+        {
+            "officer_id": 1,
+            "full_name": "Robert Anderson",
+            "percentiles": [
+                {
+                    "officer_id": 1,
+                    "year": 2016,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "76.282",
+                    "percentile_allegation_civilian": "79.479",
+                    "percentile_allegation_internal": "0.000"
+                },
+                {
+                    "officer_id": 1,
+                    "year": 2017,
+                    "percentile_trr": "0.000",
+                    "percentile_allegation": "58.446",
+                    "percentile_allegation_civilian": "63.044",
+                    "percentile_allegation_internal": "0.000"
+                }
+            ],
+            "unit": {
+              "unit_id": 2,
+              "unit_name": "001",
+              "description": "District 001"
+            },
+            "date_of_appt": "1992-01-02",
+            "active": true,
+            "rank": "Police Officer",
+            "race": "White",
+            "birth_year": 1965,
+            "badge": "19675",
+            "historic_badges": [
+              "8137"
+            ],
+            "gender": "Male",
+            "allegation_count": 125,
+            "complaint_percentile": 99.892,
+            "honorable_mention_count": 29,
+            "sustained_count": 0,
+            "discipline_count": 0,
+            "civilian_compliment_count": 8,
+            "trr_count": 24,
+            "major_award_count": 0,
+            "honorable_mention_percentile": 75.5604
+        }
 
 ## TRR [/trr/{trr_id}/]
 
@@ -1129,6 +1199,98 @@ This api require an api access token set in `Authorization` header. To get an ap
             "message": "Please enter a valid email"
         }
 
+## TRR Mobile [/mobile/trr/{trr_id}/]
+
+### Get TRR [GET]
+
++ Parameters
+    + trr_id (number) - number ID of Use of Force Report
+
++ Response 200 (application/json)
+        {
+            "id": 781,
+            "officer": {
+                "id": 583,
+                "full_name": "Robert Anderson",
+                "gender": "Male",
+                "race": "White",
+                "appointed_date": "2000-10-10",
+                "birth_year": 1973,
+                "resignation_date": "2008-03-26",
+                "unit": {
+                    "unit_name": "253",
+                    "description": "Targeted Response Unit"
+                },
+                "percentile_allegation_civilian": 92.7014,
+                "percentile_allegation_internal": 0.0,
+                "percentile_trr": 76.9689
+            },
+            "officer_in_uniform": true,
+            "officer_assigned_beat": "4682E",
+            "officer_on_duty": true,
+            "subject_race": "BLACK",
+            "subject_gender": "Male",
+            "subject_age": 27,
+            "force_category": "Other",
+            "force_types": [
+                "Physical Force - Stunning",
+                "Verbal Commands",
+                "Member Presence"
+            ],
+            "date_of_incident": "2004-04-23",
+            "location_type": "Street",
+            "address": "11XX 79Th St",
+            "beat": 612,
+            "point": {
+                "lat": 41.7508596,
+                "lng": -87.6533166
+            }
+        }
+
+## Mobile TRR Documents [/mobile/trr/{trr_id}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + trr_id (number) - number ID of TRR
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "trr_id": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "trr_id": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
+        }
 
 ## Complaint summaries [/cr/complaint-summaries/]
 
@@ -1166,19 +1328,32 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         {
             "crid": "12345",
+            'most_common_category': {
+                'category': 'Operation/Personnel Violations',
+                'allegation_name': 'NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY'
+            },
             "coaccused": [
                 {
                     "id": 123,
                     "full_name": "Robert O‚ÄôNiell",
-                    "gender": "Male",
-                    "race": "White",
+                    "final_outcome": "Reprimand",
                     "final_finding": "Sustained",
-                    "recc_outcome": "Separation",
-                    "final_outcome": "Repriment",
                     "category": "Operation/Personnel Violations",
-                    "subcategory": "NEGLECT OF DUTY/CONDUCT UNBECOMING - ON DUTY",
-                    "start_date": "2003-12-12",
-                    "end_date": "2004-12-12"
+                    "percentile_allegation": 99.861,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
+                },
+                {
+                    "id": 456,
+                    "full_name": "Alex Foo",
+                    "final_outcome": "Unknown",
+                    "final_finding": "Sustained",
+                    "category": "Operation/Personnel Violations",
+                    "percentile_allegation": 99.861,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 }
             ],
             "complainants": [
@@ -1193,61 +1368,126 @@ This api require an api access token set in `Authorization` header. To get an ap
                     "age": 20
                 }
             ],
+            "victims": [
+                {
+                    "race": "Black",
+                    "gender": "Male",
+                    "age": 53
+                },
+                {
+                    "race": "Black",
+                    "gender": "Female",
+                    "age": 20
+                }
+            ],
+            "summary": "Lorem ipsum dolor.",
             "point": {
                 "lon": -87.664606,
                 "lat": 41.68731
             },
             "incident_date": "2002-02-28",
+            "start_date": "2002-02-30",
+            "end_date": "2002-04-21",
             "address": "3510 Michigan Ave, Chicago, IL 60653",
             "location": "Police Building",
-            "beat": {
-                "name": "23"
-            },
+            "beat": "23",
             "involvements": [
                 {
+                    "officer_id": 1,
                     "involved_type": "investigator",
-                    "officers": [
-                        {
-                            "id": 1,
-                            "abbr_name": "L. Skol",
-                            "extra_info": "126 cases"
-                        }
-                    ]
+                    "full_name": "Lauren Skol",
+                    "current_rank": "IPRA investigator",
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 },
                 {
-                    "involved_type": "police witnesses",
-                    "officers": [
-                        {
-                            "id": 2,
-                            "abbr_name": "R. Piwinicki",
-                            "extra_info": "male, white"
-                        },
-                        {
-                            "id": 3,
-                            "abbr_name": "J. Ipsum",
-                            "extra_info": "male, black"
-                        }
-                    ]
+                    "officer_id": 2,
+                    "involved_type": "police_witness",
+                    "full_name": "Raymond Piwinicki",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
+                },
+                {
+                    "officer_id": 3,
+                    "involved_type": "police_witness",
+                    "full_name": "German Felix",
+                    "allegation_count": 10,
+                    "sustained_count": 3,
+                    "percentile_allegation_civilian": 99.881,
+                    "percentile_allegation_internal": 80.569,
+                    "percentile_trr": 92.110
                 }
             ],
-            "audios": [
+            "attachments": [
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
-                }
-            ],
-            "videos": [
+                    "file_type": "video",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
+                },
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
-                }
-            ],
-            "documents": [
+                    "file_type": "audio",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
+                },
                 {
                     "title": "CHI - R-00001275 Red",
-                    "url": "http://foo.com"
+                    "file_type": "document",
+                    "url": "http://foo.com",
+                    "preview_image_url": "http://foo.com/bar.jpg"
                 }
             ]
+        }
+
+
+## CR Documents [/mobile/cr/{crid}/request-document/]
+
+### Request document [POST]
+
++ Parameters
+    + crid (number) - number ID of Allegation
+
++ Request (application/json)
+
+        {
+            "email": "asdf@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Thanks for subscribing"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "already_used@example.com"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "crid": "293928",
+            "message": "Email already added"
+        }
+
++ Request (application/json)
+
+        {
+            "email": "malformed email"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "message": "Please enter a valid email"
         }
 
 
@@ -2146,3 +2386,31 @@ This api require an api access token set in `Authorization` header. To get an ap
             ],
             "discipline_count": 6404
         }
+
+
+## Popup [/v2/popup/]
+
+### Get popup [GET]
+
++ Response 200 (application/json)
+
+         [
+            {
+                "name": "unit",
+                "page": "officer",
+                "title": "Unit",
+                "text": "To be updated later"
+            },
+            {
+                "name": "rank",
+                "page": "officer",
+                "title": "Rank",
+                "text": "To be updated later"
+            },
+            {
+                "name": "investigator",
+                "page": "complaint",
+                "title": "Investigator",
+                "text": "To be updated later"
+            }
+         ]

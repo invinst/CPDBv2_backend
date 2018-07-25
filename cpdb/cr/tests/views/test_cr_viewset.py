@@ -7,8 +7,8 @@ from django.utils.timezone import now
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
-import pytz
 from freezegun import freeze_time
+import pytz
 
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory,
@@ -17,6 +17,7 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
+from data.tests.officer_percentile_utils import mock_percentile_map_range
 
 
 class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -25,6 +26,14 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         super(CRViewSetTestCase, self).setUp()
         self.maxDiff = None
 
+    @mock_percentile_map_range(
+        allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        allegation_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        internal_civilian_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        trr_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        trr_max=datetime(2007, 1, 1, tzinfo=pytz.utc)
+    )
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(
@@ -46,7 +55,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU',
+            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
@@ -112,7 +121,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'percentile_allegation': 0,
                     'percentile_allegation_civilian': 0,
                     'percentile_allegation_internal': 0,
-                    'percentile_trr': 0
+                    'percentile_trr': 0,
+                    'disciplined': True
                 }
             ],
             'complainants': [

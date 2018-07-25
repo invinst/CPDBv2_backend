@@ -6,7 +6,6 @@ pyenv_virtualenv: true
 python_version: "2.7.14"
 pyenv: "{{ pyenv_root }}/bin/pyenv"
 virtualenv_path: "{{ pyenv_root }}/versions/{{ application_name }}"
-project_root_path: "/CPDB/{{ project_name }}"
 project_path: "/CPDB/{{ project_name }}/{{ application_name }}"
 application_log_dir: "{{ virtualenv_path }}/logs"
 application_log_file: "{{ application_log_dir }}/gunicorn_supervisor.log"
@@ -28,6 +27,7 @@ nginx_error_log_file: "{{ application_log_dir }}/nginx_error.log"
 nginx_static_dir: "{{ project_path }}/staticfiles/"
 nginx_media_dir: "{{ project_path }}/media/"
 nginx_template: "nginx_site_config"
+nginx_dhparams_file: /etc/nginx/dhparams.pem
 
 pyenv_environments:
   PYENV_ROOT: "{{ pyenv_root }}"

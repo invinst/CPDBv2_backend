@@ -43,3 +43,6 @@
 
 - include: install_azcopy_and_optipng.yml
   tags: visual_token
+
+- include: install_cairo.yml
+  tags: visual_token
