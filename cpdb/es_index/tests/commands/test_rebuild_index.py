@@ -21,10 +21,10 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer.index_alias.indexing.return_value.__enter__ = Mock()
         Indexer.index_alias.migrate = Mock()
         if clear:
-            indexer_klasses_map.setdefault('test', set()).clear()
-            indexer_klasses.clear()
-        indexer_klasses_map['test'].add(Indexer)
-        indexer_klasses.add(Indexer)
+            indexer_klasses_map['test'] = []
+            del indexer_klasses[:]
+        indexer_klasses_map['test'].append(Indexer)
+        indexer_klasses.append(Indexer)
         return Indexer
 
     def test_handle(self):
@@ -69,12 +69,12 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer2.create_mapping = Mock()
         Indexer2.add_new_data = Mock()
 
-        indexer_klasses_map.setdefault('alias', set()).clear()
-        indexer_klasses_map['alias'].add(Indexer1)
-        indexer_klasses_map['alias'].add(Indexer2)
-        indexer_klasses.clear()
-        indexer_klasses.add(Indexer1)
-        indexer_klasses.add(Indexer2)
+        indexer_klasses_map['alias'] = []
+        indexer_klasses_map['alias'].append(Indexer1)
+        indexer_klasses_map['alias'].append(Indexer2)
+        del indexer_klasses[:]
+        indexer_klasses.append(Indexer1)
+        indexer_klasses.append(Indexer2)
 
         with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
             call_command('rebuild_index')
@@ -98,8 +98,8 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer2.index_alias.migrate = Mock()
         Indexer2.create_mapping = Mock()
         Indexer2.add_new_data = Mock()
-        indexer_klasses_map['test'].add(Indexer2)
-        indexer_klasses.add(Indexer2)
+        indexer_klasses_map['test'].append(Indexer2)
+        indexer_klasses.append(Indexer2)
 
         with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
             call_command('rebuild_index', 'test.a')
@@ -127,8 +127,8 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer2.add_new_data = Mock()
         Indexer2.index_alias.indexing.return_value.__exit__ = Mock()
         Indexer2.index_alias.indexing.return_value.__enter__ = Mock()
-        indexer_klasses_map['test'].add(Indexer2)
-        indexer_klasses.add(Indexer2)
+        indexer_klasses_map['test'].append(Indexer2)
+        indexer_klasses.append(Indexer2)
 
         class Indexer3:
             index_alias = Mock()
@@ -141,9 +141,8 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer3.index_alias.indexing.return_value.__enter__ = Mock()
         Indexer3.create_mapping = Mock()
         Indexer3.add_new_data = Mock()
-        indexer_klasses_map['test2'] = set()
-        indexer_klasses_map['test2'].add(Indexer3)
-        indexer_klasses.add(Indexer3)
+        indexer_klasses_map['test2'] = [Indexer3]
+        indexer_klasses.append(Indexer3)
 
         with patch('es_index.management.commands.rebuild_index.autodiscover_modules'):
             call_command('rebuild_index', 'test.a', 'test.b', 'test2')
@@ -182,8 +181,8 @@ class RebuildIndexCommandTestCase(SimpleTestCase):
         Indexer2.add_new_data = Mock()
         Indexer2.index_alias.indexing.return_value.__exit__ = Mock()
         Indexer2.index_alias.indexing.return_value.__enter__ = Mock()
-        indexer_klasses_map['test'].add(Indexer2)
-        indexer_klasses.add(Indexer2)
+        indexer_klasses_map['test'].append(Indexer2)
+        indexer_klasses.append(Indexer2)
 
         self._prepare_data(clear=False)
 
