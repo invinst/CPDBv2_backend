@@ -13,7 +13,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
 
 from data.models import Area, OfficerAllegation, Officer
-from data.constants import COMMUNITY_AREA_CHOICE
+from data.constants import COMMUNITY_AREA_CHOICE, ALLEGATION_MIN_DATETIME
 
 
 # pragma: no cover
@@ -34,10 +34,13 @@ class Command(BaseCommand):
             SELECT
                 COUNT( point ) AS count,
                 ST_AsText( ST_Centroid(ST_Collect( point )) ) AS center
-            FROM data_allegation WHERE point IS NOT NULL
+            FROM data_allegation
+            WHERE
+                incident_date >= \'%s 00:00:00\'
+                AND point IS NOT NULL
             GROUP BY
                 ST_SnapToGrid( ST_SetSRID(point, 4326), %s, %s)
-            ''' % (grid_size, grid_size)
+            ''' % (settings.ALLEGATION_MIN, grid_size, grid_size)
             )
         kclusters = kursor.fetchall()
         ret = {'features': [], 'type': 'FeatureCollection'}
@@ -76,10 +79,14 @@ class Command(BaseCommand):
                     'id': area.id,
                     'name': area.name,
                     'allegation_count': OfficerAllegation.objects.filter(
-                        allegation__areas__id=area.id).distinct().count(),
+                        allegation__areas__id=area.id,
+                        allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
+                    ).distinct().count(),
                     'discipline_count': OfficerAllegation.objects.filter(
                         allegation__areas__id=area.id,
-                        disciplined=True).distinct().count(),
+                        allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
+                        disciplined=True
+                    ).distinct().count(),
                     'most_complaints_officers': [
                         {
                             'full_name': officer.full_name,
@@ -87,7 +94,8 @@ class Command(BaseCommand):
                             'id': officer.id
                         }
                         for officer in Officer.objects.filter(
-                            officerallegation__allegation__areas__id=area.id
+                            officerallegation__allegation__areas__id=area.id,
+                            officerallegation__allegation__incident_date__gte=ALLEGATION_MIN_DATETIME,
                         ).annotate(
                             complaints_count=Count('officerallegation__allegation_id')
                         ).order_by('-complaints_count')[:3]

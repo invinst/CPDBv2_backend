@@ -1,7 +1,6 @@
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.models import Officer
-from data.constants import PERCENTILE_ALLEGATION_INTERNAL, PERCENTILE_ALLEGATION_CIVILIAN, PERCENTILE_TRR
+from data import officer_percentile
 from trr.models import TRR
 from .doc_types import TRRDocType
 from .index_aliases import trr_index_alias
@@ -18,15 +17,13 @@ class TRRIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(TRRIndexer, self).__init__(*args, **kwargs)
-        percentile_types = [PERCENTILE_ALLEGATION_INTERNAL, PERCENTILE_ALLEGATION_CIVILIAN, PERCENTILE_TRR]
-
-        top_percentile = Officer.top_complaint_officers(100, percentile_types=percentile_types)
+        top_percentile = officer_percentile.top_visual_token_percentile()
 
         self.top_percentile_dict = {
             data.officer_id: {
-                'percentile_allegation_civilian': data.percentile_allegation_civilian,
-                'percentile_allegation_internal': data.percentile_allegation_internal,
-                'percentile_trr': data.percentile_trr,
+                'percentile_allegation_civilian': getattr(data, 'percentile_allegation_civilian', None),
+                'percentile_allegation_internal': getattr(data, 'percentile_allegation_internal', None),
+                'percentile_trr': getattr(data, 'percentile_trr', None),
             }
             for data in top_percentile
         }

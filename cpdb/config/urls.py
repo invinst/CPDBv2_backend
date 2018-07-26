@@ -22,6 +22,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import routers
 
+from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
 from .views import index_view, officer_view, complaint_view
@@ -34,7 +35,6 @@ from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
-from visual_token.views import VisualTokenView
 from activity_grid.views import ActivityGridViewSet
 from search_terms.views import SearchTermCategoryViewSet
 from heatmap.views import CitySummaryViewSet
@@ -62,6 +62,7 @@ router_v2.register(r'units', UnitsViewSet, base_name='units')
 router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-grid')
 router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_name='search-term-categories')
 router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary')
+router_v2.register(r'popup', PopupViewSet, base_name='popup')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -81,7 +82,6 @@ urlpatterns = [
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
-    url(r'^visual-token/(?P<renderer>[\w\.]+)/$', VisualTokenView.as_view(), name='visual_token'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:  # pragma: no cover
