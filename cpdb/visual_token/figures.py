@@ -3,7 +3,7 @@ import math
 import gizeh
 
 
-class ChartFigure:
+class ChartFigure:  # pragma: no cover
     def __init__(self, width, height):
         self.width = width
         self.height = height

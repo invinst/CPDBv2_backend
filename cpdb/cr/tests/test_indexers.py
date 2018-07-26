@@ -14,6 +14,7 @@ from data.factories import (
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
 from data.tests.officer_percentile_utils import mock_percentile_map_range
+from data.models import Allegation
 
 
 class CRIndexerTestCase(TestCase):
@@ -25,6 +26,14 @@ class CRIndexerTestCase(TestCase):
     def test_query_set(self):
         allegation = AllegationFactory()
         expect(list(CRIndexer().get_queryset())).to.eq([allegation])
+
+    def test_passed_query_set(self):
+        AllegationFactory()
+        allegation = AllegationFactory()
+
+        expect(
+            list(CRIndexer(queryset=Allegation.objects.filter(crid=allegation.crid)).get_queryset())
+        ).to.eq([allegation])
 
     @mock_percentile_map_range(
         allegation_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
