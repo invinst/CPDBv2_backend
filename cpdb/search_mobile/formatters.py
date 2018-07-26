@@ -6,10 +6,10 @@ from search.formatters import SimpleFormatter
 class OfficerV2Formatter(SimpleFormatter):
     def get_latest_percentile(self, percentiles):
         current_year = datetime.datetime.now().year
-        percentiles_from_now = filter(lambda x: x['year'] >= current_year, percentiles)
+        percentiles_until_now = filter(lambda x: x['year'] <= current_year, percentiles)
 
-        if len(percentiles_from_now) > 0:
-            return min(percentiles_from_now, key=lambda x: x['year'])
+        if len(percentiles_until_now) > 0:
+            return max(percentiles_until_now, key=lambda x: x['year'])
 
         return []
 
