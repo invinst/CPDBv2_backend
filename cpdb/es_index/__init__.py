@@ -8,13 +8,13 @@ es_client = Elasticsearch(hosts=settings.ELASTICSEARCH_HOSTS)
 
 connections.add_connection('default', es_client)
 
-indexer_klasses = set()
+indexer_klasses = []
 indexer_klasses_map = dict()
 
 
 def register_indexer(app):
     def func(klass):
-        indexer_klasses.add(klass)
-        indexer_klasses_map.setdefault(app, set()).add(klass)
+        indexer_klasses.append(klass)
+        indexer_klasses_map.setdefault(app, []).append(klass)
         return klass
     return func

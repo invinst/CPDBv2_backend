@@ -23,11 +23,6 @@ class OfficerTimelineMinimapDocType(DocType):
     officer_id = Integer()
 
 
-@officers_index_alias.doc_type
-class OfficerSocialGraphDocType(DocType):
-    officer_id = Integer()
-
-
 class OfficerYearlyPercentile(InnerObjectWrapper):
     @staticmethod
     def mapping():

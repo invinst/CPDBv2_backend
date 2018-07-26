@@ -15,7 +15,6 @@ from data.factories import (
 from officers.tests.utils import validate_object
 from officers.indexers import (
     OfficersIndexer,
-    SocialGraphIndexer,
     OfficerPercentileIndexer,
     CRNewTimelineEventIndexer,
     UnitChangeNewTimelineEventIndexer,
@@ -250,62 +249,6 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 'id': 1,
                 'coaccusal_count': 5,
             }],
-        })
-
-
-class SocialGraphIndexerTestCase(TestCase):
-    def setUp(self):
-        self.indexer = SocialGraphIndexer()
-
-        self.officer1 = OfficerFactory(id=1, first_name='Clarence', last_name='Featherwater')
-        allegation1 = AllegationFactory(incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc))
-        allegation2 = AllegationFactory(incident_date=datetime(2002, 2, 2, tzinfo=pytz.utc))
-        allegation3 = AllegationFactory(incident_date=None)
-        allegation4 = AllegationFactory(incident_date=datetime(2002, 12, 12, tzinfo=pytz.utc))
-
-        OfficerAllegationFactory(officer=self.officer1, allegation=allegation1)
-        OfficerAllegationFactory(officer=self.officer1, allegation=allegation2)
-        OfficerAllegationFactory(officer=self.officer1, allegation=allegation3)
-        OfficerAllegationFactory(officer=self.officer1, allegation=allegation4)
-
-        self.officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
-        OfficerAllegationFactory(officer=self.officer2, allegation=allegation1)
-        OfficerAllegationFactory(officer=self.officer2, allegation=allegation2)
-
-        unrelated_allegation = AllegationFactory(incident_date=datetime(2003, 3, 3, tzinfo=pytz.utc))
-        unrelated_officer = OfficerFactory(id=3, first_name='Some', last_name='Unrelated Guy')
-        OfficerAllegationFactory(officer=unrelated_officer, allegation=unrelated_allegation)
-        OfficerAllegationFactory(officer=self.officer2, allegation=unrelated_allegation)
-
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-            expect(SocialGraphIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        expect(self.indexer.extract_datum(self.officer1)).to.eq({
-            'officer_id': 1,
-            'graph': {
-                'links': [
-                    {
-                        'source': 1,
-                        'target': 2,
-                        'cr_years': [2001, 2002]
-                    }
-                ],
-                'nodes': [
-                    {
-                        'id': 1,
-                        'name': 'Clarence Featherwater',
-                        'cr_years': [None, 2001, 2002, 2002]
-                    },
-                    {
-                        'id': 2,
-                        'name': 'Raymond Piwnicki',
-                        'cr_years': [2001, 2002, 2003]
-                    }
-                ]
-            }
         })
 
 

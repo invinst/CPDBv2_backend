@@ -8,7 +8,6 @@ from officers.serializers.respone_serialiers import NewTimelineSerializer, Offic
 from .doc_types import (
     OfficerInfoDocType,
     OfficerNewTimelineEventDocType,
-    OfficerSocialGraphDocType,
     OfficerCoaccusalsDocType,
 )
 
@@ -41,15 +40,6 @@ class OfficersViewSet(viewsets.ViewSet):
             result = query[:10000].execute()
             return Response(NewTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @detail_route(methods=['get'], url_path='social-graph')
-    def social_graph(self, request, pk):
-        query = OfficerSocialGraphDocType().search().query('term', officer_id=pk)
-        search_result = query.execute()
-        try:
-            return Response(search_result[0].to_dict()['graph'])
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):
