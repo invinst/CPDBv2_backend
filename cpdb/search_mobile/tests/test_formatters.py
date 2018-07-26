@@ -22,7 +22,7 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
                 },
                 {
                     'b': 2,
-                    'year': 2018
+                    'year': 2016
                 },
                 {
                     'c': 3,
@@ -40,7 +40,7 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
             'badge': '123',
             'percentile': {
                 'b': 2,
-                'year': 2018
+                'year': 2016
             }
         })
 
