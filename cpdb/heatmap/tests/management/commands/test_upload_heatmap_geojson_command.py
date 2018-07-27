@@ -1,10 +1,11 @@
 import gzip
 import json
+import pytz
+from datetime import datetime
 
 from django.test import TestCase
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.core.management import call_command
-
 from robber import expect
 from mock import patch
 
@@ -18,24 +19,36 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
     def setUp(self):
         self.command = Command()
 
-    def create_officer_allegation(self, count, area, **kwargs):
+    def make_officer_allegation(self, count, area, incident_date, **kwargs):
         for _ in range(count):
-            allegation = AllegationFactory()
+            allegation = AllegationFactory(incident_date=incident_date)
             area.allegation_set.add(allegation)
             OfficerAllegationFactory(
                 allegation=allegation,
                 **kwargs
             )
 
+    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
     def test_get_heatmap_cluster_data(self):
-        AllegationFactory(point=Point([20, 22]))
-        AllegationFactory(point=Point([23, 22]))
+        AllegationFactory(point=Point([20, 22]), incident_date=datetime(1988, 1, 1, tzinfo=pytz.utc))
+        AllegationFactory(point=Point([21, 22]), incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc))
+        AllegationFactory(point=Point([22, 22]), incident_date=datetime(1987, 12, 31, tzinfo=pytz.utc))
+        AllegationFactory(point=Point([23, 22]), incident_date=datetime.now(pytz.utc))
         expect(self.command.get_heatmap_cluster_data()).to.eq(json.dumps({
             'type': 'FeatureCollection',
             'features': [{
                 'type': 'Feature',
                 'geometry': {
                     'coordinates': [20.0, 22.0],
+                    'type': 'Point'
+                },
+                'properties': {
+                    'weight': 1
+                }
+            }, {
+                'type': 'Feature',
+                'geometry': {
+                    'coordinates': [21.0, 22.0],
                     'type': 'Point'
                 },
                 'properties': {
@@ -59,41 +72,70 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
         with gzip.open(file_name) as f:
             expect(f.read()).to.eq(expected_content)
 
+    @patch(
+        'heatmap.management.commands.upload_heatmap_geojson.ALLEGATION_MIN_DATETIME',
+        datetime(1988, 1, 1, tzinfo=pytz.utc)
+    )
     def test_get_community_discipline_count(self):
         area = AreaFactory(area_type=COMMUNITY_AREA_CHOICE)
-        self.create_officer_allegation(5, area, disciplined=True)
-        self.create_officer_allegation(5, area, disciplined=False)
+        self.make_officer_allegation(5, area, incident_date=datetime(1988, 1, 1, tzinfo=pytz.utc), disciplined=True)
+        self.make_officer_allegation(5, area, incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc), disciplined=False)
+        self.make_officer_allegation(2, area, incident_date=datetime(1987, 12, 31, tzinfo=pytz.utc), disciplined=False)
+        self.make_officer_allegation(2, area, incident_date=datetime.now(pytz.utc), disciplined=True)
         result = json.loads(self.command.get_community_data())
         expect(result['features']).to.have.length(1)
-        expect(result['features'][0]['properties']['allegation_count']).to.eq(10)
-        expect(result['features'][0]['properties']['discipline_count']).to.eq(5)
+        expect(result['features'][0]['properties']['allegation_count']).to.eq(12)
+        expect(result['features'][0]['properties']['discipline_count']).to.eq(7)
 
+    @patch(
+        'heatmap.management.commands.upload_heatmap_geojson.ALLEGATION_MIN_DATETIME',
+        datetime(1988, 1, 1, tzinfo=pytz.utc)
+    )
     def test_get_community_most_complaints_officers(self):
         area = AreaFactory(area_type=COMMUNITY_AREA_CHOICE)
         officer1 = OfficerFactory(id=12, first_name='John', last_name='Fenedy')
         officer2 = OfficerFactory(id=23, first_name='Jerome', last_name='Finnigan')
         officer3 = OfficerFactory(id=34, first_name='Raymond', last_name='Piwnicki')
         officer4 = OfficerFactory(id=45, first_name='Sean', last_name='Campbell')
-        self.create_officer_allegation(7, area=area, officer=officer1)
-        self.create_officer_allegation(6, area=area, officer=officer2)
-        self.create_officer_allegation(5, area=area, officer=officer3)
-        self.create_officer_allegation(4, area=area, officer=officer4)
+        min_date = datetime(1988, 1, 1, tzinfo=pytz.utc)
+        max_date = datetime(2016, 7, 1, tzinfo=pytz.utc)
+        before_min_date = datetime(1987, 12, 31, tzinfo=pytz.utc)
+        today = datetime.now(pytz.utc)
+
+        self.make_officer_allegation(7, area=area, incident_date=min_date, officer=officer1)
+        self.make_officer_allegation(6, area=area, incident_date=min_date, officer=officer2)
+        self.make_officer_allegation(5, area=area, incident_date=min_date, officer=officer3)
+        self.make_officer_allegation(4, area=area, incident_date=min_date, officer=officer4)
+        self.make_officer_allegation(7, area=area, incident_date=max_date, officer=officer1)
+        self.make_officer_allegation(6, area=area, incident_date=max_date, officer=officer2)
+        self.make_officer_allegation(5, area=area, incident_date=max_date, officer=officer3)
+        self.make_officer_allegation(4, area=area, incident_date=max_date, officer=officer4)
+
+        self.make_officer_allegation(2, area=area, incident_date=before_min_date, officer=officer1)
+        self.make_officer_allegation(2, area=area, incident_date=before_min_date, officer=officer2)
+        self.make_officer_allegation(2, area=area, incident_date=before_min_date, officer=officer3)
+        self.make_officer_allegation(2, area=area, incident_date=before_min_date, officer=officer4)
+        self.make_officer_allegation(2, area=area, incident_date=today, officer=officer1)
+        self.make_officer_allegation(2, area=area, incident_date=today, officer=officer2)
+        self.make_officer_allegation(2, area=area, incident_date=today, officer=officer3)
+        self.make_officer_allegation(2, area=area, incident_date=today, officer=officer4)
+
         result = json.loads(self.command.get_community_data())
         expect(result['features']).to.have.length(1)
         expect(result['features'][0]['properties']['most_complaints_officers']).to.eq([
             {
                 'full_name': 'John Fenedy',
-                'complaints_count': 7,
+                'complaints_count': 16,
                 'id': 12
             },
             {
                 'full_name': 'Jerome Finnigan',
-                'complaints_count': 6,
+                'complaints_count': 14,
                 'id': 23
             },
             {
                 'full_name': 'Raymond Piwnicki',
-                'complaints_count': 5,
+                'complaints_count': 12,
                 'id': 34
             }
         ])

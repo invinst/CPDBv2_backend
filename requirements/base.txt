@@ -28,3 +28,5 @@ sh==1.12.14
 fake-factory==0.5.7
 python-dateutil==2.6.1
 Twisted[tls]==18.4.0
+moviepy==0.2.3.5
+gizeh==0.1.10

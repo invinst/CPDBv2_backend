@@ -17,7 +17,7 @@ run_twitterbot: yes
 frontend_static_dir: /www/static/
 
 postgresql_version: 9.4
-postgresql_package_version: 9.4.*-1.pgdg14.04+1
+postgresql_package_version: 9.4.*-*.pgdg14.04+1
 enable_cron_job: no
 
 elasticsearch_download_url: https://artifacts.elastic.co/downloads/elasticsearch
@@ -36,3 +36,5 @@ visual_token_storageaccountname: 'cpdbdev'
 visual_token_storageaccountkey: ''
 
 import_initial_db_dump: no
+
+project_root_path: "/CPDB/{{ project_name }}"

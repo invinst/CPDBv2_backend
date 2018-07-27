@@ -105,6 +105,20 @@ docker build -t cpdbdev/postgis:9.4-alpine .circleci/postgis-docker
 docker push cpdbdev/postgis:9.4-alpine
 ```
 
+# Backup and Restore Elastic Search snapshot
+## Backup
+On local enviroment of elasticsearch:
+```
+curl -X PUT "localhost:9200/_snapshot/cpdp_es/snapshot_1?wait_for_completion=true" & tar -cvzf es_snapshot.tar.gz /backup/cpdp_es/
+```
+
+## Restore
+With zipped snapshot
+```
+tar -xvf es_snapshot.tar.gz -C /backup/cpdp_es/
+curl -X POST "localhost:9200/_snapshot/cpdp_es/snapshot_1/_restore"
+```
+
 # Removed apps
 
 The following apps are removed: `landing_page`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `story_`, it should be safe to remove them.
