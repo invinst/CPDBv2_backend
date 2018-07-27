@@ -67,6 +67,19 @@
   when: not installed_version.stat.exists
   notify: restart elasticsearch
 
+- name: Create backup folder
+  file:
+    path: "/backup/cpdp_es"
+    state: directory
+
+- name: Ensure backup folder permission
+  file:
+    path: "/backup/"
+    state: directory
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    recurse: yes
+
 - name: Configure Elasticsearch.
   template:
     src: elasticsearch.yml.j2
@@ -78,3 +91,12 @@
 
 - name: Start Elasticsearch.
   service: name=elasticsearch state=started enabled=yes
+
+- name: Create snapshot repo
+  uri:
+    url: 'http://localhost:9200/_snapshot/cpdp_es'
+    method: POST
+    body: '{ "type": "fs", "settings": { "location": "/backup/cpdp_es" } }'
+    body_format: json
+    headers:
+      Content-Type: "application/json"
