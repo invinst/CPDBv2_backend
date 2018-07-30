@@ -207,6 +207,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
     def test_rebuild_index_updated_allegation(self, DocumentCloudServiceMock, DocumentCloudMock):
         AllegationFactory(crid=123456)
         DocumentCloudSearchQueryFactory(type='CR')
+
         mock_search = DocumentCloudMock().documents.search
         mock_search.return_value = [
             MagicMock(
@@ -228,5 +229,5 @@ class UpdateDocumentsCommandTestCase(TestCase):
         cr_index_alias.write_index.refresh()
 
         expect(Allegation.objects.get(crid='123456').attachment_files.count()).to.eq(1)
-        cr_doc = CRDocType().get('123456').to_dict()
+        cr_doc = CRDocType().search().query('term', crid=123456).execute()[0].to_dict()
         expect(cr_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
