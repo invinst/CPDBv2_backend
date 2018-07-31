@@ -8,13 +8,11 @@ autocomplete = analyzer(
     'autocomplete',
     char_filter=[remove_white_spaces],
     filter=['lowercase'],
-    tokenizer=tokenizer(
-        'autocomplete', 'ngram',
-        min_gram=2, max_gram=20, token_chars=['letter', 'digit']))
+    tokenizer=tokenizer('autocomplete', 'ngram', min_gram=2, max_gram=20, token_chars=['letter', 'digit'])
+)
 
 autocomplete_search = analyzer(
     'autocomplete_search',
-    char_filter=[remove_white_spaces],
     filter=['lowercase', stop_filter],
     tokenizer='whitespace'
 )
