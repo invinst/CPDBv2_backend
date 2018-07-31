@@ -101,8 +101,6 @@ class SearchManagerTestCase(IndexMixin, TestCase):
             'full_name': u'John Mcdonald'
         }])
 
-
-
     @patch('search.services.SimpleFormatter.format', return_value='formatter_results')
     def test_hooks(self, _):
         mock_hook = Mock()
