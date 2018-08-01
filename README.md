@@ -3,11 +3,7 @@
 
 # Development
 
-Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your machine, we use them as isolated development environment and automation tools. After having both of these tools in your machine, you could start installing the ansible dependencies:
-
-``` bash
-ansible-galaxy install azavea.postgresql
-```
+Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your machine, we use them as isolated development environment and automation tools.
 
 You'll then need to manually create these files - ask the team to give them to you:
 
@@ -104,6 +100,25 @@ docker push cpdbdev/cpdbv2_backend:0.1.0
 docker build -t cpdbdev/postgis:9.4-alpine .circleci/postgis-docker
 docker push cpdbdev/postgis:9.4-alpine
 ```
+
+# Keep secrets with git-secret
+
+Please read instructions at http://git-secret.io/ to understand how it work. We have a few files encrypted this way. Generate a gpg key and give it's public key to your teammate to access those files.
+
+# Managed infrastructure with Terraform
+
+Get started by running these commands:
+
+- `az login`
+- `terraform init`
+- `terraform refresh`
+
+# Azure database for PostgreSQL
+
+After you have access to git secrets and refreshed terraform, there are 2 commands that will make working with PostgreSQL easier:
+
+- `bin/initialize_database.sh` Initialize database on staging or production. Can optionally provide a SQL dump file. Type `bin/initialize_database.sh -h` to read usage.
+- `bin/psql.sh`: Quickly launch PostgreSQL terminal to access staging or production database. Type `bin/psql.sh -h` to read usage.
 
 # Backup and Restore Elastic Search snapshot
 ## Backup

@@ -1,3 +1,4 @@
+from .common import DATABASES, prod_env
 from .common import *  # NOQA
 
 import environ
@@ -12,6 +13,8 @@ CORS_ORIGIN_WHITELIST = (
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/pyenv/versions/cpdb/emails'
+
+DATABASES['default']['HOST'] = prod_env.str('POSTGRES_STAGING_FQDN')
 
 LOGGING = {
     'version': 1,

@@ -1,3 +1,4 @@
+from .common import DATABASES, prod_env
 from .common import *  # NOQA
 
 import environ
@@ -18,3 +19,5 @@ ANYMAIL = {
 EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
 DEFAULT_FROM_EMAIL = 'info@cpdp.co'
 DOMAIN = 'https://beta.cpdp.co'
+
+DATABASES['default']['HOST'] = prod_env.str('POSTGRES_PRODUCTION_FQDN')

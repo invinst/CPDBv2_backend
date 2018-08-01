@@ -1,6 +1,11 @@
 from .common import *  # NOQA
-from .common import APPS_DIR, INSTALLED_APPS
+from .common import APPS_DIR, INSTALLED_APPS, env
 
+
+DATABASES = {
+    'default': env.db('DATABASE_URL')
+}
+DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 MEDIA_ROOT = str(APPS_DIR('test_media'))
