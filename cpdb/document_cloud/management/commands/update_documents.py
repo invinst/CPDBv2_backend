@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         try:
             documentcloud_service.update_document_meta_data(result, document)
-        except DoesNotExistError:
+        except DoesNotExistError:  # pragma: no cover
             pass  # Some documents we dont have enough permission to read or edit
 
         return crid

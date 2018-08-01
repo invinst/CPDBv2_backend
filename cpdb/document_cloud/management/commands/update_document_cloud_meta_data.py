@@ -37,5 +37,5 @@ class Command(BaseCommand):
             try:
                 document = client.documents.get(document_id)
                 document_service.update_document_meta_data(document, attachment_file)
-            except DoesNotExistError:
+            except DoesNotExistError:  # pragma: no cover
                 pass  # Some documents we dont have enough permission to read or edit
