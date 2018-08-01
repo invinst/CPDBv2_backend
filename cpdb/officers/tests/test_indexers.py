@@ -11,6 +11,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory,
     AllegationCategoryFactory, VictimFactory, AwardFactory,
+    SalaryFactory,
 )
 from officers.tests.utils import validate_object
 from officers.indexers import (
@@ -22,6 +23,7 @@ from officers.indexers import (
     TRRNewTimelineEventIndexer,
     AwardNewTimelineEventIndexer,
     OfficerCoaccusalsIndexer,
+    RankChangeNewTimelineEventIndexer,
 )
 from officers.serializers.doc_serializers import OfficerMetricsSerializer
 from trr.factories import TRRFactory
@@ -443,7 +445,7 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
                 unit_name='001',
                 description='Unit_001',
             )),
-            rank='Police Officer',
+            get_rank_by_date=Mock(return_value='Police Officer'),
         )
         expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
             'officer_id': 123,
@@ -478,7 +480,7 @@ class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
             effective_date=date(2010, 3, 4),
             unit_name='003',
             unit_description='Unit_003',
-            officer=Mock(rank='Police Officer')
+            officer=Mock(get_rank_by_date=Mock(return_value='Police Officer'))
         )
         expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
             'officer_id': 123,
@@ -541,6 +543,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
+        SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(2012, 1, 1))
 
         expect(CRNewTimelineEventIndexer().extract_datum(officer_allegation)).to.eq({
             'officer_id': 123,
@@ -604,7 +607,7 @@ class AwardNewTimelineEventIndexerTestCase(TestCase):
             start_date=date(2010, 3, 4),
             award_type='Honorable Mention',
             officer=Mock(
-                rank='Police Officer',
+                get_rank_by_date=Mock(return_value='Police Officer'),
                 get_unit_by_date=Mock(return_value=Mock(
                     unit_name='001',
                     description='Unit_001',
@@ -639,7 +642,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
             firearm_used=False,
             taser=False,
             officer=Mock(
-                rank='Police Officer',
+                get_rank_by_date=Mock(return_value='Police Officer'),
                 get_unit_by_date=Mock(return_value=Mock(
                     unit_name='001',
                     description='Unit_001',
@@ -764,4 +767,61 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'percentile_trr': 66.6667,
                 'percentile_allegation': 66.6667,
             }]
+        })
+
+
+class RankChangeNewTimelineEventIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        officer1 = OfficerFactory()
+        officer2 = OfficerFactory()
+        salary1 = SalaryFactory(
+            officer=officer1, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary2 = SalaryFactory(
+            officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary3 = SalaryFactory(
+            officer=officer2, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary4 = SalaryFactory(
+            officer=officer2, salary=15000, year=2006, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(RankChangeNewTimelineEventIndexer().get_queryset()).to.eq([salary1, salary2, salary3, salary4])
+
+    def test_extract_datum(self):
+        salary = Mock(
+            officer_id=123,
+            spp_date=date(2005, 1, 1),
+            salary=10000,
+            year=2015,
+            rank='Police Officer',
+            start_date=date(2010, 3, 4),
+            officer=Mock(
+                get_unit_by_date=Mock(return_value=Mock(
+                    unit_name='001',
+                    description='Unit_001',
+                )),
+            ),
+        )
+        expect(RankChangeNewTimelineEventIndexer().extract_datum(salary)).to.eq({
+            'officer_id': 123,
+            'date_sort': date(2005, 1, 1),
+            'priority_sort': 25,
+            'date': '2005-01-01',
+            'kind': 'RANK_CHANGE',
+            'unit_name': '001',
+            'unit_description': 'Unit_001',
+            'rank': 'Police Officer',
         })
