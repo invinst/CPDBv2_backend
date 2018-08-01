@@ -1,11 +1,10 @@
-from itertools import combinations
-
 from django.db.models import F, Q
-from django.utils.timezone import now
 
 from tqdm import tqdm
 
-from data.models import Officer, OfficerAllegation, OfficerHistory, Allegation, Award, Salary
+from data import officer_percentile
+from data.constants import MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR
+from data.models import Officer, OfficerAllegation, OfficerHistory, Award, Salary
 from data.utils.calculations import calculate_top_percentile
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
@@ -16,7 +15,6 @@ from officers.serializers.doc_serializers import (
 )
 from trr.models import TRR
 from .doc_types import (
-    OfficerSocialGraphDocType,
     OfficerNewTimelineEventDocType,
     OfficerInfoDocType,
     OfficerCoaccusalsDocType,
@@ -48,65 +46,19 @@ class OfficersIndexer(BaseIndexer):
 
 
 @register_indexer(app_name)
-class SocialGraphIndexer(BaseIndexer):
-    doc_type_klass = OfficerSocialGraphDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Officer.objects.all()
-
-    def _cr_years(self, officer):
-        dates = officer.officerallegation_set.values_list('allegation__incident_date', flat=True)
-        return sorted([_date.year if _date is not None else None for _date in dates])
-
-    def _node(self, officer):
-        return {
-            "id": officer.id,
-            "name": officer.full_name,
-            "cr_years": self._cr_years(officer)
-        }
-
-    def _links(self, officers):
-        links = []
-        for o1, o2 in combinations(officers, 2):
-            qs = Allegation.objects.filter(officerallegation__officer=o1) \
-                .filter(officerallegation__officer=o2).distinct()
-            if qs.exists():
-                link = {
-                    'source': o1.id,
-                    'target': o2.id,
-                    'cr_years': sorted([
-                        _date.year if _date is not None else None
-                        for _date in qs.values_list('incident_date', flat=True)
-                    ])
-                }
-                links.append(link)
-        return links
-
-    def extract_datum(self, officer):
-        coaccuseds = Officer.objects.filter(
-            officerallegation__allegation__officerallegation__officer=officer).distinct().order_by('id')
-
-        return {'officer_id': officer.pk, 'graph': {
-            'links': self._links(coaccuseds),
-            'nodes': [self._node(coaccused) for coaccused in coaccuseds]
-        }}
-
-
-@register_indexer(app_name)
 class OfficerPercentileIndexer(BaseIndexer):
     index_alias = officers_index_alias
     doc_type_klass = OfficerInfoDocType
     parent_doc_type_property = 'percentiles'
 
     def get_queryset(self):
+        def _not_retired(officer):
+            return not officer.resignation_date or officer.year <= officer.resignation_date.year
+
         results = []
-        for yr in tqdm(range(2001, now().year + 1), desc='Prepare percentile data'):
-            officers = Officer.top_complaint_officers(100, yr)
-            if officers and officers[0].year < yr:
-                # we have no more data to calculate, should break here
-                break
-            results.extend(officers)
+        for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
+            officers = officer_percentile.top_percentile(yr)
+            results.extend(filter(_not_retired, officers))
         return results
 
     def extract_datum(self, datum):
@@ -120,7 +72,7 @@ class OfficerSinglePercentileIndexer(BaseIndexer):
     op_type = 'update'
 
     def get_queryset(self):
-        return Officer.annotate_honorable_mention_percentile_officers()
+        return officer_percentile.annotate_honorable_mention_percentile_officers()
 
     def extract_datum(self, datum):
         return OfficerSinglePercentileSerializer(datum).data

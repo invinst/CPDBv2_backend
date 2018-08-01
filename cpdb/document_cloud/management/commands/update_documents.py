@@ -9,6 +9,7 @@ from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT
 from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
+from cr.indexers import CRIndexer
 
 
 class Command(BaseCommand):
@@ -45,6 +46,8 @@ class Command(BaseCommand):
                 last_updated=result.updated_at
             )
 
+        return crid
+
     def update_mismatched_existing_data(self, document, result, document_type):
         should_save = False
         mapping_fields = [
@@ -78,7 +81,6 @@ class Command(BaseCommand):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
-
         for document_type, syntax in search_syntaxes:
             if not syntax:
                 continue
@@ -87,8 +89,14 @@ class Command(BaseCommand):
 
             if results:
                 results = self.clean_documentcloud_results(results)
+                crids = []
                 for result in results:
-                    self.process_documentcloud_result(result, document_type)
+                    crid = self.process_documentcloud_result(result, document_type)
+                    crids.append(crid)
+
+                indexer = CRIndexer(queryset=Allegation.objects.filter(crid__in=crids))
+                with indexer.index_alias.indexing():
+                    indexer.reindex()
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,

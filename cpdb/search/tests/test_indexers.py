@@ -125,7 +125,7 @@ class AreaIndexerTestCase(TestCase):
 
         area2 = AreaFactory(area_type='police-districts')
         RacePopulationFactory(race='Black', count=100, area=area2)
-        AllegationFactory.create_batch(1, areas=[area2])
+        AllegationFactory(areas=[area2])
 
         area_indexer = AreaIndexer()
         expect(area_indexer.get_queryset().count()).to.eq(2)

@@ -2,11 +2,15 @@ from datetime import date, datetime
 
 from django.test import TestCase
 from django.contrib.gis.geos import Point
-from robber import expect
 
-from data.factories import OfficerFactory, PoliceUnitFactory, OfficerHistoryFactory, OfficerAllegationFactory
+from robber import expect
+from mock import patch, Mock
+import pytz
+
+from data.factories import OfficerFactory, PoliceUnitFactory, OfficerHistoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from trr.indexers import TRRIndexer
+from officers.tests.utils import create_object
 
 
 class TRRIndexerTestCase(TestCase):
@@ -14,9 +18,27 @@ class TRRIndexerTestCase(TestCase):
         trr = TRRFactory()
         expect(list(TRRIndexer().get_queryset())).to.eq([trr])
 
+    @patch(
+        'data.officer_percentile.top_visual_token_percentile',
+        Mock(return_value=[
+            create_object({
+                'officer_id': 1,
+                'percentile_allegation_civilian': 1.1111,
+                'percentile_allegation_internal': 2.2222,
+                'percentile_trr': 3.3333,
+            }),
+            create_object({
+                'officer_id': 2,
+                'percentile_allegation_civilian': 4.4444,
+                'percentile_allegation_internal': 5.5555,
+                'percentile_trr': 6.6666,
+            })
+        ])
+    )
     def test_extract_datum(self):
         unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
         officer = OfficerFactory(
+            id=1,
             first_name='Vinh',
             last_name='Vu',
             race='White',
@@ -24,14 +46,8 @@ class TRRIndexerTestCase(TestCase):
             appointed_date=date(2000, 1, 1),
             birth_year=1980)
         OfficerHistoryFactory(officer=officer, unit=unit)
-        OfficerAllegationFactory(
-            officer=officer,
-            allegation__incident_date=datetime(2003, 1, 1),
-            start_date=date(2004, 1, 1),
-            end_date=date(2005, 1, 1),
-            final_finding='SU')
         trr = TRRFactory(
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             taser=True,
             firearm_used=False,
             officer_assigned_beat='Beat 1',
@@ -67,11 +83,11 @@ class TRRIndexerTestCase(TestCase):
                 'full_name': 'Vinh Vu',
                 'appointed_date': '2000-01-01',
                 'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
-                'id': officer.id,
+                'id': 1,
                 'birth_year': 1980,
-                'percentile_trr': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
+                'percentile_allegation_civilian': 1.1111,
+                'percentile_allegation_internal': 2.2222,
+                'percentile_trr': 3.3333,
             },
 
             'subject_race': 'White',
@@ -99,7 +115,7 @@ class TRRIndexerTestCase(TestCase):
         trr = TRRFactory(
             taser=False,
             firearm_used=False,
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             subject_age=37,
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
@@ -138,7 +154,7 @@ class TRRIndexerTestCase(TestCase):
         trr = TRRFactory(
             taser=False,
             firearm_used=False,
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
             officer_on_duty=False,
@@ -166,6 +182,75 @@ class TRRIndexerTestCase(TestCase):
                 'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'id': officer.id,
                 'birth_year': 1980,
+            },
+            'subject_race': 'White',
+            'subject_gender': 'Male',
+            'subject_age': 37,
+            'force_category': 'Other',
+            'force_types': [],
+            'date_of_incident': '2001-01-01',
+            'location_type': 'Factory',
+            'address': '34XX Douglas Blvd',
+            'beat': 1021,
+            'point': None,
+        })
+
+    @patch(
+        'data.officer_percentile.top_visual_token_percentile',
+        Mock(return_value=[
+            create_object({
+                'officer_id': 1,
+                'percentile_allegation_civilian': 1.1111,
+                'percentile_allegation_internal': 2.2222,
+            })
+        ])
+    )
+    def test_extract_datum_missing_percentile(self):
+        unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
+        officer = OfficerFactory(
+            id=1,
+            first_name='Vinh',
+            last_name='Vu',
+            race='White',
+            gender='M',
+            appointed_date=date(2000, 1, 1),
+            birth_year=1980,
+            resignation_date=date(2000, 8, 1))
+        OfficerHistoryFactory(officer=officer, unit=unit)
+        trr = TRRFactory(
+            taser=False,
+            firearm_used=False,
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
+            officer_assigned_beat='Beat 1',
+            officer_in_uniform=True,
+            officer_on_duty=False,
+            officer=officer,
+            subject_age=37,
+            subject_gender='M',
+            location_recode='Factory',
+            block='34XX',
+            street='Douglas Blvd',
+            beat=1021,
+        )
+
+        indexer = TRRIndexer()
+        expect(indexer.extract_datum(trr)).to.eq({
+            'id': trr.id,
+            'officer_assigned_beat': 'Beat 1',
+            'officer_in_uniform': True,
+            'officer_on_duty': False,
+            'officer': {
+                'gender': 'Male',
+                'resignation_date': '2000-08-01',
+                'race': 'White',
+                'full_name': 'Vinh Vu',
+                'appointed_date': '2000-01-01',
+                'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
+                'id': 1,
+                'birth_year': 1980,
+                'percentile_allegation_civilian': 1.1111,
+                'percentile_allegation_internal': 2.2222,
+                'percentile_trr': None,
             },
             'subject_race': 'White',
             'subject_gender': 'Male',

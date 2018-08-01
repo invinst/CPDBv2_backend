@@ -1,3 +1,10 @@
+from datetime import datetime
+
+from django.conf import settings
+
+import pytz
+
+
 ACTIVE_YES_CHOICE = 'Yes'
 ACTIVE_NO_CHOICE = 'No'
 ACTIVE_UNKNOWN_CHOICE = 'Unknown'
@@ -112,16 +119,16 @@ BACKGROUND_COLOR_SCHEME = {
 
 RACE_UNKNOWN_STRINGS = ['nan', '']
 
-PERCENTILE_ALLEGATION = 'metric_allegation'
-PERCENTILE_ALLEGATION_INTERNAL = 'metric_allegation_internal'
-PERCENTILE_ALLEGATION_CIVILIAN = 'metric_allegation_civilian'
-PERCENTILE_TRR = 'metric_trr'
-PERCENTILE_HONORABLE_MENTION = 'metric_honorable_mention'
-PERCENTILE_TYPES = [
-    PERCENTILE_ALLEGATION,
-    PERCENTILE_ALLEGATION_INTERNAL,
-    PERCENTILE_ALLEGATION_CIVILIAN,
-    PERCENTILE_TRR,
+
+PERCENTILE_HONORABLE_MENTION = 'honorable_mention'
+
+PERCENTILE_ALLEGATION_GROUP = 'PERCENTILE_ALLEGATION_GROUP'
+PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP = 'PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP'
+PERCENTILE_TRR_GROUP = 'PERCENTILE_TRR_GROUP'
+PERCENTILE_GROUPS = [
+    PERCENTILE_ALLEGATION_GROUP,
+    PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+    PERCENTILE_TRR_GROUP,
 ]
 
 MAJOR_AWARDS = [
@@ -138,3 +145,20 @@ MAJOR_AWARDS = [
     'superintendents award of merit',
     "superintendent's award of merit",
 ]
+
+
+ALLEGATION_MIN_DATETIME = datetime.strptime(settings.ALLEGATION_MIN, '%Y-%m-%d').replace(tzinfo=pytz.utc)
+ALLEGATION_MAX_DATETIME = datetime.strptime(settings.ALLEGATION_MAX, '%Y-%m-%d').replace(tzinfo=pytz.utc)
+
+INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME = datetime.strptime(
+    settings.INTERNAL_CIVILIAN_ALLEGATION_MIN, '%Y-%m-%d'
+).replace(tzinfo=pytz.utc)
+INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME = datetime.strptime(
+    settings.INTERNAL_CIVILIAN_ALLEGATION_MAX, '%Y-%m-%d'
+).replace(tzinfo=pytz.utc)
+
+TRR_MIN_DATETIME = datetime.strptime(settings.TRR_MIN, '%Y-%m-%d').replace(tzinfo=pytz.utc)
+TRR_MAX_DATETIME = datetime.strptime(settings.TRR_MAX, '%Y-%m-%d').replace(tzinfo=pytz.utc)
+
+MIN_VISUAL_TOKEN_YEAR = min(INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME.year, TRR_MIN_DATETIME.year)
+MAX_VISUAL_TOKEN_YEAR = max(INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME.year, TRR_MAX_DATETIME.year)

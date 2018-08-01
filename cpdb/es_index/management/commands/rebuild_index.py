@@ -72,7 +72,7 @@ class Command(BaseCommand):
         return [(
             alias_map[key],
             indexers_map[key],
-            list(indexer_klasses_map[key] - set(indexers_map[key]))
+            [klass for klass in indexer_klasses_map[key] if klass not in indexers_map[key]]
         ) for key in alias_map.keys()]
 
     def _get_distinct_doc_types_from_indexers(self, indexers):

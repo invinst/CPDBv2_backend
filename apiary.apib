@@ -972,37 +972,6 @@ This api require an api access token set in `Authorization` header. To get an ap
             "rank": "Police Officer"
         }]
 
-## Officer social graph [/officers/{officer_id}/social-graph]
-
-### Get Officer social graph [GET]
-
-+ Parameters
-    + officer_id (number) - number ID of the officer
-
-+ Response 200 (application/json)
-
-        {
-            "links": [
-                {
-                    "source": 1,
-                    "target": 2,
-                    "cr_years": [2009, 2011]
-                }
-            ],
-            "nodes": [
-                {
-                    "id": 1,
-                    "name": "Clarence Featherwater",
-                    "cr_years": [null, 1984, 2009, 2009, 2011]
-                },
-                {
-                    "id": 2,
-                    "name": "Raymond Piwnicki",
-                    "cr_years": [2009, 2011]
-                }
-            ]
-        }
-
 ## Top Officers by allegation [/officers/top-by-allegation/]
 
 ### List Officer Cards based on top 1% complaint percentile, sort by descending [GET]
@@ -2386,3 +2355,31 @@ This api require an api access token set in `Authorization` header. To get an ap
             ],
             "discipline_count": 6404
         }
+
+
+## Popup [/v2/popup/]
+
+### Get popup [GET]
+
++ Response 200 (application/json)
+
+         [
+            {
+                "name": "unit",
+                "page": "officer",
+                "title": "Unit",
+                "text": "To be updated later"
+            },
+            {
+                "name": "rank",
+                "page": "officer",
+                "title": "Rank",
+                "text": "To be updated later"
+            },
+            {
+                "name": "investigator",
+                "page": "complaint",
+                "title": "Investigator",
+                "text": "To be updated later"
+            }
+         ]
