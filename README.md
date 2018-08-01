@@ -97,8 +97,8 @@ We're using CircleCI version 2.0. As thus has moved on to running tests and depl
 docker login
 docker build -t cpdbdev/cpdbv2_backend:0.1.0 .circleci/docker
 docker push cpdbdev/cpdbv2_backend:0.1.0
-docker build -t cpdbdev/postgis:9.4-alpine .circleci/postgis-docker
-docker push cpdbdev/postgis:9.4-alpine
+docker build -t cpdbdev/postgis:9.6-alpine .circleci/postgis-docker
+docker push cpdbdev/postgis:9.6-alpine
 ```
 
 # Keep secrets with git-secret

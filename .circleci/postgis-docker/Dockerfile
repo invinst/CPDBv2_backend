@@ -1,4 +1,4 @@
-FROM mdillon/postgis:9.4-alpine
+FROM mdillon/postgis:9.6-alpine
 
 USER $POSTGRES_USER
 
