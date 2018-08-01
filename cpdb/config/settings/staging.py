@@ -1,4 +1,4 @@
-from .common import DATABASES, prod_env
+from .common import prod_env
 from .common import *  # NOQA
 
 import environ
@@ -14,7 +14,17 @@ CORS_ORIGIN_WHITELIST = (
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/pyenv/versions/cpdb/emails'
 
-DATABASES['default']['HOST'] = prod_env.str('POSTGRES_STAGING_FQDN')
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': prod_env.str('APP_DB'),
+        'USER': prod_env.str('APP_LOGIN'),
+        'PASSWORD': prod_env.str('APP_PASSWORD'),
+        'HOST': prod_env.str('POSTGRES_STAGING_FQDN'),
+        'PORT': '5432',
+        'ATOMIC_REQUESTS': True
+    }
+}
 
 LOGGING = {
     'version': 1,

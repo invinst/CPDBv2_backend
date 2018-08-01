@@ -1,11 +1,5 @@
-from .common import env
 from .common import *  # NOQA
 
-
-DATABASES = {
-    'default': env.db('DATABASE_URL')
-}
-DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 INSTALLED_APPS += (  # NOQA
     'django_extensions',

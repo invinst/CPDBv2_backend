@@ -107,17 +107,6 @@ DATABASES = {
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': prod_env.str('APP_DB'),
-        'USER': prod_env.str('APP_LOGIN'),
-        'PASSWORD': prod_env.str('APP_PASSWORD'),
-        'PORT': '5432',
-        'ATOMIC_REQUESTS': True
-    }
-}
-
 ROOT_URLCONF = 'config.urls'
 
 # TEMPLATE CONFIGURATION
