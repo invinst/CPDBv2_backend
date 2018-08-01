@@ -43,11 +43,6 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.get_active_display()
 
 
-class OfficerSinglePercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(source='percentile_honorable_mention')
-
-
 class OfficerMetricsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     allegation_count = serializers.IntegerField()
@@ -59,20 +54,20 @@ class OfficerMetricsSerializer(serializers.Serializer):
     civilian_compliment_count = serializers.IntegerField()
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
-    single_percentiles = OfficerSinglePercentileSerializer(read_only=True)
+    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=3)
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=3)
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_civilian = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=3)
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_internal = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=3)
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
 class CoaccusalSerializer(serializers.Serializer):
@@ -86,6 +81,9 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     url = serializers.CharField(source='v1_url')
     tags = serializers.ListField(child=serializers.CharField())
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
+    current_allegation_percentile = serializers.DecimalField(
+        allow_null=True, read_only=True, max_digits=6, decimal_places=4, source='percentile_allegation')
+    has_visual_token = serializers.BooleanField()
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
@@ -304,12 +302,19 @@ class OfficerCoaccusalSerializer(serializers.Serializer):
     full_name = serializers.CharField()
     allegation_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField()
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
     birth_year = serializers.IntegerField()
     coaccusal_count = serializers.IntegerField()
     rank = serializers.CharField()
+
+    complaint_percentile = serializers.FloatField(allow_null=True, read_only=True)
+    percentile_allegation_civilian = serializers.FloatField(
+        allow_null=True, read_only=True, source='civilian_allegation_percentile')
+    percentile_allegation_internal = serializers.FloatField(
+        allow_null=True, read_only=True, source='internal_allegation_percentile')
+    percentile_trr = serializers.FloatField(
+        allow_null=True, read_only=True, source='trr_percentile')
 
 
 class OfficerCoaccusalsSerializer(serializers.Serializer):

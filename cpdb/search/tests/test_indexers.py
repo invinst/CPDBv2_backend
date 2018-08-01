@@ -278,15 +278,27 @@ class AreaIndexerTestCase(TestCase):
             {
                 'id': 123,
                 'name': 'A B',
-                'count': 5
+                'count': 5,
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 0,
+                'percentile_allegation': 0,
             }, {
                 'id': 456,
                 'name': 'E F',
-                'count': 3
+                'count': 3,
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 33.3333,
             }, {
                 'id': 789,
                 'name': 'C D',
-                'count': 2
+                'count': 2,
+                'percentile_allegation_civilian': 66.6667,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 66.6667,
             }, {
                 'id': 999,
                 'name': 'X Y',
@@ -294,26 +306,6 @@ class AreaIndexerTestCase(TestCase):
             }
         ])
         area_indexer = AreaIndexer()
-        area_indexer.top_percentile_dict = {
-            123: {
-                'percentile_allegation_civilian': 0,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 0,
-                'percentile_allegation': 0,
-            },
-            456: {
-                'percentile_allegation_civilian': 33.3333,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 33.3333,
-                'percentile_allegation': 33.3333,
-            },
-            789: {
-                'percentile_allegation_civilian': 66.6667,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 66.6667,
-                'percentile_allegation': 66.6667,
-            },
-        }
 
         expect(area_indexer.extract_datum(area)).to.be.eq({
             'name': 'name',
