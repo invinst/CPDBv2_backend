@@ -13,7 +13,13 @@ class CRIndexer(BaseIndexer):
     doc_type_klass = CRDocType
     index_alias = cr_index_alias
 
+    def __init__(self, queryset=None, *args, **kwargs):
+        super(CRIndexer, self).__init__(*args, **kwargs)
+        self.queryset = queryset
+
     def get_queryset(self):
+        if self.queryset is not None:
+            return self.queryset
         return Allegation.objects.all()
 
     def extract_datum(self, datum):

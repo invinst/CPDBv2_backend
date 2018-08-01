@@ -94,7 +94,7 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
     kind = serializers.SerializerMethodField()
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
-    rank = serializers.CharField()
+    rank = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'JOINED'
@@ -109,6 +109,9 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
     def get_unit_description(self, obj):
         unit = obj.get_unit_by_date(obj.appointed_date)
         return unit.description if unit else ''
+
+    def get_rank(self, obj):
+        return obj.get_rank_by_date(obj.appointed_date)
 
 
 class UnitChangeNewTimelineSerializer(serializers.Serializer):
@@ -128,7 +131,32 @@ class UnitChangeNewTimelineSerializer(serializers.Serializer):
         return 20
 
     def get_rank(self, obj):
-        return obj.officer.rank
+        return obj.officer.get_rank_by_date(obj.effective_date)
+
+
+class RankChangeNewTimelineSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+    date_sort = serializers.DateField(source='spp_date', format=None)
+    priority_sort = serializers.SerializerMethodField()
+    date = serializers.DateField(source='spp_date', format='%Y-%m-%d')
+    kind = serializers.SerializerMethodField()
+    unit_name = serializers.SerializerMethodField()
+    unit_description = serializers.SerializerMethodField()
+    rank = serializers.CharField()
+
+    def get_kind(self, obj):
+        return 'RANK_CHANGE'
+
+    def get_priority_sort(self, obj):
+        return 25
+
+    def get_unit_name(self, obj):
+        unit = obj.officer.get_unit_by_date(obj.spp_date)
+        return unit.unit_name if unit else ''
+
+    def get_unit_description(self, obj):
+        unit = obj.officer.get_unit_by_date(obj.spp_date)
+        return unit.description if unit else ''
 
 
 class VictimSerializer(serializers.Serializer):
@@ -181,7 +209,7 @@ class CRNewTimelineSerializer(serializers.Serializer):
         return unit.description if unit else ''
 
     def get_rank(self, obj):
-        return obj.officer.rank
+        return obj.officer.get_rank_by_date(obj.start_date)
 
     def get_point(self, obj):
         try:
@@ -219,7 +247,7 @@ class AwardNewTimelineSerializer(serializers.Serializer):
         return unit.description if unit else ''
 
     def get_rank(self, obj):
-        return obj.officer.rank
+        return obj.officer.get_rank_by_date(obj.start_date)
 
 
 class TRRNewTimelineSerializer(serializers.Serializer):
@@ -251,7 +279,7 @@ class TRRNewTimelineSerializer(serializers.Serializer):
         return unit.description if unit else ''
 
     def get_rank(self, obj):
-        return obj.officer.rank
+        return obj.officer.get_rank_by_date(obj.trr_datetime.date())
 
     def get_date_sort(self, obj):
         return obj.trr_datetime.date()

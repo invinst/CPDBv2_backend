@@ -7,7 +7,7 @@ from data.constants import (
     MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR,
     PERCENTILE_TRR_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_ALLEGATION_GROUP
 )
-from data.models import Officer, OfficerAllegation, OfficerHistory, Award
+from data.models import Officer, OfficerAllegation, OfficerHistory, Award, Salary
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from officers.serializers.doc_serializers import (
@@ -28,6 +28,7 @@ from officers.serializers.doc_serializers import (
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer,
+    RankChangeNewTimelineSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -103,6 +104,18 @@ class UnitChangeNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return UnitChangeNewTimelineSerializer(datum).data
+
+
+@register_indexer(app_name)
+class RankChangeNewTimelineEventIndexer(BaseIndexer):
+    doc_type_klass = OfficerNewTimelineEventDocType
+    index_alias = officers_index_alias
+
+    def get_queryset(self):
+        return Salary.objects.rank_histories_without_joined()
+
+    def extract_datum(self, datum):
+        return RankChangeNewTimelineSerializer(datum).data
 
 
 @register_indexer(app_name)

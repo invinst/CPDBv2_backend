@@ -13,6 +13,7 @@ from data.factories import (
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
+from data.models import Allegation
 
 
 class CRIndexerTestCase(TestCase):
@@ -24,6 +25,14 @@ class CRIndexerTestCase(TestCase):
     def test_query_set(self):
         allegation = AllegationFactory()
         expect(list(CRIndexer().get_queryset())).to.eq([allegation])
+
+    def test_passed_query_set(self):
+        AllegationFactory()
+        allegation = AllegationFactory()
+
+        expect(
+            list(CRIndexer(queryset=Allegation.objects.filter(crid=allegation.crid)).get_queryset())
+        ).to.eq([allegation])
 
     def test_extract_datum(self):
         allegation = AllegationFactory(

@@ -153,6 +153,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
         trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+        SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(1998, 9, 23))
 
         self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
