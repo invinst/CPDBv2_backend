@@ -9,11 +9,6 @@ APPS_DIR = ROOT_DIR.path('cpdb')
 env = environ.Env()
 environ.Env.read_env("{root}/.env".format(root=ROOT_DIR))  # reading .env file
 
-# prod.env contains environment variables to interact with PostgreSQL service
-# In time it may replace .env once we switch to Docker completely
-prod_env = environ.Env()
-prod_env.read_env("{root}/prod.env".format(root=ROOT_DIR))
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
