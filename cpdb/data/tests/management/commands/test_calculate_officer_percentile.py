@@ -9,11 +9,11 @@ from data.factories import OfficerFactory, OfficerAllegationFactory
 
 class CalculateOfficerPercentileTestCase(TestCase):
     def test_handle(self):
-        officer1 = OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60))
+        officer1 = OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60), resignation_date=None)
         OfficerAllegationFactory.create_batch(1, officer=officer1)
-        officer2 = OfficerFactory(id=2, appointed_date=date(1980, 1, 1))
+        officer2 = OfficerFactory(id=2, appointed_date=date(1980, 1, 1), resignation_date=None)
         OfficerAllegationFactory.create_batch(1, officer=officer2)
-        officer3 = OfficerFactory(id=3, appointed_date=date(1980, 1, 1))
+        officer3 = OfficerFactory(id=3, appointed_date=date(1980, 1, 1), resignation_date=None)
         OfficerAllegationFactory.create_batch(2, officer=officer3)
 
         call_command('calculate_officer_percentile')
