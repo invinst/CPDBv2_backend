@@ -28,10 +28,10 @@ apt_java_package: oracle-java8-installer
 manage_authorized_keys: yes
 authorized_keys: ''  # override this per environment
 
-db_user: "cpdb@127.0.0.1"
+db_user: "cpdb@localhost"
 db_name: "{{ application_name }}"
 db_password: password
-db_host: "127.0.0.1"
+db_host: "localhost"
 visual_token_storageaccountname: 'cpdbdev'
 visual_token_storageaccountkey: ''
 
