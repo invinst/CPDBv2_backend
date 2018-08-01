@@ -16,8 +16,8 @@ run_twitterbot: yes
 
 frontend_static_dir: /www/static/
 
-postgresql_version: 9.4
-postgresql_package_version: 9.4.*-*.pgdg14.04+1
+postgresql_version: 9.6
+postgresql_package_version: 9.6.*-*.pgdg14.04+1
 enable_cron_job: no
 
 elasticsearch_download_url: https://artifacts.elastic.co/downloads/elasticsearch
@@ -28,10 +28,10 @@ apt_java_package: oracle-java8-installer
 manage_authorized_keys: yes
 authorized_keys: ''  # override this per environment
 
-db_user: cpdb
+db_user: "cpdb@127.0.0.1"
 db_name: "{{ application_name }}"
 db_password: password
-database_url: "postgis://{{ db_user }}:{{ db_password }}@127.0.0.1:5432/{{ db_name }}"
+db_host: "127.0.0.1"
 visual_token_storageaccountname: 'cpdbdev'
 visual_token_storageaccountkey: ''
 

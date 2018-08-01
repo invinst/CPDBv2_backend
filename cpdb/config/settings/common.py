@@ -92,15 +92,17 @@ ADMINS = (
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
-# DATABASE CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASE_CONFIG = env.db('DATABASE_URL')
 DATABASES = {
-    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': DATABASE_CONFIG,
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'HOST': env.str('DB_HOST'),
+        'NAME': env.str('DB_NAME'),
+        'PASSWORD': env.str('DB_PASS'),
+        'PORT': 5432,
+        'USER': env.str('DB_USER')
+    }
 }
-DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 ROOT_URLCONF = 'config.urls'
 
