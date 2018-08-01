@@ -1,16 +1,18 @@
 from datetime import date
 
+import pytz
 from django.test.testcases import TestCase, override_settings
+from django.utils.timezone import datetime
 
-from robber.expect import expect
 from freezegun import freeze_time
+from robber.expect import expect
 
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory
+    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
-from data.models import Officer
+from data.models import Officer, Salary
 
 
 class OfficerTestCase(TestCase):
@@ -395,3 +397,109 @@ class OfficerTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
         OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
         expect(officer.sustained_count).to.eq(2)
+
+    def test_rank_histories(self):
+        officer = OfficerFactory()
+        SalaryFactory(
+            officer=officer, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=None,
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=15000, year=2007, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=20000, year=2008, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=25000, year=2009, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(officer.rank_histories).to.eq([{
+            'date': date(2005, 1, 1),
+            'rank': 'Police Officer'
+        }, {
+            'date': date(2008, 1, 1),
+            'rank': 'Sergeant'
+        }])
+
+    def test_rank_histories_with_no_salary(self):
+        officer = OfficerFactory()
+        expect(officer.rank_histories).to.eq([])
+
+    def test_get_rank_by_date(self):
+        officer = OfficerFactory()
+        SalaryFactory(
+            officer=officer, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=15000, year=2007, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=20000, year=2008, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer, salary=25000, year=2009, rank='Sergeant', spp_date=date(2008, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(officer.get_rank_by_date(None)).to.eq(None)
+        expect(officer.get_rank_by_date(date(2007, 1, 1))).to.eq('Police Officer')
+        expect(officer.get_rank_by_date(datetime(2007, 1, 1, tzinfo=pytz.utc))).to.eq('Police Officer')
+        expect(officer.get_rank_by_date(date(2005, 1, 1))).to.eq('Police Officer')
+        expect(officer.get_rank_by_date(date(2009, 1, 1))).to.eq('Sergeant')
+        expect(officer.get_rank_by_date(date(2004, 1, 1))).to.be.none()
+
+    def test_get_rank_by_date_with_empty_rank_histories(self):
+        officer = OfficerFactory()
+        expect(officer.get_rank_by_date(date(2007, 1, 1))).to.be.none()
+
+
+class SalaryManagerTestCase(TestCase):
+    def test_rank_histories_without_joined(self):
+        officer1 = OfficerFactory(appointed_date=date(2005, 1, 1))
+        officer2 = OfficerFactory(appointed_date=date(2005, 1, 1))
+        SalaryFactory(
+            officer=officer1, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=None,
+            start_date=date(2005, 1, 1)
+        )
+        salary1 = SalaryFactory(
+            officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer2, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        salary2 = SalaryFactory(
+            officer=officer2, salary=15000, year=2006, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        SalaryFactory(
+            officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
+            start_date=date(2005, 1, 1)
+        )
+        expect(Salary.objects.rank_histories_without_joined()).to.eq([salary1, salary2])
