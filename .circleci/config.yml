@@ -3,13 +3,16 @@ jobs:
   test:
     docker:
       - image: cpdbdev/cpdbv2_backend:0.1.0
-      - image: cpdbdev/postgis:9.4-alpine
+      - image: cpdbdev/postgis:9.6-alpine
         command: postgres
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
+      - DB_HOST: "127.0.0.1"
+      - DB_USER: "cpdb@127.0.0.1"
+      - DB_PASSWORD: password
+      - DB_NAME: cpdb
     steps:
       - checkout
       - run: pip install --user -r requirements/test.txt
