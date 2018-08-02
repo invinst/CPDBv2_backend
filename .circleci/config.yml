@@ -9,8 +9,8 @@ jobs:
       - image: selenium/standalone-chrome:3.11
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DB_HOST: "localhost"
-      - DB_USER: "cpdb@localhost"
+      - DB_HOST: localhost
+      - DB_USER: cpdb
       - DB_PASSWORD: password
       - DB_NAME: cpdb
     steps:
