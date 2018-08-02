@@ -696,7 +696,15 @@ class Area(TaggableModel):
             count=Count('allegation', distinct=True)
         )
         query = query.order_by('-count')[:3]
-        return query.values('id', 'name', 'count')
+        return query.values(
+            'id',
+            'name',
+            'count',
+            'percentile_allegation',
+            'percentile_allegation_civilian',
+            'percentile_allegation_internal',
+            'percentile_trr'
+        )
 
     @property
     def allegation_count(self):
