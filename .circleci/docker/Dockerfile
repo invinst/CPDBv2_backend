@@ -15,7 +15,15 @@ RUN pip install --upgrade pyOpenSSL ansible==2.4.3.0
 ############################################################################
 
 RUN apt-get update \
-    && apt-get install -y libav-tools binutils libproj-dev gdal-bin libncurses5 libncurses5-dev
+    && apt-get install -y \
+    libav-tools \
+    binutils \
+    libproj-dev \
+    gdal-bin \
+    libncurses5 \
+    libncurses5-dev \
+    postgresql \
+    postgresql-contrib
 
 
 ############################################################################
@@ -27,6 +35,7 @@ RUN useradd -ms /bin/bash deploy
 RUN mkdir -p /home/deploy/project
 RUN chown -R deploy /home/deploy
 RUN echo deploy:deploy | chpasswd
+RUN usermod -aG sudo deploy
 
 USER deploy
 ENV PATH /home/deploy/.local/bin:$PATH
