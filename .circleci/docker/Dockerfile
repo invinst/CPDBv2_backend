@@ -26,6 +26,7 @@ RUN useradd -ms /bin/bash deploy
 
 RUN mkdir -p /home/deploy/project
 RUN chown -R deploy /home/deploy
+RUN echo deploy:deploy | chpasswd
 
 USER deploy
 ENV PATH /home/deploy/.local/bin:$PATH
