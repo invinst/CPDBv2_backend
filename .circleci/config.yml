@@ -31,7 +31,6 @@ jobs:
       - ANSIBLE_HOST_KEY_CHECKING: False
     steps:
       - checkout
-      - run: ansible-galaxy install azavea.postgresql
       - run:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m
