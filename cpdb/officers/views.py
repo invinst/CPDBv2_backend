@@ -43,7 +43,7 @@ class OfficersViewSet(viewsets.ViewSet):
 
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):
-        limit = request.GET.get('limit', 40)
+        limit = int(request.GET.get('limit', 40))
         top_officers = OfficerInfoDocType.get_top_officers(percentile=99.0, size=limit)
 
         return Response(OfficerCardSerializer(top_officers, many=True).data)

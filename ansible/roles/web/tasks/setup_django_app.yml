@@ -24,6 +24,7 @@
     virtualenv: "{{ virtualenv_path }}"
     settings: "{{ django_settings_module }}"
   environment: "{{ django_environment }}"
+  when: run_rebuild_index is defined and run_rebuild_index
   become: yes
   become_user: "{{ deploy_user }}"
 
