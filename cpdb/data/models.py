@@ -270,14 +270,18 @@ class Officer(TaggableModel):
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
-    complaint_percentile = models.DecimalField(max_digits=6, decimal_places=3, null=True)
+    complaint_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    civilian_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    internal_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    trr_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    honorable_mention_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
 
     def __str__(self):
         return self.full_name
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name,)
+        return '%s %s' % (self.first_name, self.last_name)
 
     @property
     def historic_badges(self):
@@ -365,6 +369,16 @@ class Officer(TaggableModel):
         return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
             cr_threshold=cr_threshold
         )]
+
+    @property
+    def has_visual_token(self):
+        return all([
+            percentile is not None for percentile in [
+                self.civilian_allegation_percentile,
+                self.internal_allegation_percentile,
+                self.trr_percentile
+            ]
+        ])
 
     @property
     def visual_token_png_url(self):
@@ -557,6 +571,45 @@ class Officer(TaggableModel):
         current_salary_object = self.salary_set.all().order_by('-year').first()
         return current_salary_object.salary if current_salary_object else None
 
+    @property
+    def rank_histories(self):
+        salaries = self.salary_set.exclude(spp_date__isnull=True).order_by('year')
+        try:
+            first_salary = salaries[0]
+        except IndexError:
+            return []
+        current_rank = first_salary.rank
+        rank_histories = [{'date': first_salary.spp_date, 'rank': first_salary.rank}]
+        for salary in salaries:
+            if salary.rank != current_rank:
+                rank_histories.append({'date': salary.spp_date, 'rank': salary.rank})
+                current_rank = salary.rank
+        return rank_histories
+
+    def get_rank_by_date(self, query_date):
+        if query_date is None:
+            return None
+
+        if type(query_date) is datetime:
+            query_date = query_date.date()
+        rank_histories = self.rank_histories
+
+        try:
+            first_history = rank_histories[0]
+        except IndexError:
+            return None
+
+        last_history = rank_histories[len(rank_histories)-1]
+        if query_date < first_history['date']:
+            return None
+        if query_date >= last_history['date']:
+            return last_history['rank']
+        for i in range(len(rank_histories)):
+            if query_date < rank_histories[i]['date']:
+                return rank_histories[i-1]['rank']
+            if query_date == rank_histories[i]['date']:
+                return rank_histories[i]['rank']
+
 
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
@@ -635,6 +688,10 @@ class Area(TaggableModel):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
         query = query.values('officer').annotate(
             id=F('officer__id'),
+            percentile_allegation=F('officer__complaint_percentile'),
+            percentile_allegation_civilian=F('officer__civilian_allegation_percentile'),
+            percentile_allegation_internal=F('officer__internal_allegation_percentile'),
+            percentile_trr=F('officer__trr_percentile'),
             name=Concat('officer__first_name', Value(' '), 'officer__last_name'),
             count=Count('allegation', distinct=True)
         )
@@ -1013,6 +1070,25 @@ class AttachmentRequest(models.Model):
         super(AttachmentRequest, self).save(*args, **kwargs)
 
 
+class SalaryManager(models.Manager):
+    def rank_histories_without_joined(self):
+        salaries = self.exclude(
+            spp_date__isnull=True
+        ).exclude(
+            spp_date=F('officer__appointed_date')
+        ).order_by('officer_id', 'year')
+        last_salary = salaries.first()
+        result = [salaries.first()]
+        for salary in salaries:
+            if salary.officer_id == last_salary.officer_id:
+                if salary.rank != last_salary.rank:
+                    result.append(salary)
+            else:
+                result.append(salary)
+            last_salary = salary
+        return result
+
+
 class Salary(models.Model):
     pay_grade = models.CharField(max_length=16)
     rank = models.CharField(max_length=64, null=True)
@@ -1024,3 +1100,5 @@ class Salary(models.Model):
     year = models.PositiveSmallIntegerField()
     age_at_hire = models.PositiveSmallIntegerField(null=True)
     officer = models.ForeignKey(Officer)
+
+    objects = SalaryManager()

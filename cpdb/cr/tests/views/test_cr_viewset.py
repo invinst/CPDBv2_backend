@@ -17,7 +17,6 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
-from data.tests.officer_percentile_utils import mock_percentile_map_range
 
 
 class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -26,14 +25,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         super(CRViewSetTestCase, self).setUp()
         self.maxDiff = None
 
-    @mock_percentile_map_range(
-        allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
-        allegation_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
-        internal_civilian_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
-        internal_civilian_max=datetime(2006, 1, 1, tzinfo=pytz.utc),
-        trr_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
-        trr_max=datetime(2007, 1, 1, tzinfo=pytz.utc)
-    )
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(
@@ -44,7 +35,11 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             race='White',
             rank='Officer',
             appointed_date=date(2001, 1, 1),
-            birth_year=1993
+            birth_year=1993,
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3
         )
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         allegation = AllegationFactory(
@@ -62,12 +57,19 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                 allegation_name='Secondary/Special Employment'
             )
         )
-        officer = OfficerFactory(id=3, first_name='Raymond', last_name='Piwinicki', appointed_date=date(2001, 5, 1))
+        officer = OfficerFactory(
+            id=3,
+            first_name='Raymond',
+            last_name='Piwinicki',
+            appointed_date=date(2001, 5, 1),
+            complaint_percentile=4.4,
+            trr_percentile=5.5
+        )
         OfficerAllegationFactory(
             officer=officer,
             final_finding='SU',
             start_date=date(2003, 2, 28),
-            allegation__incident_date=date(2002, 2, 28),
+            allegation__incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
         )
         PoliceWitnessFactory(officer=officer, allegation=allegation)
@@ -75,13 +77,16 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             id=1,
             first_name='Ellis',
             last_name='Skol',
-            appointed_date=date(2001, 5, 1)
+            appointed_date=date(2001, 5, 1),
+            complaint_percentile=6.6,
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
         )
         OfficerAllegationFactory(
             officer=investigator,
             final_finding='NS',
             start_date=date(2003, 2, 28),
-            allegation__incident_date=date(2002, 2, 28),
+            allegation__incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
             allegation__is_officer_complaint=False
         )
         investigator = InvestigatorFactory(officer=investigator)
@@ -118,10 +123,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 0,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
+                    'percentile_allegation': 0.0,
+                    'percentile_allegation_civilian': 1.1,
+                    'percentile_allegation_internal': 2.2,
+                    'percentile_trr': 3.3,
                     'disciplined': True
                 }
             ],
@@ -156,9 +161,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
                     'current_rank': 'IPRA investigator',
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
+                    'percentile_allegation_civilian': 7.7,
+                    'percentile_allegation_internal': 8.8,
                 },
                 {
                     'involved_type': 'police_witness',
@@ -166,9 +170,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'full_name': 'Raymond Piwinicki',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
+                    'percentile_trr': 5.5
                 }
             ],
             'attachments': [

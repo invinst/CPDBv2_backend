@@ -1,32 +1,50 @@
-from datetime import date, datetime
-import pytz
+from datetime import datetime
 
 from django.contrib.gis.db import models
 from django.db.models import F, Q, IntegerField, Func
 from django.utils.timezone import now, timedelta
 
+from tqdm import tqdm
+import pytz
+
 from data.models import Officer, Award
 from data.constants import (
-    PERCENTILE_HONORABLE_MENTION,
     ALLEGATION_MAX_DATETIME, ALLEGATION_MIN_DATETIME,
     INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME, INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME,
     TRR_MAX_DATETIME, TRR_MIN_DATETIME,
-    PERCENTILE_GROUPS, PERCENTILE_ALLEGATION_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_TRR_GROUP
+    PERCENTILE_GROUPS, PERCENTILE_ALLEGATION_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_TRR_GROUP,
+    PERCENTILE_HONORABLE_MENTION_GROUP
 )
 from data.utils.percentile import percentile, merge_metric
 from data.utils.round import Round
 
 
-def top_allegation_percentile(year=now().year):
-    return top_percentile(year, percentile_groups=[PERCENTILE_ALLEGATION_GROUP])
+def latest_year_percentile(percentile_groups=PERCENTILE_GROUPS):
+    dates = [date for percentile_group in percentile_groups
+             for date in PERCENTILE_MAP[percentile_group]['range']]
+    min_year = min(dates).year
+    max_year = max(dates).year
 
+    resignation_dates = Officer.objects.filter(
+        resignation_date__isnull=False
+    ).values_list('resignation_date', flat=True).distinct()
 
-def top_visual_token_percentile(year=now().year):
-    visual_token_percentile_groups = [
-        PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
-        PERCENTILE_TRR_GROUP
-    ]
-    return top_percentile(year, percentile_groups=visual_token_percentile_groups)
+    resignation_years = set([resignation_date.year for resignation_date in resignation_dates])
+    calculating_years = [resignation_year for resignation_year in resignation_years
+                         if min_year <= resignation_year <= max_year]
+    percentile_officers = []
+
+    for year in tqdm(calculating_years, 'calculate yearly percentiles'):
+        yearly_percentile_officers = top_percentile(year, percentile_groups)
+        percentile_officers += [officer for officer in yearly_percentile_officers
+                                if officer.resignation_date and officer.resignation_date.year == year]
+
+    current_year = now().year
+    current_year_percentile_officers = top_percentile(current_year, percentile_groups)
+    percentile_officers += [officer for officer in current_year_percentile_officers
+                            if not officer.resignation_date or officer.resignation_date.year == current_year]
+
+    return percentile_officers
 
 
 def top_percentile(year=now().year, percentile_groups=PERCENTILE_GROUPS):
@@ -34,8 +52,7 @@ def top_percentile(year=now().year, percentile_groups=PERCENTILE_GROUPS):
     :return: list of (officer_id, percentile_value)
     # """
     if any(t not in PERCENTILE_GROUPS for t in percentile_groups):
-        raise ValueError("percentile_type is invalid")
-
+        raise ValueError("percentile_group is invalid")
     computed_data = []
     for percentile_group in percentile_groups:
         percentile_types = PERCENTILE_MAP[percentile_group]['percentile_funcs'].keys()
@@ -45,16 +62,6 @@ def top_percentile(year=now().year, percentile_groups=PERCENTILE_GROUPS):
             computed_data = percentile(computed_data, percentile_type=percentile_type, decimal_places=4)
 
     return computed_data
-
-
-def annotate_honorable_mention_percentile_officers():
-    officer_metrics = list(_compute_honorable_mention_metric())
-    officer_metrics_with_honorable_mention_percentile = percentile(
-        officer_metrics,
-        percentile_type=PERCENTILE_HONORABLE_MENTION,
-        decimal_places=4
-    )
-    return officer_metrics_with_honorable_mention_percentile
 
 
 def _allegation_count_query(min_datetime, max_datetime):
@@ -112,6 +119,34 @@ def _trr_count_query(min_datetime, max_datetime):
     )
 
 
+def _honorable_mention_count_query(_, max_datetime):
+    return models.Count(
+        models.Case(
+            models.When(
+                award__start_date__lte=max_datetime.date(),
+                award__award_type='Honorable Mention',
+                then='award'
+            ), output_field=models.CharField(),
+        ), distinct=True
+    )
+
+
+def _to_datetime(date):
+    return datetime(year=date.year, month=date.month, day=date.day, tzinfo=pytz.utc)
+
+
+def _get_award_dataset_range():
+    award_date = Award.objects.aggregate(
+        models.Min('start_date'),
+        models.Max('start_date'),
+    ).values()
+    award_datetimes = [_to_datetime(x) for x in award_date if x is not None]
+    if not award_datetimes:
+        return []
+
+    return min(award_datetimes), max(award_datetimes)
+
+
 def create_percentile_map():
     return {
         PERCENTILE_ALLEGATION_GROUP: {
@@ -132,6 +167,12 @@ def create_percentile_map():
                 'trr': _trr_count_query,
             },
             'range': (TRR_MIN_DATETIME, TRR_MAX_DATETIME)
+        },
+        PERCENTILE_HONORABLE_MENTION_GROUP: {
+            'percentile_funcs': {
+                'honorable_mention': _honorable_mention_count_query,
+            },
+            'range': _get_award_dataset_range()
         }
     }
 
@@ -140,7 +181,11 @@ PERCENTILE_MAP = create_percentile_map()
 
 
 def _compute_metric(year_end, percentile_group):
-    min_datetime, max_datetime = PERCENTILE_MAP[percentile_group]['range']
+    data_range = PERCENTILE_MAP[percentile_group]['range']
+    if not data_range:
+        return Officer.objects.none()
+
+    min_datetime, max_datetime = data_range
     if year_end:
         max_datetime = min(max_datetime, datetime(year_end, 12, 31, tzinfo=pytz.utc))
     if min_datetime + timedelta(days=365) > max_datetime:
@@ -190,58 +235,5 @@ def _officer_service_year(min_date, max_date):
                 function='DATE_PART',
                 output_field=models.FloatField()
             )  # in order to easy to test and calculate, we only get 4 decimal points
-        )
-    )
-
-
-def _compute_honorable_mention_metric(year_end=now().year):
-    dataset_range = _get_award_dataset_range()
-    if not dataset_range:
-        return []
-    [dataset_min_date, dataset_max_date] = dataset_range
-
-    if year_end:
-        dataset_max_date = min(dataset_max_date, date(year_end, 12, 31))
-
-    if dataset_min_date + timedelta(days=365) > dataset_max_date:
-        return []
-
-    # STEP 1: compute the service time of all officers
-    query = _officer_service_year(dataset_min_date, dataset_max_date)
-
-    # STEP 2: count the allegation (internal/civil), TRR and major award
-    query = _annotate_honorable_mention(query, dataset_max_date)
-
-    # STEP 3: calculate the metric
-    query = query.annotate(
-        metric_honorable_mention=models.ExpressionWrapper(
-            Round(F('num_honorable_mention') / F('service_year')),
-            output_field=models.FloatField()),
-    ).order_by('metric_honorable_mention', 'id')
-
-    return query
-
-
-def _get_award_dataset_range():
-    award_date = Award.objects.aggregate(
-        models.Min('start_date'),
-        models.Max('start_date'),
-    ).values()
-    award_date = [x.date() if hasattr(x, 'date') else x for x in award_date if x is not None]
-    if not award_date:
-        return []
-    return [min(award_date), max(award_date)]
-
-
-def _annotate_honorable_mention(query, dataset_max_date):
-    return query.annotate(
-        num_honorable_mention=models.Count(
-            models.Case(
-                models.When(
-                    award__start_date__lte=dataset_max_date,
-                    award__award_type='Honorable Mention',
-                    then='award'
-                ), output_field=models.CharField(),
-            ), distinct=True
         )
     )

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Q, Text, Long
+from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
 
 from .index_aliases import officers_index_alias
 
@@ -46,6 +46,8 @@ class OfficerInfoDocType(DocType):
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     historic_badges = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     allegation_count = Long()
+    has_visual_token = Boolean()
+    current_allegation_percentile = Float()
 
     historic_units = Nested(properties={
         "id": Integer(),
@@ -54,33 +56,13 @@ class OfficerInfoDocType(DocType):
     })
 
     @staticmethod
-    def _get_latest_year():
-        query = OfficerInfoDocType.search()
-        query.aggs.bucket('percentiles', 'nested', path='percentiles') \
-            .metric('max_year', 'max', field='percentiles.year')
-        query = query.execute()
-        max_year = query.aggregations.percentiles.max_year.value
-        return max_year if max_year else 0
-
-    @staticmethod
     def get_top_officers(percentile=99.0, size=40):
-        lastest_year = OfficerInfoDocType._get_latest_year()
-        query = OfficerInfoDocType.search().query('nested', path='percentiles', query=Q(
+        query = OfficerInfoDocType.search().query(
             'bool',
             filter=[
-                {'term': {'percentiles.year': lastest_year}},
-                {'range': {'percentiles.percentile_allegation': {'gte': percentile}}}
+                {'term': {'has_visual_token': True}},
+                {'range': {'current_allegation_percentile': {'gte': percentile}}}
             ]
-        ))
-        query = query.sort({
-            'percentiles.percentile_allegation': {
-                "order": "desc",
-                "mode": "max",
-                "nested_path": "percentiles",
-                "nested_filter": {
-                    "term": {"percentiles.year": lastest_year}
-                }
-            }}
         )
-
+        query = query.sort({'current_allegation_percentile': 'desc'})
         return query[0:size].execute()

@@ -13,7 +13,6 @@ from data.factories import (
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
-from data.tests.officer_percentile_utils import mock_percentile_map_range
 from data.models import Allegation
 
 
@@ -35,14 +34,6 @@ class CRIndexerTestCase(TestCase):
             list(CRIndexer(queryset=Allegation.objects.filter(crid=allegation.crid)).get_queryset())
         ).to.eq([allegation])
 
-    @mock_percentile_map_range(
-        allegation_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
-        allegation_max=datetime(2003, 4, 28, tzinfo=pytz.utc),
-        internal_civilian_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
-        internal_civilian_max=datetime(2003, 4, 28, tzinfo=pytz.utc),
-        trr_min=datetime(2002, 2, 28, tzinfo=pytz.utc),
-        trr_max=datetime(2003, 4, 28, tzinfo=pytz.utc)
-    )
     def test_extract_datum(self):
         allegation = AllegationFactory(
             crid='12345',
@@ -64,9 +55,12 @@ class CRIndexerTestCase(TestCase):
             race='White',
             birth_year=1986,
             appointed_date=date(2001, 1, 1),
-            rank='Officer'
+            rank='Officer',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3
         )
-
         OfficerAllegationFactory(
             officer=coaccused,
             allegation=allegation,
@@ -89,7 +83,10 @@ class CRIndexerTestCase(TestCase):
             first_name='Jerome',
             last_name='Finnigan',
             gender='M',
-            appointed_date=date(2001, 5, 1))
+            appointed_date=date(2001, 5, 1),
+            complaint_percentile=4.4,
+            trr_percentile=5.5
+        )
         OfficerAllegationFactory(
             officer=officer,
             final_finding='SU',
@@ -102,7 +99,10 @@ class CRIndexerTestCase(TestCase):
             id=3,
             first_name='German',
             last_name='Lauren',
-            appointed_date=date(2001, 5, 1)
+            appointed_date=date(2001, 5, 1),
+            complaint_percentile=6.6,
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
         )
         OfficerAllegationFactory(
             officer=investigator,
@@ -152,10 +152,10 @@ class CRIndexerTestCase(TestCase):
                     'age': 32,
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 0,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
+                    'percentile_allegation': 0.0,
+                    'percentile_allegation_civilian': 1.1,
+                    'percentile_allegation_internal': 2.2,
+                    'percentile_trr': 3.3,
                     'disciplined': True
                 }
             ],
@@ -177,10 +177,10 @@ class CRIndexerTestCase(TestCase):
                     'abbr_name': 'G. Lauren',
                     'num_cases': 1,
                     'current_rank': 'IPRA investigator',
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
-                    'percentile_allegation': 0
+                    'percentile_allegation': 6.6,
+                    'percentile_allegation_civilian': 7.7,
+                    'percentile_allegation_internal': 8.8,
+                    'percentile_trr': None
                 },
                 {
                     'involved_type': 'police_witness',
@@ -191,10 +191,10 @@ class CRIndexerTestCase(TestCase):
                     'race': 'White',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
-                    'percentile_allegation': 0
+                    'percentile_allegation': 4.4,
+                    'percentile_allegation_civilian': None,
+                    'percentile_allegation_internal': None,
+                    'percentile_trr': 5.5
                 }
             ],
             'attachments': [
@@ -206,22 +206,3 @@ class CRIndexerTestCase(TestCase):
                 }
             ]
         })
-
-    def test_extract_datum_ignore_officers_not_in_top_percentile(self):
-        indexer = CRIndexer()
-        allegation = AllegationFactory()
-        OfficerAllegationFactory(allegation=allegation)
-        InvestigatorAllegationFactory(allegation=allegation)
-        result = indexer.extract_datum(allegation)
-        expect(result['coaccused'][0]).to.exclude(
-            'percentile_allegation_civilian',
-            'percentile_allegation_internal',
-            'percentile_trr',
-            'percentile_allegation'
-        )
-        expect(result['involvements'][0]).to.exclude(
-            'percentile_allegation_civilian',
-            'percentile_allegation_internal',
-            'percentile_trr',
-            'percentile_allegation'
-        )

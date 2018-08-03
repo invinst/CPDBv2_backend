@@ -20,7 +20,11 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             race='White',
             gender='M',
             appointed_date=date(2000, 1, 1),
-            birth_year=1980)
+            birth_year=1980,
+            civilian_allegation_percentile=11.1111,
+            internal_allegation_percentile=22.2222,
+            trr_percentile=33.3333,
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             taser=False,
@@ -62,9 +66,9 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
                 'appointed_date': '2000-01-01',
                 'unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'birth_year': 1980,
-                'percentile_trr': 0.0,
-                'percentile_allegation_internal': 0.0,
-                'percentile_allegation_civilian': 0.0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation_internal': 22.2222,
+                'percentile_allegation_civilian': 11.1111,
             },
             'subject_race': 'White',
             'subject_gender': 'Male',
