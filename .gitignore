@@ -57,3 +57,10 @@ Output/
 .vscode
 Pipfile*
 /htmlcov/
+.gitsecret/keys/random_seed
+
+# Terraform secrets
+.terraform
+secrets.auto.tfvars
+backend.tf
+prod.env

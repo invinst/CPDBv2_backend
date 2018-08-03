@@ -3,8 +3,8 @@
     apt: name={{ item }} update_cache={{ update_apt_cache }} state=latest
     with_items:
       - python-psycopg2
-      - postgresql-9.4-postgis-2.2
-      - postgresql-server-dev-9.4
+      - postgresql-9.6-postgis-2.4
+      - postgresql-server-dev-9.6
     tags: packages
 
   - name: setup postgresql.conf file
@@ -23,6 +23,13 @@
 
   - name: Ensure the database exist
     postgresql_db: name={{ application_name }}
+    become: true
+    become_user: postgres
+
+  - name: Install postgis extension on database
+    postgresql_ext:
+      name: postgis
+      db: "{{ application_name }}"
     become: true
     become_user: postgres
 
