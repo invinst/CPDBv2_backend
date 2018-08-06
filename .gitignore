@@ -64,3 +64,4 @@ Pipfile*
 secrets.auto.tfvars
 backend.tf
 prod.env
+local.env
