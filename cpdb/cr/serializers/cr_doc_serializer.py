@@ -20,6 +20,11 @@ class CoaccusedSerializer(serializers.Serializer):
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
     disciplined = serializers.NullBooleanField()
 
+    percentile_allegation = serializers.FloatField(source='officer.complaint_percentile')
+    percentile_allegation_civilian = serializers.FloatField(source='officer.civilian_allegation_percentile')
+    percentile_allegation_internal = serializers.FloatField(source='officer.internal_allegation_percentile')
+    percentile_trr = serializers.FloatField(source='officer.trr_percentile')
+
 
 class ComplainantSerializer(serializers.Serializer):
     gender = serializers.CharField(source='gender_display')
@@ -48,6 +53,15 @@ class InvestigatorAllegationSerializer(serializers.Serializer):
     num_cases = serializers.IntegerField(source='investigator.num_cases')
     current_rank = serializers.CharField()
 
+    percentile_allegation = serializers.FloatField(
+        source='investigator.officer.complaint_percentile')
+    percentile_allegation_civilian = serializers.FloatField(
+        source='investigator.officer.civilian_allegation_percentile')
+    percentile_allegation_internal = serializers.FloatField(
+        source='investigator.officer.internal_allegation_percentile')
+    percentile_trr = serializers.FloatField(
+        source='investigator.officer.trr_percentile')
+
     def get_involved_type(self, obj):
         return 'investigator'
 
@@ -67,6 +81,11 @@ class PoliceWitnessSerializer(serializers.Serializer):
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
     gender = serializers.CharField(source='officer.gender_display')
     race = serializers.CharField(source='officer.race')
+
+    percentile_allegation = serializers.FloatField(source='officer.complaint_percentile')
+    percentile_allegation_civilian = serializers.FloatField(source='officer.civilian_allegation_percentile')
+    percentile_allegation_internal = serializers.FloatField(source='officer.internal_allegation_percentile')
+    percentile_trr = serializers.FloatField(source='officer.trr_percentile')
 
     def get_involved_type(self, obj):
         return 'police_witness'

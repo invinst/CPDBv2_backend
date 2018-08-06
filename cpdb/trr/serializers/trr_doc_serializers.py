@@ -13,12 +13,19 @@ class UnitSerializer(serializers.ModelSerializer):
 class OfficerSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(source='gender_display', read_only=True)
     last_unit = UnitSerializer(allow_null=True, read_only=True)
+    percentile_allegation_civilian = serializers.FloatField(
+        allow_null=True, read_only=True, source='civilian_allegation_percentile')
+    percentile_allegation_internal = serializers.FloatField(
+        allow_null=True, read_only=True, source='internal_allegation_percentile')
+    percentile_trr = serializers.FloatField(
+        allow_null=True, read_only=True, source='trr_percentile')
 
     class Meta:
         model = Officer
         fields = [
             'id', 'full_name', 'race', 'appointed_date', 'birth_year',
-            'resignation_date', 'last_unit', 'gender'
+            'resignation_date', 'last_unit', 'gender',
+            'percentile_allegation_civilian', 'percentile_allegation_internal', 'percentile_trr'
         ]
 
 

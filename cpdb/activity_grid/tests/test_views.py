@@ -31,7 +31,8 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             birth_year=1950,
             race='Asian',
             gender='M',
-            appointed_date=datetime(2011, 1, 1, tzinfo=pytz.utc)
+            appointed_date=datetime(2011, 1, 1, tzinfo=pytz.utc),
+            complaint_percentile=50.0
         )
         officer2 = OfficerFactory(
             first_name='Raymond',
@@ -39,7 +40,8 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             birth_year=1960,
             race='White',
             gender='M',
-            appointed_date=datetime(2012, 1, 1, tzinfo=pytz.utc)
+            appointed_date=datetime(2012, 1, 1, tzinfo=pytz.utc),
+            complaint_percentile=0.0
         )
         allegation = AllegationFactory(incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(
@@ -84,16 +86,16 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 6,
             'sustained_count': 2,
             'birth_year': 1950,
-            'complaint_percentile': '50.000',
+            'complaint_percentile': 50.0,
             'race': 'Asian',
             'gender': 'Male',
             'percentile': {
                 'id': officer1.id,
                 'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '50.000',
-                'percentile_allegation_internal': '0.000',
-                'percentile_allegation_civilian': '50.000'
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '50.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_allegation_civilian': '50.0000'
             },
             'type': 'single_officer',
         }, {
@@ -102,16 +104,16 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 1,
             'sustained_count': 1,
             'birth_year': 1960,
-            'complaint_percentile': '0.000',
+            'complaint_percentile': 0.0,
             'race': 'White',
             'gender': 'Male',
             'percentile': {
                 'id': officer2.id,
                 'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '0.000',
-                'percentile_allegation_internal': '0.000',
-                'percentile_allegation_civilian': '0.000'
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_allegation_civilian': '0.0000'
             },
             'type': 'single_officer',
         }, {
@@ -124,10 +126,10 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile': {
                     'id': officer1.id,
                     'year': 2016,
-                    'percentile_trr': '0.000',
-                    'percentile_allegation': '50.000',
-                    'percentile_allegation_internal': '0.000',
-                    'percentile_allegation_civilian': '50.000'
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '50.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_allegation_civilian': '50.0000'
                 },
             },
             'officer2': {
@@ -139,10 +141,10 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile': {
                     'id': officer2.id,
                     'year': 2016,
-                    'percentile_trr': '0.000',
-                    'percentile_allegation': '0.000',
-                    'percentile_allegation_internal': '0.000',
-                    'percentile_allegation_civilian': '0.000'
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '0.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_allegation_civilian': '0.0000'
                 },
             },
             'coaccusal_count': 1,

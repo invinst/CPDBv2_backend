@@ -7,3 +7,4 @@ omit =
   */tests/*
   */site-packages/*
   visual_token/figures.py
+show_missing=True
