@@ -66,7 +66,7 @@ class AllegationTestCase(TestCase):
         expect(allegation.complainant_races).to.eq(['White'])
 
         ComplainantFactory(race='White/Hispinic', allegation=allegation)
-        expect(allegation.complainant_races).to.eq(['White/Hispinic', 'White'])
+        expect(allegation.complainant_races).to.eq(['White', 'White/Hispinic'])
 
     def test_complainant_age_groups(self):
         allegation = AllegationFactory()

@@ -1,3 +1,4 @@
+
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -51,10 +52,10 @@ class CalculateOfficerPercentileTestCase(TestCase):
         ])
     )
     def test_handle(self):
-        OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60))
-        OfficerFactory(id=2, appointed_date=date(1980, 1, 1))
-        OfficerFactory(id=3, appointed_date=date(1980, 1, 1))
-        OfficerFactory(id=4, appointed_date=date(1980, 1, 1))
+        OfficerFactory(id=1, appointed_date=date.today() - timedelta(days=60), resignation_date=None)
+        OfficerFactory(id=2, appointed_date=date(1980, 1, 1), resignation_date=None)
+        OfficerFactory(id=3, appointed_date=date(1980, 1, 1), resignation_date=None)
+        OfficerFactory(id=4, appointed_date=date(1980, 1, 1), resignation_date=None)
 
         call_command('calculate_officer_percentile')
 

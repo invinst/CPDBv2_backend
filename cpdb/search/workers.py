@@ -55,7 +55,11 @@ class OfficerWorker(Worker):
             },
             functions=[
                 {
-                    'filter': {'match': {'tags': term}},
+                    'filter': {
+                        'match': {
+                            'tags': term
+                        }
+                    },
                     'script_score': {
                         'script': '_score + 60000'
                     }
@@ -74,7 +78,11 @@ class OfficerWorker(Worker):
                     }
                 },
                 {
-                    'filter': {'match': {'full_name': term}},
+                    'filter': {
+                        'match': {
+                            'full_name': term
+                        }
+                    },
                     'script_score': {
                         'script': '_score + doc[\'allegation_count\'].value * 3'
                     }
