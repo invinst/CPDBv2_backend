@@ -17,7 +17,7 @@ class WebhookViewSet(viewsets.ViewSet):
         crc_token = request.GET.get('crc_token')
         if crc_token:
             hash_token = get_hash_token(
-                settings.TWITTER_CONSUMER_SECRET,
+                key=settings.TWITTER_CONSUMER_SECRET,
                 msg=crc_token
             )
             response = {
@@ -32,9 +32,9 @@ class WebhookViewSet(viewsets.ViewSet):
         '''
         POST: Webhook to receive subscribed account's activity events from Twitter
         '''
-        twitter_signature = request.META.get('HTTP_X_TWITTER_WEBHOOKS_SIGNATURE')
+        twitter_signature = request.META.get('HTTP_X_TWITTER_WEBHOOKS_SIGNATURE', '')
         request_hash_token = get_hash_token(
-            settings.TWITTER_CONSUMER_SECRET,
+            key=settings.TWITTER_CONSUMER_SECRET,
             msg=request.body
         )
 
