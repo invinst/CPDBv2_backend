@@ -73,6 +73,7 @@ urlpatterns = [
         r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
         r'unit/\d+|'
         r'trr/\d+|'
+        r'embed/top-officers-page|'
         r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(
