@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from cms.serializers import LandingPageSerializer, OfficerPageSerializer, get_slug_page_serializer
 from cms.models import SlugPage
 
+
 CSM_SERIALIZERS = [LandingPageSerializer, OfficerPageSerializer]
 
 
