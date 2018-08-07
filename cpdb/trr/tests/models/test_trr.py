@@ -26,3 +26,7 @@ class TRRTestCase(TestCase):
             'Physical Force - Stunning',
             'Taser Display'
         ])
+
+    def test_v2_to(self):
+        trr = TRRFactory()
+        expect(trr.v2_to).to.eq('/trr/{}/'.format(trr.id))

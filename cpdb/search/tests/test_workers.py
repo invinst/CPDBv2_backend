@@ -199,21 +199,23 @@ class UnitOfficerWorkerTestCase(IndexMixin, TestCase):
 
 class CrWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = CrDocType(crid='123456')
-        doc.save()
-
+        CrDocType(crid='123456', incident_date='2007-12-27').save()
+        CrDocType(crid='890', incident_date='2008-12-27').save()
+        CrDocType(crid='678', incident_date='2009-12-27').save()
         self.refresh_index()
 
-        response = CrWorker().search('123456')
-        expect(response.hits.total).to.be.equal(1)
+        response = CrWorker().search('123456', dates=['2008-12-27'])
+        expect(response.hits.total).to.be.equal(2)
+        expect(set([hit.crid for hit in response.hits])).to.be.eq({'123456', '890'})
 
 
 class TRRWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = TRRDocType(_id='123456')
-        doc.save()
-
+        TRRDocType(_id='123456', trr_datetime='2007-12-27').save()
+        TRRDocType(_id='890', trr_datetime='2008-12-27').save()
+        TRRDocType(_id='678', trr_datetime='2009-12-27').save()
         self.refresh_index()
 
-        response = TRRWorker().search('123456')
-        expect(response.hits.total).to.be.equal(1)
+        response = TRRWorker().search('123456', dates=['2008-12-27'])
+        expect(response.hits.total).to.be.equal(2)
+        expect(set([hit._id for hit in response.hits])).to.be.eq({'123456', '890'})

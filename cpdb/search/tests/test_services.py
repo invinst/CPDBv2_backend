@@ -1,11 +1,13 @@
 from django.test import TestCase
+
 from mock import Mock, patch
 from robber import expect
 
-from officers.doc_types import OfficerInfoDocType
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
-from search.workers import OfficerWorker
+from search.workers import CrWorker, OfficerWorker
+from search.doc_types import CrDocType
+from officers.doc_types import OfficerInfoDocType
 
 
 class SearchManagerTestCase(IndexMixin, TestCase):
@@ -17,8 +19,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         })
 
     def test_search(self):
-        doc = OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
-        doc.save()
+        OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url').save()
         self.refresh_index()
         response = SearchManager().search('fu na')
 
@@ -32,6 +33,30 @@ class SearchManagerTestCase(IndexMixin, TestCase):
                 'full_name': u'full name'
             }],
             'COMMUNITY': []})
+
+    def test_search_with_date(self):
+        OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url').save()
+        CrDocType(meta={'id': '1'}, crid='1234', incident_date='2017-12-27').save()
+        self.refresh_index()
+
+        workers = {
+            'OFFICER': OfficerWorker(),
+            'CR': CrWorker()
+        }
+        response = SearchManager(workers=workers).search('fu na 2017-12-27')
+        expect(response).to.eq({
+            'OFFICER': [{
+                'id': '1',
+                'url': 'url',
+                'badge': '123',
+                'full_name': u'full name'
+            }],
+            'CR': [{
+                'id': '1',
+                'crid': '1234',
+                'incident_date': '2017-12-27'
+            }]
+        })
 
     def test_suggest_sample(self):
         taglessOfficerDoc = OfficerInfoDocType(

@@ -41,6 +41,7 @@ class AreaDocType(DocType):
 @autocompletes_alias.doc_type
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    incident_date = Keyword()
 
     class Meta:
         doc_type = 'cr'
@@ -49,6 +50,7 @@ class CrDocType(DocType):
 @autocompletes_alias.doc_type
 class TRRDocType(DocType):
     id = Integer()
+    trr_datetime = Keyword()
 
     class Meta:
         doc_type = 'trr'

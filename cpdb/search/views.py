@@ -7,10 +7,10 @@ from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter,
-    ReportFormatter, CrFormatter
+    ReportFormatter, CrFormatter, TRRFormatter
 )
 from .workers import (
-    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
+    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker, TRRWorker,
     UnitOfficerWorker, CrWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
@@ -79,7 +79,8 @@ class SearchV1ViewSet(SearchViewSet):
         'WARD': AreaFormatter,
         'BEAT': AreaFormatter,
         'UNIT > OFFICERS': OfficerFormatter,
-        'CR': CrFormatter
+        'CR': CrFormatter,
+        'TRR': TRRFormatter
     }
     workers = {
         'OFFICER': OfficerWorker(),
@@ -91,7 +92,8 @@ class SearchV1ViewSet(SearchViewSet):
         'WARD': WardWorker(),
         'BEAT': BeatWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker(),
-        'CR': CrWorker()
+        'CR': CrWorker(),
+        'TRR': TRRWorker()
     }
 
 
