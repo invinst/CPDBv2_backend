@@ -37,11 +37,18 @@ def status_url(status):
     return 'https://twitter.com/%s/status/%s/' % (status.user.screen_name, status.id)
 
 
+def generate_mp4_file(data, yd, fps):
+    if 'percentiles' in data:
+        return write_mp4(data, yd, fps)
+    return None
+
+
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     fps = int(os.environ.get('FPS', '40'))
     yd = float(os.environ.get('YEAR_DURATION', '0.5'))
     queue_name = os.environ['AZURE_QUEUE_NAME']
+    fail_queue_name = '%sfail' % queue_name
 
     twitter_auth = tweepy.OAuthHandler(
         os.environ['TWITTER_CONSUMER_KEY'],
@@ -60,6 +67,7 @@ def main():
     )
 
     queue_service.create_queue(queue_name)
+    queue_service.create_queue(fail_queue_name)
     print_stdout('Created queue %s' % queue_name)
     print_stdout('Start poll loop')
     while run:
@@ -67,8 +75,8 @@ def main():
             try:
                 content = base64.b64decode(message.content)
                 data = json.loads(content)
-                if 'percentiles' in data:
-                    filename = write_mp4(data, yd, fps)
+                filename = generate_mp4_file(data, yd, fps)
+                if filename is not None:
                     status = vid_tweet.tweet(filename, **data['tweet'])
                     print_stdout('Sent tweet with media: "%s" - %s' % (
                         data['tweet']['status'],
@@ -83,7 +91,7 @@ def main():
             except:
                 traceback.print_exc()
                 print_stderr('Message was: %s' % content)
-                continue
+                queue_service.put_message(fail_queue_name, message.content)
             queue_service.delete_message(queue_name, message.id, message.pop_receipt)
         time.sleep(1)
 

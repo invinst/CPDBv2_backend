@@ -54,6 +54,8 @@ def write_mp4(data, yd, fps):
         for year in data['percentiles']
         if has_enough_data(year)
     ]
+    if len(percentiles) < 2:
+        return None
 
     duration = yd * (len(percentiles) - 1)
     clip = mpy.VideoClip(

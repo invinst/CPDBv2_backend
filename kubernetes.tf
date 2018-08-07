@@ -1,6 +1,11 @@
+variable "kubernetes_admin_username" {}
+variable "kubernetes_admin_ssh_pub_key" {}
+variable "kubernetes_client_id" {}
+variable "kubernetes_client_secret" {}
+
 resource "azurerm_kubernetes_cluster" "cpdp" {
   name                = "cpdp"
-  location            = "East US"
+  location            = "${azurerm_resource_group.terraformed.location}"
   resource_group_name = "${azurerm_resource_group.terraformed.name}"
   dns_prefix          = "cpdp"
 
@@ -34,4 +39,10 @@ provider "kubernetes" {
   client_certificate     = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_certificate)}"
   client_key             = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_key)}"
   cluster_ca_certificate = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.cluster_ca_certificate)}"
+}
+
+resource "kubernetes_namespace" "staging" {
+  metadata {
+    name = "staging"
+  }
 }
