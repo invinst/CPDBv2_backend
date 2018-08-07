@@ -3,13 +3,16 @@ jobs:
   test:
     docker:
       - image: cpdbdev/cpdbv2_backend:0.1.0
-      - image: cpdbdev/postgis:9.4-alpine
+      - image: cpdbdev/postgis:9.6-alpine
         command: postgres
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
     environment:
       - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DATABASE_URL: postgis://cpdb:password@127.0.0.1:5432/cpdb
+      - DB_HOST: localhost
+      - DB_USER: cpdb
+      - DB_PASSWORD: password
+      - DB_NAME: cpdb
     steps:
       - checkout
       - run: pip install --user -r requirements/test.txt
@@ -28,7 +31,6 @@ jobs:
       - ANSIBLE_HOST_KEY_CHECKING: False
     steps:
       - checkout
-      - run: ansible-galaxy install azavea.postgresql
       - run:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m

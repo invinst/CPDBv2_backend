@@ -191,7 +191,7 @@ class PoliceUnit(TaggableModel):
             name=get_num_range_case('age', [0, 20, 30, 40, 50])
         ).values('name').annotate(
             count=models.Count('id', distinct=True)
-        )
+        ).order_by('name')
 
         sustained_count_query_set = Complainant.objects.filter(
             allegation__officerallegation__officer__officerhistory__unit=self,
@@ -821,7 +821,7 @@ class Allegation(models.Model):
                 default='race',
                 output_field=models.CharField()))
         query = query.values('name').distinct()
-        results = [result['name'] for result in query]
+        results = sorted([result['name'] for result in query])
         return results if results else ['Unknown']
 
     @property
@@ -869,7 +869,9 @@ class Allegation(models.Model):
                 'attachment_files',
                 queryset=AttachmentFile.objects.annotate(
                     last_created_at=Max('created_at')
-                ).filter(file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))),
+                ).filter(
+                    file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))
+                ).order_by('created_at'),
                 to_attr='latest_documents'
             )
         ).annotate(
