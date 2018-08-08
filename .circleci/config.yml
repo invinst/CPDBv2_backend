@@ -39,12 +39,11 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: export CPDPBOT_VERSION=$(cat docker/cpdpbot/VERSION)
-      - run: docker build -t cpdbdev/cpdpbot:$CPDPBOT_VERSION docker/cpdpbot
-      - run: docker run --rm cpdbdev/cpdpbot:$CPDPBOT_VERSION python -m cpdpbot.test
+      - run: docker build -t cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) docker/cpdpbot
+      - run: docker run --rm cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) python -m cpdpbot.test
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker push cpdbdev/cpdpbot:$CPDPBOT_VERSION
+          docker push cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION)
 
   deploy_cpdpbot:
     docker:
@@ -61,7 +60,7 @@ jobs:
         name: Terraform apply
         command: |
           terraform init
-          terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var 'cpdpbot_version=$CPDPBOT_VERSION'
+          terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var 'cpdpbot_version=$(cat docker/cpdpbot/VERSION)'
 
 workflows:
   version: 2
