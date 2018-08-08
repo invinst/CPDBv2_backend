@@ -82,7 +82,7 @@ jobs:
           name: Terraform apply
           command: |
             terraform init
-            terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var "cpdpbot_version=$(cat docker/cpdpbot/VERSION)"
+            terraform apply -target kubernetes_replication_controller.cpdpbot_$CIRCLE_BRANCH -auto-approve -lock=true -var "cpdpbot_version=$(cat docker/cpdpbot/VERSION)"
 
 workflows:
   version: 2
@@ -98,14 +98,19 @@ workflows:
 
   test_deploy_cpdpbot:
     jobs:
-      - build_terraform
+      - build_terraform:
+          filters:
+            branches:
+              only:
+                - staging
+                - master
       - build_cpdpbot
       - deploy_cpdpbot:
           requires:
             - build_cpdpbot
             - build_terraform
-          # filters:
-          #   branches:
-          #     only:
-          #       - staging
-          #       - master
+          filters:
+            branches:
+              only:
+                - staging
+                - master
