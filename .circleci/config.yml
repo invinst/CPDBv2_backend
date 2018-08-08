@@ -81,6 +81,7 @@ jobs:
       - run:
           name: Terraform apply
           command: |
+            az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
             terraform init
             terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var 'cpdpbot_version=$(cat docker/cpdpbot/VERSION)'
 
