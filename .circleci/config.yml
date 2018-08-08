@@ -59,9 +59,11 @@ jobs:
       - run:
           name: Import gpg private key
           command: |
-            echo $GPG_PRIVATE_KEY | base64 -D -o circleci.gpg
+            echo $GPG_PRIVATE_KEY > circleci.b64
+            base64 -d circleci.b64 > circleci.gpg
             gpg --import circleci.gpg
             rm circleci.gpg
+            rm circleci.b64
       - checkout
       - run:
           name: Terraform apply
