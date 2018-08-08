@@ -24,8 +24,16 @@ server {
         set $is_api P;
     }
 
+    if ($request_uri ~ '^\/embed\/map') {
+        set $is_embedded_map E;
+    }
+
+    if ($request_uri ~ '^\/dist') {
+        set $is_dist D;
+    }
+
     if ($http_user_agent ~* '(iPhone|iPod|Android|Blackberry|Windows Phone|Opera Mini|WebOS|SymbianOS|IEMobile|Maemo)') {
-        set $is_redirect "${is_api}C";
+        set $is_redirect "${is_dist}${is_api}${is_embedded_map}C";
     }
 
     if ($is_redirect = C) {
