@@ -43,8 +43,8 @@ jobs:
       - run: docker build -t cpdbdev/cpdpbot:$CPDPBOT_VERSION docker/cpdpbot
       - run: docker run --rm cpdbdev/cpdpbot:$CPDPBOT_VERSION python -m cpdpbot.test
       - run: |
-        docker login -u $DOCKER_USER -p $DOCKER_PASS
-        docker push cpdbdev/cpdpbot:$CPDPBOT_VERSION
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker push cpdbdev/cpdpbot:$CPDPBOT_VERSION
 
   deploy_cpdpbot:
     docker:
