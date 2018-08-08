@@ -82,7 +82,7 @@ jobs:
           name: Terraform apply
           command: |
             terraform init
-            terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var 'cpdpbot_version=$(cat docker/cpdpbot/VERSION)'
+            terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var "cpdpbot_version=$(cat docker/cpdpbot/VERSION)"
 
 workflows:
   version: 2
