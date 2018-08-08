@@ -35,6 +35,19 @@ jobs:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m
 
+  build_terraform:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build terraform image
+          command: docker build -t cpdbdev/terraform docker/terraform  
+      - run:
+          name: Push terraform image
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push cpdbdev/terraform
+
   build_cpdpbot:
     machine: true
     steps:
@@ -53,9 +66,8 @@ jobs:
 
   deploy_cpdpbot:
     docker:
-      - image: hashicorp/terraform
+      - image: cpdbdev/terraform
     steps:
-      - run: apk add gnupg
       - run:
           name: Import gpg private key
           command: |
@@ -65,6 +77,7 @@ jobs:
             rm circleci.gpg
             rm circleci.b64
       - checkout
+      - run: git secret reveal
       - run:
           name: Terraform apply
           command: |
@@ -85,10 +98,12 @@ workflows:
 
   test_deploy_cpdpbot:
     jobs:
+      - build_terraform
       - build_cpdpbot
       - deploy_cpdpbot:
           requires:
             - build_cpdpbot
+            - build_terraform
           # filters:
           #   branches:
           #     only:
