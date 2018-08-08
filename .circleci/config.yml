@@ -35,6 +35,34 @@ jobs:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m
 
+  build_cpdpbot:
+    machine: true
+    steps:
+      - checkout
+      - run: export CPDPBOT_VERSION=$(cat docker/cpdpbot/VERSION)
+      - run: docker build -t cpdbdev/cpdpbot:$CPDPBOT_VERSION docker/cpdpbot
+      - run: docker run --rm cpdbdev/cpdpbot:$CPDPBOT_VERSION python -m cpdpbot.test
+      - run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASS
+        docker push cpdbdev/cpdpbot:$CPDPBOT_VERSION
+
+  deploy_cpdpbot:
+    docker:
+      - image: hashicorp/terraform
+    steps:
+      - run:
+        name: Import gpg private key
+        command: |
+          echo $GPG_PRIVATE_KEY | base64 -D -o circleci.gpg
+          gpg --import circleci.gpg
+          rm circleci.gpg
+      - checkout
+      - run:
+        name: Terraform apply
+        command: |
+          terraform init
+          terraform apply -target kubernetes_replication_controller.cpdpbot_staging -auto-approve -lock=true -var 'cpdpbot_version=$CPDPBOT_VERSION'
+
 workflows:
   version: 2
   test_and_deploy:
@@ -46,3 +74,15 @@ workflows:
           filters:
             branches:
               only: staging
+
+  test_deploy_cpdpbot:
+    jobs:
+      - build_cpdpbot
+      - deploy_cpdpbot:
+          requires:
+            - build_cpdpbot
+          # filters:
+          #   branches:
+          #     only:
+          #       - staging
+          #       - master

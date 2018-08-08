@@ -22,6 +22,8 @@ RUN apt-get -qq update && apt-get -y install \
     libfribidi-dev && \
     apt-get clean
 
+RUN pip install --upgrade pip
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 RUN python -m imageio download_bin all
@@ -29,5 +31,7 @@ RUN python -m imageio download_bin all
 RUN mkdir -p /app/
 COPY cpdpbot /app/cpdpbot
 WORKDIR /app
+
+ADD VERSION .
 
 CMD ["python", "-m", "cpdpbot.tweet"]
