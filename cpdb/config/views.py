@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from data.models import OfficerAlias
-from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 def index_view(request, path=None):
