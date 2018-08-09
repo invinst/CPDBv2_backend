@@ -24,6 +24,18 @@ resource "azurerm_storage_account" "staging" {
   }
 }
 
+resource "azurerm_storage_account" "production" {
+  name                     = "cpdpproduction"
+  resource_group_name      = "${azurerm_resource_group.terraformed.name}"
+  location                 = "${azurerm_resource_group.terraformed.location}"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags {
+    environment = "production"
+  }
+}
+
 output "staging_storage_account_name" {
   value = "${azurerm_storage_account.staging.name}"
 }

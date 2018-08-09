@@ -82,6 +82,7 @@ jobs:
           name: Terraform apply
           command: |
             terraform init
+            terraform taint kubernetes_replication_controller.cpdpbot_$CIRCLE_BRANCH
             terraform apply -target kubernetes_replication_controller.cpdpbot_$CIRCLE_BRANCH -auto-approve -lock=true -var "cpdpbot_version=$(cat docker/cpdpbot/VERSION)"
 
 workflows:

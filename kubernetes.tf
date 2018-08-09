@@ -34,8 +34,6 @@ resource "azurerm_kubernetes_cluster" "cpdp" {
 provider "kubernetes" {
   version                = "~> 1.1"
   host                   = "${azurerm_kubernetes_cluster.cpdp.kube_config.0.host}"
-  username               = "${azurerm_kubernetes_cluster.cpdp.kube_config.0.username}"
-  password               = "${azurerm_kubernetes_cluster.cpdp.kube_config.0.password}"
   client_certificate     = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_certificate)}"
   client_key             = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_key)}"
   cluster_ca_certificate = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.cluster_ca_certificate)}"
@@ -44,6 +42,12 @@ provider "kubernetes" {
 resource "kubernetes_namespace" "staging" {
   metadata {
     name = "staging"
+  }
+}
+
+resource "kubernetes_namespace" "production" {
+  metadata {
+    name = "production"
   }
 }
 
