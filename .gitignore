@@ -65,3 +65,6 @@ secrets.auto.tfvars
 backend.tf
 prod.env
 local.env
+
+# Azure kube config file
+azurek8s

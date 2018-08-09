@@ -21,6 +21,7 @@ resource "kubernetes_replication_controller" "cpdpbot_staging" {
       container {
         image = "cpdbdev/cpdpbot:${var.cpdpbot_version}"
         name  = "cpdpbot"
+        image_pull_policy = "Always"
         env   = [
           {
             name  = "AZURE_QUEUE_NAME"

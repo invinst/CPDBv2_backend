@@ -46,3 +46,7 @@ resource "kubernetes_namespace" "staging" {
     name = "staging"
   }
 }
+
+output "kube_config" {
+    value = "${azurerm_kubernetes_cluster.cpdp.kube_config_raw}"
+}
