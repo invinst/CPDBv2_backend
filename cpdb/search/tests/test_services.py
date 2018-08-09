@@ -1,13 +1,11 @@
-from mock import Mock, patch
-
 from django.test import TestCase
-
+from mock import Mock, patch
 from robber import expect
 
+from officers.doc_types import OfficerInfoDocType
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
 from search.workers import OfficerWorker
-from officers.doc_types import OfficerInfoDocType
 
 
 class SearchManagerTestCase(IndexMixin, TestCase):
@@ -71,6 +69,37 @@ class SearchManagerTestCase(IndexMixin, TestCase):
                 'tags': ['sample']
             }]
         })
+
+    def test_search_without_spaces(self):
+        OfficerInfoDocType(meta={'id': '1'}, full_name='Kevin Mc Donald', badge='123', url='url').save()
+        OfficerInfoDocType(meta={'id': '2'}, full_name='John Mcdonald', badge='123', url='url').save()
+        self.refresh_index()
+        response = SearchManager().search('McDonald')
+        response1 = SearchManager().search('Mc Donald')
+
+        expect(response['OFFICER']).to.eq([{
+            'id': '1',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'Kevin Mc Donald'
+        }, {
+            'id': '2',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'John Mcdonald'
+        }])
+
+        expect(response1['OFFICER']).to.eq([{
+            'id': '1',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'Kevin Mc Donald'
+        }, {
+            'id': '2',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'John Mcdonald'
+        }])
 
     @patch('search.services.SimpleFormatter.format', return_value='formatter_results')
     def test_hooks(self, _):
