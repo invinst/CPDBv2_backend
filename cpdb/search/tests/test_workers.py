@@ -118,7 +118,7 @@ class UnitWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class NeighborhoodsWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        doc = AreaDocType(name='name', area_type='neighborhood')
+        doc = AreaDocType(name='name', area_type='neighborhoods')
         doc.save()
 
         self.refresh_index()
