@@ -1,4 +1,3 @@
-import json
 import hmac
 
 from django.conf import settings
@@ -7,6 +6,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from twitterbot.utils.cryptography import get_hash_token
+from twitterbot.workers import ActivityEventWorker
 
 
 class WebhookViewSet(viewsets.ViewSet):
@@ -39,7 +39,7 @@ class WebhookViewSet(viewsets.ViewSet):
         )
 
         if hmac.compare_digest(twitter_signature, request_hash_token):
-            print(json.dumps(request.data, indent=2))
+            ActivityEventWorker().process(request.data)
             return Response(status=status.HTTP_200_OK)
         else:
             return Response({'message': 'Cannot recognize the requesting source'}, status=status.HTTP_400_BAD_REQUEST)

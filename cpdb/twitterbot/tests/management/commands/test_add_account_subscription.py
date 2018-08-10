@@ -26,7 +26,7 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.management.commands.add_account_subscription.get_user_input', return_value='123')
     def test_add_account_subscription_fail(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
-        exception = HTTPError(response=Mock(json=Mock(return_value=[])))
+        exception = HTTPError(response=Mock(content=[]))
         twitter_client_mock.get_user_access_token.side_effect = exception
         stdout, stderr = StringIO(), StringIO()
 

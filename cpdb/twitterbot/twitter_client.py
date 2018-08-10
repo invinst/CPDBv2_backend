@@ -55,10 +55,12 @@ class TwitterClient(object):
             auth=self._app_oauth1
         )
         response.raise_for_status()
-        return {
+        self.requested_token = {
             key: value[0]
             for key, value in urlparse.parse_qs(response.content).items()
         }
+
+        return self.requested_token
 
     def get_auth_url(self):
         requested_token = self.get_requested_token()

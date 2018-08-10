@@ -20,7 +20,6 @@ class Command(TwitterBaseCommand):
 
             if pin:
                 user_access_token = self.twitter_client.get_user_access_token(pin)
-
                 self.twitter_client.subscription(environment).add(
                     user_access_token['account_token'], user_access_token['account_token_secret']
                 )
@@ -29,4 +28,4 @@ class Command(TwitterBaseCommand):
                 self.stderr.write('Failed to get user authorization.')
         except HTTPError as e:
             self.stderr.write('Adding user subscription was not successful')
-            self.stderr.write(json.dumps(e.response.json(), indent=2))
+            self.stderr.write(json.dumps(e.response.content, indent=2))
