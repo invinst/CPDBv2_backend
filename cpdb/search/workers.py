@@ -112,23 +112,23 @@ class AreaWorker(Worker):
 
 
 class NeighborhoodsWorker(AreaWorker):
-    area_type = 'neighborhoods'
+    area_type = 'neighborhood'
 
 
 class CommunityWorker(AreaWorker):
     area_type = 'community'
 
 
-class PoliceDistrictsWorker(AreaWorker):
-    area_type = 'police-districts'
+class PoliceDistrictWorker(AreaWorker):
+    area_type = 'police-district'
 
 
-class SchoolGroundsWorker(AreaWorker):
-    area_type = 'school-grounds'
+class SchoolGroundWorker(AreaWorker):
+    area_type = 'school-ground'
 
 
-class WardsWorker(AreaWorker):
-    area_type = 'wards'
+class WardWorker(AreaWorker):
+    area_type = 'ward'
 
 
 class BeatWorker(AreaWorker):

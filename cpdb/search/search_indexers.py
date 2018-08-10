@@ -89,8 +89,8 @@ class AreaIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         tags = list(datum.tags)
-        area_tag = datum.area_type.replace('-', ' ')
-        if area_tag not in tags:
+        area_tag = self._get_area_tag(datum.area_type)
+        if area_tag and area_tag not in tags:
             tags.append(area_tag)
 
         name = datum.name
@@ -101,7 +101,7 @@ class AreaIndexer(BaseIndexer):
 
         return {
             'name': name,
-            'area_type': datum.area_type,
+            'area_type': area_tag.replace(' ', '-'),
             'url': datum.v1_url,
             'tags': tags,
             'allegation_count': datum.allegation_count,

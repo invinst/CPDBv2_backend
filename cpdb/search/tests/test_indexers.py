@@ -157,8 +157,8 @@ class AreaIndexerTestCase(TestCase):
         ).to.be.eq({
             'name': 'Other Name',
             'url': area.v1_url,
-            'area_type': 'police-districts',
-            'tags': ['tag', 'police districts'],
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -223,8 +223,8 @@ class AreaIndexerTestCase(TestCase):
         ).to.be.eq({
             'name': 'name',
             'url': area.v1_url,
-            'area_type': 'wards',
-            'tags': ['tag', 'wards'],
+            'area_type': 'ward',
+            'tags': ['tag', 'ward'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -253,8 +253,8 @@ class AreaIndexerTestCase(TestCase):
         ).to.be.eq({
             'name': 'name',
             'url': area.v1_url,
-            'area_type': 'police-districts',
-            'tags': ['tag', 'police districts'],
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
             'allegation_count': 0,
             'officers_most_complaint': [],
             'most_common_complaint': [],
@@ -310,8 +310,8 @@ class AreaIndexerTestCase(TestCase):
         expect(area_indexer.extract_datum(area)).to.be.eq({
             'name': 'name',
             'url': area.v1_url,
-            'area_type': 'police-districts',
-            'tags': ['tag', 'police districts'],
+            'area_type': 'police-district',
+            'tags': ['tag', 'police district'],
             'allegation_count': 0,
             'most_common_complaint': [],
             'race_count': [],

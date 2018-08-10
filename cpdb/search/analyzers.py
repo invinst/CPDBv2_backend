@@ -14,5 +14,5 @@ autocomplete = analyzer(
 autocomplete_search = analyzer(
     'autocomplete_search',
     filter=['lowercase', stop_filter],
-    tokenizer=tokenizer('autocomplete_search', 'pattern', pattern='[^a-zA-Z0-9]+')
+    tokenizer='whitespace'
 )

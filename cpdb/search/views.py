@@ -11,7 +11,7 @@ from .formatters import (
 )
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
-    UnitOfficerWorker, CrWorker, BeatWorker, PoliceDistrictsWorker, WardsWorker, SchoolGroundsWorker
+    UnitOfficerWorker, CrWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -73,10 +73,10 @@ class SearchV1ViewSet(SearchViewSet):
         'OFFICER': OfficerFormatter,
         'UNIT': UnitFormatter,
         'COMMUNITY': AreaFormatter,
-        'NEIGHBORHOODS': AreaFormatter,
-        'POLICE-DISTRICTS': AreaFormatter,
-        'SCHOOL-GROUNDS': AreaFormatter,
-        'WARDS': AreaFormatter,
+        'NEIGHBORHOOD': AreaFormatter,
+        'POLICE-DISTRICT': AreaFormatter,
+        'SCHOOL-GROUND': AreaFormatter,
+        'WARD': AreaFormatter,
         'BEAT': AreaFormatter,
         'UNIT > OFFICERS': OfficerFormatter,
         'CR': CrFormatter
@@ -85,10 +85,10 @@ class SearchV1ViewSet(SearchViewSet):
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
-        'NEIGHBORHOODS': NeighborhoodsWorker(),
-        'POLICE-DISTRICTS': PoliceDistrictsWorker(),
-        'SCHOOL-GROUNDS': SchoolGroundsWorker(),
-        'WARDS': WardsWorker(),
+        'NEIGHBORHOOD': NeighborhoodsWorker(),
+        'POLICE-DISTRICT': PoliceDistrictWorker(),
+        'SCHOOL-GROUND': SchoolGroundWorker(),
+        'WARD': WardWorker(),
         'BEAT': BeatWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker(),
         'CR': CrWorker()
