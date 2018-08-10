@@ -6,7 +6,9 @@ variable "production_twitter_consumer_key" {}
 variable "production_twitter_consumer_secret" {}
 variable "production_twitter_app_token_key" {}
 variable "production_twitter_app_token_secret" {}
-variable "cpdpbot_version" {}
+variable "cpdpbot_version" {
+  default = "0.1.1"
+}
 
 resource "kubernetes_replication_controller" "cpdpbot_staging" {
   metadata {

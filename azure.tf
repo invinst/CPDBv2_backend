@@ -43,3 +43,11 @@ output "staging_storage_account_name" {
 output "staging_storage_account_key" {
   value = "${azurerm_storage_account.staging.primary_access_key}"
 }
+
+output "production_storage_account_name" {
+  value = "${azurerm_storage_account.production.name}"
+}
+
+output "production_storage_account_key" {
+  value = "${azurerm_storage_account.production.primary_access_key}"
+}
