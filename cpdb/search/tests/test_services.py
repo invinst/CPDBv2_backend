@@ -10,7 +10,7 @@ from search.workers import OfficerWorker
 
 class SearchManagerTestCase(IndexMixin, TestCase):
     def test_search_with_content_type(self):
-        response = SearchManager().search('fu na', content_type='UNIT')
+        response = SearchManager(fixed_name_workers=['OFFICERS']).search('fu na', content_type='UNIT')
 
         expect(response).to.eq({
             'UNIT': [],
@@ -20,7 +20,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         doc = OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
         doc.save()
         self.refresh_index()
-        response = SearchManager().search('fu na')
+        response = SearchManager(fixed_name_workers=['OFFICERS']).search('fu na')
 
         expect(response).to.eq({
             'UNIT': [],
@@ -74,8 +74,8 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         OfficerInfoDocType(meta={'id': '1'}, full_name='Kevin Mc Donald', badge='123', url='url').save()
         OfficerInfoDocType(meta={'id': '2'}, full_name='John Mcdonald', badge='123', url='url').save()
         self.refresh_index()
-        response = SearchManager().search('McDonald')
-        response1 = SearchManager().search('Mc Donald')
+        response = SearchManager(fixed_name_workers=['OFFICERS']).search('McDonald')
+        response1 = SearchManager(fixed_name_workers=['OFFICERS']).search('Mc Donald')
 
         expect(response['OFFICER']).to.eq([{
             'id': '1',
@@ -106,7 +106,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         mock_hook = Mock()
         mock_worker = Mock()
         term = 'whatever'
-        SearchManager(hooks=[mock_hook], workers={'mock': mock_worker}).search(term)
+        SearchManager(hooks=[mock_hook], workers={'mock': mock_worker}, fixed_name_workers=['OFFICERS']).search(term)
         mock_hook.execute.assert_called_with(term, None, {'mock': 'formatter_results'})
 
     @patch('search.services.OfficerWorker.query', return_value='abc')
@@ -122,3 +122,9 @@ class SearchManagerTestCase(IndexMixin, TestCase):
             'a': 'b',
             'id': 123
         }])
+
+    def test_singularize_content_type(self):
+        search_manager = SearchManager(fixed_name_workers=['OFFICERS', 'UNITS'])
+        expect(search_manager.singularize_content_type('DISTRICTS')).to.eq('DISTRICT')
+        expect(search_manager.singularize_content_type('NEIGHBORHOOD')).to.eq('NEIGHBORHOOD')
+        expect(search_manager.singularize_content_type('UNITS')).to.eq('UNITS')

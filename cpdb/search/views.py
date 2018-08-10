@@ -20,6 +20,7 @@ class SearchViewSet(viewsets.ViewSet):
     lookup_field = 'text'
     formatters = {}
     workers = {}
+    fixed_name_workers = []
     hooks = [
         QueryTrackingSearchHook
     ]
@@ -28,8 +29,9 @@ class SearchViewSet(viewsets.ViewSet):
         super(SearchViewSet, self).__init__(*args, **kwargs)
         self.search_manager = SearchManager(
             formatters=self.formatters,
+            fixed_name_workers=self.fixed_name_workers,
             workers=self.workers,
-            hooks=self.hooks
+            hooks=self.hooks,
         )
 
     def retrieve(self, request, text):
@@ -81,6 +83,7 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT > OFFICERS': OfficerFormatter,
         'CR': CrFormatter
     }
+
     workers = {
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
@@ -93,6 +96,8 @@ class SearchV1ViewSet(SearchViewSet):
         'UNIT > OFFICERS': UnitOfficerWorker(),
         'CR': CrWorker()
     }
+
+    fixed_name_workers = ['UNIT > OFFICERS']
 
 
 class SearchV2ViewSet(SearchViewSet):
