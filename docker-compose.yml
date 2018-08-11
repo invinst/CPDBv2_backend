@@ -1,0 +1,5 @@
+version: '3'
+services:
+  cpdpbot:
+    build: ./docker/cpdpbot
+    env_file: local.env
