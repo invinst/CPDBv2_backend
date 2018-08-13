@@ -8,13 +8,5 @@
 - name: Re-read cpdb Supervisor config
   supervisorctl: name={{ application_name }} state=present
 
-- name: Re-read twitterbot Supervisor config
-  supervisorctl: name={{ twitterbot }} state=present
-  when: run_twitterbot
-
 - name: Restart cpdb web process with supervisor
   supervisorctl: name={{ application_name }} state=restarted
-
-- name: Restart twitterbot with supervisor
-  supervisorctl: name=twitterbot state=restarted
-  when: run_twitterbot

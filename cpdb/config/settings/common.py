@@ -290,8 +290,6 @@ LOGGING = {
     },
 }
 
-TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH = ROOT_DIR.path('twitterbot_newrelic.ini')
-
 TEST = False
 
 VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('visual_token_media'))
