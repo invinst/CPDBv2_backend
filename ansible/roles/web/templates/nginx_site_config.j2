@@ -84,7 +84,7 @@ server {
         set $is_embedded_map E;
     }
 
-    if ($request_uri ~ '^\/dist') {
+    if ($request_uri ~ '^\/dist/') {
         set $is_dist D;
     }
 
