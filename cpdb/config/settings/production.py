@@ -1,4 +1,5 @@
 from .common import *  # NOQA
+from .common import DATABASES
 
 import environ
 
@@ -22,3 +23,7 @@ DOMAIN = 'https://beta.cpdp.co'
 STATICFILES_STORAGE = 'config.storages.AzureStorage'
 AZURE_STATICFILES_CONTAINER = 'static'
 AZURE_STATICFILES_SSL = True
+
+DATABASES['default']['OPTIONS'] = {
+    'sslmode': 'require'
+}
