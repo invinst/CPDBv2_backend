@@ -113,6 +113,15 @@ Get started by running these commands:
 - `terraform init`
 - `terraform refresh`
 
+# Kubernetes
+
+To interact with our kubernetes cluster via command line:
+
+- [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- `echo "$(terraform output kube_config)" > ./azurek8s`
+- `export KUBECONFIG=./azurek8s`
+- Now you should be able to run all kubectl commands such as `kubectl get nodes`
+
 # Azure database for PostgreSQL
 
 After you have access to git secrets and refreshed terraform, there are 2 commands that will make working with PostgreSQL easier:

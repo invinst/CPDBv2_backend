@@ -1,16 +1,5 @@
-provider "azurerm" {
-  version = "~> 1.11"
-}
-
-# All resources managed by Terraform should be created under
-# this resource group. Also do not put resource into this group
-# by any mean other than Terraform. Failure to do so mean
-# Terraform could mistakenly destroy resources that it has no
-# knowledge of.
-resource "azurerm_resource_group" "terraformed" {
-  name     = "terraformed"
-  location = "North Central US"
-}
+variable "postgres_admin_login" {}
+variable "postgres_admin_password" {}
 
 resource "azurerm_postgresql_server" "staging" {
   name                = "postgresql-server-staging"
@@ -35,7 +24,7 @@ resource "azurerm_postgresql_server" "staging" {
   version = "9.6"
   ssl_enforcement = "Enabled"
   tags {
-    Name = "staging"
+    environment = "staging"
   }
 }
 
@@ -70,7 +59,7 @@ resource "azurerm_postgresql_server" "production" {
   version = "9.6"
   ssl_enforcement = "Enabled"
   tags {
-    Name = "production"
+    environment = "production"
   }
 }
 
@@ -80,4 +69,28 @@ resource "azurerm_postgresql_firewall_rule" "production" {
   server_name         = "${azurerm_postgresql_server.production.name}"
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
+}
+
+output "postgres_staging_fqdn" {
+  value = "${azurerm_postgresql_server.staging.fqdn}"
+}
+
+output "postgres_staging_login" {
+  value = "${azurerm_postgresql_server.staging.administrator_login}"
+}
+
+output "postgres_staging_password" {
+  value = "${azurerm_postgresql_server.staging.administrator_login_password}"
+}
+
+output "postgres_production_fqdn" {
+  value = "${azurerm_postgresql_server.production.fqdn}"
+}
+
+output "postgres_production_login" {
+  value = "${azurerm_postgresql_server.production.administrator_login}"
+}
+
+output "postgres_production_password" {
+  value = "${azurerm_postgresql_server.production.administrator_login_password}"
 }
