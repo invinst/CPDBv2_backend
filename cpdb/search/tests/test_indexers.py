@@ -109,7 +109,8 @@ class UnitIndexerTestCase(TestCase):
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': 1,
-            'member_count': 2
+            'member_count': 2,
+            'searchable_name': 'Unit 011',
         })
 
 

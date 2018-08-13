@@ -11,7 +11,7 @@ class PoliceUnitSerializer(serializers.ModelSerializer):
     searchable_unit_name = serializers.SerializerMethodField()
 
     def get_searchable_unit_name(self, obj):
-        return 'Unit {}'.format(obj.unit_name)
+        return 'Unit {}'.format(obj.unit_name) if obj.unit_name else 'Unit'
 
 
 class OfficerSummarySerializer(serializers.Serializer):

@@ -60,13 +60,12 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
-            'searchable_name': 'Unit {}'.format(datum.unit_name),
+            'searchable_name': 'Unit {}'.format(datum.unit_name) if datum.unit_name else 'Unit',
             'description': datum.description,
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': datum.active_member_count,
             'member_count': datum.member_count,
-            # 'tags': datum.tags if 'unit' in datum.tags else datum.tags + ['unit']
         }
 
 

@@ -19,7 +19,6 @@ class ReportDocType(DocType):
 
 @autocompletes_alias.doc_type
 class UnitDocType(DocType):
-    # name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     searchable_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)

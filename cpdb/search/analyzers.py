@@ -1,7 +1,6 @@
 from elasticsearch_dsl import analyzer, tokenizer, analysis
-# from elasticsearch_dsl.analysis import CustomTokenFilter
 
-# stop_filter = CustomTokenFilter('custom_stop', 'stop', stopwords=['unit'])
+
 remove_white_spaces = analysis.char_filter('remove_white_spaces', 'pattern_replace', pattern=' ', replacement='')
 
 autocomplete = analyzer(
