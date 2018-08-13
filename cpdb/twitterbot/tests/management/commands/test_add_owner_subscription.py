@@ -15,9 +15,9 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.subscription.return_value = MagicMock(add=MagicMock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('add_owner_subscription', env='dev', stdout=stdout, stderr=stderr)
+        call_command('add_owner_subscription', stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.subscription.assert_called_once_with('dev')
+        twitter_client_mock.subscription.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.contain('Added app owner subscription successfully!')
 
     @patch('twitterbot.twitter_base_command.TwitterClient')
@@ -29,7 +29,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.subscription.return_value = MagicMock(add=add_mock)
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('add_owner_subscription', env='dev', stdout=stdout, stderr=stderr)
+        call_command('add_owner_subscription', stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.subscription.assert_called_once_with('dev')
+        twitter_client_mock.subscription.assert_called_once_with('test')
         expect(stderr.getvalue().strip()).to.contain('Adding app owner subscription was not successful')

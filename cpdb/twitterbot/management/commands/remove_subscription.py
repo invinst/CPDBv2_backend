@@ -8,8 +8,6 @@ from twitterbot.utils.user_input import get_user_input
 
 class Command(TwitterBaseCommand):
     def handle(self, *args, **options):
-        environment = options['env']
-
         try:
             auth_url = self.twitter_client.get_auth_url()
             self.stdout.write(
@@ -21,7 +19,7 @@ class Command(TwitterBaseCommand):
             if pin:
                 user_access_token = self.twitter_client.get_user_access_token(pin)
 
-                self.twitter_client.subscription(environment).remove(
+                self.twitter_client.subscription(self.environment).remove(
                     user_access_token['account_token'], user_access_token['account_token_secret']
                 )
                 self.stdout.write('Removing subscription successfully!')

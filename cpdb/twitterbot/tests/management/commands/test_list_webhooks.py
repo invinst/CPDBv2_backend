@@ -14,7 +14,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.webhook.return_value = Mock(all=Mock(return_value=[]))
         stdout = StringIO()
 
-        call_command('list_webhooks', env='dev', stdout=stdout)
+        call_command('list_webhooks', stdout=stdout)
 
-        twitter_client_mock.webhook.assert_called_once_with('dev')
+        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.eq('[]')

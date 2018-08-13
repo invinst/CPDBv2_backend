@@ -15,9 +15,9 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
         stdout = StringIO()
 
-        call_command('list_subscriptions', env='dev', stdout=stdout)
+        call_command('list_subscriptions', stdout=stdout)
 
-        twitter_client_mock.subscription.assert_called_once_with('dev')
+        twitter_client_mock.subscription.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.eq('[]')
 
     @patch('twitterbot.twitter_base_command.TwitterClient')
@@ -27,7 +27,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
         stderr = StringIO()
 
-        call_command('list_subscriptions', env='dev', stderr=stderr)
+        call_command('list_subscriptions', stderr=stderr)
 
         twitter_client_mock.subscription.assert_not_called()
         expect(stderr.getvalue().strip()).to.contain('Cannot get authentication token')

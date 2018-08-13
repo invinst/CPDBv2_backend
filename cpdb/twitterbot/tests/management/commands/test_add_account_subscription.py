@@ -17,7 +17,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('add_account_subscription', env='dev', stdout=stdout, stderr=stderr)
+        call_command('add_account_subscription', stdout=stdout, stderr=stderr)
 
         expect(stdout.getvalue().strip()).to.contain('auth_url')
         expect(stderr.getvalue().strip()).to.contain('Failed to get user authorization.')
@@ -30,7 +30,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.get_user_access_token.side_effect = exception
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('add_account_subscription', env='dev', stdout=stdout, stderr=stderr)
+        call_command('add_account_subscription', stdout=stdout, stderr=stderr)
 
         expect(stderr.getvalue().strip()).to.contain('Adding user subscription was not successful')
 
@@ -45,6 +45,6 @@ class CommandTestCase(SimpleTestCase):
         }
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('add_account_subscription', env='dev', stdout=stdout, stderr=stderr)
+        call_command('add_account_subscription', stdout=stdout, stderr=stderr)
 
         expect(stdout.getvalue().strip()).to.contain('Added user subscription successfully!')

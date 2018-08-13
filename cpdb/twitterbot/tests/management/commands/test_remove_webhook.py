@@ -15,9 +15,9 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.webhook.return_value = MagicMock(remove=MagicMock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('remove_webhook', env='dev', id=123, stdout=stdout, stderr=stderr)
+        call_command('remove_webhook', id=123, stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.webhook.assert_called_once_with('dev')
+        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.contain('Remove webhook successfully!')
 
     @patch('twitterbot.twitter_base_command.TwitterClient')
@@ -29,7 +29,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.webhook.return_value = MagicMock(remove=register_mock)
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('remove_webhook', env='dev', id=123, stdout=stdout, stderr=stderr)
+        call_command('remove_webhook', id=123, stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.webhook.assert_called_once_with('dev')
+        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stderr.getvalue().strip()).to.contain('Removing wehook was not successful')

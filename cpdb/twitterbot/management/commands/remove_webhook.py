@@ -16,11 +16,10 @@ class Command(TwitterBaseCommand):
         )
 
     def handle(self, *args, **options):
-        environment = options['env']
         id = options['id']
 
         try:
-            self.twitter_client.webhook(environment).remove(id)
+            self.twitter_client.webhook(self.environment).remove(id)
             self.stdout.write('Remove webhook successfully!')
         except HTTPError as e:
             self.stderr.write('Removing wehook was not successful')

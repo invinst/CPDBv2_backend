@@ -15,9 +15,9 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.webhook.return_value = MagicMock(register=MagicMock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('register_webhook', env='dev', url='http://webhook.api', stdout=stdout, stderr=stderr)
+        call_command('register_webhook', url='http://webhook.api', stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.webhook.assert_called_once_with('dev')
+        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.contain('Webhook was registered successfully')
 
     @patch('twitterbot.twitter_base_command.TwitterClient')
@@ -29,7 +29,7 @@ class CommandTestCase(SimpleTestCase):
         twitter_client_mock.webhook.return_value = MagicMock(register=register_mock)
         stdout, stderr = StringIO(), StringIO()
 
-        call_command('register_webhook', env='dev', url='http://webhook.api', stdout=stdout, stderr=stderr)
+        call_command('register_webhook', url='http://webhook.api', stdout=stdout, stderr=stderr)
 
-        twitter_client_mock.webhook.assert_called_once_with('dev')
+        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stderr.getvalue().strip()).to.contain('Registering wehook was not successful')

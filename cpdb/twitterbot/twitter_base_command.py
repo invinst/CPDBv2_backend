@@ -13,10 +13,4 @@ class TwitterBaseCommand(BaseCommand):
             app_token_key=settings.TWITTER_APP_TOKEN_KEY,
             app_token_secret=settings.TWITTER_APP_TOKEN_SECRET
         )
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--env',
-            dest='env',
-            help='Specify the environment'
-        )
+        self.environment = settings.TWITTERBOT_ENV
