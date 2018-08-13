@@ -50,9 +50,10 @@ class OfficerInfoDocType(DocType):
     current_allegation_percentile = Float()
 
     historic_units = Nested(properties={
-        "id": Integer(),
-        "unit_name": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        "description": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'id': Integer(),
+        'unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'searchable_unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'description': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
     })
 
     @staticmethod

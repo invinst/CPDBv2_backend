@@ -1,8 +1,8 @@
 from tqdm import tqdm
 
-from data.models import PoliceUnit, Area, Allegation
+from data.models import PoliceUnit, Area, Allegation, Salary
 from data.utils.percentile import percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType
+from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 from trr.models import TRR
@@ -60,11 +60,13 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
+            'searchable_name': 'Unit {}'.format(datum.unit_name),
             'description': datum.description,
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': datum.active_member_count,
-            'member_count': datum.member_count
+            'member_count': datum.member_count,
+            # 'tags': datum.tags if 'unit' in datum.tags else datum.tags + ['unit']
         }
 
 
@@ -169,4 +171,16 @@ class TRRIndexer(BaseIndexer):
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
             'to': datum.v2_to
+        }
+
+
+class RankIndexer(BaseIndexer):
+    doc_type_klass = RankDocType
+
+    def get_queryset(self):
+        return Salary.objects.values('rank').distinct()
+
+    def extract_datum(self, datum):
+        return {
+            'rank': datum.rank,
         }

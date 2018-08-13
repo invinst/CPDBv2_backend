@@ -51,12 +51,12 @@ class OfficerFormatter(SimpleFormatter):
 class UnitFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
-        tags = serialized_doc.get('tags', [])
+        name = serialized_doc['name']
         return {
-            'text': serialized_doc['name'],
+            'text': name,
             'payload': {
-                'tags': tags,
-                'result_text': serialized_doc['description'],
+                'tags': serialized_doc.get('tags', []),
+                'result_text': serialized_doc.get('description', 'Unit {name}'.format(name=name)),
                 'result_extra_information': serialized_doc['name'],
                 'to': serialized_doc['to']
             }
@@ -147,3 +147,15 @@ class AreaFormatter(SimpleFormatter):
         }
         results['payload']['result_text'] = serialized_doc['name']
         return results
+
+
+class RankFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'text': serialized_doc['rank'],
+            'payload': {
+                'tags': serialized_doc.get('tags', []),
+                'to': serialized_doc['to']
+            }
+        }

@@ -6,7 +6,12 @@ from data.models import PoliceUnit
 class PoliceUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoliceUnit
-        fields = ['id', 'unit_name', 'description']
+        fields = ['id', 'unit_name', 'description', 'searchable_unit_name']
+
+    searchable_unit_name = serializers.SerializerMethodField()
+
+    def get_searchable_unit_name(self, obj):
+        return 'Unit {}'.format(obj.unit_name)
 
 
 class OfficerSummarySerializer(serializers.Serializer):
