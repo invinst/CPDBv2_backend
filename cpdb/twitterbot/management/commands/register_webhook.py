@@ -19,7 +19,7 @@ class Command(TwitterBaseCommand):
         url = options['url']
 
         try:
-            webhook = self.twitter_client.webhook(self.environment).register(url)
+            webhook = self.twitter_client.webhook.register(url)
             self.stdout.write(json.dumps(webhook, indent=2))
             self.stdout.write('Webhook was registered successfully')
         except HTTPError as e:

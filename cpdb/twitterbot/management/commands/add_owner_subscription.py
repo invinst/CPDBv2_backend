@@ -10,7 +10,7 @@ from twitterbot.twitter_base_command import TwitterBaseCommand
 class Command(TwitterBaseCommand):
     def handle(self, *args, **options):
         try:
-            self.twitter_client.subscription(self.environment).add(
+            self.twitter_client.subscription.add(
                 settings.TWITTER_APP_TOKEN_KEY, settings.TWITTER_APP_TOKEN_SECRET
             )
             self.stdout.write('Added app owner subscription successfully!')

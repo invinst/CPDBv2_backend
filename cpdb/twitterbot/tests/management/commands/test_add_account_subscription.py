@@ -14,7 +14,7 @@ class CommandTestCase(SimpleTestCase):
     def test_add_account_subscription_no_pin(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
         twitter_client_mock.get_auth_url.return_value = 'auth_url'
-        twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(all=Mock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
         call_command('add_account_subscription', stdout=stdout, stderr=stderr)
@@ -38,7 +38,7 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.management.commands.add_account_subscription.get_user_input', return_value='123')
     def test_add_account_subscription_success(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
-        twitter_client_mock.subscription.return_value = Mock(add=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(add=Mock(return_value=[]))
         twitter_client_mock.get_user_access_token.return_value = {
             'account_token': 'token',
             'account_token_secret': 'token_secret'

@@ -1,6 +1,5 @@
 from django.test import SimpleTestCase
 
-from robber import expect
 from mock import patch
 
 from twitterbot.subscription_manager import SubscriptionsManager
@@ -14,13 +13,6 @@ class SubscriptionManagerTestCase(SimpleTestCase):
         )
         self.manager.list_endpoint = 'list.api'
         self.manager.endpoint = 'main.api'
-
-    def test_set_environment_name(self):
-        self.manager.set_environment_name('dev')
-        expect(self.manager.list_endpoint)\
-            .to.eq('https://api.twitter.com/1.1/account_activity/all/dev/subscriptions/list.json')
-        expect(self.manager.endpoint)\
-            .to.eq('https://api.twitter.com/1.1/account_activity/all/dev/subscriptions.json')
 
     @patch('twitterbot.subscription_manager.requests.get')
     def test_all(self, get):

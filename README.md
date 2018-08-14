@@ -165,7 +165,7 @@ Please make sure you have correct development tokens on local environment (.env 
 - Run command `manage.py add_account_subscription` and follow the instruction to subscribe twitter account.
 
 ## Deployment
-This only need to be done one times unless the webhook url or subscrition was changed.
+This only needs to be done once unless the webhook url or subscrition was changed.
 - Run command `manage.py register_webhook --url=https://beta.cpdp.co/api/v2/twitter/webhook/` to register webhook.
 - Run command `manage.py add_account_subscription`.
 - Go to the provided authenticaton url and login using CPDPBot account (get from 1Password) to get PIN number.

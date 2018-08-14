@@ -11,9 +11,9 @@ from twitterbot.workers import ActivityEventWorker
 
 class WebhookViewSet(viewsets.ViewSet):
     def list(self, request):
-        '''
+        """
         GET: Twitter Challenge Response Check (CRC)
-        '''
+        """
         crc_token = request.GET.get('crc_token')
         if crc_token:
             hash_token = get_hash_token(
@@ -29,9 +29,9 @@ class WebhookViewSet(viewsets.ViewSet):
             return Response({'message': 'Error: crc_token is missing from request'}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request):
-        '''
+        """
         POST: Webhook to receive subscribed account's activity events from Twitter
-        '''
+        """
         twitter_signature = request.META.get('HTTP_X_TWITTER_WEBHOOKS_SIGNATURE', '')
         request_hash_token = get_hash_token(
             key=settings.TWITTER_CONSUMER_SECRET,

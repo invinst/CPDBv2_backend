@@ -28,12 +28,12 @@ class TwitterClient(object):
         self._webhook = WebhookManager(self._app_oauth1)
         self._subscription = SubscriptionsManager(consumer_key, consumer_secret)
 
-    def webhook(self, dev_environment):
-        self._webhook.set_environment_name(dev_environment)
+    @property
+    def webhook(self):
         return self._webhook
 
-    def subscription(self, dev_environment):
-        self._subscription.set_environment_name(dev_environment)
+    @property
+    def subscription(self):
         return self._subscription
 
     def get_bearer_token(self):

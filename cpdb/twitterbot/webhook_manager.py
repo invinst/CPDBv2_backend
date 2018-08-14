@@ -1,14 +1,16 @@
+from django.conf import settings
+
 import requests
+
+from .constants import TWITTER_ACTIVITY_API
 
 
 class WebhookManager(object):
     def __init__(self, oauth):
         self.oauth = oauth
-        self.endpoint = 'https://api.twitter.com/1.1/account_activity/all/%s/webhooks.json'
-        self.single_endpoint = 'https://api.twitter.com/1.1/account_activity/all/%s/webhooks/%s.json'
-
-    def set_environment_name(self, environment_name):
-        self.environment_name = environment_name
+        self.endpoint = TWITTER_ACTIVITY_API + '%s/webhooks.json'
+        self.single_endpoint = TWITTER_ACTIVITY_API + '%s/webhooks/%s.json'
+        self.environment_name = settings.TWITTERBOT_ENV
 
     def all(self):
         response = requests.get(

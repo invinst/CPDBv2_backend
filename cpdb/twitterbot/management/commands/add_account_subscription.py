@@ -18,7 +18,7 @@ class Command(TwitterBaseCommand):
 
             if pin:
                 user_access_token = self.twitter_client.get_user_access_token(pin)
-                self.twitter_client.subscription(self.environment).add(
+                self.twitter_client.subscription.add(
                     user_access_token['account_token'], user_access_token['account_token_secret']
                 )
                 self.stdout.write('Added user subscription successfully!')

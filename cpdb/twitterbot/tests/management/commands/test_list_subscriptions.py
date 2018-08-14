@@ -12,19 +12,18 @@ class CommandTestCase(SimpleTestCase):
     def test_list_subscriptions(self, TwitterClient):
         twitter_client_mock = TwitterClient()
         twitter_client_mock.get_bearer_token.return_value = '123'
-        twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(all=Mock(return_value=[]))
         stdout = StringIO()
 
         call_command('list_subscriptions', stdout=stdout)
 
-        twitter_client_mock.subscription.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.eq('[]')
 
     @patch('twitterbot.twitter_base_command.TwitterClient')
     def test_list_subscriptions_fail(self, TwitterClient):
         twitter_client_mock = TwitterClient()
         twitter_client_mock.get_bearer_token.return_value = None
-        twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(all=Mock(return_value=[]))
         stderr = StringIO()
 
         call_command('list_subscriptions', stderr=stderr)

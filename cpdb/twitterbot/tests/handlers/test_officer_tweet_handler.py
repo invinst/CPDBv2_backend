@@ -47,7 +47,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
                     'were co-accused in {{coaccused}} case'))
         ResponseTemplateFactory(
             response_type='not_found',
-            syntax='Sorry, @{{user_name}}, the bot find nothing')
+            syntax='Sorry, @{{user_name}}, the bot finds nothing')
         self.screen_name = 'CPDPbot'
         self.tweet = {
             'id': 1,
@@ -188,7 +188,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
         handler.handle()
         self.send_tweet.assert_called_with(
-            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
+            'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
             in_reply_to=1,
             entity=None
         )
@@ -199,7 +199,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
         handler.handle()
         self.send_tweet.assert_called_with(
-            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
+            'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
             in_reply_to=1,
             entity=None
         )
@@ -207,7 +207,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
         handler.handle()
         self.send_tweet.assert_called_with(
-            'Sorry, @abc, the bot find nothing http://foo.com?twitterbot_log_id=5',
+            'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
             in_reply_to=1,
             entity=None
         )

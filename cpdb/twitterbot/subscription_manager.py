@@ -1,21 +1,18 @@
+from django.conf import settings
+
 import requests
 from requests_oauthlib import OAuth1
+
+from .constants import TWITTER_ACTIVITY_API
 
 
 class SubscriptionsManager(object):
     def __init__(self, consumer_key, consumer_secret, *arg, **kwargs):
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
-
-    def set_environment_name(self, dev_environment):
-        self.list_endpoint = (
-            'https://api.twitter.com/1.1/account_activity/all/'
-            '%s/subscriptions/list.json' % dev_environment
-        )
-        self.endpoint = (
-            'https://api.twitter.com/1.1/account_activity/all/'
-            '%s/subscriptions.json' % dev_environment
-        )
+        environment_name = settings.TWITTERBOT_ENV
+        self.list_endpoint = TWITTER_ACTIVITY_API + '%s/subscriptions/list.json' % environment_name
+        self.endpoint = TWITTER_ACTIVITY_API + '%s/subscriptions.json' % environment_name
 
     def get_account_oauth(self, account_token, account_token_secret):
         return OAuth1(

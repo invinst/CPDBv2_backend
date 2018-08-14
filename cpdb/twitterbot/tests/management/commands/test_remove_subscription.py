@@ -14,7 +14,7 @@ class CommandTestCase(SimpleTestCase):
     def test_remove_subscription_no_pin(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
         twitter_client_mock.get_auth_url.return_value = 'auth_url'
-        twitter_client_mock.subscription.return_value = Mock(all=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(all=Mock(return_value=[]))
         stdout, stderr = StringIO(), StringIO()
 
         call_command('remove_subscription', stdout=stdout, stderr=stderr)
@@ -38,7 +38,7 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.management.commands.remove_subscription.get_user_input', return_value='123')
     def test_remove_subscription_success(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
-        twitter_client_mock.subscription.return_value = Mock(remove=Mock(return_value=[]))
+        twitter_client_mock.subscription = Mock(remove=Mock(return_value=[]))
         twitter_client_mock.get_user_access_token.return_value = {
             'account_token': 'token',
             'account_token_secret': 'token_secret'

@@ -11,10 +11,9 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.twitter_base_command.TwitterClient')
     def test_list_webhook(self, TwitterClient):
         twitter_client_mock = TwitterClient()
-        twitter_client_mock.webhook.return_value = Mock(all=Mock(return_value=[]))
+        twitter_client_mock.webhook = Mock(all=Mock(return_value=[]))
         stdout = StringIO()
 
         call_command('list_webhooks', stdout=stdout)
 
-        twitter_client_mock.webhook.assert_called_once_with('test')
         expect(stdout.getvalue().strip()).to.eq('[]')

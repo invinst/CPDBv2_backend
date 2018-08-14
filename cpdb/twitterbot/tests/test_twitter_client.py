@@ -16,14 +16,12 @@ class TweetTestCase(SimpleTestCase):
         )
 
     def test_webhook(self):
-        self.client._webhook = Mock()
-        self.client.webhook('abc')
-        self.client._webhook.set_environment_name.assert_called_once_with('abc')
+        self.client._webhook = 'webhook'
+        expect(self.client.webhook).to.eq('webhook')
 
     def test_subscription(self):
-        self.client._subscription = Mock()
-        self.client.subscription('abc')
-        self.client._subscription.set_environment_name.assert_called_once_with('abc')
+        self.client._subscription = 'subscription'
+        expect(self.client.subscription).to.eq('subscription')
 
     @patch('twitterbot.twitter_client.HTTPBasicAuth', return_value='auth')
     @patch('twitterbot.twitter_client.OAuth2Session')

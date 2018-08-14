@@ -13,4 +13,3 @@ class TwitterBaseCommand(BaseCommand):
             app_token_key=settings.TWITTER_APP_TOKEN_KEY,
             app_token_secret=settings.TWITTER_APP_TOKEN_SECRET
         )
-        self.environment = settings.TWITTERBOT_ENV
