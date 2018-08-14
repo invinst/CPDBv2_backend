@@ -2,66 +2,76 @@ from datetime import datetime
 
 from django.test import SimpleTestCase
 
+import pytz
 from robber import expect
-from mock import Mock
 
-from twitterbot.tweets import Tweet
-from twitterbot.factories import TweetFactory, MockClientFactory
+from twitterbot.tweets import TweetContext
+from twitterbot.factories import TweetFactory, MockTweepyWrapperFactory
 
 
 class TweetTestCase(SimpleTestCase):
     def setUp(self):
         super(TweetTestCase, self).setUp()
-        self.original_tweet = Mock(
-            text='some content',
-            entities={
+        self.original_tweet = {
+            'text': 'some content',
+            'entities': {
                 'urls': [{'expanded_url': 'http://abc.com'}],
                 'hashtags': [{'text': 'def'}],
                 'user_mentions': [{'screen_name': 'Abc'}]
-            })
-        self.client = MockClientFactory()
+            }
+        }
+        self.client = MockTweepyWrapperFactory()
+        self.context = {
+            'client': self.client,
+            'for_user_id': 123
+        }
 
     def test_text_property(self):
-        tweet = Tweet(original_tweet=self.original_tweet)
+        tweet = TweetContext(original_tweet=self.original_tweet)
         expect(tweet.text).to.eq('some content')
 
     def test_urls_property(self):
-        tweet = Tweet(original_tweet=self.original_tweet, client=self.client)
+        tweet = TweetContext(original_tweet=self.original_tweet, context=self.context)
         expect(tweet.urls).to.eq(['http://abc.com'])
 
     def test_empty_urls(self):
-        tweet = Tweet(original_tweet=Mock(text='', entities={}), client=self.client)
+        tweet = TweetContext(original_tweet={'text': '', 'entities': {}}, context=self.context)
         expect(tweet.urls).to.eq([])
 
     def test_urls_not_including_self_tweet_url(self):
-        original_tweet = Mock(
-            entities={
+        original_tweet = {
+            'entities': {
                 'urls': [{'expanded_url': 'http://twitter.com/Abc'}]
-            })
-        tweet = Tweet(
+            }
+        }
+        tweet = TweetContext(
             original_tweet=original_tweet,
-            client=Mock(get_current_user=Mock(return_value=Mock(screen_name='Abc')))
+            context={
+                'client': MockTweepyWrapperFactory(subscription_screen_name='Abc'),
+                'for_user_id': 123
+            }
         )
         expect(tweet.urls).to.eq([])
 
     def test_hashtags_property(self):
-        tweet = Tweet(original_tweet=self.original_tweet)
+        tweet = TweetContext(original_tweet=self.original_tweet)
         expect(tweet.hashtags).to.eq(['def'])
 
     def test_empty_hashtags(self):
-        tweet = Tweet(Mock(
-            text='',
-            entities={}))
+        tweet = TweetContext({
+            'text': '',
+            'entities': {}
+        })
         expect(tweet.hashtags).to.eq([])
 
     def test_tweet_user_id(self):
-        original_tweet = Mock(user=Mock(id=123))
-        tweet = Tweet(original_tweet=original_tweet, client=self.client)
+        original_tweet = {'user': {'id': 123}}
+        tweet = TweetContext(original_tweet=original_tweet, context=self.context)
         expect(tweet.user_id).to.eq(123)
 
     def test_tweet_screen_name(self):
-        original_tweet = Mock(user=Mock(screen_name='Abc'))
-        tweet = Tweet(original_tweet=original_tweet)
+        original_tweet = {'user': {'screen_name': 'Abc'}}
+        tweet = TweetContext(original_tweet=original_tweet)
         expect(tweet.screen_name).to.equal('Abc')
 
     def test_user_mention_screen_names(self):
@@ -70,91 +80,91 @@ class TweetTestCase(SimpleTestCase):
 
     def test_in_reply_to_tweet(self):
         in_reply_to_tweet = TweetFactory(id=123)
-        client = MockClientFactory()
+        client = MockTweepyWrapperFactory()
         client.register(in_reply_to_tweet)
-        tweet = Tweet(original_tweet=Mock(in_reply_to_tweet_id=123), client=client)
+        tweet = TweetContext(original_tweet={'in_reply_to_tweet_id': 123}, context={'client': client})
         expect(tweet.in_reply_to_tweet.id).to.eq(123)
         expect(tweet.in_reply_to_tweet).to.eq(tweet.in_reply_to_tweet)
 
     def test_retweeted_tweet(self):
-        client = MockClientFactory()
+        client = MockTweepyWrapperFactory()
         retweeted_tweet = TweetFactory(id=123)
         client.register(retweeted_tweet)
-        tweet = Tweet(original_tweet=Mock(retweeted_tweet=Mock(id=123)), client=client)
+        tweet = TweetContext(original_tweet={'retweeted_tweet': {'id': 123}}, context={'client': client})
         expect(tweet.retweeted_tweet.id).to.eq(123)
         expect(tweet.retweeted_tweet).to.eq(tweet.retweeted_tweet)
 
     def test_quoted_tweet(self):
-        client = MockClientFactory()
+        client = MockTweepyWrapperFactory()
         quoted_tweet = TweetFactory(id=123)
         client.register(quoted_tweet)
-        tweet = Tweet(original_tweet=Mock(quoted_tweet=Mock(id=123)), client=client)
+        tweet = TweetContext(original_tweet={'quoted_tweet': {'id': 123}}, context={'client': client})
         expect(tweet.quoted_tweet.id).to.eq(123)
         expect(tweet.quoted_tweet).to.eq(tweet.quoted_tweet)
 
     def test_quoted_tweet_id(self):
-        client = MockClientFactory()
+        client = MockTweepyWrapperFactory()
         quoted_tweet = TweetFactory(id=123)
         client.register(quoted_tweet)
-        tweet = Tweet(original_tweet=Mock(quoted_tweet_id=123, quoted_tweet=None), client=client)
+        tweet = TweetContext(original_tweet={'quoted_tweet_id': 123, 'quoted_tweet': None}, context={'client': client})
         expect(tweet.quoted_tweet.id).to.eq(123)
 
     def test_is_retweet(self):
-        expect(Tweet(original_tweet=Mock(retweeted_tweet=None)).is_retweet).to.be.false()
-        expect(Tweet(original_tweet=Mock(retweeted_tweet=Mock())).is_retweet).to.be.true()
-        expect(Tweet(original_tweet=object).is_retweet).to.be.false()
+        expect(TweetContext(original_tweet={'retweeted_tweet': None}).is_retweet).to.be.false()
+        expect(TweetContext(original_tweet={'retweeted_tweet': {}}).is_retweet).to.be.true()
 
     def test_tweet_url(self):
-        tweet = Tweet(original_tweet=Mock(id=123, user=Mock(screen_name='abc')))
+        tweet = TweetContext(original_tweet={'id': 123, 'user': {'screen_name': 'abc'}})
         expect(tweet.url).to.eq('https://twitter.com/abc/status/123/')
 
     def test_tweet_created_at(self):
-        created_at = datetime(2017, 8, 4, 14, 30, 00)
-        tweet = Tweet(original_tweet=Mock(created_at=created_at))
+        created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
+        tweet = TweetContext(original_tweet={'created_at': '2017-08-04T14:30:00Z'})
         expect(tweet.created_at).to.eq(created_at)
 
     def test_is_retweet_of_twitterbot(self):
-        original_tweet = Mock(retweeted_tweet=Mock(user=Mock(id=456)))
-        client = MockClientFactory(id=456)
-        tweet = Tweet(original_tweet=original_tweet, client=client)
+        original_tweet = {'retweeted_tweet': {'user': {'id': 456}}}
+        client = MockTweepyWrapperFactory()
+        tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 456})
         expect(tweet.is_retweet_of_twitterbot).to.be.true()
 
-        client = MockClientFactory(id=123)
-        tweet = Tweet(original_tweet=original_tweet, client=client)
+        tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_retweet_of_twitterbot).to.be.false()
 
     def test_is_quoted_tweet_of_twitterbot(self):
-        original_tweet = Mock(quoted_tweet=Mock(user=Mock(id=123)))
-        client = MockClientFactory(id=123)
-        tweet = Tweet(original_tweet=original_tweet, client=client)
+        original_tweet = {'quoted_tweet': {'user': {'id': 123}}}
+        client = MockTweepyWrapperFactory()
+        tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_quoted_tweet_of_twitterbot).to.be.true()
 
-        client = MockClientFactory(id=456)
-        tweet = Tweet(original_tweet=original_tweet, client=client)
+        tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 456})
         expect(tweet.is_quoted_tweet_of_twitterbot).to.be.false()
 
     def test_is_tweet_from_followed_accounts(self):
-        client = MockClientFactory(followed_by=True)
-        tweet = Tweet(original_tweet=Mock(), client=client)
+        client = MockTweepyWrapperFactory(followed_by=True)
+        tweet = TweetContext(original_tweet={}, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_tweet_from_followed_accounts).to.be.true()
 
-        client = MockClientFactory(followed_by=False)
-        tweet = Tweet(original_tweet=Mock(), client=client)
+        client = MockTweepyWrapperFactory(followed_by=False)
+        tweet = TweetContext(original_tweet={}, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_tweet_from_followed_accounts).to.be.false()
 
     def test_is_unfollow_tweet(self):
-        client = MockClientFactory(screen_name='abc')
-        tweet = Tweet(original_tweet=Mock(text='@abc STOP'), client=client)
+        client = MockTweepyWrapperFactory(subscription_screen_name='abc')
+        tweet = TweetContext(original_tweet={'text': '@abc STOP'}, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_unfollow_tweet).to.be.true()
 
-        tweet = Tweet(original_tweet=Mock(text='anything else'), client=client)
+        tweet = TweetContext(original_tweet={'text': 'anything else'}, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_unfollow_tweet).to.be.false()
 
     def test_is_mentioning_twitterbot(self):
-        client = MockClientFactory(screen_name='abc')
-
-        tweet = TweetFactory(text='something', mentioned_screen_names=['abc'], client=client)
+        client = MockTweepyWrapperFactory(screen_name='abc')
+        context = {
+            'client': client,
+            'for_user_id': 123
+        }
+        tweet = TweetFactory(text='something', user_mentions=[{'id': 123}], context=context)
         expect(tweet.is_mentioning_twitterbot).to.be.true()
 
-        tweet = TweetFactory(text='something', client=client)
+        tweet = TweetFactory(text='something', context=context)
         expect(tweet.is_mentioning_twitterbot).to.be.false()

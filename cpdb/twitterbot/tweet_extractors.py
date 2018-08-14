@@ -9,7 +9,7 @@ class RelatedTweetExtractor(object):
         return tweets
 
     def is_self_tweet(self, tweet, context):
-        return tweet.user_id == context['client'].get_current_user().id
+        return tweet.user_id == context['for_user_id']
 
     def is_valid_tweet(self, tweet, context):
         return tweet is not None and not self.is_self_tweet(tweet, context)

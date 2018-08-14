@@ -23,3 +23,4 @@ DOMAIN = 'https://beta.cpdp.co'
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require'
 }
+TWITTERBOT_ENV = 'prod'

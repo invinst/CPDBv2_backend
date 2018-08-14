@@ -40,3 +40,5 @@ NOTEBOOK_ARGUMENTS = [
 MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']  # NOQA
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] += ('rest_framework.renderers.BrowsableAPIRenderer',)  # NOQA
 INTERNAL_IPS = ['10.0.2.2']
+
+TWITTERBOT_ENV = 'dev'
