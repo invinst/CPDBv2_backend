@@ -1111,7 +1111,6 @@ class SalaryManager(models.Manager):
         return ranks
 
 
-
 class Salary(models.Model):
     pay_grade = models.CharField(max_length=16)
     rank = models.CharField(max_length=64, null=True)
