@@ -25,7 +25,7 @@ from rest_framework import routers
 from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
-from .views import index_view, officer_view, complaint_view
+from .views import index_view, officer_view, complaint_view, embed_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
@@ -75,6 +75,9 @@ urlpatterns = [
         r'trr/\d+|'
         r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
+    url(r'^(?:(?P<path>'
+        r'embed/map|'
+        r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(
         r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
         ensure_csrf_cookie(officer_view), name='officer'),
