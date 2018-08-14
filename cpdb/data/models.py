@@ -1098,6 +1098,19 @@ class SalaryManager(models.Manager):
             last_salary = salary
         return result
 
+    def rank_objects(self):
+        class Rank(object):
+            def __init__(self, pk, rank):
+                self.pk = pk
+                self.rank = rank
+
+        ranks = []
+        for index, salary in enumerate(Salary.objects.values_list('rank', flat=True).distinct()):
+            ranks.append(Rank(pk=index, rank=salary))
+
+        return ranks
+
+
 
 class Salary(models.Model):
     pay_grade = models.CharField(max_length=16)

@@ -155,7 +155,6 @@ class RankFormatter(SimpleFormatter):
         return {
             'text': serialized_doc['rank'],
             'payload': {
-                'tags': serialized_doc.get('tags', []),
-                'to': serialized_doc['to']
+                'result_text': serialized_doc['rank'],
             }
         }

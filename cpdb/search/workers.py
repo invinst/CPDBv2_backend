@@ -149,7 +149,7 @@ class UnitOfficerWorker(Worker):
 
 class RankWorker(Worker):
     doc_type_klass = RankDocType
-    fields = ['rank']
+    fields = ['rank', 'tags']
 
 
 class CrWorker(Worker):

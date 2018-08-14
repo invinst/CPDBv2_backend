@@ -42,6 +42,7 @@ class AreaDocType(DocType):
 @autocompletes_alias.doc_type
 class RankDocType(DocType):
     rank = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'rank'
