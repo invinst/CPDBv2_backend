@@ -38,28 +38,21 @@ server {
 server {
     listen      80;
     listen      443 ssl;
-    server_name cpdp.co;
+    server_name *.cpdp.co;
     ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
     ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
     ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
     ssl_prefer_server_ciphers on;
     ssl_dhparam {{ nginx_dhparams_file }};
-    return 301 https://data.cpdp.co$request_uri;
-}
-
-# Redirect www to non-www
-server {
-    listen      80;
-    server_name www.cpdp.co;
-    return 301 https://cpdp.co$request_uri;
+    return 301 https://beta.cpdp.co$request_uri;
 }
 
 server {
     listen              443 ssl;
     server_name         {{ nginx_server_name }};
-	ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
-	ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
+    ssl_certificate     {{ ssl_dest_dir }}/{{ application_name }}.crt;
+    ssl_certificate_key {{ ssl_dest_dir }}/{{ application_name }}.key;
     ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
     ssl_prefer_server_ciphers on;
@@ -70,7 +63,11 @@ server {
 
     client_max_body_size 4G;
 
-    access_log {{ nginx_access_log_file }};
+    proxy_cache cpdp_cache;
+    proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504;
+    proxy_cache_lock on;
+
+    access_log {{ nginx_access_log_file }} custom_cache_log;
     error_log {{ nginx_error_log_file }};
 
     root {{ frontend_static_dir }};
@@ -117,12 +114,11 @@ server {
         proxy_set_header X-Forwarded-Proto https;
         proxy_set_header Host $http_host;
         proxy_redirect off;
+        proxy_ignore_headers Cache-Control;
 
-        # Try to serve static files from nginx, no point in making an
-        # *application* server like Unicorn/Rainbows! serve static files.
         if (!-f $request_filename) {
             proxy_pass http://{{ application_name }}_wsgi_server;
-            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Cache-Control "max-age=3600, public";
             break;
         }
     }

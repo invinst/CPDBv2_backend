@@ -208,6 +208,51 @@ class LandingPageSerializer(SlugPageSerializer):
         model = SlugPage
 
 
+class OfficerPageSerializer(SlugPageSerializer):
+    triangle_description = RichTextField(
+        fake_value=[
+            'The corners of the triangle show the percentile score for this officer in each of three types of data: '
+            'complaints from civilians, complaints from other officers, and self-reported uses of force.'
+        ],
+        source='fields'
+    )
+    triangle_sub_description = RichTextField(
+        fake_value=[
+            'If one corner of the black inner triangle is close to reaching the outer triangle, '
+            'then this officer is named in a relatively high rate of incidents of that '
+            'type compared with other officers.'
+        ],
+        source='fields'
+    )
+    scale_description = RichTextField(
+        fake_value=[
+            'If an officer\'s percentile rank for civilian complaints is 99% then this means that '
+            'they were accused in more civilian complaints per year than 99% of other officers.'
+        ],
+        source='fields'
+    )
+    scale_sub_description = RichTextField(
+        fake_value=[
+            'Civilian and internal complaint percentiles are based on data '
+            'that is only available since 2000, use of force data is only available since 2004. '
+            'The overall allegation count percentiles displayed on '
+            'the officer profile page are calculated using data that reaches back to 1988.'
+        ],
+        source='fields'
+    )
+    no_data_explain_text = RichTextField(
+        fake_value=[
+            'There is not enough data to construct',
+            'a radar graph for this officer.'
+        ],
+        source='fields'
+    )
+
+    class Meta:
+        slug = 'officer-page'
+        model = SlugPage
+
+
 def get_slug_page_serializer(cms_page):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if cms_page.serializer_class == name:

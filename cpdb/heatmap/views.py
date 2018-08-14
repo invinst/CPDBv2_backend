@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from data.models import OfficerAllegation
 from data.constants import ALLEGATION_MIN_DATETIME
+from django.utils.timezone import now
 
 
 class CitySummaryViewSet(ViewSet):
@@ -12,6 +13,8 @@ class CitySummaryViewSet(ViewSet):
         officer_allegations = OfficerAllegation.objects.filter(allegation__incident_date__gte=ALLEGATION_MIN_DATETIME)
 
         city_summary = {
+            'start_year': ALLEGATION_MIN_DATETIME.year,
+            'end_year': now().year,
             'allegation_count': officer_allegations.count(),
             'discipline_count': officer_allegations.filter(disciplined=True).distinct().count(),
             'most_common_complaints': [
