@@ -34,3 +34,5 @@ class DisableMigrations(object):
 MIGRATION_MODULES = DisableMigrations()
 
 DOMAIN = 'http://foo.com'
+
+TWITTERBOT_ENV = 'test'

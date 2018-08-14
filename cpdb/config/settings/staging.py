@@ -55,3 +55,4 @@ DEFAULT_FROM_EMAIL = 'info@cpdp.co'
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require'
 }
+TWITTERBOT_ENV = 'dev'

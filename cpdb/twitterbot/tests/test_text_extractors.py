@@ -4,7 +4,7 @@ from robber import expect
 from mock import patch
 
 from twitterbot.text_extractors import TweetTextExtractor, HashTagTextExtractor, URLContentTextExtractor
-from twitterbot.factories import TweetFactory, MockClientFactory
+from twitterbot.factories import TweetFactory, MockTweepyWrapperFactory
 
 
 class TweetTextExtractorTestCase(SimpleTestCase):
@@ -29,8 +29,11 @@ class URLContentTextExtractorTestCase(SimpleTestCase):
     def setUp(self):
         super(URLContentTextExtractorTestCase, self).setUp()
         self.extractor = URLContentTextExtractor()
-        client = MockClientFactory()
-        self.tweet = TweetFactory(urls=['http://fakeurl.com/articles/1/'], client=client)
+        client = MockTweepyWrapperFactory()
+        self.tweet = TweetFactory(
+            urls=['http://fakeurl.com/articles/1/'],
+            context={'client': client, 'for_user_id': 123}
+        )
 
     def test_extract(self):
         with patch('twitterbot.text_extractors.web_parsing.parse', return_value='CPD'):
