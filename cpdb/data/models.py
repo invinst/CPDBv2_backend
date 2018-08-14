@@ -1017,13 +1017,6 @@ class Involvement(models.Model):
             return self.gender
 
 
-class DocumentCloudObjectManager(models.Manager):
-    def get_queryset(self):
-        return super(DocumentCloudObjectManager, self)\
-            .get_queryset()\
-            .filter(file_type=MEDIA_TYPE_DOCUMENT, url__icontains='documentcloud')
-
-
 class AttachmentFile(models.Model):
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -1037,9 +1030,6 @@ class AttachmentFile(models.Model):
     preview_image_url = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=True)
     last_updated = models.DateTimeField(null=True)
-
-    objects = models.Manager()
-    cloud_document = DocumentCloudObjectManager()
 
     class Meta:
         unique_together = (('allegation', 'original_url'),)
