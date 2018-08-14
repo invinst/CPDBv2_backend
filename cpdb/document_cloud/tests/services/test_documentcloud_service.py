@@ -1,7 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from robber import expect
 
+from mock import MagicMock
 from document_cloud.services.documentcloud_service import DocumentcloudService
+
+from data.factories import AttachmentFileFactory
 
 
 class DocumentcloudServiceTestCase(TestCase):
@@ -30,3 +33,13 @@ class DocumentcloudServiceTestCase(TestCase):
     def test_parse_crid_from_title_with_different_document_type(self):
         document_title = 'CRID-123456 FOO'
         expect(self.service.parse_crid_from_title(document_title, document_type='BAR')).to.be.false()
+
+    @override_settings(DOMAIN='http://localhost')
+    def test_update_document_meta_data(self):
+        attachment_file = AttachmentFileFactory(allegation__crid='123456')
+        document = MagicMock(data={})
+
+        self.service.update_document_meta_data(document, attachment_file)
+        expect(document.published_url).to.eq('http://localhost/complaint/123456/')
+        expect(document.data).to.eq({'tag': 'CRID 123456'})
+        document.put.assert_called()

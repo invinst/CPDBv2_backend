@@ -6,7 +6,3 @@
 
 - name: Supervisor restart web process
   supervisorctl: name={{ application_name }} state=restarted
-
-- name: Supervisor restart twitterbot
-  supervisorctl: name=twitterbot state=restarted
-  when: run_twitterbot

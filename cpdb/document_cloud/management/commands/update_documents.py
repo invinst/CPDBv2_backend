@@ -4,6 +4,7 @@ from collections import OrderedDict
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from documentcloud import DocumentCloud
+from documentcloud.toolbox import DoesNotExistError
 
 from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT
@@ -33,7 +34,7 @@ class Command(BaseCommand):
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', result.title)
             parsed_link = documentcloud_service.parse_link(result.canonical_url)
-            AttachmentFile.objects.create(
+            document = AttachmentFile.objects.create(
                 allegation=allegation,
                 title=title,
                 url=result.canonical_url,
@@ -45,6 +46,11 @@ class Command(BaseCommand):
                 created_at=result.created_at,
                 last_updated=result.updated_at
             )
+
+        try:
+            documentcloud_service.update_document_meta_data(result, document)
+        except DoesNotExistError:  # pragma: no cover
+            pass  # Some documents we dont have enough permission to read or edit
 
         return crid
 
@@ -98,8 +104,5 @@ class Command(BaseCommand):
                 with indexer.index_alias.indexing():
                     indexer.reindex()
 
-        num_documents = AttachmentFile.objects.filter(
-            file_type=MEDIA_TYPE_DOCUMENT,
-            url__icontains='documentcloud'
-        ).count()
+        num_documents = AttachmentFile.cloud_document.count()
         DocumentCrawler.objects.create(num_documents=num_documents)

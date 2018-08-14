@@ -771,7 +771,9 @@ class AwardNewTimelineEventIndexerTestCase(TestCase):
         award1 = AwardFactory(award_type='Life Saving Award')
         award2 = AwardFactory(award_type='Award Of Appreciation')
         award3 = AwardFactory(award_type='Problem Solving Award')
-        expect(list(AwardNewTimelineEventIndexer().get_queryset())).to.eq([award1, award2, award3])
+        expect(set([
+            obj.pk for obj in AwardNewTimelineEventIndexer().get_queryset()
+        ])).to.eq(set([award1.id, award2.id, award3.id]))
 
     def test_extract_datum(self):
         award = Mock(

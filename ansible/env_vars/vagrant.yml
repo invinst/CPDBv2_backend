@@ -48,7 +48,6 @@ gunicorn_extra_params: "--reload"
 setup_newrelic: no
 backup_database_daily: no
 update_documents_daily: no
-run_twitterbot: no
 
 force_rewrite_env_file: no
 
