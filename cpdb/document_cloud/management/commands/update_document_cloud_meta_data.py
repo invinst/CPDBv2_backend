@@ -30,6 +30,7 @@ class Command(BaseCommand):
 
         tqdm_list = tqdm(AttachmentFile.cloud_document.all())
 
+        failed_documents = []
         for attachment_file in tqdm_list:
             tqdm_list.set_description('Process %s - %s' % (attachment_file.id, attachment_file.title))
 
@@ -38,4 +39,8 @@ class Command(BaseCommand):
                 document = client.documents.get(document_id)
                 document_service.update_document_meta_data(document, attachment_file)
             except DoesNotExistError:  # pragma: no cover
+                failed_documents.append(attachment_file)
                 pass  # Some documents we dont have enough permission to read or edit
+
+        self.stderr.write('Failed documents %s' % len(failed_documents))
+        self.stderr.write('\n'.join([doc.title for doc in failed_documents]))

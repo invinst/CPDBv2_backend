@@ -22,7 +22,7 @@ class UpdateDocumentMetaDataCommandTestCase(TestCase):
         document_service = MagicMock()
         document_service.parse_link = MagicMock(return_value={'documentcloud_id': 123})
         expect(
-            command.get_document_id(AttachmentFileFactory(additional_info={'documentcloud_id': 123}), document_service)
+            command.get_document_id(AttachmentFileFactory(additional_info={'abc': 456}), document_service)
         ).to.eq(123)
 
     @patch('document_cloud.management.commands.update_document_cloud_meta_data.DocumentCloud')
