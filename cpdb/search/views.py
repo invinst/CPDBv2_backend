@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import list_route
 
 from search.formatters import AreaFormatter
 from .services import SearchManager
@@ -17,7 +17,6 @@ from analytics.search_hooks import QueryTrackingSearchHook
 
 
 class SearchViewSet(viewsets.ViewSet):
-    lookup_field = 'text'
     formatters = {}
     workers = {}
     hooks = [
@@ -32,21 +31,14 @@ class SearchViewSet(viewsets.ViewSet):
             hooks=self.hooks
         )
 
-    def retrieve(self, request, text):
-        results = self.search_manager.search(
-            text,
-            content_type=self._content_type
-        )
-
-        return Response(results)
-
-    @detail_route(methods=['get'], url_path='single')
-    def single(self, request, text):
+    @list_route(methods=['get'], url_path='single')
+    def single(self, request):
+        term = self._search_term
         if not self._content_type:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         query = self.search_manager.get_search_query_for_type(
-            text, content_type=self._content_type
+            term, content_type=self._content_type
         )
         paginator = SearchQueryPagination()
         paginated_query = paginator.paginate_es_query(query, request)
@@ -55,10 +47,12 @@ class SearchViewSet(viewsets.ViewSet):
         )
 
     def list(self, request):
-        results = SearchManager(
-            formatters=self.formatters,
-            workers=self.workers
-        ).suggest_sample()
+        term = self._search_term
+        print term
+        if term:
+            results = self.search_manager.search(term, content_type=self._content_type)
+        else:
+            results = SearchManager(formatters=self.formatters, workers=self.workers).suggest_sample()
 
         return Response(results)
 
@@ -66,9 +60,12 @@ class SearchViewSet(viewsets.ViewSet):
     def _content_type(self):
         return self.request.query_params.get('contentType', None)
 
+    @property
+    def _search_term(self):
+        return self.request.query_params.get('term', None)
+
 
 class SearchV1ViewSet(SearchViewSet):
-    lookup_field = 'text'
     formatters = {
         'OFFICER': OfficerFormatter,
         'UNIT': UnitFormatter,
@@ -98,7 +95,6 @@ class SearchV1ViewSet(SearchViewSet):
 
 
 class SearchV2ViewSet(SearchViewSet):
-    lookup_field = 'text'
     formatters = {
         'OFFICER': OfficerV2Formatter,
         'UNIT': NameV2Formatter,

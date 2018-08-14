@@ -36,7 +36,9 @@ class SearchManager(object):
         return response
 
     def get_search_query_for_type(self, term, content_type):
-        return self.workers[content_type].query(term)
+        worker = self.workers[content_type]
+        dates = [date.strftime('%Y-%m-%d') for date in find_dates_from_string(term)] if worker.search_with_dates else []
+        return worker.query(term, dates=dates)
 
     def get_formatted_results(self, documents, content_type):
         return self._formatter_for(content_type)().serialize(documents)

@@ -137,7 +137,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
     @patch('search.services.OfficerWorker.query', return_value='abc')
     def test_get_search_query_for_type(self, patched_query):
         query = SearchManager().get_search_query_for_type('term', 'OFFICER')
-        patched_query.assert_called_with('term')
+        patched_query.assert_called_with('term', dates=[])
         expect(query).to.eq('abc')
 
     def test_get_formatted_results(self):
