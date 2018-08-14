@@ -1,4 +1,7 @@
 import re
+import urlparse
+
+from django.conf import settings
 
 
 class DocumentcloudService(object):
@@ -34,3 +37,10 @@ class DocumentcloudService(object):
             return matched.group('crid')
 
         return
+
+    def update_document_meta_data(self, document, model):
+        document.published_url = urlparse.urljoin(settings.DOMAIN, model.allegation.v2_to)
+        meta_data = document.data
+        meta_data['tag'] = 'CRID %s' % model.allegation.crid
+        document.data = meta_data
+        document.put()
