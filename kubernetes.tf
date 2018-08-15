@@ -2,6 +2,10 @@ variable "kubernetes_admin_username" {}
 variable "kubernetes_admin_ssh_pub_key" {}
 variable "kubernetes_client_id" {}
 variable "kubernetes_client_secret" {}
+variable "kubernetes_client_cert" {}
+variable "kubernetes_client_key" {}
+variable "kubernetes_client_ca_cert" {}
+variable "kubernetes_host" {}
 
 resource "azurerm_kubernetes_cluster" "cpdp" {
   name                = "cpdp"
@@ -33,10 +37,10 @@ resource "azurerm_kubernetes_cluster" "cpdp" {
 
 provider "kubernetes" {
   version                = "~> 1.1"
-  host                   = "${azurerm_kubernetes_cluster.cpdp.kube_config.0.host}"
-  client_certificate     = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_certificate)}"
-  client_key             = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.client_key)}"
-  cluster_ca_certificate = "${base64decode(azurerm_kubernetes_cluster.cpdp.kube_config.0.cluster_ca_certificate)}"
+  host                   = "${var.kubernetes_host}"
+  client_certificate     = "${base64decode(var.kubernetes_client_cert)}"
+  client_key             = "${base64decode(var.kubernetes_client_key)}"
+  cluster_ca_certificate = "${base64decode(var.kubernetes_client_ca_cert)}"
 }
 
 resource "kubernetes_namespace" "staging" {
