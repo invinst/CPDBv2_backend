@@ -4,10 +4,6 @@
   template: src='newrelic.j2' dest={{ project_root_path }}/newrelic.ini
   notify: restart application
 
-- name: create Twitterbot newrelic config file
-  template: src='twitterbot_newrelic.j2' dest={{ project_root_path }}/twitterbot_newrelic.ini
-  notify: restart application
-
 - name: config newrelic apt repository
   become: yes
   become_user: root

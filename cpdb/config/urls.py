@@ -25,7 +25,7 @@ from rest_framework import routers
 from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
-from .views import index_view, officer_view, complaint_view
+from .views import index_view, officer_view, complaint_view, embed_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
@@ -38,6 +38,7 @@ from alias.views import AliasViewSet
 from activity_grid.views import ActivityGridViewSet
 from search_terms.views import SearchTermCategoryViewSet
 from heatmap.views import CitySummaryViewSet
+from twitterbot.views import WebhookViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -63,6 +64,7 @@ router_v2.register(r'activity-grid', ActivityGridViewSet, base_name='activity-gr
 router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_name='search-term-categories')
 router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary')
 router_v2.register(r'popup', PopupViewSet, base_name='popup')
+router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -75,6 +77,10 @@ urlpatterns = [
         r'trr/\d+|'
         r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
+    url(r'^(?:(?P<path>'
+        r'embed/top-officers-page|'
+        r'embed/map|'
+        r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(
         r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
         ensure_csrf_cookie(officer_view), name='officer'),

@@ -12,7 +12,6 @@ extra_rebuild_index: ''
 extra_rebuild_search_index: ''
 run_django_db_migrations: yes
 run_django_collectstatic: yes
-run_twitterbot: yes
 
 frontend_static_dir: /www/static/
 

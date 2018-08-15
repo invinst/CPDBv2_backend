@@ -5,9 +5,10 @@ from mock import Mock, patch
 
 from data.factories import OfficerFactory
 from twitterbot.officer_extractor_pipelines import UrlPipeline, TextPipeline
+from twitterbot.tests.mixins import RebuildIndexMixin
 
 
-class TextPipelineTestCase(TestCase):
+class TextPipelineTestCase(RebuildIndexMixin, TestCase):
     @patch('twitterbot.text_extractors.TweetTextExtractor.extract')
     @patch('twitterbot.text_extractors.HashTagTextExtractor.extract')
     @patch('twitterbot.text_extractors.URLContentTextExtractor.extract')
@@ -19,6 +20,7 @@ class TextPipelineTestCase(TestCase):
         tweet1 = Mock(name='1')
         tweet2 = Mock(name='2')
         OfficerFactory(first_name='Ja', last_name='Vert')
+        self.refresh_index()
         matching_officer = OfficerFactory(first_name='Don', last_name='Juan')
 
         text_extract.name = 'text'
@@ -40,9 +42,10 @@ class TextPipelineTestCase(TestCase):
         expect(officers).to.eq([('some-source', matching_officer)])
 
 
-class UrlPipelineTestCase(TestCase):
+class UrlPipelineTestCase(RebuildIndexMixin, TestCase):
     def test_extract_matching_id(self):
-        officer = OfficerFactory(id=1234)
+        OfficerFactory(id=1234, first_name='James', last_name='Lynch')
+        self.refresh_index()
         tweets = [
             Mock(urls=[
                 'http://some-external-site.com/officer/2345/'
@@ -53,10 +56,13 @@ class UrlPipelineTestCase(TestCase):
                 'http://some-external-site.com/officer/2345/'
             ])
         ]
-        expect(UrlPipeline.extract(tweets)).to.eq([('cpdb-url', officer)])
+        expect(UrlPipeline.extract(tweets)).to.eq(
+            [('cpdb-url', {'allegation_count': 0, 'percentiles': [], 'id': 1234, 'full_name': u'James Lynch'})]
+        )
 
     def test_extract_no_matching_id(self):
         OfficerFactory(id=1234)
+        self.refresh_index()
         tweets = [Mock(urls=[
             'http://foo.com/officer/4567/'
         ])]
