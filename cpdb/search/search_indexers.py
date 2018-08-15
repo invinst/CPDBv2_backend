@@ -153,6 +153,7 @@ class CrIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'crid': datum.crid,
+            'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
             'to': datum.v2_to
         }
 
@@ -165,5 +166,7 @@ class TRRIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return {
-            'id': datum.id
+            'id': datum.id,
+            'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
+            'to': datum.v2_to
         }

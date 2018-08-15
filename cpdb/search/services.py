@@ -1,3 +1,4 @@
+from search.date_util import find_dates_from_string
 from .workers import (
     OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker)
 from .formatters import SimpleFormatter
@@ -20,14 +21,14 @@ class SearchManager(object):
     def search(self, term, content_type=None, limit=10000):
         response = {}
 
-        if content_type:
-            search_results = self.workers[content_type].search(term, size=limit)
-            response[content_type] = self._formatter_for(content_type)().format(search_results)
+        _limit = limit if content_type else 10
+        _workers = {content_type: self.workers[content_type]} if content_type else self.workers
+        search_with_dates = any([worker.search_with_dates for worker in _workers.values()])
+        dates = [date.strftime('%Y-%m-%d') for date in find_dates_from_string(term)] if search_with_dates else []
 
-        else:
-            for _content_type, worker in self.workers.items():
-                search_results = worker.search(term)
-                response[_content_type] = self._formatter_for(_content_type)().format(search_results)
+        for _content_type, worker in _workers.items():
+            search_results = worker.search(term, size=_limit, dates=dates)
+            response[_content_type] = self._formatter_for(_content_type)().format(search_results)
 
         for hook in self.hooks:
             hook.execute(term, content_type, response)
@@ -35,7 +36,9 @@ class SearchManager(object):
         return response
 
     def get_search_query_for_type(self, term, content_type):
-        return self.workers[content_type].query(term)
+        worker = self.workers[content_type]
+        dates = [date.strftime('%Y-%m-%d') for date in find_dates_from_string(term)] if worker.search_with_dates else []
+        return worker.query(term, dates=dates)
 
     def get_formatted_results(self, documents, content_type):
         return self._formatter_for(content_type)().serialize(documents)

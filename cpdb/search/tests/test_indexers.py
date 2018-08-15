@@ -1,7 +1,10 @@
 from mock import Mock, patch
+from datetime import datetime
+
+from django.test import SimpleTestCase, TestCase
 
 from robber import expect
-from django.test import SimpleTestCase, TestCase
+import pytz
 
 # FIXME: Be careful on this, switching this to an absolute import could failed a test
 from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
@@ -373,13 +376,13 @@ class IndexerManagerTestCase(SimpleTestCase):
 class CrIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(CrIndexer().get_queryset().count()).to.eq(0)
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory()
         OfficerAllegationFactory(allegation=allegation, officer=officer)
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456')
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
@@ -387,6 +390,7 @@ class CrIndexerTestCase(TestCase):
             CrIndexer().extract_datum(allegation)
         ).to.eq({
             'crid': '123456',
+            'incident_date': '2017-07-27',
             'to': '/complaint/123456/10/'
         })
 
@@ -398,10 +402,12 @@ class TRRIndexerTestCase(TestCase):
         expect(TRRIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        trr = TRRFactory(id='123456')
+        trr = TRRFactory(id='123456', trr_datetime=datetime(2017, 07, 27, tzinfo=pytz.utc))
 
         expect(
             TRRIndexer().extract_datum(trr)
         ).to.eq({
-            'id': '123456'
+            'id': '123456',
+            'trr_datetime': '2017-07-27',
+            'to': '/trr/123456/'
         })

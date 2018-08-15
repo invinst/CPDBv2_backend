@@ -9,21 +9,19 @@ class Worker(object):
     fields = []
     sort_order = []
     name = ''
+    search_with_dates = False
 
     @property
     def _searcher(self):
         return self.doc_type_klass().search()
 
-    def _limit(self, search_results, begin, size):
-        return search_results[begin:size]
-
-    def query(self, term):
+    def query(self, term, **kwargs):
         return self._searcher \
             .query('multi_match', query=term, operator='and', fields=self.fields) \
             .sort(*self.sort_order)
 
-    def search(self, term, size=10, begin=0):
-        return self._limit(self.query(term), begin, size).execute()
+    def search(self, term, size=10, begin=0, **kwargs):
+        return self.query(term, **kwargs)[begin:size].execute()
 
     def get_sample(self):
         query = self._searcher.query(
@@ -33,7 +31,7 @@ class Worker(object):
             'exists',
             field='tags'
         )
-        return self._limit(query, 0, 1).execute()
+        return query[:1].execute()
 
 
 class ReportWorker(Worker):
@@ -44,7 +42,7 @@ class ReportWorker(Worker):
 class OfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
 
-    def query(self, term):
+    def query(self, term, **kwargs):
         _query = self._searcher.query(
             'function_score',
             query={
@@ -103,7 +101,7 @@ class AreaWorker(Worker):
     fields = ['name', 'tags']
     sort_order = ['-allegation_count', 'name.keyword', '_score']
 
-    def query(self, term):
+    def query(self, term, **kwargs):
         filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')
         q = Q('bool',
               must=[Q('multi_match', query=term, operator='and', fields=self.fields)],
@@ -140,7 +138,7 @@ class UnitOfficerWorker(Worker):
     fields = ['unit_name', 'description']
     sort_order = ['-allegation_count']
 
-    def query(self, term):
+    def query(self, term, **kwargs):
         return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
             'multi_match',
             operator='and',
@@ -151,9 +149,31 @@ class UnitOfficerWorker(Worker):
 
 class CrWorker(Worker):
     doc_type_klass = CrDocType
-    fields = ['crid']
+    fields = ['crid', 'incident_date']
+    search_with_dates = True
+
+    def query(self, term, **kwargs):
+        dates = kwargs.get('dates', [])
+        return self._searcher.query(
+            'bool',
+            should=(
+                [Q('term', incident_date=date) for date in dates] +
+                [Q('term', crid=term)]
+            )
+        )
 
 
 class TRRWorker(Worker):
     doc_type_klass = TRRDocType
-    fields = ['_id']
+    fields = ['_id', 'trr_datetime']
+    search_with_dates = True
+
+    def query(self, term, **kwargs):
+        dates = kwargs.get('dates', [])
+        return self._searcher.query(
+            'bool',
+            should=(
+                [Q('term', trr_datetime=date) for date in dates] +
+                [Q('term', _id=term)]
+            )
+        )

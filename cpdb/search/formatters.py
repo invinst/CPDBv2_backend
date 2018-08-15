@@ -126,6 +126,18 @@ class CrFormatter(SimpleFormatter):
         }
 
 
+class TRRFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'text': str(serialized_doc['id']),
+            'payload': {
+                'result_text': str(serialized_doc['id']),
+                'to': serialized_doc['to']
+            }
+        }
+
+
 class AreaFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
