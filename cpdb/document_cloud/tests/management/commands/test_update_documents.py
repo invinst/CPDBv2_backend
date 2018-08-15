@@ -130,23 +130,22 @@ class UpdateDocumentsCommandTestCase(TestCase):
             mock_service.parse_link = MagicMock(return_value={})
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
-            document = MagicMock(
-                title='new',
-                id=1,
-                canonical_url='canonical_url',
-                normal_image_url='normal_image.jpg',
-                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-            )
+
             command.process_documentcloud_result(
-                document, 'CR'
+                MagicMock(
+                    title='new',
+                    id=1,
+                    canonical_url='canonical_url',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
+                ), 'CR'
             )
 
             expect(AttachmentFile.objects.all().count()).to.eq(1)
             media = AttachmentFile.objects.all()[0]
             expect(media.title).to.eq('new')
             expect(media.allegation.id).to.eq(allegation.id)
-            mock_service.update_document_meta_data.assert_called_once_with(document, media)
 
     def test_not_process_if_allegation_not_existed(self):
         command = Command()
