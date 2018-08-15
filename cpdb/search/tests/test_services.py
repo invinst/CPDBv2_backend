@@ -140,6 +140,15 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         patched_query.assert_called_with('term', dates=[])
         expect(query).to.eq('abc')
 
+    @patch('search.workers.CrWorker.query', return_value='abc')
+    def test_get_search_query_for_type_with_date(self, patched_query):
+        workers = {
+            'CR': CrWorker()
+        }
+        query = SearchManager(workers=workers).get_search_query_for_type('term 2017-12-27', 'CR')
+        patched_query.assert_called_with('term 2017-12-27', dates=['2017-12-27'])
+        expect(query).to.eq('abc')
+
     def test_get_formatted_results(self):
         mock_document = Mock(to_dict=Mock(return_value={'a': 'b'}), _id=123)
         formatted_results = SearchManager().get_formatted_results([mock_document], 'SIMPLE')
