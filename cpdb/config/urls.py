@@ -78,6 +78,7 @@ urlpatterns = [
         r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(r'^(?:(?P<path>'
+        r'embed/top-officers-page|'
         r'embed/map|'
         r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(
