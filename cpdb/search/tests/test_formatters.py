@@ -5,7 +5,7 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from search.formatters import (
-    SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
+    SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter, TRRFormatter,
     AreaFormatter)
 
@@ -73,28 +73,24 @@ class OfficerFormatterTestCase(SimpleTestCase):
         expect(
             OfficerFormatter().doc_format(doc)
         ).to.be.eq({
-            'text': 'name',
-            'payload': {
-                'result_text': 'name',
-                'name': 'name',
-                'badge': '123',
-                'to': 'to',
-                'tags': ['tag1', 'tag2'],
-                'unit': '001',
-                'appointed_date': '1998-01-01',
-                'resignation_date': None,
-                'trr_count': 1,
-                'rank': 'some rank',
-                'allegation_count': 10,
-                'sustained_count': 2,
-                'discipline_count': 0,
-                'honorable_mention_count': 3,
-                'civilian_compliment_count': 0,
-                'race': 'White',
-                'birth_year': 1972,
-                'gender': 'Male',
-                'percentiles': [],
-            }
+            'name': 'name',
+            'badge': '123',
+            'to': 'to',
+            'tags': ['tag1', 'tag2'],
+            'unit': '001',
+            'appointed_date': '1998-01-01',
+            'resignation_date': None,
+            'trr_count': 1,
+            'rank': 'some rank',
+            'allegation_count': 10,
+            'sustained_count': 2,
+            'discipline_count': 0,
+            'honorable_mention_count': 3,
+            'civilian_compliment_count': 0,
+            'race': 'White',
+            'birth_year': 1972,
+            'gender': 'Male',
+            'percentiles': [],
         })
 
 
@@ -111,13 +107,9 @@ class UnitFormatterTestCase(SimpleTestCase):
         expect(
             UnitFormatter().doc_format(doc)
         ).to.be.eq({
-            'text': '123',
-            'payload': {
-                'result_text': 'foo bar',
-                'result_extra_information': '123',
-                'to': '/unit/123/',
-                'tags': ['foo']
-            }
+            'description': 'foo bar',
+            'to': '/unit/123/',
+            'tags': ['foo']
         })
 
     def test_doc_format_without_tags(self):
@@ -131,33 +123,9 @@ class UnitFormatterTestCase(SimpleTestCase):
         expect(
             UnitFormatter().doc_format(doc)
         ).to.be.eq({
-            'text': '123',
-            'payload': {
-                'result_text': 'foo bar',
-                'result_extra_information': '123',
-                'to': '/unit/123/',
-                'tags': []
-            }
-        })
-
-
-class NameFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(to_dict=Mock(return_value={
-            'url': 'url',
-            'tags': ['t1', 't2'],
-            'name': 'name'
-        }))
-
-        expect(
-            NameFormatter().doc_format(doc)
-        ).to.be.eq({
-            'text': 'name',
-            'payload': {
-                'result_text': 'name',
-                'url': 'url',
-                'tags': ['t1', 't2']
-            },
+            'description': 'foo bar',
+            'to': '/unit/123/',
+            'tags': []
         })
 
 
@@ -228,11 +196,8 @@ class CrFormatterTestCase(SimpleTestCase):
         expect(
             CrFormatter().doc_format(doc)
         ).to.eq({
-            'text': '123456',
-            'payload': {
-                'result_text': '123456',
-                'to': '/complaint/123456/',
-            },
+            'crid': '123456',
+            'to': '/complaint/123456/'
         })
 
 
@@ -246,11 +211,8 @@ class TRRFormatterTestCase(SimpleTestCase):
         expect(
             TRRFormatter().doc_format(doc)
         ).to.eq({
-            'text': '123456',
-            'payload': {
-                'result_text': '123456',
-                'to': '/trr/123456/',
-            },
+            'id': '123456',
+            'to': '/trr/123456/'
         })
 
 
@@ -261,10 +223,6 @@ class AreaFormatterTestCase(SimpleTestCase):
             'type': 'community',
         }))
         expect(AreaFormatter().doc_format(doc)).to.eq({
-            'text': 'name',
-            'payload': {
-                'name': 'name',
-                'type': 'community',
-                'result_text': 'name',
-            }
+            'name': 'name',
+            'type': 'community',
         })

@@ -41,7 +41,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['UNIT > OFFICERS']
         expect(results).to.have.length(1)
 
-        expect(results[0]['text']).to.eq(officer.full_name)
+        expect(results[0]['name']).to.eq(officer.full_name)
 
     def test_retrieve_single_with_content_type(self):
         OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)

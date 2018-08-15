@@ -151,8 +151,11 @@ class CrIndexer(BaseIndexer):
         return Allegation.objects.all()
 
     def extract_datum(self, datum):
+        most_common_category = datum.get_most_common_category()
+
         return {
             'crid': datum.crid,
+            'category': most_common_category['category'] if most_common_category else None,
             'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
             'to': datum.v2_to
         }
@@ -168,5 +171,6 @@ class TRRIndexer(BaseIndexer):
         return {
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
+            'force_type': datum.top_force_type,
             'to': datum.v2_to
         }
