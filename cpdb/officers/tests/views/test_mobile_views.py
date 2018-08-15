@@ -122,7 +122,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5
+            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
+            honorable_mention_percentile=66.6667
         )
 
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
@@ -196,18 +197,18 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 {
                     'id': 123,
                     'year': 2003,
-                    'percentile_trr': u'0.000',
-                    'percentile_allegation': u'50.000',
-                    'percentile_allegation_civilian': u'50.000',
-                    'percentile_allegation_internal': u'50.000'
+                    'percentile_trr': u'0.0000',
+                    'percentile_allegation': u'50.0000',
+                    'percentile_allegation_civilian': u'50.0000',
+                    'percentile_allegation_internal': u'50.0000'
                 },
                 {
                     'id': 123,
                     'year': 2004,
-                    'percentile_trr': u'33.333',
-                    'percentile_allegation': u'66.667',
-                    'percentile_allegation_civilian': u'66.667',
-                    'percentile_allegation_internal': u'66.667'
+                    'percentile_trr': u'33.3333',
+                    'percentile_allegation': u'66.6667',
+                    'percentile_allegation_civilian': u'66.6667',
+                    'percentile_allegation_internal': u'66.6667'
                 },
             ],
             'date_of_appt': '2002-02-27',
@@ -268,6 +269,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
         trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+        SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(1998, 9, 23))
 
         self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-mobile-new-timeline-items', kwargs={'pk': 123}))

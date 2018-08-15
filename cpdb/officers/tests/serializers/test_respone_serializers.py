@@ -102,20 +102,20 @@ class OfficerMobileSerializerTestCase(SimpleTestCase):
             'full_name': 'Full Name',
             'percentiles': [
                 {
-                    'percentile_allegation': '99.345',
-                    'percentile_trr': '0.000',
+                    'percentile_allegation': '99.3450',
+                    'percentile_trr': '0.0000',
                     'year': 2001,
                     'id': 1,
-                    'percentile_allegation_civilian': '98.434',
-                    'percentile_allegation_internal': '99.784',
+                    'percentile_allegation_civilian': '98.4340',
+                    'percentile_allegation_internal': '99.7840',
                 },
                 {
-                    'percentile_allegation': '99.345',
-                    'percentile_trr': '0.000',
+                    'percentile_allegation': '99.3450',
+                    'percentile_trr': '0.0000',
                     'year': 2002,
                     'id': 1,
-                    'percentile_allegation_civilian': '98.434',
-                    'percentile_allegation_internal': '99.784',
+                    'percentile_allegation_civilian': '98.4340',
+                    'percentile_allegation_internal': '99.7840',
                 },
             ],
             'unit': {
@@ -170,16 +170,16 @@ class OfficerYearlyPercentileSerializerTestCase(SimpleTestCase):
         data = {
             'id': 1,
             'year': 2016,
-            'percentile_allegation': '66.667',
-            'percentile_allegation_internal': '50.000',
-            'percentile_allegation_civilian': '0.000',
+            'percentile_allegation': '66.6670',
+            'percentile_allegation_internal': '50.0000',
+            'percentile_allegation_civilian': '0.0000',
         }
         obj = Mock(spec=data.keys(), **data)
         expected_response = {
             'id': 1,
             'year': 2016,
-            'percentile_allegation': '66.667',
-            'percentile_allegation_internal': '50.000',
-            'percentile_allegation_civilian': '0.000',
+            'percentile_allegation': '66.6670',
+            'percentile_allegation_internal': '50.0000',
+            'percentile_allegation_civilian': '0.0000',
         }
         expect(OfficerYearlyPercentileSerializer(obj).data).to.eq(expected_response)

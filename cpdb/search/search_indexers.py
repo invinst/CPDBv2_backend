@@ -2,7 +2,6 @@ from tqdm import tqdm
 
 from data.models import PoliceUnit, Area, Allegation
 from data.utils.percentile import percentile
-from data.utils.calculations import calculate_top_percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
@@ -73,10 +72,6 @@ class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
     _percentiles = {}
 
-    def __init__(self, *args, **kwargs):
-        super(AreaIndexer, self).__init__(*args, **kwargs)
-        self.top_percentile_dict = calculate_top_percentile()
-
     def _compute_police_district_percentiles(self, query):
         scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')
         return {
@@ -103,12 +98,6 @@ class AreaIndexer(BaseIndexer):
             name = datum.description if datum.description else datum.name
 
         officers_most_complaint = list(datum.get_officers_most_complaints())
-
-        for officer in officers_most_complaint:
-            try:
-                officer.update(self.top_percentile_dict[officer['id']])
-            except KeyError:
-                pass
 
         return {
             'name': name,
@@ -164,6 +153,7 @@ class CrIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'crid': datum.crid,
+            'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
             'to': datum.v2_to
         }
 
@@ -176,5 +166,7 @@ class TRRIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return {
-            'id': datum.id
+            'id': datum.id,
+            'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
+            'to': datum.v2_to
         }

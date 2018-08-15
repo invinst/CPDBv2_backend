@@ -27,15 +27,6 @@
             backup=yes
   tags: deploy
 
-- name: Create Twitterbot start script file
-  template: src=twitterbot_start.j2
-            dest={{ virtualenv_path }}/bin/twitterbot_start
-            owner={{ deploy_user }}
-            group={{ deploy_group }}
-            mode=0755
-            backup=yes
-  tags: deploy
-
 - name: Create the application log folder
   file: path={{ application_log_dir }}
         owner={{ deploy_user }}

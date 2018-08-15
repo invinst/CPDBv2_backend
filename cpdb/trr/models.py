@@ -206,6 +206,10 @@ class TRR(models.Model):
         return self.actionresponse_set.filter(person='Member Action').\
             order_by('-action_sub_category', 'force_type').values_list('force_type', flat=True).distinct()
 
+    @property
+    def v2_to(self):
+        return '/trr/%s/' % self.id
+
 
 class ActionResponse(models.Model):
     trr = models.ForeignKey(TRR)

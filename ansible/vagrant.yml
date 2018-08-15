@@ -9,8 +9,8 @@
     - ansible_remote_user: vagrant
     - create_pam_environment: no
     - update_apt_cache: yes
-    - postgresql_version: "9.4"
-    - postgresql_package_version: "9.4.*-1.pgdg14.04+1"
+    - postgresql_version: "9.6"
+    - postgresql_package_version: "9.6.*-*.pgdg14.04+1"
     - requirements_file: "{{ project_root_path }}/requirements/local.txt"
     - elasticsearch_network_host: 0.0.0.0
   vars_files:

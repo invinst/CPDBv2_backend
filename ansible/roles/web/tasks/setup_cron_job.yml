@@ -1,13 +1,5 @@
 ---
 
-- name: Make sure database is backup daily
-  become: yes
-  become_user: "{{ deploy_user }}"
-  cron: name="backup database"
-    special_time=daily
-    job="/bin/bash -c 'source {{ project_root_path }}/bin/activate_env.sh && {{ project_root_path }}/cpdb/manage.py backup_current_database'"
-  when: backup_database_daily
-
 - name: Make sure update document cron job is registered
   become: yes
   become_user: "{{ deploy_user }}"

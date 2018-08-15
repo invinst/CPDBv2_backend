@@ -3,6 +3,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
+from freezegun import freeze_time
 from robber import expect
 from mock import patch
 import pytz
@@ -43,10 +44,13 @@ class CitySummaryViewSetTestCase(TestCase):
                 allegation__incident_date=date,
                 final_outcome='900')
 
+    @freeze_time('2017-04-04 12:00:01', tz_offset=0)
     @patch('heatmap.views.ALLEGATION_MIN_DATETIME', datetime(1988, 1, 1, tzinfo=pytz.utc))
     def test_get_city_summary(self):
         response = self.client.get(reverse('api-v2:city-summary-list'))
         expect(response.data).to.eq({
+            'start_year': 1988,
+            'end_year': 2017,
             'allegation_count': 20,
             'discipline_count': 14,
             'most_common_complaints': [

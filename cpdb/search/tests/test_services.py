@@ -1,12 +1,12 @@
-from mock import Mock, patch
-
 from django.test import TestCase
 
+from mock import Mock, patch
 from robber import expect
 
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
-from search.workers import OfficerWorker
+from search.workers import CrWorker, OfficerWorker
+from search.doc_types import CrDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -19,8 +19,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         })
 
     def test_search(self):
-        doc = OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url')
-        doc.save()
+        OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url').save()
         self.refresh_index()
         response = SearchManager().search('fu na')
 
@@ -34,6 +33,30 @@ class SearchManagerTestCase(IndexMixin, TestCase):
                 'full_name': u'full name'
             }],
             'COMMUNITY': []})
+
+    def test_search_with_date(self):
+        OfficerInfoDocType(meta={'id': '1'}, full_name='full name', badge='123', url='url').save()
+        CrDocType(meta={'id': '1'}, crid='1234', incident_date='2017-12-27').save()
+        self.refresh_index()
+
+        workers = {
+            'OFFICER': OfficerWorker(),
+            'CR': CrWorker()
+        }
+        response = SearchManager(workers=workers).search('fu na 2017-12-27')
+        expect(response).to.eq({
+            'OFFICER': [{
+                'id': '1',
+                'url': 'url',
+                'badge': '123',
+                'full_name': u'full name'
+            }],
+            'CR': [{
+                'id': '1',
+                'crid': '1234',
+                'incident_date': '2017-12-27'
+            }]
+        })
 
     def test_suggest_sample(self):
         taglessOfficerDoc = OfficerInfoDocType(
@@ -72,6 +95,37 @@ class SearchManagerTestCase(IndexMixin, TestCase):
             }]
         })
 
+    def test_search_without_spaces(self):
+        OfficerInfoDocType(meta={'id': '1'}, full_name='Kevin Mc Donald', badge='123', url='url').save()
+        OfficerInfoDocType(meta={'id': '2'}, full_name='John Mcdonald', badge='123', url='url').save()
+        self.refresh_index()
+        response = SearchManager().search('McDonald')
+        response1 = SearchManager().search('Mc Donald')
+
+        expect(response['OFFICER']).to.eq([{
+            'id': '1',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'Kevin Mc Donald'
+        }, {
+            'id': '2',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'John Mcdonald'
+        }])
+
+        expect(response1['OFFICER']).to.eq([{
+            'id': '1',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'Kevin Mc Donald'
+        }, {
+            'id': '2',
+            'url': 'url',
+            'badge': '123',
+            'full_name': u'John Mcdonald'
+        }])
+
     @patch('search.services.SimpleFormatter.format', return_value='formatter_results')
     def test_hooks(self, _):
         mock_hook = Mock()
@@ -83,7 +137,16 @@ class SearchManagerTestCase(IndexMixin, TestCase):
     @patch('search.services.OfficerWorker.query', return_value='abc')
     def test_get_search_query_for_type(self, patched_query):
         query = SearchManager().get_search_query_for_type('term', 'OFFICER')
-        patched_query.assert_called_with('term')
+        patched_query.assert_called_with('term', dates=[])
+        expect(query).to.eq('abc')
+
+    @patch('search.workers.CrWorker.query', return_value='abc')
+    def test_get_search_query_for_type_with_date(self, patched_query):
+        workers = {
+            'CR': CrWorker()
+        }
+        query = SearchManager(workers=workers).get_search_query_for_type('term 2017-12-27', 'CR')
+        patched_query.assert_called_with('term 2017-12-27', dates=['2017-12-27'])
         expect(query).to.eq('abc')
 
     def test_get_formatted_results(self):

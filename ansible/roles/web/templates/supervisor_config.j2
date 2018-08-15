@@ -3,11 +3,3 @@ command = {{ virtualenv_path }}/bin/gunicorn_start
 user = {{ deploy_user }}
 stdout_logfile = {{ application_log_file }}
 redirect_stderr = true
-
-[program:twitterbot]
-command = {{ virtualenv_path }}/bin/twitterbot_start
-user = {{ deploy_user }}
-autorestart = true
-stdout_logfile = {{ application_log_dir }}/twitterbot_out.log
-stderr_logfile = {{ application_log_dir }}/twitterbot_err.log
-autostart = {{ 'true' if run_twitterbot else 'false' }}

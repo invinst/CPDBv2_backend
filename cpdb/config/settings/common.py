@@ -92,15 +92,17 @@ ADMINS = (
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
-# DATABASE CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASE_CONFIG = env.db('DATABASE_URL')
 DATABASES = {
-    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': DATABASE_CONFIG,
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'HOST': env.str('DB_HOST'),
+        'NAME': env.str('DB_NAME'),
+        'PASSWORD': env.str('DB_PASSWORD'),
+        'PORT': 5432,
+        'USER': env.str('DB_USER')
+    }
 }
-DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 ROOT_URLCONF = 'config.urls'
 
@@ -228,6 +230,9 @@ VFTG_LIST_ID = 'e38095f8d7'
 
 AZURE_STORAGE_ACCOUNT_NAME = env.str('AZURE_STORAGE_ACCOUNT_NAME', default='')
 AZURE_STORAGE_ACCOUNT_KEY = env.str('AZURE_STORAGE_ACCOUNT_KEY', default='')
+TWITTERBOT_STORAGE_ACCOUNT_NAME = env.str('TWITTERBOT_STORAGE_ACCOUNT_NAME', default='')
+TWITTERBOT_STORAGE_ACCOUNT_KEY = env.str('TWITTERBOT_STORAGE_ACCOUNT_KEY', default='')
+AZURE_QUEUE_NAME = 'cpdpbot'
 DATA_PIPELINE_STORAGE_ACCOUNT_NAME = env.str('DATA_PIPELINE_STORAGE_ACCOUNT_NAME', default='')
 DATA_PIPELINE_STORAGE_ACCOUNT_KEY = env.str('DATA_PIPELINE_STORAGE_ACCOUNT_KEY', default='')
 TWITTER_CONSUMER_KEY = env.str('TWITTER_CONSUMER_KEY', default='')
@@ -284,8 +289,6 @@ LOGGING = {
         }
     },
 }
-
-TWITTERBOT_NEW_RELIC_CONFIG_FILE_PATH = ROOT_DIR.path('twitterbot_newrelic.ini')
 
 TEST = False
 

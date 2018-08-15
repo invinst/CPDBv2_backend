@@ -2,7 +2,7 @@ from django.test import TestCase, RequestFactory
 
 from mock import patch
 
-from config.views import index_view, officer_view, complaint_view
+from config.views import index_view, officer_view, complaint_view, embed_view
 from data.factories import OfficerFactory
 from data.models import OfficerAlias
 
@@ -13,6 +13,15 @@ class IndexViewsTestCase(TestCase):
             request_factory = RequestFactory()
             request = request_factory.get('/')
             index_view(request)
+            mock_render.assert_called_once_with(request, 'index.html')
+
+
+class EmbedViewsTestCase(TestCase):
+    def test_render_template(self):
+        with patch('config.views.render') as mock_render:
+            request_factory = RequestFactory()
+            request = request_factory.get('/embed/top-officers-page')
+            embed_view(request)
             mock_render.assert_called_once_with(request, 'index.html')
 
 

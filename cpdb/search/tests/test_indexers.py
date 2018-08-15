@@ -1,7 +1,10 @@
 from mock import Mock, patch
+from datetime import datetime
+
+from django.test import SimpleTestCase, TestCase
 
 from robber import expect
-from django.test import SimpleTestCase, TestCase
+import pytz
 
 # FIXME: Be careful on this, switching this to an absolute import could failed a test
 from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
@@ -278,15 +281,27 @@ class AreaIndexerTestCase(TestCase):
             {
                 'id': 123,
                 'name': 'A B',
-                'count': 5
+                'count': 5,
+                'percentile_allegation_civilian': 0,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 0,
+                'percentile_allegation': 0,
             }, {
                 'id': 456,
                 'name': 'E F',
-                'count': 3
+                'count': 3,
+                'percentile_allegation_civilian': 33.3333,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 33.3333,
+                'percentile_allegation': 33.3333,
             }, {
                 'id': 789,
                 'name': 'C D',
-                'count': 2
+                'count': 2,
+                'percentile_allegation_civilian': 66.6667,
+                'percentile_allegation_internal': 0,
+                'percentile_trr': 66.6667,
+                'percentile_allegation': 66.6667,
             }, {
                 'id': 999,
                 'name': 'X Y',
@@ -294,26 +309,6 @@ class AreaIndexerTestCase(TestCase):
             }
         ])
         area_indexer = AreaIndexer()
-        area_indexer.top_percentile_dict = {
-            123: {
-                'percentile_allegation_civilian': 0,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 0,
-                'percentile_allegation': 0,
-            },
-            456: {
-                'percentile_allegation_civilian': 33.3333,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 33.3333,
-                'percentile_allegation': 33.3333,
-            },
-            789: {
-                'percentile_allegation_civilian': 66.6667,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 66.6667,
-                'percentile_allegation': 66.6667,
-            },
-        }
 
         expect(area_indexer.extract_datum(area)).to.be.eq({
             'name': 'name',
@@ -381,13 +376,13 @@ class IndexerManagerTestCase(SimpleTestCase):
 class CrIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(CrIndexer().get_queryset().count()).to.eq(0)
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory()
         OfficerAllegationFactory(allegation=allegation, officer=officer)
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456')
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
@@ -395,6 +390,7 @@ class CrIndexerTestCase(TestCase):
             CrIndexer().extract_datum(allegation)
         ).to.eq({
             'crid': '123456',
+            'incident_date': '2017-07-27',
             'to': '/complaint/123456/10/'
         })
 
@@ -406,10 +402,12 @@ class TRRIndexerTestCase(TestCase):
         expect(TRRIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        trr = TRRFactory(id='123456')
+        trr = TRRFactory(id='123456', trr_datetime=datetime(2017, 07, 27, tzinfo=pytz.utc))
 
         expect(
             TRRIndexer().extract_datum(trr)
         ).to.eq({
-            'id': '123456'
+            'id': '123456',
+            'trr_datetime': '2017-07-27',
+            'to': '/trr/123456/'
         })

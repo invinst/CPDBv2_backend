@@ -10,7 +10,7 @@ from twitterbot.tests.mixins import RebuildIndexMixin
 class OfficerExtractorTestCase(RebuildIndexMixin, TestCase):
     def check_result_match_officer(self, result, officers):
         expect(result).to.have.length(len(officers))
-        expect([obj.pk for _, obj in result]).to.eq([officer.pk for officer in officers])
+        expect([obj['id'] for _, obj in result]).to.eq([officer.id for officer in officers])
 
 
 class ElasticSearchOfficerExtractorTestCase(OfficerExtractorTestCase):

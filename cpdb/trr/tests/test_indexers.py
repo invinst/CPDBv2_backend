@@ -4,13 +4,11 @@ from django.test import TestCase
 from django.contrib.gis.geos import Point
 
 from robber import expect
-from mock import patch, Mock
 import pytz
 
 from data.factories import OfficerFactory, PoliceUnitFactory, OfficerHistoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from trr.indexers import TRRIndexer
-from officers.tests.utils import create_object
 
 
 class TRRIndexerTestCase(TestCase):
@@ -18,23 +16,6 @@ class TRRIndexerTestCase(TestCase):
         trr = TRRFactory()
         expect(list(TRRIndexer().get_queryset())).to.eq([trr])
 
-    @patch(
-        'data.officer_percentile.top_visual_token_percentile',
-        Mock(return_value=[
-            create_object({
-                'officer_id': 1,
-                'percentile_allegation_civilian': 1.1111,
-                'percentile_allegation_internal': 2.2222,
-                'percentile_trr': 3.3333,
-            }),
-            create_object({
-                'officer_id': 2,
-                'percentile_allegation_civilian': 4.4444,
-                'percentile_allegation_internal': 5.5555,
-                'percentile_trr': 6.6666,
-            })
-        ])
-    )
     def test_extract_datum(self):
         unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
         officer = OfficerFactory(
@@ -44,7 +25,11 @@ class TRRIndexerTestCase(TestCase):
             race='White',
             gender='M',
             appointed_date=date(2000, 1, 1),
-            birth_year=1980)
+            birth_year=1980,
+            civilian_allegation_percentile=1.1111,
+            internal_allegation_percentile=2.2222,
+            trr_percentile=3.3333
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
@@ -182,6 +167,9 @@ class TRRIndexerTestCase(TestCase):
                 'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'id': officer.id,
                 'birth_year': 1980,
+                'percentile_allegation_civilian': None,
+                'percentile_allegation_internal': None,
+                'percentile_trr': None
             },
             'subject_race': 'White',
             'subject_gender': 'Male',
@@ -195,16 +183,6 @@ class TRRIndexerTestCase(TestCase):
             'point': None,
         })
 
-    @patch(
-        'data.officer_percentile.top_visual_token_percentile',
-        Mock(return_value=[
-            create_object({
-                'officer_id': 1,
-                'percentile_allegation_civilian': 1.1111,
-                'percentile_allegation_internal': 2.2222,
-            })
-        ])
-    )
     def test_extract_datum_missing_percentile(self):
         unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
         officer = OfficerFactory(
@@ -215,7 +193,10 @@ class TRRIndexerTestCase(TestCase):
             gender='M',
             appointed_date=date(2000, 1, 1),
             birth_year=1980,
-            resignation_date=date(2000, 8, 1))
+            resignation_date=date(2000, 8, 1),
+            civilian_allegation_percentile=1.1111,
+            internal_allegation_percentile=2.2222
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             taser=False,
