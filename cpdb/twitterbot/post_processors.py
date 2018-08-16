@@ -20,11 +20,11 @@ class ActivityGridUpdater():
             # Make sure we don't create duplicated pair card with the same members
             try:
                 activity_pair_card = ActivityPairCard.objects.get(
-                    officer1_id=officer2['id'], officer2_id=officer1['id']
+                    officer1_id=officer2.id, officer2_id=officer1.id
                 )
             except ObjectDoesNotExist:
                 activity_pair_card, _ = ActivityPairCard.objects.get_or_create(
-                    officer1_id=officer1['id'], officer2_id=officer2['id']
+                    officer1_id=officer1.id, officer2_id=officer2.id
                 )
 
             activity_pair_card.last_activity = timezone.now()

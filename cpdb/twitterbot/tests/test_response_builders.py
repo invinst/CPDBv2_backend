@@ -108,26 +108,30 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
     def test_build(self):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
-            officer1 = {
-                'id': 1, 'full_name': 'Jerome Finnigan', 'complaints': 3
+            officer1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+            OfficerAllegationFactory.create_batch(3, officer=officer1)
+            officer1_doc = {
+                'id': officer1.id, 'full_name': officer1.full_name
             }
-            officer2 = {
-                'id': 2, 'full_name': 'Raymond Piwnicki', 'complaints': 0
+
+            officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+            officer2_doc = {
+                'id': officer2.id, 'full_name': officer2.full_name
             }
 
             ResponseTemplateFactory(
                 response_type='single_officer',
-                syntax='@{{user_name}} {{officer.full_name}} has {{officer.complaints}} complaints')
+                syntax='@{{user_name}} {{officer.full_name}} has {{officer.allegation_count}} complaints')
 
             builder = SingleOfficerResponseBuilder()
-            officers = [('source1', officer1), ('source2', officer2)]
+            officers = [('source1', officer1_doc), ('source2', officer2_doc)]
 
             expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([{
                 'source': ('source1',),
                 'tweet_content': '@abc Jerome Finnigan has 3 complaints',
                 'url': 'http://foo.co/officer/1/',
                 'type': 'single_officer',
-                'entity': officer1,
+                'entity': officer1_doc,
                 'officer1': None,
                 'officer2': None,
                 'coaccused': 0,
@@ -136,7 +140,7 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
                 'url': 'http://foo.co/officer/2/',
                 'type': 'single_officer',
-                'entity': officer2,
+                'entity': officer2_doc,
                 'officer1': None,
                 'officer2': None,
                 'coaccused': 0,
@@ -186,8 +190,8 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
             'url': '',
             'type': 'coaccused_pair',
             'entity': None,
-            'officer1': officer1_doc,
-            'officer2': officer2_doc,
+            'officer1': officer1,
+            'officer2': officer2,
             'coaccused': 1,
         }])
 
