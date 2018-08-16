@@ -2,7 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import list_route
 
-from search.formatters import AreaFormatter
+from search.formatters import AreaFormatter, ZipCodeFormatter
+from search.workers import ZipCodeWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
@@ -77,7 +78,8 @@ class SearchV1ViewSet(SearchViewSet):
         'BEAT': AreaFormatter,
         'UNIT > OFFICERS': OfficerFormatter,
         'CR': CrFormatter,
-        'TRR': TRRFormatter
+        'TRR': TRRFormatter,
+        'ZIP-CODE': ZipCodeFormatter,
     }
     workers = {
         'OFFICER': OfficerWorker(),
@@ -90,7 +92,8 @@ class SearchV1ViewSet(SearchViewSet):
         'BEAT': BeatWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker(),
         'CR': CrWorker(),
-        'TRR': TRRWorker()
+        'TRR': TRRWorker(),
+        'ZIP-CODE': ZipCodeWorker(),
     }
 
 

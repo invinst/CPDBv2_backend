@@ -147,3 +147,14 @@ class AreaFormatter(SimpleFormatter):
         }
         results['payload']['result_text'] = serialized_doc['name']
         return results
+
+
+class ZipCodeFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'payload': {
+                'result_text': serialized_doc['zip_code'],
+                'to': serialized_doc['to']
+            }
+        }

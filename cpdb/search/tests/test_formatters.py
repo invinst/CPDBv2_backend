@@ -7,7 +7,8 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter, TRRFormatter,
-    AreaFormatter)
+    AreaFormatter, ZipCodeFormatter,
+)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -266,5 +267,19 @@ class AreaFormatterTestCase(SimpleTestCase):
                 'name': 'name',
                 'type': 'community',
                 'result_text': 'name',
+            }
+        })
+
+
+class ZipCodeFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'zip_code': '666666',
+            'to': 'cpdp.com'
+        }))
+        expect(ZipCodeFormatter().doc_format(doc)).to.eq({
+            'payload': {
+                'result_text': '666666',
+                'to': 'cpdp.com'
             }
         })

@@ -5,9 +5,10 @@ from robber import expect
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker, TRRWorker
+    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker, TRRWorker,
+    ZipCodeWorker,
 )
-from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, ZipCodeDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 
@@ -219,3 +220,16 @@ class TRRWorkerTestCase(IndexMixin, SimpleTestCase):
         response = TRRWorker().search('123456', dates=['2008-12-27'])
         expect(response.hits.total).to.be.equal(2)
         expect(set([hit._id for hit in response.hits])).to.be.eq({'123456', '890'})
+
+
+class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        ZipCodeDocType(zip_code='123456', tags=['zip code']).save()
+        ZipCodeDocType(zip_code='555555', tags=['zip code']).save()
+
+        self.refresh_index()
+
+        response1 = ZipCodeWorker().search('123456')
+        response2 = ZipCodeWorker().search('zip-code')
+        expect(response1.hits.total).to.be.equal(1)
+        expect(response2.hits.total).to.be.equal(2)

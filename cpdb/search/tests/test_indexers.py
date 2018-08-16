@@ -7,7 +7,11 @@ from robber import expect
 import pytz
 
 # FIXME: Be careful on this, switching this to an absolute import could failed a test
-from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+from search.utils import ZipCode
+from ..search_indexers import (
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager,
+    ZipCodeIndexer,
+)
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
@@ -410,4 +414,19 @@ class TRRIndexerTestCase(TestCase):
             'id': '123456',
             'trr_datetime': '2017-07-27',
             'to': '/trr/123456/'
+        })
+
+
+class ZipCodeIndexerTestCase(SimpleTestCase):
+    @patch('search.search_indexers.chicago_zip_codes', return_value=[])
+    def test_get_query_set(self, chicago_zip_codes_mock):
+        expect(chicago_zip_codes_mock).to.be.called_once()
+
+    def test_extract_datum(self):
+        zip_code = ZipCode(pk=1, zip_code='123456', to='cpdp.co')
+        expect(ZipCodeIndexer().extract_datum(zip_code)).to.eq({
+            'id': 1,
+            'zip_code': '123456',
+            'to': 'cpdp.co',
+            'tags': ['zip code']
         })

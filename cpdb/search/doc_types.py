@@ -54,3 +54,13 @@ class TRRDocType(DocType):
 
     class Meta:
         doc_type = 'trr'
+
+
+@autocompletes_alias.doc_type
+class ZipCodeDocType(DocType):
+    id = Integer()
+    zip_code = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'zip_code'
