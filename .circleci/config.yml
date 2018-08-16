@@ -15,7 +15,6 @@ jobs:
       - DB_NAME: cpdb
     steps:
       - checkout
-      - run: ansible-galaxy install azavea.postgresql
       - run: pip install --user -r requirements/test.txt
       - run: flake8
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
@@ -32,6 +31,7 @@ jobs:
       - ANSIBLE_HOST_KEY_CHECKING: False
     steps:
       - checkout
+      - run: ansible-galaxy install azavea.postgresql
       - run:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m
