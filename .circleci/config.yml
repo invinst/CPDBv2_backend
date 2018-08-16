@@ -15,6 +15,7 @@ jobs:
       - DB_NAME: cpdb
     steps:
       - checkout
+      - run: ansible-galaxy install azavea.postgresql
       - run: pip install --user -r requirements/test.txt
       - run: flake8
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
@@ -35,19 +36,6 @@ jobs:
           command: bin/circleci_deploy_staging
           no_output_timeout: 60m
 
-  build_terraform:
-    machine: true
-    steps:
-      - checkout
-      - run:
-          name: Build terraform image
-          command: docker build -t cpdbdev/terraform docker/terraform  
-      - run:
-          name: Push terraform image
-          command: |
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push cpdbdev/terraform
-
   build_cpdpbot:
     machine: true
     steps:
@@ -64,35 +52,6 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION)
 
-  deploy_cpdpbot:
-    docker:
-      - image: cpdbdev/terraform
-    steps:
-      - run:
-          name: Import gpg private key
-          command: |
-            echo $GPG_PRIVATE_KEY > circleci.b64
-            base64 -d circleci.b64 > circleci.gpg
-            gpg --import circleci.gpg
-            rm circleci.gpg
-            rm circleci.b64
-      - checkout
-      - run: git secret reveal
-      - run:
-          name: Terraform apply
-          command: |
-            terraform init
-            terraform taint kubernetes_replication_controller.cpdpbot_$CIRCLE_BRANCH
-            terraform apply -target kubernetes_replication_controller.cpdpbot_$CIRCLE_BRANCH -auto-approve -lock=true -var "cpdpbot_version=$(cat docker/cpdpbot/VERSION)"
-
-  create_terraform_state_snapshot:
-    docker:
-      - image: microsoft/azure-cli
-    steps:
-      - run:
-          name: create snapshot of terraform state
-          command: az storage blob snapshot -c tfstate -n prod.terraform.tfstate --connection=$TFSTATE_STORAGE_CONNECTION_STRING
-
 workflows:
   version: 2
   test_and_deploy:
@@ -107,26 +66,4 @@ workflows:
 
   test_deploy_cpdpbot:
     jobs:
-      - create_terraform_state_snapshot:
-          filters:
-            branches:
-              only:
-                - staging
-                - master
-      - build_terraform:
-          filters:
-            branches:
-              only:
-                - staging
-                - master
       - build_cpdpbot
-      - deploy_cpdpbot:
-          requires:
-            - build_cpdpbot
-            - build_terraform
-            - create_terraform_state_snapshot
-          filters:
-            branches:
-              only:
-                - staging
-                - master
