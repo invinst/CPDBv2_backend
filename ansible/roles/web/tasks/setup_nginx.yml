@@ -50,6 +50,11 @@
   notify: reload nginx
   tags: update-nginx-config
 
+- name: Purge Nginx cache
+  command: find {{ nginx_cache_location }} -delete
+  notify: reload nginx
+  tags: deploy, purge-nginx-cache
+
 - name: Ensure that the application site is enabled
   file: src=/etc/nginx/sites-available/{{ nginx_configuration_name }}
         dest=/etc/nginx/sites-enabled/{{ nginx_configuration_name }}
