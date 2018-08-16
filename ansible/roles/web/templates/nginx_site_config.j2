@@ -67,6 +67,8 @@ server {
     proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504;
     proxy_cache_lock on;
 
+    add_header 'Access-Control-Allow-Origin' '$scheme://{{ nginx_mobile_server_name }}';
+
     access_log {{ nginx_access_log_file }} custom_cache_log;
     error_log {{ nginx_error_log_file }};
 
