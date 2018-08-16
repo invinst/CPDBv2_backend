@@ -1,10 +1,9 @@
-from twitterbot.handlers import MentionEventHandler, FollowEventHandler
+from twitterbot.handlers import MentionEventHandler
 
 
 class ActivityEventWorker(object):
     workers = {
-        'tweet_create_events': MentionEventHandler,
-        'follow_events': FollowEventHandler
+        'tweet_create_events': MentionEventHandler
     }
 
     def process(self, event):
