@@ -1,5 +1,4 @@
 from .common import *  # NOQA
-from .common import DATABASES
 
 import environ
 
@@ -20,7 +19,4 @@ EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
 DEFAULT_FROM_EMAIL = 'info@cpdp.co'
 DOMAIN = 'https://beta.cpdp.co'
 
-DATABASES['default']['OPTIONS'] = {
-    'sslmode': 'require'
-}
 TWITTERBOT_ENV = 'prod'
