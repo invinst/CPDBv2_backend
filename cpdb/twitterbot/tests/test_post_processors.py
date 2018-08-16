@@ -31,20 +31,10 @@ class ActivityGridUpdaterTestCase(RebuildIndexMixin, TestCase):
     def test_process_coaccused_pair_response(self):
         officer1 = OfficerFactory()
         officer2 = OfficerFactory()
-        officer1_doc = {
-            'id': officer1.id,
-            'full_name': officer1.full_name,
-            'percentiles': []
-        }
-        officer2_doc = {
-            'id': officer2.id,
-            'full_name': officer2.full_name,
-            'percentiles': []
-        }
         updater = ActivityGridUpdater()
         response = {
-            'officer1': officer1_doc,
-            'officer2': officer2_doc,
+            'officer1': officer1,
+            'officer2': officer2,
             'type': 'coaccused_pair'
         }
 
@@ -57,8 +47,8 @@ class ActivityGridUpdaterTestCase(RebuildIndexMixin, TestCase):
         expect(ActivityPairCard.objects.count()).to.eq(1)
 
         updater.process({
-            'officer1': officer2_doc,
-            'officer2': officer1_doc,
+            'officer1': officer2,
+            'officer2': officer1,
             'type': 'coaccused_pair'
         })
         expect(ActivityPairCard.objects.count()).to.eq(1)
