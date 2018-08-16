@@ -4,7 +4,7 @@ from django.conf import settings
 from django.template import Context, Template
 
 from .models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR, TYPE_NOT_FOUND
-from data.models import Allegation
+from data.models import Allegation, Officer
 from twitterbot.models import TweetResponseRoundRobin
 
 
@@ -21,11 +21,12 @@ class BaseResponseBuilder:
 
             source = variables_set.get('source', ())
             url = variables_set.get('_url', '')
-            tweet_content = Template(response_template.syntax).render(Context(variables_set))
             entity = variables_set.get('_entity', None)
             officer1 = variables_set.get('officer1', None)
             officer2 = variables_set.get('officer2', None)
             coaccused = variables_set.get('coaccused', 0)
+
+            tweet_content = Template(response_template.syntax).render(Context(variables_set))
 
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
@@ -47,7 +48,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
     def get_variables_sets(self, entities, context):
         for (source, officer) in entities:
             yield {
-                'officer': officer,
+                'officer': Officer.objects.get(pk=officer['id']),
                 '_entity': officer,
                 '_url': '%s%s' % (settings.DOMAIN, '/officer/%s/' % officer['id']),
                 'source': (source, )
@@ -63,8 +64,8 @@ class CoaccusedPairResponseBuilder(BaseResponseBuilder):
                 .filter(officerallegation__officer_id=officer2['id']).distinct().count()
             if coaccused > 0:
                 yield {
-                    'officer1': officer1,
-                    'officer2': officer2,
+                    'officer1': Officer.objects.get(pk=officer1['id']),
+                    'officer2': Officer.objects.get(pk=officer2['id']),
                     'coaccused': coaccused,
                     'source': (source1, source2)
                 }
