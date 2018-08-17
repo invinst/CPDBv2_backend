@@ -23,9 +23,6 @@
 - include: setup_supervisor.yml
   tags: supervisor
 
-- include: set_file_permissions.yml
-  tags: deploy
-
 - include: setup_nginx.yml
   tags: nginx
 
