@@ -9,7 +9,6 @@ class Worker(object):
     fields = []
     sort_order = []
     name = ''
-    search_with_dates = False
 
     @property
     def _searcher(self):
@@ -32,6 +31,14 @@ class Worker(object):
             field='tags'
         )
         return query[:1].execute()
+
+
+class DateWorker(Worker):
+    date_field = ''
+
+    def query(self, term, **kwargs):
+        dates = kwargs.get('dates', [])
+        return self._searcher.filter('terms', **{self.date_field: dates})
 
 
 class ReportWorker(Worker):
@@ -147,33 +154,21 @@ class UnitOfficerWorker(Worker):
         )).sort(*self.sort_order)
 
 
-class CrWorker(Worker):
+class DateCRWorker(DateWorker):
     doc_type_klass = CrDocType
-    fields = ['crid', 'incident_date']
-    search_with_dates = True
+    date_field = 'incident_date'
 
-    def query(self, term, **kwargs):
-        dates = kwargs.get('dates', [])
-        return self._searcher.query(
-            'bool',
-            should=(
-                [Q('term', incident_date=date) for date in dates] +
-                [Q('term', crid=term)]
-            )
-        )
+
+class CRWorker(Worker):
+    doc_type_klass = CrDocType
+    fields = ['crid']
+
+
+class DateTRRWorker(DateWorker):
+    doc_type_klass = TRRDocType
+    date_field = 'trr_datetime'
 
 
 class TRRWorker(Worker):
     doc_type_klass = TRRDocType
-    fields = ['_id', 'trr_datetime']
-    search_with_dates = True
-
-    def query(self, term, **kwargs):
-        dates = kwargs.get('dates', [])
-        return self._searcher.query(
-            'bool',
-            should=(
-                [Q('term', trr_datetime=date) for date in dates] +
-                [Q('term', _id=term)]
-            )
-        )
+    fields = ['_id']

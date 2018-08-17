@@ -5,7 +5,7 @@ from robber import expect
 
 from search.services import SearchManager
 from search.tests.utils import IndexMixin
-from search.workers import CrWorker, OfficerWorker
+from search.workers import DateCRWorker, OfficerWorker
 from search.doc_types import CrDocType
 from officers.doc_types import OfficerInfoDocType
 
@@ -41,7 +41,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
 
         workers = {
             'OFFICER': OfficerWorker(),
-            'CR': CrWorker()
+            'DATE > CR': DateCRWorker(),
         }
         response = SearchManager(workers=workers).search('fu na 2017-12-27')
         expect(response).to.eq({
@@ -51,7 +51,7 @@ class SearchManagerTestCase(IndexMixin, TestCase):
                 'badge': '123',
                 'full_name': u'full name'
             }],
-            'CR': [{
+            'DATE > CR': [{
                 'id': '1',
                 'crid': '1234',
                 'incident_date': '2017-12-27'
@@ -140,12 +140,12 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         patched_query.assert_called_with('term', dates=[])
         expect(query).to.eq('abc')
 
-    @patch('search.workers.CrWorker.query', return_value='abc')
+    @patch('search.workers.DateCRWorker.query', return_value='abc')
     def test_get_search_query_for_type_with_date(self, patched_query):
         workers = {
-            'CR': CrWorker()
+            'DATE > CR': DateCRWorker()
         }
-        query = SearchManager(workers=workers).get_search_query_for_type('term 2017-12-27', 'CR')
+        query = SearchManager(workers=workers).get_search_query_for_type('term 2017-12-27', 'DATE > CR')
         patched_query.assert_called_with('term 2017-12-27', dates=['2017-12-27'])
         expect(query).to.eq('abc')
 
