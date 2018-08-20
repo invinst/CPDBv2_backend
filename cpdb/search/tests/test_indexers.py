@@ -420,6 +420,7 @@ class TRRIndexerTestCase(TestCase):
 class ZipCodeIndexerTestCase(SimpleTestCase):
     @patch('search.search_indexers.chicago_zip_codes', return_value=[])
     def test_get_query_set(self, chicago_zip_codes_mock):
+        ZipCodeIndexer().get_queryset()
         expect(chicago_zip_codes_mock).to.be.called_once()
 
     def test_extract_datum(self):
