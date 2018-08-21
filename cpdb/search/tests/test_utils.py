@@ -1,4 +1,4 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from mock import patch
 from robber import expect
@@ -6,6 +6,7 @@ from robber import expect
 from search.utils import chicago_zip_codes
 
 
+@override_settings(V1_URL='domain')
 class UtilsTestCase(SimpleTestCase):
     @patch('search.utils.zipcodes.filter_by')
     @patch('search.utils.zipcodes.list_all')
@@ -34,4 +35,4 @@ class UtilsTestCase(SimpleTestCase):
         expect(zip_codes).to.have.length(1)
         expect(zip_codes[0].pk).to.eq(0)
         expect(zip_codes[0].zip_code).to.eq('123456')
-        expect(zip_codes[0].to).to.eq('https://google.com.vn')
+        expect(zip_codes[0].to).to.eq('domain/url-mediator/session-builder?zip_code=123456')

@@ -1,4 +1,5 @@
 import zipcodes
+from django.conf import settings
 
 
 class ZipCode(object):
@@ -11,5 +12,8 @@ class ZipCode(object):
 def chicago_zip_codes():
     results = []
     for index, zip_code in enumerate(zipcodes.filter_by(zipcodes.list_all(), active=True, city='CHICAGO')):
-        results.append(ZipCode(pk=index, zip_code=zip_code['zip_code'], to='https://google.com.vn'))
+        to = '{domain}/url-mediator/session-builder?zip_code={zip_code}'.format(
+            domain=settings.V1_URL, zip_code=zip_code['zip_code']
+        )
+        results.append(ZipCode(pk=index, zip_code=zip_code['zip_code'], to=to))
     return results
