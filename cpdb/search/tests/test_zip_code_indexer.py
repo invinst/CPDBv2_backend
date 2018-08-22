@@ -13,10 +13,10 @@ class ZipCodeIndexerTestCase(SimpleTestCase):
         expect(chicago_zip_codes_mock).to.be.called_once()
 
     def test_extract_datum(self):
-        zip_code = ZipCode(pk=1, zip_code='123456', to='cpdp.co')
+        zip_code = ZipCode(pk=1, zip_code='123456', url='cpdp.co')
         expect(ZipCodeIndexer().extract_datum(zip_code)).to.eq({
             'id': 1,
             'zip_code': '123456',
-            'to': 'cpdp.co',
+            'url': 'cpdp.co',
             'tags': ['zip code']
         })

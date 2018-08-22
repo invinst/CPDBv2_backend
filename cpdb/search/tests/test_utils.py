@@ -35,4 +35,4 @@ class UtilsTestCase(SimpleTestCase):
         expect(zip_codes).to.have.length(1)
         expect(zip_codes[0].pk).to.eq(0)
         expect(zip_codes[0].zip_code).to.eq('123456')
-        expect(zip_codes[0].to).to.eq('domain/url-mediator/session-builder?zip_code=123456')
+        expect(zip_codes[0].url).to.eq('domain/url-mediator/session-builder?zip_code=123456')

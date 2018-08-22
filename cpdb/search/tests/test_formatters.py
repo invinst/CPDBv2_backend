@@ -275,9 +275,9 @@ class ZipCodeFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
             'zip_code': '666666',
-            'to': 'cpdp.com'
+            'url': 'cpdp.com'
         }))
         expect(ZipCodeFormatter().doc_format(doc)).to.eq({
             'name': '666666',
-            'to': 'cpdp.com'
+            'url': 'cpdp.com'
         })

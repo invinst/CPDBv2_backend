@@ -183,6 +183,6 @@ class ZipCodeIndexer(BaseIndexer):
         return {
             'id': datum.pk,
             'zip_code': datum.zip_code,
-            'to': datum.to,
+            'url': datum.url,
             'tags': ['zip code'],
         }
