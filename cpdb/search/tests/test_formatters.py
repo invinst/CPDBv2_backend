@@ -279,7 +279,7 @@ class ZipCodeFormatterTestCase(SimpleTestCase):
         }))
         expect(ZipCodeFormatter().doc_format(doc)).to.eq({
             'payload': {
-                'result_text': '666666',
+                'name': '666666',
                 'to': 'cpdp.com'
             }
         })
