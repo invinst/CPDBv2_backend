@@ -4,7 +4,11 @@ from rest_framework.response import Response
 
 from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
-from officers.serializers.respone_serialiers import NewTimelineSerializer, OfficerMobileSerializer
+from officers.serializers.respone_serialiers import (
+    DesktopTimelineSerializer,
+    OfficerMobileSerializer,
+    MobileTimelineSerializer,
+)
 from .doc_types import (
     OfficerInfoDocType,
     OfficerNewTimelineEventDocType,
@@ -38,7 +42,7 @@ class OfficersViewSet(viewsets.ViewSet):
         if Officer.objects.filter(pk=pk).exists():
             query = self._query_new_timeline_items(pk)
             result = query[:10000].execute()
-            return Response(NewTimelineSerializer(result, many=True).data)
+            return Response(DesktopTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     @list_route(methods=['get'], url_path='top-by-allegation')
@@ -76,5 +80,5 @@ class OfficersMobileViewSet(viewsets.ViewSet):
         if Officer.objects.filter(pk=pk).exists():
             query = self._query_new_timeline_items(pk)
             result = query[:10000].execute()
-            return Response(NewTimelineSerializer(result, many=True).data)
+            return Response(MobileTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)

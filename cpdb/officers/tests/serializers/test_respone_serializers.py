@@ -5,7 +5,7 @@ from mock import Mock
 from robber import expect
 
 from officers.serializers.respone_serialiers import (
-    NewTimelineSerializer,
+    DesktopTimelineSerializer,
     OfficerMobileSerializer,
     OfficerYearlyPercentileSerializer
 )
@@ -22,7 +22,7 @@ class NewTimelineSerializerTestCase(SimpleTestCase):
             'officer_id': 123
 
         })
-        expect(NewTimelineSerializer(obj).data).to.eq({
+        expect(DesktopTimelineSerializer(obj).data).to.eq({
             'a': 'b',
             'c': 'd'
         })
@@ -42,7 +42,7 @@ class NewTimelineSerializerTestCase(SimpleTestCase):
             'priority_sort': 40,
             'officer_id': 456
         })
-        expect(NewTimelineSerializer([obj1, obj2], many=True).data).to.eq([
+        expect(DesktopTimelineSerializer([obj1, obj2], many=True).data).to.eq([
             {'a': 'b'},
             {'c': 'd'}
         ])
