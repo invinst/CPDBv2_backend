@@ -153,8 +153,6 @@ class ZipCodeFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
         return {
-            'payload': {
-                'name': serialized_doc['zip_code'],
-                'to': serialized_doc['to']
-            }
+            'name': serialized_doc['zip_code'],
+            'to': serialized_doc['to']
         }
