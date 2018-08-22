@@ -153,8 +153,5 @@ class RankFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
         return {
-            'text': serialized_doc['rank'],
-            'payload': {
-                'name': serialized_doc['rank'],
-            }
+            'name': serialized_doc['rank'],
         }
