@@ -278,6 +278,6 @@ class RankFormatterTestCase(SimpleTestCase):
         expect(RankFormatter().doc_format(doc)).to.eq({
             'text': 'Police Officer',
             'payload': {
-                'result_text': 'Police Officer'
+                'name': 'Police Officer'
             }
         })
