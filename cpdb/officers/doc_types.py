@@ -51,7 +51,7 @@ class OfficerInfoDocType(DocType):
 
     historic_units = Nested(properties={
         'id': Integer(),
-        'searchable_unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'long_unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
         'description': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
     })
 

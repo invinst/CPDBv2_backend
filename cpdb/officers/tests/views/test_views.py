@@ -54,7 +54,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'id': 1,
                 'unit_name': 'CAND',
                 'description': '',
-                'searchable_unit_name': 'Unit CAND',
+                'long_unit_name': 'Unit CAND',
             },
             'date_of_appt': '2017-02-27',
             'date_of_resignation': '2017-12-27',
@@ -67,7 +67,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'id': 1,
                 'unit_name': 'CAND',
                 'description': '',
-                'searchable_unit_name': 'Unit CAND'
+                'long_unit_name': 'Unit CAND'
             }],
             'gender': 'Male',
             'complaint_records': {

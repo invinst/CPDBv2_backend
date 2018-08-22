@@ -40,13 +40,13 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
                 'id': 1,
                 'unit_name': '',
                 'description': '',
-                'searchable_unit_name': 'Unit'
+                'long_unit_name': 'Unit'
             },
             'historic_units': [{
                 'id': 1,
                 'unit_name': '1',
                 'description': 'Unit 1',
-                'searchable_unit_name': 'Unit 1',
+                'long_unit_name': 'Unit 1',
             }],
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2000',

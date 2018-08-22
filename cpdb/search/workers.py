@@ -92,7 +92,7 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name', 'searchable_name', 'description', 'tags']
+    fields = ['name', 'long_name', 'description', 'tags']
 
 
 class AreaWorker(Worker):
@@ -135,7 +135,7 @@ class BeatWorker(AreaWorker):
 
 class UnitOfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
-    fields = ['searchable_unit_name', 'description']
+    fields = ['long_unit_name', 'description']
     sort_order = ['-allegation_count']
 
     def query(self, term, **kwargs):

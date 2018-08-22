@@ -111,7 +111,7 @@ class UnitIndexerTestCase(TestCase):
             'to': datum.v2_to,
             'active_member_count': 1,
             'member_count': 2,
-            'searchable_name': 'Unit 011',
+            'long_name': 'Unit 011',
         })
 
 
