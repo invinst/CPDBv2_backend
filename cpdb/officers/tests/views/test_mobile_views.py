@@ -13,7 +13,8 @@ from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
-    SalaryFactory
+    SalaryFactory,
+    AttachmentFileFactory,
 )
 from trr.factories import TRRFactory
 
@@ -253,6 +254,12 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
         allegation = AllegationFactory(crid='123456')
+        AttachmentFileFactory(
+            allegation=allegation,
+            title='CRID-303350-CR',
+            file_type='document',
+            url='https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+        )
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
             officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
@@ -324,6 +331,12 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
+                'attachments': [{
+                    'file_type': 'document',
+                    'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf',
+                    'preview_image_url': None,
+                    'title': 'CRID-303350-CR'
+                }]
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
