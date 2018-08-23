@@ -799,7 +799,7 @@ class Allegation(models.Model):
         result = ''
         if self.add1 is not None:
             result = str(self.add1)
-        if self.add2 != '':
+        if self.add2 not in ['', ' ']:
             result = ' '.join(filter(None, [result, self.add2]))
         if self.city:
             result = ', '.join(filter(None, [result, self.city]))
