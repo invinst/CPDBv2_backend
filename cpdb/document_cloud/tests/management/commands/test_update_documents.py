@@ -206,23 +206,51 @@ class UpdateDocumentsCommandTestCase(TestCase):
     @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
     def test_rebuild_index_updated_allegation(self, DocumentCloudServiceMock, DocumentCloudMock):
         AllegationFactory(crid=123456)
-        DocumentCloudSearchQueryFactory(type='CR')
+        AllegationFactory(crid=789)
+        DocumentCloudSearchQueryFactory(type='CR', query='CR')
+        DocumentCloudSearchQueryFactory(type='CRID', query='CRID')
 
-        mock_search = DocumentCloudMock().documents.search
-        mock_search.return_value = [
-            MagicMock(
-                title='CRID 123456 CR',
-                id=1,
-                canonical_url='canonical_url',
-                normal_image_url='normal_image.jpg',
-                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-            )
-        ]
+        mock_search_map = {
+            'CR': [
+                MagicMock(
+                    title='CR 123456',
+                    id=1,
+                    canonical_url='canonical_url',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
+                )
+            ],
+            'CRID': [
+                MagicMock(
+                    title='CRID 789',
+                    id=2,
+                    canonical_url='canonical_url',
+                    normal_image_url='normal_image.jpg',
+                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
+                )
+            ]
+        }
+
+        def mock_search_side_effect(syntax):
+            return mock_search_map[syntax]
+
+        DocumentCloudMock().documents.search.side_effect = mock_search_side_effect
 
         mock_documentcloud_service = DocumentCloudServiceMock()
         mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
         mock_documentcloud_service.parse_link = MagicMock(return_value={})
+
+        mock_parse_crid_from_title_map = {
+            'CR': '123456',
+            'CRID': '789'
+        }
+
+        def mock_parse_crid_from_title_side_effect(_, document_type):
+            return mock_parse_crid_from_title_map[document_type]
+
+        mock_documentcloud_service.parse_crid_from_title.side_effect = mock_parse_crid_from_title_side_effect
 
         management.call_command('update_documents')
 
@@ -230,4 +258,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
 
         expect(Allegation.objects.get(crid='123456').attachment_files.count()).to.eq(1)
         cr_doc = CRDocType().search().query('term', crid=123456).execute()[0].to_dict()
-        expect(cr_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
+        expect(cr_doc['attachments'][0]['title']).to.eq('CR 123456')
+
+        expect(Allegation.objects.get(crid='789').attachment_files.count()).to.eq(1)
+        cr_doc_2 = CRDocType().search().query('term', crid=789).execute()[0].to_dict()
+        expect(cr_doc_2['attachments'][0]['title']).to.eq('CRID 789')
