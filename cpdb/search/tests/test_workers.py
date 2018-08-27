@@ -5,9 +5,9 @@ from robber import expect
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker, TRRWorker
+    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker, TRRWorker, RankWorker
 )
-from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 
@@ -219,3 +219,23 @@ class TRRWorkerTestCase(IndexMixin, SimpleTestCase):
         response = TRRWorker().search('123456', dates=['2008-12-27'])
         expect(response.hits.total).to.be.equal(2)
         expect(set([hit._id for hit in response.hits])).to.be.eq({'123456', '890'})
+
+
+class RankWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search_by_rank(self):
+        doc = RankDocType(rank='Rank')
+        doc.save()
+
+        self.refresh_index()
+
+        response = RankWorker().search('Rank')
+        expect(response.hits.total).to.equal(1)
+
+    def test_search_by_tag(self):
+        doc = RankDocType(tags='rank')
+        doc.save()
+
+        self.refresh_index()
+
+        response = RankWorker().search('rank')
+        expect(response.hits.total).to.equal(1)

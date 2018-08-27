@@ -7,7 +7,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, NameFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter, TRRFormatter,
-    AreaFormatter)
+    AreaFormatter, RankFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -267,4 +267,14 @@ class AreaFormatterTestCase(SimpleTestCase):
                 'type': 'community',
                 'result_text': 'name',
             }
+        })
+
+
+class RankFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'rank': 'Police Officer'
+        }))
+        expect(RankFormatter().doc_format(doc)).to.eq({
+            'name': 'Police Officer'
         })

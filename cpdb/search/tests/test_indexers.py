@@ -7,11 +7,12 @@ from robber import expect
 import pytz
 
 # FIXME: Be careful on this, switching this to an absolute import could failed a test
-from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
-    OfficerAllegationFactory, RacePopulationFactory)
+    OfficerAllegationFactory, RacePopulationFactory, SalaryFactory,
+)
 from trr.factories import TRRFactory
 
 from search.search_indexers import autocompletes_alias
@@ -109,7 +110,8 @@ class UnitIndexerTestCase(TestCase):
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': 1,
-            'member_count': 2
+            'member_count': 2,
+            'long_name': 'Unit 011',
         })
 
 
@@ -410,4 +412,18 @@ class TRRIndexerTestCase(TestCase):
             'id': '123456',
             'trr_datetime': '2017-07-27',
             'to': '/trr/123456/'
+        })
+
+
+class RankIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(RankIndexer().get_queryset()).to.have.length(0)
+        SalaryFactory()
+        expect(RankIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        salary = SalaryFactory(rank='Police Officer')
+        expect(RankIndexer().extract_datum(salary)).to.eq({
+            'rank': 'Police Officer',
+            'tags': ['rank']
         })
