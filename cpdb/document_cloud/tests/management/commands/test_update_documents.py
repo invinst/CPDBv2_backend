@@ -39,12 +39,12 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 call(queries[1].query)
             ])
 
-    def test_get_call_process_documentcloud_result(self):
+    def test_get_call_process_documentcloud_document(self):
         query = DocumentCloudSearchQueryFactory()
 
         with patch('document_cloud.management.commands.update_documents.DocumentCloud') as mock_documentcloud:
             with patch(
-                'document_cloud.management.commands.update_documents.Command.process_documentcloud_result',
+                'document_cloud.management.commands.update_documents.Command.process_documentcloud_document',
                 return_value=None
             ) as mock_process:
                 cleaned_result = MagicMock(title='title')
@@ -83,7 +83,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
             MagicMock(title='abc')
         ]
 
-        results = command.clean_documentcloud_results(raw_results)
+        results = command.clean_documents(raw_results)
 
         expect(results).to.eq(raw_results[:1])
 
@@ -94,7 +94,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
             mock_service().parse_crid_from_title = MagicMock(return_value=None)
 
-            command.process_documentcloud_result(MagicMock(title='new'), 'CR')
+            command.process_documentcloud_document(MagicMock(title='new'), 'CR')
 
             expect(AttachmentFile.objects.all().count()).to.eq(1)
             expect(AttachmentFile.objects.all()[0].title).to.eq('old')
@@ -107,7 +107,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
             mock_service().parse_crid_from_title = MagicMock(return_value=allegation.crid)
 
-            command.process_documentcloud_result(
+            command.process_documentcloud_document(
                 MagicMock(
                     title='new', id='id',
                     normal_image_url='normal_image.jpg',
@@ -131,7 +131,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
-            command.process_documentcloud_result(
+            command.process_documentcloud_document(
                 MagicMock(
                     title='new',
                     id=1,
@@ -157,7 +157,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
 
             expect(AttachmentFile.objects.all().count()).to.eq(0)
 
-            command.process_documentcloud_result(
+            command.process_documentcloud_document(
                 MagicMock(
                     title='new',
                     normal_image_url='normal_image.jpg',
@@ -176,7 +176,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
             mock_service.parse_crid_from_title = MagicMock(return_value=allegation.crid)
             mock_service.parse_link = MagicMock(return_value={})
 
-            command.process_documentcloud_result(
+            command.process_documentcloud_document(
                 MagicMock(
                     title='new-document',
                     id=allegation.id,
@@ -186,7 +186,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                     updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
                 ), 'CR'
             )
-            command.process_documentcloud_result(
+            command.process_documentcloud_document(
                 MagicMock(title='new - document', id=allegation.id, canonical_url='canonical_url 2',
                           normal_image_url='normal_image.jpg',
                           updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
@@ -239,7 +239,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         DocumentCloudMock().documents.search.side_effect = mock_search_side_effect
 
         mock_documentcloud_service = DocumentCloudServiceMock()
-        mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
+        mock_documentcloud_service.parse_crid_from_title = MagicMock()
         mock_documentcloud_service.parse_link = MagicMock(return_value={})
 
         mock_parse_crid_from_title_map = {
@@ -253,7 +253,6 @@ class UpdateDocumentsCommandTestCase(TestCase):
         mock_documentcloud_service.parse_crid_from_title.side_effect = mock_parse_crid_from_title_side_effect
 
         management.call_command('update_documents')
-
         cr_index_alias.write_index.refresh()
 
         expect(Allegation.objects.get(crid='123456').attachment_files.count()).to.eq(1)
@@ -263,3 +262,53 @@ class UpdateDocumentsCommandTestCase(TestCase):
         expect(Allegation.objects.get(crid='789').attachment_files.count()).to.eq(1)
         cr_doc_2 = CRDocType().search().query('term', crid=789).execute()[0].to_dict()
         expect(cr_doc_2['attachments'][0]['title']).to.eq('CRID 789')
+
+    @patch('document_cloud.management.commands.update_documents.DocumentCloud')
+    @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
+    def test_clean_not_exist_attachments(self, DocumentCloudServiceMock, DocumentCloudMock):
+        allegation = AllegationFactory(crid=123456)
+        DocumentCloudSearchQueryFactory(type='CR', query='CR')
+        AttachmentFileFactory(
+            allegation=allegation,
+            url='https://www.documentcloud.org/documents/to-be-deleted-CRID-123456-CR.html'
+        )
+        AttachmentFileFactory(
+            allegation=allegation,
+            url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html'
+        )
+
+        DocumentCloudMock().documents.search.return_value = [
+            MagicMock(
+                title='CRID 123456 CR',
+                id='789-CRID-123456-CR',
+                canonical_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                normal_image_url='normal_image.jpg',
+                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
+            ),
+            MagicMock(
+                title='CRID 123456 CR 2',
+                id='012-CRID-123456-CR-2',
+                canonical_url='https://www.documentcloud.org/documents/012-CRID-123456-CR-2.html',
+                normal_image_url='normal_image_2.jpg',
+                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
+            )
+        ]
+
+        mock_documentcloud_service = DocumentCloudServiceMock()
+        mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
+        mock_documentcloud_service.parse_link = MagicMock(return_value={})
+
+        management.call_command('update_documents')
+        cr_index_alias.write_index.refresh()
+
+        expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
+        expect(Allegation.objects.get(crid='123456').attachment_files.count()).to.eq(2)
+
+        cr_docs = CRDocType().search().query('term', crid=123456).execute()
+        cr_doc = cr_docs[0].to_dict()
+
+        expect(len(cr_doc['attachments'])).to.eq(2)
+        titles = set([attachment['title'] for attachment in cr_doc['attachments']])
+        expect(titles).to.eq({'CRID 123456 CR', 'CRID 123456 CR 2'})

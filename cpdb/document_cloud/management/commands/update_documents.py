@@ -15,9 +15,9 @@ from cr.indexers import CRIndexer
 class Command(BaseCommand):
     help = 'Update complaint documents info'
 
-    def process_documentcloud_result(self, result, document_type):
+    def process_documentcloud_document(self, cloud_document, document_type):
         documentcloud_service = DocumentcloudService()
-        crid = documentcloud_service.parse_crid_from_title(result.title, document_type)
+        crid = documentcloud_service.parse_crid_from_title(cloud_document.title, document_type)
         if not crid:
             return
 
@@ -28,27 +28,28 @@ class Command(BaseCommand):
 
         try:
             # update if current info is mismatched
-            document = AttachmentFile.objects.get(allegation=allegation, url__icontains=result.id)
-            self.update_mismatched_existing_data(document, result, document_type)
+            attachment = AttachmentFile.objects.get(allegation=allegation, url__icontains=cloud_document.id)
+            self.update_mismatched_existing_data(attachment, cloud_document, document_type)
+            return crid, attachment.id
+
         except AttachmentFile.DoesNotExist:
-            title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', result.title)
-            parsed_link = documentcloud_service.parse_link(result.canonical_url)
-            AttachmentFile.objects.create(
+            title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', cloud_document.title)
+            parsed_link = documentcloud_service.parse_link(cloud_document.canonical_url)
+            attachment = AttachmentFile.objects.create(
                 allegation=allegation,
                 title=title,
-                url=result.canonical_url,
+                url=cloud_document.canonical_url,
                 file_type=MEDIA_TYPE_DOCUMENT,
                 tag=document_type,
                 additional_info=parsed_link,
-                original_url=result.canonical_url,
-                preview_image_url=result.normal_image_url,
-                created_at=result.created_at,
-                last_updated=result.updated_at
+                original_url=cloud_document.canonical_url,
+                preview_image_url=cloud_document.normal_image_url,
+                created_at=cloud_document.created_at,
+                last_updated=cloud_document.updated_at
             )
+            return crid, attachment.id
 
-        return crid
-
-    def update_mismatched_existing_data(self, document, result, document_type):
+    def update_mismatched_existing_data(self, attachment, document, document_type):
         should_save = False
         mapping_fields = [
             ('title', 'title'),
@@ -58,22 +59,25 @@ class Command(BaseCommand):
         ]
 
         for (model_field, doc_field) in mapping_fields:
-            if getattr(document, model_field) != getattr(result, doc_field):
-                setattr(document, model_field, getattr(result, doc_field))
+            if getattr(attachment, model_field) != getattr(document, doc_field):
+                setattr(attachment, model_field, getattr(document, doc_field))
                 should_save = True
-        if document.tag != document_type:
-            document.tag = document_type
+        if attachment.tag != document_type:
+            attachment.tag = document_type
             should_save = True
 
         if should_save:
-            document.save()
+            attachment.save()
 
-    def clean_documentcloud_results(self, results):
+    def clean_documents(self, cloud_documents):
+        if not cloud_documents:
+            return []
+
         cleaned_results = OrderedDict()
 
-        for result in results:
-            if result.title not in cleaned_results:
-                cleaned_results[result.title] = result
+        for cloud_document in cloud_documents:
+            if cloud_document.title not in cleaned_results:
+                cleaned_results[cloud_document.title] = cloud_document
 
         return list(cleaned_results.values())
 
@@ -81,18 +85,19 @@ class Command(BaseCommand):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
         crids = set()
+        attachment_ids = []
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
         for document_type, syntax in search_syntaxes:
-            if not syntax:
-                continue
+            if syntax:
+                documents = self.clean_documents(client.documents.search(syntax))
+                for document in documents:
+                    result = self.process_documentcloud_document(document, document_type)
+                    if result:
+                        crid, attachment_id = result
+                        crids.add(crid)
+                        attachment_ids.append(attachment_id)
 
-            results = client.documents.search(syntax)
-
-            if results:
-                results = self.clean_documentcloud_results(results)
-                for result in results:
-                    crid = self.process_documentcloud_result(result, document_type)
-                    crids.add(crid)
+        AttachmentFile.objects.filter(url__icontains='documentcloud').exclude(id__in=attachment_ids).delete()
 
         indexer = CRIndexer(queryset=Allegation.objects.filter(crid__in=crids))
         with indexer.index_alias.indexing():
