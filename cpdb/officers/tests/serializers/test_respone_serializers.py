@@ -5,13 +5,14 @@ from mock import Mock
 from robber import expect
 
 from officers.serializers.respone_serialiers import (
-    NewTimelineSerializer,
+    DesktopTimelineSerializer,
     OfficerMobileSerializer,
-    OfficerYearlyPercentileSerializer
+    OfficerYearlyPercentileSerializer,
+    MobileTimelineSerializer
 )
 
 
-class NewTimelineSerializerTestCase(SimpleTestCase):
+class DesktopTimelineSerializerTestCase(SimpleTestCase):
     def test_serialization(self):
         obj = Mock()
         obj.to_dict = Mock(return_value={
@@ -22,7 +23,7 @@ class NewTimelineSerializerTestCase(SimpleTestCase):
             'officer_id': 123
 
         })
-        expect(NewTimelineSerializer(obj).data).to.eq({
+        expect(DesktopTimelineSerializer(obj).data).to.eq({
             'a': 'b',
             'c': 'd'
         })
@@ -42,10 +43,71 @@ class NewTimelineSerializerTestCase(SimpleTestCase):
             'priority_sort': 40,
             'officer_id': 456
         })
-        expect(NewTimelineSerializer([obj1, obj2], many=True).data).to.eq([
+        expect(DesktopTimelineSerializer([obj1, obj2], many=True).data).to.eq([
             {'a': 'b'},
             {'c': 'd'}
         ])
+
+
+class MobileTimeLineSerializerTestCase(SimpleTestCase):
+    def test_serialization(self):
+        obj = Mock()
+        obj.to_dict = Mock(return_value={
+            'a': 'b',
+            'c': 'd',
+            'date_sort': datetime.now(),
+            'priority_sort': 40,
+            'officer_id': 123,
+            'attachments': [{
+                'file_type': 'document',
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+            }]
+        })
+        expect(MobileTimelineSerializer(obj).data).to.eq({
+            'a': 'b',
+            'c': 'd',
+            'attachments': [{
+                'file_type': 'document',
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
+            }]
+        })
+
+    def test_serialization_multiple(self):
+        obj1 = Mock()
+        obj1.to_dict = Mock(return_value={
+            'a': 'b',
+            'date_sort': datetime.now(),
+            'priority_sort': 40,
+            'officer_id': 123,
+            'attachments': [{
+                'file_type': 'document',
+            }]
+        })
+        obj2 = Mock()
+        obj2.to_dict = Mock(return_value={
+            'a': 'b',
+            'c': 'd',
+            'date_sort': datetime.now(),
+            'priority_sort': 40,
+            'officer_id': 123,
+            'attachments': [{
+                'file_type': 'document',
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+            }]
+        })
+        expect(MobileTimelineSerializer([obj1, obj2], many=True).data).to.eq([{
+            'a': 'b',
+            'attachments': [{
+                'file_type': 'document',
+            }]
+        }, {
+            'a': 'b',
+            'c': 'd',
+            'attachments': [{
+                'file_type': 'document',
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
+            }]
+        }])
 
 
 class OfficerMobileSerializerTestCase(SimpleTestCase):
