@@ -797,12 +797,15 @@ class Allegation(models.Model):
         if self.old_complaint_address:
             return self.old_complaint_address
         result = ''
-        if self.add1 is not None:
-            result = str(self.add1)
-        if self.add2 not in ['', ' ']:
-            result = ' '.join(filter(None, [result, self.add2]))
-        if self.city:
-            result = ', '.join(filter(None, [result, self.city]))
+        add1 = self.add1.strip()
+        add2 = self.add2.strip()
+        city = self.city.strip()
+        if add1:
+            result = add1
+        if add2:
+            result = ' '.join(filter(None, [result, add2]))
+        if city:
+            result = ', '.join(filter(None, [result, city]))
         return result
 
     @property
