@@ -313,3 +313,12 @@ class CRIndexerTestCase(TestCase):
         rows = self.extract_data()
         expect(rows).to.have.length(1)
         expect(rows[0]['beat']).to.be.none()
+
+    def test_extract_coaccused_none_birth_year(self):
+        OfficerAllegationFactory(
+            officer__birth_year=None
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['coaccused'][0]['age']).to.be.none()
