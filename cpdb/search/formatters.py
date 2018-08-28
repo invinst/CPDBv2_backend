@@ -48,9 +48,11 @@ class UnitFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
         tags = serialized_doc.get('tags', [])
+        description = serialized_doc.get('description', '')
         return {
             'tags': tags,
-            'description': serialized_doc['description'],
+            'name': serialized_doc['name'],
+            'description': description,
             'to': serialized_doc['to']
         }
 
@@ -95,3 +97,11 @@ class ReportFormatter(SimpleFormatter):
 CRFormatter = SimpleFormatter
 TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
+
+
+class RankFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'name': serialized_doc['rank'],
+        }

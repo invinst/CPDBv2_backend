@@ -7,7 +7,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter)
+    AreaFormatter, RankFormatter)
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -109,7 +109,8 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'description': 'foo bar',
             'to': '/unit/123/',
-            'tags': ['foo']
+            'tags': ['foo'],
+            'name': '123'
         })
 
     def test_doc_format_without_tags(self):
@@ -125,7 +126,25 @@ class UnitFormatterTestCase(SimpleTestCase):
         ).to.be.eq({
             'description': 'foo bar',
             'to': '/unit/123/',
-            'tags': []
+            'tags': [],
+            'name': '123',
+        })
+
+    def test_doc_format_without_description(self):
+        doc = Mock()
+        doc.to_dict = Mock(return_value={
+            'name': '123',
+            'to': '/unit/123/',
+            'tags': ['foo']
+        })
+
+        expect(
+            UnitFormatter().doc_format(doc)
+        ).to.be.eq({
+            'description': '',
+            'to': '/unit/123/',
+            'tags': ['foo'],
+            'name': '123'
         })
 
 
@@ -225,4 +244,14 @@ class AreaFormatterTestCase(SimpleTestCase):
         expect(AreaFormatter().doc_format(doc)).to.eq({
             'name': 'name',
             'type': 'community',
+        })
+
+
+class RankFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'rank': 'Police Officer'
+        }))
+        expect(RankFormatter().doc_format(doc)).to.eq({
+            'name': 'Police Officer'
         })

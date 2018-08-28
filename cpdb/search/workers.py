@@ -1,6 +1,6 @@
 from elasticsearch_dsl.query import Q
 
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType
+from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -99,7 +99,7 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name', 'description', 'tags']
+    fields = ['name', 'long_name', 'description', 'tags']
 
 
 class AreaWorker(Worker):
@@ -142,16 +142,21 @@ class BeatWorker(AreaWorker):
 
 class UnitOfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
-    fields = ['unit_name', 'description']
+    fields = ['long_unit_name', 'description']
     sort_order = ['-allegation_count']
 
     def query(self, term, **kwargs):
-        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+        return self._searcher.query('nested', path='historic_units', query=Q(
             'multi_match',
             operator='and',
             fields=['historic_units.{}'.format(field) for field in self.fields],
             query=term
         )).sort(*self.sort_order)
+
+
+class RankWorker(Worker):
+    doc_type_klass = RankDocType
+    fields = ['rank', 'tags']
 
 
 class DateCRWorker(DateWorker):

@@ -1,10 +1,33 @@
 from rest_framework import serializers
 
+from data.utils.url_converter import get_pdf_url
 
-class NewTimelineSerializer(serializers.Serializer):
+
+class DesktopTimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
         remove_keys = ['officer_id', 'date_sort', 'priority_sort']
-        return {key: value for key, value in obj.to_dict().iteritems() if key not in remove_keys}
+        item = obj.to_dict()
+
+        for key in remove_keys:
+            item.pop(key, None)
+
+        return item
+
+
+class MobileTimelineSerializer(serializers.Serializer):
+    def to_representation(self, obj):
+        remove_keys = ['officer_id', 'date_sort', 'priority_sort']
+        item = obj.to_dict()
+
+        if 'attachments' in item:
+            for attachment in item['attachments']:
+                if 'url' in attachment:
+                    attachment['url'] = get_pdf_url(attachment['url'])
+
+        for key in remove_keys:
+            item.pop(key, None)
+
+        return item
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
