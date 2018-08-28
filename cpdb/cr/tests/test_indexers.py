@@ -13,7 +13,6 @@ from data.factories import (
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
-from data.models import Allegation
 
 
 class CRIndexerTestCase(TestCase):
@@ -22,19 +21,11 @@ class CRIndexerTestCase(TestCase):
         super(CRIndexerTestCase, self).setUp()
         self.maxDiff = None
 
-    def test_query_set(self):
-        allegation = AllegationFactory()
-        expect(list(CRIndexer().get_queryset())).to.eq([allegation])
+    def extract_data(self):
+        indexer = CRIndexer()
+        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
-    def test_passed_query_set(self):
-        AllegationFactory()
-        allegation = AllegationFactory()
-
-        expect(
-            list(CRIndexer(queryset=Allegation.objects.filter(crid=allegation.crid)).get_queryset())
-        ).to.eq([allegation])
-
-    def test_extract_datum(self):
+    def test_emit_correct_format(self):
         allegation = AllegationFactory(
             crid='12345',
             summary='Summary',
@@ -125,8 +116,10 @@ class CRIndexerTestCase(TestCase):
             url='http://foo.com/',
             preview_image_url='http://web.com/image'
         )
-
-        result = CRIndexer().extract_datum(allegation)
+        indexer = CRIndexer()
+        rows = list(indexer.get_queryset())
+        row = [obj for obj in rows if obj['crid'] == '12345'][0]
+        result = indexer.extract_datum(row)
         expect(dict(result)).to.eq({
             'crid': '12345',
             'most_common_category': {
@@ -206,3 +199,117 @@ class CRIndexerTestCase(TestCase):
                 }
             ]
         })
+
+    def test_extract_datum_none_point(self):
+        AllegationFactory(point=None)
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['point']).to.be.none()
+
+    def test_extract_datum_none_incident_date(self):
+        AllegationFactory(incident_date=None)
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['incident_date']).to.be.none()
+
+    def test_extract_datum_start_date_end_date(self):
+        allegation = AllegationFactory()
+        OfficerAllegationFactory(
+            allegation=allegation,
+            start_date=date(2016, 8, 3),
+            end_date=date(2017, 8, 3)
+        )
+
+        OfficerAllegationFactory(
+            allegation=allegation,
+            start_date=None,
+            end_date=None
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['start_date']).to.eq('2016-08-03')
+        expect(rows[0]['end_date']).to.eq('2017-08-03')
+
+    def test_extract_datum_most_common_category(self):
+        allegation = AllegationFactory()
+        OfficerAllegationFactory.create_batch(
+            2,
+            allegation=allegation,
+            allegation_category__category='Use Of Forces',
+            allegation_category__allegation_name='Sub Force'
+        )
+
+        OfficerAllegationFactory(
+            allegation=allegation,
+            allegation_category__category='Traffic',
+            allegation_category__allegation_name='Sub traffic'
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['most_common_category']).to.eq({
+            'category': 'Use Of Forces',
+            'allegation_name': 'Sub Force'
+        })
+
+    def test_extract_datum_none_most_common_category(self):
+        AllegationFactory()
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['most_common_category']).to.be.none()
+
+    def test_extract_datum_not_none_old_complaint_address(self):
+        AllegationFactory(old_complaint_address='Old town')
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['address']).to.eq('Old town')
+
+    def test_extract_datum_investigator_officer_name(self):
+        InvestigatorAllegationFactory(
+            investigator__officer=OfficerFactory(first_name='Jerome', last_name='Finnigan'),
+            investigator__first_name='German',
+            investigator__last_name='Lauren'
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['involvements'][0]['abbr_name']).to.eq('J. Finnigan')
+        expect(rows[0]['involvements'][0]['full_name']).to.eq('Jerome Finnigan')
+
+    def test_extract_datum_investigator_none_name(self):
+        InvestigatorAllegationFactory(
+            investigator__officer=None,
+            investigator__first_name=None,
+            investigator__last_name=None
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['involvements'][0]['abbr_name']).to.be.none()
+        expect(rows[0]['involvements'][0]['full_name']).to.eq('')
+
+    def test_extract_datum_investigator_investigator_name(self):
+        InvestigatorAllegationFactory(
+            investigator__officer=None,
+            investigator__first_name='German',
+            investigator__last_name='Lauren'
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['involvements'][0]['abbr_name']).to.eq('G. Lauren')
+        expect(rows[0]['involvements'][0]['full_name']).to.eq('German Lauren')
+
+    def test_extract_datum_victim_blank_gender(self):
+        VictimFactory(gender='')
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['victims'][0]['gender']).to.be.none()
+
+    def test_extract_beat_is_none(self):
+        AllegationFactory(beat=None)
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['beat']).to.be.none()

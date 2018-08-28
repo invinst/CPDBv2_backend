@@ -10,6 +10,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
 from cr.indexers import CRIndexer
+from cr.queries import AllegationQuery
 
 
 class Command(BaseCommand):
@@ -94,9 +95,11 @@ class Command(BaseCommand):
                     crid = self.process_documentcloud_result(result, document_type)
                     crids.append(crid)
 
-                indexer = CRIndexer(queryset=Allegation.objects.filter(crid__in=crids))
-                with indexer.index_alias.indexing():
-                    indexer.reindex()
+                crids = filter(None, crids)
+                if len(crids) > 0:
+                    indexer = CRIndexer(query=AllegationQuery().where(crid__in=crids))
+                    with indexer.index_alias.indexing():
+                        indexer.reindex()
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,

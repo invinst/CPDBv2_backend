@@ -1,4 +1,4 @@
-from django.test import SimpleTestCase
+from django.test import TestCase
 from django.core.management import call_command
 
 from mock import Mock, patch, mock_open
@@ -7,7 +7,7 @@ from es_index import indexer_klasses, indexer_klasses_map
 from es_index.management.commands.rebuild_index import Command
 
 
-class RebuildIndexCommandTestCase(SimpleTestCase):
+class RebuildIndexCommandTestCase(TestCase):
     def _prepare_data(self, clear=True):
         class Indexer:
             index_alias = Mock(new_index_name='new_name')
