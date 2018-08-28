@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from itertools import groupby
+from case_conversion import kebabcase
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -347,7 +348,7 @@ class Officer(TaggableModel):
 
     @property
     def v2_to(self):
-        return '/officer/%d/' % self.pk
+        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=kebabcase(self.full_name))
 
     def get_absolute_url(self):
         return '/officer/%d/' % self.pk
