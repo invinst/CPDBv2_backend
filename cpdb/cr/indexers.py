@@ -1,8 +1,5 @@
-from datetime import datetime
-
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from data.constants import GENDER_DICT, FINDINGS_DICT
 from .doc_types import CRDocType
 from .queries import AllegationQuery
 from .index_aliases import cr_index_alias

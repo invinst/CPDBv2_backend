@@ -1,4 +1,3 @@
-from decimal import Decimal
 from datetime import datetime
 
 from django.test import SimpleTestCase
