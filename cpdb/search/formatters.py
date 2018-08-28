@@ -92,6 +92,6 @@ class ReportFormatter(SimpleFormatter):
         }
 
 
-CrFormatter = SimpleFormatter
+CRFormatter = SimpleFormatter
 TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter

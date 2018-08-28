@@ -6,7 +6,7 @@ from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
-    NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CrFormatter, TRRFormatter,
+    NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
     AreaFormatter)
 
 
@@ -194,7 +194,7 @@ class CrFormatterTestCase(SimpleTestCase):
         }))
 
         expect(
-            CrFormatter().doc_format(doc)
+            CRFormatter().doc_format(doc)
         ).to.eq({
             'crid': '123456',
             'to': '/complaint/123456/'

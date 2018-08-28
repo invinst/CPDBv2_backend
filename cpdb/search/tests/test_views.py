@@ -6,7 +6,8 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
 
-from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory
+from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory
+from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
 
 
@@ -42,6 +43,74 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results).to.have.length(1)
 
         expect(results[0]['name']).to.eq(officer.full_name)
+
+    def test_search_cr_result(self):
+        AllegationFactory(crid='123').save()
+        AllegationFactory(crid='456').save()
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '123',
+        })
+
+        results = response.data['CR']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['crid']).to.eq('123')
+
+    def test_search_date_cr_result(self):
+        AllegationFactory(crid='123', incident_date='2007-12-27').save()
+        AllegationFactory(crid='456', incident_date='2008-12-27').save()
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '2008-12-27',
+        })
+
+        results = response.data['DATE > CR']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['crid']).to.eq('456')
+
+    def test_search_trr_result(self):
+        TRRFactory(id='123456').save()
+        TRRFactory(id='456789').save()
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '123456',
+        })
+
+        results = response.data['TRR']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['id']).to.eq('123456')
+
+    def test_search_date_trr_result(self):
+        TRRFactory(id='123', trr_datetime='2007-12-27').save()
+        TRRFactory(id='456', trr_datetime='2008-12-27').save()
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '2008-12-27',
+        })
+
+        results = response.data['DATE > TRR']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['id']).to.eq('456')
 
     def test_retrieve_single_with_content_type(self):
         OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)
