@@ -6,12 +6,12 @@ from search.formatters import AreaFormatter
 from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
-    OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter, ReportFormatter, CrFormatter, RankFormatter,
-    TRRFormatter
+    OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter, RankFormatter,
+    ReportFormatter, CRFormatter, TRRFormatter
 )
 from .workers import (
-    OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
-    TRRWorker, UnitOfficerWorker, CrWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker, RankWorker
+    DateCRWorker, DateTRRWorker, OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
+    TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker, RankWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -67,6 +67,8 @@ class SearchViewSet(viewsets.ViewSet):
 
 class SearchV1ViewSet(SearchViewSet):
     formatters = {
+        'DATE > CR': CRFormatter,
+        'DATE > TRR': TRRFormatter,
         'OFFICER': OfficerFormatter,
         'UNIT': UnitFormatter,
         'COMMUNITY': AreaFormatter,
@@ -76,11 +78,13 @@ class SearchV1ViewSet(SearchViewSet):
         'WARD': AreaFormatter,
         'BEAT': AreaFormatter,
         'UNIT > OFFICERS': OfficerFormatter,
-        'CR': CrFormatter,
+        'CR': CRFormatter,
         'RANK': RankFormatter,
-        'TRR': TRRFormatter,
+        'TRR': TRRFormatter
     }
     workers = {
+        'DATE > CR': DateCRWorker(),
+        'DATE > TRR': DateTRRWorker(),
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),
@@ -90,9 +94,9 @@ class SearchV1ViewSet(SearchViewSet):
         'WARD': WardWorker(),
         'BEAT': BeatWorker(),
         'UNIT > OFFICERS': UnitOfficerWorker(),
-        'CR': CrWorker(),
+        'CR': CRWorker(),
         'RANK': RankWorker(),
-        'TRR': TRRWorker(),
+        'TRR': TRRWorker()
     }
 
 
