@@ -1,6 +1,6 @@
 from elasticsearch_dsl.query import Q
 
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType
+from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -9,7 +9,6 @@ class Worker(object):
     fields = []
     sort_order = []
     name = ''
-    search_with_dates = False
 
     @property
     def _searcher(self):
@@ -32,6 +31,14 @@ class Worker(object):
             field='tags'
         )
         return query[:1].execute()
+
+
+class DateWorker(Worker):
+    date_field = ''
+
+    def query(self, term, **kwargs):
+        dates = kwargs.get('dates', [])
+        return self._searcher.filter('terms', **{self.date_field: dates})
 
 
 class ReportWorker(Worker):
@@ -92,7 +99,7 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name', 'description', 'tags']
+    fields = ['name', 'long_name', 'description', 'tags']
 
 
 class AreaWorker(Worker):
@@ -135,11 +142,11 @@ class BeatWorker(AreaWorker):
 
 class UnitOfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
-    fields = ['unit_name', 'description']
+    fields = ['long_unit_name', 'description']
     sort_order = ['-allegation_count']
 
     def query(self, term, **kwargs):
-        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+        return self._searcher.query('nested', path='historic_units', query=Q(
             'multi_match',
             operator='and',
             fields=['historic_units.{}'.format(field) for field in self.fields],
@@ -147,33 +154,26 @@ class UnitOfficerWorker(Worker):
         )).sort(*self.sort_order)
 
 
-class CrWorker(Worker):
-    doc_type_klass = CrDocType
-    fields = ['crid', 'incident_date']
-    search_with_dates = True
+class RankWorker(Worker):
+    doc_type_klass = RankDocType
+    fields = ['rank', 'tags']
 
-    def query(self, term, **kwargs):
-        dates = kwargs.get('dates', [])
-        return self._searcher.query(
-            'bool',
-            should=(
-                [Q('term', incident_date=date) for date in dates] +
-                [Q('term', crid=term)]
-            )
-        )
+
+class DateCRWorker(DateWorker):
+    doc_type_klass = CrDocType
+    date_field = 'incident_date'
+
+
+class CRWorker(Worker):
+    doc_type_klass = CrDocType
+    fields = ['crid']
+
+
+class DateTRRWorker(DateWorker):
+    doc_type_klass = TRRDocType
+    date_field = 'trr_datetime'
 
 
 class TRRWorker(Worker):
     doc_type_klass = TRRDocType
-    fields = ['_id', 'trr_datetime']
-    search_with_dates = True
-
-    def query(self, term, **kwargs):
-        dates = kwargs.get('dates', [])
-        return self._searcher.query(
-            'bool',
-            should=(
-                [Q('term', trr_datetime=date) for date in dates] +
-                [Q('term', _id=term)]
-            )
-        )
+    fields = ['_id']
