@@ -15,8 +15,8 @@ class BaseQuery(object):
         self._process_joins()
         self._process_fields()
 
-    def field_aliases(self):
-        return [field.alias() for field in self._fields]
+    def query_fields(self):
+        return self._fields
 
     @property
     def field_names_to_group(self):

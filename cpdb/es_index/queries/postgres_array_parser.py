@@ -1,6 +1,6 @@
 import string
-from datetime import datetime
 from enum import Enum, unique
+
 
 @unique
 class State(Enum):
@@ -8,11 +8,7 @@ class State(Enum):
     array = 1
     row = 2
     string = 3
-    number = 4
-    quoted_string = 5
-    decimal = 6
-    datetime = 7
-    json = 8
+    quoted_string = 4
 
 
 @unique
@@ -37,17 +33,10 @@ class PostgresArrayLexer(object):
             return True
         return False
 
-    def begin_with_number(self):
-        advanced = False
-        numbers = [str(num) for num in range(0, 10)]
-        while self.have_more() and self._source[self._end_ind] in numbers:
-            self.advance()
-            advanced = True
-        return advanced
-
     def begin_with_char(self):
         advanced = False
-        chars = string.ascii_letters + '{}'
+        numbers = ''.join([str(num) for num in range(0, 10)])
+        chars = string.ascii_letters + '{}' + numbers
         while self.have_more() and self._source[self._end_ind] in chars:
             self.advance()
             advanced = True
@@ -103,25 +92,9 @@ class PostgresArrayLexer(object):
                 else:  # pragma: no cover
                     raise self.error()
             elif self._state == State.row:
-                if self.begin_with_number():
-                    self.to_state(State.number)
-                elif self.begin_with(','):
+                if self.begin_with(','):
                     yield None
                     self.discard_token()
-                elif self.begin_with('t,'):
-                    yield True
-                    self.discard_token()
-                elif self.begin_with('t)"'):
-                    yield True
-                    self.discard_token()
-                    self.to_state(State.array)
-                elif self.begin_with('f,'):
-                    yield False
-                    self.discard_token()
-                elif self.begin_with('f)"'):
-                    yield False
-                    self.discard_token()
-                    self.to_state(State.array)
                 elif self.begin_with_char():
                     self.to_state(State.string)
                 elif self.begin_with('\\"'):
@@ -131,21 +104,6 @@ class PostgresArrayLexer(object):
                     yield None
                     self.discard_token()
                     self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
-            elif self._state == State.number:
-                if self.begin_with(','):
-                    yield int(self.token[:-1])
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield int(self.token[:-2])
-                    self.discard_token()
-                    self.to_state(State.array)
-                elif self.begin_with('.'):
-                    self.to_state(State.decimal)
-                elif self.begin_with('-'):
-                    self.to_state(State.datetime)
                 else:  # pragma: no cover
                     raise self.error()
             elif self._state == State.string:
@@ -174,34 +132,6 @@ class PostgresArrayLexer(object):
                     self.to_state(State.array)
                 else:
                     self.advance()
-            elif self._state == State.decimal:
-                if self.begin_with_number():
-                    pass
-                elif self.begin_with(','):
-                    yield float(self.token[:-1])
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield float(self.token[:-2])
-                    self.discard_token()
-                    self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
-            elif self._state == State.datetime:
-                if self.begin_with_number():
-                    pass
-                elif self.begin_with('-'):
-                    pass
-                elif self.begin_with(','):
-                    yield datetime.strptime(self.token[:-1], '%Y-%m-%d')
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield datetime.strptime(self.token[:-2], '%Y-%m-%d')
-                    self.discard_token()
-                    self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
 
 
 def parse_postgres_row_array(array):

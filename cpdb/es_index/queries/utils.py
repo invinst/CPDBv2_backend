@@ -1,4 +1,5 @@
 import inspect
+import re
 
 from django.db import models
 
@@ -22,3 +23,7 @@ def field_name_with_alias(base_table_alias, field_name):
 
 def is_model_subclass(obj):
     return inspect.isclass(obj) and issubclass(obj, models.Model)
+
+
+def clean_db_type(db_type):
+    return re.sub(r'([^\(]+)(\(.+\))?', r'\1', db_type)

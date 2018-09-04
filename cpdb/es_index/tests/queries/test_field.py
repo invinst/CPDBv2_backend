@@ -52,3 +52,7 @@ class FieldTestCase(SimpleTestCase):
 
     def test_related_table(self):
         expect(self.foreign_field.related_table).to.eq(TestFieldAuthor)
+
+    def test_kind(self):
+        expect(self.name_field.kind).to.eq('varchar')
+        expect(self.foreign_field.kind).to.eq('integer')

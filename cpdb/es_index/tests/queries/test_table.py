@@ -4,7 +4,7 @@ from django.contrib.gis.db import models
 from robber import expect
 from mock import patch
 
-from data.models import Allegation
+from data.models import Allegation, OfficerAllegation, Officer
 from es_index.queries.table import Table
 from es_index.queries.exceptions import ForeignKeyNotFoundException
 
@@ -33,7 +33,10 @@ class TableTestCase(SimpleTestCase):
         expect(self.investigator_table.name).to.eq('es_index_testtableinvestigator')
 
     def test_field_names(self):
-        expect(self.investigator_table.field_names()).to.eq(['id', 'name', 'officer_id'])
+        expect(self.investigator_table.field_names).to.eq(['id', 'name', 'officer_id'])
+
+    def test_field_kinds(self):
+        expect(self.investigator_table.field_kinds).to.eq(['serial', 'varchar', 'integer'])
 
     def test_find_foreign_key_to(self):
         expect(
@@ -81,3 +84,28 @@ class TableTestCase(SimpleTestCase):
             table=Table(Allegation),
             table_alias='allegation'
         )).to.throw_exactly(ForeignKeyNotFoundException)
+
+    def test_table_get_kind_int(self):
+        table = Table(Allegation)
+        expect(table.get_kind('id')).to.eq('serial')
+        expect(table.get_kind('beat_id')).to.eq('integer')
+
+    def test_table_get_kind_str(self):
+        table = Table(Allegation)
+        expect(table.get_kind('crid')).to.eq('varchar')
+
+    def test_table_get_kind_boolean(self):
+        table = Table(Allegation)
+        expect(table.get_kind('is_officer_complaint')).to.eq('boolean')
+
+    def test_table_get_kind_datetime(self):
+        table = Table(Allegation)
+        expect(table.get_kind('incident_date')).to.eq('timestamp with time zone')
+
+    def test_table_get_kind_date(self):
+        table = Table(OfficerAllegation)
+        expect(table.get_kind('start_date')).to.eq('date')
+
+    def test_table_get_kind_float(self):
+        table = Table(Officer)
+        expect(table.get_kind('complaint_percentile')).to.eq('numeric')
