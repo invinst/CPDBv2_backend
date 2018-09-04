@@ -118,6 +118,7 @@ class ForeignQueryField(QueryField):
         self._relation_table = Table(
             self._table.find_foreign_key_with_name(self._relation).related_table
         )
+        self.kind = self._relation_table.get_kind(self._relation_field_name)
 
     def render(self):
         return ' '.join([

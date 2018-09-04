@@ -5,7 +5,7 @@ from robber import expect
 from es_index.queries.aggregate_query import AggregateQuery
 from es_index.queries.distinct_query import DistinctQuery
 from es_index.queries.subquery import Subquery
-from es_index.queries.query_fields import RowArrayQueryField
+from es_index.queries.query_fields import RowArrayQueryField, ForeignQueryField
 from data.models import (
     PoliceWitness, Allegation, Officer, OfficerAllegation
 )
@@ -24,6 +24,7 @@ class AggregateQueryTestCase(TestCase):
             fields = {
                 'officer_id': 'officer_id',
                 'allegation_id': 'allegation_id',
+                'summary': ForeignQueryField(relation='allegation_id', field_name='summary'),
                 'first_name': 'officer.first_name',
             }
 
@@ -51,7 +52,7 @@ class AggregateQueryTestCase(TestCase):
         self.complaint_query = ComplaintQuery()
 
     def test_query_row_array(self):
-        allegation = AllegationFactory(crid='123456', id=334455)
+        allegation = AllegationFactory(crid='123456', id=334455, summary='summary')
         PoliceWitnessFactory(
             officer__id=554433, officer__first_name='James', allegation=allegation)
         rows = list(self.query.execute())
@@ -62,6 +63,7 @@ class AggregateQueryTestCase(TestCase):
                 'witnesses': [{
                     'officer_id': 554433,
                     'allegation_id': 334455,
+                    'summary': 'summary',
                     'first_name': 'James'
                 }]
             }
