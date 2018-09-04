@@ -21,18 +21,20 @@ class IndexAlias:
         return self.read_index.doc_type(doc_type)
 
     @timing_validate('Start migrating...')
-    def migrate(self, migrate_doc_types=[]):
-        if not migrate_doc_types:
+    def migrate(self, migrate_doc_types=None):
+        if migrate_doc_types == []:
             return
 
         self.write_index.open()
-        query = {}
-        query['source'] = {'index': self.name, 'type': migrate_doc_types}
-        query['dest'] = {
-            'index': self.new_index_name,
-            'version_type': 'external'
+        query = {
+            'source': {'index': self.name},
+            'dest': {'index': self.new_index_name, 'version_type': 'external'}
         }
+        if migrate_doc_types is not None:
+            query['source']['type'] = migrate_doc_types
+
         es_client.reindex(query, request_timeout=300)
+        self.write_index.refresh()
 
     @contextmanager
     def indexing(self):
@@ -44,3 +46,4 @@ class IndexAlias:
             raise
         self.read_index.delete(ignore=404)
         es_client.indices.put_alias(index=self.new_index_name, name=self.name)
+        self.write_index.refresh()

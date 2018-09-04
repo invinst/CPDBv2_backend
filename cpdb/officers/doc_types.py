@@ -7,6 +7,7 @@ from search.analyzers import autocomplete, autocomplete_search
 
 @officers_index_alias.doc_type
 class OfficerNewTimelineEventDocType(DocType):
+    crid = Keyword()
     date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
     priority_sort = Integer()
     kind = Keyword()

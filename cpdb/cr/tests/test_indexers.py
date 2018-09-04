@@ -4,35 +4,30 @@ from django.test import TestCase
 from django.contrib.gis.geos import Point
 
 from robber import expect
-from freezegun import freeze_time
 import pytz
 
-from cr.indexers import CRIndexer
+from cr.indexers import CRIndexer, CRPartialIndexer
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, AllegationFactory, AllegationCategoryFactory,
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
-from data.models import Allegation
+from cr.doc_types import CRDocType
+from cr.index_aliases import cr_index_alias
 
 
 class CRIndexerTestCase(TestCase):
-    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
-    def setUp(self):
-        super(CRIndexerTestCase, self).setUp()
-        self.maxDiff = None
-
     def test_query_set(self):
         allegation = AllegationFactory()
         expect(list(CRIndexer().get_queryset())).to.eq([allegation])
 
     def test_passed_query_set(self):
-        AllegationFactory()
-        allegation = AllegationFactory()
+        allegation_1 = AllegationFactory()
+        allegation_2 = AllegationFactory()
 
         expect(
-            list(CRIndexer(queryset=Allegation.objects.filter(crid=allegation.crid)).get_queryset())
-        ).to.eq([allegation])
+            set(CRIndexer().get_queryset())
+        ).to.eq({allegation_1, allegation_2})
 
     def test_extract_datum(self):
         allegation = AllegationFactory(
@@ -205,4 +200,48 @@ class CRIndexerTestCase(TestCase):
                     'preview_image_url': 'http://web.com/image'
                 }
             ]
+        })
+
+
+class CRPartialIndexerTestCase(TestCase):
+    def test_get_batch_querysets(self):
+        allegation_1 = AllegationFactory(crid='123')
+        allegation_2 = AllegationFactory(crid='456')
+        AllegationFactory(crid='789')
+
+        expect(set(CRPartialIndexer().get_batch_querysets(keys=['123', '456']))).to.eq({
+            allegation_1,
+            allegation_2,
+        })
+
+    def test_get_batch_update_docs_queries(self):
+        CRDocType(meta={'id': '1'}, **{
+            'crid': '123456',
+            'address': '30XX E NEW YORK ST , AURORA IL',
+            'attachments': [],
+            'beat': '3100',
+            'category_names': [],
+        }).save()
+
+        CRDocType(meta={'id': '2'}, **{
+            'crid': '789',
+            'address': '30XX E NEW YORK ST , AURORA IL',
+            'attachments': [],
+            'beat': '3100',
+            'category_names': [],
+        }).save()
+
+        CRDocType(meta={'id': '3'}, **{
+            'crid': '789123',
+            'address': 'AURORA IL',
+            'attachments': [],
+            'beat': '300',
+            'category_names': [],
+        }).save()
+        cr_index_alias.read_index.refresh()
+
+        update_docs_queries = CRPartialIndexer().get_batch_update_docs_queries(keys=['123456', '789', '432'])
+
+        expect(set(update_docs_query.crid for update_docs_query in update_docs_queries)).to.eq({
+            '123456', '789',
         })
