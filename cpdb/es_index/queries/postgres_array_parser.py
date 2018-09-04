@@ -2,6 +2,7 @@ import string
 from datetime import datetime
 from enum import Enum, unique
 
+
 @unique
 class State(Enum):
     initial = 0
