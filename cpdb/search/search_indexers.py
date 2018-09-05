@@ -1,8 +1,8 @@
 from tqdm import tqdm
 
-from data.models import PoliceUnit, Area, Allegation
+from data.models import PoliceUnit, Area, Allegation, Salary
 from data.utils.percentile import percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, ZipCodeDocType
+from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 from search.utils import chicago_zip_codes
@@ -61,11 +61,12 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
+            'long_name': 'Unit {}'.format(datum.unit_name) if datum.unit_name else 'Unit',
             'description': datum.description,
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': datum.active_member_count,
-            'member_count': datum.member_count
+            'member_count': datum.member_count,
         }
 
 
@@ -152,8 +153,11 @@ class CrIndexer(BaseIndexer):
         return Allegation.objects.all()
 
     def extract_datum(self, datum):
+        most_common_category = datum.get_most_common_category()
+
         return {
             'crid': datum.crid,
+            'category': most_common_category['category'] if most_common_category else None,
             'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
             'to': datum.v2_to
         }
@@ -169,7 +173,21 @@ class TRRIndexer(BaseIndexer):
         return {
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
+            'force_type': datum.top_force_type,
             'to': datum.v2_to
+        }
+
+
+class RankIndexer(BaseIndexer):
+    doc_type_klass = RankDocType
+
+    def get_queryset(self):
+        return Salary.objects.rank_objects()
+
+    def extract_datum(self, datum):
+        return {
+            'rank': datum.rank,
+            'tags': ['rank']
         }
 
 

@@ -5,10 +5,10 @@ from robber import expect
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
-    NeighborhoodsWorker, CommunityWorker, CrWorker, AreaWorker, TRRWorker,
-    ZipCodeWorker,
+    NeighborhoodsWorker, CommunityWorker, CRWorker, AreaWorker, TRRWorker, RankWorker,
+    DateCRWorker, DateTRRWorker, ZipCodeWorker
 )
-from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, ZipCodeDocType
+from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 
@@ -198,28 +198,71 @@ class UnitOfficerWorkerTestCase(IndexMixin, TestCase):
         expect(response.hits[1].full_name).to.be.eq('Kevin Cascone')
 
 
-class CrWorkerTestCase(IndexMixin, SimpleTestCase):
+class CRWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        CrDocType(crid='123456', incident_date='2007-12-27').save()
-        CrDocType(crid='890', incident_date='2008-12-27').save()
-        CrDocType(crid='678', incident_date='2009-12-27').save()
+        CrDocType(crid='123456').save()
+        CrDocType(crid='123789').save()
+        CrDocType(crid='789').save()
         self.refresh_index()
 
-        response = CrWorker().search('123456', dates=['2008-12-27'])
+        response = CRWorker().search('123')
         expect(response.hits.total).to.be.equal(2)
-        expect(set([hit.crid for hit in response.hits])).to.be.eq({'123456', '890'})
+        expect(set([hit.crid for hit in response.hits])).to.be.eq({'123456', '123789'})
+
+
+class DateCRWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        CrDocType(crid='123', incident_date='2007-12-27').save()
+        CrDocType(crid='456', incident_date='2008-12-27').save()
+        CrDocType(crid='789', incident_date='2008-12-27').save()
+        self.refresh_index()
+
+        response = DateCRWorker().search('', dates=['2008-12-27'])
+        expect(response.hits.total).to.be.equal(2)
+        expect(set([hit.crid for hit in response.hits])).to.be.eq({'456', '789'})
 
 
 class TRRWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        TRRDocType(_id='123456', trr_datetime='2007-12-27').save()
-        TRRDocType(_id='890', trr_datetime='2008-12-27').save()
-        TRRDocType(_id='678', trr_datetime='2009-12-27').save()
+        TRRDocType(_id='123').save()
+        TRRDocType(_id='789').save()
         self.refresh_index()
 
-        response = TRRWorker().search('123456', dates=['2008-12-27'])
+        response = TRRWorker().search('123')
+        expect(response.hits.total).to.be.equal(1)
+        expect(response.hits[0]._id).to.be.eq('123')
+
+
+class DateTRRWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        TRRDocType(_id='123', trr_datetime='2007-12-27').save()
+        TRRDocType(_id='456', trr_datetime='2008-12-27').save()
+        TRRDocType(_id='789', trr_datetime='2008-12-27').save()
+        self.refresh_index()
+
+        response = DateTRRWorker().search('', dates=['2008-12-27'])
         expect(response.hits.total).to.be.equal(2)
-        expect(set([hit._id for hit in response.hits])).to.be.eq({'123456', '890'})
+        expect(set([hit._id for hit in response.hits])).to.be.eq({'456', '789'})
+
+
+class RankWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search_by_rank(self):
+        doc = RankDocType(rank='Rank')
+        doc.save()
+
+        self.refresh_index()
+
+        response = RankWorker().search('Rank')
+        expect(response.hits.total).to.equal(1)
+
+    def test_search_by_tag(self):
+        doc = RankDocType(tags='rank')
+        doc.save()
+
+        self.refresh_index()
+
+        response = RankWorker().search('rank')
+        expect(response.hits.total).to.equal(1)
 
 
 class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):

@@ -797,12 +797,15 @@ class Allegation(models.Model):
         if self.old_complaint_address:
             return self.old_complaint_address
         result = ''
-        if self.add1 is not None:
-            result = str(self.add1)
-        if self.add2 != '':
-            result = ' '.join(filter(None, [result, self.add2]))
-        if self.city:
-            result = ', '.join(filter(None, [result, self.city]))
+        add1 = self.add1.strip()
+        add2 = self.add2.strip()
+        city = self.city.strip()
+        if add1:
+            result = add1
+        if add2:
+            result = ' '.join(filter(None, [result, add2]))
+        if city:
+            result = ', '.join(filter(None, [result, city]))
         return result
 
     @property
@@ -1097,6 +1100,18 @@ class SalaryManager(models.Manager):
                 result.append(salary)
             last_salary = salary
         return result
+
+    def rank_objects(self):
+        class Rank(object):
+            def __init__(self, pk, rank):
+                self.pk = pk
+                self.rank = rank
+
+        ranks = []
+        for index, salary in enumerate(Salary.objects.values_list('rank', flat=True).distinct()):
+            ranks.append(Rank(pk=index, rank=salary))
+
+        return ranks
 
 
 class Salary(models.Model):
