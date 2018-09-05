@@ -204,6 +204,17 @@ class CRIndexerTestCase(TestCase):
 
 
 class CRPartialIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        allegation_1 = AllegationFactory(crid='123')
+        allegation_2 = AllegationFactory(crid='456')
+        AllegationFactory(crid='789')
+
+        indexer = CRPartialIndexer(updating_keys=['123', '456'])
+        expect(set(indexer.get_queryset())).to.eq({
+            allegation_1,
+            allegation_2,
+        })
+
     def test_get_batch_querysets(self):
         allegation_1 = AllegationFactory(crid='123')
         allegation_2 = AllegationFactory(crid='456')

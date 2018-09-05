@@ -90,7 +90,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
         return CRNewTimelineSerializer(datum).data
 
 
-class CRNewTimelineEventPartialIndexer(CRNewTimelineEventIndexer, PartialIndexer):
+class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
     def get_batch_querysets(self, keys):
         return OfficerAllegation.objects.filter(
             start_date__isnull=False,
