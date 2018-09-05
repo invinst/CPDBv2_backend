@@ -32,3 +32,4 @@ moviepy==0.2.3.5
 gizeh==0.1.10
 dateparser==0.7.0
 tweepy==3.6.0
+case-conversion==2.1.0
