@@ -56,14 +56,6 @@ class SubqueryTestCase(SimpleTestCase):
     def test_field_names(self):
         expect(self.subquery.field_names).to.eq(['publisher_id', 'id', 'name'])
 
-    def test_query_body(self):
-        expect(self.subquery.query_body).to.eq(
-            '( SELECT DISTINCT ON (base_table.id) '
-            'base_table.publisher_id AS publisher_id, base_table.id AS id, author.name AS name '
-            'FROM es_index_testsubqueryarticle base_table '
-            'LEFT JOIN es_index_testsubqueryauthor author ON author.id = base_table.author_id )'
-        )
-
     def test_join_table(self):
         publisher_table = Table(TestSubqueryPublisher)
 
@@ -99,4 +91,21 @@ class SubqueryTestCase(SimpleTestCase):
             'FROM es_index_testsubqueryarticle base_table '
             'LEFT JOIN es_index_testsubqueryauthor author ON author.id = base_table.author_id ) s1 '
             'ON s1.id = comment.article_id'
+        )
+
+    def test_get_kind(self):
+        expect(self.subquery.get_kind('publisher_id')).to.eq('integer')
+
+    def test_join_table_with_table(self):
+        subquery = Subquery(TestSubqueryArticle, on='id', left_on='article_id')
+        comment_table = Table(TestSubqueryComment)
+
+        expect(
+            subquery.join_table(
+                's1',
+                comment_table,
+                'comment'
+            )
+        ).to.eq(
+            'LEFT JOIN es_index_testsubqueryarticle s1 ON s1.id = comment.article_id'
         )

@@ -544,12 +544,7 @@ class Officer(TaggableModel):
                 )
             )
         )
-        aggregate_count = 0
-        aggregate_sustained_count = 0
         results = list(query)
-        for item in results:
-            aggregate_count += item['count']
-            aggregate_sustained_count += item['sustained_count']
         return results
 
     @property

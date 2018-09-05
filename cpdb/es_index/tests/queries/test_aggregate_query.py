@@ -7,10 +7,11 @@ from es_index.queries.distinct_query import DistinctQuery
 from es_index.queries.subquery import Subquery
 from es_index.queries.query_fields import RowArrayQueryField, ForeignQueryField
 from data.models import (
-    PoliceWitness, Allegation, Officer, OfficerAllegation
+    PoliceWitness, Allegation, Officer, OfficerAllegation, Complainant
 )
 from data.factories import (
-    PoliceWitnessFactory, AllegationFactory, OfficerAllegationFactory
+    PoliceWitnessFactory, AllegationFactory, OfficerAllegationFactory,
+    ComplainantFactory
 )
 
 
@@ -42,10 +43,12 @@ class AggregateQueryTestCase(TestCase):
         class ComplaintQuery(DistinctQuery):
             base_table = OfficerAllegation
             joins = {
-                'allegation': Subquery(AllegationQuery(), on='id', left_on='allegation_id')
+                'allegation': Subquery(AllegationQuery(), on='id', left_on='allegation_id'),
+                'complainant': Subquery(Complainant, on='allegation_id', left_on='allegation_id')
             }
             fields = {
                 'crid': 'allegation.crid',
+                'race': 'complainant.race'
             }
 
         self.query = AllegationQuery()
@@ -91,6 +94,7 @@ class AggregateQueryTestCase(TestCase):
 
     def test_query_left_on_join(self):
         allegation = AllegationFactory(crid='112233')
+        ComplainantFactory(allegation=allegation, race='Black')
         OfficerAllegationFactory(allegation=allegation)
         rows = list(self.complaint_query.execute())
-        expect(rows).to.eq([{'crid': '112233'}])
+        expect(rows).to.eq([{'crid': '112233', 'race': 'Black'}])

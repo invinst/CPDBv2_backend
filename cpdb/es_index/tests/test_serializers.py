@@ -5,7 +5,7 @@ from django.test import SimpleTestCase
 from robber import expect
 
 from es_index.serializers import (
-    BaseSerializer, get, get_date, get_gender, literal
+    BaseSerializer, get, get_date, get_gender, literal, get_age_range
 )
 
 
@@ -57,6 +57,27 @@ class SerializerTestCase(SimpleTestCase):
             get_gender('gender')({'gender': 'F'})
         ).to.eq('Female')
 
+        expect(
+            get_gender('gender')({'gender': None})
+        ).to.be.none()
+
+        expect(
+            get_gender('gender', 'Unknown')({'gender': None})
+        ).to.eq('Unknown')
+
     def test_literal(self):
         expect(literal('string')({})).to.eq('string')
         expect(literal(123)({})).to.eq(123)
+
+    def test_get_age_range(self):
+        func = get_age_range([20, 30, 40], 'age')
+        expect(func({'age': 18})).to.eq('<20')
+        expect(func({'age': 20})).to.eq('20-30')
+        expect(func({'age': 22})).to.eq('20-30')
+        expect(func({'age': 34})).to.eq('30-40')
+        expect(func({'age': 46})).to.eq('40+')
+        expect(func({'age': None})).to.eq(None)
+
+        expect(
+            get_age_range([20, 30, 40], 'age', 'Unknown')({'age': None})
+        ).to.eq('Unknown')
