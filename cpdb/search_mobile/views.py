@@ -1,4 +1,4 @@
-from search.workers import OfficerWorker, TRRWorker, CrWorker
+from search.workers import OfficerWorker, TRRWorker, CRWorker, DateCRWorker, DateTRRWorker
 from search.views import SearchViewSet
 from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter
 
@@ -7,13 +7,17 @@ class SearchMobileV2ViewSet(SearchViewSet):
     lookup_field = 'text'
 
     formatters = {
+        'DATE > CR': CRFormatter,
+        'DATE > TRR': TRRFormatter,
         'OFFICER': OfficerV2Formatter,
         'CR': CRFormatter,
-        'TRR': TRRFormatter
+        'TRR': TRRFormatter,
     }
 
     workers = {
+        'DATE > CR': DateCRWorker(),
+        'DATE > TRR': DateTRRWorker(),
         'OFFICER': OfficerWorker(),
-        'CR': CrWorker(),
+        'CR': CRWorker(),
         'TRR': TRRWorker()
     }

@@ -13,21 +13,26 @@ from data.factories import (
 
 class AllegationTestCase(TestCase):
     def test_address(self):
-        allegation = AllegationFactory(add1=3000, add2='Michigan Ave', city='Chicago IL')
+        allegation = AllegationFactory(add1='3000', add2='Michigan Ave', city='Chicago IL')
+        allegation1 = AllegationFactory(add1='', add2='', city='')
+        allegation2 = AllegationFactory(add1='', add2=' ', city='')
+
         expect(allegation.address).to.eq('3000 Michigan Ave, Chicago IL')
+        expect(allegation1.address).to.eq('')
+        expect(allegation2.address).to.eq('')
 
     def test_address_missing_sub_address(self):
         allegation = AllegationFactory(add1='', add2='', city='')
         expect(allegation.address).to.eq('')
-        allegation = AllegationFactory(add1=15, add2='', city='')
+        allegation = AllegationFactory(add1='15', add2='', city='')
         expect(allegation.address).to.eq('15')
         allegation = AllegationFactory(add1='', add2='abc', city='')
         expect(allegation.address).to.eq('abc')
         allegation = AllegationFactory(add1='', add2='', city='Chicago')
         expect(allegation.address).to.eq('Chicago')
-        allegation = AllegationFactory(add1=15, add2='abc', city='')
+        allegation = AllegationFactory(add1='15', add2='abc', city='')
         expect(allegation.address).to.eq('15 abc')
-        allegation = AllegationFactory(add1=15, add2='', city='Chicago')
+        allegation = AllegationFactory(add1='15', add2='', city='Chicago')
         expect(allegation.address).to.eq('15, Chicago')
         allegation = AllegationFactory(add1='', add2='abc', city='Chicago')
         expect(allegation.address).to.eq('abc, Chicago')
