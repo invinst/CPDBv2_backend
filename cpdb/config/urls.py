@@ -82,7 +82,7 @@ urlpatterns = [
         r'embed/map|'
         r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(
-        r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
+        r'^officer/(?P<officer_id>\d+)(?P<slug>/[\-a-z]+)?/$',
         ensure_csrf_cookie(officer_view), name='officer'),
     url(r'^complaint/(?P<crid>\w+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',

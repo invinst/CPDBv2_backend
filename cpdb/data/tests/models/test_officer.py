@@ -27,7 +27,8 @@ class OfficerTestCase(TestCase):
         expect(Officer(first_name=first, last_name=last, pk=1).v1_url).to.eq(url)
 
     def test_v2_to(self):
-        expect(Officer(pk=1).v2_to).to.eq('/officer/1/')
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+        expect(officer.v2_to).to.eq('/officer/1/jerome-finnigan/')
 
     def test_get_absolute_url(self):
         expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')

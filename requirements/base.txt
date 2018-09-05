@@ -33,3 +33,4 @@ gizeh==0.1.10
 dateparser==0.7.0
 tweepy==3.6.0
 zipcodes==1.0.4
+case-conversion==2.1.0
