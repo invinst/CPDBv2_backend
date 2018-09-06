@@ -180,6 +180,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 'id': 1,
                 'unit_name': '4',
                 'description': '',
+                'long_unit_name': 'Unit 4',
             },
             'rank': '5',
             'race': 'White',
@@ -189,11 +190,13 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 {
                     'id': 1,
                     'unit_name': '1',
-                    'description': 'Unit 001'
+                    'description': 'Unit 001',
+                    'long_unit_name': 'Unit 1',
                 }, {
                     'id': 2,
                     'unit_name': '2',
-                    'description': 'Unit 002'
+                    'description': 'Unit 002',
+                    'long_unit_name': 'Unit 2',
                 }
             ],
             'gender': 'Male',
@@ -352,6 +355,7 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 'id': 1,
                 'unit_name': '4',
                 'description': '',
+                'long_unit_name': 'Unit 4',
             },
             'rank': '5',
             'race': 'White',
@@ -361,11 +365,13 @@ class OfficersIndexerTestCase(SimpleTestCase):
                 {
                     'id': 1,
                     'unit_name': '1',
-                    'description': 'Unit 001'
+                    'description': 'Unit 001',
+                    'long_unit_name': 'Unit 1',
                 }, {
                     'id': 2,
                     'unit_name': '2',
-                    'description': 'Unit 002'
+                    'description': 'Unit 002',
+                    'long_unit_name': 'Unit 2',
                 }
             ],
             'gender': 'Male',

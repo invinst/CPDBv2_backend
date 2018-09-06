@@ -2,6 +2,8 @@ from search.indices import autocompletes_alias
 from search import es_client
 from officers.index_aliases import officers_index_alias
 from officers.indexers import OfficersIndexer
+from search.search_indexers import IndexerManager
+from search.constants import DEFAULT_INDEXERS
 
 
 class IndexMixin(object):
@@ -16,6 +18,8 @@ class IndexMixin(object):
     def rebuild_index(self):
         with officers_index_alias.indexing():
             OfficersIndexer().reindex()
+
+        IndexerManager(indexers=DEFAULT_INDEXERS).rebuild_index()
 
     def refresh_index(self):
         officers_index_alias.read_index.refresh()
