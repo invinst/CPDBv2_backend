@@ -1,4 +1,5 @@
 import random
+import pytz
 
 import factory
 from faker import Faker
@@ -14,7 +15,7 @@ class TRRFactory(factory.django.DjangoModelFactory):
         model = TRR
 
     officer = factory.SubFactory(OfficerFactory)
-    trr_datetime = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    trr_datetime = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
     taser = factory.LazyFunction(lambda: fake.boolean())
     firearm_used = factory.LazyFunction(lambda: fake.boolean())
 

@@ -21,7 +21,7 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'historic_units': [Mock(**{
                 'id': 1,
                 'unit_name': '1',
-                'description': "Unit 1"
+                'description': 'Unit 1',
             })],
             'gender_display': 'Male',
             'birth_year': '1950',
@@ -39,12 +39,14 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'unit': {
                 'id': 1,
                 'unit_name': '',
-                'description': ''
+                'description': '',
+                'long_unit_name': 'Unit'
             },
             'historic_units': [{
                 'id': 1,
                 'unit_name': '1',
-                'description': "Unit 1"
+                'description': 'Unit 1',
+                'long_unit_name': 'Unit 1',
             }],
             'date_of_appt': '01-01-2010',
             'date_of_resignation': '01-01-2000',
