@@ -9,12 +9,6 @@ from es_index.indexers import BaseIndexer, es_client
 
 class IndexersTestCase(SimpleTestCase):
 
-    def test_get_queryset(self):
-        expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
-
-    def test_extract_datum(self):
-        expect(lambda: BaseIndexer().extract_datum('anything')).to.throw(NotImplementedError)
-
     def test_docs_when_extract_datum_is_generator(self):
         class MyDocType(DocType):
             pass

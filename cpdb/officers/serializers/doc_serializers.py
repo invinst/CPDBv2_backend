@@ -1,65 +1,314 @@
+from django.conf import settings
+from django.utils.text import slugify
+
 from rest_framework import serializers
 
+from es_index.serializers import BaseSerializer, get, get_gender, get_date
 from data.models import PoliceUnit
+from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
 
-class PoliceUnitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PoliceUnit
-        fields = ['id', 'unit_name', 'description', 'long_unit_name']
-
-    long_unit_name = serializers.SerializerMethodField()
-
+class UnitSerializer(BaseSerializer):
     def get_long_unit_name(self, obj):
-        return 'Unit {}'.format(obj.unit_name) if obj.unit_name else 'Unit'
+        return 'Unit %s' % obj['unit_name'] if obj['unit_name'] else 'Unit'
+
+    def __init__(self, *args, **kwargs):
+        super(UnitSerializer, self).__init__(*args, **kwargs)
+        self._fields = {
+            'id': get('unit_id'),
+            'unit_name': get('unit_name'),
+            'description': get('description'),
+            'long_unit_name': self.get_long_unit_name
+        }
 
 
-class OfficerSummarySerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    unit = PoliceUnitSerializer(source='last_unit')
-    date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
-    date_of_resignation = serializers.DateField(source='resignation_date', format='%Y-%m-%d')
-    active = serializers.SerializerMethodField()
-    rank = serializers.CharField()
-    full_name = serializers.CharField()
-    race = serializers.CharField()
-    badge = serializers.CharField(source='current_badge')
-    historic_badges = serializers.ListField(child=serializers.CharField())
-    historic_units = PoliceUnitSerializer(many=True, read_only=True)
-    gender = serializers.CharField(source='gender_display')
-    complaint_records = serializers.SerializerMethodField()
-    birth_year = serializers.IntegerField()
-    current_salary = serializers.IntegerField()
+class OfficerSerializer(BaseSerializer):
+    _unit_serializer = UnitSerializer()
+
+    def get_full_name(self, obj):
+        return ' '.join([obj['first_name'], obj['last_name']])
+
+    def get_unit(self, obj):
+        histories = [
+            history for history in obj['history']
+            if history['end_date'] is not None
+        ]
+        if len(histories) == 0:
+            return None
+        last_history = max(histories, key=lambda o: o['end_date'])
+        return self._unit_serializer.serialize(last_history)
+
+    def get_current_badge(self, obj):
+        badge_numbers = obj['badgenumber']
+        current_badge = [badge for badge in badge_numbers if badge['current']]
+        if len(current_badge) == 1:
+            return current_badge[0]['star']
+        return ''
+
+    def get_historic_badges(self, obj):
+        badge_numbers = obj['badgenumber']
+        return [badge['star'] for badge in badge_numbers if not badge['current']]
+
+    def get_historic_units(self, obj):
+        return [
+            self._unit_serializer.serialize(unit)
+            for unit in sorted(obj['history'], key=lambda x: x['effective_date'], reverse=True)
+        ]
+
+    def get_active(self, obj):
+        return dict(ACTIVE_CHOICES).get(obj['active'], ACTIVE_UNKNOWN_CHOICE)
+
+    def _count_for_facet_year(self, entries_dict, facet_value, year, sustained_count_step):
+        if facet_value in entries_dict:
+            entries_dict[facet_value]['count'] += 1
+            entries_dict[facet_value]['sustained_count'] += sustained_count_step
+            if year in entries_dict[facet_value]['items']:
+                entries_dict[facet_value]['items'][year]['count'] += 1
+                entries_dict[facet_value]['items'][year]['sustained_count'] += sustained_count_step
+            else:
+                entries_dict[facet_value]['items'][year] = {
+                    'count': 1,
+                    'sustained_count': sustained_count_step
+                }
+        else:
+            entries_dict[facet_value] = {
+                'count': 1,
+                'sustained_count': sustained_count_step,
+                'items': {
+                    year: {
+                        'count': 1,
+                        'sustained_count': sustained_count_step,
+                    }
+                }
+            }
+
+    def get_complainant_aggregation(self, obj, facet_name, facet):
+        entries_dict = dict()
+
+        for allegation in obj['allegations']:
+            for complaint in allegation['complaints']:
+                if complaint['officer_id'] != obj['id']:
+                    continue
+
+                if complaint['start_date'] is not None:
+                    year = complaint['start_date'].year
+                else:
+                    year = None
+                sustained_count_step = 1 if complaint['final_finding'] == 'SU' else 0
+                if len(allegation['complainants']) == 0:
+                    self._count_for_facet_year(entries_dict, 'Unknown', year, sustained_count_step)
+                    continue
+
+                for complainant in allegation['complainants']:
+                    facet_value = complainant[facet]
+                    self._count_for_facet_year(entries_dict, facet_value, year, sustained_count_step)                    
+
+        return {
+            'name': facet_name,
+            'entries': [
+                {
+                    'name': k,
+                    'count': v['count'],
+                    'sustained_count': v['sustained_count'],
+                    'items': [
+                        {
+                            'name': k,
+                            'year': ki,
+                            'count': vi['count'],
+                            'sustained_count': vi['sustained_count']
+                        } for ki, vi in v['items'].items()
+                    ]
+                } for k, v in entries_dict.items()
+            ]
+        }
+
+    def complaint_items(self, obj):
+        items_dict = dict()
+        for allegation in obj['allegations']:
+            for incident in allegation['complaints']:
+                if incident['start_date'] is None or incident['officer_id'] != obj['id']:
+                    continue
+                year = incident['start_date'].year
+                sustained_count_step = 1 if incident['final_finding'] == 'SU' else 0
+                if year in items_dict:
+                    items_dict[year]['count'] += 1
+                    items_dict[year]['sustained_count'] += sustained_count_step
+                else:
+                    items_dict[year] = {
+                        'count': 1,
+                        'sustained_count': sustained_count_step
+                    }
+        return items_dict
+
+    def get_allegation_category_aggregation(self, obj):
+        entries_dict = dict()
+        for allegation in obj['allegations']:
+            for complaint in allegation['complaints']:
+                if complaint['officer_id'] != obj['id']:
+                    continue
+
+                if complaint['start_date'] is not None:
+                    year = complaint['start_date'].year
+                else:
+                    year = None
+                sustained_count_step = 1 if complaint['final_finding'] == 'SU' else 0
+                category = complaint['category']
+                if category is None:
+                    category = 'Unknown'
+
+                if category in entries_dict:
+                    entries_dict[category]['count'] += 1
+                    entries_dict[category]['sustained_count'] += sustained_count_step
+                    if year in entries_dict[category]['items']:
+                        entries_dict[category]['items'][year]['count'] += 1
+                        entries_dict[category]['items'][year]['sustained_count'] += sustained_count_step
+                    else:
+                        entries_dict[category]['items'][year] = {
+                            'count': 1,
+                            'sustained_count': sustained_count_step
+                        }
+                else:
+                    entries_dict[category] = {
+                        'count': 1,
+                        'sustained_count': sustained_count_step,
+                        'items': {
+                            year: {
+                                'count': 1,
+                                'sustained_count': sustained_count_step,
+                            }
+                        }
+                    }
+
+        return {
+            'name': 'category',
+            'entries': [
+                {
+                    'name': k,
+                    'count': v['count'],
+                    'sustained_count': v['sustained_count'],
+                    'items': [
+                        {
+                            'name': k,
+                            'year': ki,
+                            'count': vi['count'],
+                            'sustained_count': vi['sustained_count']
+                        } for ki, vi in v['items'].items()
+                    ]
+                } for k, v in entries_dict.items()
+            ]
+        }
 
     def get_complaint_records(self, obj):
         return {
-            'count': obj.allegation_count,
-            'sustained_count': obj.sustained_count,
+            'count': obj['allegation_count'],
+            'sustained_count': obj['sustained_count'],
             'facets': [
-                {'name': 'category', 'entries': obj.complaint_category_aggregation},
-                {'name': 'complainant race', 'entries': obj.complainant_race_aggregation},
-                {'name': 'complainant age', 'entries': obj.complainant_age_aggregation},
-                {'name': 'complainant gender', 'entries': obj.complainant_gender_aggregation},
+                self.get_allegation_category_aggregation(obj),
+                self.get_complainant_aggregation(obj, 'complainant race', 'race'),
+                self.get_complainant_aggregation(obj, 'complainant age', 'age'),
+                self.get_complainant_aggregation(obj, 'complainant gender', 'gender')
             ],
-            'items': obj.total_complaints_aggregation
+            'items': [
+                {
+                    'year': k,
+                    'count': v['count'],
+                    'sustained_count': v['sustained_count']
+                } for k, v in self.complaint_items(obj).items()
+            ]
         }
 
-    def get_active(self, obj):
-        return obj.get_active_display()
+    def get_honorable_mention_count(self, obj):
+        count = 0
+        for award in obj['awards']:
+            if 'Honorable Mention' in award['award_type']:
+                count += 1
+        return count
 
+    def get_civilian_compliment_count(self, obj):
+        count = 0
+        for award in obj['awards']:
+            if award['award_type'] == 'Complimentary Letter':
+                count += 1
+        return count
 
-class OfficerMetricsSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    allegation_count = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField()
-    honorable_mention_count = serializers.IntegerField()
-    sustained_count = serializers.IntegerField()
-    unsustained_count = serializers.IntegerField()
-    discipline_count = serializers.IntegerField()
-    civilian_compliment_count = serializers.IntegerField()
-    trr_count = serializers.IntegerField()
-    major_award_count = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
+    def get_major_award_count(self, obj):
+        count = 0
+        for award in obj['awards']:
+            if award['award_type'].lower() in MAJOR_AWARDS:
+                count += 1
+        return count
+
+    def get_has_visual_token(self, obj):
+        return all([
+            percentile is not None for percentile in [
+                obj['civilian_allegation_percentile'],
+                obj['internal_allegation_percentile'],
+                obj['trr_percentile']
+            ]
+        ])
+
+    def get_url(self, obj):
+        return '{domain}/officer/{slug}/{pk}'.format(
+            domain=settings.V1_URL, slug=slugify(self.get_full_name(obj)), pk=obj['id']
+        )
+
+    def get_to(self, obj):
+        return '/officer/%d/' % obj['id']
+
+    def get_current_salary(self, obj):
+        try:
+            current_salary_obj = max(obj['salaries'], key=lambda x: x['year'])
+            return current_salary_obj['salary']
+        except ValueError:
+            return None
+
+    def get_coaccusals(self, obj):
+        return [
+            {'id': key, 'coaccusal_count': val}
+            for key, val in obj['coaccusals'].items()
+        ]
+
+    def get_current_allegation_percentile(self, obj):
+        if obj['percentile_allegation'] is None:
+            return None
+
+        return '%.4f' % obj['percentile_allegation']
+
+    def __init__(self, *args, **kwargs):
+        super(OfficerSerializer, self).__init__(*args, **kwargs)
+        self._fields = {
+            'id': get('id'),
+            'full_name': self.get_full_name,
+            'unit': self.get_unit,
+            'rank': get('rank'),
+            'race': get('race'),
+            'badge': self.get_current_badge,
+            'historic_badges': self.get_historic_badges,
+            'historic_units': self.get_historic_units,
+            'gender': get_gender('gender'),
+            'date_of_appt': get_date('date_of_appt'),
+            'date_of_resignation': get_date('date_of_resignation'),
+            'active': self.get_active,
+            'birth_year': get('birth_year'),
+            'complaint_records': self.get_complaint_records,
+            'allegation_count': get('allegation_count'),
+            'complaint_percentile': get('complaint_percentile'),
+            'honorable_mention_percentile': get('honorable_mention_percentile'),
+            'honorable_mention_count': self.get_honorable_mention_count,
+            'has_visual_token': self.get_has_visual_token,
+            'sustained_count': get('sustained_count'),
+            'discipline_count': get('discipline_count'),
+            'civilian_compliment_count': self.get_civilian_compliment_count,
+            'trr_count': get('trr_count'),
+            'major_award_count': self.get_major_award_count,
+            'tags': get('tags'),
+            'to': self.get_to,
+            'url': self.get_url,
+            'current_salary': self.get_current_salary,
+            'unsustained_count': get('unsustained_count'),
+            'coaccusals': self.get_coaccusals,
+            'current_allegation_percentile': self.get_current_allegation_percentile
+        }
 
 
 class OfficerYearlyPercentileSerializer(serializers.Serializer):
@@ -78,17 +327,6 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
 class CoaccusalSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     coaccusal_count = serializers.IntegerField()
-
-
-class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
-    percentiles = OfficerYearlyPercentileSerializer(many=True, read_only=True)
-    to = serializers.CharField(source='v2_to')
-    url = serializers.CharField(source='v1_url')
-    tags = serializers.ListField(child=serializers.CharField())
-    coaccusals = CoaccusalSerializer(many=True, read_only=True)
-    current_allegation_percentile = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4, source='percentile_allegation')
-    has_visual_token = serializers.BooleanField()
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):

@@ -20,7 +20,7 @@ class CRIndexer(BaseIndexer):
         if query is not None:
             self.query = query
 
-    def get_queryset(self):
+    def get_query(self):
         return self.query.execute()
 
     def extract_datum(self, datum):

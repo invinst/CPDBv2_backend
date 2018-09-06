@@ -23,7 +23,7 @@ class CRIndexerTestCase(TestCase):
 
     def extract_data(self):
         indexer = CRIndexer()
-        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
+        return [indexer.extract_datum(obj) for obj in indexer.get_query()]
 
     def test_emit_correct_format(self):
         allegation = AllegationFactory(
@@ -117,7 +117,7 @@ class CRIndexerTestCase(TestCase):
             preview_image_url='http://web.com/image'
         )
         indexer = CRIndexer()
-        rows = list(indexer.get_queryset())
+        rows = list(indexer.get_query())
         row = [obj for obj in rows if obj['crid'] == '12345'][0]
         result = indexer.extract_datum(row)
         expect(dict(result)).to.eq({

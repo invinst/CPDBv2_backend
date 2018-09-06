@@ -1,3 +1,5 @@
+import itertools
+
 from django.db.models import F, Q
 
 from tqdm import tqdm
@@ -10,10 +12,7 @@ from data.constants import (
 from data.models import Officer, OfficerAllegation, OfficerHistory, Award, Salary
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
-from officers.serializers.doc_serializers import (
-    OfficerYearlyPercentileSerializer,
-    OfficerInfoSerializer,
-)
+from es_index.serializers import get_gender, get_age_range
 from trr.models import TRR
 from .doc_types import (
     OfficerNewTimelineEventDocType,
@@ -28,7 +27,12 @@ from officers.serializers.doc_serializers import (
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer,
+    OfficerYearlyPercentileSerializer,
     RankChangeNewTimelineSerializer
+)
+from .queries import OfficerQuery, AllegationQuery
+from .serializers.doc_serializers import (
+    OfficerSerializer
 )
 
 app_name = __name__.split('.')[0]
@@ -38,6 +42,9 @@ app_name = __name__.split('.')[0]
 class OfficersIndexer(BaseIndexer):
     doc_type_klass = OfficerInfoDocType
     index_alias = officers_index_alias
+    serializer = OfficerSerializer()
+    query = OfficerQuery()
+    allegation_query = AllegationQuery()
 
     def __init__(self):
         super(OfficersIndexer, self).__init__()
@@ -47,10 +54,37 @@ class OfficersIndexer(BaseIndexer):
     def get_queryset(self):
         return Officer.objects.all()
 
+    def get_query(self):
+        allegations = self.allegation_query.execute()
+        self.allegation_dict = dict()
+        self.coaccusals = dict()
+        transform_gender = get_gender('gender', 'Unknown')
+        transform_age = get_age_range([20, 30, 40, 50], 'age', 'Unknown')
+        for allegation in allegations:
+            for complainant in allegation['complainants']:
+                complainant['gender'] = transform_gender(complainant)
+                complainant['age'] = transform_age(complainant)
+                if complainant['race'] == '':
+                    complainant['race'] = 'Unknown'
+            for complaint in allegation['complaints']:
+                self.allegation_dict.setdefault(complaint['officer_id'], []).append(allegation)
+            for complaint_a, complaint_b in itertools.combinations(allegation['complaints'], 2):
+                officer_id_a = complaint_a['officer_id']
+                officer_id_b = complaint_b['officer_id']
+                dict_a = self.coaccusals.setdefault(officer_id_a, dict())
+                dict_a[officer_id_b] = dict_a.get(officer_id_b, 0) + 1
+                dict_b = self.coaccusals.setdefault(officer_id_b, dict())
+                dict_b[officer_id_a] = dict_b.get(officer_id_a, 0) + 1
+        return self.query.execute()
+
     def extract_datum(self, datum):
-        if datum.id in self.top_percentile_dict:
-            setattr(datum, 'percentile_allegation', self.top_percentile_dict[datum.id].percentile_allegation)
-        return OfficerInfoSerializer(datum).data
+        datum['allegations'] = self.allegation_dict.get(datum['id'], [])
+        datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())
+        if datum['id'] in self.top_percentile_dict:
+            datum['percentile_allegation'] = self.top_percentile_dict[datum['id']].percentile_allegation
+        else:
+            datum['percentile_allegation'] = None
+        return self.serializer.serialize(datum)
 
 
 @register_indexer(app_name)

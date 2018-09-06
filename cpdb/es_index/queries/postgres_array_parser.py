@@ -33,24 +33,6 @@ class PostgresArrayLexer(object):
             return True
         return False
 
-    def begin_with_char(self):
-        advanced = False
-        numbers = ''.join([str(num) for num in range(0, 10)])
-        chars = string.ascii_letters + '{}' + numbers
-        while self.have_more() and self._source[self._end_ind] in chars:
-            self.advance()
-            advanced = True
-        return advanced
-
-    def begin_with_inner_char(self):
-        advanced = False
-        numbers = ''.join([str(num) for num in range(0, 10)])
-        chars = string.ascii_letters + '/:-._\'?&=%;{}' + numbers
-        while self.have_more() and self._source[self._end_ind] in chars:
-            self.advance()
-            advanced = True
-        return advanced
-
     def advance(self, pos=1):
         self._end_ind += pos
 
@@ -66,7 +48,7 @@ class PostgresArrayLexer(object):
 
     def error(self):  # pragma: no cover
         return Exception(
-            '%d: Encountered unanticipated chars %s (whole string was "%s")' % (
+            '%s: Encountered unanticipated chars %s (whole string was "%s")' % (
                 self._state, self._source[self._begin_ind: self._end_ind + 1], self._source
             )
         )
@@ -95,8 +77,6 @@ class PostgresArrayLexer(object):
                 if self.begin_with(','):
                     yield None
                     self.discard_token()
-                elif self.begin_with_char():
-                    self.to_state(State.string)
                 elif self.begin_with('\\"'):
                     self.discard_token()
                     self.to_state(State.quoted_string)
@@ -104,8 +84,9 @@ class PostgresArrayLexer(object):
                     yield None
                     self.discard_token()
                     self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
+                else:
+                    self.advance()
+                    self.to_state(State.string)
             elif self._state == State.string:
                 if self.begin_with(','):
                     yield unicode(self.token[:-1], 'utf8')
@@ -115,10 +96,8 @@ class PostgresArrayLexer(object):
                     yield unicode(self.token[:-2], 'utf8')
                     self.discard_token()
                     self.to_state(State.array)
-                elif self.begin_with_inner_char():
-                    pass
-                else:  # pragma: no cover
-                    raise self.error()
+                else:
+                    self.advance()
             elif self._state == State.quoted_string:
                 if self.begin_with('\\"\\"'):
                     pass

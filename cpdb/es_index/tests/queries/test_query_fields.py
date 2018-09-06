@@ -245,7 +245,7 @@ class RowArrayQueryFieldTestCase(SimpleTestCase):
             ('numeric', '1.2', 1.2),
             ('boolean', 't', True),
             ('boolean', 'f', False),
-            ('boolean', None, None),
+            ('boolean', '', None),
             ('date', '2016-08-14', date(2016, 8, 14)),
             ('integer', '12', 12),
             ('serial', '12', 12),

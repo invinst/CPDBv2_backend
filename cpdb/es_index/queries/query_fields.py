@@ -1,4 +1,5 @@
 from datetime import datetime
+import dateutil.parser
 import json
 
 from django.contrib.gis.geos import Point
@@ -27,6 +28,7 @@ class QueryField(object):
                 self._joins[k] = Table(v)
         if not hasattr(self, '_source_table_name'):
             self._source_table_name = table_alias
+        if self._source_table_name == table_alias:
             self._source_table = self._table
         else:
             self._source_table = self._joins[self._source_table_name]
@@ -202,6 +204,8 @@ class RowArrayQueryField(QueryField):
         elif kind == 'jsonb':
             string = string.replace('\\"\\"', '"')
             return json.loads(string)
+        elif kind == 'timestamp with time zone':
+            return dateutil.parser.parse(string)
         else:
             raise NotImplementedError(
                 'Cannot yet serialize subfield of kind "%s", value was "%s"' % (

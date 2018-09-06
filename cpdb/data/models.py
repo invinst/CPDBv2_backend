@@ -293,10 +293,6 @@ class Officer(TaggableModel):
         return [o.unit for o in self.officerhistory_set.all().order_by('-effective_date')]
 
     @property
-    def trr_count(self):
-        return self.trr_set.count()
-
-    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star
@@ -369,16 +365,6 @@ class Officer(TaggableModel):
         return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
             cr_threshold=cr_threshold
         )]
-
-    @property
-    def has_visual_token(self):
-        return all([
-            percentile is not None for percentile in [
-                self.civilian_allegation_percentile,
-                self.internal_allegation_percentile,
-                self.trr_percentile
-            ]
-        ])
 
     @property
     def visual_token_png_url(self):
@@ -529,23 +515,6 @@ class Officer(TaggableModel):
             for obj in query if obj['count'] > 0
         ]
         return Officer._group_and_sort_aggregations(data)
-
-    @property
-    def total_complaints_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
-        query = query.annotate(year=ExtractYear('start_date'))
-        query = query.values('year').order_by('year').annotate(
-            count=models.Count('id'),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
-        )
-        results = list(query)
-        return results
 
     @property
     def major_award_count(self):
