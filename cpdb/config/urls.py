@@ -19,6 +19,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.generic.base import RedirectView
 
 from rest_framework import routers
 
@@ -88,6 +89,7 @@ urlpatterns = [
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
+    url(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:  # pragma: no cover
