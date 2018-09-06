@@ -13,5 +13,5 @@
   become_user: "{{ deploy_user }}"
   cron: name="update documents"
     special_time=daily
-    job="/bin/bash -c 'source {{ project_root_path }}/bin/activate_env.sh && {{ project_root_path }}/cpdb/manage.py update_documents'"
+    job="/bin/bash -c 'source {{ project_root_path }}/bin/activate_env.sh && DJANGO_SETTINGS_MODULE={{django_settings_module}} {{ project_root_path }}/cpdb/manage.py update_documents'"
   when: update_documents_daily

@@ -13,13 +13,13 @@ def embed_view(request, path=None):
     return render(request, 'index.html')
 
 
-def officer_view(request, officer_id=None, subpath=None):
+def officer_view(request, officer_id=None, slug=None):
     try:
         alias = OfficerAlias.objects.get(old_officer_id=officer_id)
         return redirect(
             reverse(
                 'officer',
-                kwargs={'officer_id': alias.new_officer_id, 'subpath': '' if subpath is None else subpath}
+                kwargs={'officer_id': alias.new_officer_id, 'slug': '' if slug is None else slug}
             ),
             permanent=True
         )
