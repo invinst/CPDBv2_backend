@@ -1,5 +1,4 @@
 from .common import *  # NOQA
-from .common import DATABASES
 
 import environ
 
