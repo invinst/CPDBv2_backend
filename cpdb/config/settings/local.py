@@ -15,6 +15,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 MEDIA_ROOT = '/www/media/'
 DOMAIN = 'http://localhost:9966'
+V1_URL = 'http://localhost:8001'
 
 DEBUG = True
 

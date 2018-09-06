@@ -9,7 +9,7 @@ from data.constants import (
 )
 from data.models import Officer, OfficerAllegation, OfficerHistory, Award, Salary
 from es_index import register_indexer
-from es_index.indexers import BaseIndexer
+from es_index.indexers import BaseIndexer, PartialIndexer
 from officers.serializers.doc_serializers import (
     OfficerYearlyPercentileSerializer,
     OfficerInfoSerializer,
@@ -88,6 +88,19 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return CRNewTimelineSerializer(datum).data
+
+
+class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
+    def get_batch_queryset(self, keys):
+        return OfficerAllegation.objects.filter(
+            start_date__isnull=False,
+            allegation__crid__in=keys)
+
+    def get_postgres_count(self, keys):
+        return self.get_batch_queryset(keys).count()
+
+    def get_batch_update_docs_queries(self, keys):
+        return self.doc_type_klass.search().query('terms', crid=keys).filter('term', kind='CR')
 
 
 @register_indexer(app_name)

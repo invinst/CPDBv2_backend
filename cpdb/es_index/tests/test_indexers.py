@@ -1,10 +1,11 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
-from elasticsearch_dsl import DocType
+from elasticsearch_dsl import DocType, Keyword
 from robber import expect
 from mock import Mock, patch
 
-from es_index.indexers import BaseIndexer, es_client
+from es_index.indexers import BaseIndexer, es_client, PartialIndexer
+from es_index.index_aliases import IndexAlias
 
 
 class IndexersTestCase(SimpleTestCase):
@@ -172,3 +173,199 @@ class IndexersTestCase(SimpleTestCase):
         expect(mock_write_index.settings.called).to.be.true()
         expect(mock_init.called).to.be.true()
         expect(mock_bulk.calledWith(es_client, [1]))
+
+
+my_index_alias = IndexAlias('my_alias')
+
+
+@my_index_alias.doc_type
+class MyDocType(DocType):
+    id = Keyword()
+
+    class Meta:
+        doc_type = 'my_doc_type'
+
+
+class PartialIndexerTestCase(TestCase):
+    def setUp(self):
+        my_index_alias.read_index.delete(ignore=404)
+        my_index_alias.read_index.create(ignore=400)
+
+    def test_get_batch_queryset(self):
+        expect(lambda: PartialIndexer().get_batch_queryset([])).to.throw(NotImplementedError)
+
+    def test_get_batch_update_docs_queries(self):
+        expect(lambda: PartialIndexer().get_batch_update_docs_queries([])).to.throw(NotImplementedError)
+
+    def test_batch_querysets(self):
+        class MyPartialIndexer(PartialIndexer):
+            batch_size = 2
+
+            def get_batch_queryset(self, keys):
+                return keys
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        expect(list(my_indexer.batch_querysets)).to.eq([[1, 2], [3]])
+
+    def test_batch_update_docs_queries(self):
+        class MyPartialIndexer(PartialIndexer):
+            batch_size = 2
+
+            def get_batch_update_docs_queries(self, keys):
+                return keys
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        expect(list(my_indexer.batch_update_docs_queries)).to.eq([[1, 2], [3]])
+
+    def test_get_queryset(self):
+        class MyPartialIndexer(PartialIndexer):
+            batch_size = 2
+
+            def get_batch_queryset(self, keys):
+                return keys
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        expect(list(my_indexer.get_queryset())).to.eq([1, 2, 3])
+
+    def test_validate_updated_docs(self):
+        class MyPartialIndexer(PartialIndexer):
+            batch_size = 2
+
+            def get_postgres_count(self, keys):
+                return len(keys)
+
+            def get_batch_update_docs_queries(self, keys):
+                return Mock(count=Mock(return_value=len(keys)))
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        expect(my_indexer.validate_updated_docs()).to.be.none()
+
+    def test_validate_updated_docs_raise_ValueError(self):
+        class MyPartialIndexer(PartialIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+            batch_size = 2
+
+            def get_postgres_count(self, keys):
+                return len(keys)
+
+            def get_batch_update_docs_queries(self, keys):
+                return Mock(count=Mock(return_value=1))
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        expect(lambda: my_indexer.validate_updated_docs()).to.throw(ValueError)
+
+    def test_delete_existing_docs(self):
+        class MyPartialIndexer(PartialIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+            batch_size = 2
+
+            def get_batch_update_docs_queries(self, keys):
+                return self.doc_type_klass.search().query('terms', id=keys)
+
+        MyDocType(id=1).save()
+        MyDocType(id=2).save()
+        my_index_alias.read_index.refresh()
+
+        my_indexer = MyPartialIndexer(updating_keys=[1])
+
+        expect(MyDocType.search().count()).to.equal(2)
+
+        my_index_alias.write_index.create(ignore=400)
+        my_indexer.index_alias.migrate()
+        expect(my_index_alias.write_index.search().count()).to.equal(2)
+
+        my_indexer.delete_existing_docs()
+
+        expect(my_index_alias.write_index.search().count()).to.equal(1)
+        expect(my_index_alias.write_index.search().query('term', id=2).count()).to.equal(1)
+
+        my_index_alias.write_index.delete(ignore=404)
+
+    def test_reindex_raise_ValueError_first(self):
+        class MyPartialIndexer(PartialIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+            batch_size = 2
+
+            def get_postgres_count(self, keys):
+                return len(keys)
+
+            def get_batch_update_docs_queries(self, keys):
+                return Mock(count=Mock(return_value=1))
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
+        my_indexer.create_mapping = Mock()
+        my_indexer.migrate = Mock()
+        my_indexer.delete_existing_docs = Mock()
+        my_indexer.add_new_data = Mock()
+
+        expect(lambda: my_indexer.reindex()).to.throw(ValueError)
+
+        expect(my_indexer.create_mapping).not_to.be.called()
+        expect(my_indexer.migrate).not_to.be.called()
+        expect(my_indexer.delete_existing_docs).not_to.be.called()
+        expect(my_indexer.add_new_data).not_to.be.called()
+
+    def test_reindex_raise_ValueError(self):
+        class MyPartialIndexer(PartialIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+            batch_size = 2
+
+            def get_postgres_count(self, keys):
+                return 0
+
+            def get_batch_update_docs_queries(self, keys):
+                return self.doc_type_klass.search().query('terms', id=keys)
+
+            def extract_datum(self, datum):
+                return {'id': datum.id}
+
+        MyDocType(id=1).save()
+        MyDocType(id=2).save()
+        MyDocType(id=3).save()
+        my_index_alias.read_index.refresh()
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2])
+        expect(lambda: my_indexer.reindex()).to.throw(ValueError)
+
+    def test_reindex(self):
+        class MyPartialIndexer(PartialIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+            batch_size = 2
+
+            def get_batch_queryset(self, keys):
+                return Mock(
+                    __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
+                )
+
+            def get_postgres_count(self, keys):
+                return len(keys)
+
+            def get_batch_update_docs_queries(self, keys):
+                return self.doc_type_klass.search().query('terms', id=keys)
+
+            def extract_datum(self, datum):
+                return {'id': datum.id, 'value': datum.value}
+
+        for value in [1, 2, 3]:
+            MyDocType(id=value, value=value).save()
+        my_index_alias.read_index.refresh()
+
+        expect(MyDocType.search().count()).to.equal(3)
+        expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(1)
+        expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(2)
+        expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2])
+
+        with my_indexer.index_alias.indexing():
+            my_indexer.reindex()
+
+        expect(MyDocType.search().count()).to.equal(3)
+        expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(11)
+        expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(12)
+        expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)

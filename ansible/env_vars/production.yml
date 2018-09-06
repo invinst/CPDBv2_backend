@@ -16,7 +16,7 @@ gunicorn_max_requests: 0
 gunicorn_timeout_seconds: 300
 
 # Nginx settings.
-nginx_server_name: beta.cpdp.co
+nginx_server_name: cpdp.co
 nginx_mobile_server_name: mb.cpdp.co
 nginx_template: "nginx_site_config"
 
@@ -37,7 +37,6 @@ deploy_group: ansible
 setup_newrelic: yes
 backup_database_daily: yes
 update_documents_daily: yes
-enable_cron_job: yes
 github_ssh_key: /home/ansible/.ssh/khoi_github
 
 authorized_keys: |

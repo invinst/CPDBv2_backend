@@ -2,9 +2,10 @@ from tqdm import tqdm
 
 from data.models import PoliceUnit, Area, Allegation, Salary
 from data.utils.percentile import percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
+from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
+from search.utils import chicago_zip_codes
 from trr.models import TRR
 
 
@@ -187,4 +188,19 @@ class RankIndexer(BaseIndexer):
         return {
             'rank': datum.rank,
             'tags': ['rank']
+        }
+
+
+class ZipCodeIndexer(BaseIndexer):
+    doc_type_klass = ZipCodeDocType
+
+    def get_queryset(self):
+        return chicago_zip_codes()
+
+    def extract_datum(self, datum):
+        return {
+            'id': datum.pk,
+            'zip_code': datum.zip_code,
+            'url': datum.url,
+            'tags': ['zip code'],
         }
