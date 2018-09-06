@@ -5,7 +5,9 @@ from document_cloud.constants import DOCUMENT_TYPES
 
 class DocumentCrawler(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    num_documents = models.IntegerField()
+    num_documents = models.IntegerField(default=0)
+    num_new_documents = models.IntegerField(default=0)
+    num_updated_documents = models.IntegerField(default=0)
 
 
 class DocumentCloudSearchQuery(models.Model):
