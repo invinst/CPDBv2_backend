@@ -28,6 +28,7 @@ nginx_static_dir: "{{ project_path }}/staticfiles/"
 nginx_media_dir: "{{ project_path }}/media/"
 nginx_template: "nginx_site_config"
 nginx_dhparams_file: /etc/nginx/dhparams.pem
+nginx_cache_location: "{{ virtualenv_path }}/nginx/cache"
 
 pyenv_environments:
   PYENV_ROOT: "{{ pyenv_root }}"
@@ -42,8 +43,6 @@ newrelic_app_name: "CPDB v2 production"
 
 force_rewrite_env_file: yes
 
-twitterbot_newrelic_environment: development
-twitterbot_newrelic_app_name: Twitterbot
 yarn_version: "0.23.4"
 nvm_version: "v0.33.2"
 npm_version: "3.10.10"

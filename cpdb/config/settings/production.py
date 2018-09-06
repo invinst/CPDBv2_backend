@@ -24,6 +24,4 @@ STATICFILES_STORAGE = 'config.storages.AzureStorage'
 AZURE_STATICFILES_CONTAINER = 'static'
 AZURE_STATICFILES_SSL = True
 
-DATABASES['default']['OPTIONS'] = {
-    'sslmode': 'require'
-}
+TWITTERBOT_ENV = 'prod'

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.template import Context, Template
 
 from .models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR, TYPE_NOT_FOUND
-from data.models import Allegation
+from data.models import Allegation, Officer
 from twitterbot.models import TweetResponseRoundRobin
 
 
@@ -21,12 +21,12 @@ class BaseResponseBuilder:
 
             source = variables_set.get('source', ())
             url = variables_set.get('_url', '')
-            tweet_content = Template(response_template.syntax).render(Context(variables_set))
-            media_path = variables_set.get('_media_path', '')
             entity = variables_set.get('_entity', None)
             officer1 = variables_set.get('officer1', None)
             officer2 = variables_set.get('officer2', None)
             coaccused = variables_set.get('coaccused', 0)
+
+            tweet_content = Template(response_template.syntax).render(Context(variables_set))
 
             if len(tweet_content) > 140:
                 tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
@@ -36,7 +36,6 @@ class BaseResponseBuilder:
                 'entity': entity,
                 'url': url,
                 'type': self.response_type,
-                'media_path': media_path,
                 'officer1': officer1,
                 'officer2': officer2,
                 'coaccused': coaccused,
@@ -49,11 +48,10 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
     def get_variables_sets(self, entities, context):
         for (source, officer) in entities:
             yield {
-                'officer': officer,
+                'officer': Officer.objects.get(pk=officer['id']),
                 '_entity': officer,
-                '_url': '%s%s' % (settings.DOMAIN, officer.get_absolute_url()),
-                'source': (source, ),
-                '_media_path': officer.visual_token_png_path
+                '_url': '%s%s' % (settings.DOMAIN, '/officer/%s/' % officer['id']),
+                'source': (source, )
             }
 
 
@@ -62,12 +60,12 @@ class CoaccusedPairResponseBuilder(BaseResponseBuilder):
 
     def get_variables_sets(self, entities, context):
         for (source1, officer1), (source2, officer2) in itertools.combinations(entities, 2):
-            coaccused = Allegation.objects.filter(officerallegation__officer=officer1)\
-                .filter(officerallegation__officer=officer2).distinct().count()
+            coaccused = Allegation.objects.filter(officerallegation__officer_id=officer1['id'])\
+                .filter(officerallegation__officer_id=officer2['id']).distinct().count()
             if coaccused > 0:
                 yield {
-                    'officer1': officer1,
-                    'officer2': officer2,
+                    'officer1': Officer.objects.get(pk=officer1['id']),
+                    'officer2': Officer.objects.get(pk=officer2['id']),
                     'coaccused': coaccused,
                     'source': (source1, source2)
                 }

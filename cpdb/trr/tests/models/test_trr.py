@@ -26,3 +26,21 @@ class TRRTestCase(TestCase):
             'Physical Force - Stunning',
             'Taser Display'
         ])
+
+    def test_top_force_type(self):
+        trr = TRRFactory()
+        ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
+        ActionResponseFactory(trr=trr, force_type='Other', action_sub_category=None, person='Subject Action')
+        ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
+        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
+
+        expect(trr.top_force_type).to.eq('Impact Weapon')
+
+    def test_top_force_type_with_empty_force_type(self):
+        trr = TRRFactory()
+
+        expect(trr.top_force_type).to.eq(None)
+
+    def test_v2_to(self):
+        trr = TRRFactory()
+        expect(trr.v2_to).to.eq('/trr/{}/'.format(trr.id))

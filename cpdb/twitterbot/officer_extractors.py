@@ -1,5 +1,5 @@
-from data.models import Officer
-from .doc_types import OfficerDocType
+from officers.doc_types import OfficerInfoDocType
+from twitterbot.serializers import OfficerSerializer
 
 
 class ElasticSearchOfficerExtractor:
@@ -7,7 +7,7 @@ class ElasticSearchOfficerExtractor:
         results = []
         seen_ids = []
         for (source, name) in names:
-            query = OfficerDocType().search().query(
+            query = OfficerInfoDocType().search().query(
                 'function_score',
                 query={
                     'match': {
@@ -26,7 +26,7 @@ class ElasticSearchOfficerExtractor:
             )
             search_result = query[:1].execute()
             results += [
-                (source, Officer.objects.get(pk=obj['id']))
+                (source, OfficerSerializer(obj).data)
                 for obj in search_result if obj['id'] not in seen_ids]
             seen_ids += [obj['id'] for obj in search_result]
 

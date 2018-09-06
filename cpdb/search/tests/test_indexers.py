@@ -1,15 +1,19 @@
 from mock import Mock, patch
+from datetime import datetime
 
-from robber import expect
 from django.test import SimpleTestCase, TestCase
 
+from robber import expect
+import pytz
+
 # FIXME: Be careful on this, switching this to an absolute import could failed a test
-from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager
+from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
-    OfficerAllegationFactory, RacePopulationFactory)
-from trr.factories import TRRFactory
+    OfficerAllegationFactory, RacePopulationFactory,
+    SalaryFactory, AllegationCategoryFactory)
+from trr.factories import TRRFactory, ActionResponseFactory
 
 from search.search_indexers import autocompletes_alias
 
@@ -106,7 +110,8 @@ class UnitIndexerTestCase(TestCase):
             'url': datum.v1_url,
             'to': datum.v2_to,
             'active_member_count': 1,
-            'member_count': 2
+            'member_count': 2,
+            'long_name': 'Unit 011',
         })
 
 
@@ -373,20 +378,41 @@ class IndexerManagerTestCase(SimpleTestCase):
 class CrIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(CrIndexer().get_queryset().count()).to.eq(0)
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory()
         OfficerAllegationFactory(allegation=allegation, officer=officer)
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456')
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
+
+        category1, category2 = AllegationCategoryFactory.create_batch(2)
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
+        OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
+        OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
 
         expect(
             CrIndexer().extract_datum(allegation)
         ).to.eq({
             'crid': '123456',
+            'category': category1.category,
+            'incident_date': '2017-07-27',
+            'to': '/complaint/123456/10/'
+        })
+
+    def test_extract_datum_with_missing_incident_date_and_category(self):
+        allegation = AllegationFactory(crid='123456', incident_date=None)
+        officer = OfficerFactory(id=10)
+        OfficerAllegationFactory(allegation=allegation, officer=officer, allegation_category=None)
+
+        expect(
+            CrIndexer().extract_datum(allegation)
+        ).to.eq({
+            'crid': '123456',
+            'category': None,
+            'incident_date': None,
             'to': '/complaint/123456/10/'
         })
 
@@ -398,10 +424,43 @@ class TRRIndexerTestCase(TestCase):
         expect(TRRIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        trr = TRRFactory(id='123456')
+        trr = TRRFactory(id='123456', trr_datetime=datetime(2017, 07, 27, tzinfo=pytz.utc))
+        ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
+        ActionResponseFactory(trr=trr, force_type='Other', action_sub_category=None, person='Subject Action')
+        ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
+        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
 
         expect(
             TRRIndexer().extract_datum(trr)
         ).to.eq({
-            'id': '123456'
+            'id': '123456',
+            'force_type': 'Impact Weapon',
+            'trr_datetime': '2017-07-27',
+            'to': '/trr/123456/'
+        })
+
+    def test_extract_datum_with_missing_trr_datetime_and_force_type(self):
+        trr = TRRFactory(id='123456', trr_datetime=None)
+
+        expect(
+            TRRIndexer().extract_datum(trr)
+        ).to.eq({
+            'id': '123456',
+            'force_type': None,
+            'trr_datetime': None,
+            'to': '/trr/123456/'
+        })
+
+
+class RankIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(RankIndexer().get_queryset()).to.have.length(0)
+        SalaryFactory()
+        expect(RankIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        salary = SalaryFactory(rank='Police Officer')
+        expect(RankIndexer().extract_datum(salary)).to.eq({
+            'rank': 'Police Officer',
+            'tags': ['rank']
         })

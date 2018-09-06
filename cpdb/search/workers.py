@@ -1,6 +1,7 @@
 from elasticsearch_dsl.query import Q
 
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType
+from search.doc_types import ZipCodeDocType
+from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -14,16 +15,13 @@ class Worker(object):
     def _searcher(self):
         return self.doc_type_klass().search()
 
-    def _limit(self, search_results, begin, size):
-        return search_results[begin:size]
-
-    def query(self, term):
+    def query(self, term, **kwargs):
         return self._searcher \
             .query('multi_match', query=term, operator='and', fields=self.fields) \
             .sort(*self.sort_order)
 
-    def search(self, term, size=10, begin=0):
-        return self._limit(self.query(term), begin, size).execute()
+    def search(self, term, size=10, begin=0, **kwargs):
+        return self.query(term, **kwargs)[begin:size].execute()
 
     def get_sample(self):
         query = self._searcher.query(
@@ -33,7 +31,15 @@ class Worker(object):
             'exists',
             field='tags'
         )
-        return self._limit(query, 0, 1).execute()
+        return query[:1].execute()
+
+
+class DateWorker(Worker):
+    date_field = ''
+
+    def query(self, term, **kwargs):
+        dates = kwargs.get('dates', [])
+        return self._searcher.filter('terms', **{self.date_field: dates})
 
 
 class ReportWorker(Worker):
@@ -44,7 +50,7 @@ class ReportWorker(Worker):
 class OfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
 
-    def query(self, term):
+    def query(self, term, **kwargs):
         _query = self._searcher.query(
             'function_score',
             query={
@@ -94,7 +100,7 @@ class OfficerWorker(Worker):
 
 class UnitWorker(Worker):
     doc_type_klass = UnitDocType
-    fields = ['name', 'description', 'tags']
+    fields = ['name', 'long_name', 'description', 'tags']
 
 
 class AreaWorker(Worker):
@@ -103,7 +109,7 @@ class AreaWorker(Worker):
     fields = ['name', 'tags']
     sort_order = ['-allegation_count', 'name.keyword', '_score']
 
-    def query(self, term):
+    def query(self, term, **kwargs):
         filter = Q('term', area_type=self.area_type) if self.area_type else Q('match_all')
         q = Q('bool',
               must=[Q('multi_match', query=term, operator='and', fields=self.fields)],
@@ -137,11 +143,11 @@ class BeatWorker(AreaWorker):
 
 class UnitOfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
-    fields = ['unit_name', 'description']
+    fields = ['long_unit_name', 'description']
     sort_order = ['-allegation_count']
 
-    def query(self, term):
-        return OfficerInfoDocType.search().query('nested', path='historic_units', query=Q(
+    def query(self, term, **kwargs):
+        return self._searcher.query('nested', path='historic_units', query=Q(
             'multi_match',
             operator='and',
             fields=['historic_units.{}'.format(field) for field in self.fields],
@@ -149,11 +155,31 @@ class UnitOfficerWorker(Worker):
         )).sort(*self.sort_order)
 
 
-class CrWorker(Worker):
+class RankWorker(Worker):
+    doc_type_klass = RankDocType
+    fields = ['rank', 'tags']
+
+
+class DateCRWorker(DateWorker):
+    doc_type_klass = CrDocType
+    date_field = 'incident_date'
+
+
+class CRWorker(Worker):
     doc_type_klass = CrDocType
     fields = ['crid']
+
+
+class DateTRRWorker(DateWorker):
+    doc_type_klass = TRRDocType
+    date_field = 'trr_datetime'
 
 
 class TRRWorker(Worker):
     doc_type_klass = TRRDocType
     fields = ['_id']
+
+
+class ZipCodeWorker(Worker):
+    doc_type_klass = ZipCodeDocType
+    fields = ['zip_code', 'tags']

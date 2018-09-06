@@ -19,8 +19,9 @@ class ReportDocType(DocType):
 
 @autocompletes_alias.doc_type
 class UnitDocType(DocType):
-    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    long_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     description = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'unit'
@@ -39,8 +40,18 @@ class AreaDocType(DocType):
 
 
 @autocompletes_alias.doc_type
+class RankDocType(DocType):
+    rank = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'rank'
+
+
+@autocompletes_alias.doc_type
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    incident_date = Keyword()
 
     class Meta:
         doc_type = 'cr'
@@ -49,6 +60,17 @@ class CrDocType(DocType):
 @autocompletes_alias.doc_type
 class TRRDocType(DocType):
     id = Integer()
+    trr_datetime = Keyword()
 
     class Meta:
         doc_type = 'trr'
+
+
+@autocompletes_alias.doc_type
+class ZipCodeDocType(DocType):
+    id = Integer()
+    zip_code = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'zip_code'

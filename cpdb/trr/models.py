@@ -202,9 +202,22 @@ class TRR(models.Model):
         return 'Taser' if self.taser else 'Firearm' if self.firearm_used else 'Other'
 
     @property
-    def force_types(self):
+    def _member_actions(self):
         return self.actionresponse_set.filter(person='Member Action').\
-            order_by('-action_sub_category', 'force_type').values_list('force_type', flat=True).distinct()
+            order_by('-action_sub_category', 'force_type')
+
+    @property
+    def force_types(self):
+        return self._member_actions.values_list('force_type', flat=True).distinct()
+
+    @property
+    def top_force_type(self):
+        top_action = self._member_actions.first()
+        return top_action.force_type if top_action else None
+
+    @property
+    def v2_to(self):
+        return '/trr/%s/' % self.id
 
 
 class ActionResponse(models.Model):

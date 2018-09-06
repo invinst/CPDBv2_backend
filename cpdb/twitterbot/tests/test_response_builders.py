@@ -34,7 +34,6 @@ class BaseResponseBuilderTestCase(TestCase):
             'tweet_content': 'temp1',
             'url': '',
             'type': 'single_officer',
-            'media_path': '',
             'entity': None,
             'coaccused': 0,
             'officer1': None,
@@ -45,7 +44,6 @@ class BaseResponseBuilderTestCase(TestCase):
             'tweet_content': 'temp1',
             'url': '',
             'type': 'single_officer',
-            'media_path': '',
             'entity': None,
             'coaccused': 0,
             'officer1': None,
@@ -56,7 +54,6 @@ class BaseResponseBuilderTestCase(TestCase):
             'tweet_content': 'temp2',
             'url': '',
             'type': 'single_officer',
-            'media_path': '',
             'entity': None,
             'coaccused': 0,
             'officer1': None,
@@ -67,7 +64,6 @@ class BaseResponseBuilderTestCase(TestCase):
             'tweet_content': 'temp1',
             'url': '',
             'type': 'single_officer',
-            'media_path': '',
             'entity': None,
             'coaccused': 0,
             'officer1': None,
@@ -87,7 +83,6 @@ class BaseResponseBuilderTestCase(TestCase):
             'tweet_content': 'b',
             'url': '',
             'type': 'single_officer',
-            'media_path': '',
             'entity': None,
             'coaccused': 0,
             'officer1': None,
@@ -113,29 +108,30 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
     def test_build(self):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
-            officer1 = Mock(
-                full_name='Jerome Finnigan', complaints=3, visual_token_png_path='media_folder/officer_1.png'
-            )
-            officer1.get_absolute_url = Mock(return_value='/officer/1/')
-            officer2 = Mock(
-                full_name='Raymond Piwnicki', complaints=0, visual_token_png_path='media_folder/officer_2.png'
-            )
-            officer2.get_absolute_url = Mock(return_value='/officer/2/', )
+            officer1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+            OfficerAllegationFactory.create_batch(3, officer=officer1)
+            officer1_doc = {
+                'id': officer1.id, 'full_name': officer1.full_name
+            }
+
+            officer2 = OfficerFactory(id=2, first_name='Raymond', last_name='Piwnicki')
+            officer2_doc = {
+                'id': officer2.id, 'full_name': officer2.full_name
+            }
 
             ResponseTemplateFactory(
                 response_type='single_officer',
-                syntax='@{{user_name}} {{officer.full_name}} has {{officer.complaints}} complaints')
+                syntax='@{{user_name}} {{officer.full_name}} has {{officer.allegation_count}} complaints')
 
             builder = SingleOfficerResponseBuilder()
-            officers = [('source1', officer1), ('source2', officer2)]
+            officers = [('source1', officer1_doc), ('source2', officer2_doc)]
 
             expect(list(builder.build(officers, {'user_name': 'abc'}))).to.eq([{
                 'source': ('source1',),
                 'tweet_content': '@abc Jerome Finnigan has 3 complaints',
                 'url': 'http://foo.co/officer/1/',
                 'type': 'single_officer',
-                'media_path': 'media_folder/officer_1.png',
-                'entity': officer1,
+                'entity': officer1_doc,
                 'officer1': None,
                 'officer2': None,
                 'coaccused': 0,
@@ -144,8 +140,7 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
                 'tweet_content': '@abc Raymond Piwnicki has 0 complaints',
                 'url': 'http://foo.co/officer/2/',
                 'type': 'single_officer',
-                'media_path': 'media_folder/officer_2.png',
-                'entity': officer2,
+                'entity': officer2_doc,
                 'officer1': None,
                 'officer2': None,
                 'coaccused': 0,
@@ -160,12 +155,21 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
         officer1 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
         allegation = AllegationFactory()
         OfficerAllegationFactory(officer=officer1, allegation=allegation)
+        officer1_doc = {
+            'id': officer1.id, 'full_name': officer1.full_name, 'complaints': 3
+        }
 
         officer2 = OfficerFactory(first_name='Raymond', last_name='Piwnicki')
         OfficerAllegationFactory(officer=officer2, allegation=allegation)
+        officer2_doc = {
+            'id': officer2.id, 'full_name': officer2.full_name, 'complaints': 3
+        }
 
         officer3 = OfficerFactory(first_name='Jesse', last_name='Acosta')
         OfficerAllegationFactory(officer=officer3)
+        officer3_doc = {
+            'id': officer3.id, 'full_name': officer3.full_name, 'complaints': 3
+        }
 
         ResponseTemplateFactory(
             response_type='coaccused_pair',
@@ -178,14 +182,13 @@ class CoaccusedPairResponseBuilderTestCase(TestCase):
         builder = CoaccusedPairResponseBuilder()
 
         expect(list(builder.build(
-            [('source1', officer1), ('source2', officer2), ('source3', officer3)],
+            [('source1', officer1_doc), ('source2', officer2_doc), ('source3', officer3_doc)],
             {'user_name': 'abc'}))
         ).to.eq([{
             'source': ('source1', 'source2'),
             'tweet_content': '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
             'url': '',
             'type': 'coaccused_pair',
-            'media_path': '',
             'entity': None,
             'officer1': officer1,
             'officer2': officer2,
@@ -216,7 +219,6 @@ class NotFoundResponseBuilderTestCase(TestCase):
                 'tweet_content': 'Sorry, @abc, the bot find nothing',
                 'url': 'http://foo.co',
                 'type': 'not_found',
-                'media_path': '',
                 'entity': None,
                 'officer1': None,
                 'officer2': None,

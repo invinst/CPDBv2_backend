@@ -1,5 +1,10 @@
 ---
 
+- name: Add Nginx repo
+  apt_repository:
+    repo: ppa:nginx/stable
+    state: present
+
 - name: Install Nginx
   apt: name=nginx update_cache={{ update_apt_cache }} state=installed
   tags: packages
@@ -16,7 +21,23 @@
   copy: content="{{ dhparams }}" dest={{ nginx_dhparams_file }}
   notify: restart nginx
 
-- name: Create the Nginx configuration file
+- name: Create nginx mount location
+  file:
+    path: "{{ nginx_cache_location }}"
+    state: directory
+    owner: www-data
+    group: www-data
+  tags: update-nginx-config
+
+- name: Create Nginx configuration
+  template:
+    src: nginx_conf.j2
+    dest: /etc/nginx/nginx.conf
+    backup: yes
+  notify: reload nginx
+  tags: update-nginx-config, deploy
+
+- name: Create Nginx site configuration file
   template: src={{ nginx_template }}.j2
             dest=/etc/nginx/sites-available/{{ nginx_configuration_name }}
             backup=yes
@@ -28,6 +49,11 @@
         state=absent
   notify: reload nginx
   tags: update-nginx-config
+
+- name: Purge Nginx cache
+  command: find {{ nginx_cache_location }} -delete
+  notify: reload nginx
+  tags: deploy, purge-nginx-cache
 
 - name: Ensure that the application site is enabled
   file: src=/etc/nginx/sites-available/{{ nginx_configuration_name }}

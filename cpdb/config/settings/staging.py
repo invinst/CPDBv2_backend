@@ -38,3 +38,5 @@ LOGGING = {
 V1_URL = 'http://staging.cpdb.co'
 DOMAIN = 'http://staging.cpdp.co'
 AZURE_STATICFILES_SSL = False
+
+TWITTERBOT_ENV = 'dev'
