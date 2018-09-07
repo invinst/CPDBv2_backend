@@ -3,8 +3,7 @@ from .models import DocumentCrawler, DocumentCloudSearchQuery
 
 
 class DocumentCrawlerAdmin(admin.ModelAdmin):
-    readonly_fields = ('id', 'num_documents', 'num_new_documents', 'num_updated_documents', 'timestamp')
-    list_display = ('id', 'num_documents', 'num_new_documents', 'num_updated_documents', 'timestamp')
+    readonly_fields = list_display = ('id', 'num_documents', 'num_new_documents', 'num_updated_documents', 'timestamp')
 
     def has_add_permission(self, request):
         return False  # pragma: no cover
@@ -13,5 +12,9 @@ class DocumentCrawlerAdmin(admin.ModelAdmin):
         return False  # pragma: no cover
 
 
+class DocumentCloudSearchQueryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'query', 'type')
+
+
 admin.site.register(DocumentCrawler, DocumentCrawlerAdmin)
-admin.site.register(DocumentCloudSearchQuery)
+admin.site.register(DocumentCloudSearchQuery, DocumentCloudSearchQueryAdmin)
