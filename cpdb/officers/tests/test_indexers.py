@@ -783,14 +783,14 @@ class CRNewTimelineEventPartialIndexerTestCase(TestCase):
             officer_allegation_2,
         })
 
-    def test_get_batch_querysets(self):
+    def test_get_batch_queryset(self):
         allegation_123 = AllegationFactory(crid='123')
         allegation_456 = AllegationFactory(crid='456')
         officer_allegation_1 = OfficerAllegationFactory(allegation=allegation_123)
         officer_allegation_2 = OfficerAllegationFactory(allegation=allegation_123)
         OfficerAllegationFactory(allegation=allegation_456)
 
-        expect(set(CRNewTimelineEventPartialIndexer().get_batch_querysets(keys=['123']))).to.eq({
+        expect(set(CRNewTimelineEventPartialIndexer().get_batch_queryset(keys=['123']))).to.eq({
             officer_allegation_1,
             officer_allegation_2,
         })
