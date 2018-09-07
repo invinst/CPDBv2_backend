@@ -11,7 +11,7 @@ from data.constants import (
 )
 from data.models import Officer, OfficerAllegation, OfficerHistory, Award, Salary
 from es_index import register_indexer
-from es_index.indexers import BaseIndexer
+from es_index.indexers import BaseIndexer, PartialIndexer
 from es_index.serializers import get_gender, get_age_range
 from trr.models import TRR
 from .doc_types import (
@@ -28,12 +28,10 @@ from officers.serializers.doc_serializers import (
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer,
     OfficerYearlyPercentileSerializer,
+    OfficerSerializer,
     RankChangeNewTimelineSerializer
 )
 from .queries import OfficerQuery, AllegationQuery
-from .serializers.doc_serializers import (
-    OfficerSerializer
-)
 
 app_name = __name__.split('.')[0]
 
@@ -122,6 +120,19 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, datum):
         return CRNewTimelineSerializer(datum).data
+
+
+class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
+    def get_batch_queryset(self, keys):
+        return OfficerAllegation.objects.filter(
+            start_date__isnull=False,
+            allegation__crid__in=keys)
+
+    def get_postgres_count(self, keys):
+        return self.get_batch_queryset(keys).count()
+
+    def get_batch_update_docs_queries(self, keys):
+        return self.doc_type_klass.search().query('terms', crid=keys).filter('term', kind='CR')
 
 
 @register_indexer(app_name)

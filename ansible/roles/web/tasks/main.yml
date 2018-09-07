@@ -33,7 +33,6 @@
   tags:
     - deploy
     - cron
-  when: enable_cron_job
 
 - include: setup_twitterbot.yml
   tags: twitterbot

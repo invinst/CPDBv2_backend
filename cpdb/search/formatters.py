@@ -105,3 +105,12 @@ class RankFormatter(SimpleFormatter):
         return {
             'name': serialized_doc['rank'],
         }
+
+
+class ZipCodeFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        return {
+            'name': serialized_doc['zip_code'],
+            'url': serialized_doc['url']
+        }

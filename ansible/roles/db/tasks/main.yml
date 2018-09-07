@@ -8,12 +8,12 @@
     tags: packages
 
   - name: setup postgresql.conf file
-    copy: src=postgresql.conf dest=/etc/postgresql/9.4/main/postgresql.conf owner=postgres group=postgres mode=0640
+    copy: src=postgresql.conf dest=/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf owner=postgres group=postgres mode=0640
 
   - name: setup pg_hba file
     template:
       src: pg_hba.conf.j2
-      dest: /etc/postgresql/9.4/main/pg_hba.conf
+      dest: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
       owner: postgres
       group: postgres
       mode: 0640

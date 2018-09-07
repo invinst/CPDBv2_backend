@@ -253,7 +253,7 @@ class OfficerSerializer(BaseSerializer):
         )
 
     def get_to(self, obj):
-        return '/officer/%d/' % obj['id']
+        return '/officer/%d/%s/' % (obj['id'], slugify(self.get_full_name(obj)))
 
     def get_current_salary(self, obj):
         try:

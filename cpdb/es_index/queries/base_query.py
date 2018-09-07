@@ -67,8 +67,9 @@ class BaseQuery(object):
 
         if value_type is int:
             return str(value)
-
         if value_type is str:
+            return '\'%s\'' % value
+        if value_type is unicode:
             return '\'%s\'' % value
 
         raise NotImplementedError('lookup value of type %s is not supported yet.' % value_type.__name__)

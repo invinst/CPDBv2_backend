@@ -1,5 +1,6 @@
 from elasticsearch_dsl.query import Q
 
+from search.doc_types import ZipCodeDocType
 from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
 from officers.doc_types import OfficerInfoDocType
 
@@ -177,3 +178,8 @@ class DateTRRWorker(DateWorker):
 class TRRWorker(Worker):
     doc_type_klass = TRRDocType
     fields = ['_id']
+
+
+class ZipCodeWorker(Worker):
+    doc_type_klass = ZipCodeDocType
+    fields = ['zip_code', 'tags']

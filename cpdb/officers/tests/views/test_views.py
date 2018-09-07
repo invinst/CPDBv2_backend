@@ -107,7 +107,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'allegation_count': 1,
             'discipline_count': 1,
             'honorable_mention_count': 1,
-            'to': '/officer/123/',
+            'to': '/officer/123/kevin-kerl/',
             'url': 'https://data.cpdp.co/officer/kevin-kerl/123',
             'current_salary': 90000,
             'trr_count': 1,
