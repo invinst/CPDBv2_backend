@@ -1,10 +1,13 @@
 import copy
 import types
 
+from django.utils.module_loading import autodiscover_modules
+
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
+from es_index import indexer_klasses
 
 
 class BaseIndexer(object):
@@ -90,6 +93,13 @@ class PartialIndexer(BaseIndexer):
     def __init__(self, updating_keys=None):
         super(PartialIndexer, self).__init__()
         self.updating_keys = list(updating_keys) if updating_keys else []
+
+    def create_mapping(self):
+        self.index_alias.write_index.close()
+        autodiscover_modules('indexers')
+        doc_types = [indexer.doc_type_klass for indexer in indexer_klasses if indexer.index_alias == self.index_alias]
+        for doc_type in doc_types:
+            doc_type.init(index=self.index_alias.new_index_name)
 
     def reindex(self):
         self.validate_updated_docs()
