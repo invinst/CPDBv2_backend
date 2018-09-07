@@ -58,13 +58,21 @@ class OfficerHistoryQuery(DistinctQuery):
     }
 
 
+class AwardQuery(DistinctQuery):
+    base_table = Award
+
+    fields = {
+        'officer_id': 'officer_id',
+        'award_type': 'award_type',
+    }
+
+
 class OfficerQuery(AggregateQuery):
     base_table = Officer
 
     joins = {
         'history': Subquery(OfficerHistoryQuery(), on='officer_id'),
         'badgenumber': OfficerBadgeNumber,
-        'awards': Award,
         'salaries': Salary
     }
 
@@ -90,7 +98,6 @@ class OfficerQuery(AggregateQuery):
             from_table=OfficerAllegation, related_to='base_table', where={'final_finding': 'SU'}),
         'complaint_percentile': 'complaint_percentile',
         'honorable_mention_percentile': 'honorable_mention_percentile',
-        'awards': RowArrayQueryField('awards'),
         'discipline_count': CountQueryField(
             from_table=OfficerAllegation, related_to='base_table', where={'disciplined': True}),
         'civilian_allegation_percentile': 'civilian_allegation_percentile',

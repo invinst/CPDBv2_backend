@@ -31,7 +31,7 @@ from officers.serializers.doc_serializers import (
     OfficerSerializer,
     RankChangeNewTimelineSerializer
 )
-from .queries import OfficerQuery, AllegationQuery
+from .queries import OfficerQuery, AllegationQuery, AwardQuery
 
 app_name = __name__.split('.')[0]
 
@@ -73,10 +73,17 @@ class OfficersIndexer(BaseIndexer):
                 dict_a[officer_id_b] = dict_a.get(officer_id_b, 0) + 1
                 dict_b = self.coaccusals.setdefault(officer_id_b, dict())
                 dict_b[officer_id_a] = dict_b.get(officer_id_a, 0) + 1
+        
+        self.award_dict = dict()
+        awards = AwardQuery().execute()
+        for award in awards:
+            self.award_dict.setdefault(award['officer_id'], []).append(award)
+
         return self.query.execute()
 
     def extract_datum(self, datum):
         datum['allegations'] = self.allegation_dict.get(datum['id'], [])
+        datum['awards'] = self.award_dict.get(datum['id'], [])
         datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())
         if datum['id'] in self.top_percentile_dict:
             datum['percentile_allegation'] = self.top_percentile_dict[datum['id']].percentile_allegation

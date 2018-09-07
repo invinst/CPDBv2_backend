@@ -4,7 +4,6 @@ from django.utils.text import slugify
 from rest_framework import serializers
 
 from es_index.serializers import BaseSerializer, get, get_gender, get_date
-from data.models import PoliceUnit
 from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
 
