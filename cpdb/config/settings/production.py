@@ -7,7 +7,7 @@ env = environ.Env()
 DEBUG = False
 
 CORS_ORIGIN_WHITELIST = (
-    'mb.cpdp.co',
+    'm.cpdp.co',
     )
 
 ANYMAIL = {
