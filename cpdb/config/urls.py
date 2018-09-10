@@ -69,6 +69,8 @@ router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhoo
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    # The index_redirect url is redirecting 'admin' without slash too, we need to manually do this.
+    url(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
