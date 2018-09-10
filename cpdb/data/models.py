@@ -1072,12 +1072,17 @@ class AttachmentRequest(models.Model):
     allegation = models.ForeignKey(Allegation)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = (('allegation', 'email'),)
 
     def __str__(self):
         return '%s - %s' % (self.email, self.allegation.crid)
+
+    @property
+    def crid(self):
+        return self.allegation.crid
 
     def save(self, *args, **kwargs):
         self.full_clean()
