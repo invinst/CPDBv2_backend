@@ -1,11 +1,12 @@
 from django.test import SimpleTestCase, TestCase
 
-from elasticsearch_dsl import DocType, Keyword
+from elasticsearch_dsl import DocType, Keyword, Float, Mapping
 from robber import expect
 from mock import Mock, patch
 
 from es_index.indexers import BaseIndexer, es_client, PartialIndexer
 from es_index.index_aliases import IndexAlias
+from es_index import register_indexer
 
 
 class IndexersTestCase(SimpleTestCase):
@@ -175,6 +176,7 @@ my_index_alias = IndexAlias('my_alias')
 @my_index_alias.doc_type
 class MyDocType(DocType):
     id = Keyword()
+    value = Float()
 
     class Meta:
         doc_type = 'my_doc_type'
@@ -363,3 +365,76 @@ class PartialIndexerTestCase(TestCase):
         expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(11)
         expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(12)
         expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)
+
+    def test_create_mapping(self):
+        @my_index_alias.doc_type
+        class MyDocType2(DocType):
+            value2 = Float()
+
+            class Meta:
+                doc_type = 'my_doc_type_2'
+
+        @register_indexer('my_alias')
+        class MyIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+
+        @register_indexer('my_alias')
+        class MyIndexer2(BaseIndexer):
+            doc_type_klass = MyDocType2
+            index_alias = my_index_alias
+
+        class MyPartialIndexer(PartialIndexer, MyIndexer):
+            batch_size = 2
+
+            def get_batch_queryset(self, keys):
+                return Mock(
+                    count=Mock(return_value=len(keys)),
+                    __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
+                )
+
+            def get_batch_update_docs_queries(self, keys):
+                return self.doc_type_klass.search().query('terms', id=keys)
+
+            def extract_datum(self, datum):
+                return {'id': datum.id, 'value': datum.value}
+
+            def get_postgres_count(self, keys):
+                return len(keys)
+
+        for value in [1, 2, 3]:
+            MyDocType(id=value, value=value).save()
+            MyDocType2(id=value, value2=value).save()
+        my_index_alias.read_index.refresh()
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2])
+        with my_indexer.index_alias.indexing():
+            my_indexer.reindex()
+
+        expect(MyDocType.search().count()).to.equal(3)
+        expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(11)
+        expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(12)
+        expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)
+
+        expect(MyDocType2.search().count()).to.equal(3)
+        expect(MyDocType2.search().query('term', id=1).execute()[0].to_dict()['value2']).to.equal(1)
+        expect(MyDocType2.search().query('term', id=2).execute()[0].to_dict()['value2']).to.equal(2)
+        expect(MyDocType2.search().query('term', id=3).execute()[0].to_dict()['value2']).to.equal(3)
+
+        expect(Mapping.from_es('test_my_alias', 'my_doc_type').to_dict()).to.eq({
+            'my_doc_type': {
+                'properties': {
+                    'id': {'type': 'keyword'},
+                    'value': {'type': 'float'}
+                }
+            }
+        })
+
+        expect(Mapping.from_es('test_my_alias', 'my_doc_type_2').to_dict()).to.eq({
+            'my_doc_type_2': {
+                'properties': {
+                     'id': {'type': 'keyword'},
+                     'value2': {'type': 'float'}
+                 }
+            }
+        })
