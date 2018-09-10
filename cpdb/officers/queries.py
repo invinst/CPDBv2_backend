@@ -1,9 +1,10 @@
 from es_index.queries import (
-    AggregateQuery, RowArrayQueryField, DistinctQuery, Subquery, CountQueryField
+    AggregateQuery, RowArrayQueryField, DistinctQuery, Subquery, CountQueryField,
+    ForeignQueryField, GeometryQueryField
 )
 from data.models import (
     Officer, OfficerHistory, OfficerBadgeNumber, OfficerAllegation, AllegationCategory,
-    Allegation, Complainant, PoliceUnit, Award, Salary
+    Allegation, Complainant, PoliceUnit, Award, Salary, Victim, AttachmentFile
 )
 from trr.models import TRR
 
@@ -109,4 +110,40 @@ class OfficerQuery(AggregateQuery):
         'unsustained_count': CountQueryField(
             from_table=OfficerAllegation, related_to='base_table', where={'final_finding': 'NS'}),
         'salaries': RowArrayQueryField('salaries')
+    }
+
+
+class AllegationTimelineQuery(AggregateQuery):
+    base_table = Allegation
+
+    joins = {
+        'attachments': AttachmentFile,
+        'victims': Victim
+    }
+
+    fields = {
+        'coaccused_count': CountQueryField(
+            from_table=OfficerAllegation, related_to='base_table'
+        ),
+        'id': 'id',
+        'point': GeometryQueryField('point'),
+        'crid': 'crid',
+        'attachments': RowArrayQueryField('attachments'),
+        'victims': RowArrayQueryField('victims'),
+    }
+
+
+class CRTimelineQuery(DistinctQuery):
+    base_table = OfficerAllegation
+
+    fields = {
+        'officer_id': 'officer_id',
+        'allegation_id': 'allegation_id',
+        'start_date': 'start_date',
+        'category': ForeignQueryField(
+            relation='allegation_category_id', field_name='category'),
+        'subcategory': ForeignQueryField(
+            relation='allegation_category_id', field_name='allegation_name'),
+        'final_finding': 'final_finding',
+        'final_outcome': 'final_outcome',
     }

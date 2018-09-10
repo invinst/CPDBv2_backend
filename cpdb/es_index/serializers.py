@@ -1,4 +1,4 @@
-from data.constants import GENDER_DICT
+from data.constants import GENDER_DICT, FINDINGS_DICT
 
 
 class BaseSerializer(object):
@@ -19,9 +19,9 @@ class BaseSerializer(object):
         }
 
 
-def get(key):
+def get(key, default_value=None):
     def func(obj):
-        return obj[key]
+        return obj.get(key, default_value)
     return func
 
 
@@ -61,4 +61,18 @@ def get_age_range(ranges, key, default_value=None):
                     return '%d-%d' % (ranges[ind-1], val)
             elif ind == len_ranges - 1:
                 return '%d+' % val
+    return func
+
+
+def get_finding(key, default_value=None):
+    def func(obj):
+        return FINDINGS_DICT.get(obj[key], default_value)
+    return func
+
+
+def get_point(key, default_value=None):
+    def func(obj):
+        if obj.get(key, None) is None:
+            return default_value
+        return {'lon': obj[key].x, 'lat': obj[key].y}
     return func

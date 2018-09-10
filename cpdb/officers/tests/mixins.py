@@ -6,7 +6,6 @@ from officers.indexers import (
     JoinedNewTimelineEventIndexer,
     AwardNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer,
-    OfficerPercentileIndexer,
     OfficerCoaccusalsIndexer,
 )
 
@@ -24,7 +23,6 @@ class OfficerSummaryTestCaseMixin(object):
             JoinedNewTimelineEventIndexer().reindex()
             AwardNewTimelineEventIndexer().reindex()
             TRRNewTimelineEventIndexer().reindex()
-            OfficerPercentileIndexer().reindex()
             OfficerCoaccusalsIndexer().reindex()
 
         officers_index_alias.write_index.refresh()

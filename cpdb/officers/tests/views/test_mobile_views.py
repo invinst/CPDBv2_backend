@@ -21,8 +21,8 @@ from trr.factories import TRRFactory
 
 class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
-    @patch('officers.indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
-    @patch('officers.indexers.MAX_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.officer_indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.officer_indexers.MAX_VISUAL_TOKEN_YEAR', 2002)
     def test_retrieve_data_range_too_small_cause_no_percentiles(self):
 
         officer = OfficerFactory(

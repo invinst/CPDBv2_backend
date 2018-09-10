@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.test import TestCase
 
 from robber import expect
@@ -55,7 +57,9 @@ class AggregateQueryTestCase(TestCase):
         self.complaint_query = ComplaintQuery()
 
     def test_query_row_array(self):
-        allegation = AllegationFactory(crid='123456', id=334455, summary='summary')
+        allegation = AllegationFactory(
+            crid='123456', id=334455, summary='summary'
+        )
         PoliceWitnessFactory(
             officer__id=554433, officer__first_name='James', allegation=allegation)
         rows = list(self.query.execute())
@@ -98,3 +102,11 @@ class AggregateQueryTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation)
         rows = list(self.complaint_query.execute())
         expect(rows).to.eq([{'crid': '112233', 'race': 'Black'}])
+
+    def test_query_where_isnull(self):
+        AllegationFactory(crid='2211', incident_date=datetime(2002, 2, 3))
+        AllegationFactory(crid='2121', incident_date=None)
+        rows = list(self.query.where(incident_date__isnull=True).execute())
+        expect([row['crid'] for row in rows]).to.eq(['2121'])
+        rows = list(self.query.where(incident_date__isnull=False).execute())
+        expect([row['crid'] for row in rows]).to.eq(['2211'])

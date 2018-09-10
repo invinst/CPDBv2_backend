@@ -1,9 +1,8 @@
 from datetime import datetime
 
 from es_index.serializers import (
-    BaseSerializer, get, get_gender, get_date, literal
+    BaseSerializer, get, get_gender, get_date, literal, get_finding, get_point
 )
-from data.constants import FINDINGS_DICT
 
 
 class CoaccusedSerializer(BaseSerializer):
@@ -12,9 +11,6 @@ class CoaccusedSerializer(BaseSerializer):
 
     def get_abbr_name(self, obj):
         return '. '.join([obj['first_name'][0].upper(), obj['last_name']])
-
-    def get_final_finding(self, obj):
-        return FINDINGS_DICT.get(obj['final_finding'], None)
 
     def get_age(self, obj):
         if obj['birth_year'] is not None:
@@ -32,7 +28,7 @@ class CoaccusedSerializer(BaseSerializer):
             'race': get('race'),
             'rank': get('rank'),
             'final_outcome': get('final_outcome'),
-            'final_finding': self.get_final_finding,
+            'final_finding': get_finding('final_finding'),
             'recc_outcome': get('recc_outcome'),
             'category': get('category'),
             'subcategory': get('allegation_name'),
@@ -145,11 +141,6 @@ class AllegationSerializer(BaseSerializer):
         except ValueError:
             return None
 
-    def get_point(self, obj):
-        if obj['point'] is None:
-            return None
-        return {'lon': obj['point'].x, 'lat': obj['point'].y}
-
     def get_any_start_date(self, obj):
         for accused in obj['coaccused']:
             if accused['start_date'] is not None:
@@ -182,7 +173,7 @@ class AllegationSerializer(BaseSerializer):
             'most_common_category': self.get_most_common_category,
             'coaccused': CoaccusedSerializer(key='coaccused'),
             'summary': get('summary'),
-            'point': self.get_point,
+            'point': get_point('point'),
             'incident_date': get_date('incident_date'),
             'start_date': self.get_any_start_date,
             'end_date': self.get_any_end_date,
