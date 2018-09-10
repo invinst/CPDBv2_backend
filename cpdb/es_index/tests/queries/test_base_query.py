@@ -35,8 +35,8 @@ class BaseQueryTestCase(SimpleTestCase):
     def setUp(self):
         self.query = ArticleQuery()
 
-    def test_field_aliases(self):
-        expect(self.query.field_aliases()).to.eq(['author_id', 'name'])
+    def test_query_fields(self):
+        expect([field.alias() for field in self.query.query_fields()]).to.eq(['author_id', 'name'])
 
     def test_field_names_to_group(self):
         expect(self.query.field_names_to_group).to.eq(['base_table.author_id', 'author.name'])

@@ -10,13 +10,21 @@ class Table(object):
         ]
         self._model_class = model_class
         self.pk_field = Field(model_class._meta.pk)
+        self._field_kinds_dict = {
+            field.name: field.kind
+            for field in self.fields
+        }
+        self.field_kinds = [
+            field.kind for field in self.fields
+        ]
+        self.field_names = [field.name for field in self.fields]
 
     @property
     def name(self):
         return self._model_class._meta.db_table
 
-    def field_names(self):
-        return [field.name for field in self.fields]
+    def get_kind(self, field):
+        return self._field_kinds_dict[field]
 
     def find_foreign_key_to(self, relation):
         for field in self.fields:

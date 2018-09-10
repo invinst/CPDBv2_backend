@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.test import SimpleTestCase
 from django.contrib.gis.geos import Point
 
@@ -22,17 +24,17 @@ class QueryFieldTestCase(SimpleTestCase):
             joins={'officer': Officer}
         )
 
-        self.query_field_b = QueryField('last_name')
+        self.query_field_b = QueryField('crid')
         self.query_field_b.initialize(
             table_alias='my_table',
             table=Allegation,
-            alias='my_last_name',
+            alias='my_crid',
             joins={'officer': Officer}
         )
 
     def test_render(self):
         expect(self.query_field_a.render()).to.eq('officer.first_name AS my_first_name')
-        expect(self.query_field_b.render()).to.eq('my_table.last_name AS my_last_name')
+        expect(self.query_field_b.render()).to.eq('my_table.crid AS my_crid')
 
     def test_belong_to(self):
         expect(self.query_field_a.belong_to('my_table')).to.be.false()
@@ -41,15 +43,19 @@ class QueryFieldTestCase(SimpleTestCase):
 
     def test_name_to_group(self):
         expect(self.query_field_a.name_to_group()).to.eq('officer.first_name')
-        expect(self.query_field_b.name_to_group()).to.eq('my_table.last_name')
+        expect(self.query_field_b.name_to_group()).to.eq('my_table.crid')
 
     def test_alias(self):
         expect(self.query_field_a.alias()).to.eq('my_first_name')
-        expect(self.query_field_b.alias()).to.eq('my_last_name')
+        expect(self.query_field_b.alias()).to.eq('my_crid')
 
     def test_serialize(self):
         expect(self.query_field_a.serialize('abc')).to.eq('abc')
         expect(self.query_field_b.serialize(123)).to.eq(123)
+
+    def test_kind(self):
+        expect(self.query_field_a.kind).to.eq('varchar')
+        expect(self.query_field_b.kind).to.eq('varchar')
 
 
 class GeometryQueryFieldTestCase(SimpleTestCase):
@@ -182,22 +188,26 @@ class RowArrayQueryFieldTestCase(SimpleTestCase):
             }
             fields = {
                 'id': 'officer.id',
-                'final_finding': 'final_finding'
+                'final_finding': 'final_finding',
+                'disciplined': 'disciplined',
+                'start_date': 'start_date',
             }
-
+        subquery = Subquery(CoaccusedQuery(), on='allegation_id')
         self.query_field = RowArrayQueryField('coaccused')
         self.query_field.initialize(
             table_alias='allegation',
             table=Allegation,
             alias='coaccused',
             joins={
-                'coaccused': Subquery(CoaccusedQuery(), on='allegation_id'),
+                'coaccused': subquery,
             }
         )
 
     def test_render(self):
         expect(self.query_field.render()).to.eq(
-            'array_agg(DISTINCT ROW( coaccused.id, coaccused.final_finding )) AS coaccused'
+            'array_agg(DISTINCT ROW( '
+            'coaccused.disciplined, coaccused.start_date, coaccused.id, coaccused.final_finding )) '
+            'AS coaccused'
         )
 
     def test_belong_to(self):
@@ -211,14 +221,52 @@ class RowArrayQueryFieldTestCase(SimpleTestCase):
 
     def test_serialize(self):
         expect(self.query_field.serialize(
-            '{"(1,SU)","(2,NS)"}'
+            '{"(t,2000-01-01,1,SU)","(f,2001-01-01,2,NS)"}'
         )).to.eq([
             {
                 'id': 1,
-                'final_finding': 'SU'
+                'final_finding': 'SU',
+                'disciplined': True,
+                'start_date': date(2000, 1, 1),
             },
             {
                 'id': 2,
-                'final_finding': 'NS'
+                'final_finding': 'NS',
+                'disciplined': False,
+                'start_date': date(2001, 1, 1),
             }
         ])
+
+    def test_serialize_subfield(self):
+        test_case_with_expect = [
+            ('smallint', '1', 1),
+            ('varchar', 'abc', 'abc'),
+            ('text', 'abc', 'abc'),
+            ('numeric', '1.2', 1.2),
+            ('boolean', 't', True),
+            ('boolean', 'f', False),
+            ('boolean', '', None),
+            ('date', '2016-08-14', date(2016, 8, 14)),
+            ('integer', '12', 12),
+            ('serial', '12', 12),
+            (None, 'abc', None),
+            ('numeric', None, None),
+            ('jsonb', '{\\"\\"key\\"\\":\\"\\"value\\"\\"}', {'key': 'value'})
+        ]
+
+        for kind, string, expectation in test_case_with_expect:
+            expect(self.query_field.serialize_subfield(kind, string)).to.eq(expectation)
+
+    def test_serialize_subfield_geometry_field(self):
+        expect(self.query_field.serialize_subfield(
+            'geometry',
+            (
+                '<gml:Point srsName="EPSG:4326"><gml:coordinates>'
+                '-87.721100300000003,41.8372636</gml:coordinates></gml:Point>'
+            )
+        )).to.eq(str(Point(x=-87.7211003, y=41.8372636)))
+
+    def test_serialize_subfield_not_support_kind(self):
+        with self.assertRaisesRegexp(
+                NotImplementedError, 'Cannot yet serialize subfield of kind "my_type", value was "my_string"'):
+            self.query_field.serialize_subfield('my_type', 'my_string')

@@ -1,5 +1,4 @@
 import string
-from datetime import datetime
 from enum import Enum, unique
 
 
@@ -9,11 +8,7 @@ class State(Enum):
     array = 1
     row = 2
     string = 3
-    number = 4
-    quoted_string = 5
-    decimal = 6
-    datetime = 7
-    json = 8
+    quoted_string = 4
 
 
 @unique
@@ -38,31 +33,6 @@ class PostgresArrayLexer(object):
             return True
         return False
 
-    def begin_with_number(self):
-        advanced = False
-        numbers = [str(num) for num in range(0, 10)]
-        while self.have_more() and self._source[self._end_ind] in numbers:
-            self.advance()
-            advanced = True
-        return advanced
-
-    def begin_with_char(self):
-        advanced = False
-        chars = string.ascii_letters + '{}'
-        while self.have_more() and self._source[self._end_ind] in chars:
-            self.advance()
-            advanced = True
-        return advanced
-
-    def begin_with_inner_char(self):
-        advanced = False
-        numbers = ''.join([str(num) for num in range(0, 10)])
-        chars = string.ascii_letters + '/:-._\'?&=%;{}' + numbers
-        while self.have_more() and self._source[self._end_ind] in chars:
-            self.advance()
-            advanced = True
-        return advanced
-
     def advance(self, pos=1):
         self._end_ind += pos
 
@@ -78,7 +48,7 @@ class PostgresArrayLexer(object):
 
     def error(self):  # pragma: no cover
         return Exception(
-            '%d: Encountered unanticipated chars %s (whole string was "%s")' % (
+            '%s: Encountered unanticipated chars %s (whole string was "%s")' % (
                 self._state, self._source[self._begin_ind: self._end_ind + 1], self._source
             )
         )
@@ -104,27 +74,9 @@ class PostgresArrayLexer(object):
                 else:  # pragma: no cover
                     raise self.error()
             elif self._state == State.row:
-                if self.begin_with_number():
-                    self.to_state(State.number)
-                elif self.begin_with(','):
+                if self.begin_with(','):
                     yield None
                     self.discard_token()
-                elif self.begin_with('t,'):
-                    yield True
-                    self.discard_token()
-                elif self.begin_with('t)"'):
-                    yield True
-                    self.discard_token()
-                    self.to_state(State.array)
-                elif self.begin_with('f,'):
-                    yield False
-                    self.discard_token()
-                elif self.begin_with('f)"'):
-                    yield False
-                    self.discard_token()
-                    self.to_state(State.array)
-                elif self.begin_with_char():
-                    self.to_state(State.string)
                 elif self.begin_with('\\"'):
                     self.discard_token()
                     self.to_state(State.quoted_string)
@@ -132,23 +84,9 @@ class PostgresArrayLexer(object):
                     yield None
                     self.discard_token()
                     self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
-            elif self._state == State.number:
-                if self.begin_with(','):
-                    yield int(self.token[:-1])
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield int(self.token[:-2])
-                    self.discard_token()
-                    self.to_state(State.array)
-                elif self.begin_with('.'):
-                    self.to_state(State.decimal)
-                elif self.begin_with('-'):
-                    self.to_state(State.datetime)
-                else:  # pragma: no cover
-                    raise self.error()
+                else:
+                    self.advance()
+                    self.to_state(State.string)
             elif self._state == State.string:
                 if self.begin_with(','):
                     yield unicode(self.token[:-1], 'utf8')
@@ -158,10 +96,8 @@ class PostgresArrayLexer(object):
                     yield unicode(self.token[:-2], 'utf8')
                     self.discard_token()
                     self.to_state(State.array)
-                elif self.begin_with_inner_char():
-                    pass
-                else:  # pragma: no cover
-                    raise self.error()
+                else:
+                    self.advance()
             elif self._state == State.quoted_string:
                 if self.begin_with('\\"\\"'):
                     pass
@@ -175,34 +111,6 @@ class PostgresArrayLexer(object):
                     self.to_state(State.array)
                 else:
                     self.advance()
-            elif self._state == State.decimal:
-                if self.begin_with_number():
-                    pass
-                elif self.begin_with(','):
-                    yield float(self.token[:-1])
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield float(self.token[:-2])
-                    self.discard_token()
-                    self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
-            elif self._state == State.datetime:
-                if self.begin_with_number():
-                    pass
-                elif self.begin_with('-'):
-                    pass
-                elif self.begin_with(','):
-                    yield datetime.strptime(self.token[:-1], '%Y-%m-%d')
-                    self.discard_token()
-                    self.to_state(State.row)
-                elif self.begin_with(')"'):
-                    yield datetime.strptime(self.token[:-2], '%Y-%m-%d')
-                    self.discard_token()
-                    self.to_state(State.array)
-                else:  # pragma: no cover
-                    raise self.error()
 
 
 def parse_postgres_row_array(array):

@@ -3,7 +3,9 @@ from django.db import models
 
 from robber import expect
 
-from es_index.queries.utils import join_expression, field_name_with_alias, is_model_subclass
+from es_index.queries.utils import (
+    join_expression, field_name_with_alias, is_model_subclass, clean_db_type
+)
 
 
 class TestUtilsAuthor(models.Model):
@@ -42,3 +44,8 @@ class UtilsTestCase(SimpleTestCase):
     def test_is_model_subclass(self):
         expect(is_model_subclass(TestUtilsAuthor)).to.be.true()
         expect(is_model_subclass(TestUtilsPaper)).to.be.false()
+
+    def test_clean_db_type(self):
+        expect(clean_db_type('numeric(5, 2)')).to.eq('numeric')
+        expect(clean_db_type('varchar(50)')).to.eq('varchar')
+        expect(clean_db_type('timestamp with time zone')).to.eq('timestamp with time zone')

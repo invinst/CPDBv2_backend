@@ -1,3 +1,7 @@
+from datetime import datetime
+import dateutil.parser
+import json
+
 from django.contrib.gis.geos import Point
 
 from .table import Table
@@ -8,7 +12,7 @@ from .postgres_array_parser import parse_postgres_row_array
 class QueryField(object):
     def __init__(self, field):
         if '.' in field:
-            [self._source_table, self._name] = field.split('.')
+            [self._source_table_name, self._name] = field.split('.')
         else:
             self._name = field
 
@@ -19,16 +23,28 @@ class QueryField(object):
             self._table = Table(table)
         self._alias = alias
         self._joins = joins
-        self._source_table = getattr(self, '_source_table', table_alias)
+        for k, v in self._joins.iteritems():
+            if is_model_subclass(v):
+                self._joins[k] = Table(v)
+        if not hasattr(self, '_source_table_name'):
+            self._source_table_name = table_alias
+        if self._source_table_name == table_alias:
+            self._source_table = self._table
+        else:
+            self._source_table = self._joins[self._source_table_name]
+        try:
+            self.kind = self._source_table.get_kind(self._name)
+        except AttributeError:
+            pass
 
     def render(self):
-        return '%s.%s AS %s' % (self._source_table, self._name, self._alias)
+        return '%s.%s AS %s' % (self._source_table_name, self._name, self._alias)
 
     def belong_to(self, table_alias):
-        return self._source_table == table_alias
+        return self._source_table_name == table_alias
 
     def name_to_group(self):
-        return '%s.%s' % (self._source_table, self._name)
+        return '%s.%s' % (self._source_table_name, self._name)
 
     def alias(self):
         return self._alias
@@ -39,7 +55,7 @@ class QueryField(object):
 
 class GeometryQueryField(QueryField):
     def render(self):
-        return 'ST_AsGML(%s.%s) AS %s' % (self._source_table, self._name, self._alias)
+        return 'ST_AsGML(%s.%s) AS %s' % (self._source_table_name, self._name, self._alias)
 
     def serialize(self, val):
         if val is None:
@@ -48,6 +64,8 @@ class GeometryQueryField(QueryField):
 
 
 class CountQueryField(QueryField):
+    kind = 'integer'
+
     def __init__(self, from_table, related_to, where=None):
         self._related_to = related_to
         if is_model_subclass(from_table):
@@ -65,8 +83,6 @@ class CountQueryField(QueryField):
             self._join_table = self._table
         else:
             self._join_table = self._joins[self._related_to]
-        if is_model_subclass(self._join_table):
-            self._join_table = Table(self._join_table)
 
     def render(self):
         return ' '.join([
@@ -104,6 +120,7 @@ class ForeignQueryField(QueryField):
         self._relation_table = Table(
             self._table.find_foreign_key_with_name(self._relation).related_table
         )
+        self.kind = self._relation_table.get_kind(self._relation_field_name)
 
     def render(self):
         return ' '.join([
@@ -127,18 +144,22 @@ class ForeignQueryField(QueryField):
 
 
 class RowArrayQueryField(QueryField):
+    kind = None
+
     def __init__(self, relation):
-        self._relation = relation
+        self._source_table_name = relation
 
     def initialize(self, **kwargs):
         super(RowArrayQueryField, self).initialize(**kwargs)
-        self._relation_field_names = self._joins[self._relation].field_names()
+        relation = self._joins[self._source_table_name]
+        self._relation_field_names = relation.field_names
+        self._relation_field_kinds = relation.field_kinds
 
     def render(self):
         return ' '.join([
             'array_agg(DISTINCT ROW(',
             ', '.join([
-                '%s.%s' % (self._relation, field_name)
+                '%s.%s' % (self._source_table_name, field_name)
                 for field_name in self._relation_field_names
             ]),
             ')) AS',
@@ -151,13 +172,56 @@ class RowArrayQueryField(QueryField):
     def name_to_group(self):
         return None
 
+    def serialize_subfield(self, kind, string):
+        if string is None:
+            return None
+
+        if kind == 'smallint':
+            return int(string)
+        elif kind == 'varchar':
+            return string
+        elif kind == 'geometry':
+            return Point.from_gml(string)
+        elif kind == 'text':
+            return string
+        elif kind == 'numeric':
+            return float(string)
+        elif kind == 'boolean':
+            if string in ['t', 'Yes']:
+                return True
+            elif string in ['f', 'No']:
+                return False
+            else:
+                return None
+        elif kind == 'date':
+            return datetime.strptime(string, '%Y-%m-%d').date()
+        elif kind == 'integer':
+            return int(string)
+        elif kind == 'serial':
+            return int(string)
+        elif kind is None:
+            return None
+        elif kind == 'jsonb':
+            string = string.replace('\\"\\"', '"')
+            return json.loads(string)
+        elif kind == 'timestamp with time zone':
+            return dateutil.parser.parse(string)
+        else:
+            raise NotImplementedError(
+                'Cannot yet serialize subfield of kind "%s", value was "%s"' % (
+                    kind,
+                    string
+                )
+            )
+
     def serialize(self, val):
         val_tuples = parse_postgres_row_array(val)
         result = []
         for row in val_tuples:
             result.append(
                 {
-                    self._relation_field_names[i]: v
+                    self._relation_field_names[i]:
+                    self.serialize_subfield(self._relation_field_kinds[i], v)
                     for i, v in enumerate(row)
                 }
             )

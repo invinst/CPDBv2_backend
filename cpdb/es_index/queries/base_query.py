@@ -15,8 +15,8 @@ class BaseQuery(object):
         self._process_joins()
         self._process_fields()
 
-    def field_aliases(self):
-        return [field.alias() for field in self._fields]
+    def query_fields(self):
+        return self._fields
 
     @property
     def field_names_to_group(self):
@@ -83,10 +83,14 @@ class BaseQuery(object):
     def equal_operator(self, value):
         return '=%s' % self.value_str(value)
 
+    def isnull_operator(self, value):
+        return 'IS NULL' if value else 'IS NOT NULL'
+
     def operate_str(self, operator, value):
         operator_map = {
             'in': self.in_operator,
-            'equal': self.equal_operator
+            'equal': self.equal_operator,
+            'isnull': self.isnull_operator
         }
         return operator_map[operator](value)
 

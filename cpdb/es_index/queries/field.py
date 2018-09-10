@@ -1,4 +1,6 @@
-from django.db import models
+from django.db import connection, models
+
+from .utils import clean_db_type
 
 
 class Field(object):
@@ -21,3 +23,7 @@ class Field(object):
     @property
     def related_table(self):
         return self._model_field.related_model
+
+    @property
+    def kind(self):
+        return clean_db_type(self._model_field.db_type(connection))
