@@ -27,7 +27,6 @@ from officers.serializers.doc_serializers import (
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer,
-    OfficerYearlyPercentileSerializer,
     OfficerSerializer,
     RankChangeNewTimelineSerializer
 )
@@ -43,11 +42,33 @@ class OfficersIndexer(BaseIndexer):
     serializer = OfficerSerializer()
     query = OfficerQuery()
     allegation_query = AllegationQuery()
+    percentile_groups = [
+        PERCENTILE_ALLEGATION_GROUP,
+        PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
+        PERCENTILE_TRR_GROUP
+    ]
 
     def __init__(self):
         super(OfficersIndexer, self).__init__()
-        top_percentile = officer_percentile.top_percentile(percentile_groups=[PERCENTILE_ALLEGATION_GROUP])
-        self.top_percentile_dict = {officer.id: officer for officer in top_percentile}
+
+        self.yearly_top_percentile = dict()
+        for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
+            for officer in officer_percentile.top_percentile(yr, percentile_groups=self.percentile_groups):
+                if officer.resignation_date and yr > officer.resignation_date.year:
+                    continue
+                officer_list = self.yearly_top_percentile.setdefault(officer.id, [])
+                officer_dict = {
+                    'id': officer.id,
+                    'year': yr
+                }
+                for attr in [
+                        'percentile_trr',
+                        'percentile_allegation',
+                        'percentile_allegation_civilian',
+                        'percentile_allegation_internal']:
+                    if hasattr(officer, attr):
+                        officer_dict[attr] = str(round(getattr(officer, attr), 4))
+                officer_list.append(officer_dict)
 
     def get_queryset(self):
         return Officer.objects.all()
@@ -73,7 +94,7 @@ class OfficersIndexer(BaseIndexer):
                 dict_a[officer_id_b] = dict_a.get(officer_id_b, 0) + 1
                 dict_b = self.coaccusals.setdefault(officer_id_b, dict())
                 dict_b[officer_id_a] = dict_b.get(officer_id_a, 0) + 1
-        
+
         self.award_dict = dict()
         awards = AwardQuery().execute()
         for award in awards:
@@ -85,36 +106,8 @@ class OfficersIndexer(BaseIndexer):
         datum['allegations'] = self.allegation_dict.get(datum['id'], [])
         datum['awards'] = self.award_dict.get(datum['id'], [])
         datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())
-        if datum['id'] in self.top_percentile_dict:
-            datum['percentile_allegation'] = self.top_percentile_dict[datum['id']].percentile_allegation
-        else:
-            datum['percentile_allegation'] = None
+        datum['percentiles'] = self.yearly_top_percentile.get(datum['id'], [])
         return self.serializer.serialize(datum)
-
-
-@register_indexer(app_name)
-class OfficerPercentileIndexer(BaseIndexer):
-    index_alias = officers_index_alias
-    doc_type_klass = OfficerInfoDocType
-    parent_doc_type_property = 'percentiles'
-    percentile_groups = [
-        PERCENTILE_ALLEGATION_GROUP,
-        PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP,
-        PERCENTILE_TRR_GROUP
-    ]
-
-    def get_queryset(self):
-        def _not_retired(officer):
-            return not officer.resignation_date or officer.year <= officer.resignation_date.year
-
-        results = []
-        for yr in tqdm(range(MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR + 1), desc='Prepare percentile data'):
-            officers = officer_percentile.top_percentile(yr, percentile_groups=self.percentile_groups)
-            results.extend(filter(_not_retired, officers))
-        return results
-
-    def extract_datum(self, datum):
-        return OfficerYearlyPercentileSerializer(datum).data
 
 
 @register_indexer(app_name)

@@ -268,10 +268,11 @@ class OfficerSerializer(BaseSerializer):
         ]
 
     def get_current_allegation_percentile(self, obj):
-        if obj['percentile_allegation'] is None:
+        try:
+            lastest_percentiles = max(obj['percentiles'], key=lambda x: x['year'])
+            return lastest_percentiles['percentile_allegation']
+        except ValueError:
             return None
-
-        return '%.4f' % obj['percentile_allegation']
 
     def __init__(self, *args, **kwargs):
         super(OfficerSerializer, self).__init__(*args, **kwargs)
@@ -306,21 +307,9 @@ class OfficerSerializer(BaseSerializer):
             'current_salary': self.get_current_salary,
             'unsustained_count': get('unsustained_count'),
             'coaccusals': self.get_coaccusals,
-            'current_allegation_percentile': self.get_current_allegation_percentile
+            'current_allegation_percentile': self.get_current_allegation_percentile,
+            'percentiles': get('percentiles')
         }
-
-
-class OfficerYearlyPercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    year = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_internal = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
 class CoaccusalSerializer(serializers.Serializer):
