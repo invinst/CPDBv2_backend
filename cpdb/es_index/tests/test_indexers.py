@@ -193,8 +193,8 @@ class PartialIndexerTestCase(TestCase):
         my_index_alias.read_index.delete(ignore=404)
         my_index_alias.read_index.create(ignore=400)
 
-    def test_get_batch_querysets(self):
-        expect(lambda: PartialIndexer().get_batch_querysets([])).to.throw(NotImplementedError)
+    def test_get_batch_queryset(self):
+        expect(lambda: PartialIndexer().get_batch_queryset([])).to.throw(NotImplementedError)
 
     def test_get_batch_update_docs_queries(self):
         expect(lambda: PartialIndexer().get_batch_update_docs_queries([])).to.throw(NotImplementedError)
@@ -203,7 +203,7 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return keys
 
         my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
@@ -223,7 +223,7 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return keys
 
         my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
@@ -233,8 +233,8 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
-                return Mock(count=Mock(return_value=len(keys)))
+            def get_postgres_count(self, keys):
+                return len(keys)
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=len(keys)))
@@ -248,8 +248,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
-                return Mock(count=Mock(return_value=len(keys)))
+            def get_postgres_count(self, keys):
+                return len(keys)
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=1))
@@ -291,8 +291,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
-                return Mock(count=Mock(return_value=len(keys)))
+            def get_postgres_count(self, keys):
+                return len(keys)
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=1))
@@ -316,8 +316,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
-                return Mock(count=Mock(return_value=0))
+            def get_postgres_count(self, keys):
+                return 0
 
             def get_batch_update_docs_queries(self, keys):
                 return self.doc_type_klass.search().query('terms', id=keys)
@@ -339,11 +339,13 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(
-                    count=Mock(return_value=len(keys)),
                     __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
                 )
+
+            def get_postgres_count(self, keys):
+                return len(keys)
 
             def get_batch_update_docs_queries(self, keys):
                 return self.doc_type_klass.search().query('terms', id=keys)
