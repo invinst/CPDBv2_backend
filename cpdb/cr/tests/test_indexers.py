@@ -325,6 +325,15 @@ class CRIndexerTestCase(TestCase):
         expect(rows).to.have.length(1)
         expect(rows[0]['coaccused'][0]['age']).to.be.none()
 
+    def test_extract_investigator_multiple_cases(self):
+        investigator = InvestigatorFactory(first_name='Luke', last_name='Skywalker')
+        InvestigatorAllegationFactory.create_batch(3, investigator=investigator)
+        rows = self.extract_data()
+        expect(rows).to.have.length(3)
+        for row in rows:
+            expect(row['involvements']).to.have.length(1)
+            expect(row['involvements'][0]['full_name']).to.eq('Luke Skywalker')
+
 
 class CRPartialIndexerTestCase(TestCase):
     def test_get_queryset(self):
