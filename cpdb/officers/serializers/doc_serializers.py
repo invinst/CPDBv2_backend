@@ -9,14 +9,14 @@ from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
 class UnitSerializer(BaseSerializer):
     def get_long_unit_name(self, obj):
-        return 'Unit %s' % obj['unit_name'] if obj['unit_name'] else 'Unit'
+        return 'Unit %s' % obj['unit__unit_name'] if obj['unit__unit_name'] else 'Unit'
 
     def __init__(self, *args, **kwargs):
         super(UnitSerializer, self).__init__(*args, **kwargs)
         self._fields = {
             'id': get('unit_id'),
-            'unit_name': get('unit_name'),
-            'description': get('description'),
+            'unit_name': get('unit__unit_name'),
+            'description': get('unit__description'),
             'long_unit_name': self.get_long_unit_name
         }
 
@@ -100,7 +100,7 @@ class OfficerSerializer(BaseSerializer):
 
                 for complainant in allegation['complainants']:
                     facet_value = complainant[facet]
-                    self._count_for_facet_year(entries_dict, facet_value, year, sustained_count_step)                    
+                    self._count_for_facet_year(entries_dict, facet_value, year, sustained_count_step)
 
         return {
             'name': facet_name,
@@ -151,7 +151,7 @@ class OfficerSerializer(BaseSerializer):
                 else:
                     year = None
                 sustained_count_step = 1 if complaint['final_finding'] == 'SU' else 0
-                category = complaint['category']
+                category = complaint['allegation_category__category']
                 if category is None:
                     category = 'Unknown'
 

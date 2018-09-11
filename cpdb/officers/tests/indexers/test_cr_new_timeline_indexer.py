@@ -87,7 +87,7 @@ class CRNewTimelineIndexerTestCase(TestCase):
             url='http://foo.com/2',
             preview_image_url='http://web.com/image2'
         )
-        
+
         rows = self.extract_data()
         expect(rows).to.have.length(4)
         expect(rows[0]).to.eq({

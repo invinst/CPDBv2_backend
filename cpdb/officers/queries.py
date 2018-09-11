@@ -1,45 +1,12 @@
 from es_index.queries import (
-    AggregateQuery, RowArrayQueryField, DistinctQuery, Subquery, CountQueryField,
+    AggregateQuery, RowArrayQueryField, DistinctQuery, CountQueryField,
     ForeignQueryField, GeometryQueryField
 )
 from data.models import (
-    Officer, OfficerHistory, OfficerBadgeNumber, OfficerAllegation, AllegationCategory,
-    Allegation, Complainant, PoliceUnit, Award, Salary, Victim, AttachmentFile
+    Officer, OfficerBadgeNumber, OfficerAllegation, OfficerHistory,
+    Allegation, Salary, Victim, AttachmentFile, PoliceUnit
 )
 from trr.models import TRR
-
-
-class OfficerAllegationQuery(DistinctQuery):
-    base_table = OfficerAllegation
-
-    joins = {
-        'category': AllegationCategory
-    }
-
-    fields = {
-        'id': 'id',
-        'allegation_id': 'allegation_id',
-        'officer_id': 'officer_id',
-        'start_date': 'start_date',
-        'category': 'category.category',
-        'final_finding': 'final_finding',
-    }
-
-
-class AllegationQuery(AggregateQuery):
-    base_table = Allegation
-
-    joins = {
-        'complainants': Complainant,
-        'complaints': Subquery(OfficerAllegationQuery(), on='allegation_id')
-    }
-
-    fields = {
-        'id': 'id',
-        'crid': 'crid',
-        'complainants': RowArrayQueryField('complainants'),
-        'complaints': RowArrayQueryField('complaints')
-    }
 
 
 class OfficerHistoryQuery(DistinctQuery):
@@ -59,20 +26,10 @@ class OfficerHistoryQuery(DistinctQuery):
     }
 
 
-class AwardQuery(DistinctQuery):
-    base_table = Award
-
-    fields = {
-        'officer_id': 'officer_id',
-        'award_type': 'award_type',
-    }
-
-
 class OfficerQuery(AggregateQuery):
     base_table = Officer
 
     joins = {
-        'history': Subquery(OfficerHistoryQuery(), on='officer_id'),
         'badgenumber': OfficerBadgeNumber,
         'salaries': Salary
     }
@@ -91,7 +48,6 @@ class OfficerQuery(AggregateQuery):
         'race': 'race',
         'gender': 'gender',
         'birth_year': 'birth_year',
-        'history': RowArrayQueryField('history'),
         'badgenumber': RowArrayQueryField('badgenumber'),
         'allegation_count': CountQueryField(
             from_table=OfficerAllegation, related_to='base_table'),

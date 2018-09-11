@@ -5,7 +5,9 @@ from data.constants import (
     MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR,
     PERCENTILE_TRR_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_ALLEGATION_GROUP
 )
-from data.models import Officer
+from data.models import (
+    Officer, Award, OfficerAllegation, Complainant, Allegation, OfficerHistory
+)
 from es_index import register_indexer
 from es_index.utils import timing_validate
 from es_index.indexers import BaseIndexer
@@ -14,7 +16,7 @@ from officers.doc_types import OfficerInfoDocType
 from officers.index_aliases import officers_index_alias
 from officers.serializers.doc_serializers import OfficerSerializer
 from officers.queries import (
-    OfficerQuery, AllegationQuery, AwardQuery
+    OfficerQuery
 )
 
 app_name = __name__.split('.')[0]
@@ -36,6 +38,7 @@ class OfficersIndexer(BaseIndexer):
         self.populate_top_percentile_dict()
         self.populate_allegation_dict()
         self.populate_award_dict()
+        self.populate_history_dict()
 
     @timing_validate('OfficersIndexer: Preparing percentile data...')
     def populate_top_percentile_dict(self):
@@ -60,12 +63,28 @@ class OfficersIndexer(BaseIndexer):
 
     @timing_validate('OfficersIndexer: Populating allegation dict...')
     def populate_allegation_dict(self):
-        allegations = AllegationQuery().execute()
+        complainant_dict = dict()
+        complainant_queryset = Complainant.objects.all().values(
+            'allegation_id', 'gender', 'race', 'age'
+        )
+        for obj in complainant_queryset:
+            complainant_dict.setdefault(obj['allegation_id'], []).append(obj)
+
+        officer_allegation_dict = dict()
+        officer_allegation_queryset = OfficerAllegation.objects.all().select_related('allegation_category').values(
+            'id', 'allegation_id', 'officer_id', 'start_date', 'allegation_category__category', 'final_finding'
+        )
+        for obj in officer_allegation_queryset:
+            officer_allegation_dict.setdefault(obj['allegation_id'], []).append(obj)
+
+        allegations = Allegation.objects.all().values('id', 'crid')
         self.allegation_dict = dict()
         self.coaccusals = dict()
         transform_gender = get_gender('gender', 'Unknown')
         transform_age = get_age_range([20, 30, 40, 50], 'age', 'Unknown')
         for allegation in allegations:
+            allegation['complainants'] = complainant_dict.get(allegation['id'], [])
+            allegation['complaints'] = officer_allegation_dict.get(allegation['id'], [])
             for complainant in allegation['complainants']:
                 complainant['gender'] = transform_gender(complainant)
                 complainant['age'] = transform_age(complainant)
@@ -84,9 +103,18 @@ class OfficersIndexer(BaseIndexer):
     @timing_validate('OfficersIndexer: Populating award dict...')
     def populate_award_dict(self):
         self.award_dict = dict()
-        awards = AwardQuery().execute()
-        for award in awards:
+        queryset = Award.objects.all().values('officer_id', 'award_type')
+        for award in queryset:
             self.award_dict.setdefault(award['officer_id'], []).append(award)
+
+    @timing_validate('OfficersIndexer: Populating history dict...')
+    def populate_history_dict(self):
+        self.history_dict = dict()
+        queryset = OfficerHistory.objects.all().select_related('unit').values(
+            'officer_id', 'unit_id', 'unit__unit_name', 'unit__description', 'end_date', 'effective_date'
+        )
+        for obj in queryset:
+            self.history_dict.setdefault(obj['officer_id'], []).append(obj)
 
     def get_queryset(self):
         return Officer.objects.all()
@@ -99,4 +127,6 @@ class OfficersIndexer(BaseIndexer):
         datum['awards'] = self.award_dict.get(datum['id'], [])
         datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())
         datum['percentiles'] = self.yearly_top_percentile.get(datum['id'], [])
+        datum['history'] = self.history_dict.get(datum['id'], [])
+
         return self.serializer.serialize(datum)
