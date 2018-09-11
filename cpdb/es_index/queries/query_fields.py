@@ -202,8 +202,10 @@ class RowArrayQueryField(QueryField):
         elif kind is None:
             return None
         elif kind == 'jsonb':
-            string = string.replace('\\"\\"', '"')
-            return json.loads(string)
+            try:
+                return json.loads(string)
+            except ValueError:
+                raise ValueError('Cannot load json string: %s' % string)
         elif kind == 'timestamp with time zone':
             return dateutil.parser.parse(string)
         else:

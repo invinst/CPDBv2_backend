@@ -251,11 +251,16 @@ class RowArrayQueryFieldTestCase(SimpleTestCase):
             ('serial', '12', 12),
             (None, 'abc', None),
             ('numeric', None, None),
-            ('jsonb', '{\\"\\"key\\"\\":\\"\\"value\\"\\"}', {'key': 'value'})
+            ('jsonb', '{"key": "value"}', {'key': 'value'})
         ]
 
         for kind, string, expectation in test_case_with_expect:
             expect(self.query_field.serialize_subfield(kind, string)).to.eq(expectation)
+
+    def test_strange_json_format(self):
+        expect(
+            lambda: self.query_field.serialize_subfield('jsonb', '{\\\\"abc\\\\": 123}')
+        ).to.throw(ValueError)
 
     def test_serialize_subfield_geometry_field(self):
         expect(self.query_field.serialize_subfield(

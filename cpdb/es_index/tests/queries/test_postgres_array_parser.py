@@ -22,7 +22,11 @@ class PostgresArrayParserTestCase(SimpleTestCase):
         expect(parse_postgres_row_array('{"(\\"123\\")"}')).to.eq([('123',)])
         expect(
             parse_postgres_row_array('{"(\\"{\\"\\"documentcloud_id\\"\\": \\"\\"4335853\\"\\"}\\")"}')
-        ).to.eq([('{\\"\\"documentcloud_id\\"\\": \\"\\"4335853\\"\\"}',)])
+        ).to.eq([('{"documentcloud_id": "4335853"}',)])
+        expect(parse_postgres_row_array(
+            '{"(\\"\\"\\"{\\\\\\\\\\"\\"normalized_title\\\\\\\\\\"\\": \\\\\\\\\\"\\"cr-271494\\\\\\\\\\"\\", '
+            '\\\\\\\\\\"\\"documentcloud_id\\\\\\\\\\"\\": 1273462}\\"\\"\\")"}'
+        )).to.eq([('{"normalized_title": "cr-271494", "documentcloud_id": 1273462}',)])
 
     def test_multiple_rows(self):
         expect(parse_postgres_row_array('{"(1,Captain)","(2,Officer)"}')).to.eq([('1', 'Captain'), ('2', 'Officer')])

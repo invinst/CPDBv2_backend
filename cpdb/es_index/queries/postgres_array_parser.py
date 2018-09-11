@@ -52,6 +52,12 @@ class PostgresArrayLexer(object):
             )
         )
 
+    def cleaned_string(self, raw_str):
+        while r'\\' in raw_str:
+            raw_str = raw_str.replace(r'\\', '\\')
+        raw_str = raw_str.replace(r'\"', '"').replace('""', '"').strip('"')
+        return unicode(raw_str, 'utf8')
+
     def swallow(self):
         while self.have_more():
             if self._state == State.initial:
@@ -77,7 +83,6 @@ class PostgresArrayLexer(object):
                     yield None
                     self.discard_token()
                 elif self.begin_with('\\"'):
-                    self.discard_token()
                     self.to_state(State.quoted_string)
                 elif self.begin_with(')"'):
                     yield None
@@ -98,14 +103,16 @@ class PostgresArrayLexer(object):
                 else:
                     self.advance()
             elif self._state == State.quoted_string:
+                if self.begin_with('\\\\\\\\\\"\\"'):
+                    pass
                 if self.begin_with('\\"\\"'):
                     pass
                 elif self.begin_with('\\",'):
-                    yield unicode(self.token[:-3], 'utf8')
+                    yield self.cleaned_string(self.token[:-1])
                     self.discard_token()
                     self.to_state(State.row)
                 elif self.begin_with('\\")"'):
-                    yield unicode(self.token[:-4], 'utf8')
+                    yield self.cleaned_string(self.token[:-2])
                     self.discard_token()
                     self.to_state(State.array)
                 else:
