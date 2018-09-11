@@ -65,7 +65,7 @@ class InvestigatorAllegationQuery(DistinctQuery):
     joins = {
         'investigator': Subquery(InvestigatorQuery(), on='id', left_on='investigator_id')
     }
-    
+
     fields = {
         'officer_id': 'investigator.officer_id',
         'allegation_id': 'allegation_id',
