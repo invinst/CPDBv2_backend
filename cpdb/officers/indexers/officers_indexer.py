@@ -6,7 +6,8 @@ from data.constants import (
     PERCENTILE_TRR_GROUP, PERCENTILE_ALLEGATION_INTERNAL_CIVILIAN_GROUP, PERCENTILE_ALLEGATION_GROUP
 )
 from data.models import (
-    Officer, Award, OfficerAllegation, Complainant, Allegation, OfficerHistory
+    Officer, Award, OfficerAllegation, Complainant, Allegation, OfficerHistory,
+    OfficerBadgeNumber, Salary
 )
 from es_index import register_indexer
 from es_index.utils import timing_validate
@@ -39,6 +40,8 @@ class OfficersIndexer(BaseIndexer):
         self.populate_allegation_dict()
         self.populate_award_dict()
         self.populate_history_dict()
+        self.populate_badgenumber_dict()
+        self.populate_salary_dict()
 
     @timing_validate('OfficersIndexer: Preparing percentile data...')
     def populate_top_percentile_dict(self):
@@ -116,6 +119,24 @@ class OfficersIndexer(BaseIndexer):
         for obj in queryset:
             self.history_dict.setdefault(obj['officer_id'], []).append(obj)
 
+    @timing_validate('OfficersIndexer: Populating badgenumber dict...')
+    def populate_badgenumber_dict(self):
+        self.badgenumber_dict = dict()
+        queryset = OfficerBadgeNumber.objects.all().values(
+            'officer_id', 'star', 'current'
+        )
+        for obj in queryset:
+            self.badgenumber_dict.setdefault(obj['officer_id'], []).append(obj)
+
+    @timing_validate('OfficersIndexer: Populating salary dict...')
+    def populate_salary_dict(self):
+        self.salary_dict = dict()
+        queryset = Salary.objects.all().values(
+            'officer_id', 'salary', 'year'
+        )
+        for obj in queryset:
+            self.salary_dict.setdefault(obj['officer_id'], []).append(obj)
+
     def get_queryset(self):
         return Officer.objects.all()
 
@@ -128,5 +149,7 @@ class OfficersIndexer(BaseIndexer):
         datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())
         datum['percentiles'] = self.yearly_top_percentile.get(datum['id'], [])
         datum['history'] = self.history_dict.get(datum['id'], [])
+        datum['badgenumber'] = self.badgenumber_dict.get(datum['id'], [])
+        datum['salaries'] = self.salary_dict.get(datum['id'], [])
 
         return self.serializer.serialize(datum)

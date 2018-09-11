@@ -361,13 +361,13 @@ class OfficersIndexerTestCase(TestCase):
         expect(rows).to.have.length(2)
         expect(rows[0]['coaccusals']).to.eq([
             {
-                'id': 1102,
+                'id': 1101,
                 'coaccusal_count': 2
             }
         ])
         expect(rows[1]['coaccusals']).to.eq([
             {
-                'id': 1101,
+                'id': 1102,
                 'coaccusal_count': 2
             }
         ])
@@ -455,8 +455,8 @@ class OfficersIndexerTestCase(TestCase):
                 'percentile_trr': '66.6667'
             }
         ])
-        expect(rows[1]['current_allegation_percentile']).to.eq('66.6667')
-        expect(rows[1]['percentiles']).to.eq([
+        expect(rows[2]['current_allegation_percentile']).to.eq('66.6667')
+        expect(rows[2]['percentiles']).to.eq([
             {
                 'id': 2,
                 'year': 2016,
@@ -466,8 +466,8 @@ class OfficersIndexerTestCase(TestCase):
                 'percentile_trr': '0.0'
             }
         ])
-        expect(rows[2]['current_allegation_percentile']).to.eq('0.0')
-        expect(rows[2]['percentiles']).to.eq([
+        expect(rows[1]['current_allegation_percentile']).to.eq('0.0')
+        expect(rows[1]['percentiles']).to.eq([
             {
                 'id': 3,
                 'year': 2015,

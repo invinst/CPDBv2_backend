@@ -3,8 +3,8 @@ from es_index.queries import (
     ForeignQueryField, GeometryQueryField
 )
 from data.models import (
-    Officer, OfficerBadgeNumber, OfficerAllegation, OfficerHistory,
-    Allegation, Salary, Victim, AttachmentFile, PoliceUnit
+    Officer, OfficerAllegation, OfficerHistory,
+    Allegation, Victim, AttachmentFile, PoliceUnit
 )
 from trr.models import TRR
 
@@ -29,11 +29,6 @@ class OfficerHistoryQuery(DistinctQuery):
 class OfficerQuery(AggregateQuery):
     base_table = Officer
 
-    joins = {
-        'badgenumber': OfficerBadgeNumber,
-        'salaries': Salary
-    }
-
     fields = {
         'id': 'id',
         'date_of_appt': 'appointed_date',
@@ -48,7 +43,6 @@ class OfficerQuery(AggregateQuery):
         'race': 'race',
         'gender': 'gender',
         'birth_year': 'birth_year',
-        'badgenumber': RowArrayQueryField('badgenumber'),
         'allegation_count': CountQueryField(
             from_table=OfficerAllegation, related_to='base_table'),
         'sustained_count': CountQueryField(
@@ -64,8 +58,7 @@ class OfficerQuery(AggregateQuery):
             from_table=TRR, related_to='base_table'),
         'tags': 'tags',
         'unsustained_count': CountQueryField(
-            from_table=OfficerAllegation, related_to='base_table', where={'final_finding': 'NS'}),
-        'salaries': RowArrayQueryField('salaries')
+            from_table=OfficerAllegation, related_to='base_table', where={'final_finding': 'NS'})
     }
 
 
