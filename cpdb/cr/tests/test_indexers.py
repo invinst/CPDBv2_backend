@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from decimal import Decimal
 
 from django.test import TestCase
 from django.contrib.gis.geos import Point
@@ -49,10 +50,10 @@ class CRIndexerTestCase(TestCase):
             birth_year=1986,
             appointed_date=date(2001, 1, 1),
             rank='Officer',
-            complaint_percentile=0.0,
-            civilian_allegation_percentile=1.1,
-            internal_allegation_percentile=2.2,
-            trr_percentile=3.3
+            complaint_percentile=Decimal(0),
+            civilian_allegation_percentile=Decimal(1.1),
+            internal_allegation_percentile=Decimal(2.2),
+            trr_percentile=Decimal(3.3)
         )
         OfficerAllegationFactory(
             officer=coaccused,
@@ -147,10 +148,10 @@ class CRIndexerTestCase(TestCase):
                     'age': 32,
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 0.0,
-                    'percentile_allegation_civilian': 1.1,
-                    'percentile_allegation_internal': 2.2,
-                    'percentile_trr': 3.3,
+                    'percentile_allegation': Decimal('0'),
+                    'percentile_allegation_civilian': Decimal('1.1'),
+                    'percentile_allegation_internal': Decimal('2.2'),
+                    'percentile_trr': Decimal('3.3'),
                     'disciplined': True
                 }
             ],
@@ -172,9 +173,9 @@ class CRIndexerTestCase(TestCase):
                     'abbr_name': 'G. Lauren',
                     'num_cases': 1,
                     'current_rank': 'IPRA investigator',
-                    'percentile_allegation': 6.6,
-                    'percentile_allegation_civilian': 7.7,
-                    'percentile_allegation_internal': 8.8,
+                    'percentile_allegation': Decimal('6.6'),
+                    'percentile_allegation_civilian': Decimal('7.7'),
+                    'percentile_allegation_internal': Decimal('8.8'),
                     'percentile_trr': None
                 },
                 {
@@ -186,10 +187,10 @@ class CRIndexerTestCase(TestCase):
                     'race': 'White',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 4.4,
+                    'percentile_allegation': Decimal('4.4'),
                     'percentile_allegation_civilian': None,
                     'percentile_allegation_internal': None,
-                    'percentile_trr': 5.5
+                    'percentile_trr': Decimal('5.5')
                 }
             ],
             'attachments': [
@@ -392,3 +393,13 @@ class CRPartialIndexerTestCase(TestCase):
         expect(set(update_docs_query.crid for update_docs_query in update_docs_queries)).to.eq({
             '123456', '789',
         })
+
+    def test_extra_data_populated(self):
+        allegation = AllegationFactory(id=1122)
+        OfficerAllegationFactory(allegation=allegation)
+        InvestigatorAllegationFactory(allegation=allegation)
+        PoliceWitnessFactory(allegation=allegation)
+        indexer = CRPartialIndexer(updating_keys=['123', '456'])
+        expect(indexer.coaccused_dict[1122]).to.have.length(1)
+        expect(indexer.investigator_dict[1122]).to.have.length(1)
+        expect(indexer.policewitness_dict[1122]).to.have.length(1)

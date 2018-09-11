@@ -127,9 +127,6 @@ class CoaccusedQuery(DistinctQuery):
 class AllegationQuery(AggregateQuery):
     base_table = Allegation
     joins = {
-        'coaccused': Subquery(CoaccusedQuery(), on='allegation_id'),
-        'investigators': Subquery(InvestigatorAllegationQuery(), on='allegation_id'),
-        'police_witnesses': Subquery(PoliceWitnessQuery(), on='allegation_id'),
         'attachment_files': AttachmentFile,
         'complainants': Complainant,
         'victims': Victim
@@ -137,8 +134,8 @@ class AllegationQuery(AggregateQuery):
 
     fields = {
         'crid': 'crid',
+        'id': 'id',
         'attachments': RowArrayQueryField('attachment_files'),
-        'coaccused': RowArrayQueryField('coaccused'),
         'complainants': RowArrayQueryField('complainants'),
         'victims': RowArrayQueryField('victims'),
         'beat': ForeignQueryField(relation='beat_id', field_name='name'),
@@ -150,6 +147,4 @@ class AllegationQuery(AggregateQuery):
         'add2': 'add2',
         'city': 'city',
         'location': 'location',
-        'investigators': RowArrayQueryField('investigators'),
-        'police_witnesses': RowArrayQueryField('police_witnesses')
     }
