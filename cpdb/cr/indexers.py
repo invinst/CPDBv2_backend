@@ -5,7 +5,7 @@ from es_index.utils import timing_validate
 from es_index.indexers import BaseIndexer, PartialIndexer
 from data.models import Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation
 from .doc_types import CRDocType
-from .queries import AllegationQuery, CoaccusedQuery
+from .queries import AllegationQuery
 from .index_aliases import cr_index_alias
 from .serializers.cr_doc_serializers import AllegationSerializer
 
@@ -44,7 +44,27 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating coaccused dict...')
     def populate_coaccused_dict(self):
         self.coaccused_dict = dict()
-        for obj in CoaccusedQuery().execute():
+        sustained_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('officer_id'),
+            final_finding='SU'
+        )
+        allegation_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('officer_id')
+        )
+        queryset = OfficerAllegation.objects.all().select_related('officer', 'allegation_category')\
+            .annotate(allegation_count=models.Count(models.Subquery(allegation_count.values('id')[:1])))\
+            .annotate(sustained_count=models.Count(models.Subquery(sustained_count.values('id')[:1])))\
+            .values(
+                'officer_id', 'officer__first_name', 'officer__last_name', 'officer__middle_initial',
+                'officer__middle_initial2', 'officer__suffix_name', 'officer__gender', 'officer__race',
+                'officer__birth_year', 'officer__rank', 'officer__complaint_percentile',
+                'officer__civilian_allegation_percentile', 'officer__internal_allegation_percentile',
+                'officer__trr_percentile', 'allegation_id', 'final_outcome', 'final_finding',
+                'recc_outcome', 'start_date', 'end_date', 'disciplined', 'allegation_count',
+                'sustained_count', 'allegation_category__allegation_name', 'allegation_category__category',
+                'allegation_category_id',
+            )
+        for obj in queryset:
             self.coaccused_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     @timing_validate('CRIndexer: Populating investigator dict...')

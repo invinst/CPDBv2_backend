@@ -8,44 +8,44 @@ from data.constants import FINDINGS_DICT
 
 class CoaccusedSerializer(BaseSerializer):
     def get_full_name(self, obj):
-        return ' '.join([obj['first_name'], obj['last_name']])
+        return ' '.join([obj['officer__first_name'], obj['officer__last_name']])
 
     def get_abbr_name(self, obj):
-        return '. '.join([obj['first_name'][0].upper(), obj['last_name']])
+        return '. '.join([obj['officer__first_name'][0].upper(), obj['officer__last_name']])
 
     def get_final_finding(self, obj):
         return FINDINGS_DICT.get(obj['final_finding'], None)
 
     def get_age(self, obj):
-        if obj['birth_year'] is not None:
-            return datetime.now().year - obj['birth_year']
+        if obj['officer__birth_year'] is not None:
+            return datetime.now().year - obj['officer__birth_year']
 
         return None
 
     def __init__(self, *args, **kwargs):
         super(CoaccusedSerializer, self).__init__(*args, **kwargs)
         self._fields = {
-            'id': get('id'),
+            'id': get('officer_id'),
             'full_name': self.get_full_name,
             'abbr_name': self.get_abbr_name,
-            'gender': get_gender('gender'),
-            'race': get('race'),
-            'rank': get('rank'),
+            'gender': get_gender('officer__gender'),
+            'race': get('officer__race'),
+            'rank': get('officer__rank'),
             'final_outcome': get('final_outcome'),
             'final_finding': self.get_final_finding,
             'recc_outcome': get('recc_outcome'),
-            'category': get('category'),
-            'subcategory': get('allegation_name'),
+            'category': get('allegation_category__category'),
+            'subcategory': get('allegation_category__allegation_name'),
             'start_date': get_date('start_date'),
             'end_date': get_date('end_date'),
             'age': self.get_age,
             'allegation_count': get('allegation_count'),
             'sustained_count': get('sustained_count'),
             'disciplined': get('disciplined'),
-            'percentile_allegation': get('complaint_percentile'),
-            'percentile_allegation_civilian': get('civilian_allegation_percentile'),
-            'percentile_allegation_internal': get('internal_allegation_percentile'),
-            'percentile_trr': get('trr_percentile')
+            'percentile_allegation': get('officer__complaint_percentile'),
+            'percentile_allegation_civilian': get('officer__civilian_allegation_percentile'),
+            'percentile_allegation_internal': get('officer__internal_allegation_percentile'),
+            'percentile_trr': get('officer__trr_percentile')
         }
 
 
@@ -135,9 +135,9 @@ class AllegationSerializer(BaseSerializer):
     def get_most_common_category(self, obj):
         category_count = dict()
         for accused in obj['coaccused']:
-            category = category_count.setdefault(accused['category_id'], {
-                'allegation_name': accused['allegation_name'],
-                'category': accused['category'],
+            category = category_count.setdefault(accused['allegation_category_id'], {
+                'allegation_name': accused['allegation_category__allegation_name'],
+                'category': accused['allegation_category__category'],
                 'count': 0
             })
             category['count'] += 1
@@ -177,7 +177,7 @@ class AllegationSerializer(BaseSerializer):
             AllegationSerializer.police_witness_serializer(obj)
 
     def get_categories(self, obj):
-        return list(set([accused['category'] for accused in obj['coaccused']]))
+        return list(set([accused['allegation_category__category'] for accused in obj['coaccused']]))
 
     def __init__(self, *args, **kwargs):
         super(AllegationSerializer, self).__init__(*args, **kwargs)
