@@ -124,11 +124,6 @@ class PartialIndexer(BaseIndexer):
             yield self.get_batch_queryset(keys_batch)
 
     @property
-    def batch_postgres_count(self):
-        for keys_batch in self.get_keys_batches():
-            yield self.get_postgres_count(keys_batch)
-
-    @property
     def batch_update_docs_queries(self):
         for keys_batch in self.get_keys_batches():
             yield self.get_batch_update_docs_queries(keys_batch)
@@ -150,7 +145,7 @@ class PartialIndexer(BaseIndexer):
 
     def validate_updated_docs(self):
         num_es_docs = sum(update_docs_query.count() for update_docs_query in self.batch_update_docs_queries)
-        num_postgres_rows = sum(self.batch_postgres_count)
+        num_postgres_rows = sum(queryset.count() for queryset in self.batch_querysets)
 
         if num_postgres_rows != num_es_docs:
             raise ValueError(

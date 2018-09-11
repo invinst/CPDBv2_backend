@@ -96,9 +96,6 @@ class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer
             start_date__isnull=False,
             allegation__crid__in=keys)
 
-    def get_postgres_count(self, keys):
-        return self.get_batch_queryset(keys).count()
-
     def get_batch_update_docs_queries(self, keys):
         return self.doc_type_klass.search().query('terms', crid=keys).filter('term', kind='CR')
 

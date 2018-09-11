@@ -3,9 +3,11 @@ from django.db import models
 from es_index import register_indexer
 from es_index.utils import timing_validate
 from es_index.indexers import BaseIndexer, PartialIndexer
-from data.models import Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation
+from data.models import (
+    Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation,
+    AttachmentFile, Complainant, Victim
+)
 from .doc_types import CRDocType
-from .queries import AllegationQuery
 from .index_aliases import cr_index_alias
 from .serializers.cr_doc_serializers import AllegationSerializer
 
@@ -23,6 +25,9 @@ class CRIndexer(BaseIndexer):
         self.populate_policewitness_dict()
         self.populate_coaccused_dict()
         self.populate_investigator_dict()
+        self.populate_attachments_dict()
+        self.populate_complainants_dict()
+        self.populate_victims_dict()
 
     @timing_validate('CRIndexer: Populating policewitness dict...')
     def populate_policewitness_dict(self):
@@ -83,23 +88,56 @@ class CRIndexer(BaseIndexer):
         for obj in queryset:
             self.investigator_dict.setdefault(obj['allegation_id'], []).append(obj)
 
+    @timing_validate('CRIndexer: Populating attachments dict...')
+    def populate_attachments_dict(self):
+        self.attachments_dict = dict()
+        queryset = AttachmentFile.objects.all().values(
+            'allegation_id', 'title', 'url', 'preview_image_url', 'file_type',
+        )
+        for obj in queryset:
+            self.attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
+
+    @timing_validate('CRIndexer: Populating complainants dict...')
+    def populate_complainants_dict(self):
+        self.complainants_dict = dict()
+        queryset = Complainant.objects.all().values(
+            'allegation_id', 'race', 'gender', 'age'
+        )
+        for obj in queryset:
+            self.complainants_dict.setdefault(obj['allegation_id'], []).append(obj)
+
+    @timing_validate('CRIndexer: Populating victims dict...')
+    def populate_victims_dict(self):
+        self.victims_dict = dict()
+        queryset = Victim.objects.all().values(
+            'allegation_id', 'race', 'gender', 'age'
+        )
+        for obj in queryset:
+            self.victims_dict.setdefault(obj['allegation_id'], []).append(obj)
+
     def get_queryset(self):
-        return AllegationQuery().execute()
+        return Allegation.objects.all().select_related('beat').values(
+            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'old_complaint_address', 'add1', 'add2', 'city', 'location'
+        )
 
     def extract_datum(self, datum):
         datum['coaccused'] = self.coaccused_dict.get(datum['id'], [])
         datum['investigators'] = self.investigator_dict.get(datum['id'], [])
         datum['police_witnesses'] = self.policewitness_dict.get(datum['id'], [])
+        datum['attachments'] = self.attachments_dict.get(datum['id'], [])
+        datum['complainants'] = self.complainants_dict.get(datum['id'], [])
+        datum['victims'] = self.victims_dict.get(datum['id'], [])
 
         return self.serializer.serialize(datum)
 
 
 class CRPartialIndexer(PartialIndexer, CRIndexer):
-    def get_postgres_count(self, keys):
-        return Allegation.objects.filter(crid__in=keys).count()
-
     def get_batch_queryset(self, keys):
-        return AllegationQuery().where(crid__in=keys).execute()
+        return Allegation.objects.filter(crid__in=keys).select_related('beat').values(
+            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'old_complaint_address', 'add1', 'add2', 'city', 'location'
+        )
 
     def get_batch_update_docs_queries(self, keys):
         return self.doc_type_klass.search().query('terms', crid=keys)

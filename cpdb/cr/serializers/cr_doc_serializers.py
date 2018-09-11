@@ -192,7 +192,7 @@ class AllegationSerializer(BaseSerializer):
             'end_date': self.get_any_end_date,
             'address': self.get_address,
             'location': get('location'),
-            'beat': get('beat'),
+            'beat': get('beat__name'),
             'involvements': self.get_involvements,
             'category_names': self.get_categories,
             'complainants': DemographicSerializer(key='complainants'),
