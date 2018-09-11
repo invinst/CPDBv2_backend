@@ -1,62 +1,10 @@
 from es_index.queries import (
     DistinctQuery, AggregateQuery, GeometryQueryField, CountQueryField, ForeignQueryField,
-    Subquery, RowArrayQueryField
+    RowArrayQueryField
 )
 from data.models import (
-    Investigator, Allegation, Officer, OfficerAllegation, InvestigatorAllegation,
-    AllegationCategory, AttachmentFile, Complainant, Victim
+    Allegation, Officer, OfficerAllegation, AllegationCategory, AttachmentFile, Complainant, Victim
 )
-
-
-class InvestigatorQuery(DistinctQuery):
-    base_table = Investigator
-
-    joins = {
-        'officer': Officer
-    }
-
-    fields = {
-        'id': 'id',
-        'officer_id': 'officer_id',
-        'first_name': 'first_name',
-        'last_name': 'last_name',
-        'officer_first_name': 'officer.first_name',
-        'officer_last_name': 'officer.last_name',
-        'officer_middle_initial': 'officer.middle_initial',
-        'officer_middle_initial2': 'officer.middle_initial2',
-        'officer_suffix_name': 'officer.suffix_name',
-        'complaint_percentile': 'officer.complaint_percentile',
-        'civilian_allegation_percentile': 'officer.civilian_allegation_percentile',
-        'internal_allegation_percentile': 'officer.internal_allegation_percentile',
-        'trr_percentile': 'officer.trr_percentile',
-        'num_cases': CountQueryField(from_table=InvestigatorAllegation, related_to='base_table')
-    }
-
-
-class InvestigatorAllegationQuery(DistinctQuery):
-    base_table = InvestigatorAllegation
-
-    joins = {
-        'investigator': Subquery(InvestigatorQuery(), on='id', left_on='investigator_id')
-    }
-
-    fields = {
-        'officer_id': 'investigator.officer_id',
-        'allegation_id': 'allegation_id',
-        'current_rank': 'current_rank',
-        'investigator_first_name': 'investigator.first_name',
-        'investigator_last_name': 'investigator.last_name',
-        'officer_first_name': 'investigator.officer_first_name',
-        'officer_last_name': 'investigator.officer_last_name',
-        'officer_middle_initial': 'investigator.officer_middle_initial',
-        'officer_middle_initial2': 'investigator.officer_middle_initial2',
-        'officer_suffix_name': 'investigator.officer_suffix_name',
-        'complaint_percentile': 'investigator.complaint_percentile',
-        'civilian_allegation_percentile': 'investigator.civilian_allegation_percentile',
-        'internal_allegation_percentile': 'investigator.internal_allegation_percentile',
-        'trr_percentile': 'investigator.trr_percentile',
-        'num_cases': 'investigator.num_cases'
-    }
 
 
 class CoaccusedQuery(DistinctQuery):

@@ -51,28 +51,32 @@ class CoaccusedSerializer(BaseSerializer):
 
 class InvestigatorSerializer(BaseSerializer):
     def get_full_name(self, obj):
-        if obj['officer_first_name'] is not None:
-            return ' '.join(filter(None, [obj['officer_first_name'], obj['officer_last_name']]))
-        return ' '.join(filter(None, [obj['investigator_first_name'], obj['investigator_last_name']]))
+        if obj['investigator__officer__first_name'] is not None:
+            return ' '.join(filter(None, [
+                obj['investigator__officer__first_name'], obj['investigator__officer__last_name']
+            ]))
+        return ' '.join(filter(None, [obj['investigator__first_name'], obj['investigator__last_name']]))
 
     def get_abbr_name(self, obj):
-        if obj['officer_first_name'] is not None and obj['officer_last_name'] is not None:
-            return '. '.join([obj['officer_first_name'][0].upper(), obj['officer_last_name']])
-        elif obj['investigator_first_name'] is not None and obj['investigator_last_name'] is not None:
-            return '. '.join([obj['investigator_first_name'][0].upper(), obj['investigator_last_name']])
+        if obj['investigator__officer__first_name'] is not None and obj['investigator__officer__last_name'] is not None:
+            return '. '.join([
+                obj['investigator__officer__first_name'][0].upper(), obj['investigator__officer__last_name']
+            ])
+        elif obj['investigator__first_name'] is not None and obj['investigator__last_name'] is not None:
+            return '. '.join([obj['investigator__first_name'][0].upper(), obj['investigator__last_name']])
         return None
 
     def __init__(self, *args, **kwargs):
         super(InvestigatorSerializer, self).__init__(*args, **kwargs)
         self._fields = {
-            'officer_id': get('officer_id'),
+            'officer_id': get('investigator__officer_id'),
             'involved_type': literal('investigator'),
             'full_name': self.get_full_name,
             'abbr_name': self.get_abbr_name,
-            'percentile_allegation': get('complaint_percentile'),
-            'percentile_allegation_civilian': get('civilian_allegation_percentile'),
-            'percentile_allegation_internal': get('internal_allegation_percentile'),
-            'percentile_trr': get('trr_percentile'),
+            'percentile_allegation': get('investigator__officer__complaint_percentile'),
+            'percentile_allegation_civilian': get('investigator__officer__civilian_allegation_percentile'),
+            'percentile_allegation_internal': get('investigator__officer__internal_allegation_percentile'),
+            'percentile_trr': get('investigator__officer__trr_percentile'),
             'num_cases': get('num_cases'),
             'current_rank': get('current_rank')
         }

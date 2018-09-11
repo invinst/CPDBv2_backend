@@ -173,9 +173,9 @@ class CRIndexerTestCase(TestCase):
                     'abbr_name': 'G. Lauren',
                     'num_cases': 1,
                     'current_rank': 'IPRA investigator',
-                    'percentile_allegation': Decimal('6.6'),
-                    'percentile_allegation_civilian': Decimal('7.7'),
-                    'percentile_allegation_internal': Decimal('8.8'),
+                    'percentile_allegation': Decimal('6.6000'),
+                    'percentile_allegation_civilian': Decimal('7.7000'),
+                    'percentile_allegation_internal': Decimal('8.8000'),
                     'percentile_trr': None
                 },
                 {
@@ -187,10 +187,10 @@ class CRIndexerTestCase(TestCase):
                     'race': 'White',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': Decimal('4.4'),
+                    'percentile_allegation': Decimal('4.4000'),
                     'percentile_allegation_civilian': None,
                     'percentile_allegation_internal': None,
-                    'percentile_trr': Decimal('5.5')
+                    'percentile_trr': Decimal('5.5000')
                 }
             ],
             'attachments': [
