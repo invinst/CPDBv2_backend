@@ -80,10 +80,10 @@ class InvestigatorSerializer(BaseSerializer):
 
 class PoliceWitnessSerializer(BaseSerializer):
     def get_full_name(self, obj):
-        return ' '.join([obj['first_name'], obj['last_name']])
+        return ' '.join([obj['officer__first_name'], obj['officer__last_name']])
 
     def get_abbr_name(self, obj):
-        return '. '.join([obj['first_name'][0].upper(), obj['last_name']])
+        return '. '.join([obj['officer__first_name'][0].upper(), obj['officer__last_name']])
 
     def __init__(self, *args, **kwargs):
         super(PoliceWitnessSerializer, self).__init__(*args, **kwargs)
@@ -94,12 +94,12 @@ class PoliceWitnessSerializer(BaseSerializer):
             'abbr_name': self.get_abbr_name,
             'allegation_count': get('allegation_count'),
             'sustained_count': get('sustained_count'),
-            'gender': get_gender('gender'),
-            'race': get('race'),
-            'percentile_allegation': get('complaint_percentile'),
-            'percentile_allegation_civilian': get('civilian_allegation_percentile'),
-            'percentile_allegation_internal': get('internal_allegation_percentile'),
-            'percentile_trr': get('trr_percentile')
+            'gender': get_gender('officer__gender'),
+            'race': get('officer__race'),
+            'percentile_allegation': get('officer__complaint_percentile'),
+            'percentile_allegation_civilian': get('officer__civilian_allegation_percentile'),
+            'percentile_allegation_internal': get('officer__internal_allegation_percentile'),
+            'percentile_trr': get('officer__trr_percentile')
         }
 
 

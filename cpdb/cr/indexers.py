@@ -1,9 +1,11 @@
+from django.db import models
+
 from es_index import register_indexer
 from es_index.utils import timing_validate
 from es_index.indexers import BaseIndexer, PartialIndexer
-from data.models import Allegation
+from data.models import Allegation, PoliceWitness, OfficerAllegation
 from .doc_types import CRDocType
-from .queries import AllegationQuery, CoaccusedQuery, InvestigatorAllegationQuery, PoliceWitnessQuery
+from .queries import AllegationQuery, CoaccusedQuery, InvestigatorAllegationQuery
 from .index_aliases import cr_index_alias
 from .serializers.cr_doc_serializers import AllegationSerializer
 
@@ -25,7 +27,18 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating policewitness dict...')
     def populate_policewitness_dict(self):
         self.policewitness_dict = dict()
-        for obj in PoliceWitnessQuery().execute():
+        sustained_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('officer_id')
+        )
+        queryset = PoliceWitness.objects.all().select_related('officer')\
+            .annotate(allegation_count=models.Count('officer__officerallegation'))\
+            .annotate(sustained_count=models.Count(models.Subquery(sustained_count.values('id')[:1])))
+        for obj in queryset.values(
+                'officer_id', 'allegation_id', 'officer__first_name', 'officer__last_name',
+                'officer__middle_initial', 'officer__middle_initial2', 'officer__suffix_name',
+                'officer__complaint_percentile', 'officer__civilian_allegation_percentile',
+                'officer__internal_allegation_percentile', 'officer__trr_percentile',
+                'officer__gender', 'officer__race', 'allegation_count', 'sustained_count'):
             self.policewitness_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     @timing_validate('CRIndexer: Populating coaccused dict...')

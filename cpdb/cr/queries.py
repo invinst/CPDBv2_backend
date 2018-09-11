@@ -3,35 +3,9 @@ from es_index.queries import (
     Subquery, RowArrayQueryField
 )
 from data.models import (
-    PoliceWitness, Investigator, Allegation, Officer, OfficerAllegation, InvestigatorAllegation,
+    Investigator, Allegation, Officer, OfficerAllegation, InvestigatorAllegation,
     AllegationCategory, AttachmentFile, Complainant, Victim
 )
-
-
-class PoliceWitnessQuery(DistinctQuery):
-    base_table = PoliceWitness
-    joins = {
-        'officer': Officer
-    }
-    fields = {
-        'officer_id': 'officer_id',
-        'allegation_id': 'allegation_id',
-        'first_name': 'officer.first_name',
-        'last_name': 'officer.last_name',
-        'middle_initial': 'officer.middle_initial',
-        'middle_initial2': 'officer.middle_initial2',
-        'suffix_name': 'officer.suffix_name',
-        'complaint_percentile': 'officer.complaint_percentile',
-        'civilian_allegation_percentile': 'officer.civilian_allegation_percentile',
-        'internal_allegation_percentile': 'officer.internal_allegation_percentile',
-        'trr_percentile': 'officer.trr_percentile',
-        'gender': 'officer.gender',
-        'race': 'officer.race',
-        'allegation_count': CountQueryField(
-            from_table=OfficerAllegation, related_to='officer'),
-        'sustained_count': CountQueryField(
-            from_table=OfficerAllegation, related_to='officer', where={'final_finding': 'SU'})
-    }
 
 
 class InvestigatorQuery(DistinctQuery):
