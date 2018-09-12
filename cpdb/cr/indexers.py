@@ -7,6 +7,7 @@ from data.models import (
     Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation,
     AttachmentFile, Complainant, Victim
 )
+from data.utils.subqueries import SQCount
 from .doc_types import CRDocType
 from .index_aliases import cr_index_alias
 from .serializers.cr_doc_serializers import AllegationSerializer
@@ -33,11 +34,12 @@ class CRIndexer(BaseIndexer):
     def populate_policewitness_dict(self):
         self.policewitness_dict = dict()
         sustained_count = OfficerAllegation.objects.filter(
-            officer=models.OuterRef('officer_id')
+            officer=models.OuterRef('officer_id'),
+            final_finding='SU'
         )
         queryset = PoliceWitness.objects.all().select_related('officer')\
             .annotate(allegation_count=models.Count('officer__officerallegation'))\
-            .annotate(sustained_count=models.Count(models.Subquery(sustained_count.values('id')[:1])))
+            .annotate(sustained_count=SQCount(sustained_count.values('id')))
         for obj in queryset.values(
                 'officer_id', 'allegation_id', 'officer__first_name', 'officer__last_name',
                 'officer__middle_initial', 'officer__middle_initial2', 'officer__suffix_name',
@@ -57,8 +59,8 @@ class CRIndexer(BaseIndexer):
             officer=models.OuterRef('officer_id')
         )
         queryset = OfficerAllegation.objects.all().select_related('officer', 'allegation_category')\
-            .annotate(allegation_count=models.Count(models.Subquery(allegation_count.values('id')[:1])))\
-            .annotate(sustained_count=models.Count(models.Subquery(sustained_count.values('id')[:1])))\
+            .annotate(allegation_count=SQCount(allegation_count.values('id')))\
+            .annotate(sustained_count=SQCount(sustained_count.values('id')))\
             .values(
                 'officer_id', 'officer__first_name', 'officer__last_name', 'officer__middle_initial',
                 'officer__middle_initial2', 'officer__suffix_name', 'officer__gender', 'officer__race',
@@ -77,7 +79,7 @@ class CRIndexer(BaseIndexer):
         self.investigator_dict = dict()
         num_cases = InvestigatorAllegation.objects.filter(investigator=models.OuterRef('investigator_id'))
         queryset = InvestigatorAllegation.objects.all().select_related('investigator__officer')\
-            .annotate(num_cases=models.Count(models.Subquery(num_cases.values('id')[:1]))).values(
+            .annotate(num_cases=SQCount(num_cases.values('id'))).values(
                 'investigator__officer_id', 'allegation_id', 'current_rank', 'investigator__first_name',
                 'investigator__last_name', 'investigator__officer__first_name',
                 'investigator__officer__last_name', 'investigator__officer__middle_initial',
