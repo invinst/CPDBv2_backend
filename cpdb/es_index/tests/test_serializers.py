@@ -1,11 +1,13 @@
 from datetime import date
 
 from django.test import SimpleTestCase
+from django.contrib.gis.geos import Point
 
 from robber import expect
 
 from es_index.serializers import (
-    BaseSerializer, get, get_date, get_gender, literal, get_age_range
+    BaseSerializer, get, get_date, get_gender, literal, get_age_range,
+    get_finding, get_point
 )
 
 
@@ -80,4 +82,23 @@ class SerializerTestCase(SimpleTestCase):
 
         expect(
             get_age_range([20, 30, 40], 'age', 'Unknown')({'age': None})
+        ).to.eq('Unknown')
+
+    def test_get_finding(self):
+        func = get_finding('final_finding')
+        expect(func({'final_finding': 'UN'})).to.eq('Unfounded')
+        expect(func({'final_finding': None})).to.eq(None)
+        expect(
+            get_finding('final_finding', 'Unknown')({'final_finding': None})
+        ).to.eq('Unknown')
+
+    def test_get_point(self):
+        func = get_point('point')
+        expect(func({'point': Point(1, 2)})).to.eq({
+            'lon': 1, 'lat': 2
+        })
+        expect(func({})).to.eq(None)
+        expect(func({'point': None})).to.eq(None)
+        expect(
+            get_point('point', 'Unknown')({'point': None})
         ).to.eq('Unknown')
