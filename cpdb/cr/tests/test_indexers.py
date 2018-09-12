@@ -71,7 +71,9 @@ class CRIndexerTestCase(TestCase):
         )
 
         ComplainantFactory(allegation=allegation, gender='M', race='White', age=30)
+        ComplainantFactory(allegation=allegation, gender='F', race='Black', age=25)
         VictimFactory(allegation=allegation, gender='F', race='Black', age=25)
+        VictimFactory(allegation=allegation, gender='M', race='Hispanic', age=40)
         officer = OfficerFactory(
             id=2,
             first_name='Jerome',
@@ -155,8 +157,14 @@ class CRIndexerTestCase(TestCase):
                     'disciplined': True
                 }
             ],
-            'complainants': [{'gender': 'Male', 'race': 'White', 'age': 30}],
-            'victims': [{'gender': 'Female', 'race': 'Black', 'age': 25}],
+            'complainants': [
+                {'gender': 'Male', 'race': 'White', 'age': 30},
+                {'gender': 'Female', 'race': 'Black', 'age': 25}
+            ],
+            'victims': [
+                {'gender': 'Female', 'race': 'Black', 'age': 25},
+                {'gender': 'Male', 'race': 'Hispanic', 'age': 40}
+            ],
             'summary': 'Summary',
             'point': {'lon': 12.0, 'lat': 21.0},
             'incident_date': '2002-02-28',
@@ -236,17 +244,23 @@ class CRIndexerTestCase(TestCase):
 
     def test_extract_datum_most_common_category(self):
         allegation = AllegationFactory()
+        cat1 = AllegationCategoryFactory(
+            category='Use Of Forces',
+            allegation_name='Sub Force'
+        )
+        cat2 = AllegationCategoryFactory(
+            category='Traffic',
+            allegation_name='Sub traffic'
+        )
         OfficerAllegationFactory.create_batch(
             2,
             allegation=allegation,
-            allegation_category__category='Use Of Forces',
-            allegation_category__allegation_name='Sub Force'
+            allegation_category=cat1
         )
 
         OfficerAllegationFactory(
             allegation=allegation,
-            allegation_category__category='Traffic',
-            allegation_category__allegation_name='Sub traffic'
+            allegation_category=cat2
         )
 
         rows = self.extract_data()
@@ -334,6 +348,39 @@ class CRIndexerTestCase(TestCase):
         for row in rows:
             expect(row['involvements']).to.have.length(1)
             expect(row['involvements'][0]['full_name']).to.eq('Luke Skywalker')
+
+    def test_coaccused_counts(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory.create_batch(2, officer=officer, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, final_finding='NS')
+        rows = self.extract_data()
+        expect(rows).to.have.length(3)
+        for row in rows:
+            expect(row['coaccused']).to.have.length(1)
+            expect(row['coaccused'][0]['allegation_count']).to.eq(3)
+            expect(row['coaccused'][0]['sustained_count']).to.eq(2)
+
+    def test_police_witness_counts(self):
+        officer = OfficerFactory()
+        OfficerAllegationFactory.create_batch(2, officer=officer, final_finding='SU')
+        OfficerAllegationFactory(officer=officer, final_finding='NS')
+        allegation = AllegationFactory()
+        PoliceWitnessFactory(officer=officer, allegation=allegation)
+        rows = self.extract_data()
+        expect(rows).to.have.length(4)
+        expect(rows[-1]['involvements']).to.have.length(1)
+        expect(rows[-1]['involvements'][0]['allegation_count']).to.eq(3)
+        expect(rows[-1]['involvements'][0]['sustained_count']).to.eq(2)
+
+    def test_investigator_num_cases(self):
+        investigator = InvestigatorFactory()
+        InvestigatorAllegationFactory.create_batch(3, investigator=investigator)
+        allegation = AllegationFactory()
+        InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
+        rows = self.extract_data()
+        expect(rows).to.have.length(4)
+        expect(rows[-1]['involvements']).to.have.length(1)
+        expect(rows[-1]['involvements'][0]['num_cases']).to.eq(4)
 
 
 class CRPartialIndexerTestCase(TestCase):
