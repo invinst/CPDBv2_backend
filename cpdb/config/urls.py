@@ -19,6 +19,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.generic.base import RedirectView
 
 from rest_framework import routers
 
@@ -68,6 +69,8 @@ router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhoo
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    # The index_redirect url is redirecting 'admin' without slash too, we need to manually do this.
+    url(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
     url(r'^(?:(?P<path>'
@@ -82,12 +85,13 @@ urlpatterns = [
         r'embed/map|'
         r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(
-        r'^officer/(?P<officer_id>\d+)(?P<subpath>/(?:timeline|social))?/$',
+        r'^officer/(?P<officer_id>\d+)(?P<slug>/[\-a-z]+)?/$',
         ensure_csrf_cookie(officer_view), name='officer'),
     url(r'^complaint/(?P<crid>\w+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
+    url(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:  # pragma: no cover

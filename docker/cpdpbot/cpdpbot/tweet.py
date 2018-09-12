@@ -82,7 +82,7 @@ class TweetSender(object):
                         data['tweet']['status'],
                         self.status_url(status)
                     ))
-            except:
+            except Exception:
                 traceback.print_exc()
                 self.print_stderr('Message was: %s' % content)
                 self.queue_service.put_message(self.fail_queue_name, message.content)

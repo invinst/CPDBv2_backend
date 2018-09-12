@@ -7,6 +7,7 @@ from search.analyzers import autocomplete, autocomplete_search
 
 @officers_index_alias.doc_type
 class OfficerNewTimelineEventDocType(DocType):
+    crid = Keyword()
     date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
     priority_sort = Integer()
     kind = Keyword()
@@ -50,9 +51,9 @@ class OfficerInfoDocType(DocType):
     current_allegation_percentile = Float()
 
     historic_units = Nested(properties={
-        "id": Integer(),
-        "unit_name": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
-        "description": Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'id': Integer(),
+        'long_unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
+        'description': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
     })
 
     @staticmethod
