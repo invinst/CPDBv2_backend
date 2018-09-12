@@ -233,8 +233,8 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_postgres_count(self, keys):
-                return len(keys)
+            def get_batch_queryset(self, keys):
+                return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=len(keys)))
@@ -248,8 +248,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_postgres_count(self, keys):
-                return len(keys)
+            def get_batch_queryset(self, keys):
+                return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=1))
@@ -291,8 +291,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_postgres_count(self, keys):
-                return len(keys)
+            def get_batch_queryset(self, keys):
+                return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=1))
@@ -316,8 +316,8 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_postgres_count(self, keys):
-                return 0
+            def get_batch_queryset(self, keys):
+                return Mock(count=Mock(return_value=0))
 
             def get_batch_update_docs_queries(self, keys):
                 return self.doc_type_klass.search().query('terms', id=keys)
@@ -341,11 +341,9 @@ class PartialIndexerTestCase(TestCase):
 
             def get_batch_queryset(self, keys):
                 return Mock(
+                    count=Mock(return_value=len(keys)),
                     __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
                 )
-
-            def get_postgres_count(self, keys):
-                return len(keys)
 
             def get_batch_update_docs_queries(self, keys):
                 return self.doc_type_klass.search().query('terms', id=keys)
@@ -404,9 +402,6 @@ class PartialIndexerTestCase(TestCase):
 
             def extract_datum(self, datum):
                 return {'id': datum.id, 'value': datum.value}
-
-            def get_postgres_count(self, keys):
-                return len(keys)
 
         for value in [1, 2, 3]:
             MyDocType(id=value, value=value).save()
