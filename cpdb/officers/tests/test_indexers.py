@@ -297,9 +297,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'birth_year': 1950,
                 'coaccusal_count': 1,
                 'rank': 'Police Officer',
-                'percentile_allegation_civilian': '11.1111',
-                'percentile_allegation_internal': '22.2222',
-                'percentile_trr': '33.3333',
+                'percentile_allegation_civilian': 11.1111,
+                'percentile_allegation_internal': 22.2222,
+                'percentile_trr': 33.3333,
             }, {
                 'id': officer3.id,
                 'full_name': 'Officer 789',
@@ -311,9 +311,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'birth_year': 1970,
                 'coaccusal_count': 1,
                 'rank': 'Po As Detective',
-                'percentile_allegation_civilian': '55.5555',
-                'percentile_allegation_internal': '66.6666',
-                'percentile_trr': '77.7777',
+                'percentile_allegation_civilian': 55.5555,
+                'percentile_allegation_internal': 66.6666,
+                'percentile_trr': 77.7777,
             }]
         })
 

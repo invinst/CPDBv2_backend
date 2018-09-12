@@ -1,5 +1,7 @@
 import itertools
 
+from django.db import models
+
 from data import officer_percentile
 from data.constants import (
     MIN_VISUAL_TOKEN_YEAR, MAX_VISUAL_TOKEN_YEAR,
@@ -9,6 +11,7 @@ from data.models import (
     Officer, Award, OfficerAllegation, Complainant, Allegation, OfficerHistory,
     OfficerBadgeNumber, Salary
 )
+from data.utils.subqueries import SQCount
 from es_index import register_indexer
 from es_index.utils import timing_validate
 from es_index.indexers import BaseIndexer
@@ -16,9 +19,7 @@ from es_index.serializers import get_gender, get_age_range
 from officers.doc_types import OfficerInfoDocType
 from officers.index_aliases import officers_index_alias
 from officers.serializers.doc_serializers import OfficerSerializer
-from officers.queries import (
-    OfficerQuery
-)
+from trr.models import TRR
 
 app_name = __name__.split('.')[0]
 
@@ -36,12 +37,6 @@ class OfficersIndexer(BaseIndexer):
 
     def __init__(self):
         super(OfficersIndexer, self).__init__()
-        self.populate_top_percentile_dict()
-        self.populate_allegation_dict()
-        self.populate_award_dict()
-        self.populate_history_dict()
-        self.populate_badgenumber_dict()
-        self.populate_salary_dict()
 
     @timing_validate('OfficersIndexer: Preparing percentile data...')
     def populate_top_percentile_dict(self):
@@ -61,7 +56,7 @@ class OfficersIndexer(BaseIndexer):
                         'percentile_allegation_civilian',
                         'percentile_allegation_internal']:
                     if hasattr(officer, attr):
-                        officer_dict[attr] = str(round(getattr(officer, attr), 4))
+                        officer_dict[attr] = '%.4f' % getattr(officer, attr)
                 officer_list.append(officer_dict)
 
     @timing_validate('OfficersIndexer: Populating allegation dict...')
@@ -141,7 +136,43 @@ class OfficersIndexer(BaseIndexer):
         return Officer.objects.all()
 
     def get_query(self):
-        return OfficerQuery().execute()
+        self.populate_top_percentile_dict()
+        self.populate_allegation_dict()
+        self.populate_award_dict()
+        self.populate_history_dict()
+        self.populate_badgenumber_dict()
+        self.populate_salary_dict()
+        allegation_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('id')
+        )
+        sustained_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('id'),
+            final_finding='SU'
+        )
+        unsustained_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('id'),
+            final_finding='NS'
+        )
+        discipline_count = OfficerAllegation.objects.filter(
+            officer=models.OuterRef('id'),
+            disciplined=True
+        )
+        trr_count = TRR.objects.filter(
+            officer=models.OuterRef('id')
+        )
+        return Officer.objects.all()\
+            .annotate(allegation_count=SQCount(allegation_count.values('id')))\
+            .annotate(sustained_count=SQCount(sustained_count.values('id')))\
+            .annotate(discipline_count=SQCount(discipline_count.values('id')))\
+            .annotate(trr_count=SQCount(trr_count.values('id')))\
+            .annotate(unsustained_count=SQCount(unsustained_count.values('id')))\
+            .values(
+                'id', 'appointed_date', 'resignation_date', 'active', 'rank', 'allegation_count',
+                'first_name', 'last_name', 'middle_initial', 'middle_initial2', 'sustained_count',
+                'suffix_name', 'race', 'gender', 'birth_year', 'complaint_percentile', 'trr_count',
+                'honorable_mention_percentile', 'civilian_allegation_percentile', 'discipline_count',
+                'internal_allegation_percentile', 'trr_percentile', 'tags', 'unsustained_count'
+            )
 
     def extract_datum(self, datum):
         datum['allegations'] = self.allegation_dict.get(datum['id'], [])

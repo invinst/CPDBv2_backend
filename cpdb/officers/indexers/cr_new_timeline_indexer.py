@@ -25,9 +25,10 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     def rank_sort_key(self, obj):
         return obj['spp_date']
 
-    def __init__(self, *args, **kwargs):
-        super(CRNewTimelineEventIndexer, self).__init__(*args, **kwargs)
+    def get_queryset(self):
+        return OfficerAllegation.objects.filter(start_date__isnull=False)
 
+    def get_query(self):
         self.officer_history_dict = dict()
         for officer_history in OfficerHistoryQuery().execute():
             history_list = self.officer_history_dict.setdefault(
@@ -46,11 +47,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
             allegation['id']: allegation
             for allegation in AllegationTimelineQuery().execute()
         }
-
-    def get_queryset(self):
-        return OfficerAllegation.objects.filter(start_date__isnull=False)
-
-    def get_query(self):
         return CRTimelineQuery().where(start_date__isnull=False).execute()
 
     def extract_datum(self, datum):

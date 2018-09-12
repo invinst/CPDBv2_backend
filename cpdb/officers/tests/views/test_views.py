@@ -243,6 +243,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
         ])
 
+    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2017)
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2017)
     def test_top_officers_by_allegation(self):
         officer1 = OfficerFactory(
             id=1, first_name='Daryl', last_name='Mack',
@@ -294,7 +296,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             setattr(officer, 'year', 2017)
 
         with patch(
-            'officers.indexers.officer_percentile.top_percentile',
+            'officers.indexers.officers_indexer.officer_percentile.top_percentile',
             Mock(return_value=[officer1, officer2, officer3, officer4, officer5])
         ):
             self.refresh_index()

@@ -21,8 +21,8 @@ from trr.factories import TRRFactory
 
 class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
-    @patch('officers.indexers.officer_indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
-    @patch('officers.indexers.officer_indexers.MAX_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2002)
     def test_retrieve_data_range_too_small_cause_no_percentiles(self):
 
         officer = OfficerFactory(
@@ -106,8 +106,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         }
         expect(response.data).to.eq(expected_response)
 
-    @patch('officers.indexers.MIN_VISUAL_TOKEN_YEAR', 2002)
-    @patch('officers.indexers.MAX_VISUAL_TOKEN_YEAR', 2004)
+    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2004)
     @mock_percentile_map_range(
         allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
         allegation_max=datetime(2044, 12, 31, tzinfo=pytz.utc),
@@ -235,6 +235,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq(expected_response)
 
     def test_retrieve_no_match(self):
+        self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-mobile-detail', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 

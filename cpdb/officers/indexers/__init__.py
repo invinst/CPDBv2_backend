@@ -18,7 +18,7 @@ from officers.serializers.doc_serializers import (
     RankChangeNewTimelineSerializer
 )
 from .officers_indexer import OfficersIndexer
-from .cr_new_timeline_indexer import CRNewTimelineEventIndexer
+from .cr_new_timeline_indexer import CRNewTimelineEventIndexer, CRNewTimelineEventPartialIndexer
 
 app_name = __name__.split('.')[0]
 
@@ -106,5 +106,5 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
 __all__ = [
     'OfficersIndexer', 'CRNewTimelineEventIndexer', 'UnitChangeNewTimelineEventIndexer',
     'RankChangeNewTimelineEventIndexer', 'JoinedNewTimelineEventIndexer', 'AwardNewTimelineEventIndexer',
-    'TRRNewTimelineEventIndexer', 'OfficerCoaccusalsIndexer'
+    'TRRNewTimelineEventIndexer', 'OfficerCoaccusalsIndexer', 'CRNewTimelineEventPartialIndexer'
 ]
