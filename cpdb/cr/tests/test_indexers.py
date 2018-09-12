@@ -244,17 +244,23 @@ class CRIndexerTestCase(TestCase):
 
     def test_extract_datum_most_common_category(self):
         allegation = AllegationFactory()
+        cat1 = AllegationCategoryFactory(
+            category='Use Of Forces',
+            allegation_name='Sub Force'
+        )
+        cat2 = AllegationCategoryFactory(
+            category='Traffic',
+            allegation_name='Sub traffic'
+        )
         OfficerAllegationFactory.create_batch(
             2,
             allegation=allegation,
-            allegation_category__category='Use Of Forces',
-            allegation_category__allegation_name='Sub Force'
+            allegation_category=cat1
         )
 
         OfficerAllegationFactory(
             allegation=allegation,
-            allegation_category__category='Traffic',
-            allegation_category__allegation_name='Sub traffic'
+            allegation_category=cat2
         )
 
         rows = self.extract_data()
