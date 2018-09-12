@@ -11,7 +11,6 @@ from data.factories import (
     SalaryFactory
 )
 from officers.indexers import (
-    CRNewTimelineEventPartialIndexer,
     UnitChangeNewTimelineEventIndexer,
     JoinedNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer,
@@ -20,8 +19,6 @@ from officers.indexers import (
     RankChangeNewTimelineEventIndexer,
 )
 from trr.factories import TRRFactory
-from officers.doc_types import OfficerNewTimelineEventDocType
-from officers.index_aliases import officers_index_alias
 
 
 class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
@@ -84,58 +81,6 @@ class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
             'unit_name': '003',
             'unit_description': 'Unit_003',
             'rank': 'Police Officer',
-        })
-
-
-class CRNewTimelineEventPartialIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        allegation_123 = AllegationFactory(crid='123')
-        allegation_456 = AllegationFactory(crid='456')
-        officer_allegation_1 = OfficerAllegationFactory(allegation=allegation_123)
-        officer_allegation_2 = OfficerAllegationFactory(allegation=allegation_123)
-        OfficerAllegationFactory(allegation=allegation_456)
-
-        indexer = CRNewTimelineEventPartialIndexer(updating_keys=['123'])
-        expect(set(indexer.get_queryset())).to.eq({
-            officer_allegation_1,
-            officer_allegation_2,
-        })
-
-    def test_get_batch_queryset(self):
-        allegation_123 = AllegationFactory(crid='123')
-        allegation_456 = AllegationFactory(crid='456')
-        officer_allegation_1 = OfficerAllegationFactory(allegation=allegation_123)
-        officer_allegation_2 = OfficerAllegationFactory(allegation=allegation_123)
-        OfficerAllegationFactory(allegation=allegation_456)
-
-        expect(set(CRNewTimelineEventPartialIndexer().get_batch_queryset(keys=['123']))).to.eq({
-            officer_allegation_1,
-            officer_allegation_2,
-        })
-
-    def test_get_batch_update_docs_queries(self):
-        OfficerNewTimelineEventDocType(meta={'id': '1'}, **{
-            'crid': '123456',
-            'kind': 'CR',
-        }).save()
-
-        OfficerNewTimelineEventDocType(meta={'id': '2'}, **{
-            'crid': '789',
-            'kind': 'CR',
-        }).save()
-
-        OfficerNewTimelineEventDocType(meta={'id': '3'}, **{
-            'crid': '789123',
-            'kind': 'CR',
-        }).save()
-        officers_index_alias.read_index.refresh()
-
-        update_docs_queries = CRNewTimelineEventPartialIndexer().get_batch_update_docs_queries(
-            keys=['123456', '789', '432']
-        )
-
-        expect(set(update_docs_query.crid for update_docs_query in update_docs_queries)).to.eq({
-            '123456', '789',
         })
 
 

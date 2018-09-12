@@ -5,7 +5,9 @@ from django.contrib.gis.geos import Point
 
 from robber import expect
 
-from officers.indexers import CRNewTimelineEventIndexer
+from officers.indexers import CRNewTimelineEventIndexer, CRNewTimelineEventPartialIndexer
+from officers.doc_types import OfficerNewTimelineEventDocType
+from officers.index_aliases import officers_index_alias
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, AllegationFactory, OfficerHistoryFactory,
     SalaryFactory, VictimFactory, AttachmentFileFactory
@@ -18,7 +20,7 @@ class CRNewTimelineIndexerTestCase(TestCase):
 
     def extract_data(self):
         indexer = CRNewTimelineEventIndexer()
-        return [indexer.extract_datum(obj) for obj in indexer.get_query()]
+        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
     def test_regular_data(self):
         officer = OfficerFactory(id=123123)
@@ -35,6 +37,7 @@ class CRNewTimelineIndexerTestCase(TestCase):
             final_outcome='Unknown'
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
+        OfficerAllegationFactory()
 
         OfficerHistoryFactory(
             officer=officer,
@@ -50,6 +53,11 @@ class CRNewTimelineIndexerTestCase(TestCase):
             officer=officer,
             effective_date=date(2013, 1, 2),
             end_date=date(2014, 1, 1))
+        OfficerHistoryFactory(
+            officer=officer,
+            effective_date=None,
+            end_date=None)
+        OfficerHistoryFactory()
 
         SalaryFactory(
             officer=officer,
@@ -66,12 +74,23 @@ class CRNewTimelineIndexerTestCase(TestCase):
             rank='Detective',
             spp_date=date(2014, 1, 1)
         )
+        SalaryFactory(
+            officer=officer,
+            spp_date=None
+        )
+        SalaryFactory()
 
         VictimFactory(
             allegation=allegation,
             race='White',
             age=34,
             gender='M')
+        VictimFactory(
+            allegation=allegation,
+            race='Black',
+            age=20,
+            gender='F')
+        VictimFactory()
 
         AttachmentFileFactory(
             allegation=allegation,
@@ -87,9 +106,10 @@ class CRNewTimelineIndexerTestCase(TestCase):
             url='http://foo.com/2',
             preview_image_url='http://web.com/image2'
         )
+        AttachmentFileFactory()
 
         rows = self.extract_data()
-        expect(rows).to.have.length(4)
+        expect(rows).to.have.length(5)
         expect(rows[0]).to.eq({
             'officer_id': 123123,
             'date_sort': date(2012, 1, 1),
@@ -110,6 +130,11 @@ class CRNewTimelineIndexerTestCase(TestCase):
                     'race': 'White',
                     'age': 34,
                     'gender': 'Male',
+                },
+                {
+                    'race': 'Black',
+                    'age': 20,
+                    'gender': 'Female'
                 }
             ],
             'point': {
@@ -130,4 +155,57 @@ class CRNewTimelineIndexerTestCase(TestCase):
                     'file_type': 'document',
                 },
             ]
+        })
+
+
+class CRNewTimelineEventPartialIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        allegation_123 = AllegationFactory(id=1212, crid='123')
+        allegation_456 = AllegationFactory(id=2323, crid='456')
+        OfficerAllegationFactory(allegation=allegation_123)
+        OfficerAllegationFactory(allegation=allegation_123)
+        OfficerAllegationFactory(allegation=allegation_456)
+
+        indexer = CRNewTimelineEventPartialIndexer(updating_keys=['123'])
+        result = list(indexer.get_queryset())
+        expect([obj['allegation_id'] for obj in result]).to.eq([1212, 1212])
+        expect(result[0]['officer_id']).to.ne(result[1]['officer_id'])
+
+    def test_get_batch_queryset(self):
+        allegation_123 = AllegationFactory(id=123, crid='123')
+        allegation_456 = AllegationFactory(id=456, crid='456')
+        OfficerAllegationFactory(allegation=allegation_123)
+        OfficerAllegationFactory(allegation=allegation_123)
+        OfficerAllegationFactory(allegation=allegation_456)
+
+        result = CRNewTimelineEventPartialIndexer().get_batch_queryset(keys=['123'])
+        expect([obj['allegation_id'] for obj in result]).to.eq([123, 123])
+        expect(result[0]['officer_id']).to.ne(result[1]['officer_id'])
+
+    def test_get_batch_update_docs_queries(self):
+        officers_index_alias.read_index.delete()
+        officers_index_alias.read_index.create(ignore=400)
+        OfficerNewTimelineEventDocType.init(index=officers_index_alias.read_index._name)
+        OfficerNewTimelineEventDocType(meta={'id': '1'}, **{
+            'crid': '123456',
+            'kind': 'CR',
+        }).save()
+
+        OfficerNewTimelineEventDocType(meta={'id': '2'}, **{
+            'crid': '789',
+            'kind': 'CR',
+        }).save()
+
+        OfficerNewTimelineEventDocType(meta={'id': '3'}, **{
+            'crid': '789123',
+            'kind': 'CR',
+        }).save()
+        officers_index_alias.read_index.refresh()
+
+        update_docs_queries = CRNewTimelineEventPartialIndexer().get_batch_update_docs_queries(
+            keys=['123456', '789', '432']
+        )
+
+        expect(set(update_docs_query.crid for update_docs_query in update_docs_queries)).to.eq({
+            '123456', '789',
         })
