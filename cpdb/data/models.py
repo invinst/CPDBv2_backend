@@ -271,11 +271,15 @@ class Officer(TaggableModel):
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
 
+    # CACHED COLUMNS
     complaint_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     civilian_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     internal_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     trr_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     honorable_mention_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    allegation_count = models.IntegerField(default=0)
+    sustained_count = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.full_name
@@ -310,14 +314,6 @@ class Officer(TaggableModel):
             return GENDER_DICT[self.gender]
         except KeyError:
             return self.gender
-
-    @property
-    def allegation_count(self):
-        return self.officerallegation_set.all().distinct().count()
-
-    @property
-    def sustained_count(self):
-        return self.officerallegation_set.filter(final_finding='SU').distinct().count()
 
     @property
     def unsustained_count(self):
@@ -759,6 +755,14 @@ class Investigator(models.Model):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)
 
 
+class AllegationCategory(models.Model):
+    category_code = models.CharField(max_length=255)
+    category = models.CharField(max_length=255, blank=True)
+    allegation_name = models.CharField(max_length=255, blank=True)
+    on_duty = models.BooleanField(default=False)
+    citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
+
+
 class Allegation(models.Model):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
@@ -774,6 +778,17 @@ class Allegation(models.Model):
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
+    police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
+
+    # CACHED COLUMNS
+    most_common_category = models.ForeignKey(AllegationCategory, null=True)
+    first_start_date = models.DateTimeField(null=True)
+    first_end_date = models.DateTimeField(null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['crid']),
+        ]
 
     def get_most_common_category(self):
         return self.officerallegation_set.values(
@@ -847,22 +862,6 @@ class Allegation(models.Model):
         return results if results else ['Unknown']
 
     @property
-    def first_start_date(self):
-        try:
-            return self.officerallegation_set.filter(start_date__isnull=False)\
-                .values_list('start_date', flat=True)[0]
-        except IndexError:
-            return None
-
-    @property
-    def first_end_date(self):
-        try:
-            return self.officerallegation_set.filter(end_date__isnull=False)\
-                .values_list('end_date', flat=True)[0]
-        except IndexError:
-            return None
-
-    @property
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
@@ -904,14 +903,6 @@ class InvestigatorAllegation(models.Model):
     current_rank = models.CharField(max_length=100, null=True)
     current_unit = models.ForeignKey(PoliceUnit, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
-
-
-class AllegationCategory(models.Model):
-    category_code = models.CharField(max_length=255)
-    category = models.CharField(max_length=255, blank=True)
-    allegation_name = models.CharField(max_length=255, blank=True)
-    on_duty = models.BooleanField(default=False)
-    citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
 
 
 class OfficerAllegation(models.Model):

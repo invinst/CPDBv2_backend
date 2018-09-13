@@ -33,6 +33,7 @@ from cms.views import CMSPageViewSet
 from officers.views import OfficersViewSet, OfficersMobileViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
+from cr_v3.views import CRV3ViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from activity_grid.views import ActivityGridViewSet
@@ -55,6 +56,7 @@ router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mo
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
 router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'cr-v3', CRV3ViewSet, base_name='cr-v3')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
 router_v2.register(r'trr', TRRDesktopViewSet, base_name='trr')
 router_v2.register(r'mobile/trr', TRRMobileViewSet, base_name='trr-mobile')
