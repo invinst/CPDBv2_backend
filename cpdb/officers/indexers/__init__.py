@@ -1,6 +1,6 @@
-from django.db.models import F, Q
+from django.db.models import Q
 
-from data.models import Officer, OfficerHistory, Award, Salary
+from data.models import Officer, Award, Salary
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from trr.models import TRR
@@ -10,7 +10,6 @@ from officers.doc_types import (
 )
 from officers.index_aliases import officers_index_alias
 from officers.serializers.doc_serializers import (
-    UnitChangeNewTimelineSerializer,
     JoinedNewTimelineSerializer,
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
@@ -19,24 +18,9 @@ from officers.serializers.doc_serializers import (
 )
 from .officers_indexer import OfficersIndexer
 from .cr_new_timeline_indexer import CRNewTimelineEventIndexer, CRNewTimelineEventPartialIndexer
+from .unit_change_new_timeline_event_indexer import UnitChangeNewTimelineEventIndexer
 
 app_name = __name__.split('.')[0]
-
-
-@register_indexer(app_name)
-class UnitChangeNewTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerNewTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return OfficerHistory.objects.filter(
-            effective_date__isnull=False,
-        ).exclude(
-            effective_date=F('officer__appointed_date'),
-        )
-
-    def extract_datum(self, datum):
-        return UnitChangeNewTimelineSerializer(datum).data
 
 
 @register_indexer(app_name)

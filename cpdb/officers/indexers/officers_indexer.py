@@ -35,9 +35,6 @@ class OfficersIndexer(BaseIndexer):
         PERCENTILE_TRR_GROUP
     ]
 
-    def __init__(self):
-        super(OfficersIndexer, self).__init__()
-
     @timing_validate('OfficersIndexer: Preparing percentile data...')
     def populate_top_percentile_dict(self):
         self.yearly_top_percentile = dict()

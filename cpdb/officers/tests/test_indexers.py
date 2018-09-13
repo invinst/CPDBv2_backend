@@ -7,11 +7,10 @@ from robber import expect
 import pytz
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, OfficerHistoryFactory, AwardFactory,
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, AwardFactory,
     SalaryFactory
 )
 from officers.indexers import (
-    UnitChangeNewTimelineEventIndexer,
     JoinedNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer,
     AwardNewTimelineEventIndexer,
@@ -45,41 +44,6 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
             'kind': 'JOINED',
             'unit_name': '001',
             'unit_description': 'Unit_001',
-            'rank': 'Police Officer',
-        })
-
-
-class UnitChangeNewTimelineEventIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        officer_history = OfficerHistoryFactory(
-            effective_date=date(2010, 1, 1),
-            officer=OfficerFactory(appointed_date=date(2001, 2, 2))
-        )
-        OfficerHistoryFactory(
-            effective_date=date(2010, 1, 1),
-            officer=OfficerFactory(appointed_date=date(2010, 1, 1))
-        )
-        OfficerHistoryFactory(
-            effective_date=None,
-        )
-        expect(list(UnitChangeNewTimelineEventIndexer().get_queryset())).to.eq([officer_history])
-
-    def test_extract_datum(self):
-        officer_history = Mock(
-            officer_id=123,
-            effective_date=date(2010, 3, 4),
-            unit_name='003',
-            unit_description='Unit_003',
-            officer=Mock(get_rank_by_date=Mock(return_value='Police Officer'))
-        )
-        expect(UnitChangeNewTimelineEventIndexer().extract_datum(officer_history)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'priority_sort': 20,
-            'date': '2010-03-04',
-            'kind': 'UNIT_CHANGE',
-            'unit_name': '003',
-            'unit_description': 'Unit_003',
             'rank': 'Police Officer',
         })
 
