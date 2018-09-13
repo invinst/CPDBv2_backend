@@ -312,53 +312,6 @@ class OfficerSerializer(BaseSerializer):
         }
 
 
-class TRRNewTimelineSerializer(serializers.Serializer):
-    trr_id = serializers.IntegerField(source='id')
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.SerializerMethodField()
-    priority_sort = serializers.SerializerMethodField()
-    date = serializers.SerializerMethodField()
-    kind = serializers.SerializerMethodField()
-    taser = serializers.NullBooleanField()
-    firearm_used = serializers.NullBooleanField()
-    unit_name = serializers.SerializerMethodField()
-    unit_description = serializers.SerializerMethodField()
-    rank = serializers.SerializerMethodField()
-    point = serializers.SerializerMethodField()
-
-    def get_kind(self, obj):
-        return 'FORCE'
-
-    def get_priority_sort(self, obj):
-        return 50
-
-    def get_unit_name(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.trr_datetime)
-        return unit.unit_name if unit else ''
-
-    def get_unit_description(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.trr_datetime)
-        return unit.description if unit else ''
-
-    def get_rank(self, obj):
-        return obj.officer.get_rank_by_date(obj.trr_datetime.date())
-
-    def get_date_sort(self, obj):
-        return obj.trr_datetime.date()
-
-    def get_date(self, obj):
-        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
-
-    def get_point(self, obj):
-        try:
-            return {
-                'lon': obj.point.x,
-                'lat': obj.point.y
-            }
-        except AttributeError:
-            return None
-
-
 class OfficerCoaccusalSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()

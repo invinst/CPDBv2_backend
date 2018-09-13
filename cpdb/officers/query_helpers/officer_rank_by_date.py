@@ -1,6 +1,8 @@
-from sortedcontainers import SortedKeyList
+from datetime import datetime
 
 from django.conf import settings
+
+from sortedcontainers import SortedKeyList
 
 from es_index.utils import timing_validate
 from data.models import Salary
@@ -29,11 +31,13 @@ def initialize_rank_by_date_helper():
         _init_rank_dict()
 
 
-def get_officer_rank_by_date(officer_id, date):
+def get_officer_rank_by_date(officer_id, d):
     global _rank_dict
+    if d is not None and type(d) is datetime:
+        d = d.date()
     if officer_id in _rank_dict:
         rank_list = _rank_dict[officer_id]
-        ind = rank_list.bisect_key_right(date)
+        ind = rank_list.bisect_key_right(d)
         if ind > 0:
             return rank_list[ind-1]['rank']
 

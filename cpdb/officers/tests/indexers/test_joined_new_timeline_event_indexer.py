@@ -45,3 +45,10 @@ class JoinedNewTimelineEventIndexerTestCase(TestCase):
             'unit_description': 'District 1',
             'rank': 'Police Officer',
         })
+
+    def test_empty_unit(self):
+        OfficerFactory(appointed_date=date(2005, 1, 1))
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['unit_name']).to.eq('')
+        expect(rows[0]['unit_description']).to.eq('')

@@ -595,10 +595,6 @@ class OfficerHistory(models.Model):
     def unit_name(self):
         return self.unit.unit_name
 
-    @property
-    def unit_description(self):
-        return self.unit.description
-
 
 class AreaObjectManager(models.Manager):
     def with_allegation_per_capita(self):

@@ -64,8 +64,8 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     def extract_datum(self, obj):
         datum = obj.__dict__
-        datum['allegation_category__category'] = obj.allegation_category.category
-        datum['allegation_category__allegation_name'] = obj.allegation_category.allegation_name
+        datum['allegation_category__category'] = getattr(obj.allegation_category, 'category', None)
+        datum['allegation_category__allegation_name'] = getattr(obj.allegation_category, 'allegation_name', None)
         officer_id = datum['officer_id']
         datum['rank'] = get_officer_rank_by_date(officer_id, datum['start_date'])
         datum['unit_name'], datum['unit_description'] = get_officer_unit_by_date(officer_id, datum['start_date'])

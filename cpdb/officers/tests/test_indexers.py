@@ -1,96 +1,16 @@
 from datetime import date, datetime
 
-from django.test import SimpleTestCase, TestCase
+from django.test import TestCase
 
-from mock import Mock, patch
 from robber import expect
 import pytz
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory,
-    SalaryFactory
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory
 )
 from officers.indexers import (
-    JoinedNewTimelineEventIndexer,
-    TRRNewTimelineEventIndexer,
-    OfficerCoaccusalsIndexer,
-    RankChangeNewTimelineEventIndexer,
+    OfficerCoaccusalsIndexer
 )
-from trr.factories import TRRFactory
-
-
-class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
-    def test_get_queryset(self):
-        officer = Mock()
-        with patch('officers.indexers.Officer.objects.filter', return_value=[officer]):
-            expect(JoinedNewTimelineEventIndexer().get_queryset()).to.eq([officer])
-
-    def test_extract_datum(self):
-        officer = Mock(
-            id=123,
-            appointed_date=date(2012, 1, 1),
-            get_unit_by_date=Mock(return_value=Mock(
-                unit_name='001',
-                description='Unit_001',
-            )),
-            get_rank_by_date=Mock(return_value='Police Officer'),
-        )
-        expect(JoinedNewTimelineEventIndexer().extract_datum(officer)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2012, 1, 1),
-            'priority_sort': 10,
-            'date': '2012-01-01',
-            'kind': 'JOINED',
-            'unit_name': '001',
-            'unit_description': 'Unit_001',
-            'rank': 'Police Officer',
-        })
-
-
-class TRRNewTimelineEventIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        trr = TRRFactory()
-        TRRFactory(officer=None)
-
-        expect([obj.id for obj in TRRNewTimelineEventIndexer().get_queryset()]).to.eq([trr.id])
-
-    def test_extract_datum(self):
-        trr = Mock(
-            id=2,
-            officer_id=123,
-            trr_datetime=datetime(2010, 3, 4),
-            firearm_used=False,
-            taser=False,
-            officer=Mock(
-                get_rank_by_date=Mock(return_value='Police Officer'),
-                get_unit_by_date=Mock(return_value=Mock(
-                    unit_name='001',
-                    description='Unit_001',
-                )),
-            ),
-            point=Mock(
-                x=34.5,
-                y=67.8
-            ),
-        )
-
-        expect(TRRNewTimelineEventIndexer().extract_datum(trr)).to.eq({
-            'trr_id': 2,
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'priority_sort': 50,
-            'date': '2010-03-04',
-            'kind': 'FORCE',
-            'taser': False,
-            'firearm_used': False,
-            'unit_name': '001',
-            'unit_description': 'Unit_001',
-            'rank': 'Police Officer',
-            'point': {
-                'lat': 67.8,
-                'lon': 34.5
-            },
-        })
 
 
 class OfficerCoaccusalsIndexerTestCase(TestCase):
@@ -182,61 +102,4 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'percentile_allegation_internal': 66.6666,
                 'percentile_trr': 77.7777,
             }]
-        })
-
-
-class RankChangeNewTimelineEventIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        officer1 = OfficerFactory()
-        officer2 = OfficerFactory()
-        salary1 = SalaryFactory(
-            officer=officer1, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        salary2 = SalaryFactory(
-            officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        salary3 = SalaryFactory(
-            officer=officer2, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        salary4 = SalaryFactory(
-            officer=officer2, salary=15000, year=2006, rank='Detective', spp_date=date(2006, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        expect(RankChangeNewTimelineEventIndexer().get_queryset()).to.eq([salary1, salary2, salary3, salary4])
-
-    def test_extract_datum(self):
-        salary = Mock(
-            officer_id=123,
-            spp_date=date(2005, 1, 1),
-            salary=10000,
-            year=2015,
-            rank='Police Officer',
-            start_date=date(2010, 3, 4),
-            officer=Mock(
-                get_unit_by_date=Mock(return_value=Mock(
-                    unit_name='001',
-                    description='Unit_001',
-                )),
-            ),
-        )
-        expect(RankChangeNewTimelineEventIndexer().extract_datum(salary)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2005, 1, 1),
-            'priority_sort': 25,
-            'date': '2005-01-01',
-            'kind': 'RANK_CHANGE',
-            'unit_name': '001',
-            'unit_description': 'Unit_001',
-            'rank': 'Police Officer',
         })

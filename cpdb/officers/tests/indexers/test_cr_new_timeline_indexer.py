@@ -158,6 +158,22 @@ class CRNewTimelineIndexerTestCase(TestCase):
             ]
         })
 
+    def test_category_null(self):
+        OfficerAllegationFactory(
+            allegation_category=None
+        )
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['category']).to.eq(None)
+        expect(rows[0]['subcategory']).to.eq(None)
+
+    def test_empty_victims_attachments(self):
+        OfficerAllegationFactory()
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['victims']).to.have.length(0)
+        expect(rows[0]['attachments']).to.have.length(0)
+
 
 class CRNewTimelineEventPartialIndexerTestCase(TestCase):
     def test_get_queryset(self):
