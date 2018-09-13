@@ -133,9 +133,6 @@ class OfficersIndexer(BaseIndexer):
             self.salary_dict.setdefault(obj['officer_id'], []).append(obj)
 
     def get_queryset(self):
-        return Officer.objects.all()
-
-    def get_query(self):
         self.populate_top_percentile_dict()
         self.populate_allegation_dict()
         self.populate_award_dict()
@@ -161,20 +158,14 @@ class OfficersIndexer(BaseIndexer):
             officer=models.OuterRef('id')
         )
         return Officer.objects.all()\
-            .annotate(allegation_count=SQCount(allegation_count.values('id')))\
-            .annotate(sustained_count=SQCount(sustained_count.values('id')))\
-            .annotate(discipline_count=SQCount(discipline_count.values('id')))\
+            .annotate(complaint_count=SQCount(allegation_count.values('id')))\
+            .annotate(sustained_complaint_count=SQCount(sustained_count.values('id')))\
+            .annotate(discipline_complaint_count=SQCount(discipline_count.values('id')))\
             .annotate(trr_count=SQCount(trr_count.values('id')))\
-            .annotate(unsustained_count=SQCount(unsustained_count.values('id')))\
-            .values(
-                'id', 'appointed_date', 'resignation_date', 'active', 'rank', 'allegation_count',
-                'first_name', 'last_name', 'middle_initial', 'middle_initial2', 'sustained_count',
-                'suffix_name', 'race', 'gender', 'birth_year', 'complaint_percentile', 'trr_count',
-                'honorable_mention_percentile', 'civilian_allegation_percentile', 'discipline_count',
-                'internal_allegation_percentile', 'trr_percentile', 'tags', 'unsustained_count'
-            )
+            .annotate(unsustained_complaint_count=SQCount(unsustained_count.values('id')))
 
-    def extract_datum(self, datum):
+    def extract_datum(self, obj):
+        datum = obj.__dict__
         datum['allegations'] = self.allegation_dict.get(datum['id'], [])
         datum['awards'] = self.award_dict.get(datum['id'], [])
         datum['coaccusals'] = self.coaccusals.get(datum['id'], dict())

@@ -11,6 +11,12 @@ from es_index import register_indexer
 
 class IndexersTestCase(SimpleTestCase):
 
+    def test_get_queryset(self):
+        expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
+
+    def test_extract_datum(self):
+        expect(lambda: BaseIndexer().extract_datum()).to.throw(NotImplementedError)
+
     def test_docs_when_extract_datum_is_generator(self):
         class MyDocType(DocType):
             pass

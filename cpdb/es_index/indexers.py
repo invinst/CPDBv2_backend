@@ -16,6 +16,12 @@ class BaseIndexer(object):
     parent_doc_type_property = None
     op_type = 'index'
 
+    def get_queryset(self):
+        raise NotImplementedError
+
+    def extract_datum(self):
+        raise NotImplementedError
+
     def _embed_update_script(self, doc):
         raw_doc = copy.deepcopy(doc['_source'])
         doc['_op_type'] = 'update'
@@ -50,14 +56,9 @@ class BaseIndexer(object):
             doc = self._embed_update_script(doc)
         return doc
 
-    def get_objects(self):
-        if hasattr(self, 'get_query'):
-            return self.get_query()
-        return self.get_queryset()
-
     def docs(self):
         for datum in tqdm(
-                self.get_objects(),
+                self.get_queryset(),
                 desc='Indexing {doc_type_name}({indexer_name})'.format(
                     doc_type_name=self.doc_type_klass._doc_type.name,
                     indexer_name=self.__class__.__name__

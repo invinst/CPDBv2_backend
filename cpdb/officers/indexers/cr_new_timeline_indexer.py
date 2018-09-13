@@ -93,12 +93,12 @@ class CRNewTimelineEventIndexer(BaseIndexer):
         self._populate_rank_dict()
         self._populate_victims_dict()
         return OfficerAllegation.objects.filter(start_date__isnull=False)\
-            .select_related('allegation_category').values(
-            'officer_id', 'allegation_id', 'start_date', 'allegation_category__category',
-            'allegation_category__allegation_name', 'final_finding', 'final_outcome'
-        )
+            .select_related('allegation_category')
 
-    def extract_datum(self, datum):
+    def extract_datum(self, obj):
+        datum = obj.__dict__
+        datum['allegation_category__category'] = obj.allegation_category.category
+        datum['allegation_category__allegation_name'] = obj.allegation_category.allegation_name
         officer_id = datum['officer_id']
         if officer_id in self._rank_dict:
             rank_list = self._rank_dict[officer_id]
@@ -135,13 +135,7 @@ class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer
         self._populate_victims_dict()
         return OfficerAllegation.objects\
             .filter(start_date__isnull=False, allegation__crid__in=keys)\
-            .select_related('allegation_category').values(
-                'officer_id', 'allegation_id', 'start_date', 'allegation_category__category',
-                'allegation_category__allegation_name', 'final_finding', 'final_outcome'
-            )
-
-    def get_postgres_count(self, keys):
-        return self.get_batch_queryset(keys).count()
+            .select_related('allegation_category')
 
     def get_batch_update_docs_queries(self, keys):
         return self.doc_type_klass.search().query('terms', crid=keys).filter('term', kind='CR')

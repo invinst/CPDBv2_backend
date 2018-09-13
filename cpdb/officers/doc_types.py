@@ -1,5 +1,5 @@
 from elasticsearch_dsl import (
-    DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean, MetaField
+    DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
 )
 
 from .index_aliases import officers_index_alias
@@ -57,9 +57,6 @@ class OfficerInfoDocType(DocType):
         'long_unit_name': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
         'description': Text(analyzer=autocomplete, search_analyzer=autocomplete_search),
     })
-
-    class Meta:
-        all = MetaField(enabled=False)
 
     @staticmethod
     def get_top_officers(percentile=99.0, size=40):

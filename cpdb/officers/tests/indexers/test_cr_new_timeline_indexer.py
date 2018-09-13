@@ -168,8 +168,8 @@ class CRNewTimelineEventPartialIndexerTestCase(TestCase):
 
         indexer = CRNewTimelineEventPartialIndexer(updating_keys=['123'])
         result = list(indexer.get_queryset())
-        expect([obj['allegation_id'] for obj in result]).to.eq([1212, 1212])
-        expect(result[0]['officer_id']).to.ne(result[1]['officer_id'])
+        expect([obj.allegation_id for obj in result]).to.eq([1212, 1212])
+        expect(result[0].officer_id).to.ne(result[1].officer_id)
 
     def test_get_batch_queryset(self):
         allegation_123 = AllegationFactory(id=123, crid='123')
@@ -179,11 +179,11 @@ class CRNewTimelineEventPartialIndexerTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation_456)
 
         result = CRNewTimelineEventPartialIndexer().get_batch_queryset(keys=['123'])
-        expect([obj['allegation_id'] for obj in result]).to.eq([123, 123])
-        expect(result[0]['officer_id']).to.ne(result[1]['officer_id'])
+        expect([obj.allegation_id for obj in result]).to.eq([123, 123])
+        expect(result[0].officer_id).to.ne(result[1].officer_id)
 
     def test_get_batch_update_docs_queries(self):
-        officers_index_alias.read_index.delete()
+        officers_index_alias.read_index.delete(ignore=404)
         officers_index_alias.read_index.create(ignore=400)
         OfficerNewTimelineEventDocType.init(index=officers_index_alias.read_index._name)
         OfficerNewTimelineEventDocType(meta={'id': '1'}, **{

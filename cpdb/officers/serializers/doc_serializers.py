@@ -199,8 +199,8 @@ class OfficerSerializer(BaseSerializer):
 
     def get_complaint_records(self, obj):
         return {
-            'count': obj['allegation_count'],
-            'sustained_count': obj['sustained_count'],
+            'count': obj['complaint_count'],
+            'sustained_count': obj['sustained_complaint_count'],
             'facets': [
                 self.get_allegation_category_aggregation(obj),
                 self.get_complainant_aggregation(obj, 'complainant race', 'race'),
@@ -291,13 +291,13 @@ class OfficerSerializer(BaseSerializer):
             'active': self.get_active,
             'birth_year': get('birth_year'),
             'complaint_records': self.get_complaint_records,
-            'allegation_count': get('allegation_count'),
+            'allegation_count': get('complaint_count'),
             'complaint_percentile': get('complaint_percentile'),
             'honorable_mention_percentile': get('honorable_mention_percentile'),
             'honorable_mention_count': self.get_honorable_mention_count,
             'has_visual_token': self.get_has_visual_token,
-            'sustained_count': get('sustained_count'),
-            'discipline_count': get('discipline_count'),
+            'sustained_count': get('sustained_complaint_count'),
+            'discipline_count': get('discipline_complaint_count'),
             'civilian_compliment_count': self.get_civilian_compliment_count,
             'trr_count': get('trr_count'),
             'major_award_count': self.get_major_award_count,
@@ -305,16 +305,11 @@ class OfficerSerializer(BaseSerializer):
             'to': self.get_to,
             'url': self.get_url,
             'current_salary': self.get_current_salary,
-            'unsustained_count': get('unsustained_count'),
+            'unsustained_count': get('unsustained_complaint_count'),
             'coaccusals': self.get_coaccusals,
             'current_allegation_percentile': self.get_current_allegation_percentile,
             'percentiles': get('percentiles')
         }
-
-
-class CoaccusalSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    coaccusal_count = serializers.IntegerField()
 
 
 class JoinedNewTimelineSerializer(serializers.Serializer):
@@ -388,68 +383,6 @@ class RankChangeNewTimelineSerializer(serializers.Serializer):
     def get_unit_description(self, obj):
         unit = obj.officer.get_unit_by_date(obj.spp_date)
         return unit.description if unit else ''
-
-
-class VictimSerializer(serializers.Serializer):
-    gender = serializers.CharField(source='gender_display')
-    race = serializers.CharField()
-    age = serializers.IntegerField()
-
-
-class AttachmentFileSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    url = serializers.CharField()
-    preview_image_url = serializers.CharField()
-    file_type = serializers.CharField()
-
-
-class CRNewTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.DateField(source='start_date', format=None)
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
-    priority_sort = serializers.SerializerMethodField()
-    kind = serializers.SerializerMethodField()
-    crid = serializers.CharField()
-    category = serializers.SerializerMethodField()
-    subcategory = serializers.CharField()
-    finding = serializers.CharField(source='final_finding_display')
-    outcome = serializers.CharField(source='final_outcome')
-    coaccused = serializers.IntegerField(source='coaccused_count')
-    unit_name = serializers.SerializerMethodField()
-    unit_description = serializers.SerializerMethodField()
-    rank = serializers.SerializerMethodField()
-    attachments = AttachmentFileSerializer(many=True)
-    point = serializers.SerializerMethodField()
-    victims = VictimSerializer(many=True)
-
-    def get_category(self, obj):
-        return obj.category if obj.category else 'Unknown'
-
-    def get_kind(self, obj):
-        return 'CR'
-
-    def get_priority_sort(self, obj):
-        return 30
-
-    def get_unit_name(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.start_date)
-        return unit.unit_name if unit else ''
-
-    def get_unit_description(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.start_date)
-        return unit.description if unit else ''
-
-    def get_rank(self, obj):
-        return obj.officer.get_rank_by_date(obj.start_date)
-
-    def get_point(self, obj):
-        try:
-            return {
-                'lon': obj.allegation.point.x,
-                'lat': obj.allegation.point.y
-            }
-        except AttributeError:
-            return None
 
 
 class AwardNewTimelineSerializer(serializers.Serializer):

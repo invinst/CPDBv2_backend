@@ -26,7 +26,7 @@ class CRIndexerTestCase(TestCase):
 
     def extract_data(self):
         indexer = CRIndexer()
-        return [indexer.extract_datum(obj) for obj in indexer.get_query()]
+        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
     def test_emit_correct_format(self):
         allegation = AllegationFactory(
@@ -122,8 +122,8 @@ class CRIndexerTestCase(TestCase):
             preview_image_url='http://web.com/image'
         )
         indexer = CRIndexer()
-        rows = list(indexer.get_query())
-        row = [obj for obj in rows if obj['crid'] == '12345'][0]
+        rows = list(indexer.get_queryset())
+        row = [obj for obj in rows if obj.crid == '12345'][0]
         result = indexer.extract_datum(row)
         expect(dict(result)).to.eq({
             'crid': '12345',
@@ -391,7 +391,7 @@ class CRPartialIndexerTestCase(TestCase):
 
         indexer = CRPartialIndexer(updating_keys=['123', '456'])
         result = indexer.get_queryset()
-        crids = [cr['crid'] for cr in result]
+        crids = [cr.crid for cr in result]
         expect(set(crids)).to.eq({
             '123',
             '456',
@@ -403,7 +403,7 @@ class CRPartialIndexerTestCase(TestCase):
         AllegationFactory(crid='789')
 
         result = CRPartialIndexer().get_batch_queryset(keys=['123', '456'])
-        crids = [cr['crid'] for cr in result]
+        crids = [cr.crid for cr in result]
         expect(set(crids)).to.eq({
             '123',
             '456',

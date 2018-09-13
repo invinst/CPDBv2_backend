@@ -21,7 +21,7 @@ class OfficersIndexerTestCase(TestCase):
 
     def extract_data(self):
         indexer = OfficersIndexer()
-        return [indexer.extract_datum(obj) for obj in indexer.get_query()]
+        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
     @override_settings(V1_URL='http://test.com')
     @patch(
