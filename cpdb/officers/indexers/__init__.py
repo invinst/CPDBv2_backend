@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from data.models import Officer, Award, Salary
+from data.models import Officer, Award
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from trr.models import TRR
@@ -13,26 +13,14 @@ from officers.serializers.doc_serializers import (
     JoinedNewTimelineSerializer,
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
-    OfficerCoaccusalsSerializer,
-    RankChangeNewTimelineSerializer
+    OfficerCoaccusalsSerializer
 )
 from .officers_indexer import OfficersIndexer
 from .cr_new_timeline_indexer import CRNewTimelineEventIndexer, CRNewTimelineEventPartialIndexer
 from .unit_change_new_timeline_event_indexer import UnitChangeNewTimelineEventIndexer
+from .rank_change_new_timeline_event_indexer import RankChangeNewTimelineEventIndexer
 
 app_name = __name__.split('.')[0]
-
-
-@register_indexer(app_name)
-class RankChangeNewTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerNewTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Salary.objects.rank_histories_without_joined()
-
-    def extract_datum(self, datum):
-        return RankChangeNewTimelineSerializer(datum).data
 
 
 @register_indexer(app_name)

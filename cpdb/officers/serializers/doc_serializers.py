@@ -340,31 +340,6 @@ class JoinedNewTimelineSerializer(serializers.Serializer):
         return obj.get_rank_by_date(obj.appointed_date)
 
 
-class RankChangeNewTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.DateField(source='spp_date', format=None)
-    priority_sort = serializers.SerializerMethodField()
-    date = serializers.DateField(source='spp_date', format='%Y-%m-%d')
-    kind = serializers.SerializerMethodField()
-    unit_name = serializers.SerializerMethodField()
-    unit_description = serializers.SerializerMethodField()
-    rank = serializers.CharField()
-
-    def get_kind(self, obj):
-        return 'RANK_CHANGE'
-
-    def get_priority_sort(self, obj):
-        return 25
-
-    def get_unit_name(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.spp_date)
-        return unit.unit_name if unit else ''
-
-    def get_unit_description(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.spp_date)
-        return unit.description if unit else ''
-
-
 class AwardNewTimelineSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField()
     date_sort = serializers.DateField(source='start_date', format=None)

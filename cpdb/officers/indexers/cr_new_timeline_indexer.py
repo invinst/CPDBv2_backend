@@ -1,9 +1,7 @@
 from django.db import models
 
-from sortedcontainers import SortedKeyList
-
 from data.models import (
-    Salary, OfficerAllegation, OfficerHistory, AttachmentFile, Victim, Allegation
+    OfficerAllegation, AttachmentFile, Victim, Allegation
 )
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer, PartialIndexer
@@ -11,6 +9,8 @@ from es_index.utils import timing_validate
 from officers.doc_types import OfficerNewTimelineEventDocType
 from officers.index_aliases import officers_index_alias
 from officers.serializers.cr_new_timeline_serializer import CRNewTimelineSerializer
+from officers.query_helpers.officer_unit_by_date import initialize_unit_by_date_helper, get_officer_unit_by_date
+from officers.query_helpers.officer_rank_by_date import initialize_rank_by_date_helper, get_officer_rank_by_date
 
 app_name = __name__.split('.')[0]
 
@@ -20,39 +20,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     doc_type_klass = OfficerNewTimelineEventDocType
     index_alias = officers_index_alias
     serializer = CRNewTimelineSerializer()
-
-    def history_sort_key(self, obj):
-        return obj['effective_date']
-
-    def rank_sort_key(self, obj):
-        return obj['spp_date']
-
-    @timing_validate('CRNewTimelineEventIndexer: Populating officer history dict...')
-    def _populate_officer_history_dict(self):
-        if hasattr(self, '_officer_history_dict'):
-            return
-        self._officer_history_dict = dict()
-        queryset = OfficerHistory.objects.filter(effective_date__isnull=False)\
-            .select_related('unit').values(
-                'unit_id', 'officer_id', 'unit__unit_name', 'unit__description',
-                'end_date', 'effective_date'
-            )
-        for officer_history in queryset:
-            history_list = self._officer_history_dict.setdefault(
-                officer_history['officer_id'],
-                SortedKeyList(key=self.history_sort_key))
-            history_list.add(officer_history)
-
-    @timing_validate('CRNewTimelineEventIndexer: Populating rank dict...')
-    def _populate_rank_dict(self):
-        if hasattr(self, '_rank_dict'):
-            return
-        self._rank_dict = dict()
-        for rank in Salary.objects.filter(spp_date__isnull=False).values('officer_id', 'spp_date', 'rank'):
-            rank_list = self._rank_dict.setdefault(
-                rank['officer_id'],
-                SortedKeyList(key=self.rank_sort_key))
-            rank_list.add(rank)
 
     @timing_validate('CRNewTimelineEventIndexer: Populating allegation dict...')
     def _populate_allegation_dict(self):
@@ -87,10 +54,10 @@ class CRNewTimelineEventIndexer(BaseIndexer):
             self._attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     def get_queryset(self):
-        self._populate_officer_history_dict()
+        initialize_unit_by_date_helper()
+        initialize_rank_by_date_helper()
         self._populate_allegation_dict()
         self._populate_attachments_dict()
-        self._populate_rank_dict()
         self._populate_victims_dict()
         return OfficerAllegation.objects.filter(start_date__isnull=False)\
             .select_related('allegation_category')
@@ -100,20 +67,8 @@ class CRNewTimelineEventIndexer(BaseIndexer):
         datum['allegation_category__category'] = obj.allegation_category.category
         datum['allegation_category__allegation_name'] = obj.allegation_category.allegation_name
         officer_id = datum['officer_id']
-        if officer_id in self._rank_dict:
-            rank_list = self._rank_dict[officer_id]
-            ind = rank_list.bisect_key_right(datum['start_date'])
-            if ind > 0:
-                datum['rank'] = rank_list[ind-1]['rank']
-
-        if officer_id in self._officer_history_dict:
-            history_list = self._officer_history_dict[officer_id]
-            ind = history_list.bisect_key_right(datum['start_date'])
-            if ind > 0:
-                history = history_list[ind-1]
-                if history['end_date'] is None or history['end_date'] >= datum['start_date']:
-                    datum['unit_name'] = history['unit__unit_name']
-                    datum['unit_description'] = history['unit__description']
+        datum['rank'] = get_officer_rank_by_date(officer_id, datum['start_date'])
+        datum['unit_name'], datum['unit_description'] = get_officer_unit_by_date(officer_id, datum['start_date'])
 
         allegation_id = datum['allegation_id']
         allegation = self._allegation_dict[allegation_id]
@@ -128,10 +83,10 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
 class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
     def get_batch_queryset(self, keys):
-        self._populate_officer_history_dict()
+        initialize_unit_by_date_helper()
+        initialize_rank_by_date_helper()
         self._populate_allegation_dict()
         self._populate_attachments_dict()
-        self._populate_rank_dict()
         self._populate_victims_dict()
         return OfficerAllegation.objects\
             .filter(start_date__isnull=False, allegation__crid__in=keys)\

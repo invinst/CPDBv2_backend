@@ -1061,7 +1061,7 @@ class SalaryManager(models.Manager):
             spp_date=F('officer__appointed_date')
         ).order_by('officer_id', 'year')
         last_salary = salaries.first()
-        result = [salaries.first()]
+        result = [last_salary]
         for salary in salaries:
             if salary.officer_id == last_salary.officer_id:
                 if salary.rank != last_salary.rank:

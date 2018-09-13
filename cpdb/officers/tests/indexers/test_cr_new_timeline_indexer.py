@@ -110,7 +110,8 @@ class CRNewTimelineIndexerTestCase(TestCase):
 
         rows = self.extract_data()
         expect(rows).to.have.length(5)
-        expect(rows[0]).to.eq({
+        row = [obj for obj in rows if obj['officer_id'] == 123123][0]
+        expect(row).to.eq({
             'officer_id': 123123,
             'date_sort': date(2012, 1, 1),
             'priority_sort': 30,
