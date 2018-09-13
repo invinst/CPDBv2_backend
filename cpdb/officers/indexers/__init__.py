@@ -1,6 +1,4 @@
-from django.db.models import Q
-
-from data.models import Officer, Award
+from data.models import Officer
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer
 from trr.models import TRR
@@ -10,7 +8,6 @@ from officers.doc_types import (
 )
 from officers.index_aliases import officers_index_alias
 from officers.serializers.doc_serializers import (
-    AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
     OfficerCoaccusalsSerializer
 )
@@ -19,24 +16,9 @@ from .cr_new_timeline_indexer import CRNewTimelineEventIndexer, CRNewTimelineEve
 from .unit_change_new_timeline_event_indexer import UnitChangeNewTimelineEventIndexer
 from .rank_change_new_timeline_event_indexer import RankChangeNewTimelineEventIndexer
 from .joined_new_timeline_event_indexer import JoinedNewTimelineEventIndexer
+from .award_new_timeline_event_indexer import AwardNewTimelineEventIndexer
 
 app_name = __name__.split('.')[0]
-
-
-@register_indexer(app_name)
-class AwardNewTimelineEventIndexer(BaseIndexer):
-    doc_type_klass = OfficerNewTimelineEventDocType
-    index_alias = officers_index_alias
-
-    def get_queryset(self):
-        return Award.objects.filter(
-            Q(start_date__isnull=False),
-            ~Q(award_type__contains='Honorable Mention'),
-            ~Q(award_type__in=['Complimentary Letter', 'Department Commendation'])
-        )
-
-    def extract_datum(self, awards):
-        return AwardNewTimelineSerializer(awards).data
 
 
 @register_indexer(app_name)

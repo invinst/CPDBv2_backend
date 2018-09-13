@@ -7,13 +7,12 @@ from robber import expect
 import pytz
 
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, AwardFactory,
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory,
     SalaryFactory
 )
 from officers.indexers import (
     JoinedNewTimelineEventIndexer,
     TRRNewTimelineEventIndexer,
-    AwardNewTimelineEventIndexer,
     OfficerCoaccusalsIndexer,
     RankChangeNewTimelineEventIndexer,
 )
@@ -42,47 +41,6 @@ class JoinedNewTimelineEventIndexerTestCase(SimpleTestCase):
             'priority_sort': 10,
             'date': '2012-01-01',
             'kind': 'JOINED',
-            'unit_name': '001',
-            'unit_description': 'Unit_001',
-            'rank': 'Police Officer',
-        })
-
-
-class AwardNewTimelineEventIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AwardFactory(award_type='Honorable Mention')
-        AwardFactory(award_type='Honorable Mention Ribbon Award')
-        AwardFactory(award_type="Superintendent'S Honorable Mention")
-        AwardFactory(award_type='Special Honorable Mention')
-        AwardFactory(award_type='Complimentary Letter')
-        AwardFactory(award_type='Department Commendation')
-        award1 = AwardFactory(award_type='Life Saving Award')
-        award2 = AwardFactory(award_type='Award Of Appreciation')
-        award3 = AwardFactory(award_type='Problem Solving Award')
-        expect(set([
-            obj.pk for obj in AwardNewTimelineEventIndexer().get_queryset()
-        ])).to.eq(set([award1.id, award2.id, award3.id]))
-
-    def test_extract_datum(self):
-        award = Mock(
-            officer_id=123,
-            start_date=date(2010, 3, 4),
-            award_type='Honorable Mention',
-            officer=Mock(
-                get_rank_by_date=Mock(return_value='Police Officer'),
-                get_unit_by_date=Mock(return_value=Mock(
-                    unit_name='001',
-                    description='Unit_001',
-                )),
-            ),
-        )
-        expect(AwardNewTimelineEventIndexer().extract_datum(award)).to.eq({
-            'officer_id': 123,
-            'date_sort': date(2010, 3, 4),
-            'priority_sort': 40,
-            'date': '2010-03-04',
-            'kind': 'AWARD',
-            'award_type': 'Honorable Mention',
             'unit_name': '001',
             'unit_description': 'Unit_001',
             'rank': 'Police Officer',

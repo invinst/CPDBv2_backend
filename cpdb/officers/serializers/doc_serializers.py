@@ -312,35 +312,6 @@ class OfficerSerializer(BaseSerializer):
         }
 
 
-class AwardNewTimelineSerializer(serializers.Serializer):
-    officer_id = serializers.IntegerField()
-    date_sort = serializers.DateField(source='start_date', format=None)
-    priority_sort = serializers.SerializerMethodField()
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
-    kind = serializers.SerializerMethodField()
-    award_type = serializers.CharField()
-    unit_name = serializers.SerializerMethodField()
-    unit_description = serializers.SerializerMethodField()
-    rank = serializers.SerializerMethodField()
-
-    def get_kind(self, obj):
-        return 'AWARD'
-
-    def get_priority_sort(self, obj):
-        return 40
-
-    def get_unit_name(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.start_date)
-        return unit.unit_name if unit else ''
-
-    def get_unit_description(self, obj):
-        unit = obj.officer.get_unit_by_date(obj.start_date)
-        return unit.description if unit else ''
-
-    def get_rank(self, obj):
-        return obj.officer.get_rank_by_date(obj.start_date)
-
-
 class TRRNewTimelineSerializer(serializers.Serializer):
     trr_id = serializers.IntegerField(source='id')
     officer_id = serializers.IntegerField()
