@@ -68,7 +68,8 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
                 for coaccused_id, count in
                 sorted(
                     self._coaccusal_dict.get(officer.id, dict()).items(),
-                    key=lambda t: t[0]
+                    key=lambda t: t[1],
+                    reverse=True
                 )
             ]
         }

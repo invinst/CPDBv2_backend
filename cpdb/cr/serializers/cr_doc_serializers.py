@@ -28,7 +28,7 @@ class CoaccusedSerializer(BaseSerializer):
             'race': get('officer__race'),
             'rank': get('officer__rank'),
             'final_outcome': get('final_outcome'),
-            'final_finding': get_finding('final_finding'),
+            'final_finding': get_finding('final_finding', 'Unknown'),
             'recc_outcome': get('recc_outcome'),
             'category': get('allegation_category__category'),
             'subcategory': get('allegation_category__allegation_name'),

@@ -21,7 +21,8 @@ class BaseSerializer(object):
 
 def get(key, default_value=None):
     def func(obj):
-        return obj.get(key, default_value)
+        value = obj.get(key, None)
+        return value if value is not None else default_value
     return func
 
 

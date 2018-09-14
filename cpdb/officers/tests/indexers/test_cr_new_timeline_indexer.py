@@ -164,7 +164,7 @@ class CRNewTimelineIndexerTestCase(TestCase):
         )
         rows = self.extract_data()
         expect(rows).to.have.length(1)
-        expect(rows[0]['category']).to.eq(None)
+        expect(rows[0]['category']).to.eq('Unknown')
         expect(rows[0]['subcategory']).to.eq(None)
 
     def test_empty_victims_attachments(self):
@@ -173,6 +173,19 @@ class CRNewTimelineIndexerTestCase(TestCase):
         expect(rows).to.have.length(1)
         expect(rows[0]['victims']).to.have.length(0)
         expect(rows[0]['attachments']).to.have.length(0)
+
+    def test_empty_unit(self):
+        OfficerAllegationFactory()
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['unit_name']).to.eq('')
+        expect(rows[0]['unit_description']).to.eq('')
+
+    def test_empty_finding(self):
+        OfficerAllegationFactory(final_finding='')
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['finding']).to.eq('Unknown')
 
 
 class CRNewTimelineEventPartialIndexerTestCase(TestCase):

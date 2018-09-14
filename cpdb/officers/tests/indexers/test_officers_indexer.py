@@ -75,8 +75,7 @@ class OfficersIndexerTestCase(TestCase):
             unit__id=1002,
             unit__unit_name='002',
             unit__description='Tactical',
-            effective_date=date(2011, 1, 2),
-            end_date=date(2012, 1, 1)
+            effective_date=date(2011, 1, 2)
         )
         OfficerBadgeNumberFactory(
             officer=officer,

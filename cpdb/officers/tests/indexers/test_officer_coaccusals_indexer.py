@@ -66,6 +66,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         OfficerAllegationFactory(
             officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
         )
+        OfficerAllegationFactory(
+            officer=officer1, allegation=allegation3, final_finding='NS', start_date=date(2006, 1, 1)
+        )
 
         rows = self.extract_data()
         expect(rows).to.have.length(3)
@@ -74,6 +77,20 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         expect(row).to.eq({
             'id': officer1.id,
             'coaccusals': [{
+                'id': officer3.id,
+                'full_name': 'Officer 789',
+                'allegation_count': 3,
+                'sustained_count': 1,
+                'complaint_percentile': 88.8888,
+                'race': 'Black',
+                'gender': 'Male',
+                'birth_year': 1970,
+                'coaccusal_count': 2,
+                'rank': 'Po As Detective',
+                'percentile_allegation_civilian': 55.5555,
+                'percentile_allegation_internal': 66.6666,
+                'percentile_trr': 77.7777,
+            }, {
                 'id': officer2.id,
                 'full_name': 'Officer 456',
                 'allegation_count': 2,
@@ -87,20 +104,6 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'percentile_allegation_civilian': 11.1111,
                 'percentile_allegation_internal': 22.2222,
                 'percentile_trr': 33.3333,
-            }, {
-                'id': officer3.id,
-                'full_name': 'Officer 789',
-                'allegation_count': 3,
-                'sustained_count': 1,
-                'complaint_percentile': 88.8888,
-                'race': 'Black',
-                'gender': 'Male',
-                'birth_year': 1970,
-                'coaccusal_count': 1,
-                'rank': 'Po As Detective',
-                'percentile_allegation_civilian': 55.5555,
-                'percentile_allegation_internal': 66.6666,
-                'percentile_trr': 77.7777,
             }]
         })
 

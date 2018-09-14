@@ -5,12 +5,12 @@ from es_index.serializers import BaseSerializer, get, get_gender, get_date
 from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
 
-class UnitSerializer(BaseSerializer):
+class _UnitSerializer(BaseSerializer):
     def get_long_unit_name(self, obj):
         return 'Unit %s' % obj['unit__unit_name'] if obj['unit__unit_name'] else 'Unit'
 
     def __init__(self, *args, **kwargs):
-        super(UnitSerializer, self).__init__(*args, **kwargs)
+        super(_UnitSerializer, self).__init__(*args, **kwargs)
         self._fields = {
             'id': get('unit_id'),
             'unit_name': get('unit__unit_name'),
@@ -20,19 +20,15 @@ class UnitSerializer(BaseSerializer):
 
 
 class OfficerSerializer(BaseSerializer):
-    _unit_serializer = UnitSerializer()
+    _unit_serializer = _UnitSerializer()
 
     def get_full_name(self, obj):
         return ' '.join([obj['first_name'], obj['last_name']])
 
     def get_unit(self, obj):
-        histories = [
-            history for history in obj['history']
-            if history['end_date'] is not None
-        ]
-        if len(histories) == 0:
+        if len(obj['history']) == 0:
             return None
-        last_history = max(histories, key=lambda o: o['end_date'])
+        last_history = max(obj['history'], key=lambda o: o['effective_date'])
         return self._unit_serializer.serialize(last_history)
 
     def get_current_badge(self, obj):
@@ -267,8 +263,8 @@ class OfficerSerializer(BaseSerializer):
 
     def get_current_allegation_percentile(self, obj):
         try:
-            lastest_percentiles = max(obj['percentiles'], key=lambda x: x['year'])
-            return lastest_percentiles['percentile_allegation']
+            latest_percentiles = max(obj['percentiles'], key=lambda x: x['year'])
+            return latest_percentiles['percentile_allegation']
         except ValueError:
             return None
 
