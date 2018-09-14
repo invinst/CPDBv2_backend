@@ -18,7 +18,7 @@ from es_index.indexers import BaseIndexer
 from es_index.serializers import get_gender, get_age_range
 from officers.doc_types import OfficerInfoDocType
 from officers.index_aliases import officers_index_alias
-from officers.serializers.doc_serializers import OfficerSerializer
+from officers.serializers.officer_serializer import OfficerSerializer
 from trr.models import TRR
 
 app_name = __name__.split('.')[0]

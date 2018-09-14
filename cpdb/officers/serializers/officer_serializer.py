@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.utils.text import slugify
 
-from rest_framework import serializers
-
 from es_index.serializers import BaseSerializer, get, get_gender, get_date
 from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
@@ -310,28 +308,3 @@ class OfficerSerializer(BaseSerializer):
             'current_allegation_percentile': self.get_current_allegation_percentile,
             'percentiles': get('percentiles')
         }
-
-
-class OfficerCoaccusalSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    full_name = serializers.CharField()
-    allegation_count = serializers.IntegerField()
-    sustained_count = serializers.IntegerField()
-    race = serializers.CharField()
-    gender = serializers.CharField(source='gender_display')
-    birth_year = serializers.IntegerField()
-    coaccusal_count = serializers.IntegerField()
-    rank = serializers.CharField()
-
-    complaint_percentile = serializers.FloatField(allow_null=True, read_only=True)
-    percentile_allegation_civilian = serializers.FloatField(
-        allow_null=True, read_only=True, source='civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(
-        allow_null=True, read_only=True, source='internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(
-        allow_null=True, read_only=True, source='trr_percentile')
-
-
-class OfficerCoaccusalsSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    coaccusals = OfficerCoaccusalSerializer(many=True)

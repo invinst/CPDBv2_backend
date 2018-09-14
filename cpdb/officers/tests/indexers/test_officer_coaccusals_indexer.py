@@ -1,22 +1,18 @@
-from datetime import date, datetime
+from datetime import datetime, date
 
 from django.test import TestCase
 
 from robber import expect
 import pytz
 
-from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory
-)
-from officers.indexers import (
-    OfficerCoaccusalsIndexer
-)
+from officers.indexers import OfficerCoaccusalsIndexer
+from data.factories import AllegationFactory, OfficerFactory, OfficerAllegationFactory
 
 
 class OfficerCoaccusalsIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        officer = OfficerFactory()
-        expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
+    def extract_data(self):
+        indexer = OfficerCoaccusalsIndexer()
+        return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
     def test_extract_datum(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
@@ -71,7 +67,11 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
             officer=officer3, allegation=allegation4, final_finding='NS', start_date=date(2006, 1, 1)
         )
 
-        expect(dict(OfficerCoaccusalsIndexer().extract_datum(officer1))).to.eq({
+        rows = self.extract_data()
+        expect(rows).to.have.length(3)
+        row = [obj for obj in rows if obj['id'] == officer1.id][0]
+
+        expect(row).to.eq({
             'id': officer1.id,
             'coaccusals': [{
                 'id': officer2.id,
@@ -102,4 +102,13 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
                 'percentile_allegation_internal': 66.6666,
                 'percentile_trr': 77.7777,
             }]
+        })
+
+    def test_empty_coaccusal(self):
+        OfficerFactory(id=3232)
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]).to.eq({
+            'id': 3232,
+            'coaccusals': []
         })
