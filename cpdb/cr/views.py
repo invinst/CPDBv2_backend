@@ -49,7 +49,7 @@ class CRViewSet(viewsets.ViewSet):
 
         except ValidationError as e:
             if e.get_codes() == {'non_field_errors': ['unique']}:
-                return Response({'message': 'Email already added', 'crid': pk})
+                return Response({'message': 'Email already added', 'crid': pk}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({'message': 'Please enter a valid email'}, status=status.HTTP_400_BAD_REQUEST)
 
