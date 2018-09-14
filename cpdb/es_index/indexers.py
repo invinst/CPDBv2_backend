@@ -70,10 +70,11 @@ class BaseIndexer(object):
             else:
                 yield self.doc_dict(result)
 
-    def create_mapping(self):
-        self.index_alias.write_index.close()
-        if not self.parent_doc_type_property:
-            self.doc_type_klass.init(index=self.index_alias.new_index_name)
+    @classmethod
+    def create_mapping(cls):
+        cls.index_alias.write_index.close()
+        if not cls.parent_doc_type_property:
+            cls.doc_type_klass.init(index=cls.index_alias.new_index_name)
 
     def add_new_data(self):
         self.index_alias.write_index.settings(refresh_interval='-1')
@@ -94,12 +95,13 @@ class PartialIndexer(BaseIndexer):
         super(PartialIndexer, self).__init__()
         self.updating_keys = list(updating_keys) if updating_keys else []
 
-    def create_mapping(self):
-        self.index_alias.write_index.close()
+    @classmethod
+    def create_mapping(cls):
+        cls.index_alias.write_index.close()
         autodiscover_modules('indexers')
-        doc_types = [indexer.doc_type_klass for indexer in indexer_klasses if indexer.index_alias == self.index_alias]
+        doc_types = [indexer.doc_type_klass for indexer in indexer_klasses if indexer.index_alias == cls.index_alias]
         for doc_type in doc_types:
-            doc_type.init(index=self.index_alias.new_index_name)
+            doc_type.init(index=cls.index_alias.new_index_name)
 
     def reindex(self):
         self.validate_updated_docs()

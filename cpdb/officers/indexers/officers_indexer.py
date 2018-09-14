@@ -35,6 +35,15 @@ class OfficersIndexer(BaseIndexer):
         PERCENTILE_TRR_GROUP
     ]
 
+    def __del__(self):
+        del self.allegation_dict
+        del self.award_dict
+        del self.coaccusals
+        del self.yearly_top_percentile
+        del self.history_dict
+        del self.badgenumber_dict
+        del self.salary_dict
+
     @timing_validate('OfficersIndexer: Preparing percentile data...')
     def populate_top_percentile_dict(self):
         self.yearly_top_percentile = dict()
