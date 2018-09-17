@@ -118,11 +118,13 @@ class CRIndexer(BaseIndexer):
             self.victims_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     def get_queryset(self):
-        return Allegation.objects.all().select_related('beat')
+        # Values are extracted so that we can save some 2.5Gb of memory during run
+        return Allegation.objects.all().select_related('beat').values(
+            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'old_complaint_address', 'add1', 'add2', 'city', 'location'
+        )
 
-    def extract_datum(self, obj):
-        datum = obj.__dict__
-        datum['beat'] = getattr(obj.beat, 'name', None)
+    def extract_datum(self, datum):
         datum['coaccused'] = self.coaccused_dict.get(datum['id'], [])
         datum['investigators'] = self.investigator_dict.get(datum['id'], [])
         datum['police_witnesses'] = self.policewitness_dict.get(datum['id'], [])
@@ -135,7 +137,10 @@ class CRIndexer(BaseIndexer):
 
 class CRPartialIndexer(PartialIndexer, CRIndexer):
     def get_batch_queryset(self, keys):
-        return Allegation.objects.filter(crid__in=keys).select_related('beat')
+        return Allegation.objects.filter(crid__in=keys).select_related('beat').values(
+            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'old_complaint_address', 'add1', 'add2', 'city', 'location'
+        )
 
     def get_batch_update_docs_queries(self, keys):
         return self.doc_type_klass.search().query('terms', crid=keys)

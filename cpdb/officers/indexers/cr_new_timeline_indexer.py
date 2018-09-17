@@ -21,6 +21,14 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     index_alias = officers_index_alias
     serializer = CRNewTimelineSerializer()
 
+    def __init__(self, *args, **kwargs):
+        super(CRNewTimelineEventIndexer, self).__init__(*args, **kwargs)
+        initialize_unit_by_date_helper()
+        initialize_rank_by_date_helper()
+        self._populate_allegation_dict()
+        self._populate_attachments_dict()
+        self._populate_victims_dict()
+
     @timing_validate('CRNewTimelineEventIndexer: Populating allegation dict...')
     def _populate_allegation_dict(self):
         if hasattr(self, '_allegation_dict'):
@@ -54,11 +62,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
             self._attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     def get_queryset(self):
-        initialize_unit_by_date_helper()
-        initialize_rank_by_date_helper()
-        self._populate_allegation_dict()
-        self._populate_attachments_dict()
-        self._populate_victims_dict()
         return OfficerAllegation.objects.filter(start_date__isnull=False)\
             .select_related('allegation_category')
 
@@ -83,11 +86,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
 class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
     def get_batch_queryset(self, keys):
-        initialize_unit_by_date_helper()
-        initialize_rank_by_date_helper()
-        self._populate_allegation_dict()
-        self._populate_attachments_dict()
-        self._populate_victims_dict()
         return OfficerAllegation.objects\
             .filter(start_date__isnull=False, allegation__crid__in=keys)\
             .select_related('allegation_category')

@@ -14,7 +14,7 @@ class JoinedNewTimelineEventIndexerTestCase(TestCase):
         return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
     def test_extract_datum(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2011, 1, 1))
+        officer = OfficerFactory(id=123, appointed_date=date(2011, 1, 2))
         OfficerHistoryFactory(
             officer=officer,
             effective_date=date(2011, 1, 1),
@@ -37,9 +37,9 @@ class JoinedNewTimelineEventIndexerTestCase(TestCase):
         expect(rows).to.have.length(1)
         expect(rows[0]).to.eq({
             'officer_id': 123,
-            'date_sort': date(2011, 1, 1),
+            'date_sort': date(2011, 1, 2),
             'priority_sort': 10,
-            'date': '2011-01-01',
+            'date': '2011-01-02',
             'kind': 'JOINED',
             'unit_name': '001',
             'unit_description': 'District 1',
