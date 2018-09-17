@@ -8,7 +8,7 @@ from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, Ra
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 from search.utils import chicago_zip_codes
-from trr.models import TRR
+from trr.models import TRR, ActionResponse
 
 
 class BaseIndexer(object):
@@ -190,6 +190,20 @@ class CrIndexer(BaseIndexer):
 class TRRIndexer(BaseIndexer):
     doc_type_klass = TRRDocType
 
+    def __init__(self, *args, **kwargs):
+        super(TRRIndexer, self).__init__(*args, **kwargs)
+        self._populate_top_forcetype_dict()
+
+    def _populate_top_forcetype_dict(self):
+        self.top_forcetype_dict = dict()
+        queryset = ActionResponse.objects\
+            .filter(person='Member Action')\
+            .order_by('-action_sub_category', 'force_type')
+
+        for obj in queryset:
+            if obj.trr_id not in self.top_forcetype_dict:
+                self.top_forcetype_dict[obj.trr_id] = obj.force_type
+
     def get_queryset(self):
         return TRR.objects.all()
 
@@ -197,7 +211,7 @@ class TRRIndexer(BaseIndexer):
         return {
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
-            'force_type': datum.top_force_type,
+            'force_type': self.top_forcetype_dict.get(datum.id, None),
             'to': datum.v2_to
         }
 

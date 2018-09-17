@@ -358,13 +358,13 @@ class IndexerManagerTestCase(SimpleTestCase):
 class CrIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(CrIndexer().get_queryset().count()).to.eq(0)
-        allegation = AllegationFactory(incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
+        allegation = AllegationFactory(incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
         officer = OfficerFactory()
         OfficerAllegationFactory(allegation=allegation, officer=officer)
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 07, 27, tzinfo=pytz.utc))
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
@@ -400,12 +400,13 @@ class CrIndexerTestCase(TestCase):
 
 class TRRIndexerTestCase(TestCase):
     def test_get_queryset(self):
-        expect(TRRIndexer().get_queryset().count()).to.eq(0)
+        indexer = TRRIndexer()
+        expect(indexer.get_queryset().count()).to.eq(0)
         TRRFactory()
-        expect(TRRIndexer().get_queryset().count()).to.eq(1)
+        expect(indexer.get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        trr = TRRFactory(id='123456', trr_datetime=datetime(2017, 07, 27, tzinfo=pytz.utc))
+        trr = TRRFactory(id=123456, trr_datetime=datetime(2017, 7, 27, tzinfo=pytz.utc))
         ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
         ActionResponseFactory(trr=trr, force_type='Other', action_sub_category=None, person='Subject Action')
         ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
@@ -414,7 +415,7 @@ class TRRIndexerTestCase(TestCase):
         expect(
             TRRIndexer().extract_datum(trr)
         ).to.eq({
-            'id': '123456',
+            'id': 123456,
             'force_type': 'Impact Weapon',
             'trr_datetime': '2017-07-27',
             'to': '/trr/123456/'
