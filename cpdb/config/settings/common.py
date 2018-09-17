@@ -275,16 +275,10 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'SysLog': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.SysLogHandler',
-            'formatter': 'standard',
-            'address': ('logs7.papertrailapp.com', 41386)
-        },
     },
     'loggers': {
         'django': {
-            'handlers': ['error-file', 'SysLog'],
+            'handlers': ['error-file'],
             'level': 'ERROR',
             'propagate': True,
         },
