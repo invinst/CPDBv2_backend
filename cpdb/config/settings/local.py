@@ -4,12 +4,13 @@ from .common import *  # NOQA
 INSTALLED_APPS += (  # NOQA
     'django_extensions',
     'debug_toolbar',
-    )
+)
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:9966',
     'localhost:9967',
-    )
+    'localhost:8001',
+)
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 

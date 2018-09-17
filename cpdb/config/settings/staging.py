@@ -2,11 +2,13 @@ from .production import *  # NOQA
 
 import environ
 
+
 env = environ.Env()
 
 CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
-    )
+    'staging.cpdb.co',
+)
 
 LOGGING = {
     'version': 1,
