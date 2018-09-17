@@ -1,0 +1,8 @@
+files:
+  - {{ nginx_error_log_file }}
+  - {{ nginx_access_log_file }}
+destination:
+  host: logs7.papertrailapp.com
+  port: 41386
+  protocol: tls
+pid_file: /var/run/remote_syslog.pid
