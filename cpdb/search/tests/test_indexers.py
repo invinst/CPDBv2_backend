@@ -6,16 +6,15 @@ from django.test import SimpleTestCase, TestCase
 from robber import expect
 import pytz
 
-# FIXME: Be careful on this, switching this to an absolute import could failed a test
-from ..search_indexers import CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
+from search.search_indexers import (
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
+)
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory,
     SalaryFactory, AllegationCategoryFactory)
 from trr.factories import TRRFactory, ActionResponseFactory
-
-from search.search_indexers import autocompletes_alias
 
 
 def mock_object(**kwargs):
@@ -52,41 +51,21 @@ class BaseIndexerTestCase(SimpleTestCase):
         indexer.extract_datum = Mock(return_value=[{'foo': 'bar'}])
         expect(indexer.extract_datum_with_id(datum)).to.eq([{'foo': 'bar'}])
 
-    def test_index_datum_dict(self):
-        with patch.object(autocompletes_alias, 'new_index_name', 'test_autocompletes_1'):
-            indexer = BaseIndexer()
-            doc_type = Mock()
-            indexer.doc_type_klass = Mock(return_value=doc_type)
-            indexer.extract_datum_with_id = Mock(return_value={'key': 'something'})
-            indexer.get_queryset = Mock(return_value=['something'])
-
-            indexer.index_datum('anything')
-
-            indexer.doc_type_klass.assert_called_once_with(key='something', _index='test_autocompletes_1')
-            expect(doc_type.save.called).to.be.true()
-
-    def test_index_datum_list(self):
-        with patch.object(autocompletes_alias, 'new_index_name', 'test_autocompletes_1'):
-            indexer = BaseIndexer()
-
-            doc_type = Mock()
-            indexer.doc_type_klass = Mock(return_value=doc_type)
-            indexer.extract_datum_with_id = Mock(return_value=[{'key': 'something'}])
-            indexer.get_queryset = Mock(return_value=['something'])
-
-            indexer.index_datum('anything')
-            indexer.doc_type_klass.assert_called_once_with(key='something', _index='test_autocompletes_1')
-            expect(doc_type.save.called).to.be.true()
-
-    def test_index_data(self):
+    def test_docs_from_data_list(self):
         indexer = BaseIndexer()
-        indexer.get_queryset = Mock(return_value=[1])
         indexer.doc_type_klass = Mock()
-        indexer.index_datum = Mock()
+        indexer.get_queryset = Mock(return_value=['something'])
+        indexer.extract_datum_with_id = Mock(return_value=[{'abc': 'def'}])
+        indexer._prepare_doc = lambda o: o
+        expect(list(indexer.docs())).to.eq([{'abc': 'def'}])
 
-        indexer.index_data()
-
-        indexer.index_datum.assert_called_once_with(1)
+    def test_docs_from_data_dict(self):
+        indexer = BaseIndexer()
+        indexer.doc_type_klass = Mock()
+        indexer.get_queryset = Mock(return_value=['something'])
+        indexer.extract_datum_with_id = Mock(return_value={'abc': 'def'})
+        indexer._prepare_doc = lambda o: o
+        expect(list(indexer.docs())).to.eq([{'abc': 'def'}])
 
 
 class UnitIndexerTestCase(TestCase):
@@ -360,9 +339,10 @@ class AreaIndexerTestCase(TestCase):
 
 
 class IndexerManagerTestCase(SimpleTestCase):
-    @patch('cpdb.search.search_indexers.autocompletes_alias')
+    @patch('search.search_indexers.autocompletes_alias')
     def test_rebuild_index(self, autocompletes_alias):
         indexer_obj = Mock()
+        indexer_obj.docs = Mock(return_value=[])
         indexer = Mock(return_value=indexer_obj)
         manager = IndexerManager(indexers=[indexer])
         manager.rebuild_index()
@@ -372,7 +352,7 @@ class IndexerManagerTestCase(SimpleTestCase):
         expect(autocompletes_alias.indexing.return_value.__enter__.called).to.be.true()
         expect(autocompletes_alias.indexing.return_value.__exit__.called).to.be.true()
         expect(indexer.doc_type_klass.init.called).to.be.true()
-        expect(indexer_obj.index_data.called).to.be.true()
+        expect(indexer_obj.docs.called).to.be.true()
 
 
 class CrIndexerTestCase(TestCase):
@@ -388,7 +368,8 @@ class CrIndexerTestCase(TestCase):
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
-        category1, category2 = AllegationCategoryFactory.create_batch(2)
+        category1 = AllegationCategoryFactory(category='Abc')
+        category2 = AllegationCategoryFactory(category='Def')
         OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
         OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
         OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
@@ -397,9 +378,9 @@ class CrIndexerTestCase(TestCase):
             CrIndexer().extract_datum(allegation)
         ).to.eq({
             'crid': '123456',
-            'category': category1.category,
+            'category': 'Abc',
             'incident_date': '2017-07-27',
-            'to': '/complaint/123456/10/'
+            'to': '/complaint/123456/'
         })
 
     def test_extract_datum_with_missing_incident_date_and_category(self):
@@ -413,7 +394,7 @@ class CrIndexerTestCase(TestCase):
             'crid': '123456',
             'category': None,
             'incident_date': None,
-            'to': '/complaint/123456/10/'
+            'to': '/complaint/123456/'
         })
 
 
