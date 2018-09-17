@@ -31,8 +31,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     @timing_validate('CRNewTimelineEventIndexer: Populating allegation dict...')
     def _populate_allegation_dict(self):
-        if hasattr(self, '_allegation_dict'):
-            return
         allegations = Allegation.objects.all()\
             .annotate(coaccused_count=models.Count('officerallegation'))\
             .values('id', 'coaccused_count', 'point', 'crid')
@@ -43,8 +41,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     @timing_validate('CRNewTimelineEventIndexer: Populating victims dict...')
     def _populate_victims_dict(self):
-        if hasattr(self, '_victims_dict'):
-            return
         self._victims_dict = dict()
         victims = Victim.objects.all().values('race', 'gender', 'age', 'allegation_id')
         for victim in victims:
@@ -52,8 +48,6 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 
     @timing_validate('CRNewTimelineEventIndexer: Populating attachments dict...')
     def _populate_attachments_dict(self):
-        if hasattr(self, '_attachments_dict'):
-            return
         self._attachments_dict = dict()
         attachments = AttachmentFile.objects.all().values(
             'title', 'url', 'preview_image_url', 'file_type', 'allegation_id'
