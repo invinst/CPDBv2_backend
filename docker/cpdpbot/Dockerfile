@@ -1,4 +1,4 @@
-FROM python:2.7-jessie
+FROM python:3.5-jessie
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
@@ -21,6 +21,8 @@ RUN apt-get -qq update && apt-get -y install \
     libssl-dev \
     libfribidi-dev && \
     apt-get clean
+
+RUN curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
 
 RUN pip install --upgrade pip
 
