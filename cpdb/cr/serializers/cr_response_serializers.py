@@ -180,7 +180,7 @@ class CRRelatedComplaintSerializer(serializers.Serializer):
     def get_coaccused(self, obj):
         try:
             return [coaccused.abbr_name for coaccused in obj.coaccused]
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             return []
 
     def get_complainants(self, obj):

@@ -26,4 +26,4 @@ cd $DIR/..
 source prod.env
 
 PGPASSWORD=$(terraform output postgres_staging_password) psql \
-    --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 --dbname $APP_DB
+    --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 "sslmode=require dbname=$APP_DB"

@@ -12,11 +12,17 @@ class AttachmentRequestTestCase(TestCase):
         expect(attachment_request.status).to.be.false()
 
     def test_str(self):
-        attachment_request = AttachmentRequestFactory(
+        attachment_request = AttachmentRequestFactory.build(
             allegation=AllegationFactory(crid='1111'),
             email='foo@bar.com'
         )
         expect(str(attachment_request)).to.eq('foo@bar.com - 1111')
+
+    def test_crid(self):
+        attachment_request = AttachmentRequestFactory.build(
+            allegation=AllegationFactory(crid='1111'),
+        )
+        expect(attachment_request.crid).to.eq('1111')
 
     def test_email_validation(self):
         expect(lambda: AttachmentRequestFactory(email='foo')).to.throw(ValidationError)

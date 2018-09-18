@@ -107,5 +107,6 @@ class CPDPBotTestCase(unittest.TestCase):
         sender.queue_service.delete_message.assert_called_with(
             sender.queue_name, messages[0].id, messages[0].pop_receipt)
 
+
 if __name__ == '__main__':
     unittest.main()
