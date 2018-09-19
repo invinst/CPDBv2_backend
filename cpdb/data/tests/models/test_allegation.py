@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.test.testcases import TestCase
 
 from robber.expect import expect
@@ -112,22 +110,6 @@ class AllegationTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, officer=None)
 
         expect(allegation.v2_to).to.eq('/complaint/456/')
-
-    def test_first_start_date(self):
-        allegation1 = AllegationFactory()
-        expect(allegation1.first_start_date).to.equal(None)
-
-        allegation2 = AllegationFactory()
-        OfficerAllegationFactory(allegation=allegation2, start_date=date(2002, 2, 2))
-        expect(allegation2.first_start_date).to.eq(date(2002, 2, 2))
-
-    def test_first_end_date(self):
-        allegation1 = AllegationFactory()
-        expect(allegation1.first_end_date).to.equal(None)
-
-        allegation2 = AllegationFactory()
-        OfficerAllegationFactory(allegation=allegation2, end_date=date(2012, 1, 1))
-        expect(allegation2.first_end_date).to.eq(date(2012, 1, 1))
 
     def test_most_common_category(self):
         allegation = AllegationFactory()

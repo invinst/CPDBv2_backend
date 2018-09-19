@@ -33,13 +33,17 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             complaint_percentile=0.0,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
-            trr_percentile=3.3
+            trr_percentile=3.3,
+            allegation_count=1,
+            sustained_count=1,
         )
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         allegation = AllegationFactory(
             crid='12345', point=Point(12, 21), incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc), add1=3510,
             add2='Michigan Ave', city='Chicago', location='Police Communications System', beat=area,
-            is_officer_complaint=False, summary='Summary'
+            is_officer_complaint=False, summary='Summary',
+            first_start_date=date(2003, 3, 20),
+            first_end_date=date(2006, 5, 26)
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
@@ -57,7 +61,9 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             last_name='Piwinicki',
             appointed_date=date(2001, 5, 1),
             complaint_percentile=4.4,
-            trr_percentile=5.5
+            trr_percentile=5.5,
+            allegation_count=1,
+            sustained_count=1,
         )
         OfficerAllegationFactory(
             officer=officer,
@@ -75,6 +81,8 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             complaint_percentile=6.6,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
+            allegation_count=1,
+            sustained_count=0,
         )
         OfficerAllegationFactory(
             officer=investigator,

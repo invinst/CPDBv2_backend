@@ -27,11 +27,6 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'birth_year': '1950',
             'allegation_count': 2,
             'sustained_count': 1,
-            'complaint_category_aggregation': [],
-            'complainant_race_aggregation': [],
-            'complainant_age_aggregation': [],
-            'complainant_gender_aggregation': [],
-            'total_complaints_aggregation': [],
             'current_salary': 90000,
         })
         expect(OfficerSummarySerializer(obj).data).to.eq({
@@ -57,17 +52,6 @@ class OfficerSummarySerializerTestCase(SimpleTestCase):
             'badge': '789',
             'historic_badges': ['123', '456'],
             'gender': 'Male',
-            'complaint_records': {
-                'count': 2,
-                'sustained_count': 1,
-                'facets': [
-                    {'name': 'category', 'entries': []},
-                    {'name': 'complainant race', 'entries': []},
-                    {'name': 'complainant age', 'entries': []},
-                    {'name': 'complainant gender', 'entries': []},
-                ],
-                'items': [],
-            },
             'birth_year': 1950,
             'current_salary': 90000,
         })

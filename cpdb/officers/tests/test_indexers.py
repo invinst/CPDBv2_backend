@@ -74,193 +74,9 @@ class OfficersIndexerTestCase(SimpleTestCase):
 
     def test_get_queryset(self):
         officer = Mock()
-        with patch(
-            'officers.indexers.officer_percentile.top_percentile',
-            Mock(return_value=[])
-        ):
-            with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
-                expect(OfficersIndexer().get_queryset()).to.eq([officer])
+        with patch('officers.indexers.Officer.objects.all', return_value=[officer]):
+            expect(OfficersIndexer().get_queryset()).to.eq([officer])
 
-    @patch(
-        'officers.indexers.officer_percentile.top_percentile',
-        Mock(return_value=[Mock(id=1, percentile_allegation=99.9899)])
-    )
-    def test_extract_datum_not_in_percentile(self):
-        officer = create_object({
-            'v2_to': '',
-            'v1_url': '',
-            'tags': [],
-            'id': 123,
-            'full_name': 'Alex Mack',
-            'last_unit': Mock(id=1, unit_name='4', description=''),
-            'rank': '5',
-            'race': 'White',
-            'current_badge': '123456',
-            'historic_badges': ['123', '456'],
-            'historic_units': [
-                Mock(**{
-                    'id': 1,
-                    'unit_name': '1',
-                    'description': 'Unit 001'
-                }),
-                Mock(**{
-                    'id': 2,
-                    'unit_name': '2',
-                    'description': 'Unit 002'
-                })],
-            'gender_display': 'Male',
-            'birth_year': 1910,
-            'has_visual_token': False,
-            'appointed_date': date(2017, 2, 27),
-            'resignation_date': date(2017, 12, 27),
-            'get_active_display': Mock(return_value='Active'),
-            'allegation_count': 2,
-            'complaint_percentile': 99.8,
-            'honorable_mention_count': 1,
-            'sustained_count': 1,
-            'unsustained_count': 2,
-            'discipline_count': 1,
-            'civilian_compliment_count': 0,
-            'percentiles': [],
-            'coaccusals': [{
-                'id': 1,
-                'coaccusal_count': 5
-            }],
-            'current_salary': 9000,
-            'honorable_mention_percentile': 98,
-            'total_complaints_aggregation': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
-            'trr_count': 1,
-            'major_award_count': 9,
-            'complaint_category_aggregation': [
-                {
-                    'name': 'Illegal Search',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_race_aggregation': [
-                {
-                    'name': 'White',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_age_aggregation': [
-                {
-                    'name': '<20',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_gender_aggregation': [
-                {
-                    'name': 'Male',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ]
-        })
-
-        expect(OfficersIndexer().extract_datum(officer)).to.eq({
-            'id': 123,
-            'full_name': 'Alex Mack',
-            'unit': {
-                'id': 1,
-                'unit_name': '4',
-                'description': '',
-                'long_unit_name': 'Unit 4',
-            },
-            'rank': '5',
-            'race': 'White',
-            'badge': '123456',
-            'historic_badges': ['123', '456'],
-            'historic_units': [
-                {
-                    'id': 1,
-                    'unit_name': '1',
-                    'description': 'Unit 001',
-                    'long_unit_name': 'Unit 1',
-                }, {
-                    'id': 2,
-                    'unit_name': '2',
-                    'description': 'Unit 002',
-                    'long_unit_name': 'Unit 2',
-                }
-            ],
-            'gender': 'Male',
-            'date_of_appt': '2017-02-27',
-            'date_of_resignation': '2017-12-27',
-            'active': 'Active',
-            'birth_year': 1910,
-            'complaint_records': {
-                'count': 2,
-                'sustained_count': 1,
-                'items': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
-                'facets': [
-                    {
-                        'name': 'category',
-                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant gender',
-                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    }
-                ]
-            },
-            'allegation_count': 2,
-            'complaint_percentile': 99.8,
-            'honorable_mention_count': 1,
-            'honorable_mention_percentile': 98,
-            'has_visual_token': False,
-            'sustained_count': 1,
-            'discipline_count': 1,
-            'civilian_compliment_count': 0,
-            'percentiles': [],
-            'trr_count': 1,
-            'major_award_count': 9,
-            'tags': [],
-            'to': '',
-            'url': '',
-            'current_salary': 9000,
-            'unsustained_count': 2,
-            'coaccusals': [{
-                'id': 1,
-                'coaccusal_count': 5,
-            }],
-        })
-
-    @patch(
-        'officers.indexers.officer_percentile.top_percentile',
-        Mock(return_value=[Mock(id=123, percentile_allegation=99.9899)])
-    )
     def test_extract_datum(self):
         officer = create_object({
             'v2_to': '',
@@ -307,47 +123,8 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'total_complaints_aggregation': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
             'trr_count': 1,
             'major_award_count': 9,
-            'complaint_category_aggregation': [
-                {
-                    'name': 'Illegal Search',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_race_aggregation': [
-                {
-                    'name': 'White',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_age_aggregation': [
-                {
-                    'name': '<20',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ],
-            'complainant_gender_aggregation': [
-                {
-                    'name': 'Male',
-                    'count': 1,
-                    'sustained_count': 0,
-                    'items': [
-                        {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
-                    ]
-                }
-            ]
         })
+
         expected_result = {
             'id': 123,
             'full_name': 'Alex Mack',
@@ -379,42 +156,10 @@ class OfficersIndexerTestCase(SimpleTestCase):
             'date_of_resignation': '2017-12-27',
             'active': 'Active',
             'birth_year': 1910,
-            'complaint_records': {
-                'count': 2,
-                'sustained_count': 1,
-                'items': [{'year': 2000, 'count': 1, 'sustained_count': 0}],
-                'facets': [
-                    {
-                        'name': 'category',
-                        'entries': [{'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant gender',
-                        'entries': [{'name': 'Male', 'count': 1, 'sustained_count': 0, 'items': [
-                            {'year': 2000, 'name': 'Male', 'count': 1, 'sustained_count': 0}
-                        ]}]
-                    }
-                ]
-            },
             'allegation_count': 2,
             'complaint_percentile': 99.8,
             'honorable_mention_count': 1,
             'honorable_mention_percentile': 98,
-            'current_allegation_percentile': '99.9899',
             'has_visual_token': False,
             'sustained_count': 1,
             'discipline_count': 1,
@@ -686,6 +431,7 @@ class CRNewTimelineEventIndexerTestCase(TestCase):
         allegation = AllegationFactory(
             crid='123456',
             point=Point(35.5, 68.9),
+            coaccused_count=4
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -914,7 +660,12 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
         expect(list(OfficerCoaccusalsIndexer().get_queryset())).to.eq([officer])
 
     def test_extract_datum(self):
-        officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
+        officer1 = OfficerFactory(
+            appointed_date=date(2001, 1, 1),
+            allegation_count=1,
+            sustained_count=0,
+            unsustained_count=1
+        )
         officer2 = OfficerFactory(
             first_name='Officer',
             last_name='456',
@@ -927,6 +678,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
             internal_allegation_percentile=22.2222,
             trr_percentile=33.3333,
             complaint_percentile=44.4444,
+            allegation_count=2,
+            sustained_count=1,
+            unsustained_count=1
         )
         officer3 = OfficerFactory(
             first_name='Officer',
@@ -940,6 +694,9 @@ class OfficerCoaccusalsIndexerTestCase(TestCase):
             internal_allegation_percentile=66.6666,
             trr_percentile=77.7777,
             complaint_percentile=88.8888,
+            allegation_count=3,
+            sustained_count=1,
+            unsustained_count=2
         )
 
         allegation1 = AllegationFactory(incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc))

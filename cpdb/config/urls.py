@@ -31,6 +31,7 @@ from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
 from officers.views import OfficersViewSet, OfficersMobileViewSet
+from officers_v3.views import OfficersV3ViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from cr_v3.views import CRV3ViewSet
@@ -54,6 +55,7 @@ router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(r'officers', OfficersViewSet, base_name='officers')
+router_v2.register(r'officers-v3', OfficersV3ViewSet, base_name='officers-v3')
 router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
 router_v2.register(r'cr-v3', CRV3ViewSet, base_name='cr-v3')

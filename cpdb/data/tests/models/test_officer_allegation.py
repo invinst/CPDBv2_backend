@@ -7,6 +7,8 @@ from data.factories import (
     AttachmentFileFactory, VictimFactory,
 )
 
+from data.cache_managers import allegation_cache_manager
+
 
 class OfficerAllegationTestCase(TestCase):
     def test_crid(self):
@@ -34,6 +36,8 @@ class OfficerAllegationTestCase(TestCase):
         allegation = AllegationFactory()
         officer_allegation = OfficerAllegationFactory(allegation=allegation)
         OfficerAllegationFactory.create_batch(5, allegation=allegation)
+        allegation_cache_manager.cache_data()
+        allegation.refresh_from_db()
 
         expect(officer_allegation.coaccused_count).to.eq(6)
 

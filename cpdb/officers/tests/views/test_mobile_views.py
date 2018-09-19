@@ -29,7 +29,10 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5
+            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
+            sustained_count=1, allegation_count=2, discipline_count=1, trr_count=1,
+            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            last_unit_id=1, current_badge='123456'
         )
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
         internal_allegation = AllegationFactory(
@@ -124,7 +127,10 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
-            honorable_mention_percentile=66.6667
+            honorable_mention_percentile=66.6667,
+            sustained_count=1, allegation_count=3, discipline_count=1, trr_count=1,
+            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            last_unit_id=1, current_badge='123456'
         )
 
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
@@ -253,7 +259,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
-        allegation = AllegationFactory(crid='123456')
+        allegation = AllegationFactory(crid='123456', coaccused_count=4)
         AttachmentFileFactory(
             allegation=allegation,
             title='CRID-303350-CR',
@@ -267,7 +273,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
-        allegation2 = AllegationFactory(crid='654321')
+        allegation2 = AllegationFactory(crid='654321', coaccused_count=1)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,

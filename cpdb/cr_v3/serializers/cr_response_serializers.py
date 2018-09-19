@@ -65,13 +65,9 @@ class PoliceWitnessSerializer(serializers.Serializer):
     officer_id = serializers.IntegerField(source='id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.CharField()
-    abbr_name = serializers.CharField()
     allegation_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
-    gender = serializers.CharField(source='gender_display')
-    race = serializers.CharField()
 
-    percentile_allegation = serializers.FloatField(source='complaint_percentile')
     percentile_allegation_civilian = serializers.FloatField(source='civilian_allegation_percentile')
     percentile_allegation_internal = serializers.FloatField(source='internal_allegation_percentile')
     percentile_trr = serializers.FloatField(source='trr_percentile')

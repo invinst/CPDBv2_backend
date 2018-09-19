@@ -6,16 +6,15 @@ from case_conversion import kebabcase
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
-from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Q, Value, Max, Count, Prefetch
-from django.db.models.functions import Concat, ExtractYear, Cast, Lower
+from django.db.models.functions import Concat, ExtractYear, Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, MAJOR_AWARDS,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -277,9 +276,17 @@ class Officer(TaggableModel):
     internal_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     trr_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     honorable_mention_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
-    allegation_count = models.IntegerField(default=0)
-    sustained_count = models.IntegerField(default=0)
-
+    allegation_count = models.IntegerField(default=0, null=True)
+    sustained_count = models.IntegerField(default=0, null=True)
+    honorable_mention_count = models.IntegerField(default=0, null=True)
+    unsustained_count = models.IntegerField(default=0, null=True)
+    discipline_count = models.IntegerField(default=0, null=True)
+    civilian_compliment_count = models.IntegerField(default=0, null=True)
+    trr_count = models.IntegerField(default=0, null=True)
+    major_award_count = models.IntegerField(default=0, null=True)
+    current_badge = models.CharField(max_length=10, null=True)
+    last_unit = models.ForeignKey(PoliceUnit, null=True)
+    current_salary = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return self.full_name
@@ -295,18 +302,18 @@ class Officer(TaggableModel):
 
     @property
     def historic_units(self):
-        return [o.unit for o in self.officerhistory_set.all().order_by('-effective_date')]
+        return [o.unit for o in self.officerhistory_set.all().select_related('unit').order_by('-effective_date')]
 
-    @property
-    def trr_count(self):
-        return self.trr_set.count()
+    # @property
+    # def trr_count(self):
+    #     return self.trr_set.count()
 
-    @property
-    def current_badge(self):
-        try:
-            return self.officerbadgenumber_set.get(current=True).star
-        except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
-            return ''
+    # @property
+    # def current_badge(self):
+    #     try:
+    #         return self.officerbadgenumber_set.get(current=True).star
+    #     except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
+    #         return ''
 
     @property
     def gender_display(self):
@@ -315,28 +322,28 @@ class Officer(TaggableModel):
         except KeyError:
             return self.gender
 
-    @property
-    def unsustained_count(self):
-        return self.officerallegation_set.filter(final_finding='NS').distinct().count()
+    # @property
+    # def unsustained_count(self):
+    #     return self.officerallegation_set.filter(final_finding='NS').distinct().count()
 
-    @property
-    def honorable_mention_count(self):
-        return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
+    # @property
+    # def honorable_mention_count(self):
+    #     return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
 
-    @property
-    def civilian_compliment_count(self):
-        return self.award_set.filter(award_type='Complimentary Letter').distinct().count()
+    # @property
+    # def civilian_compliment_count(self):
+    #     return self.award_set.filter(award_type='Complimentary Letter').distinct().count()
 
     @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
 
-    @property
-    def last_unit(self):
-        try:
-            return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
-        except IndexError:
-            return None
+    # @property
+    # def last_unit(self):
+    #     try:
+    #         return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
+    #     except IndexError:
+    #         return None
 
     @property
     def current_age(self):
@@ -353,9 +360,9 @@ class Officer(TaggableModel):
     def abbr_name(self):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)
 
-    @property
-    def discipline_count(self):
-        return self.officerallegation_set.filter(disciplined=True).count()
+    # @property
+    # def discipline_count(self):
+    #     return self.officerallegation_set.filter(disciplined=True).count()
 
     @property
     def visual_token_background_color(self):
@@ -549,13 +556,13 @@ class Officer(TaggableModel):
             aggregate_sustained_count += item['sustained_count']
         return results
 
-    @property
-    def major_award_count(self):
-        return self.award_set.annotate(
-            lower_award_type=Lower('award_type')
-        ).filter(
-            lower_award_type__in=MAJOR_AWARDS
-        ).count()
+    # @property
+    # def major_award_count(self):
+    #     return self.award_set.annotate(
+    #         lower_award_type=Lower('award_type')
+    #     ).filter(
+    #         lower_award_type__in=MAJOR_AWARDS
+    #     ).count()
 
     @property
     def coaccusals(self):
@@ -563,10 +570,10 @@ class Officer(TaggableModel):
             officerallegation__allegation__officerallegation__officer=self
         ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
-    @property
-    def current_salary(self):
-        current_salary_object = self.salary_set.all().order_by('-year').first()
-        return current_salary_object.salary if current_salary_object else None
+    # @property
+    # def current_salary(self):
+    #     current_salary_object = self.salary_set.all().order_by('-year').first()
+    #     return current_salary_object.salary if current_salary_object else None
 
     @property
     def rank_histories(self):
@@ -608,10 +615,29 @@ class Officer(TaggableModel):
                 return rank_histories[i]['rank']
 
 
+class OfficerYearlyPercentile(models.Model):
+    officer = models.ForeignKey(Officer, null=False)
+    year = models.IntegerField()
+    percentile_trr = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    percentile_allegation = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    percentile_allegation_civilian = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    percentile_allegation_internal = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['year']),
+        ]
+
+
 class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, null=True)
     star = models.CharField(max_length=10)
     current = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['current']),
+        ]
 
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
@@ -622,6 +648,12 @@ class OfficerHistory(models.Model):
     unit = models.ForeignKey(PoliceUnit, null=True)
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['end_date']),
+            models.Index(fields=['effective_date']),
+        ]
 
     @property
     def unit_name(self):
@@ -784,6 +816,7 @@ class Allegation(models.Model):
     most_common_category = models.ForeignKey(AllegationCategory, null=True)
     first_start_date = models.DateTimeField(null=True)
     first_end_date = models.DateTimeField(null=True)
+    coaccused_count = models.IntegerField(default=0, null=True)
 
     class Meta:
         indexes = [
@@ -922,6 +955,11 @@ class OfficerAllegation(models.Model):
     final_outcome_class = models.CharField(max_length=20, blank=True)
     disciplined = models.NullBooleanField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['start_date']),
+        ]
+
     @property
     def crid(self):
         return self.allegation.crid
@@ -942,7 +980,7 @@ class OfficerAllegation(models.Model):
 
     @property
     def coaccused_count(self):
-        return OfficerAllegation.objects.filter(allegation=self.allegation).distinct().count()
+        return self.allegation.coaccused_count
 
     @property
     def final_finding_display(self):
@@ -1119,3 +1157,8 @@ class Salary(models.Model):
     officer = models.ForeignKey(Officer)
 
     objects = SalaryManager()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['year']),
+        ]

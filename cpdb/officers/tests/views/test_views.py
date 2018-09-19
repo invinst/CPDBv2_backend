@@ -26,7 +26,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE, birth_year=1910, complaint_percentile=32.5
+            active=ACTIVE_YES_CHOICE, birth_year=1910, complaint_percentile=32.5,
+            sustained_count=1, allegation_count=1, discipline_count=1, trr_count=1,
+            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            last_unit_id=1, current_badge='123456', current_salary=90000
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
@@ -70,37 +73,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'long_unit_name': 'Unit CAND'
             }],
             'gender': 'Male',
-            'complaint_records': {
-                'count': 1,
-                'sustained_count': 1,
-                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
-                'facets': [
-                    {
-                        'name': 'category',
-                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant race',
-                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant age',
-                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    },
-                    {
-                        'name': 'complainant gender',
-                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
-                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
-                        ]}]
-                    }
-                ]
-            },
             'birth_year': 1910,
             'sustained_count': 1,
             'civilian_compliment_count': 1,
@@ -137,7 +109,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
-        allegation = AllegationFactory(crid='123456')
+        allegation = AllegationFactory(crid='123456', coaccused_count=4)
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
@@ -146,7 +118,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
-        allegation2 = AllegationFactory(crid='654321', point=Point(35.5, 68.9))
+        allegation2 = AllegationFactory(crid='654321', point=Point(35.5, 68.9), coaccused_count=1)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
@@ -247,35 +219,35 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         officer1 = OfficerFactory(
             id=1, first_name='Daryl', last_name='Mack',
             trr_percentile=12.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
-            complaint_percentile=99.8000,
+            complaint_percentile=99.3450,
             race='White', gender='M', birth_year=1975,
         )
         officer2 = OfficerFactory(
             id=2,
             first_name='Ronald', last_name='Watts',
             trr_percentile=0.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
-            complaint_percentile=99.8000,
+            complaint_percentile=99.5000,
             race='White', gender='M', birth_year=1975,
         )
         officer3 = OfficerFactory(
             id=3,
             first_name='Officer', last_name='low percentile',
             trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=99.8000,
+            complaint_percentile=96.3450,
             race='White', gender='M', birth_year=1975,
         )
         officer4 = OfficerFactory(
             id=4,
             first_name='Officer', last_name='no visual token',
             trr_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=99.8000,
+            complaint_percentile=99.8800,
             race='White', gender='M', birth_year=1975,
         )
         officer5 = OfficerFactory(
             id=5,
             first_name='Officer', last_name='filter out',
             trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=99.8000,
+            complaint_percentile=99.2000,
             race='White', gender='M', birth_year=1975,
         )
         OfficerFactory(
@@ -305,7 +277,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             expect(response.data).to.have.length(2)
             expect(response.data).to.eq([
                 {
-                    'complaint_percentile': 99.8000,
+                    'complaint_percentile': 99.5000,
                     'full_name': u'Ronald Watts',
                     'id': 2,
                     'percentile': {
@@ -320,7 +292,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'birth_year': 1975,
                 },
                 {
-                    'complaint_percentile': 99.8000,
+                    'complaint_percentile': 99.3450,
                     'full_name': u'Daryl Mack',
                     'id': 1,
                     'percentile': {
@@ -341,7 +313,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_coaccusals(self):
-        officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
+        officer1 = OfficerFactory(
+            appointed_date=date(2001, 1, 1),
+            allegation_count=2,
+            sustained_count=0,
+        )
         officer2 = OfficerFactory(
             first_name='Officer',
             last_name='1',
@@ -354,6 +330,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             civilian_allegation_percentile=33.3333,
             internal_allegation_percentile=0.0,
             trr_percentile=33.3333,
+            allegation_count=2,
+            sustained_count=1,
         )
         officer3 = OfficerFactory(
             first_name='Officer',
@@ -367,6 +345,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             civilian_allegation_percentile=66.6667,
             internal_allegation_percentile=0.0,
             trr_percentile=66.6667,
+            allegation_count=1,
+            sustained_count=1,
         )
         officer4 = OfficerFactory(
             first_name='Officer',
@@ -376,7 +356,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             birth_year=1950,
             rank='Police Officer',
             appointed_date=None,
-            complaint_percentile=None
+            complaint_percentile=None,
+            allegation_count=1,
+            sustained_count=0,
         )
         allegation1 = AllegationFactory(incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc))
         allegation2 = AllegationFactory(incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc))

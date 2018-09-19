@@ -48,7 +48,7 @@ class OfficerInfoDocType(DocType):
     historic_badges = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     allegation_count = Long()
     has_visual_token = Boolean()
-    current_allegation_percentile = Float()
+    complaint_percentile = Float()
 
     historic_units = Nested(properties={
         'id': Integer(),
@@ -62,8 +62,8 @@ class OfficerInfoDocType(DocType):
             'bool',
             filter=[
                 {'term': {'has_visual_token': True}},
-                {'range': {'current_allegation_percentile': {'gte': percentile}}}
+                {'range': {'complaint_percentile': {'gte': percentile}}}
             ]
         )
-        query = query.sort({'current_allegation_percentile': 'desc'})
+        query = query.sort({'complaint_percentile': 'desc'})
         return query[0:size].execute()

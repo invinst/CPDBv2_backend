@@ -40,7 +40,9 @@ class CRIndexerTestCase(TestCase):
             city='Chicago',
             location='Police Building',
             beat=AreaFactory(name='23'),
-            is_officer_complaint=False
+            is_officer_complaint=False,
+            first_start_date=date(2003, 3, 28),
+            first_end_date=date(2003, 4, 28),
         )
         coaccused = OfficerFactory(
             id=1,
@@ -54,7 +56,9 @@ class CRIndexerTestCase(TestCase):
             complaint_percentile=0.0,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
-            trr_percentile=3.3
+            trr_percentile=3.3,
+            allegation_count=1,
+            sustained_count=1,
         )
         OfficerAllegationFactory(
             officer=coaccused,
@@ -80,7 +84,9 @@ class CRIndexerTestCase(TestCase):
             gender='M',
             appointed_date=date(2001, 5, 1),
             complaint_percentile=4.4,
-            trr_percentile=5.5
+            trr_percentile=5.5,
+            allegation_count=1,
+            sustained_count=1,
         )
         OfficerAllegationFactory(
             officer=officer,
@@ -98,6 +104,8 @@ class CRIndexerTestCase(TestCase):
             complaint_percentile=6.6,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
+            allegation_count=1,
+            sustained_count=0,
         )
         OfficerAllegationFactory(
             officer=investigator,

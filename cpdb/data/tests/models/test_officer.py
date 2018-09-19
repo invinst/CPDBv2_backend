@@ -13,6 +13,7 @@ from data.factories import (
     AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
 from data.models import Officer, Salary
+from data.cache_managers import officer_cache_manager
 
 
 class OfficerTestCase(TestCase):
@@ -39,13 +40,19 @@ class OfficerTestCase(TestCase):
 
     def test_current_badge_not_found(self):
         officer = OfficerFactory()
-        expect(officer.current_badge).to.equal('')
+        expect(officer.current_badge).to.equal(None)
         OfficerBadgeNumberFactory(officer=officer, current=False)
-        expect(officer.current_badge).to.equal('')
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
+        expect(officer.current_badge).to.equal(None)
 
     def test_current_badge(self):
         officer = OfficerFactory()
         OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.current_badge).to.eq('123')
 
     def test_historic_units(self):
@@ -79,6 +86,8 @@ class OfficerTestCase(TestCase):
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Honorable Mention')
         AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
 
         expect(officer.honorable_mention_count).to.eq(2)
 
@@ -89,6 +98,8 @@ class OfficerTestCase(TestCase):
         AwardFactory(officer=officer, award_type='Complimentary Letter')
         AwardFactory(officer=officer, award_type='Honorable Mention')
         AwardFactory(officer=officer, award_type='ABC Honorable Mention')
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
 
         expect(officer.civilian_compliment_count).to.eq(2)
 
@@ -98,6 +109,9 @@ class OfficerTestCase(TestCase):
 
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'), end_date=date(2000, 1, 1))
         OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='BDCH'), end_date=date(2002, 1, 1))
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.last_unit.unit_name).to.eq('BDCH')
 
     def test_abbr_name(self):
@@ -108,6 +122,9 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         OfficerAllegationFactory(officer=officer, disciplined=True)
         OfficerAllegationFactory(officer=officer, disciplined=False)
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.discipline_count).to.eq(1)
 
     def test_visual_token_background_color(self):
@@ -119,9 +136,8 @@ class OfficerTestCase(TestCase):
             (30, '#aec9e8'),
             (45, '#90b1f5')
         ]
-        for cr, color in crs_colors:
-            officer = OfficerFactory()
-            OfficerAllegationFactory.create_batch(cr, officer=officer)
+        for cr_count, color in crs_colors:
+            officer = OfficerFactory(allegation_count=cr_count)
             expect(officer.visual_token_background_color).to.eq(color)
 
     @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
@@ -350,6 +366,9 @@ class OfficerTestCase(TestCase):
         AwardFactory(officer=officer, award_type='POLICE MEDAL')
         AwardFactory(officer=officer, award_type='PIPE BAND AWARD')
         AwardFactory(officer=officer, award_type='LIFE SAVING AWARD')
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.major_award_count).to.eq(2)
 
     def test_coaccusals(self):
@@ -382,21 +401,27 @@ class OfficerTestCase(TestCase):
         SalaryFactory(officer=officer, year=2012, salary=10000)
         SalaryFactory(officer=officer, year=2015, salary=15000)
         SalaryFactory(officer=officer, year=2017, salary=20000)
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
 
         expect(officer.current_salary).to.eq(20000)
 
     def test_unsustained_count(self):
-        allegation = AllegationFactory()
         officer = OfficerFactory()
-        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
-        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
+        OfficerAllegationFactory(final_finding='NS', officer=officer)
+        OfficerAllegationFactory(final_finding='NS', officer=officer)
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.unsustained_count).to.eq(2)
 
     def test_sustained_count(self):
-        allegation = AllegationFactory()
         officer = OfficerFactory()
-        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
-        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
+        OfficerAllegationFactory(final_finding='SU', officer=officer)
+        OfficerAllegationFactory(final_finding='SU', officer=officer)
+        officer_cache_manager.build_cached_columns()
+        officer.refresh_from_db()
+
         expect(officer.sustained_count).to.eq(2)
 
     def test_rank_histories(self):

@@ -11,7 +11,7 @@ from utils.bulk_db import build_bulk_update_sql
 
 
 class Command(BaseCommand):
-    def update_percentile_to_db(percentile_values):
+    def update_percentile_to_db(self, percentile_values):
         if percentile_values:
             Officer.objects.all().update(
                 complaint_percentile=None,

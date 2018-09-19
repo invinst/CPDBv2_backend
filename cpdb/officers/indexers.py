@@ -39,17 +39,10 @@ class OfficersIndexer(BaseIndexer):
     doc_type_klass = OfficerInfoDocType
     index_alias = officers_index_alias
 
-    def __init__(self):
-        super(OfficersIndexer, self).__init__()
-        top_percentile = officer_percentile.top_percentile(percentile_groups=[PERCENTILE_ALLEGATION_GROUP])
-        self.top_percentile_dict = {officer.id: officer for officer in top_percentile}
-
     def get_queryset(self):
         return Officer.objects.all()
 
     def extract_datum(self, datum):
-        if datum.id in self.top_percentile_dict:
-            setattr(datum, 'percentile_allegation', self.top_percentile_dict[datum.id].percentile_allegation)
         return OfficerInfoSerializer(datum).data
 
 

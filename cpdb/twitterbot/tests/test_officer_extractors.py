@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from robber import expect
 
-from data.factories import OfficerFactory, OfficerAllegationFactory
+from data.factories import OfficerFactory
 from twitterbot.officer_extractors import ElasticSearchOfficerExtractor
 from twitterbot.tests.mixins import RebuildIndexMixin
 
@@ -56,10 +56,8 @@ class ElasticSearchOfficerExtractorTestCase(OfficerExtractorTestCase):
         )
 
     def test_find_only_officer_with_highest_complaint_count(self):
-        officer1 = OfficerFactory(first_name='Michael', last_name='Flynn')
-        officer2 = OfficerFactory(first_name='Michael', last_name='Glynn')
-        OfficerAllegationFactory.create_batch(3, officer=officer2)
-        OfficerAllegationFactory.create_batch(2, officer=officer1)
+        OfficerFactory(first_name='Michael', last_name='Flynn', allegation_count=2)
+        officer2 = OfficerFactory(first_name='Michael', last_name='Glynn', allegation_count=3)
 
         self.refresh_index()
 

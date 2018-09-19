@@ -5,7 +5,7 @@ def build_bulk_update_sql(table_name, id_field, fields, data):
         FROM (values
           {type_row}
           {value_rows}
-        ) AS c({data_columns}) 
+        ) AS c({data_columns})
         WHERE c.{id_field} = t.{id_field};
     '''
 
