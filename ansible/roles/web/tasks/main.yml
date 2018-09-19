@@ -42,3 +42,6 @@
 
 - include: install_cairo.yml
   tags: visual_token
+
+- include: setup_papertrail.yml
+  tags: papertrail
