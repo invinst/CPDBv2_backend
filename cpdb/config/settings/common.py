@@ -275,6 +275,14 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
+        'twitterbot-log': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/pyenv/versions/cpdb/logs/twitterbot-webhook.log',
+            'maxBytes': 1024*1024*10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'standard',
+        }
     },
     'loggers': {
         'django': {
@@ -284,6 +292,11 @@ LOGGING = {
         },
         'django.command': {
             'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'twitterbot': {
+            'handlers': ['twitterbot-log'],
             'level': 'INFO',
             'propagate': True,
         }
