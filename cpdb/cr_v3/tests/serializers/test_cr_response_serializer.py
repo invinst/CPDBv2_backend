@@ -72,7 +72,9 @@ class CRSerializerTestCase(TestCase):
         police_witnesses_arg = police_witness_serializer_mock.call_args[0][0]
         expect(set(investigator_allegations_arg)).to.eq(set(investigator_allegations))
         expect(set(police_witnesses_arg)).to.eq(set([officer_1, officer_2]))
-        expect(result['involvements']).to.eq([{'officer_id': 1}, {'officer_id': 2}, {'officer_id': 4}, {'officer_id': 3}])
+        expect(result['involvements']).to.eq(
+            [{'officer_id': 1}, {'officer_id': 2}, {'officer_id': 4}, {'officer_id': 3}]
+        )
 
 
 class InvestigatorAllegationSerializerTestCase(TestCase):

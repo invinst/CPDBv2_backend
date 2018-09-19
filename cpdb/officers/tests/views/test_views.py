@@ -73,6 +73,37 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'long_unit_name': 'Unit CAND'
             }],
             'gender': 'Male',
+            'complaint_records': {
+                'count': 1,
+                'sustained_count': 1,
+                'items': [{'count': 1, 'sustained_count': 1, 'year': 2000}],
+                'facets': [
+                    {
+                        'name': 'category',
+                        'entries': [{'name': 'Use of Force', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Use of Force', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant race',
+                        'entries': [{'name': 'White', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'White', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant age',
+                        'entries': [{'name': '<20', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': '<20', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    },
+                    {
+                        'name': 'complainant gender',
+                        'entries': [{'name': 'Female', 'count': 1, 'sustained_count': 1, 'items': [
+                            {'year': 2000, 'name': 'Female', 'count': 1, 'sustained_count': 1}
+                        ]}]
+                    }
+                ]
+            },
             'birth_year': 1910,
             'sustained_count': 1,
             'civilian_compliment_count': 1,
@@ -317,7 +348,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_no_coaccusals(self):
         OfficerFactory(id=990)
         self.refresh_index()
-        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 990}))
+        response = self.client.get(reverse('api-v2:officers-old-coaccusals', kwargs={'pk': 990}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([])
 

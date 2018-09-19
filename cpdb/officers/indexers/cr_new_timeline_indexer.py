@@ -32,8 +32,8 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     @timing_validate('CRNewTimelineEventIndexer: Populating allegation dict...')
     def _populate_allegation_dict(self):
         allegations = Allegation.objects.all()\
-            .annotate(coaccused_count=models.Count('officerallegation'))\
-            .values('id', 'coaccused_count', 'point', 'crid')
+            .annotate(annotated_coaccused_count=models.Count('officerallegation'))\
+            .values('id', 'annotated_coaccused_count', 'point', 'crid')
         self._allegation_dict = {
             obj['id']: obj
             for obj in allegations
@@ -70,7 +70,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
         allegation_id = datum['allegation_id']
         allegation = self._allegation_dict[allegation_id]
         datum['crid'] = allegation['crid']
-        datum['coaccused_count'] = allegation['coaccused_count']
+        datum['annotated_coaccused_count'] = allegation['annotated_coaccused_count']
         datum['point'] = allegation['point']
         datum['victims'] = self._victims_dict.get(allegation_id, [])
         datum['attachments'] = self._attachments_dict.get(allegation_id, [])

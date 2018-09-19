@@ -38,7 +38,7 @@ class CRNewTimelineSerializer(BaseSerializer):
             'subcategory': get('allegation_category__allegation_name'),
             'finding': get_finding('final_finding', 'Unknown'),
             'outcome': get('final_outcome'),
-            'coaccused': get('coaccused_count'),
+            'coaccused': get('annotated_coaccused_count'),
             'unit_name': get('unit_name', ''),
             'unit_description': get('unit_description', ''),
             'rank': get('rank'),

@@ -22,7 +22,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
     def search(self, crid, params):
         return self.client.get(
             '%s?%s' % (
-                reverse('api-v2:cr-related-complaints', kwargs={'pk': crid}),
+                reverse('api-v2:cr-old-related-complaints', kwargs={'pk': crid}),
                 urllib.urlencode(params)
             )
         )

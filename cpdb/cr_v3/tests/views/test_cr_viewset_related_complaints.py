@@ -73,8 +73,7 @@ class CRV3ViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
             allegation_category__category='False Arrest')
         complaint = OfficerAllegationFactory(
             allegation__point=Point([0.01, 0.01]),
-            allegation_category__category='False Arrest',
-            officer=None
+            allegation_category__category='False Arrest'
         )
 
         self.refresh_index()
@@ -87,7 +86,6 @@ class CRV3ViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data['count']).to.eq(1)
         expect(response.data['results'][0]['crid']).to.eq(str(complaint.allegation.crid))
-        expect(response.data['results'][0]['coaccused']).to.have.length(0)
 
     def test_allegation_has_no_complainant(self):
         OfficerAllegationFactory(
