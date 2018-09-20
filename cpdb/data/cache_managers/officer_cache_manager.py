@@ -119,6 +119,9 @@ def build_cached_yearly_percentiles():
         officers = officer_percentile.top_percentile(yr, percentile_groups=percentile_groups)
         results.extend(filter(_not_retired, officers))
 
+    cursor = connection.cursor()
+    cursor.execute("TRUNCATE TABLE `{}`".format(OfficerYearlyPercentile._meta.db_table))
+
     OfficerYearlyPercentile.objects.bulk_create(
         OfficerYearlyPercentile(
             officer=result,
