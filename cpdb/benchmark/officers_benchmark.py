@@ -98,19 +98,27 @@ def benchmark_http_timeline():
 
 # cPickle ===================================
 def load_cpickle_running_times():
-    return cPickle.load(open('running_times.p', 'rb'))
+    return cPickle.load(open('files/officers_running_times.p', 'rb'))
 
 
 def load_cpickle_http_running_times():
-    return cPickle.load(open('http_running_times.p', 'rb'))
+    return cPickle.load(open('files/http_officers_running_times.p', 'rb'))
 
 
 def load_cpickle_officers_running_times():
-    return cPickle.load(open('officers_running_times.p', 'rb'))
+    return cPickle.load(open('files/timeline_running_times.p', 'rb'))
 
 
 def load_cpickle_http_officers_running_times():
-    return cPickle.load(open('http_officers_running_times.p', 'rb'))
+    return cPickle.load(open('files/http_timeline_running_times.p', 'rb'))
+
+
+def to_csv(name):
+    with open('files/{}.csv'.format(name), 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile)
+        spamwriter.writerow(['ID', 'ES Time', 'Postgres Time'])
+        for page in cPickle.load(open('files/{}.p'.format(name), 'rb')):
+            spamwriter.writerow(page)
 
 
 # COMPARE OFFICER SUMMARY DATA ===================================

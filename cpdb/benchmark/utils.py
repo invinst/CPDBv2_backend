@@ -1,8 +1,15 @@
-def stats(running_times):
+def _stats(running_times):
     max_time = max(running_times)
     min_time = min(running_times)
     avg_time = sum(running_times) / len(running_times)
     return max_time, min_time, avg_time
+
+
+def stats(running_times):
+    es_times = [i[1] for i in running_times]
+    postgres_times = [i[2] for i in running_times]
+
+    return _stats(es_times), _stats(postgres_times)
 
 
 def drop_null_empty(object):
