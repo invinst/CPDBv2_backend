@@ -211,11 +211,11 @@ class OfficerSerializer(BaseSerializer):
         }
 
     def get_honorable_mention_count(self, obj):
-        count = 0
-        for award in obj['awards']:
-            if 'Honorable Mention' in award['award_type']:
-                count += 1
-        return count
+        return sum(
+            1
+            for award in obj['awards']
+            if 'Honorable Mention' in award['award_type']
+        )
 
     def get_civilian_compliment_count(self, obj):
         count = 0
@@ -232,13 +232,10 @@ class OfficerSerializer(BaseSerializer):
         return count
 
     def get_has_visual_token(self, obj):
-        return all([
-            percentile is not None for percentile in [
-                obj['civilian_allegation_percentile'],
-                obj['internal_allegation_percentile'],
-                obj['trr_percentile']
-            ]
-        ])
+        return not any(
+            obj[key] is None for key in
+            ['civilian_allegation_percentile', 'internal_allegation_percentile', 'trr_percentile']
+        )
 
     def get_url(self, obj):
         return '{domain}/officer/{slug}/{pk}'.format(
