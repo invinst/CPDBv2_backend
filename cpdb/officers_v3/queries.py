@@ -78,19 +78,16 @@ class OfficerTimeline:
     def _rank_change_timeline(self):
         salary_timeline_queryset = self.officer.salary_set.exclude(
             spp_date__isnull=True
-        ).exclude(
-            spp_date=self.officer.appointed_date
         ).order_by('year').annotate(
             **self.unit_subqueries('spp_date')
         )
-
         salary_timeline = [
-            list(salaries)[0]
+            salaries.next()
             for _, salaries in groupby(salary_timeline_queryset, key=attrgetter('rank'))
         ]
 
         return RankChangeNewTimelineSerializer(
-            salary_timeline,
+            [salary for salary in salary_timeline if salary.spp_date != self.officer.appointed_date],
             many=True
         ).data
 

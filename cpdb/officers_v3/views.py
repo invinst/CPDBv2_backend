@@ -1,9 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from data.models import Officer
+from officers.doc_types import OfficerCoaccusalsDocType
 from officers_v3.seriallizers.respone_serialiers import OfficerInfoSerializer, OfficerCardSerializer
 from officers_v3.queries import OfficerTimeline
 
@@ -32,3 +33,12 @@ class OfficersV3ViewSet(viewsets.ViewSet):
             trr_percentile__isnull=False,
         ).order_by('-complaint_percentile')[:limit]
         return Response(OfficerCardSerializer(top_officers, many=True).data)
+
+    @detail_route(methods=['get'])
+    def coaccusals(self, _, pk):
+        query = OfficerCoaccusalsDocType().search().query('term', id=pk)
+        result = query.execute()
+        try:
+            return Response(result[0].to_dict()['coaccusals'])
+        except IndexError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
