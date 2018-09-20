@@ -6,5 +6,4 @@ omit =
   manage.py
   */tests/*
   */site-packages/*
-  visual_token/figures.py
 show_missing=True

@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
 from itertools import groupby
-from case_conversion import kebabcase
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -348,7 +346,7 @@ class Officer(TaggableModel):
 
     @property
     def v2_to(self):
-        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=kebabcase(self.full_name))
+        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=slugify(self.full_name))
 
     def get_absolute_url(self):
         return '/officer/%d/' % self.pk
@@ -380,19 +378,6 @@ class Officer(TaggableModel):
                 self.trr_percentile
             ]
         ])
-
-    @property
-    def visual_token_png_url(self):
-        return 'https://{account_name}.blob.core.windows.net/visual-token/officer_{id}.png'.format(
-            account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
-        )
-
-    @property
-    def visual_token_png_path(self):
-        file_name = 'officer_{id}.png'.format(
-            account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
-        )
-        return os.path.join(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, file_name)
 
     def get_unit_by_date(self, query_date):
         try:

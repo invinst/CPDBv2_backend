@@ -46,8 +46,6 @@ twitterbot_newrelic.ini
 
 .tmp/
 
-test_visual_token_media
-visual_token_media
 
 data_report/
 cpdb/data_importer/cleaned_data/

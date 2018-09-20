@@ -30,8 +30,6 @@ db_user: "cpdb@localhost"
 db_name: "{{ application_name }}"
 db_password: password
 db_host: "localhost"
-visual_token_storageaccountname: 'cpdbdev'
-visual_token_storageaccountkey: ''
 
 import_initial_db_dump: no
 
