@@ -1,5 +1,33 @@
 version: '3'
 services:
+  web:
+    build: .
+    environment:
+      GUNICORN_RELOAD: "True"
+    ports:
+      - "8000:80"
+    depends_on:
+      - postgis
+      - elasticsearch
+    volumes:
+      - .:/usr/src/app
+  postgis:
+    build: ./docker/postgis
+    command: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  elasticsearch:
+    image: elasticsearch:5-alpine
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
   cpdpbot:
     build: ./docker/cpdpbot
     env_file: local.env
+
+volumes:
+  pgdata:
+  esdata:
