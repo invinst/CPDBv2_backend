@@ -7,3 +7,4 @@ azure-storage-queue==1.3.0
 requests==2.19.1
 mock==2.0.0
 robber==1.1.3
+tls-syslog==0.1.3
