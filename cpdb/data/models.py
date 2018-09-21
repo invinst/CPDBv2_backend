@@ -1088,6 +1088,15 @@ class AttachmentRequest(models.Model):
         self.full_clean()
         super(AttachmentRequest, self).save(*args, **kwargs)
 
+    def investigator_names(self):
+        investigators = [ia.investigator.full_name for ia in self.allegation.investigatorallegation_set.all()]
+        return ', '.join(investigators)
+    investigator_names.short_description = 'Investigators'
+
+    def is_being_investigated(self):
+        return self.allegation.investigatorallegation_set.count() > 0
+    is_being_investigated.boolean = True
+
 
 class SalaryManager(models.Manager):
     def rank_histories_without_joined(self):

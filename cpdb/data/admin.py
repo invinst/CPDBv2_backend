@@ -3,8 +3,8 @@ from .models import AttachmentRequest
 
 
 class AttachmentRequestAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'timestamp')
-    fields = readonly_fields = ('email', 'crid', 'timestamp')
+    list_display = ('__str__', 'timestamp', 'is_being_investigated')
+    fields = readonly_fields = ('email', 'crid', 'timestamp', 'investigator_names')
 
     def has_add_permission(self, request):
         return False  # pragma: no cover
