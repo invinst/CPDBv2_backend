@@ -47,6 +47,20 @@
         mode=0664
         state=file
 
+- name: Create django error log file
+  file: path={{ django_error_file }}
+        state=touch
+        owner={{ deploy_user }}
+        group={{ deploy_group }}
+        mode=0664
+
+- name: Create twitterbot error log file
+  file: path={{ twitterbot_log_file }}
+        state=touch
+        owner={{ deploy_user }}
+        group={{ deploy_group }}
+        mode=0664
+
 - name: Create the maintenance page
   template: src=maintenance_off.html
             dest={{ virtualenv_path }}/maintenance_off.html
