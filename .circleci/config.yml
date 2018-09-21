@@ -22,15 +22,15 @@ jobs:
       - image: microsoft/azure-cli
     steps:
       - checkout
-      - run:
-          name: trigger build acr
-          command: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
+      - run: az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
 
   build_backend_with_tag:
     docker:
       - image: microsoft/azure-cli
     steps:
       - checkout
+      - run: az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
       - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_TAG .
       - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:latest .
 
@@ -45,19 +45,31 @@ jobs:
     <<: *test_default
     docker:
       - image: cpdbdev/postgis:latest
+        auth:
+          username: $ARM_CLIENT_ID
+          password: $ARM_CLIENT_SECRET
         command: postgres
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
       - image: cpdbdev/cpdbv2_backend:staging
+        auth:
+          username: $ARM_CLIENT_ID
+          password: $ARM_CLIENT_SECRET
 
   test:
     <<: *test_default
     docker:
       - image: cpdbdev/postgis:latest
+        auth:
+          username: $ARM_CLIENT_ID
+          password: $ARM_CLIENT_SECRET
         command: postgres
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
       - image: cpdbdev/cpdbv2_backend:master
+        auth:
+          username: $ARM_CLIENT_ID
+          password: $ARM_CLIENT_SECRET
 
   deploy:
     docker:
