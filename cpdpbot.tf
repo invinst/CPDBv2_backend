@@ -6,8 +6,10 @@ variable "production_twitter_consumer_key" {}
 variable "production_twitter_consumer_secret" {}
 variable "production_twitter_app_token_key" {}
 variable "production_twitter_app_token_secret" {}
+variable "papertrail_endpoint" {}
+variable "papertrail_port" {}
 variable "cpdpbot_version" {
-  default = "0.1.1"
+  default = "0.1.2"
 }
 
 resource "kubernetes_replication_controller" "cpdpbot_staging" {
@@ -56,6 +58,14 @@ resource "kubernetes_replication_controller" "cpdpbot_staging" {
           {
             name  = "AZURE_STORAGE_ACCOUNT_KEY"
             value = "${azurerm_storage_account.staging.primary_access_key}"
+          },
+          {
+            name  = "PAPERTRAIL_ENDPOINT"
+            value = "${var.papertrail_endpoint}"
+          },
+          {
+            name  = "PAPERTRAIL_PORT"
+            value = "${var.papertrail_port}"
           },
         ]
       }
@@ -109,6 +119,14 @@ resource "kubernetes_replication_controller" "cpdpbot_master" {
           {
             name  = "AZURE_STORAGE_ACCOUNT_KEY"
             value = "${azurerm_storage_account.production.primary_access_key}"
+          },
+          {
+            name  = "PAPERTRAIL_ENDPOINT"
+            value = "${var.papertrail_endpoint}"
+          },
+          {
+            name  = "PAPERTRAIL_PORT"
+            value = "${var.papertrail_port}"
           },
         ]
       }
