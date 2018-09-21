@@ -1,26 +1,63 @@
+test_default: &test_default
+  environment:
+    - DJANGO_SETTINGS_MODULE: config.settings.circleci
+    - DB_HOST: localhost
+    - DB_USER: cpdb
+    - DB_PASSWORD: password
+    - DB_NAME: cpdb
+  steps:
+    - checkout
+    - run: pip install --user -r requirements/test.txt
+    - run: flake8
+    - run: coverage run cpdb/manage.py test --noinput --nologcapture
+    - run: coverage combine
+    - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
+    - run: coveralls
+
+test_docker_default: &test_docker_default
+  - image: cpdbdev/postgis:latest
+    command: postgres
+  - image: elasticsearch:5-alpine
+  - image: selenium/standalone-chrome:3.11
+
+
 version: 2
 jobs:
-  test:
+  build_backend:
     docker:
-      - image: cpdbdev/cpdbv2_backend:0.1.0
-      - image: cpdbdev/postgis:9.6-alpine
-        command: postgres
-      - image: elasticsearch:5-alpine
-      - image: selenium/standalone-chrome:3.11
-    environment:
-      - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DB_HOST: localhost
-      - DB_USER: cpdb
-      - DB_PASSWORD: password
-      - DB_NAME: cpdb
+      - image: microsoft/azure-cli
     steps:
       - checkout
-      - run: pip install --user -r requirements/test.txt
-      - run: flake8
-      - run: coverage run cpdb/manage.py test --noinput --nologcapture
-      - run: coverage combine
-      - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
-      - run: coveralls
+      - run:
+          name: trigger build acr
+          command: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
+
+  build_backend_with_tag:
+    docker:
+      - image: microsoft/azure-cli
+    steps:
+      - checkout
+      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_TAG .
+      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:latest .
+
+  build_postgis:
+    docker:
+      - image: microsoft/azure-cli
+    steps:
+      - checkout
+      - run: az acr build --registry cpdpacr --image cpdbdev/postgis:latest .
+
+  test_staging:
+    <<: *test_default
+    docker:
+      <<: *test_docker_default
+      - image: cpdbdev/cpdbv2_backend:staging
+
+  test:
+    <<: *test_default
+    docker:
+      <<: *test_docker_default
+      - image: cpdbdev/cpdbv2_backend:master
 
   deploy:
     docker:
@@ -51,15 +88,53 @@ jobs:
 
 workflows:
   version: 2
-  test_and_deploy:
+  build_and_test:
     jobs:
-      - test
-      - deploy:
-          requires:
-            - test
+      - build_postgis:
           filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only:
+                - master
+                - staging
+      - build_backend:
+          filters:
+            tags:
+              ignore: /.*/
+      - test_staging:
+          requires:
+            - build_backend
+          filters:
+            tags:
+              ignore: /.*/
             branches:
               only: staging
+      - test:
+          requires:
+            - build_backend
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: staging
+
+  build_tag:
+    jobs:
+      - build_backend_with_tag:
+          filters:
+            tags:
+              only: /^v[\d\.]+$/
+            branches:
+              ignore: /.*/
+      - test:
+          requires:
+            - build_backend_with_tag
+          filters:
+            tags:
+              only: /^v[\d\.]+$/
+            branches:
+              ignore: /.*/
 
   test_deploy_cpdpbot:
     jobs:

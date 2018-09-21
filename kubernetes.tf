@@ -7,6 +7,14 @@ variable "kubernetes_client_key" {}
 variable "kubernetes_client_ca_cert" {}
 variable "kubernetes_host" {}
 
+resource "azurerm_container_registry" "cpdp" {
+  name                = "cpdpacr"
+  resource_group_name = "${azurerm_resource_group.terraformed.name}"
+  location            = "${azurerm_resource_group.terraformed.location}"
+  admin_enabled       = true
+  sku                 = "Basic"
+}
+
 resource "azurerm_kubernetes_cluster" "cpdp" {
   name                = "cpdp"
   location            = "${azurerm_resource_group.terraformed.location}"
