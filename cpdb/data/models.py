@@ -1118,7 +1118,8 @@ class SalaryManager(models.Manager):
         salaries = self.exclude(
             spp_date__isnull=True
         ).exclude(
-            spp_date=F('officer__appointed_date')
+            spp_date=F('officer__appointed_date'),
+            officer__appointed_date__isnull=False
         ).order_by('officer_id', 'year')
         last_salary = salaries.first()
         result = [salaries.first()]

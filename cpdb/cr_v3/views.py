@@ -13,7 +13,7 @@ from cr.doc_types import CRDocType
 from cr.views import NoCategoryError, NoOfficerError
 from cr_v3.serializers.cr_response_serializers import CRSerializer, CRSummarySerializer
 from cr.serializers.cr_response_serializers import (
-    AttachmentRequestSerializer, CRSummarySerializer,
+    AttachmentRequestSerializer,
     AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
     CRRelatedComplaintSerializer
 )

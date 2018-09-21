@@ -1,5 +1,6 @@
 import cPickle
 import timeit
+import csv
 from operator import itemgetter
 
 from mock import Mock
@@ -13,87 +14,75 @@ from benchmark.utils import drop_null_empty, drop_keys, diff
 
 
 def officer_ids():
-    return [o.id for o in Officer.objects.all()]
+    return [o.id for o in Officer.objects.all()[:100]]
 
 
 # OFFICER PAGE ===================================
 def benchmark_summary():
-    try:
-        print('OfficersV3ViewSet')
-        officers_running_times = [
-            (
-                officer_id,
-                timeit.timeit(lambda: OfficersViewSet().summary(None, officer_id), number=1),
-                timeit.timeit(lambda: OfficersV3ViewSet().summary(None, officer_id), number=1),
-            )
-            for officer_id in officer_ids()
-        ]
-        officers_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(officers_running_times, open('files/officers_running_times.p', 'wb'))
-    except:
-        pass
+    print('OfficersV3ViewSet')
+    officers_running_times = [
+        (
+            officer_id,
+            timeit.timeit(lambda: OfficersViewSet().summary(None, officer_id), number=1),
+            timeit.timeit(lambda: OfficersV3ViewSet().summary(None, officer_id), number=1),
+        )
+        for officer_id in officer_ids()
+    ]
+    officers_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(officers_running_times, open('files/officers_running_times.p', 'wb'))
 
 
 # HTTP OFFICER PAGE ===================================
-def benchmark_http_summary():
-    try:
-        print('api/v2/officers-v3')
-        http_officers_running_times = [
-            (
-                officer_id,
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/officers/{}/summary/')".format(officer_id),
-                    "from httplib2 import Http; h=Http()", number=1),
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/officers-v3/{}/summary/')".format(officer_id),
-                    "from httplib2 import Http; h=Http()", number=1),
-            )
-            for officer_id in officer_ids()
-        ]
-        http_officers_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(http_officers_running_times, open('files/http_officers_running_times.p', 'wb'))
-    except:
-        pass
+def benchmark_http_summary(server_host):
+    print('api/v2/officers-v3')
+    http_officers_running_times = [
+        (
+            officer_id,
+            timeit.timeit(
+                "h.request('{}/api/v2/old/officers/{}/summary/')".format(server_host, officer_id),
+                "from httplib2 import Http; h=Http()", number=1),
+            timeit.timeit(
+                "h.request('{}/api/v2/officers/{}/summary/')".format(server_host, officer_id),
+                "from httplib2 import Http; h=Http()", number=1),
+        )
+        for officer_id in officer_ids()
+    ]
+    http_officers_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(http_officers_running_times, open('files/http_officers_running_times.p', 'wb'))
 
 
 # TIMELINE PAGE ===================================
 def benchmark_timeline():
-    try:
-        print('OfficersV3ViewSet - Timeline')
-        timeline_running_times = [
-            (
-                officer_id,
-                timeit.timeit(lambda: OfficersViewSet().new_timeline_items(None, officer_id), number=1),
-                timeit.timeit(lambda: OfficersV3ViewSet().new_timeline_items(None, officer_id), number=1),
-            )
-            for officer_id in officer_ids()
-        ]
-        timeline_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(timeline_running_times, open('files/timeline_running_times.p', 'wb'))
-    except:
-        pass
+    print('OfficersV3ViewSet - Timeline')
+    timeline_running_times = [
+        (
+            officer_id,
+            timeit.timeit(lambda: OfficersViewSet().new_timeline_items(None, officer_id), number=1),
+            timeit.timeit(lambda: OfficersV3ViewSet().new_timeline_items(None, officer_id), number=1),
+        )
+        for officer_id in officer_ids()
+    ]
+    timeline_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(timeline_running_times, open('files/timeline_running_times.p', 'wb'))
 
 
 # HTTP TIMELINE PAGE ===================================
-def benchmark_http_timeline():
-    try:
-        print('api/v2/officers-v3/id/new-timeline-items')
-        http_timeline_running_times = [
-            (
-                officer_id,
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/officers/{}/new-timeline-items/')".format(officer_id),
-                    "from httplib2 import Http; h=Http()", number=1),
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/officers-v3/{}/new-timeline-items/')".format(officer_id),
-                    "from httplib2 import Http; h=Http()", number=1),
-            )
-            for officer_id in officer_ids()
-        ]
-        http_timeline_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(http_timeline_running_times, open('files/http_timeline_running_times.p', 'wb'))
-    except:
-        pass
+def benchmark_http_timeline(server_host):
+    print('api/v2/officers-v3/id/new-timeline-items')
+    http_timeline_running_times = [
+        (
+            officer_id,
+            timeit.timeit(
+                "h.request('{}/api/v2/old/officers/{}/new-timeline-items/')".format(server_host, officer_id),
+                "from httplib2 import Http; h=Http()", number=1),
+            timeit.timeit(
+                "h.request('{}/api/v2/officers/{}/new-timeline-items/')".format(server_host, officer_id),
+                "from httplib2 import Http; h=Http()", number=1),
+        )
+        for officer_id in officer_ids()
+    ]
+    http_timeline_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(http_timeline_running_times, open('files/http_timeline_running_times.p', 'wb'))
 
 
 # cPickle ===================================

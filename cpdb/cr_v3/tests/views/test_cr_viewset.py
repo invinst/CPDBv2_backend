@@ -17,12 +17,13 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
+from data.cache_managers import officer_cache_manager, allegation_cache_manager
 
 
-class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
     @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def setUp(self):
-        super(CRViewSetTestCase, self).setUp()
+        super(CRV3ViewSetTestCase, self).setUp()
         self.maxDiff = None
 
     def test_retrieve(self):
@@ -108,9 +109,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
 
-        self.refresh_index()
+        officer_cache_manager.build_cached_columns()
+        allegation_cache_manager.cache_data()
 
-        response = self.client.get(reverse('api-v2:cr-old-detail', kwargs={'pk': '12345'}))
+        response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': '12345'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(dict(response.data)).to.eq({
             'crid': '12345',
@@ -169,6 +171,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
                     'current_rank': 'IPRA investigator',
+                    'percentile_trr': None,
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },
@@ -178,7 +181,9 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'full_name': 'Raymond Piwinicki',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_trr': 5.5
+                    'percentile_trr': 5.5,
+                    'percentile_allegation_civilian': None,
+                    'percentile_allegation_internal': None,
                 }
             ],
             'attachments': [
@@ -192,13 +197,13 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         })
 
     def test_retrieve_no_match(self):
-        response = self.client.get(reverse('api-v2:cr-old-detail', kwargs={'pk': 321}))
+        response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_request_document(self):
         AllegationFactory(crid='112233')
         response = self.client.post(
-            reverse('api-v2:cr-old-request-document', kwargs={'pk': '112233'}),
+            reverse('api-v2:cr-request-document', kwargs={'pk': '112233'}),
             {'email': 'valid_email@example.com'}
         )
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -210,12 +215,12 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_request_same_document_twice(self):
         allegation = AllegationFactory(crid='112233')
         self.client.post(
-            reverse('api-v2:cr-old-request-document', kwargs={'pk': allegation.crid}),
+            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
             {'email': 'valid_email@example.com'}
         )
 
         response2 = self.client.post(
-            reverse('api-v2:cr-old-request-document', kwargs={'pk': allegation.crid}),
+            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
             {'email': 'valid_email@example.com'}
         )
         expect(response2.status_code).to.eq(status.HTTP_200_OK)
@@ -226,7 +231,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_document_without_email(self):
         AllegationFactory(crid='321')
-        response = self.client.post(reverse('api-v2:cr-old-request-document', kwargs={'pk': 321}))
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
             'message': 'Please enter a valid email'
@@ -234,7 +239,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_document_with_invalid_email(self):
         AllegationFactory(crid='321')
-        response = self.client.post(reverse('api-v2:cr-old-request-document', kwargs={'pk': 321}),
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}),
                                     {'email': 'invalid@email'})
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
@@ -242,7 +247,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         })
 
     def test_request_document_with_invalid_allegation(self):
-        response = self.client.post(reverse('api-v2:cr-old-request-document', kwargs={'pk': 321}))
+        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_request_complaint_summary(self):
@@ -257,8 +262,12 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             end_date=date(2004, 4, 28),
             allegation_category=category
         )
-        self.refresh_index()
-        response = self.client.get(reverse('api-v2:cr-old-complaint-summaries'))
+
+        officer_cache_manager.build_cached_yearly_percentiles()
+        officer_cache_manager.build_cached_columns()
+        allegation_cache_manager.cache_data()
+
+        response = self.client.get(reverse('api-v2:cr-complaint-summaries'))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([{
             'crid': '11',
@@ -300,7 +309,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
-        response = self.client.get(reverse('api-v2:cr-old-list-by-new-document'), {'limit': 2})
+        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {

@@ -120,7 +120,7 @@ def build_cached_yearly_percentiles():
         results.extend(filter(_not_retired, officers))
 
     cursor = connection.cursor()
-    cursor.execute("TRUNCATE TABLE `{}`".format(OfficerYearlyPercentile._meta.db_table))
+    cursor.execute("TRUNCATE TABLE {}".format(OfficerYearlyPercentile._meta.db_table))
 
     OfficerYearlyPercentile.objects.bulk_create(
         OfficerYearlyPercentile(

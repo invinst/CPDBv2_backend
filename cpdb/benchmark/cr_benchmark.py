@@ -8,46 +8,40 @@ from benchmark.utils import drop_null_empty, diff
 
 
 def crids():
-    return [a.crid for a in Allegation.objects.all()]
+    return [a.crid for a in Allegation.objects.all()[:100]]
 
 
 # CR PAGE ===================================
 def benchmark_cr():
-    try:
-        print('CRV3ViewSet')
-        cr_running_times = [
-            (
-                crid,
-                timeit.timeit(lambda: CRViewSet().retrieve(None, crid), number=1),
-                timeit.timeit(lambda: CRV3ViewSet().retrieve(None, crid), number=1),
-            )
-            for crid in crids()
-        ]
-        cr_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(cr_running_times, open('files/cr_running_times.p', 'wb'))
-    except:
-        pass
+    print('CRV3ViewSet')
+    cr_running_times = [
+        (
+            crid,
+            timeit.timeit(lambda: CRViewSet().retrieve(None, crid), number=1),
+            timeit.timeit(lambda: CRV3ViewSet().retrieve(None, crid), number=1),
+        )
+        for crid in crids()
+    ]
+    cr_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(cr_running_times, open('files/cr_running_times.p', 'wb'))
 
 
-def benchmark_http_cr():
-    try:
-        print('api/v2/cr-v3')
-        http_cr_running_times = [
-            (
-                crid,
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/cr-v3/{}/')".format(crid),
-                    "from httplib2 import Http; h=Http()", number=1),
-                timeit.timeit(
-                    "h.request('http://localhost:8000/api/v2/cr/{}/')".format(crid),
-                    "from httplib2 import Http; h=Http()", number=1),
-            )
-            for crid in crids()
-        ]
-        http_cr_running_times.sort(key=lambda x: x[1], reverse=True)
-        cPickle.dump(http_cr_running_times, open('files/http_cr_running_times.p', 'wb'))
-    except:
-        pass
+def benchmark_http_cr(server_host):
+    print('api/v2/cr-v3')
+    http_cr_running_times = [
+        (
+            crid,
+            timeit.timeit(
+                "h.request('{}/api/v2/old/cr/{}/')".format(server_host, crid),
+                "from httplib2 import Http; h=Http()", number=1),
+            timeit.timeit(
+                "h.request('{}/api/v2/cr/{}/')".format(server_host, crid),
+                "from httplib2 import Http; h=Http()", number=1),
+        )
+        for crid in crids()
+    ]
+    http_cr_running_times.sort(key=lambda x: x[1], reverse=True)
+    cPickle.dump(http_cr_running_times, open('files/http_cr_running_times.p', 'wb'))
 
 
 # COMPARE CR DATA ===================================

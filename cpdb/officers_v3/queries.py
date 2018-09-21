@@ -14,7 +14,7 @@ from officers_v3.seriallizers.respone_serialiers import (
 )
 
 
-class OfficerTimeline:
+class OfficerTimelineQuery:
     def __init__(self, officer):
         self.officer = officer
 
@@ -78,6 +78,8 @@ class OfficerTimeline:
     def _rank_change_timeline(self):
         salary_timeline_queryset = self.officer.salary_set.exclude(
             spp_date__isnull=True
+        ).exclude(
+            spp_date=self.officer.appointed_date
         ).order_by('year').annotate(
             **self.unit_subqueries('spp_date')
         )
@@ -87,8 +89,7 @@ class OfficerTimeline:
         ]
 
         return RankChangeNewTimelineSerializer(
-            [salary for salary in salary_timeline if salary.spp_date != self.officer.appointed_date],
-            many=True
+            salary_timeline, many=True
         ).data
 
     @property
@@ -125,7 +126,7 @@ class OfficerTimeline:
         )
         return TRRNewTimelineSerializer(trr_timeline_queryset, many=True).data
 
-    def __iter__(self):
+    def execute(self):
         timeline = self._cr_timeline + self._unit_change_timeline + self._rank_change_timeline + \
                    self._join_timeline + self._award_timeline + self._trr_timeline
         sorted_timeline = sorted(timeline, key=itemgetter('date_sort', 'priority_sort'), reverse=True)
@@ -133,4 +134,4 @@ class OfficerTimeline:
         for item in sorted_timeline:
             for key in ['officer_id', 'date_sort', 'priority_sort']:
                 item.pop(key, None)
-        return iter(sorted_timeline)
+        return sorted_timeline

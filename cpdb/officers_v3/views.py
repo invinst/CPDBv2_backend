@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from data.models import Officer
 from officers.doc_types import OfficerCoaccusalsDocType
 from officers_v3.seriallizers.respone_serialiers import OfficerInfoSerializer, OfficerCardSerializer
-from officers_v3.queries import OfficerTimeline
+from officers_v3.queries import OfficerTimelineQuery
 
 
 class OfficersV3ViewSet(viewsets.ViewSet):
@@ -20,7 +20,7 @@ class OfficersV3ViewSet(viewsets.ViewSet):
     def new_timeline_items(self, _, pk):
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=pk)
-        return Response(OfficerTimeline(officer))
+        return Response(OfficerTimelineQuery(officer).execute())
 
     @list_route(methods=['get'], url_path='top-by-allegation')
     def top_officers_by_allegation(self, request):
