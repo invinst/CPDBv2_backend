@@ -1,3 +1,5 @@
+version: 2
+
 test_default: &test_default
   environment:
     - DJANGO_SETTINGS_MODULE: config.settings.circleci
@@ -14,14 +16,6 @@ test_default: &test_default
     - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
     - run: coveralls
 
-test_docker_default: &test_docker_default
-  - image: cpdbdev/postgis:latest
-    command: postgres
-  - image: elasticsearch:5-alpine
-  - image: selenium/standalone-chrome:3.11
-
-
-version: 2
 jobs:
   build_backend:
     docker:
@@ -50,13 +44,19 @@ jobs:
   test_staging:
     <<: *test_default
     docker:
-      <<: *test_docker_default
+      - image: cpdbdev/postgis:latest
+        command: postgres
+      - image: elasticsearch:5-alpine
+      - image: selenium/standalone-chrome:3.11
       - image: cpdbdev/cpdbv2_backend:staging
 
   test:
     <<: *test_default
     docker:
-      <<: *test_docker_default
+      - image: cpdbdev/postgis:latest
+        command: postgres
+      - image: elasticsearch:5-alpine
+      - image: selenium/standalone-chrome:3.11
       - image: cpdbdev/cpdbv2_backend:master
 
   deploy:
