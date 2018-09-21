@@ -8,8 +8,6 @@ ENV GUNICORN_NAME cpdb
 ENV GUNICORN_LOGLEVEL info
 ENV GUNICORN_CHDIR /usr/src/app/cpdb
 
-ENV DJANGO_SETTINGS_MODULE config.settings.local
-
 RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
     apk add \

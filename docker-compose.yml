@@ -11,6 +11,7 @@ services:
       - elasticsearch
     volumes:
       - .:/usr/src/app
+    command: cpdb/manage.py runserver 0.0.0.0:80
   postgis:
     build: ./docker/postgis
     command: postgres
