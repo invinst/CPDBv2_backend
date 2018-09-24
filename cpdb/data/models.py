@@ -1093,9 +1093,9 @@ class AttachmentRequest(models.Model):
         return ', '.join(investigators)
     investigator_names.short_description = 'Investigators'
 
-    def is_being_investigated(self):
-        return self.allegation.investigatorallegation_set.count() > 0
-    is_being_investigated.boolean = True
+    def investigated_by_cpd(self):
+        return self.allegation.investigatorallegation_set.filter(investigator__officer_id__isnull=False).exists()
+    investigated_by_cpd.boolean = True
 
 
 class SalaryManager(models.Manager):

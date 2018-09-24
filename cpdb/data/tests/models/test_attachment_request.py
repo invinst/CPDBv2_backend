@@ -5,6 +5,7 @@ from robber.expect import expect
 from data.factories import (
     AttachmentRequestFactory, AllegationFactory, InvestigatorAllegationFactory,
     InvestigatorFactory,
+    OfficerFactory,
 )
 from data.models import AttachmentRequest
 
@@ -45,13 +46,16 @@ class AttachmentRequestTestCase(TestCase):
         attachment_request = AttachmentRequestFactory(allegation=allegation)
         expect(attachment_request.investigator_names()).to.eq('Jerome Finnigan')
 
-    def test_is_being_investigated(self):
+    def test_investigated_by_cpd(self):
         allegation = AllegationFactory()
-        investigator = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
+        officer = OfficerFactory()
+        investigator = InvestigatorFactory(first_name='Jerome', last_name='Finnigan', officer=officer)
         InvestigatorAllegationFactory(allegation=allegation, investigator=investigator)
         attachment_request_1 = AttachmentRequestFactory(allegation=allegation)
-        expect(attachment_request_1.is_being_investigated()).to.be.true()
+        expect(attachment_request_1.investigated_by_cpd()).to.be.true()
 
         allegation_2 = AllegationFactory()
+        investigator_2 = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
+        InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator_2)
         attachment_request_2 = AttachmentRequestFactory(allegation=allegation_2)
-        expect(attachment_request_2.is_being_investigated()).to.be.false()
+        expect(attachment_request_2.investigated_by_cpd()).to.be.false()
