@@ -63,7 +63,7 @@ jobs:
           command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 flake8
       - run:
           name: Spin up Postgres
-          command: docker run -d --name postgres cpdbv2_backend_postgis postgres
+          command: docker run -d --name postgres cpdpacr.azurecr.io/postgis:9.6 postgres
       - run:
           name: Spin up Elasticsearch
           command: docker run -d --name elasticsearch elasticsearch:5-alpine
