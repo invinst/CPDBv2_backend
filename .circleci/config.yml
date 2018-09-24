@@ -24,7 +24,7 @@ jobs:
             fi
       - run:
           name: Docker login
-          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Build Docker image
           command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
@@ -62,7 +62,7 @@ jobs:
       - checkout
       - run:
           name: Docker login
-          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Docker pull image
           command: docker pull cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
@@ -113,7 +113,7 @@ jobs:
           command: docker push cpdbdev/cpdbv2_backend:latest
       - run:
           name: Login to Azure Container Registry
-          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Push image tag with commit hash
           command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
