@@ -26,14 +26,8 @@ jobs:
           name: Docker login
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
-          name: Build Docker image
-          command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
-      - run:
           name: Build Docker image tag with commit hash
           command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 .
-      - run:
-          name: Push image
-          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH
       - run:
           name: Push image tag with commit hash
           command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
@@ -41,7 +35,7 @@ jobs:
           name: Save Docker image layer cache
           command: |
             mkdir -p /caches
-            docker history -q cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH | sed '/^<missing/ d' > /tmp/layers.txt
+            docker history -q cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
             docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz
       - save_cache:
           key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
