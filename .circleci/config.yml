@@ -10,10 +10,10 @@ jobs:
           command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
       - restore_cache:
           keys:
-            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
-            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
-            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
-            - v1-backend-docker-layers-
+            - v2-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
+            - v2-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+            - v2-backend-docker-layers-{{ checksum "Dockerfile" }}-
+            - v2-backend-docker-layers-
       - run:
           name: Load Docker image layer cache
           command: |
@@ -39,7 +39,7 @@ jobs:
             docker history -q cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
             docker save $(cat /tmp/layers.txt) | gzip > /home/circleci/caches/v2_backend_docker_layers.tar.gz'
       - save_cache:
-          key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
+          key: v2-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
           paths:
             - /home/circleci/caches/
 
@@ -86,9 +86,9 @@ jobs:
           command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
       - restore_cache:
           keys:
-            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
-            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
-            - v1-backend-docker-layers-
+            - v2-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+            - v2-backend-docker-layers-{{ checksum "Dockerfile" }}-
+            - v2-backend-docker-layers-
       - run:
           name: Load Docker image layer cache
           command: |
