@@ -1,38 +1,122 @@
 version: 2
 
-test_default: &test_default
-  environment:
-    - DJANGO_SETTINGS_MODULE: config.settings.circleci
-    - DB_HOST: localhost
-    - DB_USER: cpdb
-    - DB_PASSWORD: password
-    - DB_NAME: cpdb
-  steps:
-    - checkout
-    - run: pip install --user -r requirements/test.txt
-    - run: flake8
-    - run: coverage run cpdb/manage.py test --noinput --nologcapture
-    - run: coverage combine
-    - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
-    - run: coveralls
-
 jobs:
   build_backend:
-    docker:
-      - image: microsoft/azure-cli
+    machine: true
     steps:
       - checkout
-      - run: az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_BUILD_NUM .
+      - run:
+          name: Create hash of requirements folder
+          command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
+      - restore_cache:
+        keys:
+          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
+          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
+          - v1-backend-docker-layers-
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set -o pipefail
+            if [ -f /caches/v2_backend_docker_layers.tar.gz ]; then
+              gunzip -c /caches/v2_backend_docker_layers.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Docker login
+          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+      - run:
+          name: Build Docker image
+          command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH .
+      - run:
+          name: Build Docker image tag with commit hash
+          command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 .
+      - run:
+          name: Push image
+          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH
+      - run:
+          name: Push image tag with commit hash
+          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker history -q cpdbdev/cpdbv2_backend:$CIRCLE_BRANCH | sed '/^<missing/ d' > /tmp/layers.txt
+            docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz
+      - save_cache:
+          key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
+          paths:
+            - /caches/
+
+  test:
+    docker:
+      - image: circleci/classic:latest
+      - image: cpdbdev/postgis:latest
+        auth:
+          username: $ARM_CLIENT_ID
+          password: $ARM_CLIENT_SECRET
+        command: postgres
+      - image: elasticsearch:5-alpine
+      - image: selenium/standalone-chrome:3.11
+    steps:
+      - checkout
+      - run:
+          name: Docker login
+          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+      - run:
+          name: Docker pull image
+          command: docker pull cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
+      - run:
+          name: Run flake8 against code
+          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 flake8
+      - run:
+          name: Test while record coverage
+          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
+      - run:
+          name: Coverage report
+          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage combine && coverage report"
+      - run:
+          name: Submit coverage report to coveralls
+          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app coveralls
 
   build_backend_with_tag:
-    docker:
-      - image: microsoft/azure-cli
+    machine: true
     steps:
       - checkout
-      - run: az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:$CIRCLE_TAG .
-      - run: az acr build --registry cpdpacr --image cpdbdev/cpdbv2_backend:latest .
+      - run:
+          name: Create hash of requirements folder
+          command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
+      - restore_cache:
+        keys:
+          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
+          - v1-backend-docker-layers-
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set -o pipefail
+            if [ -f /caches/v2_backend_docker_layers.tar.gz ]; then
+              gunzip -c /caches/v2_backend_docker_layers.tar.gz | docker load;
+              docker images;
+            fi
+      - run: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_TAG
+      - run: docker build -t cpdbdev/cpdbv2_backend:latest .
+      - run: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 .
+      - run:
+          name: Login to Docker Hub
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          name: Push tagged image
+          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_TAG
+      - run:
+          name: Push latest image
+          command: docker push cpdbdev/cpdbv2_backend:latest
+      - run:
+          name: Login to Azure Container Registry
+          command: docker login cpdbacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+      - run:
+          name: Push image tag with commit hash
+          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
 
   build_postgis:
     docker:
@@ -40,36 +124,6 @@ jobs:
     steps:
       - checkout
       - run: az acr build --registry cpdpacr --image cpdbdev/postgis:latest .
-
-  test_staging:
-    <<: *test_default
-    docker:
-      - image: cpdbdev/postgis:latest
-        auth:
-          username: $ARM_CLIENT_ID
-          password: $ARM_CLIENT_SECRET
-        command: postgres
-      - image: elasticsearch:5-alpine
-      - image: selenium/standalone-chrome:3.11
-      - image: cpdbdev/cpdbv2_backend:staging
-        auth:
-          username: $ARM_CLIENT_ID
-          password: $ARM_CLIENT_SECRET
-
-  test:
-    <<: *test_default
-    docker:
-      - image: cpdbdev/postgis:latest
-        auth:
-          username: $ARM_CLIENT_ID
-          password: $ARM_CLIENT_SECRET
-        command: postgres
-      - image: elasticsearch:5-alpine
-      - image: selenium/standalone-chrome:3.11
-      - image: cpdbdev/cpdbv2_backend:master
-        auth:
-          username: $ARM_CLIENT_ID
-          password: $ARM_CLIENT_SECRET
 
   deploy:
     docker:
@@ -104,32 +158,14 @@ workflows:
     jobs:
       - build_postgis:
           filters:
-            tags:
-              ignore: /.*/
             branches:
               only:
                 - master
                 - staging
-      - build_backend:
-          filters:
-            tags:
-              ignore: /.*/
-      - test_staging:
-          requires:
-            - build_backend
-          filters:
-            tags:
-              ignore: /.*/
-            branches:
-              only: staging
+      - build_backend
       - test:
           requires:
             - build_backend
-          filters:
-            tags:
-              ignore: /.*/
-            branches:
-              ignore: staging
 
   build_tag:
     jobs:
