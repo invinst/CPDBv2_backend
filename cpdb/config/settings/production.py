@@ -17,7 +17,7 @@ ANYMAIL = {
     'MAILGUN_SENDER_DOMAIN': 'cpdp.co'
 }
 
-EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 DEFAULT_FROM_EMAIL = 'info@cpdp.co'
 DOMAIN = 'https://beta.cpdp.co'
 
