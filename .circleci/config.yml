@@ -18,8 +18,8 @@ jobs:
           name: Load Docker image layer cache
           command: |
             set -o pipefail
-            if [ -f /caches/v2_backend_docker_layers.tar.gz ]; then
-              gunzip -c /caches/v2_backend_docker_layers.tar.gz | docker load
+            if [ -f /home/circleci/caches/v2_backend_docker_layers.tar.gz ]; then
+              gunzip -c /home/circleci/caches/v2_backend_docker_layers.tar.gz | docker load
               docker images
             fi
       - run:
@@ -35,13 +35,13 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            sudo mkdir -p /caches
+            mkdir -p /home/circleci/caches
             docker history -q cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
-            sudo sh -c 'docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz'
+            docker save $(cat /tmp/layers.txt) | gzip > /home/circleci/caches/v2_backend_docker_layers.tar.gz'
       - save_cache:
           key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
           paths:
-            - /caches/
+            - /home/circleci/caches/
 
   test:
     machine: true
