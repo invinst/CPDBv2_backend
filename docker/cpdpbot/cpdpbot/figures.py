@@ -84,7 +84,7 @@ class ChartFigure:  # pragma: no cover
             ly=self.height,
             fill=chart_color
         ).draw(self.surface)
-        self.draw_triangle([self.spine_length] * 3, (1, 1, 1, 0.6), None, None)
+        self.draw_triangle([self.spine_length] * 3, (1, 1, 1, 0.6), None, 0)
 
         spines = [value * self.spine_length / 100 for value in data]
         self.draw_triangle(

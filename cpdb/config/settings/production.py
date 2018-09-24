@@ -1,5 +1,6 @@
 from .common import *  # NOQA
 
+
 import environ
 
 env = environ.Env()
@@ -8,7 +9,8 @@ DEBUG = False
 
 CORS_ORIGIN_WHITELIST = (
     'm.cpdp.co',
-    )
+    'beta.cpdb.co',
+)
 
 ANYMAIL = {
     'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY'),
