@@ -35,9 +35,9 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            mkdir -p /caches
+            sudo mkdir -p /caches
             docker history -q cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
-            docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz
+            sudo sh -c 'docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz'
       - save_cache:
           key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
           paths:
