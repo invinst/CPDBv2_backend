@@ -27,15 +27,16 @@ jobs:
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Build Docker image tag with commit hash
-          command: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 .
+          command: docker build -t cpdbv2_backend:$CIRCLE_SHA1 .
+      - run: docker tag cpdbv2_backend:$CIRCLE_SHA1 cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
       - run:
           name: Push image tag with commit hash
-          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
+          command: docker push cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
       - run:
           name: Save Docker image layer cache
           command: |
             mkdir -p /caches
-            docker history -q cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
+            docker history -q cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
             docker save $(cat /tmp/layers.txt) | gzip > /caches/v2_backend_docker_layers.tar.gz
       - save_cache:
           key: v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
@@ -45,7 +46,7 @@ jobs:
   test:
     docker:
       - image: circleci/classic:latest
-      - image: cpdbdev/postgis:latest
+      - image: cpdpacr.azurecr.io/postgis:9.6
         auth:
           username: $ARM_CLIENT_ID
           password: $ARM_CLIENT_SECRET
@@ -59,19 +60,19 @@ jobs:
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Docker pull image
-          command: docker pull cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
+          command: docker pull cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
       - run:
           name: Run flake8 against code
-          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 flake8
+          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 flake8
       - run:
           name: Test while record coverage
-          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
+          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
       - run:
           name: Coverage report
-          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage combine && coverage report"
+          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage combine && coverage report"
       - run:
           name: Submit coverage report to coveralls
-          command: docker run --rm cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app coveralls
+          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app coveralls
 
   build_backend_with_tag:
     machine: true
@@ -94,8 +95,8 @@ jobs:
               docker images;
             fi
       - run: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_TAG
-      - run: docker build -t cpdbdev/cpdbv2_backend:latest .
-      - run: docker build -t cpdbdev/cpdbv2_backend:$CIRCLE_SHA1 .
+      - run: docker tag cpdbdev/cpdbv2_backend:$CIRCLE_TAG cpdbdev/cpdbv2_backend:latest .
+      - run: docker tag cpdbdev/cpdbv2_backend:$CIRCLE_TAG cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
       - run:
           name: Login to Docker Hub
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
@@ -110,14 +111,19 @@ jobs:
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
           name: Push image tag with commit hash
-          command: docker push cpdbdev/cpdbv2_backend:$CIRCLE_SHA1
+          command: docker push cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
 
   build_postgis:
-    docker:
-      - image: microsoft/azure-cli
+    machine: true
     steps:
       - checkout
-      - run: az acr build --registry cpdpacr --image cpdbdev/postgis:latest .
+      - run: docker build -t cpdpacr.azurecr.io/postgis:9.6 docker/postgis
+      - run:
+          name: Login to Azure Container Registry
+          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+      - run:
+          name: Push postgis image
+          command: docker push cpdpacr.azurecr.io/postgis:9.6
 
   deploy:
     docker:
