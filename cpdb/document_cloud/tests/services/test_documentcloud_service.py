@@ -19,6 +19,14 @@ class DocumentcloudServiceTestCase(TestCase):
         link = 'https://foo.com/bar/'
         expect(self.service.parse_link(link)).to.eq({})
 
+    def test_parse_id(self):
+        documentcloud_id = '789-CRID-123456-CR'
+        expect(self.service.parse_id(documentcloud_id)).to.eq('789')
+
+    def test_parse_not_existed_id(self):
+        documentcloud_id = 'CRID-123456-CR'
+        expect(self.service.parse_id(documentcloud_id)).to.be.none()
+
     def test_parse_existed_crid_from_title(self):
         document_title = 'CRID-123456 CR'
         expect(self.service.parse_crid_from_title(document_title)).to.eq('123456')

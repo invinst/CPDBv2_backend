@@ -4,6 +4,7 @@ import re
 class DocumentcloudService(object):
     DOCUMENTCLOUD_LINK_PATTERN = ('https://www.documentcloud\.org/documents/'
                                   '(?P<documentcloud_id>\d+)-(?P<normalized_title>[^/]+)\.html')
+    DOCUMENTCLOUD_ID_PATTERN = '(?P<documentcloud_id>\d+)-.*'
 
     def parse_link(self, link):
         '''
@@ -20,6 +21,12 @@ class DocumentcloudService(object):
             }
 
         return {}
+
+    def parse_id(self, documentcloud_id):
+        pattern = re.compile(self.DOCUMENTCLOUD_ID_PATTERN)
+        matched = re.match(pattern, documentcloud_id)
+        if matched:
+            return matched.group('documentcloud_id')
 
     def parse_crid_from_title(self, documentcloud_title, document_type='CR'):
         '''

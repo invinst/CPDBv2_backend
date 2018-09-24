@@ -14,7 +14,7 @@ from data.factories import (
     AllegationCategoryFactory, VictimFactory, AwardFactory,
     SalaryFactory,
 )
-from officers.tests.utils import validate_object, create_object
+from shared.tests.utils import create_object, validate_object
 from officers.indexers import (
     OfficersIndexer,
     OfficerPercentileIndexer,

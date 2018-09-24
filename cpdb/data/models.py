@@ -1022,6 +1022,7 @@ class Involvement(models.Model):
 
 
 class AttachmentFile(models.Model):
+    external_id = models.CharField(max_length=50, null=True, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, db_index=True)
