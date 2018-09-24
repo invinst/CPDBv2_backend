@@ -9,11 +9,11 @@ jobs:
           name: Create hash of requirements folder
           command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
       - restore_cache:
-        keys:
-          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
-          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
-          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
-          - v1-backend-docker-layers-
+          keys:
+            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
+            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
+            - v1-backend-docker-layers-
       - run:
           name: Load Docker image layer cache
           command: |
@@ -87,10 +87,10 @@ jobs:
           name: Create hash of requirements folder
           command: find requirements -type f -exec md5sum {} \; | sort -k 2 > /tmp/requirements-hash.txt
       - restore_cache:
-        keys:
-          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
-          - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
-          - v1-backend-docker-layers-
+          keys:
+            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-
+            - v1-backend-docker-layers-{{ checksum "Dockerfile" }}-
+            - v1-backend-docker-layers-
       - run:
           name: Load Docker image layer cache
           command: |
