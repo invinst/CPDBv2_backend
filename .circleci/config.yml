@@ -37,7 +37,7 @@ jobs:
           command: |
             mkdir -p /home/circleci/caches
             docker history -q cpdbv2_backend:$CIRCLE_SHA1 | sed '/^<missing/ d' > /tmp/layers.txt
-            docker save $(cat /tmp/layers.txt) | gzip > /home/circleci/caches/v2_backend_docker_layers.tar.gz'
+            docker save $(cat /tmp/layers.txt) | gzip > /home/circleci/caches/v2_backend_docker_layers.tar.gz
       - save_cache:
           key: v2-backend-docker-layers-{{ checksum "Dockerfile" }}-{{ checksum "/tmp/requirements-hash.txt" }}-{{ .Branch }}
           paths:
