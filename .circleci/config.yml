@@ -44,35 +44,38 @@ jobs:
             - /caches/
 
   test:
-    docker:
-      - image: circleci/classic:latest
-      - image: cpdpacr.azurecr.io/postgis:9.6
-        auth:
-          username: $ARM_CLIENT_ID
-          password: $ARM_CLIENT_SECRET
-        command: postgres
-      - image: elasticsearch:5-alpine
-      - image: selenium/standalone-chrome:3.11
+    machine: true
+    environment:
+      DB_HOST: postgis
     steps:
       - checkout
       - run:
           name: Docker login
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
-          name: Docker pull image
+          name: Pull backend image
           command: docker pull cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
+      - run:
+          name: Pull Postgres image
+          command: docker pull cpdpacr.azurecr.io/postgis:9.6
       - run:
           name: Run flake8 against code
           command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 flake8
       - run:
+          name: Spin up Postgres
+          command: docker run -d --name postgres cpdbv2_backend_postgis postgres
+      - run:
+          name: Spin up Elasticsearch
+          command: docker run -d --name elasticsearch elasticsearch:5-alpine
+      - run:
           name: Test while record coverage
-          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
+          command: docker run --rm --link postgres:postgis --link elasticsearch:elasticsearch -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
       - run:
           name: Coverage report
-          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app sh -c "coverage combine && coverage report"
+          command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage combine && coverage report"
       - run:
           name: Submit coverage report to coveralls
-          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 -v $(pwd):/usr/src/app coveralls
+          command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 coveralls
 
   build_backend_with_tag:
     machine: true
