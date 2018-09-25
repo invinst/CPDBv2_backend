@@ -4,7 +4,6 @@ from django.test import TestCase
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 from data.factories import OfficerFactory
-from officers.indexers import OfficersIndexer
 from data.models import Officer
 from cpdb.alias.utils import set_aliases
 
@@ -20,6 +19,6 @@ class AliasUtilsTestCase(IndexMixin, TestCase):
         self.refresh_index()
 
     def test_set_officer_aliases(self):
-        set_aliases(OfficersIndexer, '1', ['alias1', 'alias2'])
+        set_aliases(OfficerInfoDocType, Officer, '1', ['alias1', 'alias2'])
         expect(OfficerInfoDocType.get('1').tags).to.eq(['alias1', 'alias2'])
         expect(Officer.objects.get(pk=1).tags).to.eq(['alias1', 'alias2'])

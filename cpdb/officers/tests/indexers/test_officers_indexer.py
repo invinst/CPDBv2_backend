@@ -193,6 +193,35 @@ class OfficersIndexerTestCase(TestCase):
             'percentiles': []
         })
 
+    def test_has_visual_token(self):
+        OfficerFactory(
+            civilian_allegation_percentile=10,
+            internal_allegation_percentile=11,
+            trr_percentile=12)
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['has_visual_token']).to.be.true()
+
+    def test_has_visual_token_false(self):
+        OfficerFactory(
+            civilian_allegation_percentile=None,
+            internal_allegation_percentile=11,
+            trr_percentile=12)
+        OfficerFactory(
+            civilian_allegation_percentile=10,
+            internal_allegation_percentile=None,
+            trr_percentile=12)
+        OfficerFactory(
+            civilian_allegation_percentile=10,
+            internal_allegation_percentile=11,
+            trr_percentile=None)
+        OfficerFactory(
+            civilian_allegation_percentile=None,
+            internal_allegation_percentile=None,
+            trr_percentile=None)
+        rows = self.extract_data()
+        expect([row['has_visual_token'] for row in rows]).to.eq([False] * 4)
+
     def test_extract_info_complaint_record_null_category(self):
         officer = OfficerFactory()
         OfficerAllegationFactory(

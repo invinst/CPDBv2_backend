@@ -65,44 +65,56 @@ class OfficersIndexer(BaseIndexer):
                         officer_dict[attr] = '%.4f' % getattr(officer, attr)
                 officer_list.append(officer_dict)
 
-    @timing_validate('OfficersIndexer: Populating allegation dict...')
-    def populate_allegation_dict(self):
+    def get_complainant_dict(self):
         complainant_dict = dict()
         complainant_queryset = Complainant.objects.all().values(
             'allegation_id', 'gender', 'race', 'age'
         )
         for obj in complainant_queryset:
             complainant_dict.setdefault(obj['allegation_id'], []).append(obj)
+        return complainant_dict
 
+    def get_officer_allegation_dict(self):
         officer_allegation_dict = dict()
         officer_allegation_queryset = OfficerAllegation.objects.all().select_related('allegation_category').values(
             'id', 'allegation_id', 'officer_id', 'start_date', 'allegation_category__category', 'final_finding'
         )
         for obj in officer_allegation_queryset:
             officer_allegation_dict.setdefault(obj['allegation_id'], []).append(obj)
+        return officer_allegation_dict
 
+    def transform_demographic(self, allegation):
+        transform_gender = get_gender('gender', 'Unknown')
+        transform_age = get_age_range([20, 30, 40, 50], 'age', 'Unknown')
+        for complainant in allegation['complainants']:
+            complainant['gender'] = transform_gender(complainant)
+            complainant['age'] = transform_age(complainant)
+            if complainant['race'] == '':
+                complainant['race'] = 'Unknown'
+
+    def populate_coaccusal(self, allegation):
+        for complaint_a, complaint_b in itertools.combinations(allegation['complaints'], 2):
+            officer_id_a = complaint_a['officer_id']
+            officer_id_b = complaint_b['officer_id']
+            dict_a = self.coaccusals.setdefault(officer_id_a, dict())
+            dict_a[officer_id_b] = dict_a.get(officer_id_b, 0) + 1
+            dict_b = self.coaccusals.setdefault(officer_id_b, dict())
+            dict_b[officer_id_a] = dict_b.get(officer_id_a, 0) + 1
+
+    @timing_validate('OfficersIndexer: Populating allegation dict...')
+    def populate_allegation_dict(self):
+        complainant_dict = self.get_complainant_dict()
+        officer_allegation_dict = self.get_officer_allegation_dict()
         allegations = Allegation.objects.all().values('id', 'crid')
         self.allegation_dict = dict()
         self.coaccusals = dict()
-        transform_gender = get_gender('gender', 'Unknown')
-        transform_age = get_age_range([20, 30, 40, 50], 'age', 'Unknown')
         for allegation in allegations:
             allegation['complainants'] = complainant_dict.get(allegation['id'], [])
             allegation['complaints'] = officer_allegation_dict.get(allegation['id'], [])
-            for complainant in allegation['complainants']:
-                complainant['gender'] = transform_gender(complainant)
-                complainant['age'] = transform_age(complainant)
-                if complainant['race'] == '':
-                    complainant['race'] = 'Unknown'
+            self.transform_demographic(allegation)
             for complaint in allegation['complaints']:
                 self.allegation_dict.setdefault(complaint['officer_id'], []).append(allegation)
-            for complaint_a, complaint_b in itertools.combinations(allegation['complaints'], 2):
-                officer_id_a = complaint_a['officer_id']
-                officer_id_b = complaint_b['officer_id']
-                dict_a = self.coaccusals.setdefault(officer_id_a, dict())
-                dict_a[officer_id_b] = dict_a.get(officer_id_b, 0) + 1
-                dict_b = self.coaccusals.setdefault(officer_id_b, dict())
-                dict_b[officer_id_a] = dict_b.get(officer_id_a, 0) + 1
+            self.populate_coaccusal(allegation)
 
     @timing_validate('OfficersIndexer: Populating award dict...')
     def populate_award_dict(self):

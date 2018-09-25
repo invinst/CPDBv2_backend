@@ -61,10 +61,7 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
         return {
             'id': officer.id,
             'coaccusals': [
-                dict(
-                    [('coaccusal_count', count)] +
-                    self._officer_dict[coaccused_id].items()
-                )
+                dict(self._officer_dict[coaccused_id], coaccusal_count=count)
                 for coaccused_id, count in
                 sorted(
                     self._coaccusal_dict.get(officer.id, dict()).items(),

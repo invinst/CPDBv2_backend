@@ -397,6 +397,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             officer=officer2, allegation=allegation3, final_finding='NS', start_date=date(2006, 1, 1)
         )
         OfficerAllegationFactory(
+            officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
+        )
+        OfficerAllegationFactory(
             officer=officer4, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
         )
         OfficerAllegationFactory(
@@ -409,12 +412,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expected_response_data = [{
             'id': officer2.id,
             'full_name': 'Officer 1',
-            'allegation_count': 2,
+            'allegation_count': 3,
             'sustained_count': 1,
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1950,
-            'coaccusal_count': 1,
+            'coaccusal_count': 2,
             'rank': 'Police Officer',
             'complaint_percentile': 95.0,
             'percentile_trr': 33.3333,

@@ -1,0 +1,7 @@
+[program:remote_syslog]
+command=remote_syslog -D --tls
+user=root
+group=root
+autostart=true
+autorestart=true
+redirect_stderr=true

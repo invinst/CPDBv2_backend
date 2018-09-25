@@ -18,12 +18,14 @@ class JoinedNewTimelineEventIndexerTestCase(TestCase):
         OfficerHistoryFactory(
             officer=officer,
             effective_date=date(2011, 1, 1),
+            end_date=date(2012, 1, 1),
             unit__unit_name='001',
             unit__description='District 1'
         )
         OfficerHistoryFactory(
             officer=officer,
             effective_date=date(2013, 1, 1),
+            end_date=date(2015, 1, 1),
             unit__unit_name='002',
             unit__description='District 2'
         )
