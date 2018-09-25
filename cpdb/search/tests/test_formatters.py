@@ -69,6 +69,8 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'gender': 'Male',
             'honorable_mention_count': 3,
             'trr_count': 1,
+            'major_award_count': 1,
+            'honorable_mention_percentile': 10,
         }))
 
         expect(
@@ -92,6 +94,39 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'birth_year': 1972,
             'gender': 'Male',
             'percentiles': [],
+            'major_award_count': 1,
+            'honorable_mention_percentile': 10,
+        })
+
+    def test_officer_doc_format_with_missing_values(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'id': 1,
+            'full_name': 'name',
+        }))
+
+        expect(
+            OfficerFormatter().doc_format(doc)
+        ).to.be.eq({
+            'name': 'name',
+            'badge': None,
+            'to': None,
+            'tags': [],
+            'unit': None,
+            'appointed_date': None,
+            'resignation_date': None,
+            'trr_count': 0,
+            'rank': None,
+            'allegation_count': 0,
+            'sustained_count': 0,
+            'discipline_count': 0,
+            'honorable_mention_count': 0,
+            'civilian_compliment_count': 0,
+            'race': None,
+            'birth_year': None,
+            'gender': None,
+            'percentiles': [],
+            'major_award_count': 0,
+            'honorable_mention_percentile': None,
         })
 
 
