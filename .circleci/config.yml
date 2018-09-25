@@ -46,28 +46,25 @@ jobs:
   test:
     machine: true
     steps:
-      - checkout
-      - run:
-          name: Docker login
-          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
-      - run:
-          name: Pull backend image
-          command: docker pull cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
-      - run:
-          name: Pull Postgres image
-          command: docker pull cpdpacr.azurecr.io/postgis:9.6
-      - run:
-          name: Run flake8 against code
-          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 flake8
-      - run:
-          name: Spin up Postgres
-          command: docker run -d --name postgres cpdpacr.azurecr.io/postgis:9.6 postgres
       - run:
           name: Spin up Elasticsearch
           command: docker run -d --name elasticsearch elasticsearch:5-alpine
       - run:
-          name: Clean all pyc files
-          command: find . -name *.pyc -delete
+          name: Docker login
+          command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
+      - run:
+          name: Pull Postgres image
+          command: docker pull cpdpacr.azurecr.io/postgis:9.6
+      - run:
+          name: Spin up Postgres
+          command: docker run -d --name postgres cpdpacr.azurecr.io/postgis:9.6 postgres
+      - checkout
+      - run:
+          name: Pull backend image
+          command: docker pull cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1
+      - run:
+          name: Run flake8 against code
+          command: docker run --rm cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 flake8
       - run:
           name: Test while record coverage
           command: |
