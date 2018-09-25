@@ -50,6 +50,9 @@ jobs:
           name: Spin up Elasticsearch
           command: docker run -d --name elasticsearch elasticsearch:5-alpine
       - run:
+          name: Install coveralls
+          command: pip install coveralls
+      - run:
           name: Docker login
           command: docker login cpdpacr.azurecr.io -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET
       - run:
