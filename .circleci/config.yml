@@ -180,7 +180,7 @@ workflows:
       - build_backend_with_tag:
           filters:
             tags:
-              only: /^v[\d\.]+$/
+              only: /^v[\d\.]+/
             branches:
               ignore: /.*/
       - test:
@@ -188,7 +188,7 @@ workflows:
             - build_backend_with_tag
           filters:
             tags:
-              only: /^v[\d\.]+$/
+              only: /^v[\d\.]+/
             branches:
               ignore: /.*/
 
