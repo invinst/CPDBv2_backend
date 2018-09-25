@@ -5,7 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .serializers import AliasSerializer
-from .constants import INDEXER_MAPPINGS
+from .constants import ALIAS_MAPPINGS
 from .utils import set_aliases
 
 
@@ -15,7 +15,7 @@ class AliasViewSet(viewsets.ViewSet):
 
     def update(self, request, alias_type, pk):
         try:
-            indexer_class = INDEXER_MAPPINGS[alias_type]
+            doc_type_class, model_class = ALIAS_MAPPINGS[alias_type]
         except KeyError:
             return Response({'message': 'Cannot find type "{}"'.format(alias_type)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -25,8 +25,8 @@ class AliasViewSet(viewsets.ViewSet):
 
         validated_aliases = aliases.validated_data['aliases']
         try:
-            set_aliases(indexer_class, pk, validated_aliases)
-        except NotFoundError:
+            set_aliases(doc_type_class, model_class, pk, validated_aliases)
+        except (NotFoundError, model_class.DoesNotExist):
             return Response({
                 'message': 'Cannot find any "{alias_type}" record with pk={pk}'.format(pk=pk, alias_type=alias_type)
             }, status=status.HTTP_404_NOT_FOUND)

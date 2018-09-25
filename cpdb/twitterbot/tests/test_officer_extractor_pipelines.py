@@ -43,7 +43,8 @@ class TextPipelineTestCase(RebuildIndexMixin, TestCase):
 
 
 class UrlPipelineTestCase(RebuildIndexMixin, TestCase):
-    def test_extract_matching_id(self):
+    @patch('officers.indexers.officers_indexer.officer_percentile.top_percentile', return_value=[])
+    def test_extract_matching_id(self, _):
         OfficerFactory(id=1234, first_name='James', last_name='Lynch')
         self.refresh_index()
         tweets = [
