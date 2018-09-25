@@ -66,6 +66,9 @@ jobs:
           name: Spin up Elasticsearch
           command: docker run -d --name elasticsearch elasticsearch:5-alpine
       - run:
+          name: Clean all pyc files
+          command: find . -name *.pyc -delete
+      - run:
           name: Test while record coverage
           command: |
             docker run --rm \
@@ -73,7 +76,7 @@ jobs:
               --link elasticsearch:elasticsearch \
               -v $(pwd):/usr/src/app \
               cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 \
-              sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
+              coverage run cpdb/manage.py test --noinput --nologcapture
       - run:
           name: Coverage report
           command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage combine && coverage report"
