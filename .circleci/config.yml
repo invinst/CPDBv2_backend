@@ -77,9 +77,7 @@ jobs:
       - run:
           name: Coverage report
           command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage combine && coverage report"
-      - run:
-          name: Submit coverage report to coveralls
-          command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 coveralls
+      - run: coveralls
 
   build_backend_with_tag:
     machine: true
