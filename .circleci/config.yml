@@ -72,7 +72,6 @@ jobs:
               --link postgres:postgis \
               --link elasticsearch:elasticsearch \
               -v $(pwd):/usr/src/app \
-              -e DB_HOST=postgis \
               cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 \
               sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
       - run:

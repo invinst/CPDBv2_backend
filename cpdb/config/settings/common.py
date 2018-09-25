@@ -95,11 +95,11 @@ DATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': env.str('DB_HOST'),
-        'NAME': env.str('DB_NAME'),
-        'PASSWORD': env.str('DB_PASSWORD'),
+        'HOST': env.str('DB_HOST', 'postgis'),
+        'NAME': env.str('DB_NAME', 'cpdb'),
+        'PASSWORD': env.str('DB_PASSWORD', 'password'),
         'PORT': 5432,
-        'USER': env.str('DB_USER')
+        'USER': env.str('DB_USER', 'cpdb')
     }
 }
 
