@@ -45,9 +45,6 @@ jobs:
 
   test:
     machine: true
-    environment:
-      DB_HOST: postgis
-      DJANGO_SECRET_KEY: django
     steps:
       - checkout
       - run:
@@ -70,7 +67,14 @@ jobs:
           command: docker run -d --name elasticsearch elasticsearch:5-alpine
       - run:
           name: Test while record coverage
-          command: docker run --rm --link postgres:postgis --link elasticsearch:elasticsearch -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
+          command: |
+            docker run --rm \
+              --link postgres:postgis \
+              --link elasticsearch:elasticsearch \
+              -v $(pwd):/usr/src/app \
+              -e DB_HOST=postgis \
+              cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 \
+              sh -c "coverage run cpdb/manage.py test --noinput --nologcapture"
       - run:
           name: Coverage report
           command: docker run --rm -v $(pwd):/usr/src/app cpdpacr.azurecr.io/cpdbv2_backend:$CIRCLE_SHA1 sh -c "coverage combine && coverage report"
