@@ -258,7 +258,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             allegation=allegation,
             title='CRID-303350-CR',
             file_type='document',
-            url='https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+            url='https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
         )
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
