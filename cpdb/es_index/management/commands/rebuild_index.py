@@ -85,15 +85,15 @@ class Command(BaseCommand):
         for alias, indexers, migrating_indexers in alias_indexers_tuple:
             with alias.indexing():
                 list_migrate_doc_types = self._get_distinct_doc_types_from_indexers(migrating_indexers)
-                indexer_klass_instances = [klass() for klass in indexers]
 
-                for indexer_instance in indexer_klass_instances:
-                    indexer_instance.create_mapping()
+                for indexer_klass in indexers:
+                    indexer_klass.create_mapping()
 
                 for indexer_klass in migrating_indexers:
-                    indexer_klass().create_mapping()
+                    indexer_klass.create_mapping()
 
                 alias.migrate(list_migrate_doc_types)
 
-                for indexer_instance in indexer_klass_instances:
+                for indexer_klass in indexers:
+                    indexer_instance = indexer_klass()
                     indexer_instance.add_new_data()

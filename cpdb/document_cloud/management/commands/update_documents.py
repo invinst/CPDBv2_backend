@@ -108,13 +108,11 @@ class Command(BaseCommand):
     def rebuild_related_elasticsearch_docs(self, crids):
         if not crids:
             return
-        cr_partial_indexer = CRPartialIndexer(updating_keys=crids)
-        with cr_partial_indexer.index_alias.indexing():
-            cr_partial_indexer.reindex()
 
-        cr_officer_timeline_partial_indexer = CRNewTimelineEventPartialIndexer(updating_keys=crids)
-        with cr_officer_timeline_partial_indexer.index_alias.indexing():
-            cr_officer_timeline_partial_indexer.reindex()
+        for indexer_klass in [CRPartialIndexer, CRNewTimelineEventPartialIndexer]:
+            indexer = indexer_klass(updating_keys=crids)
+            with indexer.index_alias.indexing():
+                indexer.reindex()
 
     def handle(self, *args, **options):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
