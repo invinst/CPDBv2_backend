@@ -1089,9 +1089,8 @@ class AttachmentRequest(models.Model):
         super(AttachmentRequest, self).save(*args, **kwargs)
 
     def investigator_names(self):
-        full_name_concat = Concat('investigator__first_name', Value(' '), 'investigator__last_name')
-        annotated = self.allegation.investigatorallegation_set.annotate(full_name=full_name_concat)
-        investigators = annotated.values_list('full_name', flat=True)
+        investigatorallegation_set = self.allegation.investigatorallegation_set.select_related('investigator')
+        investigators = [ia.investigator.full_name for ia in investigatorallegation_set.all()]
         return ', '.join(investigators)
     investigator_names.short_description = 'Investigators'
 
