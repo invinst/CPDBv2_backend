@@ -1,4 +1,6 @@
-from elasticsearch_dsl import DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
+from elasticsearch_dsl import (
+    DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
+)
 
 from .index_aliases import officers_index_alias
 

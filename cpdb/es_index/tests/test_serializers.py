@@ -40,6 +40,9 @@ class BaseSerializerTestCase(SimpleTestCase):
 class SerializerTestCase(SimpleTestCase):
     def test_get(self):
         expect(get('name')({'name': 'Jerome'})).to.eq('Jerome')
+        expect(get('name')({'age': 45})).to.eq(None)
+        expect(get('name', '')({'age': 45})).to.eq('')
+        expect(get('name', '')({'name': None})).to.eq('')
 
     def test_get_date(self):
         expect(
