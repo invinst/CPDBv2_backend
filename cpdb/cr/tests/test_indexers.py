@@ -340,6 +340,15 @@ class CRIndexerTestCase(TestCase):
         expect(rows).to.have.length(1)
         expect(rows[0]['coaccused'][0]['age']).to.be.none()
 
+    def test_extract_coaccused_empty_final_finding(self):
+        OfficerAllegationFactory(
+            final_finding=''
+        )
+
+        rows = self.extract_data()
+        expect(rows).to.have.length(1)
+        expect(rows[0]['coaccused'][0]['final_finding']).to.eq('Unknown')
+
     def test_extract_investigator_multiple_cases(self):
         investigator = InvestigatorFactory(first_name='Luke', last_name='Skywalker')
         InvestigatorAllegationFactory.create_batch(3, investigator=investigator)

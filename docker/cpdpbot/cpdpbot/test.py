@@ -6,7 +6,10 @@ import base64
 from mock import patch, Mock
 from robber import expect
 
-from tweet import TweetSender
+from .tweet import TweetSender
+
+
+mock_logger = Mock()
 
 
 @patch(
@@ -24,10 +27,11 @@ from tweet import TweetSender
 @patch('cpdpbot.tweet.tweepy.API')
 @patch('cpdpbot.tweet.VideoTweet')
 @patch('cpdpbot.tweet.QueueService')
+@patch('cpdpbot.tweet.logging.getLogger', return_value=mock_logger)
 @patch('cpdpbot.tweet.print')
 class CPDPBotTestCase(unittest.TestCase):
-    def test_print_stderr(self, mock_print, *args):
-        TweetSender().print_stderr('something bad')
+    def test_print_exception(self, mock_print, *args):
+        TweetSender().print_exception('something bad')
         mock_print.assert_called_with('something bad', file=sys.stderr)
 
     def test_print_stdout(self, mock_print, *args):
@@ -63,7 +67,7 @@ class CPDPBotTestCase(unittest.TestCase):
 
     def prepare_messages(self, sender, messages):
         messages = [
-            Mock(content=base64.b64encode(json.dumps(message)))
+            Mock(content=base64.b64encode(json.dumps(message).encode('utf-8')))
             for message in messages
         ]
         sender.queue_service.get_messages = Mock(return_value=messages)
@@ -73,7 +77,6 @@ class CPDPBotTestCase(unittest.TestCase):
         sender = TweetSender()
         messages = self.prepare_messages(sender, [{'tweet': {'status': 'good day'}}])
         sender.generate_mp4_file = Mock(return_value=None)
-
         sender.process_messages()
 
         sender.twitter_api.update_status.assert_called_with(status='good day')
@@ -96,13 +99,10 @@ class CPDPBotTestCase(unittest.TestCase):
         messages = self.prepare_messages(sender, [{'tweet': {'status': 'good day'}}])
         sender.generate_mp4_file = Mock()
         sender.generate_mp4_file.side_effect = Exception('something wrong')
-        sender.print_stderr = Mock()
 
-        with patch('cpdpbot.tweet.traceback.print_exc') as mock_print_exc:
-            sender.process_messages()
-            mock_print_exc.assert_called()
+        sender.process_messages()
 
-        sender.print_stderr.assert_called_with('Message was: {"tweet": {"status": "good day"}}')
+        mock_logger.exception.assert_called_with('Cannot send status: {"tweet": {"status": "good day"}}')
         sender.queue_service.put_message.assert_called_with(sender.fail_queue_name, messages[0].content)
         sender.queue_service.delete_message.assert_called_with(
             sender.queue_name, messages[0].id, messages[0].pop_receipt)

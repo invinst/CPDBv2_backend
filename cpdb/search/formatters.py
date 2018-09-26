@@ -40,6 +40,8 @@ class OfficerFormatter(SimpleFormatter):
             'discipline_count': serialized_doc.get('discipline_count', 0),
             'honorable_mention_count': serialized_doc.get('honorable_mention_count', 0),
             'civilian_compliment_count': serialized_doc.get('civilian_compliment_count', 0),
+            'major_award_count': serialized_doc.get('major_award_count', 0),
+            'honorable_mention_percentile': serialized_doc.get('honorable_mention_percentile'),
             'percentiles': serialized_doc.get('percentiles', []),
         }
 
