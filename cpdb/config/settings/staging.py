@@ -2,11 +2,13 @@ from .production import *  # NOQA
 
 import environ
 
+
 env = environ.Env()
 
 CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
-    )
+    'staging.cpdb.co',
+)
 
 LOGGING = {
     'version': 1,
@@ -35,8 +37,8 @@ LOGGING = {
     },
 }
 
-V1_URL = 'http://staging.cpdb.co'
-DOMAIN = 'http://staging.cpdp.co'
-AZURE_STATICFILES_SSL = False
+V1_URL = 'https://staging.cpdb.co'
+DOMAIN = 'https://staging.cpdp.co'
+AZURE_STATICFILES_SSL = True
 
 TWITTERBOT_ENV = 'dev'
