@@ -85,13 +85,29 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         command = Command()
         AttachmentFileFactory(title='old')
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
-            mock_service().parse_crid_from_title = MagicMock(return_value=None)
+        command.process_documentcloud_document(MagicMock(title='new'), 'CR')
 
-            command.process_documentcloud_document(MagicMock(title='new'), 'CR')
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
 
-            expect(AttachmentFile.objects.all().count()).to.eq(1)
-            expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+    def test_process_invalid_crid(self):
+        command = Command()
+        AttachmentFileFactory(title='old')
+
+        command.process_documentcloud_document(MagicMock(title='CRID 12 CR'), 'CR')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+
+    def test_process_invalid_document_cloud_id(self):
+        command = Command()
+        allegation = AllegationFactory(crid='123456')
+        AttachmentFileFactory(title='old', allegation=allegation)
+
+        command.process_documentcloud_document(MagicMock(title='CRID 123456 CR', id='invalid id'), 'CR')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
 
     def test_update_title_if_title_changed(self):
         command = Command()
