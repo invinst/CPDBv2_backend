@@ -15,7 +15,7 @@ class TRRIndexer(BaseIndexer):
     index_alias = trr_index_alias
 
     def get_queryset(self):
-        return TRR.objects.all()
+        return TRR.objects.all().select_related('officer')
 
     def extract_datum(self, datum):
         return TRRDocSerializer(datum).data
