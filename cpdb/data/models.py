@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from itertools import groupby
-from case_conversion import kebabcase
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -294,10 +293,6 @@ class Officer(TaggableModel):
         return [o.unit for o in self.officerhistory_set.all().order_by('-effective_date')]
 
     @property
-    def trr_count(self):
-        return self.trr_set.count()
-
-    @property
     def current_badge(self):
         try:
             return self.officerbadgenumber_set.get(current=True).star
@@ -348,7 +343,7 @@ class Officer(TaggableModel):
 
     @property
     def v2_to(self):
-        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=kebabcase(self.full_name))
+        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=slugify(self.full_name))
 
     def get_absolute_url(self):
         return '/officer/%d/' % self.pk
@@ -370,16 +365,6 @@ class Officer(TaggableModel):
         return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
             cr_threshold=cr_threshold
         )]
-
-    @property
-    def has_visual_token(self):
-        return all([
-            percentile is not None for percentile in [
-                self.civilian_allegation_percentile,
-                self.internal_allegation_percentile,
-                self.trr_percentile
-            ]
-        ])
 
     @property
     def visual_token_png_url(self):
@@ -532,28 +517,6 @@ class Officer(TaggableModel):
         return Officer._group_and_sort_aggregations(data)
 
     @property
-    def total_complaints_aggregation(self):
-        query = self.officerallegation_set.filter(start_date__isnull=False)
-        query = query.annotate(year=ExtractYear('start_date'))
-        query = query.values('year').order_by('year').annotate(
-            count=models.Count('id'),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=models.Value(0),
-                    output_field=models.IntegerField()
-                )
-            )
-        )
-        aggregate_count = 0
-        aggregate_sustained_count = 0
-        results = list(query)
-        for item in results:
-            aggregate_count += item['count']
-            aggregate_sustained_count += item['sustained_count']
-        return results
-
-    @property
     def major_award_count(self):
         return self.award_set.annotate(
             lower_award_type=Lower('award_type')
@@ -630,10 +593,6 @@ class OfficerHistory(models.Model):
     @property
     def unit_name(self):
         return self.unit.unit_name
-
-    @property
-    def unit_description(self):
-        return self.unit.description
 
 
 class AreaObjectManager(models.Manager):
@@ -1097,7 +1056,7 @@ class SalaryManager(models.Manager):
             spp_date=F('officer__appointed_date')
         ).order_by('officer_id', 'year')
         last_salary = salaries.first()
-        result = [salaries.first()]
+        result = [last_salary]
         for salary in salaries:
             if salary.officer_id == last_salary.officer_id:
                 if salary.rank != last_salary.rank:
