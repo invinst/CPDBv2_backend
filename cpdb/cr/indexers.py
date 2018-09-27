@@ -118,6 +118,7 @@ class CRIndexer(BaseIndexer):
             self.victims_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     def get_queryset(self):
+        # Values are extracted so that we can save some 2.5Gb of memory during run
         return Allegation.objects.all().select_related('beat').values(
             'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
             'old_complaint_address', 'add1', 'add2', 'city', 'location'

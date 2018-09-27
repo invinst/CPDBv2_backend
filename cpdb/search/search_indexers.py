@@ -1,12 +1,14 @@
 from tqdm import tqdm
+from elasticsearch.helpers import bulk
 
-from data.models import PoliceUnit, Area, Allegation, Salary
+from es_index import es_client
+from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation
 from data.utils.percentile import percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer
 from search.utils import chicago_zip_codes
-from trr.models import TRR
+from trr.models import TRR, ActionResponse
 
 
 class BaseIndexer(object):
@@ -32,24 +34,21 @@ class BaseIndexer(object):
             extracted_data['meta'] = {'id': datum.pk}
         return extracted_data
 
-    def save_doc(self, extracted_data, index=None):
+    def _prepare_doc(self, extracted_data, index=None):
         extracted_data['_index'] = self.index_name
-        doc = self.doc_type_klass(**extracted_data)
-        doc.save()
+        return self.doc_type_klass(**extracted_data).to_dict(include_meta=True)
 
-    def index_datum(self, datum):
-        extracted_data = self.extract_datum_with_id(datum)
-        if isinstance(extracted_data, list):
-            [self.save_doc(entry) for entry in extracted_data]
-        else:
-            self.save_doc(extracted_data)
-
-    def index_data(self):
+    def docs(self):
         for datum in tqdm(
-            self.get_queryset(),
-            desc='Indexing {doc_type_name}'.format(
-                doc_type_name=self.doc_type_klass._doc_type.name)):
-            self.index_datum(datum)
+                self.get_queryset(),
+                desc='Indexing {doc_type_name}'.format(
+                    doc_type_name=self.doc_type_klass._doc_type.name)):
+            extracted_data = self.extract_datum_with_id(datum)
+            if isinstance(extracted_data, list):
+                for entry in extracted_data:
+                    yield self._prepare_doc(entry)
+            else:
+                yield self._prepare_doc(extracted_data)
 
 
 class UnitIndexer(BaseIndexer):
@@ -137,7 +136,7 @@ class IndexerManager(object):
     def _index_data(self):
         for indexer_klass in self.indexers:
             a = indexer_klass()
-            a.index_data()
+            bulk(es_client, a.docs())
 
     def rebuild_index(self, migrate_doc_types=[]):
         with autocompletes_alias.indexing():
@@ -149,22 +148,61 @@ class IndexerManager(object):
 class CrIndexer(BaseIndexer):
     doc_type_klass = CrDocType
 
+    def __init__(self, *args, **kwargs):
+        super(CrIndexer, self).__init__(*args, **kwargs)
+        self.populate_officerallegation_dict()
+
+    def populate_officerallegation_dict(self):
+        self.officerallegation_dict = dict()
+        queryset = OfficerAllegation.objects.filter(allegation_category__isnull=False)\
+            .select_related('allegation_category')\
+            .values('allegation_category__category', 'allegation_category_id', 'allegation_id')
+        for obj in queryset:
+            self.officerallegation_dict.setdefault(obj['allegation_id'], []).append(obj)
+
+    def get_most_common_category(self, id):
+        category_count = dict()
+        for officerallegation_obj in self.officerallegation_dict.get(id, []):
+            category_obj = category_count.setdefault(officerallegation_obj['allegation_category_id'], {
+                'category': officerallegation_obj['allegation_category__category'],
+                'count': 0
+            })
+            category_obj['count'] += 1
+
+        try:
+            result = max(category_count.values(), key=lambda obj: obj['count'])
+            return result['category']
+        except ValueError:
+            return None
+
     def get_queryset(self):
         return Allegation.objects.all()
 
     def extract_datum(self, datum):
-        most_common_category = datum.get_most_common_category()
-
         return {
             'crid': datum.crid,
-            'category': most_common_category['category'] if most_common_category else None,
+            'category': self.get_most_common_category(datum.id),
             'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
-            'to': datum.v2_to
+            'to': '/complaint/%s/' % datum.crid
         }
 
 
 class TRRIndexer(BaseIndexer):
     doc_type_klass = TRRDocType
+
+    def __init__(self, *args, **kwargs):
+        super(TRRIndexer, self).__init__(*args, **kwargs)
+        self._populate_top_forcetype_dict()
+
+    def _populate_top_forcetype_dict(self):
+        self.top_forcetype_dict = dict()
+        queryset = ActionResponse.objects\
+            .filter(person='Member Action')\
+            .order_by('-action_sub_category', 'force_type')
+
+        for obj in queryset:
+            if obj.trr_id not in self.top_forcetype_dict:
+                self.top_forcetype_dict[obj.trr_id] = obj.force_type
 
     def get_queryset(self):
         return TRR.objects.all()
@@ -173,7 +211,7 @@ class TRRIndexer(BaseIndexer):
         return {
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
-            'force_type': datum.top_force_type,
+            'force_type': self.top_forcetype_dict.get(datum.id, None),
             'to': datum.v2_to
         }
 

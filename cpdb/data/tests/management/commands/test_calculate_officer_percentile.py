@@ -10,7 +10,7 @@ from mock import patch, Mock
 
 from data.models import Officer
 from data.factories import OfficerFactory
-from officers.tests.utils import create_object
+from shared.tests.utils import create_object
 
 
 class CalculateOfficerPercentileTestCase(TestCase):
