@@ -13,6 +13,15 @@ from cr.indexers import CRPartialIndexer
 from officers.indexers import CRNewTimelineEventPartialIndexer
 
 
+def _get_url(document):
+    document_url = document.canonical_url
+    try:
+        document_url = document.resources.pdf or document_url
+    except AttributeError:
+        pass
+    return document_url
+
+
 class Command(BaseCommand):
     help = 'Update complaint documents info'
 
@@ -26,23 +35,31 @@ class Command(BaseCommand):
         except Allegation.DoesNotExist:
             return
 
+        documentcloud_id = documentcloud_service.parse_id(cloud_document.id)
+        if documentcloud_id is None:
+            return
+
+        setattr(cloud_document, 'url', _get_url(cloud_document))
+
         try:
             # update if current info is mismatched
-            updated_attachment = AttachmentFile.objects.get(allegation=allegation, url__icontains=cloud_document.id)
+            updated_attachment = AttachmentFile.objects.get(allegation=allegation, external_id=documentcloud_id)
             updated = self.update_mismatched_existing_data(updated_attachment, cloud_document, document_type)
             return {'attachment': updated_attachment, 'is_new_attachment': False, 'updated': updated}
 
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', cloud_document.title)
-            parsed_link = documentcloud_service.parse_link(cloud_document.canonical_url)
+            additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
+
             new_attachment = AttachmentFile.objects.create(
+                external_id=documentcloud_id,
                 allegation=allegation,
                 title=title,
-                url=cloud_document.canonical_url,
+                url=cloud_document.url,
                 file_type=MEDIA_TYPE_DOCUMENT,
                 tag=document_type,
-                additional_info=parsed_link,
-                original_url=cloud_document.canonical_url,
+                additional_info=additional_info,
+                original_url=cloud_document.url,
                 preview_image_url=cloud_document.normal_image_url,
                 created_at=cloud_document.created_at,
                 last_updated=cloud_document.updated_at
@@ -52,6 +69,7 @@ class Command(BaseCommand):
     def update_mismatched_existing_data(self, attachment, document, document_type):
         should_save = False
         mapping_fields = [
+            ('url', 'url'),
             ('title', 'title'),
             ('preview_image_url', 'normal_image_url'),
             ('last_updated', 'updated_at'),
