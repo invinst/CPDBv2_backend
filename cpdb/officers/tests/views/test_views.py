@@ -342,6 +342,11 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 999}))
         expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
+    def test_no_coaccusals(self):
+        OfficerFactory(id=990)
+        response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 990}))
+        expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
     def test_coaccusals(self):
         officer1 = OfficerFactory(appointed_date=date(2001, 1, 1))
         officer2 = OfficerFactory(

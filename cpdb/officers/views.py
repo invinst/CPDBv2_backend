@@ -58,7 +58,7 @@ class OfficersViewSet(viewsets.ViewSet):
         result = query.execute()
         try:
             return Response(result[0].to_dict()['coaccusals'])
-        except IndexError:
+        except (IndexError, KeyError):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
