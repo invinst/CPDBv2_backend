@@ -11,7 +11,7 @@ from sh import pwd
 # pragma: no cover
 class Command(BaseCommand):
     help = 'Dump current database and upload to azure'
-    db_config = settings.DATABASE_CONFIG
+    db_config = settings.DATABASES['default']
     database_url = 'postgres://{user}:{password}@{host}:{port}/{db_name}'.format(
         user=db_config['USER'],
         password=db_config['PASSWORD'],

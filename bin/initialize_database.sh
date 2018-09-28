@@ -27,7 +27,7 @@ cd $DIR/..
 source prod.env
 
 PGPASSWORD=$PG_PASSWORD psql \
-        --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 --dbname postgres <<-EOSQL
+        --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 "sslmode=require dbname=postgres" <<-EOSQL
     CREATE USER $APP_LOGIN;
     ALTER USER $APP_LOGIN WITH ENCRYPTED PASSWORD '$APP_PASS';
     DROP DATABASE $APP_DB;
@@ -43,5 +43,5 @@ EOSQL
 
 if [ $# -gt 1 ]; then
     PGPASSWORD=$PG_PASSWORD psql \
-        --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 $APP_DB < $2;
+        --username "$PG_LOGIN@$PG_HOST" --host="$PG_HOST" --port=5432 "sslmode=require dbname=$APP_DB" < $2;
 fi

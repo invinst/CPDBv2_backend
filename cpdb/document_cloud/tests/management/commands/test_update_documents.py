@@ -16,6 +16,7 @@ from document_cloud.models import DocumentCrawler
 from cr.doc_types import CRDocType
 from document_cloud.tests.mixins import DocumentcloudTestCaseMixin
 from officers.doc_types import OfficerNewTimelineEventDocType
+from shared.tests.utils import create_object
 
 
 class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
@@ -84,122 +85,184 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         command = Command()
         AttachmentFileFactory(title='old')
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
-            mock_service().parse_crid_from_title = MagicMock(return_value=None)
+        command.process_documentcloud_document(MagicMock(title='new'), 'CR')
 
-            command.process_documentcloud_document(MagicMock(title='new'), 'CR')
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
 
-            expect(AttachmentFile.objects.all().count()).to.eq(1)
-            expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+    def test_process_invalid_crid(self):
+        command = Command()
+        AttachmentFileFactory(title='old')
+
+        command.process_documentcloud_document(MagicMock(title='CRID 12 CR'), 'CR')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+
+    def test_process_invalid_document_cloud_id(self):
+        command = Command()
+        allegation = AllegationFactory(crid='123456')
+        AttachmentFileFactory(title='old', allegation=allegation)
+
+        command.process_documentcloud_document(MagicMock(title='CRID 123456 CR', id='invalid id'), 'CR')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
 
     def test_update_title_if_title_changed(self):
         command = Command()
-        allegation = AllegationFactory()
-        AttachmentFileFactory(title='old', allegation=allegation, url='url id')
+        allegation = AllegationFactory(crid='123456')
+        AttachmentFileFactory(
+            external_id='789',
+            title='CRID 123456 CR',
+            allegation=allegation,
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'
+        )
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service:
-            mock_service().parse_crid_from_title = MagicMock(return_value=allegation.crid)
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR New',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+            }), 'CR'
+        )
 
-            command.process_documentcloud_document(
-                MagicMock(
-                    title='new', id='id',
-                    normal_image_url='normal_image.jpg',
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-                ),
-                'CR'
-            )
-
-            expect(AttachmentFile.objects.all().count()).to.eq(1)
-            expect(AttachmentFile.objects.all()[0].title).to.eq('new')
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        expect(AttachmentFile.objects.all()[0].title).to.eq('CRID 123456 CR New')
 
     def test_insert_new_document_if_allegation_existed(self):
         command = Command()
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(crid='123456')
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service_class:
-            mock_service = mock_service_class()
-            mock_service.parse_crid_from_title = MagicMock(return_value=allegation.crid)
-            mock_service.parse_link = MagicMock(return_value={})
+        expect(AttachmentFile.objects.all().count()).to.eq(0)
 
-            expect(AttachmentFile.objects.all().count()).to.eq(0)
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+            }), 'CR'
+        )
 
-            command.process_documentcloud_document(
-                MagicMock(
-                    title='new',
-                    id=1,
-                    canonical_url='canonical_url',
-                    normal_image_url='normal_image.jpg',
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-                ), 'CR'
-            )
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        media = AttachmentFile.objects.all()[0]
+        expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.url).to.eq('https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf')
+        expect(media.allegation.id).to.eq(allegation.id)
 
-            expect(AttachmentFile.objects.all().count()).to.eq(1)
-            media = AttachmentFile.objects.all()[0]
-            expect(media.title).to.eq('new')
-            expect(media.allegation.id).to.eq(allegation.id)
+    def test_insert_new_document_with_missing_resources_object(self):
+        command = Command()
+        allegation = AllegationFactory(crid='123456')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(0)
+
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+            }), 'CR'
+        )
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        media = AttachmentFile.objects.all()[0]
+        expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
+
+        expect(media.allegation.id).to.eq(allegation.id)
+
+    def test_insert_new_document_with_missing_resources_pdf_link(self):
+        command = Command()
+        allegation = AllegationFactory(crid='123456')
+
+        expect(AttachmentFile.objects.all().count()).to.eq(0)
+
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({})
+            }), 'CR'
+        )
+
+        expect(AttachmentFile.objects.all().count()).to.eq(1)
+        media = AttachmentFile.objects.all()[0]
+        expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
+        expect(media.allegation.id).to.eq(allegation.id)
 
     def test_not_process_if_allegation_not_existed(self):
         command = Command()
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service_class:
-            mock_service = mock_service_class()
-            mock_service.parse_crid_from_title = MagicMock(return_value='1')
-            mock_service.parse_link = MagicMock(return_value={})
+        expect(AttachmentFile.objects.all().count()).to.eq(0)
 
-            expect(AttachmentFile.objects.all().count()).to.eq(0)
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID CRID CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-CRID-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-CRID-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-CRID-CR.pdf'})
+            }), 'CR'
+        )
 
-            command.process_documentcloud_document(
-                MagicMock(
-                    title='new',
-                    normal_image_url='normal_image.jpg',
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc)
-                ), 'CR')
-
-            expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.all().count()).to.eq(0)
 
     def test_replace_hyphen_with_space(self):
         command = Command()
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(crid='123456')
 
-        with patch('document_cloud.management.commands.update_documents.DocumentcloudService') as mock_service_class:
-            mock_service = mock_service_class()
-            mock_service.parse_crid_from_title = MagicMock(return_value=allegation.crid)
-            mock_service.parse_link = MagicMock(return_value={})
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR new-document',
+                'id': '456-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/456-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/456-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/456/CRID-123456-CR.pdf'})
+            }), 'CR'
+        )
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR new - document',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+            }), 'CR'
+        )
 
-            command.process_documentcloud_document(
-                MagicMock(
-                    title='new-document',
-                    id=allegation.id,
-                    canonical_url='canonical_url 1',
-                    normal_image_url='normal_image.jpg',
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-                ), 'CR'
-            )
-            command.process_documentcloud_document(
-                MagicMock(title='new - document', id=allegation.id, canonical_url='canonical_url 2',
-                          normal_image_url='normal_image.jpg',
-                          updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
-                          created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                          ), 'CR'
-            )
+        media = AttachmentFile.objects.first()
+        expect(media.title).to.eq('CRID 123456 CR new document')
+        expect(media.allegation.id).to.eq(allegation.id)
 
-            media = AttachmentFile.objects.first()
-            expect(media.title).to.eq('new document')
-            expect(media.allegation.id).to.eq(allegation.id)
-
-            media = AttachmentFile.objects.all()[1]
-            expect(media.title).to.eq('new - document')
-            expect(media.allegation.id).to.eq(allegation.id)
+        media = AttachmentFile.objects.all()[1]
+        expect(media.title).to.eq('CRID 123456 CR new - document')
+        expect(media.allegation.id).to.eq(allegation.id)
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
     def test_rebuild_index_updated_allegation_and_officer_new_timeline(
         self,
-        DocumentCloudServiceMock,
         DocumentCloudMock
     ):
         allegation_1 = AllegationFactory(crid='123456')
@@ -211,24 +274,28 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         mock_search_map = {
             'CR': [
-                MagicMock(
-                    title='CR 123456',
-                    id=1,
-                    canonical_url='www.documentcloud.org/documents/canonical_url',
-                    normal_image_url='normal_image.jpg',
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-                )
+                create_object({
+                    'title': 'CRID 123456 CR',
+                    'id': '789-CRID-123456-CR',
+                    'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                    'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                    'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                    'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                    'resources': create_object(
+                        {'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+                })
             ],
             'CRID': [
-                MagicMock(
-                    title='CRID 789',
-                    id=2,
-                    canonical_url='www.documentcloud.org/documents/canonical_url',
-                    normal_image_url='normal_image.jpg',
-                    created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-                )
+                create_object({
+                    'title': 'CRID 789 CRID',
+                    'id': '789-CRID-789-CR',
+                    'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-789-CR.html',
+                    'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-789-CR.html',
+                    'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                    'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                    'resources': create_object(
+                        {'pdf': 'https://www.documentcloud.org/documents/789/CRID-789-CR.pdf'})
+                })
             ]
         }
 
@@ -236,20 +303,6 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             return mock_search_map[syntax]
 
         DocumentCloudMock().documents.search.side_effect = mock_search_side_effect
-
-        mock_documentcloud_service = DocumentCloudServiceMock()
-        mock_documentcloud_service.parse_crid_from_title = MagicMock()
-        mock_documentcloud_service.parse_link = MagicMock(return_value={})
-
-        mock_parse_crid_from_title_map = {
-            'CR': '123456',
-            'CRID': '789'
-        }
-
-        def mock_parse_crid_from_title_side_effect(_, document_type):
-            return mock_parse_crid_from_title_map[document_type]
-
-        mock_documentcloud_service.parse_crid_from_title.side_effect = mock_parse_crid_from_title_side_effect
 
         CRDocType(meta={'id': '1'}, **{
             'crid': '123456',
@@ -286,15 +339,15 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         expect(CRDocType().search().query('terms', crid=['123456', '789']).count()).to.eq(2)
         cr_doc = CRDocType().search().query('term', crid='123456').execute()[0].to_dict()
-        expect(cr_doc['attachments'][0]['title']).to.eq('CR 123456')
+        expect(cr_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
         cr_doc_2 = CRDocType().search().query('term', crid='789').execute()[0].to_dict()
-        expect(cr_doc_2['attachments'][0]['title']).to.eq('CRID 789')
+        expect(cr_doc_2['attachments'][0]['title']).to.eq('CRID 789 CRID')
 
         expect(OfficerNewTimelineEventDocType().search().query('terms', crid=['123456', '789']).count()).to.eq(2)
         cr_timeline_doc = OfficerNewTimelineEventDocType().search().query('term', crid='123456').execute()[0].to_dict()
-        expect(cr_timeline_doc['attachments'][0]['title']).to.eq('CR 123456')
+        expect(cr_timeline_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
         cr_timeline_doc_2 = OfficerNewTimelineEventDocType().search().query('term', crid='789').execute()[0].to_dict()
-        expect(cr_timeline_doc_2['attachments'][0]['title']).to.eq('CRID 789')
+        expect(cr_timeline_doc_2['attachments'][0]['title']).to.eq('CRID 789 CRID')
 
         crawling_log = DocumentCrawler.objects.last()
         expect(crawling_log.num_documents).to.equal(2)
@@ -302,45 +355,45 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_updated_documents).to.equal(0)
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
-    def test_clean_not_exist_attachments(self, DocumentCloudServiceMock, DocumentCloudMock):
+    def test_clean_not_exist_attachments(self, DocumentCloudMock):
         allegation = AllegationFactory(crid=123456)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
+            external_id='456',
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='To be deleted',
-            url='https://www.documentcloud.org/documents/to-be-deleted-CRID-123456-CR.html'
+            url='https://www.documentcloud.org/documents/456/to-be-deleted-CRID-123456-CR.pdf'
         )
         AttachmentFileFactory(
+            external_id='789',
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='To be updated',
-            url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html'
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'
         )
 
         DocumentCloudMock().documents.search.return_value = [
-            MagicMock(
-                title='CRID 123456 CR',
-                id='789-CRID-123456-CR',
-                canonical_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                normal_image_url='normal_image.jpg',
-                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-            ),
-            MagicMock(
-                title='CRID 123456 CR 2',
-                id='012-CRID-123456-CR-2',
-                canonical_url='https://www.documentcloud.org/documents/012-CRID-123456-CR-2.html',
-                normal_image_url='normal_image_2.jpg',
-                created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                updated_at=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-            )
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'normal_image.jpg',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'}),
+            }),
+            create_object({
+                'title': 'CRID 123456 CR 2',
+                'id': '012-CRID-123456-CR-2',
+                'canonical_url': 'https://www.documentcloud.org/documents/012-CRID-123456-CR-2.html',
+                'normal_image_url': 'normal_image_2.jpg',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/012/CRID-123456-CR-2.pdf'}),
+            })
         ]
 
-        mock_documentcloud_service = DocumentCloudServiceMock()
-        mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
-        mock_documentcloud_service.parse_link = MagicMock(return_value={})
         CRDocType(meta={'id': '1'}, **{
             'crid': '123456',
             'address': '30XX E NEW YORK ST , AURORA IL',
@@ -349,13 +402,13 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
                     'file_type': 'document',
                     'preview_image_url': '',
                     'title': 'To be deleted',
-                    'url': 'https://www.documentcloud.org/documents/to-be-deleted-CRID-123456-CR.html'
+                    'url': 'https://www.documentcloud.org/documents/456/to-be-deleted-CRID-123456-CR.pdf'
                 },
                 {
                     'file_type': 'document',
                     'preview_image_url': '',
                     'title': 'To be updated',
-                    'url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html'
+                    'url': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'
                 }
             ],
             'beat': '3100',
@@ -389,14 +442,12 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_updated_documents).to.equal(1)
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
     @patch('document_cloud.management.commands.update_documents.CRPartialIndexer')
     @patch('document_cloud.management.commands.update_documents.CRNewTimelineEventPartialIndexer')
     def test_no_rebuild_index_if_no_change(
         self,
         CRNewTimelineEventPartialIndexerMock,
         CRPartialIndexerMock,
-        DocumentCloudServiceMock,
         DocumentCloudMock,
     ):
         updated_date = datetime.datetime(2015, 12, 31, tzinfo=pytz.utc)
@@ -405,10 +456,11 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         allegation = AllegationFactory(crid='123456')
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
+            external_id='789',
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='CRID 123456 CR',
-            url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
             preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
             last_updated=updated_date,
             created_at=created_date,
@@ -416,19 +468,16 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         )
 
         DocumentCloudMock().documents.search.return_value = [
-            MagicMock(
-                title='CRID 123456 CR',
-                id='789-CRID-123456-CR',
-                canonical_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                normal_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                updated_at=updated_date,
-                created_at=created_date
-            )
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'updated_at': updated_date,
+                'created_at': created_date,
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+            })
         ]
-
-        mock_documentcloud_service = DocumentCloudServiceMock()
-        mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
-        mock_documentcloud_service.parse_link = MagicMock(return_value={})
 
         management.call_command('update_documents')
 
@@ -436,39 +485,37 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(CRNewTimelineEventPartialIndexerMock).not_to.be.called()
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.DocumentcloudService')
     @patch('document_cloud.management.commands.update_documents.CRPartialIndexer')
     @patch('document_cloud.management.commands.update_documents.CRNewTimelineEventPartialIndexer')
     def test_updating_attachment_error_and_no_rebuild_if_no_change(
         self,
         CRNewTimelineEventPartialIndexerMock,
         CRPartialIndexerMock,
-        DocumentCloudServiceMock,
         DocumentCloudMock,
     ):
         allegation = AllegationFactory(crid='123456')
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
+            external_id='789',
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='CRID 123456 CR',
-            url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
             preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
             tag='CR'
         )
 
         DocumentCloudMock().documents.search.return_value = [
-            MagicMock(
-                title='CRID 123456 CR',
-                id='789-CRID-123456',
-                canonical_url='https://www.documentcloud.org/documents/Changed-CRID-123456-CR.html',
-                normal_image_url='https://www.documentcloud.org/documents/Changed-CRID-123456-CR.html',
-            )
+            create_object({
+                'title': 'CRID 123456 CR New',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+            })
         ]
-
-        mock_documentcloud_service = DocumentCloudServiceMock()
-        mock_documentcloud_service.parse_crid_from_title = MagicMock(return_value='123456')
-        mock_documentcloud_service.parse_link = MagicMock(return_value={})
 
         with patch.object(AttachmentFile, 'save', side_effect=ValueError('save() prohibited)')):
             management.call_command('update_documents')

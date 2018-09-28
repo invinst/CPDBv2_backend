@@ -60,7 +60,7 @@ class MobileTimeLineSerializerTestCase(SimpleTestCase):
             'officer_id': 123,
             'attachments': [{
                 'file_type': 'document',
-                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
             }]
         })
         expect(MobileTimelineSerializer(obj).data).to.eq({
@@ -92,7 +92,7 @@ class MobileTimeLineSerializerTestCase(SimpleTestCase):
             'officer_id': 123,
             'attachments': [{
                 'file_type': 'document',
-                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.html'
+                'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
             }]
         })
         expect(MobileTimelineSerializer([obj1, obj2], many=True).data).to.eq([{

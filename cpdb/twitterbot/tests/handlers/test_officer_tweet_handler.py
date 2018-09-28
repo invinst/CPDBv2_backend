@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from functools import wraps
 
 from django.test import TestCase, override_settings
@@ -67,10 +67,16 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.client.tweet = Mock(return_value=self.outgoing_tweet)
         self.send_tweet_patcher = patch('twitterbot.handlers.officer_tweet_handler.send_tweet')
         self.send_tweet = self.send_tweet_patcher.start()
+        self.percentile_patch = patch(
+            'officers.indexers.officers_indexer.officer_percentile.top_percentile',
+            return_value=[]
+        )
+        self.percentile_patch.start()
 
     def tearDown(self):
         self.client_patch.stop()
         self.send_tweet_patcher.stop()
+        self.percentile_patch.stop()
 
     @patch('twitterbot.handlers.officer_tweet_handler.TweetContext')
     def test_match_tweet(self, tweet_context):
@@ -98,7 +104,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             entity={'allegation_count': 1, 'percentiles': [], 'id': 1, 'full_name': u'Jerome Finnigan'}
         )
         expect(ActivityCard.objects.get(officer=self.officer).last_activity).to.eq(
-            datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
+            datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
 
     @namepaser_returns([])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=10))
@@ -365,7 +371,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         expect(response_log.entity_url).to.eq(entity_url)
         expect(response_log.tweet_content).to.eq(
             '@abc Jerome Finnigan has 1 complaints %s' % (entity_url))
-        expect(response_log.created_at).to.eq(datetime.datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
+        expect(response_log.created_at).to.eq(datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
         expect(response_log.incoming_tweet_username).to.eq('abc')
         expect(response_log.incoming_tweet_url).to.eq('https://twitter.com/abc/status/1/')
         expect(response_log.incoming_tweet_content).to.eq('@CPDPbot Jerome Finnigan')

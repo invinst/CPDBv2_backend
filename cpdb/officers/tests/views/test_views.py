@@ -215,6 +215,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
         ])
 
+    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2017)
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2017)
     def test_top_officers_by_allegation(self):
         officer1 = OfficerFactory(
             id=1, first_name='Daryl', last_name='Mack',
@@ -266,7 +268,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             setattr(officer, 'year', 2017)
 
         with patch(
-            'officers.indexers.officer_percentile.top_percentile',
+            'officers.indexers.officers_indexer.officer_percentile.top_percentile',
             Mock(return_value=[officer1, officer2, officer3, officer4, officer5])
         ):
             self.refresh_index()
@@ -311,6 +313,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_coaccusals_not_found(self):
         response_not_found = self.client.get(reverse('api-v2:officers-old-coaccusals', kwargs={'pk': 999}))
         expect(response_not_found.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_no_coaccusals(self):
+        OfficerFactory(id=990)
+        self.refresh_index()
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 990}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([])
 
     def test_coaccusals(self):
         officer1 = OfficerFactory(
@@ -377,6 +386,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             officer=officer2, allegation=allegation3, final_finding='NS', start_date=date(2006, 1, 1)
         )
         OfficerAllegationFactory(
+            officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
+        )
+        OfficerAllegationFactory(
             officer=officer4, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
         )
         OfficerAllegationFactory(
@@ -389,12 +401,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expected_response_data = [{
             'id': officer2.id,
             'full_name': 'Officer 1',
-            'allegation_count': 2,
+            'allegation_count': 3,
             'sustained_count': 1,
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1950,
-            'coaccusal_count': 1,
+            'coaccusal_count': 2,
             'rank': 'Police Officer',
             'complaint_percentile': 95.0,
             'percentile_trr': 33.3333,

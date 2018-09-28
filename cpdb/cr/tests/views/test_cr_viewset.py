@@ -218,7 +218,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             reverse('api-v2:cr-old-request-document', kwargs={'pk': allegation.crid}),
             {'email': 'valid_email@example.com'}
         )
-        expect(response2.status_code).to.eq(status.HTTP_200_OK)
+        expect(response2.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response2.data).to.eq({
             'message': 'Email already added',
             'crid': '112233'

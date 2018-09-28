@@ -1,10 +1,13 @@
 import copy
 import types
 
+from django.utils.module_loading import autodiscover_modules
+
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
+from es_index import indexer_klasses
 
 
 class BaseIndexer(object):
@@ -16,7 +19,7 @@ class BaseIndexer(object):
     def get_queryset(self):
         raise NotImplementedError
 
-    def extract_datum(self, datum):
+    def extract_datum(self):
         raise NotImplementedError
 
     def _embed_update_script(self, doc):
@@ -67,10 +70,11 @@ class BaseIndexer(object):
             else:
                 yield self.doc_dict(result)
 
-    def create_mapping(self):
-        self.index_alias.write_index.close()
-        if not self.parent_doc_type_property:
-            self.doc_type_klass.init(index=self.index_alias.new_index_name)
+    @classmethod
+    def create_mapping(cls):
+        cls.index_alias.write_index.close()
+        if not cls.parent_doc_type_property:
+            cls.doc_type_klass.init(index=cls.index_alias.new_index_name)
 
     def add_new_data(self):
         self.index_alias.write_index.settings(refresh_interval='-1')
@@ -91,6 +95,14 @@ class PartialIndexer(BaseIndexer):
         super(PartialIndexer, self).__init__()
         self.updating_keys = list(updating_keys) if updating_keys else []
 
+    @classmethod
+    def create_mapping(cls):
+        cls.index_alias.write_index.close()
+        autodiscover_modules('indexers')
+        doc_types = [indexer.doc_type_klass for indexer in indexer_klasses if indexer.index_alias == cls.index_alias]
+        for doc_type in doc_types:
+            doc_type.init(index=cls.index_alias.new_index_name)
+
     def reindex(self):
         self.validate_updated_docs()
         self.create_mapping()
@@ -102,7 +114,7 @@ class PartialIndexer(BaseIndexer):
         for i in range(0, len(self.updating_keys), self.batch_size):
             yield self.updating_keys[i:i + self.batch_size]
 
-    def get_batch_querysets(self, keys):
+    def get_batch_queryset(self, keys):
         raise NotImplementedError
 
     def get_batch_update_docs_queries(self, keys):
@@ -111,7 +123,7 @@ class PartialIndexer(BaseIndexer):
     @property
     def batch_querysets(self):
         for keys_batch in self.get_keys_batches():
-            yield self.get_batch_querysets(keys_batch)
+            yield self.get_batch_queryset(keys_batch)
 
     @property
     def batch_update_docs_queries(self):
@@ -134,15 +146,15 @@ class PartialIndexer(BaseIndexer):
         self.index_alias.write_index.refresh()
 
     def validate_updated_docs(self):
-        num_update_docs = sum(update_docs_query.count() for update_docs_query in self.batch_update_docs_queries)
-        num_update_objects = sum(queryset.count() for queryset in self.batch_querysets)
+        num_es_docs = sum(update_docs_query.count() for update_docs_query in self.batch_update_docs_queries)
+        num_postgres_rows = sum(queryset.count() for queryset in self.batch_querysets)
 
-        if num_update_objects != num_update_docs:
+        if num_postgres_rows != num_es_docs:
             raise ValueError(
-                '''
-                Can not update index for {}.
-                No current docs {} and no new docs {}
-                '''.format(
-                    self.doc_type_klass._doc_type.name, num_update_docs, num_update_objects
+                (
+                    'Can not update index for %s. '
+                    'Number of ES doc (%d) is not equal to number of PostgreS rows (%d)'
+                ) % (
+                    self.doc_type_klass._doc_type.name, num_es_docs, num_postgres_rows
                 )
             )

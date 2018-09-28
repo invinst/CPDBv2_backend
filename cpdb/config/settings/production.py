@@ -1,5 +1,6 @@
 from .common import *  # NOQA
 
+
 import environ
 
 env = environ.Env()
@@ -7,15 +8,16 @@ env = environ.Env()
 DEBUG = False
 
 CORS_ORIGIN_WHITELIST = (
-    'mb.cpdp.co',
-    )
+    'm.cpdp.co',
+    'beta.cpdb.co',
+)
 
 ANYMAIL = {
     'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY'),
     'MAILGUN_SENDER_DOMAIN': 'cpdp.co'
 }
 
-EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 DEFAULT_FROM_EMAIL = 'info@cpdp.co'
 DOMAIN = 'https://beta.cpdp.co'
 

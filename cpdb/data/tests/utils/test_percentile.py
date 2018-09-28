@@ -4,7 +4,7 @@ from robber import expect
 from mock import Mock
 
 from data.utils.percentile import percentile, merge_metric
-from officers.tests.utils import create_object, validate_object
+from shared.tests.utils import create_object, validate_object
 
 
 class PercentileTestCase(SimpleTestCase):

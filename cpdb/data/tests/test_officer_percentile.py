@@ -16,7 +16,7 @@ from data.constants import (
 )
 from data.factories import OfficerFactory, OfficerAllegationFactory, AwardFactory
 from data.tests.officer_percentile_utils import mock_percentile_map_range
-from officers.tests.utils import validate_object
+from shared.tests.utils import validate_object
 from trr.factories import TRRFactory
 from data import officer_percentile
 

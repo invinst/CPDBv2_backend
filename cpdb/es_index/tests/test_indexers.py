@@ -1,11 +1,12 @@
 from django.test import SimpleTestCase, TestCase
 
-from elasticsearch_dsl import DocType, Keyword
+from elasticsearch_dsl import DocType, Keyword, Float, Mapping
 from robber import expect
 from mock import Mock, patch
 
 from es_index.indexers import BaseIndexer, es_client, PartialIndexer
 from es_index.index_aliases import IndexAlias
+from es_index import register_indexer
 
 
 class IndexersTestCase(SimpleTestCase):
@@ -14,7 +15,7 @@ class IndexersTestCase(SimpleTestCase):
         expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
 
     def test_extract_datum(self):
-        expect(lambda: BaseIndexer().extract_datum('anything')).to.throw(NotImplementedError)
+        expect(lambda: BaseIndexer().extract_datum()).to.throw(NotImplementedError)
 
     def test_docs_when_extract_datum_is_generator(self):
         class MyDocType(DocType):
@@ -143,7 +144,7 @@ class IndexersTestCase(SimpleTestCase):
             doc_type_klass = Mock(init=init_mock)
             index_alias = Mock(new_index_name='new_index_name')
 
-        ConcreteIndexer().create_mapping()
+        ConcreteIndexer.create_mapping()
         expect(init_mock).to.be.called()
 
     def test_dont_init_doc_type_when_parent_doc_type_property_is_set(self):
@@ -154,17 +155,20 @@ class IndexersTestCase(SimpleTestCase):
             index_alias = Mock(new_index_name='new_index_name')
             parent_doc_type_property = 'children'
 
-        ConcreteIndexer().create_mapping()
+        ConcreteIndexer.create_mapping()
         expect(init_mock).not_to.be.called()
 
     @patch('es_index.indexers.bulk')
     def test_reindex(self, mock_bulk):
         mock_write_index = Mock()
         mock_init = Mock()
-        indexer = BaseIndexer()
+
+        class TestIndexer(BaseIndexer):
+            index_alias = Mock(write_index=mock_write_index, new_index_name='new_index_name')
+            doc_type_klass = Mock(init=mock_init)
+
+        indexer = TestIndexer()
         indexer.docs = Mock(return_value=[1])
-        indexer.index_alias = Mock(write_index=mock_write_index, new_index_name='new_index_name')
-        indexer.doc_type_klass = Mock(init=mock_init)
 
         indexer.reindex()
 
@@ -181,6 +185,7 @@ my_index_alias = IndexAlias('my_alias')
 @my_index_alias.doc_type
 class MyDocType(DocType):
     id = Keyword()
+    value = Float()
 
     class Meta:
         doc_type = 'my_doc_type'
@@ -191,8 +196,8 @@ class PartialIndexerTestCase(TestCase):
         my_index_alias.read_index.delete(ignore=404)
         my_index_alias.read_index.create(ignore=400)
 
-    def test_get_batch_querysets(self):
-        expect(lambda: PartialIndexer().get_batch_querysets([])).to.throw(NotImplementedError)
+    def test_get_batch_queryset(self):
+        expect(lambda: PartialIndexer().get_batch_queryset([])).to.throw(NotImplementedError)
 
     def test_get_batch_update_docs_queries(self):
         expect(lambda: PartialIndexer().get_batch_update_docs_queries([])).to.throw(NotImplementedError)
@@ -201,7 +206,7 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return keys
 
         my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
@@ -221,7 +226,7 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return keys
 
         my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
@@ -231,7 +236,7 @@ class PartialIndexerTestCase(TestCase):
         class MyPartialIndexer(PartialIndexer):
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
@@ -246,7 +251,7 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
@@ -289,21 +294,21 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(count=Mock(return_value=len(keys)))
 
             def get_batch_update_docs_queries(self, keys):
                 return Mock(count=Mock(return_value=1))
 
         my_indexer = MyPartialIndexer(updating_keys=[1, 2, 3])
-        my_indexer.create_mapping = Mock()
+        MyPartialIndexer.create_mapping = Mock()
         my_indexer.migrate = Mock()
         my_indexer.delete_existing_docs = Mock()
         my_indexer.add_new_data = Mock()
 
         expect(lambda: my_indexer.reindex()).to.throw(ValueError)
 
-        expect(my_indexer.create_mapping).not_to.be.called()
+        expect(MyPartialIndexer.create_mapping).not_to.be.called()
         expect(my_indexer.migrate).not_to.be.called()
         expect(my_indexer.delete_existing_docs).not_to.be.called()
         expect(my_indexer.add_new_data).not_to.be.called()
@@ -314,7 +319,7 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(count=Mock(return_value=0))
 
             def get_batch_update_docs_queries(self, keys):
@@ -337,7 +342,7 @@ class PartialIndexerTestCase(TestCase):
             index_alias = my_index_alias
             batch_size = 2
 
-            def get_batch_querysets(self, keys):
+            def get_batch_queryset(self, keys):
                 return Mock(
                     count=Mock(return_value=len(keys)),
                     __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
@@ -367,3 +372,73 @@ class PartialIndexerTestCase(TestCase):
         expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(11)
         expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(12)
         expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)
+
+    def test_create_mapping(self):
+        @my_index_alias.doc_type
+        class MyDocType2(DocType):
+            value2 = Float()
+
+            class Meta:
+                doc_type = 'my_doc_type_2'
+
+        @register_indexer('my_alias')
+        class MyIndexer(BaseIndexer):
+            doc_type_klass = MyDocType
+            index_alias = my_index_alias
+
+        @register_indexer('my_alias')
+        class MyIndexer2(BaseIndexer):
+            doc_type_klass = MyDocType2
+            index_alias = my_index_alias
+
+        class MyPartialIndexer(PartialIndexer, MyIndexer):
+            batch_size = 2
+
+            def get_batch_queryset(self, keys):
+                return Mock(
+                    count=Mock(return_value=len(keys)),
+                    __iter__=Mock(return_value=iter([Mock(id=key, value=key + 10) for key in keys]))
+                )
+
+            def get_batch_update_docs_queries(self, keys):
+                return self.doc_type_klass.search().query('terms', id=keys)
+
+            def extract_datum(self, datum):
+                return {'id': datum.id, 'value': datum.value}
+
+        for value in [1, 2, 3]:
+            MyDocType(id=value, value=value).save()
+            MyDocType2(id=value, value2=value).save()
+        my_index_alias.read_index.refresh()
+
+        my_indexer = MyPartialIndexer(updating_keys=[1, 2])
+        with my_indexer.index_alias.indexing():
+            my_indexer.reindex()
+
+        expect(MyDocType.search().count()).to.equal(3)
+        expect(MyDocType.search().query('term', id=1).execute()[0].to_dict()['value']).to.equal(11)
+        expect(MyDocType.search().query('term', id=2).execute()[0].to_dict()['value']).to.equal(12)
+        expect(MyDocType.search().query('term', id=3).execute()[0].to_dict()['value']).to.equal(3)
+
+        expect(MyDocType2.search().count()).to.equal(3)
+        expect(MyDocType2.search().query('term', id=1).execute()[0].to_dict()['value2']).to.equal(1)
+        expect(MyDocType2.search().query('term', id=2).execute()[0].to_dict()['value2']).to.equal(2)
+        expect(MyDocType2.search().query('term', id=3).execute()[0].to_dict()['value2']).to.equal(3)
+
+        expect(Mapping.from_es('test_my_alias', 'my_doc_type').to_dict()).to.eq({
+            'my_doc_type': {
+                'properties': {
+                    'id': {'type': 'keyword'},
+                    'value': {'type': 'float'}
+                }
+            }
+        })
+
+        expect(Mapping.from_es('test_my_alias', 'my_doc_type_2').to_dict()).to.eq({
+            'my_doc_type_2': {
+                'properties': {
+                     'id': {'type': 'keyword'},
+                     'value2': {'type': 'float'}
+                 }
+            }
+        })
