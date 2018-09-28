@@ -16,10 +16,10 @@ class OfficerSerializer(serializers.Serializer):
     appointed_date = serializers.DateField(allow_null=True)
     birth_year = serializers.IntegerField(allow_null=True)
     resignation_date = serializers.DateField(read_only=True, allow_null=True)
-    unit = UnitSerializer(source='last_unit')
-    percentile_allegation_civilian = serializers.FloatField(allow_null=True)
-    percentile_allegation_internal = serializers.FloatField(allow_null=True)
-    percentile_trr = serializers.FloatField(allow_null=True)
+    unit = UnitSerializer(required=False, source='last_unit')
+    percentile_allegation_civilian = serializers.FloatField(required=False, allow_null=True)
+    percentile_allegation_internal = serializers.FloatField(required=False, allow_null=True)
+    percentile_trr = serializers.FloatField(required=False, allow_null=True)
 
 
 class TRRSerializer(serializers.Serializer):
@@ -37,9 +37,9 @@ class TRRSerializer(serializers.Serializer):
 
     date_of_incident = serializers.CharField(max_length=10)
 
-    location_type = serializers.CharField(max_length=255)
+    location_type = serializers.CharField(required=False, max_length=255)
     address = serializers.CharField(max_length=255, allow_null=True)
-    beat = serializers.IntegerField(allow_null=True)
+    beat = serializers.IntegerField(required=False, allow_null=True)
     point = serializers.DictField(read_only=True, child=serializers.FloatField())
 
 

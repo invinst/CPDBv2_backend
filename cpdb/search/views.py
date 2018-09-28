@@ -49,7 +49,6 @@ class SearchViewSet(viewsets.ViewSet):
 
     def list(self, request):
         term = self._search_term
-        print term
         if term:
             results = self.search_manager.search(term, content_type=self._content_type)
         else:

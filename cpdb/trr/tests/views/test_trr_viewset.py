@@ -163,6 +163,19 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:trr-detail', kwargs={'pk': 123}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
+    def test_retrieve_missing_percentile(self):
+        officer = OfficerFactory(
+            civilian_allegation_percentile=None,
+            internal_allegation_percentile=None,
+            trr_percentile=None
+        )
+        trr = TRRFactory(officer=officer)
+
+        self.refresh_index()
+
+        response = self.client.get(reverse('api-v2:trr-detail', kwargs={'pk': trr.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
     def test_request_document(self):
         TRRFactory(pk=112233)
         response = self.client.post(
