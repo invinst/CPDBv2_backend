@@ -16,12 +16,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='allegation',
             name='first_end_date',
-            field=models.DateTimeField(null=True),
+            field=models.DateField(null=True),
         ),
         migrations.AddField(
             model_name='allegation',
             name='first_start_date',
-            field=models.DateTimeField(null=True),
+            field=models.DateField(null=True),
         ),
         migrations.AddField(
             model_name='allegation',
