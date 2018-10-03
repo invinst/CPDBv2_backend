@@ -1,10 +1,9 @@
-from itertools import groupby
-from operator import attrgetter, itemgetter
+from operator import itemgetter
 
 from django.db.models import Q, Subquery, OuterRef
 
 from data.models import OfficerHistory, Salary, Officer
-from officers_v3.seriallizers.respone_serialiers import (
+from officers_v3.serializers.response_serializers import (
     CRNewTimelineSerializer,
     JoinedNewTimelineSerializer,
     UnitChangeNewTimelineSerializer,
@@ -24,7 +23,7 @@ class OfficerTimelineQuery:
                 OfficerHistory.objects.filter(officer_id=self.officer.id).filter(
                     Q(effective_date__lte=OuterRef(outer_ref_field)) | Q(effective_date__isnull=True),
                     Q(end_date__gte=OuterRef(outer_ref_field)) | Q(end_date__isnull=True)
-                ).values('unit__unit_name')[:1]
+                ).order_by('effective_date').values('unit__unit_name')[:1]
             ),
             'unit_description': Subquery(
                 OfficerHistory.objects.filter(officer_id=self.officer.id).filter(
@@ -37,7 +36,9 @@ class OfficerTimelineQuery:
     def rank_subquery(self, outer_ref_field):
         return {
             'rank_name': Subquery(
-                Salary.objects.filter(officer_id=self.officer.id, spp_date__isnull=False).filter(
+                Salary.objects.filter(
+                    officer_id=self.officer.id,
+                    rank_changed=True,
                     spp_date__lte=OuterRef(outer_ref_field),
                 ).order_by('-year', '-spp_date').values('rank')[:1]
             )
@@ -76,17 +77,13 @@ class OfficerTimelineQuery:
 
     @property
     def _rank_change_timeline(self):
-        salary_timeline_queryset = self.officer.salary_set.exclude(
-            spp_date__isnull=True
+        salary_timeline = self.officer.salary_set.filter(
+            rank_changed=True
         ).exclude(
             spp_date=self.officer.appointed_date
         ).order_by('year').annotate(
             **self.unit_subqueries('spp_date')
         )
-        salary_timeline = [
-            salaries.next()
-            for _, salaries in groupby(salary_timeline_queryset, key=attrgetter('rank'))
-        ]
 
         return RankChangeNewTimelineSerializer(
             salary_timeline, many=True
@@ -132,6 +129,6 @@ class OfficerTimelineQuery:
         sorted_timeline = sorted(timeline, key=itemgetter('date_sort', 'priority_sort'), reverse=True)
 
         for item in sorted_timeline:
-            for key in ['officer_id', 'date_sort', 'priority_sort']:
+            for key in ['date_sort', 'priority_sort']:
                 item.pop(key, None)
         return sorted_timeline

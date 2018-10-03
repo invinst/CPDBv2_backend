@@ -252,7 +252,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_complaint_summary(self):
         allegation = AllegationFactory(crid='11',
-                                       incident_date=datetime(2002, 2, 28),
+                                       incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
                                        summary='Summary')
         category = AllegationCategoryFactory(category='Use of Force')
         OfficerAllegationFactory(
@@ -261,6 +261,13 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
             start_date=date(2003, 2, 28),
             end_date=date(2004, 4, 28),
             allegation_category=category
+        )
+        OfficerAllegationFactory(
+            allegation=allegation,
+            officer=OfficerFactory(appointed_date=date(2001, 1, 1)),
+            start_date=date(2003, 2, 28),
+            end_date=date(2004, 4, 28),
+            allegation_category=None
         )
 
         officer_cache_manager.build_cached_yearly_percentiles()
@@ -271,7 +278,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([{
             'crid': '11',
-            'category_names': ['Use of Force'],
+            'category_names': ['Unknown', 'Use of Force'],
             'incident_date': '2002-02-28',
             'summary': 'Summary'
         }])

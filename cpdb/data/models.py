@@ -777,21 +777,14 @@ class Allegation(models.Model):
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey(AllegationCategory, null=True)
-    first_start_date = models.DateTimeField(null=True)
-    first_end_date = models.DateTimeField(null=True)
+    first_start_date = models.DateField(null=True)
+    first_end_date = models.DateField(null=True)
     coaccused_count = models.IntegerField(default=0, null=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['crid']),
         ]
-
-    def get_most_common_category(self):
-        return self.officerallegation_set.values(
-            category_id=F('allegation_category__id'),
-            category=F('allegation_category__category'),
-            allegation_name=F('allegation_category__allegation_name')
-        ).annotate(cat_count=Count('category_id')).order_by('-cat_count').first()
 
     @property
     def category_names(self):
@@ -1135,6 +1128,7 @@ class Salary(models.Model):
     year = models.PositiveSmallIntegerField()
     age_at_hire = models.PositiveSmallIntegerField(null=True)
     officer = models.ForeignKey(Officer)
+    rank_changed = models.BooleanField(default=False)
 
     objects = SalaryManager()
 

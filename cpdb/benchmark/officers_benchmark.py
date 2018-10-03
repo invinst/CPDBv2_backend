@@ -14,7 +14,7 @@ from benchmark.utils import drop_null_empty, drop_keys, diff
 
 
 def officer_ids():
-    return [o.id for o in Officer.objects.all()[:100]]
+    return [o.id for o in Officer.objects.all()]
 
 
 # OFFICER PAGE ===================================
@@ -150,7 +150,9 @@ def timeline_sort_key(item):
         item['date'],
         priority_mapping.get(item['kind'], 0),
         item.get('award_type', ''),
-        item.get('crid', '')
+        item.get('crid', ''),
+        item.get('officer_id', ''),
+        item.get('trr_id', ''),
     )
 
 
@@ -166,16 +168,35 @@ def sort_relationship(data):
     return data
 
 
+def remove_wrong_rank_change(timeline_items):
+    if timeline_items:
+        reversed_timeline_items = list(reversed(timeline_items))
+        first_item = reversed_timeline_items[0]
+
+        wrong_rank_change_index = None
+        if first_item['kind'] == 'JOINED':
+            joined_item = first_item
+
+            for index, item in enumerate(reversed_timeline_items):
+                if item['kind'] == 'RANK_CHANGE':
+                    first_rank_change_item = item
+                    if joined_item.get('rank', None) == first_rank_change_item.get('rank', None):
+                        wrong_rank_change_index = index
+                        break
+        if wrong_rank_change_index is not None:
+            del reversed_timeline_items[wrong_rank_change_index]
+            return list(reversed(reversed_timeline_items))
+    return timeline_items
+
+
 def get_officer_timelines(officer_id):
     data_1 = OfficersViewSet().new_timeline_items(None, officer_id).data
     for data in data_1:
-        drop_keys(data, ['has_visual_token', 'rank', 'unit_name', 'unit_description'])
+        drop_keys(data, ['has_visual_token'])
     drop_null_empty(data_1)
-    data_1 = sort_relationship(data_1)
+    data_1 = remove_wrong_rank_change(sort_relationship(data_1))
 
     data_2 = list(OfficersV3ViewSet().new_timeline_items(None, officer_id).data)
-    for data in data_2:
-        drop_keys(data, ['rank', 'unit_name', 'unit_description'])
     drop_null_empty(data_2)
     data_2 = sort_relationship(data_2)
 

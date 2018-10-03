@@ -18,6 +18,7 @@ from data.factories import (
 from trr.factories import TRRFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from data import cache_managers
 
 
 class OfficersV3ViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
@@ -145,8 +146,7 @@ class OfficersV3ViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
         SalaryFactory(officer=officer, year=2000, rank='Junior Police Officer', spp_date=date(2000, 1, 1))
 
-        officer_cache_manager.build_cached_columns()
-        allegation_cache_manager.cache_data()
+        cache_managers.cache_all()
 
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
 
@@ -243,6 +243,104 @@ class OfficersV3ViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': '',
                 'rank': 'Junior Police Officer',
             },
+        ])
+
+    def test_new_timeline_item_no_join(self):
+        officer = OfficerFactory(id=123, appointed_date=None, rank='Police Officer')
+
+        unit = PoliceUnitFactory(unit_name='001', description='unit_001')
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2010, 1, 1), end_date=date(2011, 12, 31))
+
+        allegation = AllegationFactory(crid='123456', coaccused_count=4)
+        OfficerAllegationFactory(
+            final_finding='UN', final_outcome='Unknown',
+            officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
+            allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
+        )
+        OfficerAllegationFactory.create_batch(3, allegation=allegation)
+
+        SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
+
+        cache_managers.cache_all()
+
+        response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'date': '2011-08-23',
+                'kind': 'CR',
+                'crid': '123456',
+                'category': 'category',
+                'subcategory': 'sub category',
+                'finding': 'Unfounded',
+                'outcome': 'Unknown',
+                'coaccused': 4,
+                'unit_name': '001',
+                'unit_description': 'unit_001',
+                'rank': 'Police Officer',
+                'victims': [],
+                'point': None,
+                'attachments': [],
+            }, {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '001',
+                'unit_description': 'unit_001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2001-09-23',
+                'kind': 'RANK_CHANGE',
+                'unit_name': '',
+                'unit_description': '',
+                'rank': 'Police Officer',
+            }
+        ])
+
+    def test_new_timeline_item_merge_rank_and_unit_change_join(self):
+        officer = OfficerFactory(id=123, appointed_date=date(2000, 1, 1), rank='Police Officer')
+
+        first_unit = PoliceUnitFactory(unit_name='001', description='unit_001')
+        unit = PoliceUnitFactory(unit_name='002', description='unit_002')
+        OfficerHistoryFactory(
+            officer=officer,
+            unit=first_unit,
+            effective_date=date(2000, 1, 1),
+            end_date=date(2009, 12, 31))
+        OfficerHistoryFactory(
+            officer=officer,
+            unit=unit,
+            effective_date=date(2010, 1, 1),
+            end_date=date(2011, 12, 31))
+
+        SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
+        SalaryFactory(officer=officer, year=2000, rank='Junior Police Officer', spp_date=date(2000, 1, 1))
+
+        cache_managers.cache_all()
+
+        response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '002',
+                'unit_description': 'unit_002',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2001-09-23',
+                'kind': 'RANK_CHANGE',
+                'unit_name': '001',
+                'unit_description': 'unit_001',
+                'rank': 'Police Officer',
+            }, {
+                'date': '2000-01-01',
+                'kind': 'JOINED',
+                'unit_name': '001',
+                'unit_description': 'unit_001',
+                'rank': 'Junior Police Officer',
+            }
         ])
 
     def test_top_officers_by_allegation(self):
@@ -415,7 +513,9 @@ class OfficersV3ViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
         )
-        self.refresh_index()
+        OfficerAllegationFactory(
+            officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
+        )
 
         response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -427,7 +527,7 @@ class OfficersV3ViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1950,
-            'coaccusal_count': 1,
+            'coaccusal_count': 2,
             'rank': 'Police Officer',
             'complaint_percentile': 95.0,
             'percentile_trr': 33.3333,

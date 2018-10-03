@@ -17,7 +17,7 @@ def drop_null_empty(object):
         for key in object.keys():
             drop_null_empty(object[key])
             value = object[key]
-            if value is None or value == [] or value == {}:
+            if value is None or value == [] or value == {} or value == '':
                 object.pop(key, None)
 
     elif isinstance(object, list):
