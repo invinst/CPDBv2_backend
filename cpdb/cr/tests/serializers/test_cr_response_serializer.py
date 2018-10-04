@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point
 from robber import expect
 from mock import patch, Mock
 
-from cr_v3.serializers.cr_response_serializers import (
+from cr.serializers.cr_response_serializers import (
     CRSerializer,
     InvestigatorAllegationSerializer,
     CRSummarySerializer,
@@ -39,7 +39,7 @@ class CRSerializerTestCase(TestCase):
         expect(result['beat']).to.eq('23')
 
     @patch(
-        'cr_v3.serializers.cr_response_serializers.CoaccusedSerializer',
+        'cr.serializers.cr_response_serializers.CoaccusedSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_get_coaccused(self, coaccused_serializer_mock):
@@ -52,11 +52,11 @@ class CRSerializerTestCase(TestCase):
         expect(result['coaccused']).to.eq([{'id': 1}, {'id': 2}])
 
     @patch(
-        'cr_v3.serializers.cr_response_serializers.InvestigatorAllegationSerializer',
+        'cr.serializers.cr_response_serializers.InvestigatorAllegationSerializer',
         return_value=Mock(data=[{'officer_id': 1}, {'officer_id': 2}])
     )
     @patch(
-        'cr_v3.serializers.cr_response_serializers.PoliceWitnessSerializer',
+        'cr.serializers.cr_response_serializers.PoliceWitnessSerializer',
         return_value=Mock(data=[{'officer_id': 4}, {'officer_id': 3}])
     )
     def test_get_involvements(self, police_witness_serializer_mock, investigator_allegation_serializer_mock):

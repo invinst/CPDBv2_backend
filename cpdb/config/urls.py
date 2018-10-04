@@ -35,7 +35,7 @@ from officers.views import OfficersViewSet, OfficersMobileViewSet
 from officers_v3.views import OfficersV3ViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
-from cr_v3.views import CRV3ViewSet
+from old_cr.views import OldCRViewSet, OldCRMobileViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from activity_grid.views import ActivityGridViewSet
@@ -58,8 +58,9 @@ router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mo
 router_v2.register(r'old/officers', OfficersViewSet, base_name='officers-old')
 router_v2.register(r'officers', OfficersV3ViewSet, base_name='officers')
 router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
-router_v2.register(r'old/cr', CRViewSet, base_name='cr-old')
-router_v2.register(r'cr', CRV3ViewSet, base_name='cr')
+router_v2.register(r'old/cr', OldCRViewSet, base_name='cr-old')
+router_v2.register(r'cr', CRViewSet, base_name='cr')
+router_v2.register(r'mobile/old/cr', OldCRMobileViewSet, base_name='cr-mobile-old')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
 router_v2.register(r'trr', TRRDesktopViewSet, base_name='trr')
 router_v2.register(r'mobile/trr', TRRMobileViewSet, base_name='trr-mobile')

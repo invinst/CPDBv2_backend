@@ -11,18 +11,18 @@ from robber import expect
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory
 )
-from cr.tests.mixins import CRTestCaseMixin
+from old_cr.tests.mixins import CRTestCaseMixin
 
 
-class CRV3ViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
+class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
     def setUp(self):
-        super(CRV3ViewSetRelatedComplaintsTestCase, self).setUp()
+        super(CRViewSetRelatedComplaintsTestCase, self).setUp()
         self.allegation = AllegationFactory(point=Point([0, 0]))
 
     def search(self, crid, params):
         return self.client.get(
             '%s?%s' % (
-                reverse('api-v2:cr-related-complaints', kwargs={'pk': crid}),
+                reverse('api-v2:cr-old-related-complaints', kwargs={'pk': crid}),
                 urllib.urlencode(params)
             )
         )

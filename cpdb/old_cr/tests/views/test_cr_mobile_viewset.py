@@ -1,13 +1,11 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
 from django.core.urlresolvers import reverse
 from django.contrib.gis.geos import Point
-from django.utils.timezone import now
 
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
-from freezegun import freeze_time
 import pytz
 
 from data.factories import (
@@ -17,14 +15,9 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
-from data.cache_managers import officer_cache_manager, allegation_cache_manager
 
 
-class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
-    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
-    def setUp(self):
-        super(CRV3ViewSetTestCase, self).setUp()
-        self.maxDiff = None
+class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
@@ -55,7 +48,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
+            officer=officer1, allegation=allegation, final_finding='SU',
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
@@ -109,10 +102,9 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
 
-        officer_cache_manager.build_cached_columns()
-        allegation_cache_manager.cache_data()
+        self.refresh_index()
 
-        response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': '12345'}))
+        response = self.client.get(reverse('api-v2:cr-mobile-old-detail', kwargs={'pk': '12345'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(dict(response.data)).to.eq({
             'crid': '12345',
@@ -124,20 +116,15 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
                 {
                     'id': 123,
                     'full_name': 'Mr Foo',
-                    'gender': 'Male',
-                    'race': 'White',
                     'rank': 'Officer',
-                    'age': 25,
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
-                    'category': 'Operation/Personnel Violations',
                     'allegation_count': 1,
-                    'sustained_count': 1,
+                    'category': 'Operation/Personnel Violations',
                     'percentile_allegation': 0.0,
                     'percentile_allegation_civilian': 1.1,
                     'percentile_allegation_internal': 2.2,
                     'percentile_trr': 3.3,
-                    'disciplined': True
                 }
             ],
             'complainants': [
@@ -171,7 +158,6 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
                     'current_rank': 'IPRA investigator',
-                    'percentile_trr': None,
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },
@@ -181,9 +167,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'full_name': 'Raymond Piwinicki',
                     'allegation_count': 1,
                     'sustained_count': 1,
-                    'percentile_trr': 5.5,
-                    'percentile_allegation_civilian': None,
-                    'percentile_allegation_internal': None,
+                    'percentile_trr': 5.5
                 }
             ],
             'attachments': [
@@ -196,14 +180,14 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
             ]
         })
 
-    def test_retrieve_no_match(self):
-        response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': 321}))
+    def test_retrieve_not_found(self):
+        response = self.client.get(reverse('api-v2:cr-mobile-old-detail', kwargs={'pk': '45678'}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_request_document(self):
         AllegationFactory(crid='112233')
         response = self.client.post(
-            reverse('api-v2:cr-request-document', kwargs={'pk': '112233'}),
+            reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': '112233'}),
             {'email': 'valid_email@example.com'}
         )
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -215,15 +199,15 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
     def test_request_same_document_twice(self):
         allegation = AllegationFactory(crid='112233')
         self.client.post(
-            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
+            reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': allegation.crid}),
             {'email': 'valid_email@example.com'}
         )
 
         response2 = self.client.post(
-            reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
+            reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': allegation.crid}),
             {'email': 'valid_email@example.com'}
         )
-        expect(response2.status_code).to.eq(status.HTTP_200_OK)
+        expect(response2.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response2.data).to.eq({
             'message': 'Email already added',
             'crid': '112233'
@@ -231,7 +215,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_document_without_email(self):
         AllegationFactory(crid='321')
-        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
+        response = self.client.post(reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
             'message': 'Please enter a valid email'
@@ -239,7 +223,7 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_document_with_invalid_email(self):
         AllegationFactory(crid='321')
-        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}),
+        response = self.client.post(reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': 321}),
                                     {'email': 'invalid@email'})
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
         expect(response.data).to.eq({
@@ -247,94 +231,5 @@ class CRV3ViewSetTestCase(CRTestCaseMixin, APITestCase):
         })
 
     def test_request_document_with_invalid_allegation(self):
-        response = self.client.post(reverse('api-v2:cr-request-document', kwargs={'pk': 321}))
+        response = self.client.post(reverse('api-v2:cr-mobile-old-request-document', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
-
-    def test_request_complaint_summary(self):
-        allegation = AllegationFactory(crid='11',
-                                       incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
-                                       summary='Summary')
-        category = AllegationCategoryFactory(category='Use of Force')
-        OfficerAllegationFactory(
-            allegation=allegation,
-            officer=OfficerFactory(appointed_date=date(2001, 1, 1)),
-            start_date=date(2003, 2, 28),
-            end_date=date(2004, 4, 28),
-            allegation_category=category
-        )
-        OfficerAllegationFactory(
-            allegation=allegation,
-            officer=OfficerFactory(appointed_date=date(2001, 1, 1)),
-            start_date=date(2003, 2, 28),
-            end_date=date(2004, 4, 28),
-            allegation_category=None
-        )
-
-        officer_cache_manager.build_cached_yearly_percentiles()
-        officer_cache_manager.build_cached_columns()
-        allegation_cache_manager.cache_data()
-
-        response = self.client.get(reverse('api-v2:cr-complaint-summaries'))
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([{
-            'crid': '11',
-            'category_names': ['Unknown', 'Use of Force'],
-            'incident_date': '2002-02-28',
-            'summary': 'Summary'
-        }])
-
-    def test_cr_new_documents(self):
-        six_month_ago = now() - timedelta(weeks=12)
-        allegation = AllegationFactory(crid='111')
-        AttachmentFileFactory(
-            allegation=allegation,
-            title='CR document 1',
-            tag='CR',
-            url='http://cr-document.com/1',
-            file_type=MEDIA_TYPE_DOCUMENT,
-            preview_image_url='http://preview.com/url',
-            created_at=six_month_ago + timedelta(days=10)
-        )
-        AttachmentFileFactory(
-            allegation=allegation,
-            title='CR document 2',
-            tag='CR',
-            url='http://cr-document.com/2',
-            file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=six_month_ago + timedelta(days=5)
-        )
-
-        allegation2 = AllegationFactory(crid='112')
-        AttachmentFileFactory(
-            allegation=allegation2,
-            title='CR document 3',
-            tag='CR',
-            url='http://cr-document.com/3',
-            file_type=MEDIA_TYPE_DOCUMENT,
-            preview_image_url='http://preview.com/url3',
-            created_at=six_month_ago + timedelta(days=6)
-        )
-
-        AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
-        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
-            {
-                'crid': '111',
-                'latest_document': {
-                    'title': 'CR document 1',
-                    'url': 'http://cr-document.com/1',
-                    'preview_image_url': 'http://preview.com/url'
-                },
-                'num_recent_documents': 2
-            },
-            {
-                'crid': '112',
-                'latest_document': {
-                    'title': 'CR document 3',
-                    'url': 'http://cr-document.com/3',
-                    'preview_image_url': 'http://preview.com/url3'
-                },
-                'num_recent_documents': 1
-            },
-        ])

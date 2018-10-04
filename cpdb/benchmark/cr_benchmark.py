@@ -1,4 +1,4 @@
-from cr_v3.views import CRV3ViewSet
+from old_cr.views import OldCRViewSet
 from cr.views import CRViewSet
 from data.models import Allegation
 import timeit
@@ -13,12 +13,12 @@ def crids():
 
 # CR PAGE ===================================
 def benchmark_cr():
-    print('CRV3ViewSet')
+    print('CRViewSet')
     cr_running_times = [
         (
             crid,
+            timeit.timeit(lambda: OldCRViewSet().retrieve(None, crid), number=1),
             timeit.timeit(lambda: CRViewSet().retrieve(None, crid), number=1),
-            timeit.timeit(lambda: CRV3ViewSet().retrieve(None, crid), number=1),
         )
         for crid in crids()
     ]
@@ -27,7 +27,7 @@ def benchmark_cr():
 
 
 def benchmark_http_cr(server_host):
-    print('api/v2/cr-v3')
+    print('api/v2/cr/id')
     http_cr_running_times = [
         (
             crid,
@@ -56,16 +56,16 @@ def sort_cr_data(data):
 
 def compare_cr(crid):
     print "\r" + crid,
-    data_1 = CRViewSet().retrieve(None, crid).data
-    data_2 = CRV3ViewSet().retrieve(None, crid).data
+    data_1 = OldCRViewSet().retrieve(None, crid).data
+    data_2 = CRViewSet().retrieve(None, crid).data
     return drop_null_empty(sort_cr_data(data_1)) == drop_null_empty(sort_cr_data(data_2))
 
 
 def cr_miss_keys(crid):
-    data_1 = sort_cr_data(CRViewSet().retrieve(None, crid).data)
+    data_1 = sort_cr_data(OldCRViewSet().retrieve(None, crid).data)
     drop_null_empty(data_1)
 
-    data_2 = sort_cr_data(CRV3ViewSet().retrieve(None, crid).data)
+    data_2 = sort_cr_data(CRViewSet().retrieve(None, crid).data)
     drop_null_empty(data_2)
     diff(data_1, data_2)
 
@@ -76,4 +76,4 @@ def compare_crs():
 
 # COMPARE COMPLAIN SUMMARIES DATA ===================================
 def compare_complain_summaries():
-    assert(CRViewSet().complaint_summaries(None).data == CRV3ViewSet().complaint_summaries(None).data)
+    assert(OldCRViewSet().complaint_summaries(None).data == CRViewSet().complaint_summaries(None).data)
