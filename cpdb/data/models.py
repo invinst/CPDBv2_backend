@@ -303,13 +303,6 @@ class Officer(TaggableModel):
     def historic_units(self):
         return [o.unit for o in self.officerhistory_set.all().select_related('unit').order_by('-effective_date')]
 
-    # @property
-    # def current_badge(self):
-    #     try:
-    #         return self.officerbadgenumber_set.get(current=True).star
-    #     except (OfficerBadgeNumber.DoesNotExist, MultipleObjectsReturned):
-    #         return ''
-
     @property
     def gender_display(self):
         try:
@@ -317,28 +310,9 @@ class Officer(TaggableModel):
         except KeyError:
             return self.gender
 
-    # @property
-    # def unsustained_count(self):
-    #     return self.officerallegation_set.filter(final_finding='NS').distinct().count()
-
-    # @property
-    # def honorable_mention_count(self):
-    #     return self.award_set.filter(award_type__contains='Honorable Mention').distinct().count()
-
-    # @property
-    # def civilian_compliment_count(self):
-    #     return self.award_set.filter(award_type='Complimentary Letter').distinct().count()
-
     @property
     def v1_url(self):
         return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
-
-    # @property
-    # def last_unit(self):
-    #     try:
-    #         return OfficerHistory.objects.filter(officer=self.pk).order_by('-end_date')[0].unit
-    #     except IndexError:
-    #         return None
 
     @property
     def current_age(self):
@@ -354,10 +328,6 @@ class Officer(TaggableModel):
     @property
     def abbr_name(self):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)
-
-    # @property
-    # def discipline_count(self):
-    #     return self.officerallegation_set.filter(disciplined=True).count()
 
     @property
     def visual_token_background_color(self):
@@ -519,24 +489,11 @@ class Officer(TaggableModel):
         ]
         return Officer._group_and_sort_aggregations(data)
 
-    # @property
-    # def major_award_count(self):
-    #     return self.award_set.annotate(
-    #         lower_award_type=Lower('award_type')
-    #     ).filter(
-    #         lower_award_type__in=MAJOR_AWARDS
-    #     ).count()
-
     @property
     def coaccusals(self):
         return Officer.objects.filter(
             officerallegation__allegation__officerallegation__officer=self
         ).distinct().exclude(id=self.id).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
-
-    # @property
-    # def current_salary(self):
-    #     current_salary_object = self.salary_set.all().order_by('-year').first()
-    #     return current_salary_object.salary if current_salary_object else None
 
     @property
     def rank_histories(self):

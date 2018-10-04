@@ -45,7 +45,6 @@ twitterbot-nl-api.json
 twitterbot_newrelic.ini
 
 .tmp/
-files/
 
 test_visual_token_media
 visual_token_media
