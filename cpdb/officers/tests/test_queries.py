@@ -10,17 +10,13 @@ from robber import expect
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, PoliceUnitFactory, OfficerHistoryFactory, SalaryFactory,
     AwardFactory)
-from officers_v3.queries import OfficerTimelineQuery
+from officers.queries import OfficerTimelineQuery
 from trr.factories import TRRFactory
-
-
-def _find_object(id, objects):
-    return [o for o in objects if o.id == id][0]
 
 
 class OfficerTimelineQueryTestCase(TestCase):
     @patch(
-        'officers_v3.queries.CRNewTimelineSerializer',
+        'officers.queries.CRNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_cr_timeline(self, cr_new_timeline_serializer_mock):
@@ -62,9 +58,8 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(officer_allegation_2_arg.unit_description).to.eq('District 002')
         expect(officer_allegation_2_arg.rank_name).to.eq('Senior Police Officer')
 
-
     @patch(
-        'officers_v3.queries.UnitChangeNewTimelineSerializer',
+        'officers.queries.UnitChangeNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_unit_change_timeline(self, unit_change_new_timeline_serializer_mock):
@@ -105,7 +100,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(officer_allegation_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers_v3.queries.RankChangeNewTimelineSerializer',
+        'officers.queries.RankChangeNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_rank_change_timeline(self, rank_change_new_timeline_serializer_mock):
@@ -117,8 +112,12 @@ class OfficerTimelineQueryTestCase(TestCase):
         salary_2 = SalaryFactory(
             year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
         )
-        SalaryFactory(year=2001, rank='Junior Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 02, 03))
-        SalaryFactory(year=2003, rank='Senior Police Officer', officer=officer, rank_changed=False, spp_date=date(2003, 05, 03))
+        SalaryFactory(
+            year=2001, rank='Junior Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 02, 03)
+        )
+        SalaryFactory(
+            year=2003, rank='Senior Police Officer', officer=officer, rank_changed=False, spp_date=date(2003, 05, 03)
+        )
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
@@ -149,7 +148,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(salary_2_arg.unit_description).to.eq('District 002')
 
     @patch(
-        'officers_v3.queries.RankChangeNewTimelineSerializer',
+        'officers.queries.RankChangeNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}])
     )
     def test_rank_change_timeline_no_officer_appointed_date(self, rank_change_new_timeline_serializer_mock):
@@ -167,7 +166,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(salary_arg.id).to.eq(salary.id)
 
     @patch(
-        'officers_v3.queries.JoinedNewTimelineSerializer',
+        'officers.queries.JoinedNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}])
     )
     def test_join_timeline(self, join_new_timeline_serializer_mock):
@@ -198,7 +197,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(OfficerTimelineQuery(officer)._join_timeline).to.eq([])
 
     @patch(
-        'officers_v3.queries.AwardNewTimelineSerializer',
+        'officers.queries.AwardNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_award_timeline(self, award_new_timeline_serializer_mock):
@@ -242,7 +241,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(award_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers_v3.queries.TRRNewTimelineSerializer',
+        'officers.queries.TRRNewTimelineSerializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_trr_timeline(self, trr_new_timeline_serializer_mock):
@@ -282,7 +281,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(trr_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._cr_timeline',
+        'officers.queries.OfficerTimelineQuery._cr_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 1, 'date_sort': date(2000, 01, 01), 'priority_sort': 30},
@@ -290,7 +289,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._unit_change_timeline',
+        'officers.queries.OfficerTimelineQuery._unit_change_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 3, 'date_sort': date(2000, 01, 02), 'priority_sort': 20},
@@ -298,7 +297,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._rank_change_timeline',
+        'officers.queries.OfficerTimelineQuery._rank_change_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 5, 'date_sort': date(2000, 01, 03), 'priority_sort': 25},
@@ -306,14 +305,14 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._join_timeline',
+        'officers.queries.OfficerTimelineQuery._join_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 7, 'date_sort': date(2000, 01, 01), 'priority_sort': 10},
         ]
     )
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._award_timeline',
+        'officers.queries.OfficerTimelineQuery._award_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 8, 'date_sort': date(2000, 01, 04), 'priority_sort': 40},
@@ -321,7 +320,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers_v3.queries.OfficerTimelineQuery._trr_timeline',
+        'officers.queries.OfficerTimelineQuery._trr_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 10, 'date_sort': date(2000, 01, 04), 'priority_sort': 50},

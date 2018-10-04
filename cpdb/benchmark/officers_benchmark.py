@@ -6,7 +6,7 @@ from operator import itemgetter
 from mock import Mock
 
 
-from officers_v3.views import OfficersV3ViewSet
+from old_officers.views import OldOfficersViewSet
 from officers.views import OfficersViewSet
 from data.models import Officer
 
@@ -19,12 +19,12 @@ def officer_ids():
 
 # OFFICER PAGE ===================================
 def benchmark_summary():
-    print('OfficersV3ViewSet')
+    print('OfficersViewSet')
     officers_running_times = [
         (
             officer_id,
+            timeit.timeit(lambda: OldOfficersViewSet().summary(None, officer_id), number=1),
             timeit.timeit(lambda: OfficersViewSet().summary(None, officer_id), number=1),
-            timeit.timeit(lambda: OfficersV3ViewSet().summary(None, officer_id), number=1),
         )
         for officer_id in officer_ids()
     ]
@@ -34,7 +34,7 @@ def benchmark_summary():
 
 # HTTP OFFICER PAGE ===================================
 def benchmark_http_summary(server_host):
-    print('api/v2/officers-v3')
+    print('api/v2/officers/id/summary')
     http_officers_running_times = [
         (
             officer_id,
@@ -53,12 +53,12 @@ def benchmark_http_summary(server_host):
 
 # TIMELINE PAGE ===================================
 def benchmark_timeline():
-    print('OfficersV3ViewSet - Timeline')
+    print('OfficersViewSet - Timeline')
     timeline_running_times = [
         (
             officer_id,
+            timeit.timeit(lambda: OldOfficersViewSet().new_timeline_items(None, officer_id), number=1),
             timeit.timeit(lambda: OfficersViewSet().new_timeline_items(None, officer_id), number=1),
-            timeit.timeit(lambda: OfficersV3ViewSet().new_timeline_items(None, officer_id), number=1),
         )
         for officer_id in officer_ids()
     ]
@@ -68,7 +68,7 @@ def benchmark_timeline():
 
 # HTTP TIMELINE PAGE ===================================
 def benchmark_http_timeline(server_host):
-    print('api/v2/officers-v3/id/new-timeline-items')
+    print('api/v2/officers/id/new-timeline-items')
     http_timeline_running_times = [
         (
             officer_id,
@@ -112,16 +112,16 @@ def to_csv(name):
 
 # COMPARE OFFICER SUMMARY DATA ===================================
 def compare_officer_summary(officer_id):
-    data_1 = OfficersViewSet().summary(None, officer_id).data
-    data_2 = OfficersV3ViewSet().summary(None, officer_id).data
+    data_1 = OldOfficersViewSet().summary(None, officer_id).data
+    data_2 = OfficersViewSet().summary(None, officer_id).data
     return drop_keys(data_1, ['has_visual_token', 'complaint_records']) == drop_null_empty(data_2)
 
 
 def diff_officer_summary(officer_id):
-    data_1 = OfficersViewSet().summary(None, officer_id).data
+    data_1 = OldOfficersViewSet().summary(None, officer_id).data
     data_1 = drop_keys(data_1, ['has_visual_token', 'complaint_records'])
 
-    data_2 = OfficersV3ViewSet().summary(None, officer_id).data
+    data_2 = OfficersViewSet().summary(None, officer_id).data
     drop_null_empty(data_2)
 
     diff(data_1, data_2)
@@ -209,13 +209,13 @@ def remove_rank_unit_if_need(timeline_items):
 
 
 def get_officer_timelines(officer_id):
-    data_1 = OfficersViewSet().new_timeline_items(None, officer_id).data
+    data_1 = OldOfficersViewSet().new_timeline_items(None, officer_id).data
     for data in data_1:
         drop_keys(data, ['has_visual_token'])
     drop_null_empty(data_1)
     data_1 = remove_rank_unit_if_need(remove_wrong_rank_change(sort_relationship(data_1)))
 
-    data_2 = list(OfficersV3ViewSet().new_timeline_items(None, officer_id).data)
+    data_2 = list(OfficersViewSet().new_timeline_items(None, officer_id).data)
     drop_null_empty(data_2)
     data_2 = remove_rank_unit_if_need(sort_relationship(data_2))
 
@@ -243,15 +243,15 @@ def compare_officers_timeline():
 def compare_top_officers():
     request = Mock(GET={})
     assert(
-        OfficersViewSet().top_officers_by_allegation(request).data ==
-        OfficersV3ViewSet().top_officers_by_allegation(request).data
+        OldOfficersViewSet().top_officers_by_allegation(request).data ==
+        OfficersViewSet().top_officers_by_allegation(request).data
     )
 
 
 def diff_top_officers():
     request = Mock(GET={})
     for o1, o2 in zip(
-        OfficersViewSet().top_officers_by_allegation(request).data,
-        OfficersV3ViewSet().top_officers_by_allegation(request).data
+        OldOfficersViewSet().top_officers_by_allegation(request).data,
+        OfficersViewSet().top_officers_by_allegation(request).data
     ):
         diff(o1, o2)

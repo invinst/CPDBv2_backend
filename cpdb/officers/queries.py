@@ -4,7 +4,7 @@ from django.db.models import Q, Subquery, OuterRef
 from django.db.models.functions import TruncDate
 
 from data.models import OfficerHistory, Salary, Officer
-from officers_v3.serializers.response_serializers import (
+from officers.serializers.response_serializers import (
     CRNewTimelineSerializer,
     JoinedNewTimelineSerializer,
     UnitChangeNewTimelineSerializer,
