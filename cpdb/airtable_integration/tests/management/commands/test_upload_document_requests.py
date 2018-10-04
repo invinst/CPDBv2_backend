@@ -12,6 +12,8 @@ from trr.factories import TRRFactory, TRRAttachmentRequestFactory
 
 
 class UpdateDocumentsCommandTestCase(TestCase):
+    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_document_requests(self, airtable_mock):
         allegation123 = AllegationFactory(crid='123')
@@ -75,7 +77,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 'Project': [
                     'CPDP'
                 ],
-                'Request Desc': 'CR 123(investigated by CPD)',
+                'Agency': ['CPD_AGENCY_ID'],
+                'Request Desc': 'CR 123',
                 'Requestor': [
                     {
                         'id': 'usrVdJCqxgnDTNRFW',
@@ -94,7 +97,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 'Project': [
                     'CPDP'
                 ],
-                'Request Desc': 'CR 456(investigated by COPA)',
+                'Agency': ['COPA_AGENCY_ID'],
+                'Request Desc': 'CR 456',
                 'Requestor': [
                     {
                         'id': 'usrVdJCqxgnDTNRFW',
@@ -113,6 +117,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                 'Project': [
                   'CPDP'
                 ],
+                'Agency': [],
                 'Request Desc': 'TRR 123456',
                 'Requestor': [
                   {

@@ -42,3 +42,6 @@ DOMAIN = 'https://staging.cpdp.co'
 AZURE_STATICFILES_SSL = True
 
 TWITTERBOT_ENV = 'dev'
+
+AIRTABLE_COPA_AGENCY_ID = 'recMBxxV8FCMqri2O'
+AIRTABLE_CPD_AGENCY_ID = 'rec6zglKh8mWa4Ycg'

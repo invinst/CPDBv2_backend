@@ -1,10 +1,10 @@
 from django.test.testcases import TestCase
+from django.conf import settings
 
 from mock import patch, call, Mock
 from robber import expect
 from requests.exceptions import HTTPError
 
-from config.settings.common import AIRTABLE_PROJECT_KEY, AIRTABLE_TABLE_NAME
 from airtable_integration.services.document_request_service import (
     CRRequestAirTableUploader,
     TRRRequestAirTableUploader,
@@ -22,6 +22,7 @@ from trr.factories import TRRAttachmentRequestFactory, TRRFactory
 
 
 class DocumentRequestServiceTestCase(TestCase):
+    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd(self, airtable_mock):
         allegation = AllegationFactory(crid='123456')
@@ -38,7 +39,8 @@ class DocumentRequestServiceTestCase(TestCase):
             'Project': [
               'CPDP'
             ],
-            'Request Desc': 'CR 123456(investigated by CPD)',
+            'Agency': ['CPD_AGENCY_ID'],
+            'Request Desc': 'CR 123456',
             'Requestor': [
               {
                 'id': 'usrVdJCqxgnDTNRFW',
@@ -61,6 +63,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.added_to_foia_airtable).to.be.true()
 
+    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_copa(self, airtable_mock):
         allegation = AllegationFactory(crid='123456')
@@ -75,7 +78,8 @@ class DocumentRequestServiceTestCase(TestCase):
             'Project': [
               'CPDP'
             ],
-            'Request Desc': 'CR 123456(investigated by COPA)',
+            'Agency': ['COPA_AGENCY_ID'],
+            'Request Desc': 'CR 123456',
             'Requestor': [
               {
                 'id': 'usrVdJCqxgnDTNRFW',
@@ -109,6 +113,7 @@ class DocumentRequestServiceTestCase(TestCase):
             'Project': [
               'CPDP'
             ],
+            'Agency': [],
             'Request Desc': 'TRR 123456',
             'Requestor': [
               {
@@ -129,7 +134,7 @@ class DocumentRequestServiceTestCase(TestCase):
         TRRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
-        AirTableUploader._get_foia_airtable().insert.assert_called_with(expected_airtable_data)
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.added_to_foia_airtable).to.be.true()
 
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
@@ -167,7 +172,7 @@ class DocumentRequestServiceTestCase(TestCase):
             with patch(
                 'airtable_integration.services.document_request_service.'
                 'AirTableUploader._build_explanation_and_request_desc',
-                return_value=('', '')
+                return_value=('', '', [])
             ):
                 expect(AirTableUploader.upload).to.throw(NotImplementedError)
 
@@ -177,6 +182,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 ):
                     AirTableUploader.upload()
 
+    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_Airtable_insert_raise_HTTPError(self, airtable_mock):
         AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[True, HTTPError])
@@ -210,7 +217,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'Project': [
                     'CPDP'
                 ],
-                'Request Desc': 'CR 123(investigated by CPD)',
+                'Agency': ['CPD_AGENCY_ID'],
+                'Request Desc': 'CR 123',
                 'Requestor': [
                     {
                         'id': 'usrVdJCqxgnDTNRFW',
@@ -229,7 +237,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'Project': [
                     'CPDP'
                 ],
-                'Request Desc': 'CR 456(investigated by COPA)',
+                'Agency': ['COPA_AGENCY_ID'],
+                'Request Desc': 'CR 456',
                 'Requestor': [
                     {
                         'id': 'usrVdJCqxgnDTNRFW',
@@ -256,5 +265,5 @@ class DocumentRequestServiceTestCase(TestCase):
         first_aitable = AirTableUploader._get_foia_airtable()
         second_aitable = AirTableUploader._get_foia_airtable()
 
-        airtable_cls_mock.assert_called_once_with(AIRTABLE_PROJECT_KEY, AIRTABLE_TABLE_NAME)
+        airtable_cls_mock.assert_called_once_with(settings.AIRTABLE_PROJECT_KEY, settings.AIRTABLE_TABLE_NAME)
         expect(first_aitable).to.be.equal(second_aitable)
