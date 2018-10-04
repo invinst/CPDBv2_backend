@@ -31,7 +31,7 @@ SEARCH_TERM_CTA_TYPES = (
 class SearchTermItem(SortableMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = SortableForeignKey(SearchTermCategory)
-    slug = models.CharField(max_length=30)
+    slug = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=60)
     description = models.TextField(null=True, blank=True)
     call_to_action_type = models.CharField(
