@@ -151,8 +151,9 @@ def timeline_sort_key(item):
         priority_mapping.get(item['kind'], 0),
         item.get('award_type', ''),
         item.get('crid', ''),
-        item.get('officer_id', ''),
         item.get('trr_id', ''),
+        item.get('rank', ''),
+        item.get('unit_name', ''),
     )
 
 
@@ -171,22 +172,40 @@ def sort_relationship(data):
 def remove_wrong_rank_change(timeline_items):
     if timeline_items:
         reversed_timeline_items = list(reversed(timeline_items))
-        first_item = reversed_timeline_items[0]
-
         wrong_rank_change_index = None
-        if first_item['kind'] == 'JOINED':
-            joined_item = first_item
-
-            for index, item in enumerate(reversed_timeline_items):
-                if item['kind'] == 'RANK_CHANGE':
-                    first_rank_change_item = item
-                    if joined_item.get('rank', None) == first_rank_change_item.get('rank', None):
-                        wrong_rank_change_index = index
-                        break
+        joined_item = None
+        for index, item in enumerate(reversed_timeline_items):
+            if item['kind'] == 'JOINED':
+                joined_item = item
+                continue
+            if joined_item and item['kind'] == 'RANK_CHANGE':
+                first_rank_change_item = item
+                if joined_item.get('rank', None) == first_rank_change_item.get('rank', None):
+                    wrong_rank_change_index = index
+                break
         if wrong_rank_change_index is not None:
             del reversed_timeline_items[wrong_rank_change_index]
             return list(reversed(reversed_timeline_items))
     return timeline_items
+
+
+def remove_unit_in_rank_change(timeline_items):
+    for item in timeline_items:
+        if item['kind'] == 'RANK_CHANGE':
+            item['unit_name'] = ''
+            item['unit_description'] = ''
+    return timeline_items
+
+
+def remove_rank_in_unit_change(timeline_items):
+    for item in timeline_items:
+        if item['kind'] == 'UNIT_CHANGE':
+            item['rank'] = ''
+    return timeline_items
+
+
+def remove_rank_unit_if_need(timeline_items):
+    return remove_unit_in_rank_change(remove_rank_in_unit_change(timeline_items))
 
 
 def get_officer_timelines(officer_id):
@@ -194,11 +213,11 @@ def get_officer_timelines(officer_id):
     for data in data_1:
         drop_keys(data, ['has_visual_token'])
     drop_null_empty(data_1)
-    data_1 = remove_wrong_rank_change(sort_relationship(data_1))
+    data_1 = remove_rank_unit_if_need(remove_wrong_rank_change(sort_relationship(data_1)))
 
     data_2 = list(OfficersV3ViewSet().new_timeline_items(None, officer_id).data)
     drop_null_empty(data_2)
-    data_2 = sort_relationship(data_2)
+    data_2 = remove_rank_unit_if_need(sort_relationship(data_2))
 
     return data_1, data_2
 

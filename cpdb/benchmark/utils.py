@@ -52,7 +52,15 @@ def diff_dict(dict_1, dict_2):
 
 def diff(data_1, data_2):
     if isinstance(data_1, list):
-        if isinstance(data_2, list) and len(data_1) == len(data_2):
+        if isinstance(data_2, list):
+            len_1 = len(data_1)
+            len_2 = len(data_2)
+            if len_1 != len_2:
+                print('different length', len_1, len_2)
+                if len_1 > len_2:
+                    print data_1[len_2:]
+                else:
+                    print data_2[len_1:]
             for idx, (dict_1, dict_2) in enumerate(zip(data_1, data_2)):
                 print 'compare item[{}]'.format(idx)
                 diff(dict_1, dict_2)
