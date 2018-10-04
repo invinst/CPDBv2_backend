@@ -248,7 +248,7 @@ class OfficerTimelineQueryTestCase(TestCase):
     def test_trr_timeline(self, trr_new_timeline_serializer_mock):
         officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
 
-        trr_1 = TRRFactory(officer=officer, trr_datetime=datetime(2002, 01, 03, tzinfo=pytz.utc))
+        trr_1 = TRRFactory(officer=officer, trr_datetime=datetime(2002, 01, 04, tzinfo=pytz.utc))
         trr_2 = TRRFactory(officer=officer, trr_datetime=datetime(2003, 01, 05, tzinfo=pytz.utc))
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')

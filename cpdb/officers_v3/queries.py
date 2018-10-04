@@ -1,6 +1,7 @@
 from operator import itemgetter
 
 from django.db.models import Q, Subquery, OuterRef
+from django.db.models.functions import TruncDate
 
 from data.models import OfficerHistory, Salary, Officer
 from officers_v3.serializers.response_serializers import (
@@ -117,9 +118,11 @@ class OfficerTimelineQuery:
     @property
     def _trr_timeline(self):
         trr_timeline_queryset = self.officer.trr_set.all().annotate(
-            **self.unit_subqueries('trr_datetime')
+            trr_date=TruncDate('trr_datetime')
         ).annotate(
-            **self.rank_subquery('trr_datetime')
+            **self.unit_subqueries('trr_date')
+        ).annotate(
+            **self.rank_subquery('trr_date')
         )
         return TRRNewTimelineSerializer(trr_timeline_queryset, many=True).data
 
