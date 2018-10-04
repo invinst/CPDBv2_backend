@@ -240,8 +240,6 @@ TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
 TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
 TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
-V1_URL = 'https://data.cpdp.co'
-
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
 LOGGING = {
