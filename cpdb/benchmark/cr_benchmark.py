@@ -8,7 +8,7 @@ from benchmark.utils import drop_null_empty, diff
 
 
 def crids():
-    return [a.crid for a in Allegation.objects.all()[:100]]
+    return [a.crid for a in Allegation.objects.all()]
 
 
 # CR PAGE ===================================
@@ -23,7 +23,7 @@ def benchmark_cr():
         for crid in crids()
     ]
     cr_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(cr_running_times, open('files/cr_running_times.p', 'wb'))
+    cPickle.dump(cr_running_times, open('cr_running_times.p', 'wb'))
 
 
 def benchmark_http_cr(server_host):
@@ -41,7 +41,7 @@ def benchmark_http_cr(server_host):
         for crid in crids()
     ]
     http_cr_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(http_cr_running_times, open('files/http_cr_running_times.p', 'wb'))
+    cPickle.dump(http_cr_running_times, open('http_cr_running_times.p', 'wb'))
 
 
 # COMPARE CR DATA ===================================

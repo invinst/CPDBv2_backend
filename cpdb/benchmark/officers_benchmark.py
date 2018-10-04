@@ -29,7 +29,7 @@ def benchmark_summary():
         for officer_id in officer_ids()
     ]
     officers_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(officers_running_times, open('files/officers_running_times.p', 'wb'))
+    cPickle.dump(officers_running_times, open('officers_running_times.p', 'wb'))
 
 
 # HTTP OFFICER PAGE ===================================
@@ -48,7 +48,7 @@ def benchmark_http_summary(server_host):
         for officer_id in officer_ids()
     ]
     http_officers_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(http_officers_running_times, open('files/http_officers_running_times.p', 'wb'))
+    cPickle.dump(http_officers_running_times, open('http_officers_running_times.p', 'wb'))
 
 
 # TIMELINE PAGE ===================================
@@ -63,7 +63,7 @@ def benchmark_timeline():
         for officer_id in officer_ids()
     ]
     timeline_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(timeline_running_times, open('files/timeline_running_times.p', 'wb'))
+    cPickle.dump(timeline_running_times, open('timeline_running_times.p', 'wb'))
 
 
 # HTTP TIMELINE PAGE ===================================
@@ -82,31 +82,31 @@ def benchmark_http_timeline(server_host):
         for officer_id in officer_ids()
     ]
     http_timeline_running_times.sort(key=lambda x: x[1], reverse=True)
-    cPickle.dump(http_timeline_running_times, open('files/http_timeline_running_times.p', 'wb'))
+    cPickle.dump(http_timeline_running_times, open('http_timeline_running_times.p', 'wb'))
 
 
 # cPickle ===================================
 def load_cpickle_running_times():
-    return cPickle.load(open('files/officers_running_times.p', 'rb'))
+    return cPickle.load(open('officers_running_times.p', 'rb'))
 
 
 def load_cpickle_http_running_times():
-    return cPickle.load(open('files/http_officers_running_times.p', 'rb'))
+    return cPickle.load(open('http_officers_running_times.p', 'rb'))
 
 
 def load_cpickle_officers_running_times():
-    return cPickle.load(open('files/timeline_running_times.p', 'rb'))
+    return cPickle.load(open('timeline_running_times.p', 'rb'))
 
 
 def load_cpickle_http_officers_running_times():
-    return cPickle.load(open('files/http_timeline_running_times.p', 'rb'))
+    return cPickle.load(open('http_timeline_running_times.p', 'rb'))
 
 
 def to_csv(name):
-    with open('files/{}.csv'.format(name), 'wb') as csvfile:
+    with open('{}.csv'.format(name), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile)
         spamwriter.writerow(['ID', 'ES Time', 'Postgres Time'])
-        for page in cPickle.load(open('files/{}.p'.format(name), 'rb')):
+        for page in cPickle.load(open('{}.p'.format(name), 'rb')):
             spamwriter.writerow(page)
 
 
