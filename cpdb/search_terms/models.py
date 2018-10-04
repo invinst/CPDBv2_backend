@@ -1,4 +1,6 @@
 import uuid
+
+from django.conf import settings
 from django.db import models
 
 from adminsortable.models import SortableMixin
@@ -38,7 +40,7 @@ class SearchTermItem(SortableMixin):
         choices=SEARCH_TERM_CTA_TYPES, default=PLAIN_TEXT_CTA_TYPE, max_length=20
     )
     call_to_action_text = models.CharField(max_length=255, null=True, blank=True)
-    link = models.URLField(null=True, blank=True)
+    link = models.CharField(max_length=200, null=True, blank=True)
     order_number = models.PositiveIntegerField(default=0, editable=False, db_index=True)
 
     class Meta:
@@ -46,3 +48,9 @@ class SearchTermItem(SortableMixin):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def v1_url(self):
+        return '{domain}{path}'.format(
+            domain=settings.V1_URL, path=self.link
+        )
