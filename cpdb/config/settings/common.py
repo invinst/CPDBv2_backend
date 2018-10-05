@@ -1,5 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
+from datetime import timedelta
+
 import environ
 
 
@@ -115,8 +117,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         'DIRS': [
-            str(APPS_DIR.path('templates')),
-            '/www/static/templates/',
+            str(APPS_DIR.path('templates'))
         ],
         'OPTIONS': {
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
@@ -124,6 +125,7 @@ TEMPLATES = [
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
             # https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types
             'loaders': [
+                'config.loaders.AzureStorageLoader',
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
             ],
@@ -325,3 +327,5 @@ TRR_MAX = env.str('TRR_MAX', '2016-04-12')
 
 AZURE_STATICFILES_CONTAINER = 'static'
 AZURE_STATICFILES_SSL = False
+
+TEMPLATE_TIME_TO_LIVE = timedelta(minutes=5)

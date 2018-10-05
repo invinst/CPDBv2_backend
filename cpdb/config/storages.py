@@ -89,3 +89,7 @@ class AzureStorage(Storage):
             name
         )
         return blob.properties.last_modified
+
+    def get_bytes(self, name):
+        blob = self.base_blob_service.get_blob_to_bytes(self.azure_container, name)
+        return blob.content
