@@ -54,7 +54,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'user': {'id': 121, 'screen_name': 'abc'},
             'text': '',
             'in_reply_to_tweet_id': None,
-            'retweeted_tweet': None,
+            'retweeted_status': None,
             'quoted_tweet': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
@@ -219,18 +219,8 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         )
 
     @namepaser_returns([('text', 'Raymond Piwnicki')])
-    def test_retweet_mentioning_twitterbot(self):
-        self.tweet['entities']['user_mentions'] = [{'id': 111, 'screen_name': 'ScreenName'}]
-        self.tweet['retweeted_tweet'] = {'user': {'id': 111}}
-        self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
-        handler.handle()
-        self.send_tweet.assert_not_called()
-
-    @namepaser_returns([('text', 'Raymond Piwnicki')])
-    def test_quoted_tweet_mentioning_twitterbot(self):
-        self.tweet['entities']['user_mentions'] = [{'id': 111, 'screen_name': 'ScreenName'}]
-        self.tweet['quoted_tweet'] = {'user': {'id': 111}}
+    def test_retweet_twitterbot_status(self):
+        self.tweet['retweeted_status'] = {'user': {'id': 123}}
         self.refresh_index()
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
@@ -244,7 +234,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
             'in_reply_to_tweet_id': None,
-            'retweeted_tweet': None,
+            'retweeted_status': None,
             'quoted_tweet': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
@@ -270,19 +260,19 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_officer_in_retweet_tweet(self, _):
-        retweeted_tweet = {
+        retweeted_status = {
             'id': 2,
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
             'in_reply_to_tweet_id': None,
-            'retweeted_tweet': None,
+            'retweeted_status': None,
             'quoted_tweet': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
-        self.tweet['retweeted_tweet'] = retweeted_tweet
-        self.client.register(TweetContext(original_tweet=retweeted_tweet, context={'client': self.client}))
+        self.tweet['retweeted_status'] = retweeted_status
+        self.client.register(TweetContext(original_tweet=retweeted_status, context={'client': self.client}))
         self.refresh_index()
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
@@ -308,7 +298,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
             'in_reply_to_tweet_id': None,
-            'retweeted_tweet': None,
+            'retweeted_status': None,
             'quoted_tweet': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',

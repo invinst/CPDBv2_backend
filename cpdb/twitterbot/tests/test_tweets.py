@@ -86,13 +86,13 @@ class TweetTestCase(SimpleTestCase):
         expect(tweet.in_reply_to_tweet.id).to.eq(123)
         expect(tweet.in_reply_to_tweet).to.eq(tweet.in_reply_to_tweet)
 
-    def test_retweeted_tweet(self):
+    def test_retweeted_status(self):
         client = MockTweepyWrapperFactory()
-        retweeted_tweet = TweetFactory(id=123)
-        client.register(retweeted_tweet)
-        tweet = TweetContext(original_tweet={'retweeted_tweet': {'id': 123}}, context={'client': client})
-        expect(tweet.retweeted_tweet.id).to.eq(123)
-        expect(tweet.retweeted_tweet).to.eq(tweet.retweeted_tweet)
+        retweeted_status = TweetFactory(id=123)
+        client.register(retweeted_status)
+        tweet = TweetContext(original_tweet={'retweeted_status': {'id': 123}}, context={'client': client})
+        expect(tweet.retweeted_status.id).to.eq(123)
+        expect(tweet.retweeted_status).to.eq(tweet.retweeted_status)
 
     def test_quoted_tweet(self):
         client = MockTweepyWrapperFactory()
@@ -110,8 +110,8 @@ class TweetTestCase(SimpleTestCase):
         expect(tweet.quoted_tweet.id).to.eq(123)
 
     def test_is_retweet(self):
-        expect(TweetContext(original_tweet={'retweeted_tweet': None}).is_retweet).to.be.false()
-        expect(TweetContext(original_tweet={'retweeted_tweet': {}}).is_retweet).to.be.true()
+        expect(TweetContext(original_tweet={'retweeted_status': None}).is_retweet).to.be.false()
+        expect(TweetContext(original_tweet={'retweeted_status': {}}).is_retweet).to.be.true()
 
     def test_tweet_url(self):
         tweet = TweetContext(original_tweet={'id': 123, 'user': {'screen_name': 'abc'}})
@@ -123,7 +123,7 @@ class TweetTestCase(SimpleTestCase):
         expect(tweet.created_at).to.eq(created_at)
 
     def test_is_retweet_of_twitterbot(self):
-        original_tweet = {'retweeted_tweet': {'user': {'id': 456}}}
+        original_tweet = {'retweeted_status': {'user': {'id': 456}}}
         client = MockTweepyWrapperFactory()
         tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 456})
         expect(tweet.is_retweet_of_twitterbot).to.be.true()

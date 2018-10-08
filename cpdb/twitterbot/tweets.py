@@ -1,12 +1,12 @@
 from dateutil.parser import parse
 
 
-class TweetContext:
+class TweetContext(object):
     def __init__(self, original_tweet, context=None):
         self._original_tweet = original_tweet
         self._context = context
         self._in_reply_to_tweet = None
-        self._retweeted_tweet = None
+        self._retweeted_status = None
         self._quoted_tweet = None
 
     @property
@@ -57,12 +57,12 @@ class TweetContext:
         return None
 
     @property
-    def retweeted_tweet(self):
-        if self._retweeted_tweet:
-            return self._retweeted_tweet
-        if self._original_tweet.get('retweeted_tweet'):
-            self._retweeted_tweet = TweetContext(self._original_tweet.get('retweeted_tweet'), self._context)
-            return self._retweeted_tweet
+    def retweeted_status(self):
+        if self._retweeted_status:
+            return self._retweeted_status
+        if self._original_tweet.get('retweeted_status'):
+            self._retweeted_status = TweetContext(self._original_tweet.get('retweeted_status'), self._context)
+            return self._retweeted_status
         return None
 
     @property
@@ -81,7 +81,7 @@ class TweetContext:
 
     @property
     def is_retweet(self):
-        return self._original_tweet.get('retweeted_tweet') is not None
+        return self._original_tweet.get('retweeted_status') is not None
 
     @property
     def url(self):
@@ -99,7 +99,7 @@ class TweetContext:
 
     @property
     def is_retweet_of_twitterbot(self):
-        return self.retweeted_tweet is not None and self.retweeted_tweet.user_id == self._context['for_user_id']
+        return self.retweeted_status is not None and self.retweeted_status.user_id == self._context['for_user_id']
 
     @property
     def is_quoted_tweet_of_twitterbot(self):
