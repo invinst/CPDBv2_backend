@@ -41,8 +41,8 @@ class TweetFactory(factory.Factory):
         'id': o.id,
         'in_reply_to_tweet_id': o.in_reply_to_tweet._original_tweet['id'] if o.in_reply_to_tweet is not None else None,
         'retweeted_status': o.retweeted_status._original_tweet if o.retweeted_status is not None else None,
-        'quoted_tweet_id': o.quoted_tweet._original_tweet['id'] if o.quoted_tweet is not None else None,
-        'quoted_tweet': o.quoted_tweet._original_tweet if o.quoted_tweet is not None else None,
+        'quoted_tweet_id': o.quoted_status._original_tweet['id'] if o.quoted_status is not None else None,
+        'quoted_status': o.quoted_status._original_tweet if o.quoted_status is not None else None,
         'user': {
             'id': o.user_id,
             'screen_name': o.author_screen_name
@@ -67,7 +67,7 @@ class TweetFactory(factory.Factory):
         urls = []
         in_reply_to_tweet = None
         retweeted_status = None
-        quoted_tweet = None
+        quoted_status = None
         user_id = factory.Faker('random_number', digits=17)
         id = factory.Faker('random_number', digits=17)
         author_screen_name = None

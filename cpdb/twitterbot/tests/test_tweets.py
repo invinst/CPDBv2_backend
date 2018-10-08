@@ -96,18 +96,18 @@ class TweetTestCase(SimpleTestCase):
 
     def test_quoted_tweet(self):
         client = MockTweepyWrapperFactory()
-        quoted_tweet = TweetFactory(id=123)
-        client.register(quoted_tweet)
-        tweet = TweetContext(original_tweet={'quoted_tweet': {'id': 123}}, context={'client': client})
-        expect(tweet.quoted_tweet.id).to.eq(123)
-        expect(tweet.quoted_tweet).to.eq(tweet.quoted_tweet)
+        quoted_status = TweetFactory(id=123)
+        client.register(quoted_status)
+        tweet = TweetContext(original_tweet={'quoted_status': {'id': 123}}, context={'client': client})
+        expect(tweet.quoted_status.id).to.eq(123)
+        expect(tweet.quoted_status).to.eq(tweet.quoted_status)
 
     def test_quoted_tweet_id(self):
         client = MockTweepyWrapperFactory()
-        quoted_tweet = TweetFactory(id=123)
-        client.register(quoted_tweet)
-        tweet = TweetContext(original_tweet={'quoted_tweet_id': 123, 'quoted_tweet': None}, context={'client': client})
-        expect(tweet.quoted_tweet.id).to.eq(123)
+        quoted_status = TweetFactory(id=123)
+        client.register(quoted_status)
+        tweet = TweetContext(original_tweet={'quoted_tweet_id': 123, 'quoted_status': None}, context={'client': client})
+        expect(tweet.quoted_status.id).to.eq(123)
 
     def test_is_retweet(self):
         expect(TweetContext(original_tweet={'retweeted_status': None}).is_retweet).to.be.false()
@@ -132,7 +132,7 @@ class TweetTestCase(SimpleTestCase):
         expect(tweet.is_retweet_of_twitterbot).to.be.false()
 
     def test_is_quoted_tweet_of_twitterbot(self):
-        original_tweet = {'quoted_tweet': {'user': {'id': 123}}}
+        original_tweet = {'quoted_status': {'user': {'id': 123}}}
         client = MockTweepyWrapperFactory()
         tweet = TweetContext(original_tweet=original_tweet, context={'client': client, 'for_user_id': 123})
         expect(tweet.is_quoted_tweet_of_twitterbot).to.be.true()

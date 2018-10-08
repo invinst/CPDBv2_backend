@@ -7,7 +7,7 @@ class TweetContext(object):
         self._context = context
         self._in_reply_to_tweet = None
         self._retweeted_status = None
-        self._quoted_tweet = None
+        self._quoted_status = None
 
     @property
     def text(self):
@@ -66,17 +66,17 @@ class TweetContext(object):
         return None
 
     @property
-    def quoted_tweet(self):
-        if self._quoted_tweet:
-            return self._quoted_tweet
-        if self._original_tweet.get('quoted_tweet'):
-            self._quoted_tweet = TweetContext(self._original_tweet.get('quoted_tweet'), self._context)
-            return self._quoted_tweet
+    def quoted_status(self):
+        if self._quoted_status:
+            return self._quoted_status
+        if self._original_tweet.get('quoted_status'):
+            self._quoted_status = TweetContext(self._original_tweet.get('quoted_status'), self._context)
+            return self._quoted_status
         if self._original_tweet.get('quoted_tweet_id'):
-            self._quoted_tweet = TweetContext(
+            self._quoted_status = TweetContext(
                 self._context['client'].get_tweet(self._original_tweet.get('quoted_tweet_id')), self._context
             )
-            return self._quoted_tweet
+            return self._quoted_status
         return None
 
     @property
@@ -103,7 +103,7 @@ class TweetContext(object):
 
     @property
     def is_quoted_tweet_of_twitterbot(self):
-        return self.quoted_tweet is not None and self.quoted_tweet.user_id == self._context['for_user_id']
+        return self.quoted_status is not None and self.quoted_status.user_id == self._context['for_user_id']
 
     @property
     def is_unfollow_tweet(self):

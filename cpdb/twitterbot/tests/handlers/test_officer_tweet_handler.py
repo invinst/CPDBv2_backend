@@ -55,7 +55,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'text': '',
             'in_reply_to_tweet_id': None,
             'retweeted_status': None,
-            'quoted_tweet': None,
+            'quoted_status': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
@@ -226,6 +226,14 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         handler.handle()
         self.send_tweet.assert_not_called()
 
+    @namepaser_returns([('text', 'Raymond Piwnicki')])
+    def test_quoted_twitterbot_status(self):
+        self.tweet['quoted_status'] = {'user': {'id': 123}}
+        self.refresh_index()
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
+        handler.handle()
+        self.send_tweet.assert_not_called()
+
     @namepaser_returns([('text', 'Jerome Finnigan')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', side_effect=[Mock(id=10), Mock(id=20)])
     def test_tweet_officer_in_replied_tweet(self, _):
@@ -235,7 +243,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'text': '',
             'in_reply_to_tweet_id': None,
             'retweeted_status': None,
-            'quoted_tweet': None,
+            'quoted_status': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
@@ -266,7 +274,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'text': '',
             'in_reply_to_tweet_id': None,
             'retweeted_status': None,
-            'quoted_tweet': None,
+            'quoted_status': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
@@ -293,20 +301,20 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         'twitterbot.models.TwitterBotResponseLog.objects.create',
         side_effect=[Mock(id=10), Mock(id=20), Mock(id=30), Mock(id=40)])
     def test_tweet_officer_in_quoted_tweet(self, _):
-        quoted_tweet = {
+        quoted_status = {
             'id': 2,
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
             'in_reply_to_tweet_id': None,
             'retweeted_status': None,
-            'quoted_tweet': None,
+            'quoted_status': None,
             'quoted_tweet_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
-        self.tweet['quoted_tweet'] = quoted_tweet
+        self.tweet['quoted_status'] = quoted_status
         self.client.register(
-            TweetContext(original_tweet=quoted_tweet, context={'client': self.client, 'for_user_id': 123})
+            TweetContext(original_tweet=quoted_status, context={'client': self.client, 'for_user_id': 123})
         )
         self.refresh_index()
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
@@ -324,9 +332,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         )
 
         self.send_tweet.reset_mock()
-        self.tweet['quoted_tweet'] = None
+        self.tweet['quoted_status'] = None
         self.tweet['quoted_tweet_id'] = 2
-        self.client.register(TweetContext(original_tweet=quoted_tweet, context={'client': self.client}))
+        self.client.register(TweetContext(original_tweet=quoted_status, context={'client': self.client}))
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.any_call(
