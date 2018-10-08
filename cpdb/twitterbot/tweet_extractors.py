@@ -24,8 +24,8 @@ class RelatedTweetExtractor(object):
     def get_related_tweets(self, tweet, context):
         tweets = []
         tweets += self.get_tweets(tweet.in_reply_to_tweet, context)
-        tweets += self.get_tweets(tweet.retweeted_tweet, context)
-        tweets += self.get_tweets(tweet.quoted_tweet, context)
+        tweets += self.get_tweets(tweet.retweeted_status, context)
+        tweets += self.get_tweets(tweet.quoted_status, context)
         return tweets
 
     def get_original_tweet(self, tweets):
