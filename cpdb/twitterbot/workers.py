@@ -14,7 +14,8 @@ class ActivityEventWorker(object):
             worker_cls = self.workers[event_type]
             worker = worker_cls(
                 event_data=event.get(event_type)[0],
-                for_user_id=int(event.get('for_user_id'))
+                for_user_id=int(event.get('for_user_id')),
+                original_event=event
             )
             worker.handle()
             break

@@ -80,7 +80,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
 
     @patch('twitterbot.handlers.officer_tweet_handler.TweetContext')
     def test_match_tweet(self, tweet_context):
-        handler = OfficerTweetHandler(event_data=None, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=None, for_user_id=123, original_event=None)
         tweet_context_mock = tweet_context()
         tweet_context_mock.is_unfollow_tweet = False
 
@@ -96,7 +96,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def test_tweet_officer_in_tweet_text(self, _):
         self.tweet['text'] = '@CPDPbot Jerome Finnigan'
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.called_with(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -115,7 +115,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         ]
 
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.called_with(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -128,7 +128,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def test_tweet_officer_in_tweet_hashtags(self, _):
         self.tweet['entities']['hashtags'] = [{'text': 'jeromeFinnigan'}]
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.called_with(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -142,7 +142,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['entities']['urls'] = [{'expanded_url': 'http://fakeurl.com'}]
         with patch('twitterbot.utils.web_parsing.parse', return_value='Chicago Police Jerome Finnigan'):
             self.refresh_index()
-            handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+            handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
             handler.handle()
             expect(self.send_tweet).to.be.called_with(
                 '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=10',
@@ -158,7 +158,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             {'id': 124, 'screen_name': 'def'}
         ]
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         entity = {'allegation_count': 1, 'percentiles': [], 'id': 1, 'full_name': u'Jerome Finnigan'}
         expect(self.send_tweet).to.be.any_call(
@@ -180,7 +180,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         )
 
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.called_with(
             '@abc Jerome Finnigan and Raymond Piwnicki were co-accused in 1 case',
@@ -191,7 +191,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_not_found(self, _):
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_called_with(
             'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
@@ -202,7 +202,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     @patch('twitterbot.models.TwitterBotResponseLog.objects.create', return_value=Mock(id=5))
     def test_tweet_context_is_reset(self, _):
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_called_with(
             'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
@@ -210,7 +210,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             entity=None
         )
         self.send_tweet.reset_mock()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_called_with(
             'Sorry, @abc, the bot finds nothing http://foo.com?twitterbot_log_id=5',
@@ -223,7 +223,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['entities']['user_mentions'] = [{'id': 111, 'screen_name': 'ScreenName'}]
         self.tweet['retweeted_tweet'] = {'user': {'id': 111}}
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_not_called()
 
@@ -232,7 +232,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['entities']['user_mentions'] = [{'id': 111, 'screen_name': 'ScreenName'}]
         self.tweet['quoted_tweet'] = {'user': {'id': 111}}
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_not_called()
 
@@ -253,7 +253,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['in_reply_to_tweet_id'] = 2
         self.client.register(TweetContext(original_tweet=replied_tweet, context={'client': self.client}))
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         entity = {'allegation_count': 1, 'percentiles': [], 'id': 1, 'full_name': u'Jerome Finnigan'}
         expect(self.send_tweet).to.be.any_call(
@@ -284,7 +284,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['retweeted_tweet'] = retweeted_tweet
         self.client.register(TweetContext(original_tweet=retweeted_tweet, context={'client': self.client}))
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         entity = {'allegation_count': 1, 'percentiles': [], 'id': 1, 'full_name': u'Jerome Finnigan'}
         expect(self.send_tweet).to.be.any_call(
@@ -319,7 +319,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             TweetContext(original_tweet=quoted_tweet, context={'client': self.client, 'for_user_id': 123})
         )
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         entity = {'allegation_count': 1, 'percentiles': [], 'id': 1, 'full_name': u'Jerome Finnigan'}
         expect(self.send_tweet).to.be.any_call(
@@ -337,7 +337,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         self.tweet['quoted_tweet'] = None
         self.tweet['quoted_tweet_id'] = 2
         self.client.register(TweetContext(original_tweet=quoted_tweet, context={'client': self.client}))
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         expect(self.send_tweet).to.be.any_call(
             '@abc Jerome Finnigan has 1 complaints http://foo.com/officer/1/?twitterbot_log_id=30',
@@ -353,7 +353,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     @namepaser_returns([('text', 'Raymond Piwnicki')])
     def test_tweet_not_mentioning_twitterbot(self):
         self.tweet['entities']['user_mentions'] = []
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
         self.send_tweet.assert_not_called()
 
@@ -362,7 +362,15 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
     def test_save_log(self):
         self.tweet['text'] = '@CPDPbot Jerome Finnigan'
         self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123)
+        original_event = {
+            'tweet_create_events': [
+                {
+                    'text': '@CPDPbot Jerome Finnigan'
+                }
+            ],
+            'for_user_id': 123
+        }
+        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=original_event)
         handler.handle()
 
         response_log = TwitterBotResponseLog.objects.all().first()
@@ -378,4 +386,5 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         expect(response_log.original_tweet_username).to.eq('abc')
         expect(response_log.original_tweet_url).to.eq('https://twitter.com/abc/status/1/')
         expect(response_log.original_tweet_content).to.eq('@CPDPbot Jerome Finnigan')
+        expect(response_log.original_event_object).to.eq(original_event)
         expect(response_log.status).to.eq(TwitterBotResponseLog.SENT)
