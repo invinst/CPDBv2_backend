@@ -49,9 +49,9 @@ class TweetContext(object):
     def in_reply_to_tweet(self):
         if self._in_reply_to_tweet:
             return self._in_reply_to_tweet
-        if self._original_tweet.get('in_reply_to_tweet_id'):
+        if self._original_tweet.get('in_reply_to_status_id'):
             self._in_reply_to_tweet = TweetContext(
-                self._context['client'].get_tweet(self._original_tweet.get('in_reply_to_tweet_id')), self._context
+                self._context['client'].get_tweet(self._original_tweet.get('in_reply_to_status_id')), self._context
             )
             return self._in_reply_to_tweet
         return None
@@ -72,9 +72,9 @@ class TweetContext(object):
         if self._original_tweet.get('quoted_status'):
             self._quoted_status = TweetContext(self._original_tweet.get('quoted_status'), self._context)
             return self._quoted_status
-        if self._original_tweet.get('quoted_tweet_id'):
+        if self._original_tweet.get('quoted_status_id'):
             self._quoted_status = TweetContext(
-                self._context['client'].get_tweet(self._original_tweet.get('quoted_tweet_id')), self._context
+                self._context['client'].get_tweet(self._original_tweet.get('quoted_status_id')), self._context
             )
             return self._quoted_status
         return None

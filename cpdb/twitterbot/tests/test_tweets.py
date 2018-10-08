@@ -82,7 +82,7 @@ class TweetTestCase(SimpleTestCase):
         in_reply_to_tweet = TweetFactory(id=123)
         client = MockTweepyWrapperFactory()
         client.register(in_reply_to_tweet)
-        tweet = TweetContext(original_tweet={'in_reply_to_tweet_id': 123}, context={'client': client})
+        tweet = TweetContext(original_tweet={'in_reply_to_status_id': 123}, context={'client': client})
         expect(tweet.in_reply_to_tweet.id).to.eq(123)
         expect(tweet.in_reply_to_tweet).to.eq(tweet.in_reply_to_tweet)
 
@@ -106,7 +106,9 @@ class TweetTestCase(SimpleTestCase):
         client = MockTweepyWrapperFactory()
         quoted_status = TweetFactory(id=123)
         client.register(quoted_status)
-        tweet = TweetContext(original_tweet={'quoted_tweet_id': 123, 'quoted_status': None}, context={'client': client})
+        tweet = TweetContext(
+            original_tweet={'quoted_status_id': 123, 'quoted_status': None}, context={'client': client}
+        )
         expect(tweet.quoted_status.id).to.eq(123)
 
     def test_is_retweet(self):

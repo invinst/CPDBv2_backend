@@ -53,10 +53,10 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'id': 1,
             'user': {'id': 121, 'screen_name': 'abc'},
             'text': '',
-            'in_reply_to_tweet_id': None,
+            'in_reply_to_status_id': None,
             'retweeted_status': None,
             'quoted_status': None,
-            'quoted_tweet_id': None,
+            'quoted_status_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
@@ -241,14 +241,14 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'id': 2,
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
-            'in_reply_to_tweet_id': None,
+            'in_reply_to_status_id': None,
             'retweeted_status': None,
             'quoted_status': None,
-            'quoted_tweet_id': None,
+            'quoted_status_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
-        self.tweet['in_reply_to_tweet_id'] = 2
+        self.tweet['in_reply_to_status_id'] = 2
         self.client.register(TweetContext(original_tweet=replied_tweet, context={'client': self.client}))
         self.refresh_index()
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
@@ -272,10 +272,10 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'id': 2,
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
-            'in_reply_to_tweet_id': None,
+            'in_reply_to_status_id': None,
             'retweeted_status': None,
             'quoted_status': None,
-            'quoted_tweet_id': None,
+            'quoted_status_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
@@ -305,10 +305,10 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             'id': 2,
             'user': {'id': 456, 'screen_name': 'def'},
             'text': '',
-            'in_reply_to_tweet_id': None,
+            'in_reply_to_status_id': None,
             'retweeted_status': None,
             'quoted_status': None,
-            'quoted_tweet_id': None,
+            'quoted_status_id': None,
             'created_at': '2017-08-03T11:59:00Z',
             'entities': {'user_mentions': [{'id': 123, 'screen_name': self.screen_name}], 'hashtags': [], 'urls': []}
         }
@@ -333,7 +333,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
 
         self.send_tweet.reset_mock()
         self.tweet['quoted_status'] = None
-        self.tweet['quoted_tweet_id'] = 2
+        self.tweet['quoted_status_id'] = 2
         self.client.register(TweetContext(original_tweet=quoted_status, context={'client': self.client}))
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
