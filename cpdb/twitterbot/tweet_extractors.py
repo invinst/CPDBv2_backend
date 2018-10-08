@@ -4,7 +4,8 @@ class RelatedTweetExtractor(object):
         try:
             context['first_non_retweet'] = [t for t in tweets if not t.is_retweet][0]
         except IndexError:
-            context['first_non_retweet'] = None
+            return []
+
         context['original_tweet'] = self.get_original_tweet(tweets)
         return tweets
 

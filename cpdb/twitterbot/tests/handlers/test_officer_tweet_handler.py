@@ -218,17 +218,9 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
             entity=None
         )
 
-    @namepaser_returns([('text', 'Raymond Piwnicki')])
+    @namepaser_returns([('text', 'Jerome Finnigan')])
     def test_retweet_twitterbot_status(self):
         self.tweet['retweeted_status'] = {'user': {'id': 123}}
-        self.refresh_index()
-        handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
-        handler.handle()
-        self.send_tweet.assert_not_called()
-
-    @namepaser_returns([('text', 'Raymond Piwnicki')])
-    def test_quoted_twitterbot_status(self):
-        self.tweet['quoted_status'] = {'user': {'id': 123}}
         self.refresh_index()
         handler = OfficerTweetHandler(event_data=self.tweet, for_user_id=123, original_event=None)
         handler.handle()
