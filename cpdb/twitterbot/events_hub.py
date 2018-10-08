@@ -1,21 +1,21 @@
 from twitterbot.handlers import MentionEventHandler
 
 
-class ActivityEventWorker(object):
-    workers = {
+class ActivityEventHub(object):
+    event_handlers = {
         'tweet_create_events': MentionEventHandler
     }
 
-    def process(self, event):
-        for event_type in self.workers.keys():
+    def handle_event(self, event):
+        for event_type in self.event_handlers.keys():
             if event_type not in event:
                 continue
 
-            worker_cls = self.workers[event_type]
-            worker = worker_cls(
+            handler_cls = self.event_handlers[event_type]
+            handler = handler_cls(
                 event_data=event.get(event_type)[0],
                 for_user_id=int(event.get('for_user_id')),
                 original_event=event
             )
-            worker.handle()
+            handler.handle()
             break
