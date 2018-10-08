@@ -62,10 +62,9 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
 
     def test_populate_first_non_retweet_got_none(self):
         tweet = Mock()
-        context = {}
         with patch('twitterbot.tweet_extractors.RelatedTweetExtractor.get_tweets', return_value=[]):
-            self.extractor.extract(tweet, context=self.context)
-            expect(context.get('first_non_retweet', None)).to.be.none()
+            tweets = self.extractor.extract(tweet, context=self.context)
+            expect(tweets).to.have.length(0)
 
     def test_populate_original_tweet(self):
         retweeted_status = TweetFactory(context=self.context, created_at='2010-02-03T11:59:00Z')
