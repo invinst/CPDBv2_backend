@@ -7,7 +7,7 @@ from twitterbot.handlers import MentionEventHandler, FollowEventHandler
 
 class MentionEventHandlerTestCase(SimpleTestCase):
     def test_handle(self):
-        handler = MentionEventHandler(event_data=None, for_user_id=123)
+        handler = MentionEventHandler(event_data=None, for_user_id=123, original_event=None)
         match_sub_handler_mock = Mock()
         match_sub_handler_mock().match_tweet.return_value = True
 
@@ -23,7 +23,7 @@ class MentionEventHandlerTestCase(SimpleTestCase):
 
 class FollowEventHandlerTestCase(SimpleTestCase):
     def test_handle(self):
-        handler = FollowEventHandler(event_data={'source': {'id': 456}}, for_user_id=123)
+        handler = FollowEventHandler(event_data={'source': {'id': 456}}, for_user_id=123, original_event=None)
         handler.client = Mock(get_current_user=Mock(return_value=Mock(id=456)))
 
         handler.handle()
