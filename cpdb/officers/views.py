@@ -60,6 +60,8 @@ class OfficersViewSet(viewsets.ViewSet):
             return Response(result[0].to_dict()['coaccusals'])
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        except KeyError:
+            return Response([])
 
 
 class OfficersMobileViewSet(viewsets.ViewSet):

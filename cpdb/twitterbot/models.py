@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 
@@ -35,6 +36,7 @@ class TwitterBotResponseLog(models.Model):
     original_tweet_username = models.CharField(max_length=15)
     original_tweet_url = models.URLField()
     original_tweet_content = models.TextField()
+    original_event_object = JSONField(null=True)
     status = models.CharField(max_length=10, choices=status_choices, default=PENDING)
 
     def __unicode__(self):
