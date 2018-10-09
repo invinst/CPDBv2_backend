@@ -2,20 +2,20 @@ from django.test import SimpleTestCase
 
 from mock import Mock
 
-from twitterbot.workers import ActivityEventWorker
+from twitterbot.events_hub import ActivityEventHub
 
 
 class WorkerTestCase(SimpleTestCase):
     def test_process(self):
-        event_worker = ActivityEventWorker()
+        events_hub = ActivityEventHub()
         tweet_handler_mock = Mock()
         follow_handler_mock = Mock()
-        event_worker.workers = {
+        events_hub.event_handlers = {
             'tweet': tweet_handler_mock,
             'follow': follow_handler_mock
         }
 
-        event_worker.process({
+        events_hub.handle_event({
             'for_user_id': 123,
             'tweet': ['abc']
         })

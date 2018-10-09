@@ -23,19 +23,19 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
         tweet_ids = [t.id for t in self.extractor.extract(tweet, context=self.context)]
         expect(tweet_ids).to.eq([tweet.id, replied_tweet.id])
 
-    def test_extract_retweeted_tweet(self):
-        retweeted_tweet = TweetFactory(context=self.context)
-        self.client.register(retweeted_tweet)
-        tweet = TweetFactory(retweeted_tweet=retweeted_tweet, context=self.context)
+    def test_extract_retweeted_status(self):
+        retweeted_status = TweetFactory(context=self.context)
+        self.client.register(retweeted_status)
+        tweet = TweetFactory(retweeted_status=retweeted_status, context=self.context)
         tweet_ids = [t.id for t in self.extractor.extract(tweet, context=self.context)]
-        expect(tweet_ids).to.eq([tweet.id, retweeted_tweet.id])
+        expect(tweet_ids).to.eq([tweet.id, retweeted_status.id])
 
     def test_extract_quoted_tweet(self):
-        quoted_tweet = TweetFactory(context=self.context)
-        self.client.register(quoted_tweet)
-        tweet = TweetFactory(quoted_tweet=quoted_tweet, context=self.context)
+        quoted_status = TweetFactory(context=self.context)
+        self.client.register(quoted_status)
+        tweet = TweetFactory(quoted_status=quoted_status, context=self.context)
         tweet_ids = [t.id for t in self.extractor.extract(tweet, context=self.context)]
-        expect(tweet_ids).to.eq([tweet.id, quoted_tweet.id])
+        expect(tweet_ids).to.eq([tweet.id, quoted_status.id])
 
     def test_extract_nested_tweet(self):
         nested_replied_tweet = TweetFactory(context=self.context)
@@ -54,25 +54,24 @@ class RelatedTweetExtractorTestCase(SimpleTestCase):
         expect(tweet_ids).to.eq([tweet.id])
 
     def test_populate_first_non_retweet(self):
-        retweeted_tweet = TweetFactory(context=self.context)
-        self.client.register(retweeted_tweet)
-        tweet = TweetFactory(retweeted_tweet=retweeted_tweet, context=self.context)
+        retweeted_status = TweetFactory(context=self.context)
+        self.client.register(retweeted_status)
+        tweet = TweetFactory(retweeted_status=retweeted_status, context=self.context)
         self.extractor.extract(tweet, context=self.context)
-        expect(self.context['first_non_retweet'].id).to.eq(retweeted_tweet.id)
+        expect(self.context['first_non_retweet'].id).to.eq(retweeted_status.id)
 
     def test_populate_first_non_retweet_got_none(self):
         tweet = Mock()
-        context = {}
         with patch('twitterbot.tweet_extractors.RelatedTweetExtractor.get_tweets', return_value=[]):
-            self.extractor.extract(tweet, context=self.context)
-            expect(context.get('first_non_retweet', None)).to.be.none()
+            tweets = self.extractor.extract(tweet, context=self.context)
+            expect(tweets).to.have.length(0)
 
     def test_populate_original_tweet(self):
-        retweeted_tweet = TweetFactory(context=self.context, created_at='2010-02-03T11:59:00Z')
-        self.client.register(retweeted_tweet)
-        tweet = TweetFactory(retweeted_tweet=retweeted_tweet, context=self.context)
+        retweeted_status = TweetFactory(context=self.context, created_at='2010-02-03T11:59:00Z')
+        self.client.register(retweeted_status)
+        tweet = TweetFactory(retweeted_status=retweeted_status, context=self.context)
         self.extractor.extract(tweet, context=self.context)
-        expect(self.context['original_tweet'].id).to.eq(retweeted_tweet.id)
+        expect(self.context['original_tweet'].id).to.eq(retweeted_status.id)
 
     @patch.object(RelatedTweetExtractor, 'get_tweets', return_value=[])
     def test_populate_original_tweet_got_none(self, extractor):

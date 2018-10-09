@@ -37,6 +37,7 @@ deploy_group: ansible
 setup_newrelic: yes
 backup_database_daily: no
 update_documents_daily: yes
+upload_document_request_hourly: yes
 github_ssh_key: /home/ansible/.ssh/khoi_github
 
 authorized_keys: |
