@@ -375,11 +375,15 @@ class CRIndexerTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, final_finding='NS')
         allegation = AllegationFactory()
         PoliceWitnessFactory(officer=officer, allegation=allegation)
+
         rows = self.extract_data()
+
         expect(rows).to.have.length(4)
-        expect(rows[-1]['involvements']).to.have.length(1)
-        expect(rows[-1]['involvements'][0]['allegation_count']).to.eq(3)
-        expect(rows[-1]['involvements'][0]['sustained_count']).to.eq(2)
+        expect({len(row['involvements']) for row in rows}).to.eq({0, 1})
+        for row in rows:
+            if len(row['involvements']) == 1:
+                expect(row['involvements'][0]['allegation_count']).to.eq(3)
+                expect(row['involvements'][0]['sustained_count']).to.eq(2)
 
     def test_investigator_num_cases(self):
         investigator = InvestigatorFactory()
