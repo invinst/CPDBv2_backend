@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0067_attachmentrequest_timestamp'),
+        ('data', '0069_add_officer_and_allegation_cached_columns'),
     ]
 
     operations = [

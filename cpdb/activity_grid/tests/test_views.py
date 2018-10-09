@@ -32,7 +32,9 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             race='Asian',
             gender='M',
             appointed_date=datetime(2011, 1, 1, tzinfo=pytz.utc),
-            complaint_percentile=50.0
+            complaint_percentile=50.0,
+            allegation_count=6,
+            sustained_count=2,
         )
         officer2 = OfficerFactory(
             first_name='Raymond',
@@ -41,7 +43,9 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             race='White',
             gender='M',
             appointed_date=datetime(2012, 1, 1, tzinfo=pytz.utc),
-            complaint_percentile=0.0
+            complaint_percentile=0.0,
+            allegation_count=1,
+            sustained_count=1,
         )
         allegation = AllegationFactory(incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(

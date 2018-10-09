@@ -108,8 +108,7 @@ class SingleOfficerResponseBuilderTestCase(TestCase):
     def test_build(self):
         _mock_open = mock_open()
         with patch('twitterbot.handlers.open', _mock_open, create=True):
-            officer1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
-            OfficerAllegationFactory.create_batch(3, officer=officer1)
+            officer1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan', allegation_count=3)
             officer1_doc = {
                 'id': officer1.id, 'full_name': officer1.full_name
             }
