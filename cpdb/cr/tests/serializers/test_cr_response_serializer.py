@@ -100,7 +100,7 @@ class CRSummarySerializerTestCase(TestCase):
     def test_get_category_names(self):
         allegation = AllegationFactory()
 
-        setattr(allegation, 'categories', ['A Category', 'Z Category', 'B Category', None])
+        setattr(allegation, 'categories', ['Z Category', 'A Category', 'Z Category', 'B Category', None])
         result = CRSummarySerializer(allegation).data
         expect(result['category_names']).to.eq(['A Category', 'B Category', 'Unknown', 'Z Category'])
 

@@ -21,27 +21,27 @@ class OfficerTimelineQueryTestCase(TestCase):
     )
     def test_cr_timeline(self, cr_new_timeline_serializer_mock):
         officer = OfficerFactory(id=123)
-        OfficerAllegationFactory(id=1, officer=officer, start_date=date(2002, 02, 03))
-        OfficerAllegationFactory(id=2, officer=officer, start_date=date(2003, 01, 05))
+        OfficerAllegationFactory(id=1, officer=officer, start_date=date(2002, 2, 3))
+        OfficerAllegationFactory(id=2, officer=officer, start_date=date(2003, 1, 5))
         OfficerAllegationFactory(id=3, officer=officer, start_date=None)
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
         OfficerHistoryFactory(
-            officer=officer, unit=unit_1, effective_date=date(2002, 01, 03), end_date=date(2003, 01, 02)
+            officer=officer, unit=unit_1, effective_date=date(2002, 1, 3), end_date=date(2003, 1, 2)
         )
         OfficerHistoryFactory(
-            officer=officer, unit=unit_2, effective_date=date(2003, 01, 03), end_date=date(2018, 01, 03)
+            officer=officer, unit=unit_2, effective_date=date(2003, 1, 3), end_date=date(2018, 1, 3)
         )
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
         SalaryFactory(
-            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
         other_officer = OfficerFactory(id=456)
-        OfficerAllegationFactory(id=4, officer=other_officer, start_date=date(2003, 01, 05))
+        OfficerAllegationFactory(id=4, officer=other_officer, start_date=date(2003, 1, 5))
 
         expect(OfficerTimelineQuery(officer)._cr_timeline).to.eq([{'id': 1}, {'id': 2}])
 
@@ -63,29 +63,29 @@ class OfficerTimelineQueryTestCase(TestCase):
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_unit_change_timeline(self, unit_change_new_timeline_serializer_mock):
-        officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
         officer_history_1 = OfficerHistoryFactory(
-            officer=officer, effective_date=date(2002, 01, 03), end_date=date(2002, 01, 03)
+            officer=officer, effective_date=date(2002, 1, 3), end_date=date(2002, 1, 3)
         )
         officer_history_2 = OfficerHistoryFactory(
-            officer=officer, effective_date=date(2003, 01, 03), end_date=date(2018, 01, 03)
+            officer=officer, effective_date=date(2003, 1, 3), end_date=date(2018, 1, 3)
         )
         OfficerHistoryFactory(
-            officer=officer, effective_date=None, end_date=date(2018, 01, 03)
+            officer=officer, effective_date=None, end_date=date(2018, 1, 3)
         )
         OfficerHistoryFactory(
-            officer=officer, effective_date=None, end_date=date(2001, 02, 03)
+            officer=officer, effective_date=None, end_date=date(2001, 2, 3)
         )
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
         SalaryFactory(
-            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
         other_officer = OfficerFactory(id=456)
         OfficerHistoryFactory(
-            officer=other_officer, effective_date=date(2002, 01, 03), end_date=date(2002, 01, 03)
+            officer=other_officer, effective_date=date(2002, 1, 3), end_date=date(2002, 1, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._unit_change_timeline).to.eq([{'id': 1}, {'id': 2}])
@@ -104,33 +104,33 @@ class OfficerTimelineQueryTestCase(TestCase):
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_rank_change_timeline(self, rank_change_new_timeline_serializer_mock):
-        officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
 
         salary_1 = SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
         salary_2 = SalaryFactory(
-            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
         SalaryFactory(
-            year=2001, rank='Junior Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 02, 03)
+            year=2001, rank='Junior Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 2, 3)
         )
         SalaryFactory(
-            year=2003, rank='Senior Police Officer', officer=officer, rank_changed=False, spp_date=date(2003, 05, 03)
+            year=2003, rank='Senior Police Officer', officer=officer, rank_changed=False, spp_date=date(2003, 5, 3)
         )
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
         OfficerHistoryFactory(
-            officer=officer, unit=unit_1, effective_date=date(2001, 01, 03), end_date=date(2002, 01, 02)
+            officer=officer, unit=unit_1, effective_date=date(2001, 1, 3), end_date=date(2002, 1, 2)
         )
         OfficerHistoryFactory(
-            officer=officer, unit=unit_2, effective_date=date(2002, 01, 03), end_date=date(2018, 01, 03)
+            officer=officer, unit=unit_2, effective_date=date(2002, 1, 3), end_date=date(2018, 1, 3)
         )
 
         other_officer = OfficerFactory(id=456)
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=other_officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=other_officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._rank_change_timeline).to.eq([{'id': 1}, {'id': 2}])
@@ -155,7 +155,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         officer = OfficerFactory(id=123, appointed_date=None)
 
         salary = SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._rank_change_timeline).to.eq([{'id': 1}])
@@ -170,15 +170,15 @@ class OfficerTimelineQueryTestCase(TestCase):
         return_value=Mock(data=[{'id': 1}])
     )
     def test_join_timeline(self, join_new_timeline_serializer_mock):
-        officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
 
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 02, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 2, 3)
         )
 
         unit = PoliceUnitFactory(unit_name='001', description='District 001')
         OfficerHistoryFactory(
-            officer=officer, unit=unit, effective_date=date(2001, 01, 03), end_date=date(2001, 02, 03)
+            officer=officer, unit=unit, effective_date=date(2001, 1, 3), end_date=date(2001, 2, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._join_timeline).to.eq([{'id': 1}])
@@ -201,28 +201,28 @@ class OfficerTimelineQueryTestCase(TestCase):
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_award_timeline(self, award_new_timeline_serializer_mock):
-        officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
 
-        award_1 = AwardFactory(officer=officer, start_date=date(2002, 01, 03), award_type='Honored Police Star')
-        award_2 = AwardFactory(officer=officer, start_date=date(2003, 01, 05), award_type='Life Saving Award')
-        AwardFactory(officer=officer, start_date=date(2007, 02, 03), award_type='Complimentary Letter')
-        AwardFactory(officer=officer, start_date=date(2008, 02, 03), award_type='Department Commendation')
-        AwardFactory(officer=officer, start_date=date(2011, 02, 03), award_type='Citizen Honorable Mention')
+        award_1 = AwardFactory(officer=officer, start_date=date(2002, 1, 3), award_type='Honored Police Star')
+        award_2 = AwardFactory(officer=officer, start_date=date(2003, 1, 5), award_type='Life Saving Award')
+        AwardFactory(officer=officer, start_date=date(2007, 2, 3), award_type='Complimentary Letter')
+        AwardFactory(officer=officer, start_date=date(2008, 2, 3), award_type='Department Commendation')
+        AwardFactory(officer=officer, start_date=date(2011, 2, 3), award_type='Citizen Honorable Mention')
         AwardFactory(officer=officer, start_date=None, award_type='Life Saving')
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
         OfficerHistoryFactory(
-            officer=officer, unit=unit_1, effective_date=date(2002, 01, 03), end_date=date(2003, 01, 02)
+            officer=officer, unit=unit_1, effective_date=date(2002, 1, 3), end_date=date(2003, 1, 2)
         )
         OfficerHistoryFactory(
-            officer=officer, unit=unit_2, effective_date=date(2003, 01, 03), end_date=date(2018, 01, 03)
+            officer=officer, unit=unit_2, effective_date=date(2003, 1, 3), end_date=date(2018, 1, 3)
         )
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
         SalaryFactory(
-            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._award_timeline).to.eq([{'id': 1}, {'id': 2}])
@@ -245,24 +245,24 @@ class OfficerTimelineQueryTestCase(TestCase):
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_trr_timeline(self, trr_new_timeline_serializer_mock):
-        officer = OfficerFactory(id=123, appointed_date=date(2001, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
 
-        trr_1 = TRRFactory(officer=officer, trr_datetime=datetime(2002, 01, 04, tzinfo=pytz.utc))
-        trr_2 = TRRFactory(officer=officer, trr_datetime=datetime(2003, 01, 05, tzinfo=pytz.utc))
+        trr_1 = TRRFactory(officer=officer, trr_datetime=datetime(2002, 1, 4, tzinfo=pytz.utc))
+        trr_2 = TRRFactory(officer=officer, trr_datetime=datetime(2003, 1, 5, tzinfo=pytz.utc))
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
         OfficerHistoryFactory(
-            officer=officer, unit=unit_1, effective_date=date(2002, 01, 03), end_date=date(2003, 01, 02)
+            officer=officer, unit=unit_1, effective_date=date(2002, 1, 3), end_date=date(2003, 1, 2)
         )
         OfficerHistoryFactory(
-            officer=officer, unit=unit_2, effective_date=date(2003, 01, 03), end_date=date(2018, 01, 03)
+            officer=officer, unit=unit_2, effective_date=date(2003, 1, 3), end_date=date(2018, 1, 3)
         )
         SalaryFactory(
-            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 05, 03)
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
         SalaryFactory(
-            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 05, 03)
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
         expect(OfficerTimelineQuery(officer)._trr_timeline).to.eq([{'id': 1}, {'id': 2}])
@@ -284,47 +284,47 @@ class OfficerTimelineQueryTestCase(TestCase):
         'officers.queries.OfficerTimelineQuery._cr_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 1, 'date_sort': date(2000, 01, 01), 'priority_sort': 30},
-            {'id': 2, 'date_sort': date(2001, 01, 02), 'priority_sort': 30},
+            {'id': 1, 'date_sort': date(2000, 1, 1), 'priority_sort': 30},
+            {'id': 2, 'date_sort': date(2001, 1, 2), 'priority_sort': 30},
         ]
     )
     @patch(
         'officers.queries.OfficerTimelineQuery._unit_change_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 3, 'date_sort': date(2000, 01, 02), 'priority_sort': 20},
-            {'id': 4, 'date_sort': date(2001, 01, 02), 'priority_sort': 20},
+            {'id': 3, 'date_sort': date(2000, 1, 2), 'priority_sort': 20},
+            {'id': 4, 'date_sort': date(2001, 1, 2), 'priority_sort': 20},
         ]
     )
     @patch(
         'officers.queries.OfficerTimelineQuery._rank_change_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 5, 'date_sort': date(2000, 01, 03), 'priority_sort': 25},
-            {'id': 6, 'date_sort': date(2001, 01, 02), 'priority_sort': 25},
+            {'id': 5, 'date_sort': date(2000, 1, 3), 'priority_sort': 25},
+            {'id': 6, 'date_sort': date(2001, 1, 2), 'priority_sort': 25},
         ]
     )
     @patch(
         'officers.queries.OfficerTimelineQuery._join_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 7, 'date_sort': date(2000, 01, 01), 'priority_sort': 10},
+            {'id': 7, 'date_sort': date(2000, 1, 1), 'priority_sort': 10},
         ]
     )
     @patch(
         'officers.queries.OfficerTimelineQuery._award_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 8, 'date_sort': date(2000, 01, 04), 'priority_sort': 40},
-            {'id': 9, 'date_sort': date(2001, 01, 02), 'priority_sort': 40},
+            {'id': 8, 'date_sort': date(2000, 1, 4), 'priority_sort': 40},
+            {'id': 9, 'date_sort': date(2001, 1, 2), 'priority_sort': 40},
         ]
     )
     @patch(
         'officers.queries.OfficerTimelineQuery._trr_timeline',
         new_callable=PropertyMock,
         return_value=[
-            {'id': 10, 'date_sort': date(2000, 01, 04), 'priority_sort': 50},
-            {'id': 11, 'date_sort': date(2001, 01, 02), 'priority_sort': 50},
+            {'id': 10, 'date_sort': date(2000, 1, 4), 'priority_sort': 50},
+            {'id': 11, 'date_sort': date(2001, 1, 2), 'priority_sort': 50},
         ]
     )
     def test_execute(self, _trr, _award, _join, _rank, _unit, _cr):

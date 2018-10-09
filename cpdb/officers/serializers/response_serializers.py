@@ -66,8 +66,7 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.get_active_display()
 
     def get_badge(self, obj):
-        current_badge = obj.current_badge
-        return current_badge if current_badge else ''
+        return obj.current_badge or ''
 
 
 class OfficerMetricsSerializer(serializers.Serializer):
