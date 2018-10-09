@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0068_attachmentfile_external_id'),
+        ('data', '0072_salary_rank_changed'),
     ]
 
     operations = [
