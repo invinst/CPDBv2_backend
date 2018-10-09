@@ -9,7 +9,7 @@ from .storages import AzureStorage
 
 
 class AzureStorageLoader(Loader):
-    _azure_storage = AzureStorage()
+    _azure_storage = AzureStorage(azure_container=settings.AZURE_TEMPLATE_CONTAINER)
     time_to_live = settings.TEMPLATE_TIME_TO_LIVE
 
     def __init__(self, *args, **kwargs):
