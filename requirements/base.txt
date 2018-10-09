@@ -34,3 +34,4 @@ dateparser==0.7.0
 tweepy==3.6.0
 zipcodes==1.0.4
 sortedcontainers==2.0.5
+airtable-python-wrapper==0.11.3

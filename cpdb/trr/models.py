@@ -283,6 +283,8 @@ class TRRAttachmentRequest(models.Model):
     trr = models.ForeignKey(TRR)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    added_to_foia_airtable = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (('trr', 'email'),)
