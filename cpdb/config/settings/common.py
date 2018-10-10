@@ -61,6 +61,7 @@ LOCAL_APPS = (
     'heatmap',
     'trr',
     'popup',
+    'airtable_integration'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -327,6 +328,12 @@ TRR_MAX = env.str('TRR_MAX', '2016-04-12')
 
 AZURE_STATICFILES_CONTAINER = 'static'
 AZURE_STATICFILES_SSL = False
+
+AIRTABLE_PROJECT_KEY = env.str('AIRTABLE_PROJECT_KEY', '')
+AIRTABLE_TABLE_NAME = env.str('AIRTABLE_TABLE_NAME', 'Request a FOIA')
+
+AIRTABLE_COPA_AGENCY_ID = ''
+AIRTABLE_CPD_AGENCY_ID = ''
 
 TEMPLATE_TIME_TO_LIVE = timedelta(minutes=5)
 AZURE_TEMPLATE_CONTAINER = 'templates'

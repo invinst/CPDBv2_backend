@@ -75,7 +75,8 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'birth_year': 1910,
             'complaint_count': 2,
             'sustained_count': 1,
-            'percentile': None
+            'percentile': None,
+            'complaint_percentile': None
         })
 
 

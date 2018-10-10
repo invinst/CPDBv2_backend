@@ -157,7 +157,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
         self.assertEqual(changelog.target_model, 'data.allegation')
         self.assertEqual(changelog.log_type, LOG_TYPE_DELETE)
         self.assertEqual(changelog.object_pk, old_pk)
-        self.assertEqual(dict(changelog.content.items()), {
+        expected_content_items = {
             'id': old_pk,
             'crid': '456123',
             'add1': '103',
@@ -173,4 +173,10 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             'incident_date': '2000-01-01T00:00:00Z',
             'old_complaint_address': None,
             'is_officer_complaint': False,
-        })
+            'police_witnesses': [],
+            'most_common_category': None,
+            'first_start_date': None,
+            'first_end_date': None,
+            'coaccused_count': 0,
+        }
+        self.assertEqual(dict(changelog.content.items()), expected_content_items)

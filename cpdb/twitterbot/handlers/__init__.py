@@ -12,7 +12,7 @@ class MentionEventHandler(EventHandler):
 
     def handle(self):
         for handler_cls in list(self.sub_handlers):
-            handler = handler_cls(self.event_data, self.for_user_id)
+            handler = handler_cls(self.event_data, self.for_user_id, self.original_event)
             if handler.match_tweet():
                 handler.handle()
 

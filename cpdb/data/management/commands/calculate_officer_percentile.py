@@ -1,11 +1,13 @@
 import time
 
 from django.core.management import BaseCommand
+from django.db import connection
 
 from tqdm import tqdm
 
 from data.models import Officer
 from data import officer_percentile
+from utils.bulk_db import build_bulk_update_sql
 
 
 class Command(BaseCommand):
@@ -18,20 +20,31 @@ class Command(BaseCommand):
                 trr_percentile=None,
                 honorable_mention_percentile=None,
             )
-            for data in tqdm(percentile_values):
-                officer = Officer.objects.get(pk=data.officer_id)
-                if officer:
-                    if hasattr(data, 'percentile_allegation'):
-                        officer.complaint_percentile = data.percentile_allegation
-                    if hasattr(data, 'percentile_allegation_civilian'):
-                        officer.civilian_allegation_percentile = data.percentile_allegation_civilian
-                    if hasattr(data, 'percentile_allegation_internal'):
-                        officer.internal_allegation_percentile = data.percentile_allegation_internal
-                    if hasattr(data, 'percentile_trr'):
-                        officer.trr_percentile = data.percentile_trr
-                    if hasattr(data, 'percentile_honorable_mention'):
-                        officer.honorable_mention_percentile = data.percentile_honorable_mention
-                    officer.save()
+
+            data = [{
+                'id': officer.officer_id,
+                'complaint_percentile': getattr(officer, 'percentile_allegation', None),
+                'civilian_allegation_percentile': getattr(officer, 'percentile_allegation_civilian', None),
+                'internal_allegation_percentile': getattr(officer, 'percentile_allegation_internal', None),
+                'trr_percentile': getattr(officer, 'percentile_trr', None),
+                'honorable_mention_percentile': getattr(officer, 'percentile_honorable_mention', None),
+            } for officer in percentile_values]
+
+            update_fields = [
+                'complaint_percentile',
+                'civilian_allegation_percentile',
+                'internal_allegation_percentile',
+                'trr_percentile',
+                'honorable_mention_percentile'
+            ]
+
+            cursor = connection.cursor()
+
+            batch_size = 100
+            for i in tqdm(range(0, len(data), batch_size)):
+                batch_data = data[i:i + batch_size]
+                update_command = build_bulk_update_sql(Officer._meta.db_table, 'id', update_fields, batch_data)
+                cursor.execute(update_command)
 
     def handle(self, *args, **kwargs):
         start_time = time.time()
