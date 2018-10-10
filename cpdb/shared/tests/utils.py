@@ -3,7 +3,10 @@ from robber import expect
 
 
 def create_object(dict_object):
-    return Mock(spec=dict_object.keys(), **dict_object)
+    m = Mock(spec=dict_object.keys(), **dict_object)
+    if 'name' in dict_object:
+        m.configure_mock(name=dict_object['name'])
+    return m
 
 
 def validate_object(obj, data):

@@ -12,9 +12,9 @@ from django.db.models import F
 from cr.doc_types import CRDocType
 from cr.serializers.cr_response_serializers import (
     CRSerializer, CRSummarySerializer, AttachmentRequestSerializer,
-    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
-    CRRelatedComplaintSerializer, CRMobileSerializer
+    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer, CRRelatedComplaintSerializer
 )
+from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from es_index.pagination import ESQueryPagination
 from data.models import Allegation
 

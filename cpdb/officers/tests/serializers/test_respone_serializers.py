@@ -313,7 +313,6 @@ class OfficerInfoSerializerTestCase(TestCase):
                     'id': 123,
                     'year': 2002,
                     'percentile_trr': '99.8800',
-                    'percentile_allegation': None,
                     'percentile_allegation_civilian': '77.6600',
                     'percentile_allegation_internal': '66.5500',
                 },
@@ -467,7 +466,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
         setattr(officer_allegation, 'unit_description', 'District 001')
         setattr(officer_allegation, 'rank_name', 'Police Officer')
 
-        expect(CRNewTimelineSerializer(officer_allegation).data['point']).to.eq(None)
+        expect(CRNewTimelineSerializer(officer_allegation).data).to.exclude('point')
 
 
 class AwardNewTimelineSerializerTestCase(TestCase):
@@ -531,7 +530,7 @@ class TRRNewTimelineSerializerTestCase(TestCase):
         setattr(trr, 'unit_description', 'District 001')
         setattr(trr, 'rank_name', 'Police Officer')
 
-        expect(TRRNewTimelineSerializer(trr).data['point']).to.eq(None)
+        expect(TRRNewTimelineSerializer(trr).data).to.exclude('point')
 
 
 class OfficerCoaccusalSerializerTestCase(TestCase):
