@@ -30,6 +30,7 @@ class OfficerCardSerializer(serializers.Serializer):
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
     percentile = serializers.SerializerMethodField()
+    rank = serializers.CharField()
 
     def get_percentile(self, obj):
         return OfficerPercentileSerializer(obj).data
