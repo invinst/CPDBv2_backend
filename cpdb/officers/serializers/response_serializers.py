@@ -109,7 +109,7 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
     def get_percentiles(self, obj):
-        yearly_percentiles = obj.officeryearlypercentile_set.order_by('-year')
+        yearly_percentiles = obj.officeryearlypercentile_set.order_by('year')
         return OfficerYearlyPercentileSerializer(yearly_percentiles, many=True).data
 
 

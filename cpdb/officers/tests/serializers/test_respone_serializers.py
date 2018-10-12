@@ -303,19 +303,19 @@ class OfficerInfoSerializerTestCase(TestCase):
             'percentiles': [
                 {
                     'id': 123,
-                    'year': 2003,
-                    'percentile_trr': '99.9900',
-                    'percentile_allegation': '88.8800',
-                    'percentile_allegation_civilian': '77.7700',
-                    'percentile_allegation_internal': '66.6600',
-                },
-                {
-                    'id': 123,
                     'year': 2002,
                     'percentile_trr': '99.8800',
                     'percentile_allegation': None,
                     'percentile_allegation_civilian': '77.6600',
                     'percentile_allegation_internal': '66.5500',
+                },
+                {
+                    'id': 123,
+                    'year': 2003,
+                    'percentile_trr': '99.9900',
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
                 },
             ]
         })
