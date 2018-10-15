@@ -34,6 +34,10 @@ class CoaccusedSerializer(serializers.Serializer):
     complaint_percentile = serializers.FloatField(
         read_only=True, allow_null=True, source='officer.complaint_percentile'
     )
+    final_outcome = serializers.CharField()
+    final_finding = serializers.CharField(source='final_finding_display')
+    category = serializers.CharField()
+    disciplined = serializers.NullBooleanField()
     race = serializers.CharField(source='officer.race')
     gender = serializers.CharField(source='officer.gender_display')
     rank = serializers.CharField(source='officer.rank')
