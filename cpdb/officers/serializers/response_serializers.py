@@ -260,18 +260,5 @@ class TRRNewTimelineSerializer(BaseTimelineSerializer):
             return None
 
 
-class OfficerCoaccusalSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    full_name = serializers.CharField()
-    complaint_count = serializers.IntegerField(source='allegation_count')
-    sustained_count = serializers.IntegerField()
-    birth_year = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField(read_only=True, allow_null=True)
-    race = serializers.CharField()
-    gender = serializers.CharField(source='gender_display')
-    percentile = serializers.SerializerMethodField()
+class OfficerCoaccusalSerializer(OfficerCardSerializer):
     coaccusal_count = serializers.IntegerField()
-    rank = serializers.CharField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data
