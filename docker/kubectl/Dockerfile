@@ -1,6 +1,6 @@
 FROM alpine
 
-ENV KUBE_LATEST_VERSION="v1.3.5"
+ENV KUBE_LATEST_VERSION="v1.11.3"
 
 # Install kubectl
 RUN apk add --update ca-certificates \

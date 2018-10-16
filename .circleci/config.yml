@@ -53,14 +53,14 @@ jobs:
 
   deploy_ingress:
     docker:
-      - image: cpdbdev/kubectl:v1.3.5
+      - image: cpdbdev/kubectl:v1.11.3
     steps:
       - checkout
       - run: echo $KUBECONFIG_JSON > kubeconfig.json
       - run:
           name: Reveal secrets
           command: |
-            echo $GPG_PRIVATE_KEY > /tmp/gpg_private.gpg
+            echo $GPG_PRIVATE_KEY | base64 -D > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
       - run:
