@@ -79,7 +79,8 @@ jobs:
               export NAMESPACE=staging
               export ENV_FILE=staging.env
             fi
-            kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE
+            set +e
+            kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
             templater ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
 
 
