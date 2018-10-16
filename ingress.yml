@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cpdp-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  - hosts:
+    - {{INGRESS_HOST}}
+    secretName: tls-secret
+  rules:
+  - host: {{INGRESS_HOST}}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: desktop-frontend
+          servicePort: 80

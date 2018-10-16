@@ -51,6 +51,38 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION)
 
+  deploy_ingress:
+    docker:
+      - image: cpdbdev/kubectl:v1.3.5
+    steps:
+      - checkout
+      - run: echo $KUBECONFIG_JSON > kubeconfig.json
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Install nginx ingress controller
+          command: |
+            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
+      - run:
+          name: Apply ingress
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export NAMESPACE=production
+              export ENV_FILE=prod.env
+            else
+              export NAMESPACE=staging
+              export ENV_FILE=staging.env
+            fi
+            kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE
+            templater ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
+
+
 workflows:
   version: 2
   test_and_deploy:
@@ -66,3 +98,12 @@ workflows:
   test_deploy_cpdpbot:
     jobs:
       - build_cpdpbot
+
+  deploy_ingress:
+    jobs:
+      - deploy_ingress:
+          filters:
+            branches:
+              only:
+                - staging
+                - master
