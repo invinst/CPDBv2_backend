@@ -16,7 +16,7 @@ gunicorn_max_requests: 0
 gunicorn_timeout_seconds: 300
 
 # Nginx settings.
-nginx_server_name: cpdp.co
+nginx_server_name: api.cpdp.co
 nginx_mobile_server_name: m.cpdp.co
 nginx_template: "nginx_site_config"
 
