@@ -60,7 +60,7 @@ jobs:
       - run:
           name: Reveal secrets
           command: |
-            echo $GPG_PRIVATE_KEY | base64 -D > /tmp/gpg_private.gpg
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
       - run:
