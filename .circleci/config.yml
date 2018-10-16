@@ -96,9 +96,14 @@ workflows:
             branches:
               only: staging
 
-  test_deploy_cpdpbot:
+  test_build_cpdpbot:
     jobs:
-      - build_cpdpbot
+      - build_cpdpbot:
+          filters:
+            branches:
+              only:
+                - staging
+                - master
 
   deploy_ingress:
     jobs:
