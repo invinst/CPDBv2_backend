@@ -7,13 +7,21 @@ metadata:
 spec:
   tls:
   - hosts:
-    - {{INGRESS_HOST}}
+    - {{DESKTOP_DOMAIN}}
+    - {{MOBILE_DOMAIN}}
     secretName: tls-secret
   rules:
-  - host: {{INGRESS_HOST}}
+  - host: {{DESKTOP_DOMAIN}}
     http:
       paths:
       - path: /
         backend:
           serviceName: desktop-frontend
+          servicePort: 80
+  - host: {{MOBILE_DOMAIN}}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: mobile-frontend
           servicePort: 80
