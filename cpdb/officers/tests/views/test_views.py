@@ -88,7 +88,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'major_award_count': 1,
             'unsustained_count': 0,
             'complaint_percentile': 32.5,
-            'honorable_mention_percentile': None,
             'coaccusals': [],
             'percentiles': [],
             'tags': [],
@@ -161,7 +160,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '002',
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
-                'point': None,
             }, {
                 'date': '2015-08-23',
                 'kind': 'CR',
@@ -195,7 +193,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
-                'point': None,
             }, {
                 'date': '2011-08-23',
                 'kind': 'CR',
@@ -215,7 +212,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                         'gender': 'Male',
                     }
                 ],
-                'point': None,
                 'attachments': [],
             }, {
                 'date': '2011-03-23',
@@ -280,7 +276,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
                 'victims': [],
-                'point': None,
                 'attachments': [],
             }, {
                 'date': '2010-01-01',
@@ -543,9 +538,5 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1950,
             'coaccusal_count': 1,
             'rank': 'Police Officer',
-            'complaint_percentile': None,
-            'percentile_trr': None,
-            'percentile_allegation_civilian': None,
-            'percentile_allegation_internal': None,
         }]
         expect(response.data).to.eq(expected_response_data)
