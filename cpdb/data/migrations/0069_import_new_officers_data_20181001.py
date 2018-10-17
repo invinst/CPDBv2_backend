@@ -36,8 +36,13 @@ def has_change(row, obj):
     return any(str(getattr(obj, k)) != str(row[k]) for k in row)
 
 
-def bulk_create_update(klass, rows):
-    object_dict = klass.objects.all().in_bulk()
+def bulk_create_update(klass, rows, all_fields=None):
+    if not rows:
+        return
+
+    all_fields = all_fields or rows[0].keys()
+
+    object_dict = klass.objects.all().only(*all_fields).in_bulk()
 
     new_objects = [klass(**row) for row in rows if int(row['id']) not in object_dict]
     old_objects = [
@@ -50,8 +55,7 @@ def bulk_create_update(klass, rows):
     )
 
     if old_objects:
-        update_fields = rows[0].keys()
-        update_fields.remove('id')
+        update_fields = [f for f in all_fields if f != 'id']
 
         print 'Updating {} old objects'.format(len(old_objects))
         batch_size = 1000
@@ -73,14 +77,15 @@ def import_officers_data(apps, schema_editor):
             field.name: None if field.null else ''
             for field in Officer._meta.get_fields()
         }
+        all_fields = [
+            'id', 'first_name', 'last_name', 'middle_initial', 'middle_initial2', 'suffix_name',
+            'gender', 'race', 'appointed_date', 'resignation_date', 'rank', 'birth_year', 'active'
+        ]
 
         def clean(row):
             row['id'] = int(row.pop('pk'))
             for key in row.keys():
-                if key not in [
-                    'id', 'first_name', 'last_name', 'middle_initial', 'middle_initial2', 'suffix_name',
-                    'gender', 'race', 'appointed_date', 'resignation_date', 'rank', 'birth_year', 'active'
-                ]:
+                if key not in all_fields:
                     row.pop(key)
 
             for key, val in row.iteritems():
@@ -90,7 +95,7 @@ def import_officers_data(apps, schema_editor):
             return row
 
         rows = map(clean, reader)
-        bulk_create_update(Officer, rows)
+        bulk_create_update(Officer, rows, all_fields)
 
 
 class Migration(migrations.Migration):
