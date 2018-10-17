@@ -30,13 +30,6 @@ class OfficerAllegationTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(allegation_category=allegation_category)
         expect(officer_allegation.subcategory).to.eq('subcategory')
 
-    def test_coaccused_count(self):
-        allegation = AllegationFactory()
-        officer_allegation = OfficerAllegationFactory(allegation=allegation)
-        OfficerAllegationFactory.create_batch(5, allegation=allegation)
-
-        expect(officer_allegation.coaccused_count).to.eq(6)
-
     def test_final_finding_display(self):
         officer_allegation = OfficerAllegationFactory(final_finding='?')
         expect(officer_allegation.final_finding_display).to.eq('Unknown')

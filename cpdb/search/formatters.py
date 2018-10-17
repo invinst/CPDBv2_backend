@@ -36,7 +36,7 @@ class OfficerFormatter(SimpleFormatter):
             'resignation_date': serialized_doc.get('date_of_resignation'),
             'allegation_count': serialized_doc.get('allegation_count', 0),
             'sustained_count': serialized_doc.get('sustained_count', 0),
-            'trr_count': serialized_doc.get('trr_count', 0),
+            'trr_count': serialized_doc.get('annotated_trr_count', 0),
             'discipline_count': serialized_doc.get('discipline_count', 0),
             'honorable_mention_count': serialized_doc.get('honorable_mention_count', 0),
             'civilian_compliment_count': serialized_doc.get('civilian_compliment_count', 0),

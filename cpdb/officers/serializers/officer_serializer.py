@@ -290,7 +290,7 @@ class OfficerSerializer(BaseSerializer):
             'sustained_count': get('sustained_complaint_count'),
             'discipline_count': get('discipline_complaint_count'),
             'civilian_compliment_count': self.get_civilian_compliment_count,
-            'trr_count': get('trr_count'),
+            'trr_count': get('annotated_trr_count'),
             'major_award_count': self.get_major_award_count,
             'tags': get('tags'),
             'to': self.get_to,

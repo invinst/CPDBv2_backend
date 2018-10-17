@@ -68,7 +68,7 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'race': 'White',
             'gender': 'Male',
             'honorable_mention_count': 3,
-            'trr_count': 1,
+            'annotated_trr_count': 1,
             'major_award_count': 1,
             'honorable_mention_percentile': 10,
         }))

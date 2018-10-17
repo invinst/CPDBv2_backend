@@ -34,7 +34,7 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         super(OfficerTweetHandlerTestCase, self).setUp()
         ResponseTemplate.objects.all().delete()
 
-        self.officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+        self.officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan', allegation_count=1)
         self.allegation = AllegationFactory()
         OfficerAllegationFactory(officer=self.officer, allegation=self.allegation)
 
