@@ -11,6 +11,8 @@ from django.db.models.functions import Concat, ExtractYear, Cast, Lower
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
+from django_bulk_update.manager import BulkUpdateManager
+
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
@@ -275,6 +277,8 @@ class Officer(TaggableModel):
     internal_allegation_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     trr_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     honorable_mention_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+
+    objects = BulkUpdateManager()
 
     def __str__(self):
         return self.full_name
@@ -580,6 +584,8 @@ class OfficerBadgeNumber(models.Model):
     star = models.CharField(max_length=10)
     current = models.BooleanField(default=False)
 
+    objects = BulkUpdateManager()
+
     def __str__(self):
         return '%s - %s' % (self.officer, self.star)
 
@@ -589,6 +595,8 @@ class OfficerHistory(models.Model):
     unit = models.ForeignKey(PoliceUnit, null=True)
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
+
+    objects = BulkUpdateManager()
 
     @property
     def unit_name(self):
@@ -705,6 +713,8 @@ class Investigator(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
 
+    objects = BulkUpdateManager()
+
     @property
     def num_cases(self):
         return self.investigatorallegation_set.all().count()
@@ -733,6 +743,8 @@ class Allegation(models.Model):
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
+
+    objects = BulkUpdateManager()
 
     def get_most_common_category(self):
         return self.officerallegation_set.values(
@@ -864,6 +876,8 @@ class InvestigatorAllegation(models.Model):
     current_unit = models.ForeignKey(PoliceUnit, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
 
+    objects = BulkUpdateManager()
+
 
 class AllegationCategory(models.Model):
     category_code = models.CharField(max_length=255)
@@ -871,6 +885,8 @@ class AllegationCategory(models.Model):
     allegation_name = models.CharField(max_length=255, blank=True)
     on_duty = models.BooleanField(default=False)
     citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
+
+    objects = BulkUpdateManager()
 
 
 class OfficerAllegation(models.Model):
@@ -889,6 +905,8 @@ class OfficerAllegation(models.Model):
     final_outcome = models.CharField(max_length=32, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
     disciplined = models.NullBooleanField()
+
+    objects = BulkUpdateManager()
 
     @property
     def crid(self):
@@ -939,6 +957,8 @@ class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
     officer = models.ForeignKey(Officer, null=True)
 
+    objects = BulkUpdateManager()
+
 
 class Complainant(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
@@ -946,6 +966,8 @@ class Complainant(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+
+    objects = BulkUpdateManager()
 
     @property
     def gender_display(self):
@@ -1019,6 +1041,8 @@ class Victim(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+
+    objects = BulkUpdateManager()
 
     @property
     def gender_display(self):
