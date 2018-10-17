@@ -44,7 +44,7 @@ class OfficerMobileSerializer(serializers.Serializer):
     birth_year = serializers.IntegerField(read_only=True, allow_null=True)
     badge = serializers.CharField(read_only=True, allow_null=True)
     historic_badges = serializers.ListField(read_only=True, allow_null=True, child=serializers.CharField())
-    gender = serializers.CharField()
+    gender = serializers.CharField(read_only=True, allow_null=True)
     allegation_count = serializers.IntegerField(read_only=True, allow_null=True)
     complaint_percentile = serializers.FloatField(read_only=True, allow_null=True)
     honorable_mention_count = serializers.IntegerField(read_only=True, allow_null=True)
