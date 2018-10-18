@@ -179,7 +179,7 @@ class OfficersIndexer(BaseIndexer):
             .annotate(complaint_count=SQCount(allegation_count.values('id')))\
             .annotate(sustained_complaint_count=SQCount(sustained_count.values('id')))\
             .annotate(discipline_complaint_count=SQCount(discipline_count.values('id')))\
-            .annotate(trr_count=SQCount(trr_count.values('id')))\
+            .annotate(annotated_trr_count=SQCount(trr_count.values('id')))\
             .annotate(unsustained_complaint_count=SQCount(unsustained_count.values('id')))
 
     def extract_datum(self, obj):

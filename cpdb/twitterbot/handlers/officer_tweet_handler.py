@@ -26,14 +26,15 @@ class OfficerTweetHandler(SubEventHandler):
     )
     post_processors = (ActivityGridUpdater(),)
 
-    def __init__(self, event_data, for_user_id, *args, **kwargs):
-        super(OfficerTweetHandler, self).__init__(event_data, for_user_id, *args, **kwargs)
+    def __init__(self, event_data, for_user_id, original_event, *args, **kwargs):
+        super(OfficerTweetHandler, self).__init__(event_data, for_user_id, original_event, *args, **kwargs)
         self._context = {
             'client': self.client,
             'for_user_id': self.for_user_id
         }
         self.incoming_tweet = TweetContext(self.event_data, self._context)
         self._context['incoming_tweet'] = self.incoming_tweet
+        self.original_event = original_event
 
     def match_tweet(self):
         return not self.incoming_tweet.is_unfollow_tweet
@@ -65,6 +66,7 @@ class OfficerTweetHandler(SubEventHandler):
         response_log.status = TwitterBotResponseLog.SENT
         response_log.entity_url = entity_url
         response_log.tweet_content = tweet_content
+        response_log.original_event_object = self.original_event
         response_log.save()
 
         logger.info('%s - tweet "%s"' % (self.__class__.__name__, tweet_content))
