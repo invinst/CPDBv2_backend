@@ -12,8 +12,7 @@ from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
-    SalaryFactory,
-    VictimFactory,
+    SalaryFactory, OfficerAliasFactory, VictimFactory
 )
 from trr.factories import TRRFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
@@ -98,6 +97,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
     def test_summary_no_match(self):
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_summary_with_alias(self):
+        officer = OfficerFactory(id=456)
+        OfficerAliasFactory(old_officer_id=123, new_officer=officer)
+        response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 123}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.eq(456)
 
     def test_new_timeline_items_no_match(self):
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 456}))
@@ -338,6 +344,36 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }
         ])
 
+    def test_new_timeline_item_with_alias(self):
+        officer = OfficerFactory(id=456, appointed_date=date(2000, 1, 1))
+        OfficerAliasFactory(old_officer_id=123, new_officer=officer)
+        unit = PoliceUnitFactory(unit_name='001', description='unit_001')
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2010, 1, 1), end_date=date(2011, 12, 31))
+        AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
+
+        response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
+        expect(response.data).to.eq([
+            {
+                'date': '2011-03-23',
+                'kind': 'AWARD',
+                'award_type': 'Life Saving Award',
+                'unit_name': '001',
+                'unit_description': 'unit_001'
+            },
+            {
+                'date': '2010-01-01',
+                'kind': 'UNIT_CHANGE',
+                'unit_name': '001',
+                'unit_description': 'unit_001'
+            },
+            {
+                'date': '2000-01-01',
+                'kind': 'JOINED',
+                'unit_name': '',
+                'unit_description': ''
+            }
+        ])
+
     def test_top_officers_by_allegation(self):
         OfficerFactory(
             id=1, first_name='Daryl', last_name='Mack',
@@ -540,3 +576,15 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'rank': 'Police Officer',
         }]
         expect(response.data).to.eq(expected_response_data)
+
+    def test_coaccusals_with_alias(self):
+        officer = OfficerFactory(id=456)
+        OfficerAliasFactory(old_officer_id=123, new_officer=officer)
+        allegation = AllegationFactory()
+        coaccused = OfficerFactory(id=333)
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+        OfficerAllegationFactory(officer=coaccused, allegation=allegation)
+
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 123}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data[0]['id']).to.eq(333)

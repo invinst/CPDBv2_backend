@@ -3,9 +3,9 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from data.models import Officer
+from data.models import Officer, OfficerAlias
 from officers.serializers.response_serializers import (
-    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer,
+    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer
 )
 from officers.serializers.response_mobile_serializers import (
     OfficerMobileSerializer,
@@ -25,17 +25,28 @@ _ALLOWED_FILTERS = [
 ]
 
 
-class OfficersViewSet(viewsets.ViewSet):
+class OfficerBaseViewSet(viewsets.ViewSet):
+    def get_officer_id(self, pk):
+        try:
+            alias = OfficerAlias.objects.get(old_officer_id=pk)
+            return alias.new_officer_id
+        except OfficerAlias.DoesNotExist:
+            return pk
+
+
+class OfficersDesktopViewSet(OfficerBaseViewSet):
     @detail_route(methods=['get'])
     def summary(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerInfoSerializer(officer).data)
 
     @detail_route(methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineQuery(officer).execute())
 
     @list_route(methods=['get'], url_path='top-by-allegation')
@@ -52,14 +63,17 @@ class OfficersViewSet(viewsets.ViewSet):
 
     @detail_route(methods=['get'])
     def coaccusals(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerCoaccusalSerializer(officer.coaccusals, many=True).data)
 
 
-class OfficersMobileViewSet(viewsets.ViewSet):
+class OfficersMobileViewSet(OfficerBaseViewSet):
+
     def retrieve(self, request, pk):
-        query = OfficerInfoDocType().search().query('term', id=pk)
+        officer_id = self.get_officer_id(pk)
+        query = OfficerInfoDocType().search().query('term', id=officer_id)
         search_result = query.execute()
         try:
             return Response(OfficerMobileSerializer(search_result[0].to_dict()).data)
@@ -72,8 +86,9 @@ class OfficersMobileViewSet(viewsets.ViewSet):
 
     @detail_route(methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
-        if Officer.objects.filter(pk=pk).exists():
-            query = self._query_new_timeline_items(pk)
+        officer_id = self.get_officer_id(pk)
+        if Officer.objects.filter(pk=officer_id).exists():
+            query = self._query_new_timeline_items(officer_id)
             result = query[:10000].execute()
             return Response(MobileTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)
