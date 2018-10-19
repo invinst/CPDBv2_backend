@@ -15,7 +15,7 @@ class AirTableUploader(object):
     _lazy_airtable = None
 
     @classmethod
-    def _build_explanation_and_request_desc(cls, raw_object):
+    def _build_data(cls, raw_object):
         raise NotImplementedError
 
     @classmethod
@@ -26,20 +26,15 @@ class AirTableUploader(object):
 
     @classmethod
     def _build_record(cls, raw_object):
-        explanation, request_desc, agencies = cls._build_explanation_and_request_desc(raw_object)
+        explanation, requested_for, agencies = cls._build_data(raw_object)
         return {
             'Explanation': explanation,
             'Project': [
                 'CPDP'
             ],
             'Agency': agencies,
-            'Request Desc': request_desc,
+            'Requested For': requested_for,
             'Requestor': [
-                {
-                    'id': 'usrVdJCqxgnDTNRFW',
-                    'email': 'andrew@invisibleinstitute.com',
-                    'name': 'Andrew Fan'
-                },
                 {
                     'id': 'usrGiZFcyZ6wHTYWd',
                     'email': 'rajiv@invisibleinstitute.com',
@@ -79,7 +74,7 @@ class AirTableUploader(object):
 
 class CRRequestAirTableUploader(AirTableUploader):
     @classmethod
-    def _build_explanation_and_request_desc(cls, document_request):
+    def _build_data(cls, document_request):
         allegation = document_request.allegation
         officer_allegations = allegation.officerallegation_set.select_related('officer')\
             .order_by('officer__first_name', 'officer__last_name')
@@ -91,13 +86,13 @@ class CRRequestAirTableUploader(AirTableUploader):
             for officer_allegation in officer_allegations if officer_allegation.officer
         ]
         explanation = "Officers: {}".format(', '.join(officers_info)) if officers_info else ''
-        request_desc = "CR {crid}".format(crid=allegation.crid)
+        requested_for = "CR {crid}".format(crid=allegation.crid)
         agencies = [
             settings.AIRTABLE_CPD_AGENCY_ID
             if document_request.investigated_by_cpd()
             else settings.AIRTABLE_COPA_AGENCY_ID
         ]
-        return explanation, request_desc, agencies
+        return explanation, requested_for, agencies
 
     @classmethod
     def _get_uploaded_objects(cls):
@@ -115,15 +110,15 @@ class CRRequestAirTableUploader(AirTableUploader):
 
 class TRRRequestAirTableUploader(AirTableUploader):
     @classmethod
-    def _build_explanation_and_request_desc(cls, document_request):
+    def _build_data(cls, document_request):
         officer = document_request.trr.officer
         explanation = "Officer: {officer_name}(ID {officer_id})".format(
             officer_id=officer.id,
             officer_name=officer.full_name
         ) if officer else ''
 
-        request_desc = "TRR {trrid}".format(trrid=document_request.trr_id)
-        return explanation, request_desc, []
+        requested_for = "TRR {trrid}".format(trrid=document_request.trr_id)
+        return explanation, requested_for, []
 
     @classmethod
     def _get_uploaded_objects(cls):

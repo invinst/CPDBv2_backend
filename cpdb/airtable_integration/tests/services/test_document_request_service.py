@@ -40,13 +40,8 @@ class DocumentRequestServiceTestCase(TestCase):
               'CPDP'
             ],
             'Agency': ['CPD_AGENCY_ID'],
-            'Request Desc': 'CR 123456',
+            'Requested For': 'CR 123456',
             'Requestor': [
-              {
-                'id': 'usrVdJCqxgnDTNRFW',
-                'email': 'andrew@invisibleinstitute.com',
-                'name': 'Andrew Fan'
-              },
               {
                 'id': 'usrGiZFcyZ6wHTYWd',
                 'email': 'rajiv@invisibleinstitute.com',
@@ -79,13 +74,8 @@ class DocumentRequestServiceTestCase(TestCase):
               'CPDP'
             ],
             'Agency': ['COPA_AGENCY_ID'],
-            'Request Desc': 'CR 123456',
+            'Requested For': 'CR 123456',
             'Requestor': [
-              {
-                'id': 'usrVdJCqxgnDTNRFW',
-                'email': 'andrew@invisibleinstitute.com',
-                'name': 'Andrew Fan'
-              },
               {
                 'id': 'usrGiZFcyZ6wHTYWd',
                 'email': 'rajiv@invisibleinstitute.com',
@@ -114,13 +104,8 @@ class DocumentRequestServiceTestCase(TestCase):
               'CPDP'
             ],
             'Agency': [],
-            'Request Desc': 'TRR 123456',
+            'Requested For': 'TRR 123456',
             'Requestor': [
-              {
-                'id': 'usrVdJCqxgnDTNRFW',
-                'email': 'andrew@invisibleinstitute.com',
-                'name': 'Andrew Fan'
-              },
               {
                 'id': 'usrGiZFcyZ6wHTYWd',
                 'email': 'rajiv@invisibleinstitute.com',
@@ -171,7 +156,7 @@ class DocumentRequestServiceTestCase(TestCase):
 
             with patch(
                 'airtable_integration.services.document_request_service.'
-                'AirTableUploader._build_explanation_and_request_desc',
+                'AirTableUploader._build_data',
                 return_value=('', '', [])
             ):
                 expect(AirTableUploader.upload).to.throw(NotImplementedError)
@@ -218,13 +203,8 @@ class DocumentRequestServiceTestCase(TestCase):
                     'CPDP'
                 ],
                 'Agency': ['CPD_AGENCY_ID'],
-                'Request Desc': 'CR 123',
+                'Requested For': 'CR 123',
                 'Requestor': [
-                    {
-                        'id': 'usrVdJCqxgnDTNRFW',
-                        'email': 'andrew@invisibleinstitute.com',
-                        'name': 'Andrew Fan'
-                    },
                     {
                         'id': 'usrGiZFcyZ6wHTYWd',
                         'email': 'rajiv@invisibleinstitute.com',
@@ -238,13 +218,8 @@ class DocumentRequestServiceTestCase(TestCase):
                     'CPDP'
                 ],
                 'Agency': ['COPA_AGENCY_ID'],
-                'Request Desc': 'CR 456',
+                'Requested For': 'CR 456',
                 'Requestor': [
-                    {
-                        'id': 'usrVdJCqxgnDTNRFW',
-                        'email': 'andrew@invisibleinstitute.com',
-                        'name': 'Andrew Fan'
-                    },
                     {
                         'id': 'usrGiZFcyZ6wHTYWd',
                         'email': 'rajiv@invisibleinstitute.com',
