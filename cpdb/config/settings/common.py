@@ -54,7 +54,6 @@ LOCAL_APPS = (
     'units',
     'alias',
     'twitterbot',
-    'visual_token',
     'activity_grid',
     'document_cloud',
     'search_terms',
@@ -306,10 +305,6 @@ LOGGING = {
 }
 
 TEST = False
-
-VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('visual_token_media'))
-VISUAL_TOKEN_STORAGEACCOUNTNAME = env.str('VISUAL_TOKEN_STORAGEACCOUNTNAME', default='cpdbdev')
-VISUAL_TOKEN_STORAGEACCOUNTKEY = env.str('VISUAL_TOKEN_STORAGEACCOUNTKEY', default='')
 
 RUNNING_PORT = '80'
 

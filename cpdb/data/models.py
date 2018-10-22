@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from itertools import groupby
 
@@ -338,19 +337,6 @@ class Officer(TaggableModel):
         return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
             cr_threshold=cr_threshold
         )]
-
-    @property
-    def visual_token_png_url(self):
-        return 'https://{account_name}.blob.core.windows.net/visual-token/officer_{id}.png'.format(
-            account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
-        )
-
-    @property
-    def visual_token_png_path(self):
-        file_name = 'officer_{id}.png'.format(
-            account_name=settings.VISUAL_TOKEN_STORAGEACCOUNTNAME, id=self.id
-        )
-        return os.path.join(settings.VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER, file_name)
 
     def get_unit_by_date(self, query_date):
         try:
