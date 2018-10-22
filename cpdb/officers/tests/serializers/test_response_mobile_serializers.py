@@ -16,6 +16,7 @@ from officers.serializers.response_mobile_serializers import (
     CRNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
+    OfficerCardMobileSerializer
 )
 from data.factories import (
     OfficerFactory, PoliceUnitFactory, OfficerBadgeNumberFactory,
@@ -366,3 +367,33 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         setattr(trr, 'rank_name', 'Police Officer')
 
         expect(TRRNewTimelineMobileSerializer(trr).data).to.exclude('point')
+
+
+class OfficerCardMobileSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(
+            id=123,
+            first_name='Jame',
+            last_name='Bone',
+            allegation_count=2,
+            sustained_count=1,
+            birth_year=1950,
+            race='White',
+            gender='M',
+            resignation_date=date(2000, 01, 01),
+            complaint_percentile='99.9900',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+
+        expect(OfficerCardMobileSerializer(officer).data).to.eq({
+            'id': 123,
+            'full_name': 'Jame Bone',
+            'complaint_count': 2,
+            'percentile': {
+                'percentile_allegation_civilian': '88.8800',
+                'percentile_allegation_internal': '77.7700',
+                'percentile_trr': '66.6600',
+            }
+        })

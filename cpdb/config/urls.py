@@ -88,6 +88,7 @@ urlpatterns = [
         r')/)?$', ensure_csrf_cookie(index_view), name='index'),
     url(r'^(?:(?P<path>'
         r'embed/top-officers-page|'
+        r'embed/officers|'
         r'embed/map|'
         r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
     url(

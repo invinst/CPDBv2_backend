@@ -392,3 +392,55 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'rank': 'Junior Police Officer',
             },
         ])
+
+    def test_list_all_invalid_ids(self):
+        response = self.client.get(reverse('api-v2:officers-mobile-list'), {'ids': '1,2.0,3'})
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.have.eq('Invalid officer ids: 2.0, 1, 3')
+
+    def test_list(self):
+        OfficerFactory(
+            id=1, first_name='Daryl', last_name='Mack',
+            trr_percentile=12.0000,
+            allegation_count=12,
+            sustained_count=0,
+            civilian_allegation_percentile=99.7840,
+            internal_allegation_percentile=99.7840,
+            complaint_percentile=99.3450,
+            race='White', gender='M', birth_year=1975,
+        )
+        OfficerFactory(
+            id=2,
+            first_name='Ronald', last_name='Watts',
+            trr_percentile=0.0000,
+            allegation_count=5,
+            sustained_count=None,
+            civilian_allegation_percentile=98.4344,
+            internal_allegation_percentile=None,
+            complaint_percentile=99.5000,
+            race='Black', gender='F', birth_year=1971,
+        )
+
+        response = self.client.get(reverse('api-v2:officers-mobile-list'), {'ids': '2,1'})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'id': 2,
+                'full_name': 'Ronald Watts',
+                'complaint_count': 5,
+                'percentile': {
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation_civilian': '98.4344',
+                }
+            },
+            {
+                'id': 1,
+                'full_name': 'Daryl Mack',
+                'complaint_count': 12,
+                'percentile': {
+                    'percentile_trr': '12.0000',
+                    'percentile_allegation_civilian': '99.7840',
+                    'percentile_allegation_internal': '99.7840'
+                }
+            }
+        ])
