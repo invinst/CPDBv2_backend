@@ -15,7 +15,7 @@ environ.Env.read_env("{root}/.env".format(root=ROOT_DIR))  # reading .env file
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('DJANGO_SECRET_KEY')
+SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='django')
 
 ALLOWED_HOSTS = ['*']
 
@@ -98,11 +98,11 @@ DATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': env.str('DB_HOST'),
-        'NAME': env.str('DB_NAME'),
-        'PASSWORD': env.str('DB_PASSWORD'),
+        'HOST': env.str('DB_HOST', 'postgis'),
+        'NAME': env.str('DB_NAME', 'cpdb'),
+        'PASSWORD': env.str('DB_PASSWORD', 'password'),
         'PORT': 5432,
-        'USER': env.str('DB_USER')
+        'USER': env.str('DB_USER', 'cpdb')
     }
 }
 
@@ -243,7 +243,7 @@ TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
 V1_URL = 'https://data.cpdp.co'
 
-ELASTICSEARCH_HOSTS = ['localhost:9200']
+ELASTICSEARCH_HOSTS = ['elasticsearch:9200']
 
 LOGGING = {
     'version': 1,
