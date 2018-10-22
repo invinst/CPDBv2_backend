@@ -104,9 +104,3 @@ class AzureStorageTestCase(SimpleTestCase):
         storage = AzureStorage()
         storage.get_modified_time('admin.js')
         storage.base_blob_service.get_blob_properties.assert_called_with('static', 'admin.js')
-
-    @patch('config.storages.BaseBlobService.get_blob_to_bytes', return_value=Mock(content='blob_bytes'))
-    def test_get_bytes(self, BaseBlobServiceMock):
-        storage = AzureStorage()
-        content_bytes = storage.get_bytes('blob_file')
-        expect(content_bytes).to.eq('blob_bytes')

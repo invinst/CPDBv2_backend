@@ -27,6 +27,11 @@ _ALLOWED_FILTERS = [
 
 class OfficerBaseViewSet(viewsets.ViewSet):
     def get_officer_id(self, pk):
+        """
+        If an officer id does not exist, return the alias id if possible.
+        Frontend should be able to detect that there is a change in officer
+        id and redirect accordingly.
+        """
         try:
             alias = OfficerAlias.objects.get(old_officer_id=pk)
             return alias.new_officer_id
