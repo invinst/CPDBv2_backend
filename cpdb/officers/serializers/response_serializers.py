@@ -2,9 +2,10 @@ from rest_framework import serializers
 
 from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import PoliceUnit
+from shared.serializer import NoNullSerializer
 
 
-class OfficerPercentileSerializer(serializers.Serializer):
+class OfficerPercentileSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     year = serializers.SerializerMethodField()
     percentile_trr = serializers.DecimalField(
@@ -20,7 +21,7 @@ class OfficerPercentileSerializer(serializers.Serializer):
         return min(obj.resignation_date.year, MAX_VISUAL_TOKEN_YEAR) if obj.resignation_date else MAX_VISUAL_TOKEN_YEAR
 
 
-class OfficerCardSerializer(serializers.Serializer):
+class OfficerCardSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     complaint_count = serializers.IntegerField(source='allegation_count')
@@ -47,7 +48,7 @@ class PoliceUnitSerializer(serializers.ModelSerializer):
         return 'Unit {}'.format(obj.unit_name) if obj.unit_name else 'Unit'
 
 
-class OfficerSummarySerializer(serializers.Serializer):
+class OfficerSummarySerializer(NoNullSerializer):
     id = serializers.IntegerField()
     unit = PoliceUnitSerializer(source='last_unit')
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
@@ -70,7 +71,7 @@ class OfficerSummarySerializer(serializers.Serializer):
         return obj.current_badge or ''
 
 
-class OfficerMetricsSerializer(serializers.Serializer):
+class OfficerMetricsSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     allegation_count = serializers.IntegerField()
     complaint_percentile = serializers.FloatField()
@@ -84,7 +85,7 @@ class OfficerMetricsSerializer(serializers.Serializer):
     honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
 
 
-class OfficerYearlyPercentileSerializer(serializers.Serializer):
+class OfficerYearlyPercentileSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer_id')
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(
@@ -97,7 +98,7 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
         allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
-class CoaccusalSerializer(serializers.Serializer):
+class CoaccusalSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     coaccusal_count = serializers.IntegerField()
 
@@ -110,11 +111,11 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
     def get_percentiles(self, obj):
-        yearly_percentiles = obj.officeryearlypercentile_set.order_by('-year')
+        yearly_percentiles = obj.officeryearlypercentile_set.order_by('year')
         return OfficerYearlyPercentileSerializer(yearly_percentiles, many=True).data
 
 
-class BaseTimelineSerializer(serializers.Serializer):
+class BaseTimelineSerializer(NoNullSerializer):
     unit_name = serializers.SerializerMethodField()
     unit_description = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
@@ -173,13 +174,13 @@ class UnitChangeNewTimelineSerializer(BaseTimelineSerializer):
         return 20
 
 
-class VictimSerializer(serializers.Serializer):
+class VictimSerializer(NoNullSerializer):
     gender = serializers.CharField(source='gender_display')
     race = serializers.CharField()
     age = serializers.IntegerField()
 
 
-class AttachmentFileSerializer(serializers.Serializer):
+class AttachmentFileSerializer(NoNullSerializer):
     title = serializers.CharField()
     url = serializers.CharField()
     preview_image_url = serializers.CharField()

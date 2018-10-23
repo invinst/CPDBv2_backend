@@ -12,9 +12,9 @@ from django.db.models import F
 from cr.doc_types import CRDocType
 from cr.serializers.cr_response_serializers import (
     CRSerializer, CRSummarySerializer, AttachmentRequestSerializer,
-    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
-    CRRelatedComplaintSerializer, CRMobileSerializer
+    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer, CRRelatedComplaintSerializer
 )
+from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from es_index.pagination import ESQueryPagination
 from data.models import Allegation
 
@@ -153,12 +153,10 @@ class CRViewSet(viewsets.ViewSet):
 
 class CRMobileViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        query = CRDocType().search().query('term', crid=pk)
-        search_result = query.execute()
-        try:
-            return Response(CRMobileSerializer(search_result[0].to_dict()).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        queryset = Allegation.objects.select_related('beat', 'most_common_category')
+        allegation = get_object_or_404(queryset, crid=pk)
+        serializer = CRMobileSerializer(allegation)
+        return Response(serializer.data)
 
     @detail_route(methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):

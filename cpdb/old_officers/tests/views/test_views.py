@@ -111,7 +111,7 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'discipline_count': 1,
             'honorable_mention_count': 1,
             'to': '/officer/123/kevin-kerl/',
-            'url': 'https://data.cpdp.co/officer/kevin-kerl/123',
+            'url': 'http://cpdb.lvh.me/officer/kevin-kerl/123',
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
