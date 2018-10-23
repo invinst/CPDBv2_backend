@@ -15,6 +15,7 @@ from data.factories import (
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
+from data.cache_managers import officer_cache_manager, allegation_cache_manager
 
 
 class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -102,7 +103,8 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
 
-        self.refresh_index()
+        officer_cache_manager.build_cached_columns()
+        allegation_cache_manager.cache_data()
 
         response = self.client.get(reverse('api-v2:cr-mobile-detail', kwargs={'pk': '12345'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -175,7 +177,6 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
-                    'preview_image_url': None
                 }
             ]
         })

@@ -173,7 +173,7 @@ class OfficerCacheManagerTestCase(TestCase):
         expect(officer_2.current_salary).to.be.none()
 
     @patch(
-        'data.management.commands.calculate_officer_percentile.officer_percentile.latest_year_percentile',
+        'data.cache_managers.officer_cache_manager.officer_percentile.latest_year_percentile',
         Mock(return_value=[
             create_object({
                 'officer_id': 2,

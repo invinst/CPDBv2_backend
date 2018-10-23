@@ -12,9 +12,24 @@ from officers.serializers.response_serializers import (
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer
 )
+from officers.serializers.response_mobile_serializers import (
+    CRNewTimelineMobileSerializer,
+    JoinedNewTimelineMobileSerializer,
+    UnitChangeNewTimelineMobileSerializer,
+    RankChangeNewTimelineMobileSerializer,
+    AwardNewTimelineMobileSerializer,
+    TRRNewTimelineMobileSerializer
+)
 
 
-class OfficerTimelineQuery:
+class OfficerTimelineBaseQuery(object):
+    cr_new_timeline_serializer = None
+    unit_change_new_timeline_serializer = None
+    rank_change_new_timeline_serializer = None
+    joined_new_timeline_serializer = None
+    award_new_timeline_serializer = None
+    trr_new_timeline_serializer = None
+
     def __init__(self, officer):
         self.officer = officer
 
@@ -59,7 +74,7 @@ class OfficerTimelineQuery:
             **self.rank_subquery('start_date')
         )
 
-        return CRNewTimelineSerializer(cr_timeline_queryset, many=True).data
+        return self.cr_new_timeline_serializer(cr_timeline_queryset, many=True).data
 
     @property
     def _unit_change_timeline(self):
@@ -71,7 +86,7 @@ class OfficerTimelineQuery:
             **self.rank_subquery('effective_date')
         )
 
-        return UnitChangeNewTimelineSerializer(
+        return self.unit_change_new_timeline_serializer(
             unit_change_timeline_queryset,
             many=True
         ).data
@@ -86,7 +101,7 @@ class OfficerTimelineQuery:
             **self.unit_subqueries('spp_date')
         )
 
-        return RankChangeNewTimelineSerializer(
+        return self.rank_change_new_timeline_serializer(
             salary_timeline, many=True
         ).data
 
@@ -98,7 +113,7 @@ class OfficerTimelineQuery:
             ).annotate(
                 **self.rank_subquery('appointed_date')
             )[:1]
-            return JoinedNewTimelineSerializer(joined_timeline_query, many=True).data
+            return self.joined_new_timeline_serializer(joined_timeline_query, many=True).data
         else:
             return []
 
@@ -113,7 +128,7 @@ class OfficerTimelineQuery:
         ).annotate(
             **self.rank_subquery('start_date')
         )
-        return AwardNewTimelineSerializer(award_timeline_queryset, many=True).data
+        return self.award_new_timeline_serializer(award_timeline_queryset, many=True).data
 
     @property
     def _trr_timeline(self):
@@ -124,7 +139,7 @@ class OfficerTimelineQuery:
         ).annotate(
             **self.rank_subquery('trr_date')
         )
-        return TRRNewTimelineSerializer(trr_timeline_queryset, many=True).data
+        return self.trr_new_timeline_serializer(trr_timeline_queryset, many=True).data
 
     def execute(self):
         timeline = self._cr_timeline + self._unit_change_timeline + self._rank_change_timeline + \
@@ -135,3 +150,21 @@ class OfficerTimelineQuery:
             for key in ['date_sort', 'priority_sort']:
                 item.pop(key, None)
         return sorted_timeline
+
+
+class OfficerTimelineQuery(OfficerTimelineBaseQuery):
+    cr_new_timeline_serializer = CRNewTimelineSerializer
+    unit_change_new_timeline_serializer = UnitChangeNewTimelineSerializer
+    rank_change_new_timeline_serializer = RankChangeNewTimelineSerializer
+    joined_new_timeline_serializer = JoinedNewTimelineSerializer
+    award_new_timeline_serializer = AwardNewTimelineSerializer
+    trr_new_timeline_serializer = TRRNewTimelineSerializer
+
+
+class OfficerTimelineMobileQuery(OfficerTimelineBaseQuery):
+    cr_new_timeline_serializer = CRNewTimelineMobileSerializer
+    unit_change_new_timeline_serializer = UnitChangeNewTimelineMobileSerializer
+    rank_change_new_timeline_serializer = RankChangeNewTimelineMobileSerializer
+    joined_new_timeline_serializer = JoinedNewTimelineMobileSerializer
+    award_new_timeline_serializer = AwardNewTimelineMobileSerializer
+    trr_new_timeline_serializer = TRRNewTimelineMobileSerializer
