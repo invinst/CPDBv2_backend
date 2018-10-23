@@ -24,7 +24,7 @@ resource "azurerm_kubernetes_cluster" "cpdp" {
   agent_pool_profile {
     name            = "default"
     count           = 1
-    vm_size         = "Standard_D1_v2"
+    vm_size         = "Standard_D2_v3"
     os_type         = "Linux"
     os_disk_size_gb = 30
   }
@@ -41,18 +41,6 @@ provider "kubernetes" {
   client_certificate     = "${base64decode(var.kubernetes_client_cert)}"
   client_key             = "${base64decode(var.kubernetes_client_key)}"
   cluster_ca_certificate = "${base64decode(var.kubernetes_client_ca_cert)}"
-}
-
-resource "kubernetes_namespace" "staging" {
-  metadata {
-    name = "staging"
-  }
-}
-
-resource "kubernetes_namespace" "production" {
-  metadata {
-    name = "production"
-  }
 }
 
 output "kube_config" {

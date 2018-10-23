@@ -39,17 +39,40 @@ jobs:
     machine: true
     steps:
       - checkout
+      - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
+      - persist_to_workspace:
+          root: .
+          paths:
+            - buildnum
       - run:
           name: Build cpdpbot image
-          command: docker build -t cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) docker/cpdpbot
+          command: docker build -t cpdbdev/cpdpbot:$(cat buildnum) docker/cpdpbot
       - run:
           name: Test cpdpbot image
-          command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) python -m cpdpbot.test
+          command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat buildnum) python -m cpdpbot.test
       - run:
           name: Push cpdpbot image
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION)
+            docker push cpdbdev/cpdpbot:$(cat buildnum)
+
+  deploy_cpdpbot:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: echo $KUBECONFIG_JSON > kubeconfig.json
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Deploy cpdpbot
+          command: CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/cpdpbot.yml -f prod.env | kubectl apply --namespace=production -f -
 
   deploy_ingress:
     docker:
@@ -81,7 +104,7 @@ jobs:
             fi
             set +e
             kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
-            templater ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
+            templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
 
 
 workflows:
@@ -96,9 +119,9 @@ workflows:
             branches:
               only: staging
 
-  test_build_cpdpbot:
+  deploy_cpdpbot:
     jobs:
-      - build_cpdpbot:
+      - deploy_cpdpbot:
           filters:
             branches:
               only:
@@ -107,9 +130,12 @@ workflows:
 
   deploy_ingress:
     jobs:
-      - deploy_ingress:
+      - build_cpdpbot:
           filters:
             branches:
               only:
                 - staging
                 - master
+      - deploy_ingress:
+          requires:
+            - build_cpdpbot
