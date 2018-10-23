@@ -22,7 +22,7 @@ from officers.serializers.response_mobile_serializers import (
 )
 
 
-class OfficerTimelineBaseQuery:
+class OfficerTimelineBaseQuery(object):
     cr_new_timeline_serializer = None
     unit_change_new_timeline_serializer = None
     rank_change_new_timeline_serializer = None
