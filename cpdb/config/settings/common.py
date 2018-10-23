@@ -68,6 +68,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIDDLEWARE CONFIGURATION
 # ------------------------------------------------------------------------------
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -77,8 +78,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware'
+    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
+
+# CACHES CONFIGURATION
+# ------------------------------------------------------------------------------
+CACHE_MIDDLEWARE_SECONDS = 3600
+CACHE_MIDDLEWARE_KEY_PREFIX = 'django'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -98,7 +112,7 @@ DATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': env.str('DB_HOST', 'postgis'),
+        'HOST': env.str('DB_HOST', 'postgres'),
         'NAME': env.str('DB_NAME', 'cpdb'),
         'PASSWORD': env.str('DB_PASSWORD', 'password'),
         'PORT': 5432,

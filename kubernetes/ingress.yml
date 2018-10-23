@@ -9,6 +9,7 @@ spec:
   - hosts:
     - {{DESKTOP_DOMAIN}}
     - {{MOBILE_DOMAIN}}
+    - {{API_DOMAIN}}
     secretName: tls-secret
   rules:
   - host: {{DESKTOP_DOMAIN}}
@@ -24,4 +25,11 @@ spec:
       - path: /
         backend:
           serviceName: mobile-frontend
+          servicePort: 80
+  - host: {{API_DOMAIN}}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: gunicron
           servicePort: 80

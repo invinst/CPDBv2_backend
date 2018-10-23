@@ -7,13 +7,13 @@ services:
     ports:
       - "8000:80"
     depends_on:
-      - postgis
+      - postgres
       - elasticsearch
     volumes:
       - .:/usr/src/app
     command: cpdb/manage.py runserver 0.0.0.0:80
-  postgis:
-    build: ./docker/postgis
+  postgres:
+    build: ./docker/postgres
     command: postgres
     ports:
       - "5432:5432"

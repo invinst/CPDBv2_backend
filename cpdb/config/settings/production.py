@@ -30,3 +30,13 @@ TWITTERBOT_ENV = 'prod'
 
 AIRTABLE_COPA_AGENCY_ID = 'rec1ue6wbuNiBYR5p'
 AIRTABLE_CPD_AGENCY_ID = 'rectsNdkdCupVByTf'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
