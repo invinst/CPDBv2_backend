@@ -32,7 +32,7 @@ class InvestigatorSerializer(CherryPickSerializer):
             'involved_type',
             'officer_id',
             'full_name',
-            'current_rank',
+            'badge',
             'percentile_allegation_civilian',
             'percentile_allegation_internal',
             'percentile_trr'
