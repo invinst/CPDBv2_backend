@@ -111,7 +111,7 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'discipline_count': 1,
             'honorable_mention_count': 1,
             'to': '/officer/123/kevin-kerl/',
-            'url': 'https://data.cpdp.co/officer/kevin-kerl/123',
+            'url': 'http://cpdb.lvh.me/officer/kevin-kerl/123',
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
@@ -253,41 +253,41 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             id=1, first_name='Daryl', last_name='Mack',
             trr_percentile=12.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
             complaint_percentile=99.3450,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
         officer2 = OfficerFactory(
             id=2,
             first_name='Ronald', last_name='Watts',
             trr_percentile=0.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
             complaint_percentile=99.5000,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
         officer3 = OfficerFactory(
             id=3,
             first_name='Officer', last_name='low percentile',
             trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
             complaint_percentile=96.3450,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
         officer4 = OfficerFactory(
             id=4,
             first_name='Officer', last_name='no visual token',
             trr_percentile=0.0000, internal_allegation_percentile=0.0000,
             complaint_percentile=99.8800,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
         officer5 = OfficerFactory(
             id=5,
             first_name='Officer', last_name='filter out',
             trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
             complaint_percentile=99.2000,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
         OfficerFactory(
             id=6,
             first_name='Officer', last_name='no percentiles',
             complaint_percentile=99.8000,
-            race='White', gender='M', birth_year=1975,
+            race='White', gender='M', birth_year=1975, rank='Police Officer',
         )
 
         for officer, percentile in zip(
@@ -323,6 +323,7 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'complaint_count': 0,
                     'sustained_count': 0,
                     'birth_year': 1975,
+                    'rank': 'Police Officer',
                 },
                 {
                     'complaint_percentile': 99.3450,
@@ -338,6 +339,7 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                     'complaint_count': 0,
                     'sustained_count': 0,
                     'birth_year': 1975,
+                    'rank': 'Police Officer',
                 }
             ])
 

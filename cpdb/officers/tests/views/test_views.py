@@ -82,7 +82,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'discipline_count': 1,
             'honorable_mention_count': 1,
             'to': '/officer/123/kevin-kerl/',
-            'url': 'https://data.cpdp.co/officer/kevin-kerl/123',
+            'url': 'http://cpdb.lvh.me/officer/kevin-kerl/123',
             'current_salary': 90000,
             'trr_count': 1,
             'major_award_count': 1,
@@ -346,6 +346,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             internal_allegation_percentile=99.7840,
             complaint_percentile=99.3450,
             race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
         )
         OfficerFactory(
             id=2,
@@ -355,6 +356,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             internal_allegation_percentile=99.7840,
             complaint_percentile=99.5000,
             race='White', gender='M', birth_year=1975,
+            rank='Detective'
         )
         OfficerFactory(
             id=3,
@@ -364,6 +366,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             internal_allegation_percentile=0.0000,
             complaint_percentile=96.3450,
             race='White', gender='M', birth_year=1975,
+            rank=''
         )
         OfficerFactory(
             id=4,
@@ -372,6 +375,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             internal_allegation_percentile=0.0000,
             complaint_percentile=99.8800,
             race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
         )
         OfficerFactory(
             id=5,
@@ -381,12 +385,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             internal_allegation_percentile=0.0000,
             complaint_percentile=99.2000,
             race='White', gender='M', birth_year=1975,
+            rank='Detective'
         )
         OfficerFactory(
             id=6,
             first_name='Officer', last_name='no percentiles',
             complaint_percentile=99.8000,
             race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
         )
 
         officer_cache_manager.build_cached_columns()
@@ -395,44 +401,43 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:officers-top-by-allegation'), {'limit': 2})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.have.length(2)
-        expect(response.data).to.eq([
-            {
-                'complaint_percentile': 99.5000,
-                'full_name': u'Ronald Watts',
+        expect(response.data).to.eq([{
+            'id': 2,
+            'full_name': 'Ronald Watts',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1975,
+            'complaint_percentile': 99.5000,
+            'race': 'White',
+            'gender': 'Male',
+            'rank': 'Detective',
+            'percentile': {
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '99.5000',
+                'percentile_allegation_civilian': '98.4344',
+                'percentile_allegation_internal': '99.7840',
+                'year': 2016,
                 'id': 2,
-                'percentile': {
-                    u'percentile_trr': '0.0000',
-                    u'percentile_allegation': '99.5000',
-                    u'percentile_allegation_civilian': '98.4344',
-                    u'percentile_allegation_internal': '99.7840',
-                    u'year': 2016,
-                    u'id': 2,
-                },
-                'race': u'White',
-                'gender': u'Male',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
             },
-            {
-                'complaint_percentile': 99.3450,
-                'full_name': u'Daryl Mack',
+        }, {
+            'id': 1,
+            'full_name': 'Daryl Mack',
+            'complaint_count': 0,
+            'sustained_count': 0,
+            'birth_year': 1975,
+            'complaint_percentile': 99.3450,
+            'race': 'White',
+            'gender': 'Male',
+            'rank': 'Police Officer',
+            'percentile': {
+                'percentile_trr': '12.0000',
+                'percentile_allegation': '99.3450',
+                'percentile_allegation_civilian': '98.4344',
+                'percentile_allegation_internal': '99.7840',
+                'year': 2016,
                 'id': 1,
-                'percentile': {
-                    u'percentile_trr': '12.0000',
-                    u'percentile_allegation': '99.3450',
-                    u'percentile_allegation_civilian': '98.4344',
-                    u'percentile_allegation_internal': '99.7840',
-                    u'year': 2016,
-                    u'id': 1,
-                },
-                'race': u'White',
-                'gender': u'Male',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
-            }
-        ])
+            },
+        }])
 
     def test_coaccusals_not_found(self):
         response_not_found = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': 999}))
@@ -512,31 +517,40 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             officer=officer2, allegation=allegation4, final_finding='NS', start_date=date(2007, 1, 1)
         )
 
-        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
         expected_response_data = [{
             'id': officer2.id,
             'full_name': 'Officer 1',
-            'allegation_count': 2,
+            'complaint_count': 2,
             'sustained_count': 1,
+            'birth_year': 1950,
+            'complaint_percentile': 95.0,
             'race': 'White',
             'gender': 'Male',
-            'birth_year': 1950,
-            'coaccusal_count': 2,
             'rank': 'Police Officer',
-            'complaint_percentile': 95.0,
-            'percentile_trr': 33.3333,
-            'percentile_allegation_civilian': 33.3333,
-            'percentile_allegation_internal': 0.0,
+            'coaccusal_count': 2,
+            'percentile': {
+                'percentile_trr': '33.3333',
+                'percentile_allegation': '95.0000',
+                'percentile_allegation_civilian': '33.3333',
+                'percentile_allegation_internal': '0.0000',
+                'id': officer2.id,
+                'year': 2016
+            },
         }, {
             'id': officer4.id,
             'full_name': 'Officer No Percentile',
-            'allegation_count': 1,
+            'complaint_count': 1,
             'sustained_count': 0,
+            'birth_year': 1950,
             'race': 'White',
             'gender': 'Female',
-            'birth_year': 1950,
             'coaccusal_count': 1,
             'rank': 'Police Officer',
+            'percentile': {
+                'id': officer4.id,
+                'year': 2016
+            },
         }]
+        response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_response_data)

@@ -1,28 +1,50 @@
 from rest_framework import serializers
 from django.db.models import Prefetch
 
+from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import AttachmentRequest
 from shared.serializer import NoNullSerializer
+
+
+class OfficerAllegationPercentileSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    year = serializers.SerializerMethodField()
+    percentile_trr = serializers.DecimalField(
+        source='officer.trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+    percentile_allegation = serializers.DecimalField(
+        source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+    percentile_allegation_civilian = serializers.DecimalField(
+        source='officer.civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
+    percentile_allegation_internal = serializers.DecimalField(
+        source='officer.internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
+
+    def get_year(self, obj):
+        return min(obj.officer.resignation_date.year, MAX_VISUAL_TOKEN_YEAR) if \
+            obj.officer.resignation_date else MAX_VISUAL_TOKEN_YEAR
 
 
 class CoaccusedSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer.id')
     full_name = serializers.CharField(source='officer.full_name')
-    gender = serializers.CharField(source='officer.gender_display')
-    race = serializers.CharField(source='officer.race')
-    rank = serializers.CharField(source='officer.rank')
-    age = serializers.IntegerField(source='officer.current_age')
-    allegation_count = serializers.IntegerField(source='officer.allegation_count')
+    complaint_count = serializers.IntegerField(source='officer.allegation_count')
     sustained_count = serializers.IntegerField(source='officer.sustained_count')
+    birth_year = serializers.IntegerField(source='officer.birth_year')
+    complaint_percentile = serializers.FloatField(
+        read_only=True, allow_null=True, source='officer.complaint_percentile'
+    )
     final_outcome = serializers.CharField()
     final_finding = serializers.CharField(source='final_finding_display')
     category = serializers.CharField()
     disciplined = serializers.NullBooleanField()
+    race = serializers.CharField(source='officer.race')
+    gender = serializers.CharField(source='officer.gender_display')
+    rank = serializers.CharField(source='officer.rank')
+    percentile = serializers.SerializerMethodField()
 
-    percentile_allegation = serializers.FloatField(source='officer.complaint_percentile')
-    percentile_allegation_civilian = serializers.FloatField(source='officer.civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(source='officer.internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(source='officer.trr_percentile')
+    def get_percentile(self, obj):
+        return OfficerAllegationPercentileSerializer(obj).data
 
 
 class ComplainantSerializer(NoNullSerializer):
@@ -48,7 +70,7 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
     officer_id = serializers.IntegerField(source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    current_rank = serializers.CharField()
+    badge = serializers.SerializerMethodField()
 
     percentile_allegation_civilian = serializers.FloatField(
         source='investigator.officer.civilian_allegation_percentile')
@@ -62,6 +84,9 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
 
     def get_full_name(self, obj):
         return getattr(obj.investigator.officer, 'full_name', obj.investigator.full_name)
+
+    def get_badge(self, obj):
+        return obj.investigator.badge
 
 
 class PoliceWitnessSerializer(NoNullSerializer):

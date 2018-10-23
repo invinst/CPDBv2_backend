@@ -47,6 +47,7 @@ class OfficerCardSerializerTestCase(TestCase):
             civilian_allegation_percentile='88.8800',
             internal_allegation_percentile='77.7700',
             trr_percentile='66.6600',
+            rank='Police Officer',
         )
 
         expect(OfficerCardSerializer(officer).data).to.eq({
@@ -58,6 +59,7 @@ class OfficerCardSerializerTestCase(TestCase):
             'race': 'White',
             'gender': 'Male',
             'complaint_percentile': 99.99,
+            'rank': 'Police Officer',
             'percentile': {
                 'id': 123,
                 'year': 2000,
@@ -303,18 +305,18 @@ class OfficerInfoSerializerTestCase(TestCase):
             'percentiles': [
                 {
                     'id': 123,
+                    'year': 2002,
+                    'percentile_trr': '99.8800',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                },
+                {
+                    'id': 123,
                     'year': 2003,
                     'percentile_trr': '99.9900',
                     'percentile_allegation': '88.8800',
                     'percentile_allegation_civilian': '77.7700',
                     'percentile_allegation_internal': '66.6600',
-                },
-                {
-                    'id': 123,
-                    'year': 2002,
-                    'percentile_trr': '99.8800',
-                    'percentile_allegation_civilian': '77.6600',
-                    'percentile_allegation_internal': '66.5500',
                 },
             ]
         })
@@ -556,15 +558,20 @@ class OfficerCoaccusalSerializerTestCase(TestCase):
         expect(OfficerCoaccusalSerializer(officer).data).to.eq({
             'id': 123,
             'full_name': 'Michael Flynn',
-            'allegation_count': 20,
+            'complaint_count': 20,
             'sustained_count': 4,
+            'complaint_percentile': 99.99,
             'race': 'Black',
             'gender': 'Female',
             'coaccusal_count': 3,
             'birth_year': 1950,
             'rank': 'Sergeant',
-            'complaint_percentile': 99.99,
-            'percentile_allegation_civilian': 88.88,
-            'percentile_allegation_internal': 77.77,
-            'percentile_trr': 66.66,
+            'percentile': {
+                'percentile_allegation': '99.9900',
+                'percentile_allegation_civilian': '88.8800',
+                'percentile_allegation_internal': '77.7700',
+                'percentile_trr': '66.6600',
+                'year': 2016,
+                'id': 123,
+            },
         })

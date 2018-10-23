@@ -10,13 +10,13 @@ from robber import expect
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, PoliceUnitFactory, OfficerHistoryFactory, SalaryFactory,
     AwardFactory)
-from officers.queries import OfficerTimelineQuery
+from officers.queries import OfficerTimelineMobileQuery
 from trr.factories import TRRFactory
 
 
-class OfficerTimelineQueryTestCase(TestCase):
+class OfficerTimelineMobileQueryTestCase(TestCase):
     @patch(
-        'officers.queries.OfficerTimelineQuery.cr_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.cr_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_cr_timeline(self, cr_new_timeline_serializer_mock):
@@ -43,7 +43,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         other_officer = OfficerFactory(id=456)
         OfficerAllegationFactory(id=4, officer=other_officer, start_date=date(2003, 1, 5))
 
-        expect(OfficerTimelineQuery(officer)._cr_timeline).to.eq([{'id': 1}, {'id': 2}])
+        expect(OfficerTimelineMobileQuery(officer)._cr_timeline).to.eq([{'id': 1}, {'id': 2}])
 
         cr_timeline_queryset_arg = cr_new_timeline_serializer_mock.call_args[0][0]
         officer_allegation_1_arg, officer_allegation_2_arg = sorted(cr_timeline_queryset_arg, key=attrgetter('id'))
@@ -59,7 +59,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(officer_allegation_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.unit_change_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.unit_change_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_unit_change_timeline(self, unit_change_new_timeline_serializer_mock):
@@ -88,7 +88,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             officer=other_officer, effective_date=date(2002, 1, 3), end_date=date(2002, 1, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._unit_change_timeline).to.eq([{'id': 1}, {'id': 2}])
+        expect(OfficerTimelineMobileQuery(officer)._unit_change_timeline).to.eq([{'id': 1}, {'id': 2}])
 
         unit_change_timeline_queryset_arg = unit_change_new_timeline_serializer_mock.call_args[0][0]
         officer_allegation_1_arg, officer_allegation_2_arg = unit_change_timeline_queryset_arg
@@ -100,7 +100,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(officer_allegation_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.rank_change_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.rank_change_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_rank_change_timeline(self, rank_change_new_timeline_serializer_mock):
@@ -133,7 +133,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             year=2001, rank='Police Officer', officer=other_officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._rank_change_timeline).to.eq([{'id': 1}, {'id': 2}])
+        expect(OfficerTimelineMobileQuery(officer)._rank_change_timeline).to.eq([{'id': 1}, {'id': 2}])
 
         rank_change_timeline_queryset_arg = rank_change_new_timeline_serializer_mock.call_args[0][0]
 
@@ -148,7 +148,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(salary_2_arg.unit_description).to.eq('District 002')
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.rank_change_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.rank_change_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}])
     )
     def test_rank_change_timeline_no_officer_appointed_date(self, rank_change_new_timeline_serializer_mock):
@@ -158,7 +158,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._rank_change_timeline).to.eq([{'id': 1}])
+        expect(OfficerTimelineMobileQuery(officer)._rank_change_timeline).to.eq([{'id': 1}])
 
         rank_change_timeline_queryset_arg = rank_change_new_timeline_serializer_mock.call_args[0][0]
 
@@ -166,7 +166,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(salary_arg.id).to.eq(salary.id)
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.joined_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.joined_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}])
     )
     def test_join_timeline(self, join_new_timeline_serializer_mock):
@@ -181,7 +181,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             officer=officer, unit=unit, effective_date=date(2001, 1, 3), end_date=date(2001, 2, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._join_timeline).to.eq([{'id': 1}])
+        expect(OfficerTimelineMobileQuery(officer)._join_timeline).to.eq([{'id': 1}])
 
         join_timeline_queryset_arg = join_new_timeline_serializer_mock.call_args[0][0]
         officer_arg, = join_timeline_queryset_arg
@@ -194,10 +194,10 @@ class OfficerTimelineQueryTestCase(TestCase):
     def test_join_timeline_no_officer_appointed_date(self):
         officer = OfficerFactory(id=123, appointed_date=None)
 
-        expect(OfficerTimelineQuery(officer)._join_timeline).to.eq([])
+        expect(OfficerTimelineMobileQuery(officer)._join_timeline).to.eq([])
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.award_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.award_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_award_timeline(self, award_new_timeline_serializer_mock):
@@ -225,7 +225,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._award_timeline).to.eq([{'id': 1}, {'id': 2}])
+        expect(OfficerTimelineMobileQuery(officer)._award_timeline).to.eq([{'id': 1}, {'id': 2}])
 
         award_timeline_queryset_arg = award_new_timeline_serializer_mock.call_args[0][0]
         award_1_arg, award_2_arg = sorted(award_timeline_queryset_arg, key=attrgetter('id'))
@@ -241,7 +241,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(award_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers.queries.OfficerTimelineQuery.trr_new_timeline_serializer',
+        'officers.queries.OfficerTimelineMobileQuery.trr_new_timeline_serializer',
         return_value=Mock(data=[{'id': 1}, {'id': 2}])
     )
     def test_trr_timeline(self, trr_new_timeline_serializer_mock):
@@ -265,7 +265,7 @@ class OfficerTimelineQueryTestCase(TestCase):
             year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
         )
 
-        expect(OfficerTimelineQuery(officer)._trr_timeline).to.eq([{'id': 1}, {'id': 2}])
+        expect(OfficerTimelineMobileQuery(officer)._trr_timeline).to.eq([{'id': 1}, {'id': 2}])
 
         trr_timeline_queryset_arg = trr_new_timeline_serializer_mock.call_args[0][0]
         trr_1_arg, trr_2_arg = sorted(trr_timeline_queryset_arg, key=attrgetter('id'))
@@ -281,7 +281,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(trr_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
-        'officers.queries.OfficerTimelineQuery._cr_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._cr_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 1, 'date_sort': date(2000, 1, 1), 'priority_sort': 30},
@@ -289,7 +289,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers.queries.OfficerTimelineQuery._unit_change_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._unit_change_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 3, 'date_sort': date(2000, 1, 2), 'priority_sort': 20},
@@ -297,7 +297,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers.queries.OfficerTimelineQuery._rank_change_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._rank_change_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 5, 'date_sort': date(2000, 1, 3), 'priority_sort': 25},
@@ -305,14 +305,14 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers.queries.OfficerTimelineQuery._join_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._join_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 7, 'date_sort': date(2000, 1, 1), 'priority_sort': 10},
         ]
     )
     @patch(
-        'officers.queries.OfficerTimelineQuery._award_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._award_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 8, 'date_sort': date(2000, 1, 4), 'priority_sort': 40},
@@ -320,7 +320,7 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     @patch(
-        'officers.queries.OfficerTimelineQuery._trr_timeline',
+        'officers.queries.OfficerTimelineMobileQuery._trr_timeline',
         new_callable=PropertyMock,
         return_value=[
             {'id': 10, 'date_sort': date(2000, 1, 4), 'priority_sort': 50},
@@ -328,6 +328,6 @@ class OfficerTimelineQueryTestCase(TestCase):
         ]
     )
     def test_execute(self, _trr, _award, _join, _rank, _unit, _cr):
-        sorted_timeline = OfficerTimelineQuery(None).execute()
+        sorted_timeline = OfficerTimelineMobileQuery(None).execute()
         sorted_timeline_ids = [item['id'] for item in sorted_timeline]
         expect(sorted_timeline_ids).to.eq([11, 9, 2, 6, 4, 10, 8, 5, 3, 1, 7])

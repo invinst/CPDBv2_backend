@@ -30,6 +30,7 @@ class OfficerCardSerializer(NoNullSerializer):
     complaint_percentile = serializers.FloatField(read_only=True, allow_null=True)
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
+    rank = serializers.CharField()
     percentile = serializers.SerializerMethodField()
 
     def get_percentile(self, obj):
@@ -110,7 +111,7 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
     def get_percentiles(self, obj):
-        yearly_percentiles = obj.officeryearlypercentile_set.order_by('-year')
+        yearly_percentiles = obj.officeryearlypercentile_set.order_by('year')
         return OfficerYearlyPercentileSerializer(yearly_percentiles, many=True).data
 
 
@@ -260,21 +261,5 @@ class TRRNewTimelineSerializer(BaseTimelineSerializer):
             return None
 
 
-class OfficerCoaccusalSerializer(NoNullSerializer):
-    id = serializers.IntegerField()
-    full_name = serializers.CharField()
-    allegation_count = serializers.IntegerField()
-    sustained_count = serializers.IntegerField()
-    race = serializers.CharField()
-    gender = serializers.CharField(source='gender_display')
-    birth_year = serializers.IntegerField()
+class OfficerCoaccusalSerializer(OfficerCardSerializer):
     coaccusal_count = serializers.IntegerField()
-    rank = serializers.CharField()
-
-    complaint_percentile = serializers.FloatField(allow_null=True, read_only=True)
-    percentile_allegation_civilian = serializers.FloatField(
-        allow_null=True, read_only=True, source='civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(
-        allow_null=True, read_only=True, source='internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(
-        allow_null=True, read_only=True, source='trr_percentile')

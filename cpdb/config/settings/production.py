@@ -19,6 +19,8 @@ ANYMAIL = {
 
 EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 DEFAULT_FROM_EMAIL = 'info@cpdp.co'
+
+V1_URL = 'https://data.cpdp.co'
 DOMAIN = 'https://beta.cpdp.co'
 
 STATICFILES_STORAGE = 'config.storages.AzureStorage'
