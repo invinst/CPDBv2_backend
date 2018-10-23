@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0070_attachmentfile_external_id'),
+        ('data', '0066_add_officer_percentile_fields'),
     ]
 
     operations = [

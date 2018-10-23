@@ -171,7 +171,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
                     'badge': 'CPD',
-                    'percentile_trr': None,
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },
@@ -182,8 +181,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'allegation_count': 1,
                     'sustained_count': 1,
                     'percentile_trr': 5.5,
-                    'percentile_allegation_civilian': None,
-                    'percentile_allegation_internal': None,
                 }
             ],
             'attachments': [
@@ -191,7 +188,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
-                    'preview_image_url': None
                 }
             ]
         })

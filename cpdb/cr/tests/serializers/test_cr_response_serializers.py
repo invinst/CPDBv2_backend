@@ -23,7 +23,7 @@ class CRSerializerTestCase(TestCase):
     def test_get_point(self):
         allegation = AllegationFactory(point=None)
         result = CRSerializer(allegation).data
-        expect(result['point']).to.eq(None)
+        expect(result).to.exclude('point')
 
         allegation = AllegationFactory(point=Point(1.0, 1.0))
         result = CRSerializer(allegation).data
@@ -32,7 +32,7 @@ class CRSerializerTestCase(TestCase):
     def test_get_beat(self):
         allegation = AllegationFactory(beat=None)
         result = CRSerializer(allegation).data
-        expect(result['beat']).to.eq(None)
+        expect(result).to.exclude('beat')
 
         allegation = AllegationFactory(beat=AreaFactory(name='23'))
         result = CRSerializer(allegation).data
