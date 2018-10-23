@@ -1,9 +1,11 @@
 from datetime import date, datetime
 
-import pytz
 from django.urls import reverse
+from django.contrib.gis.geos import Point
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+import pytz
 from robber import expect
 from mock import patch
 
@@ -12,11 +14,12 @@ from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
-    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
-    SalaryFactory,
-    AttachmentFileFactory,
+    AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory,
+    ComplainantFactory, SalaryFactory, VictimFactory
 )
 from trr.factories import TRRFactory
+from data import cache_managers
+from data.cache_managers import officer_cache_manager, allegation_cache_manager
 
 
 class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
@@ -29,7 +32,10 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             tags=[],
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
-            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5
+            active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
+            sustained_count=1, allegation_count=2, discipline_count=1, trr_count=1,
+            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            last_unit_id=1, current_badge='123456'
         )
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
         internal_allegation = AllegationFactory(
@@ -75,7 +81,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             active=ACTIVE_YES_CHOICE, birth_year=1970
         )
 
-        self.refresh_index()
+        officer_cache_manager.build_cached_columns()
+        allegation_cache_manager.cache_data()
 
         response = self.client.get(reverse('api-v2:officers-mobile-detail', kwargs={'pk': 123}))
         expected_response = {
@@ -87,7 +94,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
             'date_of_appt': '2002-02-27',
             'date_of_resignation': '2017-12-27',
-            'active': True,
+            'active': 'Active',
             'rank': 'PO',
             'full_name': 'Kevin Kerl',
             'race': 'White',
@@ -103,11 +110,12 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'trr_count': 1,
             'major_award_count': 1,
             'complaint_percentile': 32.5,
+            'percentiles': []
         }
         expect(response.data).to.eq(expected_response)
 
-    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2002)
-    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2004)
+    @patch('data.cache_managers.officer_cache_manager.MIN_VISUAL_TOKEN_YEAR', 2002)
+    @patch('data.cache_managers.officer_cache_manager.MAX_VISUAL_TOKEN_YEAR', 2004)
     @mock_percentile_map_range(
         allegation_min=datetime(2002, 1, 1, tzinfo=pytz.utc),
         allegation_max=datetime(2044, 12, 31, tzinfo=pytz.utc),
@@ -124,7 +132,10 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             first_name='Kevin', last_name='Kerl', id=123, race='White', gender='M',
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
-            honorable_mention_percentile=66.6667
+            honorable_mention_percentile=66.6667,
+            sustained_count=1, allegation_count=3, discipline_count=1, trr_count=1,
+            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            last_unit_id=1, current_badge='123456'
         )
 
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
@@ -184,7 +195,9 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             active=ACTIVE_YES_CHOICE, birth_year=1970
         )
 
-        self.refresh_index()
+        officer_cache_manager.build_cached_yearly_percentiles()
+        officer_cache_manager.build_cached_columns()
+        allegation_cache_manager.cache_data()
 
         response = self.client.get(reverse('api-v2:officers-mobile-detail', kwargs={'pk': 123}))
         expected_response = {
@@ -214,7 +227,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             ],
             'date_of_appt': '2002-02-27',
             'date_of_resignation': '2017-12-27',
-            'active': True,
+            'active': 'Active',
             'rank': 'PO',
             'full_name': 'Kevin Kerl',
             'race': 'White',
@@ -235,7 +248,6 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq(expected_response)
 
     def test_retrieve_no_match(self):
-        self.refresh_index()
         response = self.client.get(reverse('api-v2:officers-mobile-detail', kwargs={'pk': 456}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
@@ -254,13 +266,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
-        allegation = AllegationFactory(crid='123456')
-        AttachmentFileFactory(
-            allegation=allegation,
-            title='CRID-303350-CR',
-            file_type='document',
-            url='https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf'
-        )
+        allegation = AllegationFactory(crid='123456', coaccused_count=4)
+        VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
             officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
@@ -268,18 +275,30 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
-        allegation2 = AllegationFactory(crid='654321')
+        allegation2 = AllegationFactory(crid='654321', point=Point(35.5, 68.9), coaccused_count=1)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='9 Day Suspension',
             officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
 
-        trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
-        trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
-        SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(1998, 9, 23))
+        trr2011 = TRRFactory(
+            officer=officer,
+            trr_datetime=datetime(2011, 9, 23, tzinfo=pytz.utc),
+            taser=True,
+            firearm_used=False
+        )
+        trr2015 = TRRFactory(
+            officer=officer,
+            trr_datetime=datetime(2015, 9, 23, tzinfo=pytz.utc),
+            taser=False,
+            firearm_used=False
+        )
+        SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
+        SalaryFactory(officer=officer, year=2000, rank='Junior Police Officer', spp_date=date(2000, 1, 1))
 
-        self.refresh_index()
+        cache_managers.cache_all()
+
         response = self.client.get(reverse('api-v2:officers-mobile-new-timeline-items', kwargs={'pk': 123}))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -305,6 +324,12 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '002',
                 'unit_description': 'unit_002',
                 'rank': 'Police Officer',
+                'point': {
+                    'lon': 35.5,
+                    'lat': 68.9
+                },
+                'victims': [],
+                'attachments': []
             }, {
                 'date': '2012-01-01',
                 'kind': 'UNIT_CHANGE',
@@ -332,12 +357,14 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
-                'attachments': [{
-                    'file_type': 'document',
-                    'url': 'https://www.documentcloud.org/documents/3518955-CRID-303350-CR.pdf',
-                    'preview_image_url': None,
-                    'title': 'CRID-303350-CR'
-                }]
+                'victims': [
+                    {
+                        'race': 'White',
+                        'age': 34,
+                        'gender': 'Male',
+                    }
+                ],
+                'attachments': [],
             }, {
                 'date': '2011-03-23',
                 'kind': 'AWARD',
@@ -352,10 +379,16 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
             }, {
+                'date': '2001-09-23',
+                'kind': 'RANK_CHANGE',
+                'unit_name': '',
+                'unit_description': '',
+                'rank': 'Police Officer',
+            }, {
                 'date': '2000-01-01',
                 'kind': 'JOINED',
                 'unit_name': '',
                 'unit_description': '',
-                'rank': 'Police Officer',
+                'rank': 'Junior Police Officer',
             },
         ])

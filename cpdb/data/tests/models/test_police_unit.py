@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from django.test.testcases import TestCase, override_settings
 
 from robber.expect import expect
@@ -54,7 +56,7 @@ class PoliceUnitTestCase(TestCase):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(race='White'))
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(race=''))
-        expect(unit.member_race_aggregation).to.eq([
+        expect(sorted(unit.member_race_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': 'Unknown',
                 'count': 1
@@ -75,7 +77,7 @@ class PoliceUnitTestCase(TestCase):
         OfficerHistoryFactory(officer=OfficerFactory(race='White'), unit=unit1)
         OfficerHistoryFactory(officer=OfficerFactory(race=''), unit=unit1)
 
-        expect(unit1.member_race_aggregation).to.eq([
+        expect(sorted(unit1.member_race_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': 'Unknown',
                 'count': 1
@@ -90,7 +92,7 @@ class PoliceUnitTestCase(TestCase):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(birth_year='1980'))
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(birth_year=None))
-        expect(unit.member_age_aggregation).to.eq([
+        expect(sorted(unit.member_age_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': '31-40',
                 'count': 1
@@ -111,7 +113,7 @@ class PoliceUnitTestCase(TestCase):
         OfficerHistoryFactory(officer=OfficerFactory(birth_year='1985'), unit=unit1)
         OfficerHistoryFactory(officer=OfficerFactory(birth_year=None), unit=unit1)
 
-        expect(unit1.member_age_aggregation).to.eq([
+        expect(sorted(unit1.member_age_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': '31-40',
                 'count': 2
@@ -126,7 +128,7 @@ class PoliceUnitTestCase(TestCase):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(gender='F'))
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(gender=''))
-        expect(unit.member_gender_aggregation).to.eq([
+        expect(sorted(unit.member_gender_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': 'Female',
                 'count': 1
@@ -147,7 +149,7 @@ class PoliceUnitTestCase(TestCase):
         OfficerHistoryFactory(officer=OfficerFactory(gender='F'), unit=unit1)
         OfficerHistoryFactory(officer=OfficerFactory(gender=''), unit=unit1)
 
-        expect(unit1.member_gender_aggregation).to.eq([
+        expect(sorted(unit1.member_gender_aggregation, key=itemgetter('name'))).to.eq([
             {
                 'name': 'Female',
                 'count': 2
@@ -311,7 +313,7 @@ class PoliceUnitTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, allegation=allegation2, final_finding='UN')
         ComplainantFactory(allegation=allegation1, gender='F')
         ComplainantFactory(allegation=allegation2, gender='')
-        expect(unit.complainant_gender_aggregation).to.eq([{
+        expect(sorted(unit.complainant_gender_aggregation, key=itemgetter('name'))).to.eq([{
             'name': 'Female',
             'count': 1,
             'sustained_count': 1

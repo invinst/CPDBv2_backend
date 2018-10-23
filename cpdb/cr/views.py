@@ -1,21 +1,22 @@
 from copy import deepcopy
 from collections import OrderedDict
 
-from elasticsearch_dsl import Q
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.serializers import ValidationError
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import F
 
-from .doc_types import CRDocType
-from data.models import Allegation
+from cr.doc_types import CRDocType
 from cr.serializers.cr_response_serializers import (
-    AttachmentRequestSerializer, CRSummarySerializer,
-    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
-    CRRelatedComplaintSerializer, CRDesktopSerializer, CRMobileSerializer
+    CRSerializer, CRSummarySerializer, AttachmentRequestSerializer,
+    AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer, CRRelatedComplaintSerializer
 )
+from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from es_index.pagination import ESQueryPagination
+from data.models import Allegation
 
 
 class NoCategoryError(Exception):
@@ -28,12 +29,23 @@ class NoOfficerError(Exception):
 
 class CRViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        query = CRDocType().search().query('term', crid=pk)
-        search_result = query.execute()
-        try:
-            return Response(CRDesktopSerializer(search_result[0].to_dict()).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        queryset = Allegation.objects.select_related('beat', 'most_common_category')
+        allegation = get_object_or_404(queryset, crid=pk)
+        serializer = CRSerializer(allegation)
+        return Response(serializer.data)
+
+    @list_route(methods=['GET'], url_path='complaint-summaries')
+    def complaint_summaries(self, request):
+        query = Allegation.objects.filter(
+            summary__isnull=False
+        ).exclude(
+            summary__exact=''
+        ).annotate(
+            categories=ArrayAgg('officerallegation__allegation_category__category')
+        ).only(
+            'crid', 'summary', 'incident_date'
+        ).order_by(F('incident_date').desc(nulls_last=True), '-crid')[:40]
+        return Response(CRSummarySerializer(query, many=True).data, status=status.HTTP_200_OK)
 
     @detail_route(methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
@@ -59,16 +71,6 @@ class CRViewSet(viewsets.ViewSet):
         results = Allegation.get_cr_with_new_documents(limit)
         serializer = AllegationWithNewDocumentsSerializer(results, many=True)
         return Response(serializer.data)
-
-    @list_route(methods=['GET'], url_path='complaint-summaries')
-    def complaint_summaries(self, request):
-        query = CRDocType().search().filter('bool', filter=[
-            Q('exists', field='summary'),
-            ~Q('term', summary__keyword='')
-        ])
-        query = query.sort('-incident_date', '-crid')
-        results = query[0:40].execute()
-        return Response(CRSummarySerializer(results, many=True).data, status=status.HTTP_200_OK)
 
     @detail_route(methods=['GET'], url_path='related-complaints')
     def related_complaints(self, request, pk):
@@ -151,12 +153,10 @@ class CRViewSet(viewsets.ViewSet):
 
 class CRMobileViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        query = CRDocType().search().query('term', crid=pk)
-        search_result = query.execute()
-        try:
-            return Response(CRMobileSerializer(search_result[0].to_dict()).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        queryset = Allegation.objects.select_related('beat', 'most_common_category')
+        allegation = get_object_or_404(queryset, crid=pk)
+        serializer = CRMobileSerializer(allegation)
+        return Response(serializer.data)
 
     @detail_route(methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):

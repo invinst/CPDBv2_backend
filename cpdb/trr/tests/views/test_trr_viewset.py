@@ -25,7 +25,8 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             birth_year=1980,
             civilian_allegation_percentile=11.1111,
             internal_allegation_percentile=22.2222,
-            trr_percentile=33.3333
+            trr_percentile=33.3333,
+            last_unit=unit
         )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
@@ -102,6 +103,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
             civilian_allegation_percentile=11.1111,
             internal_allegation_percentile=22.2222,
             trr_percentile=33.3333,
+            last_unit=unit
         )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(

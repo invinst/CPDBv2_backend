@@ -70,7 +70,7 @@ class Command(BaseCommand):
         try:
             obj['geocode_result'] = json.loads(result)['results'][0]['geometry']['location']
         except (IndexError, KeyError):
-            pass
+            obj['geocode_result'] = 'error'
         pbar.update(1)
 
     def outputResult(self, result, outfile, pbar):
