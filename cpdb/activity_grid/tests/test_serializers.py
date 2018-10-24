@@ -31,7 +31,8 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             complaint_percentile='0.088',
-            percentiles=[percentile_mock]
+            rank='Police Officer',
+            percentiles=[percentile_mock],
         )
 
         expect(OfficerCardSerializer(obj).data).to.eq({
@@ -43,6 +44,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'complaint_count': 2,
             'complaint_percentile': 0.088,
             'sustained_count': 1,
+            'rank': 'Police Officer',
             'percentile': {
                 'id': 123,
                 'year': 2016,
@@ -65,6 +67,7 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             sustained_count=1,
             discipline_count=1,
             civilian_compliment_count=0,
+            rank='Police Officer',
         )
 
         expect(OfficerCardSerializer(obj).data).to.eq({
@@ -75,7 +78,9 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'birth_year': 1910,
             'complaint_count': 2,
             'sustained_count': 1,
-            'percentile': None
+            'percentile': None,
+            'complaint_percentile': None,
+            'rank': 'Police Officer',
         })
 
 
@@ -88,7 +93,7 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             'percentile_trr': '0.000',
             'percentile_allegation': '0.088',
             'percentile_allegation_civilian': '77.000',
-            'percentile_allegation_internal': '0.020'
+            'percentile_allegation_internal': '0.020',
         }
 
         obj = Mock(
@@ -102,6 +107,7 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             sustained_count=1,
             discipline_count=1,
             civilian_compliment_count=0,
+            rank='Police Officer',
             percentiles=[percentile_mock]
         )
 
@@ -111,6 +117,7 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1910,
+            'rank': 'Police Officer',
             'percentile': {
                 'id': 123,
                 'year': 2016,
@@ -133,6 +140,7 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             sustained_count=1,
             discipline_count=1,
             civilian_compliment_count=0,
+            rank='Police Officer',
         )
 
         expect(SimpleCardSerializer(obj).data).to.eq({
@@ -141,5 +149,6 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             'race': 'White',
             'gender': 'Male',
             'birth_year': 1910,
-            'percentile': None
+            'percentile': None,
+            'rank': 'Police Officer',
         })

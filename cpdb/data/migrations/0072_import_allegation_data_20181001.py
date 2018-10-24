@@ -55,13 +55,18 @@ def has_change(row, obj):
     return any(str(getattr(obj, k)) != str(row[k]) for k in row)
 
 
-def bulk_create_update(klass, rows):
-    object_dict = klass.objects.all().in_bulk()
+def bulk_create_update(klass, rows, all_fields=None):
+    if not rows:
+        return
+
+    all_fields = all_fields or rows[0].keys()
+
+    object_dict = klass.objects.all().only(*all_fields).in_bulk()
 
     new_objects = [klass(**row) for row in rows if int(row['id']) not in object_dict]
     old_objects = [
         klass(**row) for row in rows
-        if int(row['id']) in object_dict and has_change(row, object_dict[row['id']])]
+        if row['id'] in object_dict and has_change(row, object_dict[row['id']])]
 
     timeit(
         lambda: klass.objects.bulk_create(new_objects),
@@ -69,8 +74,7 @@ def bulk_create_update(klass, rows):
     )
 
     if old_objects:
-        update_fields = rows[0].keys()
-        update_fields.remove('id')
+        update_fields = [f for f in all_fields if f != 'id']
 
         print 'Updating {} old objects'.format(len(old_objects))
         batch_size = 1000
@@ -113,7 +117,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-                import_data,
-                reverse_code=migrations.RunPython.noop,
-                elidable=True),
+            import_data,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True),
     ]

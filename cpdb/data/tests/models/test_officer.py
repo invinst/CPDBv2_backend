@@ -9,8 +9,7 @@ from robber.expect import expect
 
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
-    OfficerAllegationFactory, AwardFactory,
-    AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
+    OfficerAllegationFactory, AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
 from data.models import Officer, Salary
 
@@ -37,17 +36,6 @@ class OfficerTestCase(TestCase):
     def test_current_age(self):
         expect(OfficerFactory(birth_year=1968).current_age).to.eq(49)
 
-    def test_current_badge_not_found(self):
-        officer = OfficerFactory()
-        expect(officer.current_badge).to.equal('')
-        OfficerBadgeNumberFactory(officer=officer, current=False)
-        expect(officer.current_badge).to.equal('')
-
-    def test_current_badge(self):
-        officer = OfficerFactory()
-        OfficerBadgeNumberFactory(officer=officer, star='123', current=True)
-        expect(officer.current_badge).to.eq('123')
-
     def test_historic_units(self):
         officer = OfficerFactory()
         unithistory1 = OfficerHistoryFactory(officer=officer, unit__unit_name='1',
@@ -72,43 +60,9 @@ class OfficerTestCase(TestCase):
     def test_gender_display_keyerror(self):
         expect(OfficerFactory(gender='').gender_display).to.equal('')
 
-    def test_honorable_mention_count(self):
-        officer = OfficerFactory()
-        AwardFactory(officer=officer, award_type='Other')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Honorable Mention')
-        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
-
-        expect(officer.honorable_mention_count).to.eq(2)
-
-    def test_civilian_compliment_count(self):
-        officer = OfficerFactory()
-        AwardFactory(officer=officer, award_type='Other')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Complimentary Letter')
-        AwardFactory(officer=officer, award_type='Honorable Mention')
-        AwardFactory(officer=officer, award_type='ABC Honorable Mention')
-
-        expect(officer.civilian_compliment_count).to.eq(2)
-
-    def test_last_unit(self):
-        officer = OfficerFactory()
-        expect(officer.last_unit).to.equal(None)
-
-        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='CAND'), end_date=date(2000, 1, 1))
-        OfficerHistoryFactory(officer=officer, unit=PoliceUnitFactory(unit_name='BDCH'), end_date=date(2002, 1, 1))
-        expect(officer.last_unit.unit_name).to.eq('BDCH')
-
     def test_abbr_name(self):
         officer = OfficerFactory(first_name='Michel', last_name='Foo')
         expect(officer.abbr_name).to.eq('M. Foo')
-
-    def test_discipline_count(self):
-        officer = OfficerFactory()
-        OfficerAllegationFactory(officer=officer, disciplined=True)
-        OfficerAllegationFactory(officer=officer, disciplined=False)
-        expect(officer.discipline_count).to.eq(1)
 
     def test_visual_token_background_color(self):
         crs_colors = [
@@ -119,9 +73,8 @@ class OfficerTestCase(TestCase):
             (30, '#aec9e8'),
             (45, '#90b1f5')
         ]
-        for cr, color in crs_colors:
-            officer = OfficerFactory()
-            OfficerAllegationFactory.create_batch(cr, officer=officer)
+        for cr_count, color in crs_colors:
+            officer = OfficerFactory(allegation_count=cr_count)
             expect(officer.visual_token_background_color).to.eq(color)
 
     @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
@@ -344,14 +297,6 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         expect(officer.complainant_gender_aggregation).to.eq([])
 
-    def test_major_award_count(self):
-        officer = OfficerFactory()
-        AwardFactory(officer=officer, award_type='HONORED POLICE STAR')
-        AwardFactory(officer=officer, award_type='POLICE MEDAL')
-        AwardFactory(officer=officer, award_type='PIPE BAND AWARD')
-        AwardFactory(officer=officer, award_type='LIFE SAVING AWARD')
-        expect(officer.major_award_count).to.eq(2)
-
     def test_coaccusals(self):
         officer0 = OfficerFactory()
         officer1 = OfficerFactory()
@@ -373,31 +318,6 @@ class OfficerTestCase(TestCase):
 
         expect(coaccusals[coaccusals.index(officer1)].coaccusal_count).to.eq(2)
         expect(coaccusals[coaccusals.index(officer2)].coaccusal_count).to.eq(1)
-
-    def test_current_salary(self):
-        officer = OfficerFactory()
-        expect(officer.current_salary).to.be.none()
-
-        SalaryFactory(officer=officer, year=2010, salary=5000)
-        SalaryFactory(officer=officer, year=2012, salary=10000)
-        SalaryFactory(officer=officer, year=2015, salary=15000)
-        SalaryFactory(officer=officer, year=2017, salary=20000)
-
-        expect(officer.current_salary).to.eq(20000)
-
-    def test_unsustained_count(self):
-        allegation = AllegationFactory()
-        officer = OfficerFactory()
-        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
-        OfficerAllegationFactory(allegation=allegation, final_finding='NS', officer=officer)
-        expect(officer.unsustained_count).to.eq(2)
-
-    def test_sustained_count(self):
-        allegation = AllegationFactory()
-        officer = OfficerFactory()
-        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
-        OfficerAllegationFactory(allegation=allegation, final_finding='SU', officer=officer)
-        expect(officer.sustained_count).to.eq(2)
 
     def test_rank_histories(self):
         officer = OfficerFactory()

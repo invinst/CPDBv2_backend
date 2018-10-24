@@ -11,7 +11,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary)
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile)
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
@@ -232,3 +232,11 @@ class SalaryFactory(factory.django.DjangoModelFactory):
     year = factory.LazyFunction(lambda: fake.year())
     age_at_hire = factory.LazyAttribute(lambda _: fake.pyint())
     officer = factory.SubFactory(OfficerFactory)
+
+
+class OfficerYearlyPercentileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerYearlyPercentile
+
+    officer = factory.SubFactory(OfficerFactory)
+    year = factory.LazyFunction(lambda: fake.year())

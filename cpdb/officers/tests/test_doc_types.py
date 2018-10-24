@@ -16,37 +16,37 @@ class OfficerInfoDocTypeTestCase(OfficerSummaryTestCaseMixin, SimpleTestCase):
             id='1',
             full_name='Daryl Smith',
             has_visual_token=True,
-            current_allegation_percentile=99.345,
+            complaint_percentile=99.345,
         ).save()
         OfficerInfoDocType(
             id='2',
             full_name='Officer highest percentile',
             has_visual_token=True,
-            current_allegation_percentile=99.5,
+            complaint_percentile=99.5,
         ).save()
         OfficerInfoDocType(
             id='3',
             full_name='Officer low percentile',
             has_visual_token=True,
-            current_allegation_percentile=96.345,
+            complaint_percentile=96.345,
         ).save()
         OfficerInfoDocType(
             id='4',
             full_name='Officer no visual token',
             has_visual_token=False,
-            current_allegation_percentile=99.88,
+            complaint_percentile=99.88,
         ).save()
         OfficerInfoDocType(
             id='5',
             full_name='Officer filter out',
             has_visual_token=True,
-            current_allegation_percentile=99.2,
+            complaint_percentile=99.2,
         ).save()
         OfficerInfoDocType(
             id='6',
             full_name='Officer no allegation_percentile',
             has_visual_token=True,
-            current_allegation_percentile=None,
+            complaint_percentile=None,
         ).save()
         officers_index_alias.read_index.refresh()
 

@@ -28,7 +28,8 @@ class TRRIndexerTestCase(TestCase):
             birth_year=1980,
             civilian_allegation_percentile=1.1111,
             internal_allegation_percentile=2.2222,
-            trr_percentile=3.3333
+            trr_percentile=3.3333,
+            last_unit=unit
         )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
@@ -134,7 +135,9 @@ class TRRIndexerTestCase(TestCase):
             gender='M',
             appointed_date=date(2000, 1, 1),
             birth_year=1980,
-            resignation_date=date(2000, 8, 1))
+            resignation_date=date(2000, 8, 1),
+            last_unit=unit
+        )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(
             taser=False,
@@ -195,7 +198,8 @@ class TRRIndexerTestCase(TestCase):
             birth_year=1980,
             resignation_date=date(2000, 8, 1),
             civilian_allegation_percentile=1.1111,
-            internal_allegation_percentile=2.2222
+            internal_allegation_percentile=2.2222,
+            last_unit=unit
         )
         OfficerHistoryFactory(officer=officer, unit=unit)
         trr = TRRFactory(

@@ -64,10 +64,10 @@ class DateUtilTestCase(SimpleTestCase):
 
     def test_find_dates_from_string_multiple_dates(self):
         test_cases = {
-            '2001 Jan 12 2014 Oct 1st ': [datetime(2001, 01, 12), datetime(2014, 10, 01)],
-            '2001-01-01 2004 02  01  ke': [datetime(2001, 01, 01), datetime(2004, 02, 01)],
-            '2004 2001-01-01 2014 Jan 12': [datetime(2001, 01, 01), datetime(2014, 01, 12)],
-            '2001-01-01 de 2014 Jan 12': [datetime(2001, 01, 01), datetime(2014, 01, 12)],
+            '2001 Jan 12 2014 Oct 1st ': [datetime(2001, 1, 12), datetime(2014, 10, 1)],
+            '2001-01-01 2004 02  01  ke': [datetime(2001, 1, 1), datetime(2004, 2, 1)],
+            '2004 2001-01-01 2014 Jan 12': [datetime(2001, 1, 1), datetime(2014, 1, 12)],
+            '2001-01-01 de 2014 Jan 12': [datetime(2001, 1, 1), datetime(2014, 1, 12)],
         }
 
         for string, dates in test_cases.iteritems():
