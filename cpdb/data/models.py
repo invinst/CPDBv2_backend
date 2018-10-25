@@ -702,6 +702,10 @@ class Investigator(models.Model):
     def abbr_name(self):
         return '%s. %s' % (self.first_name[0].upper(), self.last_name)
 
+    @property
+    def badge(self):
+        return 'CPD' if self.officer_id else ''
+
 
 class AllegationCategory(models.Model):
     category_code = models.CharField(max_length=255)

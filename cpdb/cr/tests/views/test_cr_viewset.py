@@ -54,7 +54,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
-        OfficerAllegationFactory(
+        officer_allegation = OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
@@ -127,16 +127,22 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'gender': 'Male',
                     'race': 'White',
                     'rank': 'Officer',
-                    'age': 25,
+                    'birth_year': 1993,
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
-                    'allegation_count': 1,
+                    'complaint_count': 1,
                     'sustained_count': 1,
-                    'percentile_allegation': 0.0,
-                    'percentile_allegation_civilian': 1.1,
-                    'percentile_allegation_internal': 2.2,
-                    'percentile_trr': 3.3,
+                    'complaint_percentile': 0.0,
+                    'percentile': {
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000',
+                        'percentile_trr': '3.3000',
+                        'year': 2016,
+                        'id': officer_allegation.id,
+                    },
+
                     'disciplined': True
                 }
             ],
@@ -170,7 +176,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'involved_type': 'investigator',
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
-                    'current_rank': 'IPRA investigator',
+                    'badge': 'CPD',
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },

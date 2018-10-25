@@ -157,7 +157,6 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'involved_type': 'investigator',
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
-                    'current_rank': 'IPRA investigator',
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },
