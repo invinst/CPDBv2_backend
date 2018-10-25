@@ -9,6 +9,8 @@ from django.db.models.functions import Concat, ExtractYear, Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
 
+from django_bulk_update.manager import BulkUpdateManager
+
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
@@ -286,6 +288,8 @@ class Officer(TaggableModel):
     last_unit = models.ForeignKey(PoliceUnit, null=True)
     current_salary = models.PositiveIntegerField(null=True)
 
+    objects = BulkUpdateManager()
+
     def __str__(self):
         return self.full_name
 
@@ -540,6 +544,8 @@ class OfficerBadgeNumber(models.Model):
     star = models.CharField(max_length=10)
     current = models.BooleanField(default=False)
 
+    objects = BulkUpdateManager()
+
     class Meta:
         indexes = [
             models.Index(fields=['current']),
@@ -554,6 +560,8 @@ class OfficerHistory(models.Model):
     unit = models.ForeignKey(PoliceUnit, null=True)
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
+
+    objects = BulkUpdateManager()
 
     class Meta:
         indexes = [
@@ -680,6 +688,8 @@ class Investigator(models.Model):
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
 
+    objects = BulkUpdateManager()
+
     @property
     def num_cases(self):
         return self.investigatorallegation_set.all().count()
@@ -699,6 +709,8 @@ class AllegationCategory(models.Model):
     allegation_name = models.CharField(max_length=255, blank=True)
     on_duty = models.BooleanField(default=False)
     citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
+
+    objects = BulkUpdateManager()
 
 
 class Allegation(models.Model):
@@ -723,6 +735,8 @@ class Allegation(models.Model):
     first_start_date = models.DateField(null=True)
     first_end_date = models.DateField(null=True)
     coaccused_count = models.IntegerField(default=0, null=True)
+
+    objects = BulkUpdateManager()
 
     class Meta:
         indexes = [
@@ -836,6 +850,8 @@ class InvestigatorAllegation(models.Model):
     current_unit = models.ForeignKey(PoliceUnit, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
 
+    objects = BulkUpdateManager()
+
 
 class OfficerAllegation(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
@@ -853,6 +869,8 @@ class OfficerAllegation(models.Model):
     final_outcome = models.CharField(max_length=32, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
     disciplined = models.NullBooleanField()
+
+    objects = BulkUpdateManager()
 
     class Meta:
         indexes = [
@@ -908,6 +926,8 @@ class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
     officer = models.ForeignKey(Officer, null=True)
 
+    objects = BulkUpdateManager()
+
 
 class Complainant(models.Model):
     allegation = models.ForeignKey(Allegation, null=True)
@@ -915,6 +935,8 @@ class Complainant(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+
+    objects = BulkUpdateManager()
 
     @property
     def gender_display(self):
@@ -988,6 +1010,8 @@ class Victim(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+
+    objects = BulkUpdateManager()
 
     @property
     def gender_display(self):

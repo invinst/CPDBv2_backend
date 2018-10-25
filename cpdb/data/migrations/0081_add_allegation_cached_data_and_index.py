@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0067_add_officer_cached_allegation_count_fields'),
+        ('data', '0080_add_officer_cached_allegation_count_fields'),
     ]
 
     operations = [

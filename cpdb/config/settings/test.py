@@ -35,3 +35,5 @@ MIGRATION_MODULES = DisableMigrations()
 DOMAIN = 'http://foo.com'
 
 TWITTERBOT_ENV = 'test'
+
+V1_URL = 'http://cpdb.lvh.me'

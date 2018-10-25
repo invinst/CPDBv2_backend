@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0066_add_officer_percentile_fields'),
+        ('data', '0079_import_officerallegation_data_20181001'),
     ]
 
     operations = [
