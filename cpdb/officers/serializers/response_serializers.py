@@ -56,6 +56,7 @@ class OfficerSummarySerializer(NoNullSerializer):
     active = serializers.SerializerMethodField()
     rank = serializers.CharField()
     full_name = serializers.CharField()
+    has_unique_name = serializers.BooleanField()
     race = serializers.CharField()
     badge = serializers.SerializerMethodField()
     historic_badges = serializers.ListField(child=serializers.CharField())

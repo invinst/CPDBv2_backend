@@ -114,6 +114,7 @@ class OfficerSummarySerializerTestCase(TestCase):
             current_badge='456',
             birth_year=1950,
             current_salary=10000,
+            has_unique_name=False
         )
 
         OfficerBadgeNumberFactory(
@@ -163,6 +164,7 @@ class OfficerSummarySerializerTestCase(TestCase):
             'gender': 'Female',
             'birth_year': 1950,
             'current_salary': 10000,
+            'has_unique_name': False,
         })
 
     def test_get_badge_with_no_current_badge(self):
@@ -219,6 +221,7 @@ class OfficerInfoSerializerTestCase(TestCase):
             trr_count=7,
             major_award_count=8,
             honorable_mention_percentile='88.8800',
+            has_unique_name=True
         )
 
         OfficerBadgeNumberFactory(
@@ -265,6 +268,7 @@ class OfficerInfoSerializerTestCase(TestCase):
             'active': 'Active',
             'rank': 'Sergeant',
             'full_name': 'Michael Flynn',
+            'has_unique_name': True,
             'race': 'Black',
             'badge': '456',
             'historic_badges': ['789'],

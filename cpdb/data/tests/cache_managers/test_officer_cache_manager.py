@@ -172,6 +172,31 @@ class OfficerCacheManagerTestCase(TestCase):
         expect(officer_1.current_salary).to.eq(20000)
         expect(officer_2.current_salary).to.be.none()
 
+    def test_has_unique_name(self):
+        officer_1 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
+        officer_3 = OfficerFactory(first_name='German', last_name='Finnigan')
+        officer_4 = OfficerFactory(first_name='Jerome', last_name='Piwinicki')
+        officer_5 = OfficerFactory(first_name='German', last_name='Piwinicki')
+        expect(officer_1.has_unique_name).to.be.false()
+        expect(officer_2.has_unique_name).to.be.false()
+        expect(officer_3.has_unique_name).to.be.false()
+        expect(officer_4.has_unique_name).to.be.false()
+        expect(officer_5.has_unique_name).to.be.false()
+
+        officer_cache_manager.build_cached_columns()
+        officer_1.refresh_from_db()
+        officer_2.refresh_from_db()
+        officer_3.refresh_from_db()
+        officer_4.refresh_from_db()
+        officer_5.refresh_from_db()
+
+        expect(officer_1.has_unique_name).to.be.false()
+        expect(officer_2.has_unique_name).to.be.false()
+        expect(officer_3.has_unique_name).to.be.true()
+        expect(officer_4.has_unique_name).to.be.true()
+        expect(officer_5.has_unique_name).to.be.true()
+
     @patch(
         'data.cache_managers.officer_cache_manager.officer_percentile.latest_year_percentile',
         Mock(return_value=[
