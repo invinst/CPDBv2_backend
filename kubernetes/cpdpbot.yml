@@ -26,13 +26,13 @@ spec:
         - name: AZURE_QUEUE_NAME
           value: "cpdpbot"
         - name: TWITTER_CONSUMER_KEY
-          value: "{{TWITTER_CONSUMER_KEY}}"
+          value: "{{CPDPBOT_TWITTER_CONSUMER_KEY}}"
         - name: TWITTER_CONSUMER_SECRET
-          value: "{{TWITTER_CONSUMER_SECRET}}"
+          value: "{{CPDPBOT_TWITTER_CONSUMER_SECRET}}"
         - name: TWITTER_APP_TOKEN_KEY
-          value: "{{TWITTER_APP_TOKEN_KEY}}"
+          value: "{{CPDPBOT_TWITTER_APP_TOKEN_KEY}}"
         - name: TWITTER_APP_TOKEN_SECRET
-          value: "{{TWITTER_APP_TOKEN_SECRET}}"
+          value: "{{CPDPBOT_TWITTER_APP_TOKEN_SECRET}}"
         - name: AZURE_STORAGE_ACCOUNT_NAME
           value: "{{AZURE_QUEUE_STORAGE_ACCOUNT_NAME}}"
         - name: AZURE_STORAGE_ACCOUNT_KEY

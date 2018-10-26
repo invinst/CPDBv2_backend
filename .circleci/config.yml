@@ -1,18 +1,18 @@
 version: 2
 jobs:
-  test:
+  test_backend:
     docker:
-      - image: cpdbdev/cpdbv2_backend:0.1.0
-      - image: cpdbdev/postgis:9.6-alpine
-        command: postgres
+      - image: cpdbdev/backend:latest
+        user: gunicorn
+      - image: cpdbdev/postgres:9.6
       - image: elasticsearch:5-alpine
       - image: selenium/standalone-chrome:3.11
     environment:
-      - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DB_HOST: localhost
-      - DB_USER: cpdb
-      - DB_PASSWORD: password
-      - DB_NAME: cpdb
+      DJANGO_SETTINGS_MODULE: config.settings.circleci
+      DB_HOST: localhost
+      DB_USER: cpdb
+      DB_PASSWORD: password
+      DB_NAME: cpdb
     steps:
       - checkout
       - run: pip install --user -r requirements/test.txt
@@ -22,18 +22,52 @@ jobs:
       - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
       - run: coveralls
       - store_artifacts:
-          path: /home/deploy/project/cpdb/test_visual_token_media
+          path: /usr/src/app/project/cpdb/test_visual_token_media
 
-  deploy:
-    docker:
-      - image: cpdbdev/cpdbv2_backend:0.1.0
+  push_backend_image:
+    machine: true
     environment:
-      - ANSIBLE_HOST_KEY_CHECKING: False
+      ANSIBLE_HOST_KEY_CHECKING: "False"
     steps:
       - checkout
+      - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
+      - persist_to_workspace:
+          root: .
+          paths:
+            - buildnum
       - run:
-          command: bin/circleci_deploy_staging
-          no_output_timeout: 60m
+          name: Build image
+          command: docker build -t cpdbdev/backend:$(cat buildnum)
+      - run:
+          name: Push image
+          command: docker push cpdbdev/backend:$(cat buildnum)
+
+  deploy_backend:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Apply deployment
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export NAMESPACE=production
+              source prod.env
+            else
+              export NAMESPACE=staging
+              source staging.env
+            fi
+            echo $KUBECONFIG_JSON > kube_config.json
+            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml | kubectl --kubeconfig kube_config.json apply -f - --namespace=$NAMESPACE
 
   build_cpdpbot:
     machine: true
@@ -103,32 +137,27 @@ jobs:
               export ENV_FILE=staging.env
             fi
             set +e
+            kubectl apply -f kubernetes/namespaces.yml
             kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
             templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
 
 
 workflows:
   version: 2
-  test_and_deploy:
+  test_and_deploy_backend:
     jobs:
-      - test
-      - deploy:
-          requires:
-            - test
-          filters:
-            branches:
-              only: staging
-
-  deploy_cpdpbot:
-    jobs:
-      - deploy_cpdpbot:
+      - test_backend
+      - push_backend_image:
           filters:
             branches:
               only:
                 - staging
                 - master
+      - deploy_backend:
+          requires:
+            - push_backend_image
 
-  deploy_ingress:
+  deploy_cpdpbot:
     jobs:
       - build_cpdpbot:
           filters:
@@ -136,6 +165,14 @@ workflows:
               only:
                 - staging
                 - master
+      - deploy_cpdpbot:
+          filters:
+            branches:
+              only:
+                - master
+
+  deploy_ingress:
+    jobs:
       - deploy_ingress:
           requires:
             - build_cpdpbot

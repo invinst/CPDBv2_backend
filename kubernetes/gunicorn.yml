@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: gunicorn
-        image: cpdbdev/cpdbv2_backend:{{BACKEND_IMAGE_TAG}}
+        image: cpdbdev/backend:{{BACKEND_IMAGE_TAG}}
         imagePullPolicy: Always
         resources:
           requests:
@@ -22,6 +22,53 @@ spec:
           limits:
             cpu: 2
             memory: 2Gi
+        env:
+        - name: DB_NAME
+          value: "{{POSTGRES_APP_DB}}"
+        - name: DB_USER
+          value: "{{POSTGRES_APP_USER}}"
+        - name: DB_PASSWORD
+          value: "{{POSTGRES_APP_PASSWORD}}"
+        - name: DB_HOST
+          value: postgres
+        - name: GUNICORN_WORKERS
+          value: 2
+        - name: DJANGO_SETTINGS_MODULE
+          value: "{{DJANGO_SETTINGS_MODULE}}"
+        - name: DJANGO_SECRET_KEY
+          value: "{{DJANGO_SECRET_KEY}}"
+        - name: MAILCHIMP_API_KEY
+          value: "{{MAILCHIMP_API_KEY}}"
+        - name: MAILCHIMP_USER
+          value: "{{MAILCHIMP_USER}}"
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          value: "{{AZURE_STORAGE_ACCOUNT_NAME}}"
+        - name: AZURE_STORAGE_ACCOUNT_KEY
+          value: "{{AZURE_STORAGE_ACCOUNT_KEY}}"
+        - name: TWITTERBOT_STORAGE_ACCOUNT_NAME
+          value: "{{TWITTERBOT_STORAGE_ACCOUNT_NAME}}"
+        - name: TWITTERBOT_STORAGE_ACCOUNT_KEY
+          value: "{{TWITTERBOT_STORAGE_ACCOUNT_KEY}}"
+        - name: DATA_PIPELINE_STORAGE_ACCOUNT_NAME
+          value: "{{DATA_PIPELINE_STORAGE_ACCOUNT_NAME}}"
+        - name: DATA_PIPELINE_STORAGE_ACCOUNT_KEY
+          value: "{{DATA_PIPELINE_STORAGE_ACCOUNT_KEY}}"
+        - name: DOCUMENTCLOUD_USER
+          value: "{{DOCUMENTCLOUD_USER}}"
+        - name: DOCUMENTCLOUD_PASSWORD
+          value: "{{DOCUMENTCLOUD_PASSWORD}}"
+        - name: AIRTABLE_API_KEY
+          value: "{{AIRTABLE_API_KEY}}"
+        - name: AIRTABLE_PROJECT_KEY
+          value: "{{AIRTABLE_PROJECT_KEY}}"
+        - name: TWITTER_CONSUMER_KEY
+          value: "{{TWITTER_CONSUMER_KEY}}"
+        - name: TWITTER_CONSUMER_SECRET
+          value: "{{TWITTER_CONSUMER_SECRET}}"
+        - name: TWITTER_APP_TOKEN_KEY
+          value: "{{TWITTER_APP_TOKEN_KEY}}"
+        - name: TWITTER_APP_TOKEN_SECRET
+          value: "{{TWITTER_APP_TOKEN_SECRET}}"
         ports:
         - containerPort: 80
 ---
