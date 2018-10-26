@@ -22,6 +22,7 @@ RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/re
         jpeg-dev \
         zlib-dev \
         proj4-dev@testing \
+        git \
         gdal-dev@testing
 
 ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
