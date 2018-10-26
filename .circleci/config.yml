@@ -174,5 +174,8 @@ workflows:
   deploy_ingress:
     jobs:
       - deploy_ingress:
-          requires:
-            - build_cpdpbot
+          filters:
+            branches:
+              only:
+                - staging
+                - master
