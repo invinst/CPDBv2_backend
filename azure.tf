@@ -36,13 +36,6 @@ resource "azurerm_storage_account" "production" {
   }
 }
 
-resource "azurerm_virtual_network" "cpdp" {
-  name                = "cpdp-vnet"
-  resource_group_name = "${azurerm_resource_group.terraformed.name}"
-  location            = "${azurerm_resource_group.terraformed.location}"
-  address_space       = ["10.1.0.0/16"]
-}
-
 output "staging_storage_account_name" {
   value = "${azurerm_storage_account.staging.name}"
 }

@@ -65,6 +65,7 @@ secrets.auto.tfvars
 backend.tf
 prod.env
 local.env
+staging.env
 
 # Azure kube config file
 azurek8s
@@ -72,3 +73,5 @@ azurek8s
 # TLS certificate and key
 tls_cert
 tls_key
+docker/postgres/server.crt
+docker/postgres/server.key

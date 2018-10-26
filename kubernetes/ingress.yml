@@ -31,5 +31,5 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: gunicron
+          serviceName: gunicorn
           servicePort: 80
