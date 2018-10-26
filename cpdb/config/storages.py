@@ -13,11 +13,11 @@ from azure.common import AzureMissingResourceHttpError
 
 @deconstructible
 class AzureStorage(Storage):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, azure_container=settings.AZURE_STATICFILES_CONTAINER, *args, **kwargs):
         super(AzureStorage, self).__init__(*args, **kwargs)
         self.account_name = settings.AZURE_STORAGE_ACCOUNT_NAME
         self.account_key = settings.AZURE_STORAGE_ACCOUNT_KEY
-        self.azure_container = settings.AZURE_STATICFILES_CONTAINER
+        self.azure_container = azure_container
         self.azure_ssl = settings.AZURE_STATICFILES_SSL
         self._base_blob_service = None
         self._block_blob_service = None

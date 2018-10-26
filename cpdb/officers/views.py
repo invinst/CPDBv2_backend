@@ -3,9 +3,9 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from data.models import Officer
+from data.models import Officer, OfficerAlias
 from officers.serializers.response_serializers import (
-    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer,
+    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer
 )
 from officers.serializers.response_mobile_serializers import OfficerInfoMobileSerializer
 from officers.queries import OfficerTimelineQuery, OfficerTimelineMobileQuery
@@ -18,17 +18,33 @@ _ALLOWED_FILTERS = [
 ]
 
 
-class OfficersViewSet(viewsets.ViewSet):
+class OfficerBaseViewSet(viewsets.ViewSet):
+    def get_officer_id(self, pk):
+        """
+        If an officer id does not exist, return the alias id if possible.
+        Frontend should be able to detect that there is a change in officer
+        id and redirect accordingly.
+        """
+        try:
+            alias = OfficerAlias.objects.get(old_officer_id=pk)
+            return alias.new_officer_id
+        except OfficerAlias.DoesNotExist:
+            return pk
+
+
+class OfficersDesktopViewSet(OfficerBaseViewSet):
     @detail_route(methods=['get'])
     def summary(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerInfoSerializer(officer).data)
 
     @detail_route(methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineQuery(officer).execute())
 
     @list_route(methods=['get'], url_path='top-by-allegation')
@@ -45,19 +61,22 @@ class OfficersViewSet(viewsets.ViewSet):
 
     @detail_route(methods=['get'])
     def coaccusals(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerCoaccusalSerializer(officer.coaccusals, many=True).data)
 
 
-class OfficersMobileViewSet(viewsets.ViewSet):
+class OfficersMobileViewSet(OfficerBaseViewSet):
     def retrieve(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerInfoMobileSerializer(officer).data)
 
     @detail_route(methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
+        officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
-        officer = get_object_or_404(queryset, id=pk)
+        officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineMobileQuery(officer).execute())
