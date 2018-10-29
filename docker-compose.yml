@@ -11,6 +11,7 @@ services:
       - elasticsearch
     volumes:
       - .:/usr/src/app
+      - logfiles:/logfiles
     command: cpdb/manage.py runserver 0.0.0.0:80
   postgres:
     build: ./docker/postgres
@@ -32,3 +33,4 @@ services:
 volumes:
   pgdata:
   esdata:
+  logfiles:

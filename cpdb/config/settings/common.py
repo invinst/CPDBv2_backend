@@ -279,7 +279,7 @@ LOGGING = {
         'error-file': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/pyenv/versions/cpdb/logs/django-error.log',
+            'filename': '/logfiles/django-error.log',
             'maxBytes': 1024*1024*10,  # 10MB
             'backupCount': 10,
             'formatter': 'standard',
@@ -293,7 +293,7 @@ LOGGING = {
         'twitterbot-log': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/pyenv/versions/cpdb/logs/twitterbot-webhook.log',
+            'filename': '/logfiles/twitterbot-webhook.log',
             'maxBytes': 1024*1024*10,  # 10MB
             'backupCount': 10,
             'formatter': 'standard',
