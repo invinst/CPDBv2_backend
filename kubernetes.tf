@@ -25,7 +25,7 @@ resource "azurerm_kubernetes_cluster" "cpdp_akc" {
 
   agent_pool_profile {
     name            = "default"
-    count           = 2
+    count           = 3
     vm_size         = "Standard_D2_v3"
     os_type         = "Linux"
     os_disk_size_gb = 30
