@@ -37,6 +37,14 @@ spec:
           value: "{{POSTGRES_CIVIS_PASSWORD}}"
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: tls-secrets
+          mountPath: "/tls-secrets"
+          readOnly: true
+      volumes:
+      - name: tls-secrets
+        secret:
+          secretName: tls-secret
 ---
 apiVersion: v1
 kind: Service
