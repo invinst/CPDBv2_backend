@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route
 
 from search.formatters import AreaFormatter, ZipCodeFormatter
-from search.workers import ZipCodeWorker
+from search.workers import ZipCodeWorker, DateOfficerWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
@@ -69,6 +69,7 @@ class SearchV1ViewSet(SearchViewSet):
     formatters = {
         'DATE > CR': CRFormatter,
         'DATE > TRR': TRRFormatter,
+        'DATE > OFFICERS': OfficerFormatter,
         'OFFICER': OfficerFormatter,
         'UNIT': UnitFormatter,
         'COMMUNITY': AreaFormatter,
@@ -86,6 +87,7 @@ class SearchV1ViewSet(SearchViewSet):
     workers = {
         'DATE > CR': DateCRWorker(),
         'DATE > TRR': DateTRRWorker(),
+        'DATE > OFFICERS': DateOfficerWorker(),
         'OFFICER': OfficerWorker(),
         'UNIT': UnitWorker(),
         'COMMUNITY': CommunityWorker(),

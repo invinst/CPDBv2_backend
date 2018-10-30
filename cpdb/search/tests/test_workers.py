@@ -1,16 +1,19 @@
 from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
 
 from robber import expect
 
-from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory
+from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory, \
+    AllegationFactory
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CRWorker, AreaWorker, TRRWorker, RankWorker,
-    DateCRWorker, DateTRRWorker, ZipCodeWorker
-)
+    DateCRWorker, DateTRRWorker, ZipCodeWorker,
+    DateOfficerWorker)
 from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
+from trr.factories import TRRFactory
 
 
 class ReportWorkerTestCase(IndexMixin, SimpleTestCase):
@@ -276,3 +279,27 @@ class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):
         response2 = ZipCodeWorker().search('zip-code')
         expect(response1.hits.total).to.be.equal(1)
         expect(response2.hits.total).to.be.equal(2)
+
+
+class DateOfficerWorkerTestCase(IndexMixin, TestCase):
+    def test_search(self):
+        officer_1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(id=2, first_name='Edward', last_name='May')
+
+        allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
+        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 06))
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(allegation=allegation_2)
+
+        TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
+        TRRFactory(trr_datetime=timezone.datetime(2010, 05, 07))
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        response = DateOfficerWorker().search('', dates=['2004-10-10'])
+        expect(response.hits.total).to.equal(2)
+        expect(response.hits[0].id).to.eq(1)
+        expect(response.hits[0].full_name).to.eq('Jerome Finnigan')
+        expect(response.hits[1].id).to.eq(2)
+        expect(response.hits[1].full_name).to.eq('Edward May')
