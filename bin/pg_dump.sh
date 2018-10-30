@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-    echo "Connect to app database on production or staging using psql."
+    echo "Dump data from PostgreSQL database."
     echo ""
     echo "Usage: `basename $0` {--production|--staging} outfile"
     echo "       `basename $0` {-h|--help}"

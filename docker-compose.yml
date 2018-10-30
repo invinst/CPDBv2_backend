@@ -4,6 +4,7 @@ services:
     build: .
     environment:
       GUNICORN_RELOAD: "True"
+      GOOGLE_APPLICATION_CREDENTIALS: "/usr/src/app/twitterbot-nl-api.json"
     ports:
       - "8000:80"
     depends_on:
@@ -15,11 +16,11 @@ services:
     command: cpdb/manage.py runserver 0.0.0.0:80
   postgres:
     build: ./docker/postgres
-    command: postgres
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    command: postgres -c ssl=off
   elasticsearch:
     image: elasticsearch:5-alpine
     ports:

@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pg-data-disk
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: managed-premium
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -35,16 +47,23 @@ spec:
           value: "{{POSTGRES_NOTEBOOK_PASSWORD}}"
         - name: POSTGRES_CIVIS_PASSWORD
           value: "{{POSTGRES_CIVIS_PASSWORD}}"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
         ports:
         - containerPort: 5432
         volumeMounts:
         - name: tls-secrets
           mountPath: "/tls-secrets"
           readOnly: true
+        - mountPath: "/var/lib/postgresql/data"
+          name: pg-data-disk
       volumes:
       - name: tls-secrets
         secret:
           secretName: tls-secret
+      - name: pg-data-disk
+        persistentVolumeClaim:
+          claimName: pg-data-disk
 ---
 apiVersion: v1
 kind: Service
