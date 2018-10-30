@@ -285,14 +285,16 @@ class DateOfficerWorkerTestCase(IndexMixin, TestCase):
     def test_search(self):
         officer_1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=2, first_name='Edward', last_name='May')
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
 
         allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
         allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 06))
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
-        OfficerAllegationFactory(allegation=allegation_2)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_2)
 
         TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
-        TRRFactory(trr_datetime=timezone.datetime(2010, 05, 07))
+        TRRFactory(trr_datetime=timezone.datetime(2010, 05, 07), officer=officer_4)
 
         self.rebuild_index()
         self.refresh_index()

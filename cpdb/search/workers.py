@@ -177,7 +177,7 @@ class DateTRRWorker(DateWorker):
     date_field = 'trr_datetime'
 
 
-class DateOfficerWorker(Worker):
+class DateOfficerWorker(DateWorker):
     doc_type_klass = OfficerInfoDocType
     sort_order = ['id']
 
