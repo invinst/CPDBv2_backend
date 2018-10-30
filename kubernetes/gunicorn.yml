@@ -11,9 +11,6 @@ spec:
       labels:
         app: gunicorn
     spec:
-      volumes:
-      - name: logfiles
-        emptyDir: {}
       containers:
       - name: remote-syslog2
         image: cpdbdev/remote_syslog2:latest
@@ -38,9 +35,6 @@ spec:
           limits:
             cpu: 1
             memory: 2Gi
-        volumeMounts:
-        - name: logfiles
-          mountPath: /logfiles
         env:
         - name: DB_NAME
           value: "{{POSTGRES_APP_DB}}"
@@ -90,8 +84,22 @@ spec:
           value: "{{TWITTER_APP_TOKEN_SECRET}}"
         - name: MAILGUN_API_KEY
           value: "{{MAILGUN_API_KEY}}"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/google_creds/google-nl-api.json"
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: google-creds
+          mountPath: "/google_creds"
+          readOnly: true
+        - name: logfiles
+          mountPath: /logfiles
+      volumes:
+      - name: google-creds
+        secret:
+          secretName: google-nl-api-credentials
+      - name: logfiles
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
