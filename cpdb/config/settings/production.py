@@ -14,7 +14,7 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 ANYMAIL = {
-    'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY'),
+    'MAILGUN_API_KEY': env.str('MAILGUN_API_KEY', ''),
     'MAILGUN_SENDER_DOMAIN': 'cpdp.co'
 }
 

@@ -3,7 +3,7 @@ from django.conf import settings
 from google.cloud.language import enums, types, LanguageServiceClient
 
 
-class GoogleNaturalLanguageNameParser:
+class GoogleNaturalLanguageNameParser(object):
     def __init__(self):
         if not settings.TEST:
             self.client = LanguageServiceClient()  # pragma: no cover
