@@ -26,3 +26,6 @@ RUN git clone https://github.com/sobolevn/git-secret.git git-secret \
 # Install templater
 RUN curl -L https://raw.githubusercontent.com/johanhaleby/bash-templater/master/templater.sh -o /usr/local/bin/templater \
   && chmod +x /usr/local/bin/templater
+
+RUN adduser -D kubectl
+USER kubectl

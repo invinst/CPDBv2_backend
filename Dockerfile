@@ -39,8 +39,11 @@ RUN pip install --no-cache-dir -r requirements/local.txt
 
 COPY . .
 
+RUN mkdir cpdb/static
+
 RUN adduser -D gunicorn
 RUN chown -R gunicorn .
+RUN mkdir /logfiles && chown gunicorn /logfiles
 USER root
 
 EXPOSE 80

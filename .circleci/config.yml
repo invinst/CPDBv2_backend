@@ -43,6 +43,92 @@ jobs:
           name: Push image
           command: docker push cpdbdev/backend:$(cat buildnum)
 
+  django_collect_static:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Start job
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export CONTEXT=production
+            else
+              export CONTEXT=staging
+            fi
+            bin/run_job.sh --$CONTEXT django_collect_static.yml django-collect-static $(cat /tmp/workspace/buildnum)
+
+  django_migrate:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Start job
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export CONTEXT=production
+            else
+              export CONTEXT=staging
+            fi
+            bin/run_job.sh --$CONTEXT django_migrate.yml django-migrate $(cat /tmp/workspace/buildnum)
+
+  rebuild_index:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Start job
+          command: bin/run_job.sh --production rebuild_index.yml rebuild-index $(cat /tmp/workspace/buildnum)
+
+  rebuild_search_index:
+    docker:
+      - image: cpdbdev/kubectl:v1.11.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Start job
+          command: bin/run_job.sh --production rebuild_search_index.yml rebuild-search-index $(cat /tmp/workspace/buildnum)
+
   deploy_backend:
     docker:
       - image: cpdbdev/kubectl:v1.11.3
@@ -56,6 +142,7 @@ jobs:
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Apply deployment
           command: |
@@ -67,8 +154,7 @@ jobs:
               export NAMESPACE=staging
               source staging.env
             fi
-            echo $KUBECONFIG_JSON > kube_config.json
-            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml | kubectl --kubeconfig kube_config.json apply -f - --namespace=$NAMESPACE
+            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml | kubectl apply -f - --namespace=$NAMESPACE
 
   build_cpdpbot:
     machine: true
@@ -98,7 +184,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run: echo $KUBECONFIG_JSON > kubeconfig.json
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Reveal secrets
           command: |
@@ -114,7 +200,7 @@ jobs:
       - image: cpdbdev/kubectl:v1.11.3
     steps:
       - checkout
-      - run: echo $KUBECONFIG_JSON > kubeconfig.json
+      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Reveal secrets
           command: |
@@ -124,8 +210,8 @@ jobs:
       - run:
           name: Install nginx ingress controller
           command: |
-            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
-            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
       - run:
           name: Apply ingress
           command: |
@@ -139,8 +225,8 @@ jobs:
             fi
             set +e
             kubectl apply -f kubernetes/namespaces.yml
-            kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
-            templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
+            kubectl create secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
+            templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --namespace=$NAMESPACE -f -
 
   create_sql_dump_file:
     docker:
@@ -176,18 +262,59 @@ jobs:
 
 workflows:
   version: 2
-  test_and_deploy_backend:
+  test_backend:
     jobs:
-      - test_backend
-      - push_backend_image:
+      - test_backend:
           filters:
             branches:
-              only:
+              ignore:
                 - staging
                 - master
-      - deploy_backend:
+  deploy_backend_staging:
+    jobs:
+      - test_backend:
+          filters:
+            branches:
+              only: staging
+      - push_backend_image:
+          requires:
+            - test_backend
+      - django_collect_static:
           requires:
             - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      - deploy_backend:
+          requires:
+            - django_migrate
+            - django_collect_static
+  deploy_backend_production:
+    jobs:
+      - test_backend:
+          filters:
+            branches:
+              only: master
+      - push_backend_image:
+          requires:
+            - test_backend
+      - django_collect_static:
+          requires:
+            - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      - rebuild_index:
+          requires:
+            - django_migrate
+      - rebuild_search_index:
+          requires:
+            - django_migrate
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
+            - django_collect_static
 
   daily_backup:
     triggers:
