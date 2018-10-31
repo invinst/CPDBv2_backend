@@ -747,6 +747,7 @@ class Allegation(models.Model):
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
+    subjects = ArrayField(models.CharField(max_length=255), default=[])
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey(AllegationCategory, null=True)
@@ -994,7 +995,7 @@ class AttachmentFile(models.Model):
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, db_index=True)
-    additional_info = JSONField()
+    additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, related_name='attachment_files')

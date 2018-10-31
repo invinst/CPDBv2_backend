@@ -61,7 +61,8 @@ LOCAL_APPS = (
     'heatmap',
     'trr',
     'popup',
-    'airtable_integration'
+    'airtable_integration',
+    'data_importer'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

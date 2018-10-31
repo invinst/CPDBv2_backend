@@ -170,6 +170,7 @@ class PostgreSQLChangeKeeperTestCase(TestCase):
             'point': 'SRID=4326;POINT (0 0)',
             'source': 'IPRA',
             'summary': 'lorem ipsum',
+            'subjects': [],
             'incident_date': '2000-01-01T00:00:00Z',
             'old_complaint_address': None,
             'is_officer_complaint': False,

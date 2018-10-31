@@ -1,9 +1,13 @@
-from django.test import SimpleTestCase
-from mock import patch, MagicMock
+from django.test.testcases import SimpleTestCase
+
+from mock import MagicMock, patch
 from robber import expect
 
-from data_importer.ipra_portal_crawler.crawler import OpenIpraInvestigationCrawler, BaseComplaintCrawler, \
-    ComplaintCrawler
+from data_importer.ipra_portal_crawler.crawler import (
+    OpenIpraInvestigationCrawler,
+    BaseComplaintCrawler,
+    ComplaintCrawler,
+)
 
 
 class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
@@ -23,11 +27,9 @@ class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
                                 <a href='http://www.iprachicago.org/case/1063442-2/' rel='bookmark'>1063442</a>
                             </th>
                         </tr>
-                    </tbody>
-                '''
+                    </tbody>'''
             }
         }
-
         links = ['http://www.iprachicago.org/case/1063127-2/', 'http://www.iprachicago.org/case/1063442-2/']
         expect(OpenIpraInvestigationCrawler().crawl()).to.be.eq(links)
 
@@ -61,41 +63,38 @@ class BaseComplaintCrawlerTest(SimpleTestCase):
 
 
 class ComplaintCrawlerTest(SimpleTestCase):
-    URL = 'http://www.chicagocopa.org/case/1085949/'
+    URL = 'http://www.iprachicago.org/case/1042532-2/'
     HTML_CONTENT = '''
     <div class="entry-content">
-        <div class="table-responsive hidden-lg hidden-md stack-table">
-            <table class="table table-bordered table-striped">
+        <div class="table-responsive hidden-sm hidden-xs">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Log#</th>
+                    <th scope="col">Incident Type(s)</th>
+                    <th scope="col">IPRA/COPA Notification Date</th>
+                    <th scope="col">Incident Date &amp; Time</th>
+                    <th scope="col">District of Occurrence</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr>
-                    <th scope="row">Log Number:</th>
-                    <td>1061883</td>
-                </tr>
-                <tr>
-                    <th scope="row">Incident Type(s):</th>
+                    <th scope="row">
+                        1061883
+                    </th>
                     <td>
                         Firearm Discharge
                     </td>
-                </tr>
-                <tr>
-                    <th scope="row">IPRA Notification Date:</th>
                     <td>
                         04-30-2013
                     </td>
-                </tr>
-                <tr>
-                    <th scope="row">Incident Date &amp; Time:</th>
                     <td>
                         04-30-2013 9:30 pm
                     </td>
-                </tr>
-                <tr>
-                    <th scope="row">District of Occurrence:</th>
                     <td>
                         04
                     </td>
                 </tr>
-
                 </tbody>
             </table>
         </div>
