@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: 500m
+            cpu: 1
             memory: 1Gi
           limits:
             cpu: 1
@@ -86,6 +86,8 @@ spec:
           value: "{{MAILGUN_API_KEY}}"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/google_creds/google-nl-api.json"
+        - name: PROFILER
+          value: "0"
         ports:
         - containerPort: 80
         volumeMounts:
