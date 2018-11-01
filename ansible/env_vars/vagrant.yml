@@ -49,6 +49,7 @@ setup_newrelic: no
 backup_database_daily: no
 update_documents_daily: no
 upload_document_request_hourly: no
+crawl_ipra_daily: no
 
 force_rewrite_env_file: no
 

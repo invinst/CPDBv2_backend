@@ -23,3 +23,11 @@
     special_time=hourly
     job="/bin/bash -c 'source {{ project_root_path }}/bin/activate_env.sh && DJANGO_SETTINGS_MODULE={{django_settings_module}} {{ project_root_path }}/cpdb/manage.py upload_document_requests'"
   when: upload_document_request_hourly
+
+- name: Make sure copa document crawling cron job is registered
+  become: yes
+  become_user: "{{ deploy_user }}"
+  cron: name="upload document requests"
+    special_time=daily
+    job="/bin/bash -c 'source {{ project_root_path }}/bin/activate_env.sh && DJANGO_SETTINGS_MODULE={{django_settings_module}} {{ project_root_path }}/cpdb/manage.py crawl_ipra_portal_data'"
+  when: crawl_ipra_daily
