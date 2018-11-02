@@ -1,4 +1,4 @@
-FROM python:2.7-alpine
+FROM python:2.7-slim
 
 ENV GUNICORN_BIND 0.0.0.0:80
 ENV GUNICORN_WORKERS 1
@@ -8,29 +8,24 @@ ENV GUNICORN_NAME cpdb
 ENV GUNICORN_LOGLEVEL info
 ENV GUNICORN_CHDIR /usr/src/app/cpdb
 
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-    apk add \
-        postgresql-dev \
-        gcc \
-        libffi-dev \
-        musl-dev \
-        libressl-dev \
-        g++ \
-        build-base \
-        python-dev \
-        jpeg-dev \
-        zlib-dev \
-        proj4-dev@testing \
-        git \
-        gdal-dev@testing
+RUN apt-get update && \
+    apt-get install -y \
+    gcc \
+    proj-bin \
+    gdal-bin \
+    build-essential \
+    libjpeg-dev \
+    curl \
+    zlib1g-dev
 
 ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
 RUN tar xjf geos-3.6.1.tar.bz2 && \
     cd geos-3.6.1 && \
     ./configure && \
     make && \
-    make install
+    make install && \
+    rm -rf /geos-3.6.1 && \
+    rm /geos-3.6.1.tar.bz2
 
 WORKDIR /usr/src/app
 
@@ -41,7 +36,7 @@ COPY . .
 
 RUN mkdir cpdb/static
 
-RUN adduser -D gunicorn
+RUN useradd -ms /bin/bash gunicorn
 RUN chown -R gunicorn .
 RUN mkdir /logfiles && chown gunicorn /logfiles
 USER root
