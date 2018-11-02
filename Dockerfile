@@ -16,7 +16,8 @@ RUN apt-get update && \
     build-essential \
     libjpeg-dev \
     curl \
-    zlib1g-dev
+    zlib1g-dev \
+    git
 
 ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
 RUN tar xjf geos-3.6.1.tar.bz2 && \

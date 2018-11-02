@@ -37,7 +37,7 @@ jobs:
             - buildnum
       - run:
           name: Build image
-          command: docker build -t cpdbdev/backend:$(cat buildnum)
+          command: docker build -t cpdbdev/backend:$(cat buildnum) .
       - run:
           name: Push image
           command: |
