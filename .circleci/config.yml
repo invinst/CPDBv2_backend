@@ -311,12 +311,16 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
+      - run_cache_data:
+          type: approval
+          requires:
+           - django_migrate
       - rebuild_index:
           requires:
-            - django_migrate
+            - run_cache_data
       - rebuild_search_index:
           requires:
-            - django_migrate
+            - run_cache_data
       - deploy_backend:
           requires:
             - rebuild_index
