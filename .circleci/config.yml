@@ -27,8 +27,6 @@ jobs:
 
   push_backend_image:
     machine: true
-    environment:
-      ANSIBLE_HOST_KEY_CHECKING: "False"
     steps:
       - checkout
       - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
@@ -41,7 +39,9 @@ jobs:
           command: docker build -t cpdbdev/backend:$(cat buildnum)
       - run:
           name: Push image
-          command: docker push cpdbdev/backend:$(cat buildnum)
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push cpdbdev/backend:$(cat buildnum)
 
   django_collect_static:
     docker:
@@ -62,11 +62,11 @@ jobs:
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export CONTEXT=production
+              export ENVFLAG=--production
             else
-              export CONTEXT=staging
+              export ENVFLAG=--staging
             fi
-            bin/run_job.sh --$CONTEXT django_collect_static.yml django-collect-static $(cat /tmp/workspace/buildnum)
+            bin/run_job.sh $ENVFLAG django_collect_static.yml $(cat /tmp/workspace/buildnum)
 
   django_migrate:
     docker:
@@ -87,11 +87,11 @@ jobs:
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export CONTEXT=production
+              export ENVFLAG=--production
             else
-              export CONTEXT=staging
+              export ENVFLAG=--staging
             fi
-            bin/run_job.sh --$CONTEXT django_migrate.yml django-migrate $(cat /tmp/workspace/buildnum)
+            bin/run_job.sh $ENVFLAG django_migrate.yml $(cat /tmp/workspace/buildnum)
 
   rebuild_index:
     docker:
@@ -109,7 +109,7 @@ jobs:
       - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Start job
-          command: bin/run_job.sh --production rebuild_index.yml rebuild-index $(cat /tmp/workspace/buildnum)
+          command: bin/run_job.sh --production rebuild_index.yml $(cat /tmp/workspace/buildnum)
 
   rebuild_search_index:
     docker:
@@ -127,7 +127,7 @@ jobs:
       - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Start job
-          command: bin/run_job.sh --production rebuild_search_index.yml rebuild-search-index $(cat /tmp/workspace/buildnum)
+          command: bin/run_job.sh --production rebuild_search_index.yml $(cat /tmp/workspace/buildnum)
 
   deploy_backend:
     docker:
@@ -149,12 +149,19 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export NAMESPACE=production
-              source prod.env
+              export ENV_FILE=prod.env
             else
               export NAMESPACE=staging
-              source staging.env
+              export ENV_FILE=staging.env
             fi
-            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml | kubectl apply -f - --namespace=$NAMESPACE
+            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml -f $ENV_FILE | kubectl apply -f - --namespace=$NAMESPACE
+      - run:
+          name: Setup cronjobs
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              bin/setup_cronjobs.sh --production $(cat /tmp/workspace/buildnum)
+            fi
 
   build_cpdpbot:
     machine: true
@@ -275,7 +282,7 @@ workflows:
       - test_backend:
           filters:
             branches:
-              only: staging
+              only: feature/466-dockerize-v2-backend
       - push_backend_image:
           requires:
             - test_backend

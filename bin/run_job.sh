@@ -4,8 +4,10 @@ set -e
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Run a job on production or staging."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging} <manifest_file> <job_name> <backend_image_tag>"
+    echo "Usage: `basename $0` {--production|--staging} <manifest_file> <backend_image_tag>"
     echo "       `basename $0` {-h|--help}"
+    echo "Example:"
+    echo "    $ `basename $0` --staging rebuild_index.yml latest"
     exit 0
 elif [ -z "$1" ]; then
     echo "Must specify either --production or --staging."
@@ -29,23 +31,18 @@ else
 fi
 
 if [ -z "$3" ]; then
-    echo "Must specify job name as third argument."
+    echo "Must specify backend image tag as third argument."
     exit 1
 else
-    JOB_NAME="$3"
-fi
-
-if [ -z "$4" ]; then
-    echo "Must specify backend image tag as fourth argument."
-    exit 1
-else
-    imagetag="$4"
+    imagetag="$3"
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-BACKEND_IMAGE_TAG=$imagetag templater kubernetes/jobs/$MANIFEST_FILE -f $ENV_FILE | kubectl apply -f - --namespace $NAMESPACE
+JOB_STATUS="$(BACKEND_IMAGE_TAG=$imagetag templater kubernetes/jobs/$MANIFEST_FILE -f $ENV_FILE | kubectl apply -f - --namespace $NAMESPACE)"
+JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch\/([a-z-]+) .+/\1/p')"
+
 SUCCEEDED=0
 printf "The job output will be printed as soon as it's done. Please be patient...\n"
 while [ "$SUCCEEDED" != "1" ]
