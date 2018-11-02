@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: upload-document-requests
+spec:
+  template:
+    spec:
+      containers:
+      - name: gunicorn
+        image: cpdbdev/backend:{{BACKEND_IMAGE_TAG}}
+        command: ["cpdb/manage.py",  "upload_document_requests"]
+        env:
+        - name: DB_NAME
+          value: "{{POSTGRES_APP_DB}}"
+        - name: DB_USER
+          value: "{{POSTGRES_APP_USER}}"
+        - name: DB_PASSWORD
+          value: "{{POSTGRES_APP_PASSWORD}}"
+        - name: DB_HOST
+          value: postgres
+        - name: DJANGO_SETTINGS_MODULE
+          value: "{{DJANGO_SETTINGS_MODULE}}"
+        - name: AIRTABLE_API_KEY
+          value: "{{AIRTABLE_API_KEY}}"
+        - name: AIRTABLE_PROJECT_KEY
+          value: "{{AIRTABLE_PROJECT_KEY}}"
+      restartPolicy: Never
+  backoffLimit: 4

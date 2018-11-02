@@ -1,0 +1,31 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: update-documents
+spec:
+  schedule: "@daily"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: gunicorn
+            image: cpdbdev/backend:{{BACKEND_IMAGE_TAG}}
+            command: ["cpdb/manage.py",  "update_documents"]
+            env:
+            - name: DB_NAME
+              value: "{{POSTGRES_APP_DB}}"
+            - name: DB_USER
+              value: "{{POSTGRES_APP_USER}}"
+            - name: DB_PASSWORD
+              value: "{{POSTGRES_APP_PASSWORD}}"
+            - name: DB_HOST
+              value: postgres
+            - name: DJANGO_SETTINGS_MODULE
+              value: "{{DJANGO_SETTINGS_MODULE}}"
+            - name: DOCUMENTCLOUD_USER
+              value: "{{DOCUMENTCLOUD_USER}}"
+            - name: DOCUMENTCLOUD_PASSWORD
+              value: "{{DOCUMENTCLOUD_PASSWORD}}"
+          restartPolicy: "Never"
+  concurrencyPolicy: Replace
