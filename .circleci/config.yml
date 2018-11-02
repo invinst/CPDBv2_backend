@@ -5,7 +5,6 @@ jobs:
       - image: cpdbdev/backend:latest
         user: gunicorn
       - image: cpdbdev/postgres:9.6
-        name: postgres
         command: postgres -c ssl=off
       - image: elasticsearch:5-alpine
         name: elasticsearch
