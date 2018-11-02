@@ -4,17 +4,19 @@ set -e
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Dump data from PostgreSQL database."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging} outfile"
+    echo "Usage: `basename $0` {--production|--staging|--local} outfile"
     echo "       `basename $0` {-h|--help}"
     exit 0
 elif [ -z "$1" ]; then
-    echo "Must specify either --production or --staging."
+    echo "Must specify either --production or --staging or --local."
     exit 1
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
     exit 0
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
+elif [ "$1" == "--local" ]; then
+    ENV_FILE=local.env
 else
     echo "Unrecognized first argument. See help with --help"
     exit 1
@@ -30,4 +32,4 @@ cd $DIR/..
 source $ENV_FILE
 
 PGPASSWORD=$POSTGRES_APP_PASSWORD pg_dump \
-    --username $POSTGRES_APP_USER --host="$POSTGRES_HOST" --port=5432 "sslmode=require dbname=$POSTGRES_APP_DB" > $2
+    --username $POSTGRES_APP_USER --host="$POSTGRES_HOST" --port=5432 $POSTGRES_APP_DB > $2
