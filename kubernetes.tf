@@ -8,6 +8,7 @@ resource "azurerm_kubernetes_cluster" "cpdp_aks_cluster" {
   location            = "${azurerm_resource_group.terraformed.location}"
   resource_group_name = "${azurerm_resource_group.terraformed.name}"
   dns_prefix          = "cpdp"
+  kubernetes_version  = "1.11.3"
 
   linux_profile {
     admin_username = "${var.kubernetes_admin_username}"
