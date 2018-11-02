@@ -5,6 +5,7 @@ jobs:
       - image: cpdbdev/backend:latest
         user: gunicorn
       - image: cpdbdev/postgres:9.6
+        name: postgres
       - image: elasticsearch:5-alpine
         name: elasticsearch
       - image: selenium/standalone-chrome:3.11
