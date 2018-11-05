@@ -283,7 +283,7 @@ workflows:
       - test_backend:
           filters:
             branches:
-              only: feature/466-dockerize-v2-backend
+              only: staging
       - push_backend_image:
           requires:
             - test_backend
