@@ -29,3 +29,5 @@ RUN curl -L https://raw.githubusercontent.com/johanhaleby/bash-templater/master/
 
 RUN adduser -D kubectl
 USER kubectl
+
+RUN mkdir /home/kubectl/.kube
