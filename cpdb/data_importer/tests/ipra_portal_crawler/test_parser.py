@@ -1,7 +1,7 @@
 from datetime import datetime
 
+import pytz
 from django.test.testcases import SimpleTestCase
-
 from mock import MagicMock
 from robber import expect
 
@@ -41,12 +41,15 @@ class AttachmentFileFieldTest(SimpleTestCase):
             'type': 'Audio something',
             'title': 'title',
             'link': '//this_is_a_link',
+            'last_updated': '2018-10-30T15:00:03+00:00',
         })).to.be.eq({
             'file_type': 'audio',
             'title': 'title',
             'url': '//this_is_a_link',
             'original_url': '//this_is_a_link',
-            'tag': 'Other'
+            'tag': 'Other',
+            'source_type': 'COPA',
+            'last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
         })
 
 
@@ -66,7 +69,12 @@ class DateTimeFieldTest(SimpleTestCase):
         expect(DateTimeField(field_name='key').parse({'key': '1-4-2011 9:35 PM'})).to.be.eq(
             datetime(month=1, day=4, year=2011, hour=21, minute=35))
 
+        expect(
+            DateTimeField(field_name='key').parse({'key': '2018-10-30T15:00:03+00:00'})
+        ).to.be.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
+
         expect(DateTimeField(field_name='key').parse({'other_key': '1-4-2011 9:35 PM'})).to.be.none()
+
         expect(
             lambda: DateTimeField(field_name='key').parse({'key': '2011-23-23 9:35 PM'})
         ).to.throw(NotSupportedDateFormatException)

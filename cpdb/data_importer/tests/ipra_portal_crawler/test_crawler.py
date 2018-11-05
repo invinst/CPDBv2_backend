@@ -1,5 +1,4 @@
 from django.test.testcases import SimpleTestCase
-
 from mock import MagicMock, patch
 from robber import expect
 
@@ -104,6 +103,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
         </div>
 
         %s
+        <time class="entry-date published" datetime="2018-10-30T15:00:03+00:00">October 30, 2018</time>
 
         <div class="col-sm-4 col-xs-6 col-with-vspace">
             <div class="large-icon" id="link170660179">
@@ -199,18 +199,22 @@ class ComplaintCrawlerTest(SimpleTestCase):
         single_subject_content = '''
         <p>Subjects: Barry Hayes</p>
         '''
+
         get_html_content.return_value = self.HTML_CONTENT % single_subject_content
-        records = {'attachments': [{'type': 'audio', 'link': 'http://audio_link', 'title': 'Audio Clip'},
-                                   {'type': 'video', 'link': 'http://video_link', 'title': 'Video Clip'},
-                                   {'type': 'document', 'link': 'http://document.pdf',
-                                    'title': 'Original Case Incident Report'}],
-                   'date': '04-30-2013',
-                   'district': '04',
-                   'log_number': '1061883',
-                   'time': '04-30-2013 9:30 pm',
-                   'type': 'Firearm Discharge',
-                   'subjects': ['Barry Hayes'],
-                   }
+        records = {
+            'attachments': [
+                {'type': 'audio', 'link': 'http://audio_link', 'title': 'Audio Clip'},
+                {'type': 'video', 'link': 'http://video_link', 'title': 'Video Clip'},
+                {'type': 'document', 'link': 'http://document.pdf', 'title': 'Original Case Incident Report'}
+            ],
+            'date': '04-30-2013',
+            'district': '04',
+            'log_number': '1061883',
+            'time': '04-30-2013 9:30 pm',
+            'type': 'Firearm Discharge',
+            'subjects': ['Barry Hayes'],
+            'last_updated': '2018-10-30T15:00:03+00:00'
+        }
         expect(ComplaintCrawler(url=self.URL).crawl()).to.be.eq(records)
 
     @patch('data_importer.ipra_portal_crawler.crawler.ComplaintCrawler.get_html_content')

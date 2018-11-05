@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from documentcloud import DocumentCloud
 
+from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
 
 
@@ -11,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
         missing_documentcloud_docs = AttachmentFile.objects.filter(
-            original_url__icontains='copa',
+            source_type=AttachmentSourceType.COPA,
             file_type='document'
         ).exclude(
             url__icontains='documentcloud'

@@ -1,7 +1,6 @@
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
-
+from data.constants import AttachmentSourceType
 from data.models import AttachmentFile, Allegation, AllegationCategory
 from data_importer.ipra_portal_crawler.crawler import OpenIpraInvestigationCrawler, ComplaintCrawler
 from data_importer.ipra_portal_crawler.parser import (
@@ -13,9 +12,9 @@ from data_importer.ipra_portal_crawler.parser import (
     AttachmentFileField,
     SimpleField
 )
+from document_cloud.models import DocumentCrawler
 
-
-logger = logging.getLogger('ipra_portal_crawler')
+logger = logging.getLogger('django.command')
 
 
 class AutoOpenIPRA(object):
@@ -50,47 +49,101 @@ class AutoOpenIPRA(object):
 
     @staticmethod
     def crawl_open_ipra():
-        logger.warn('Crawling process is about to start...')
+        logger.info('Crawling process is about to start...')
         links = OpenIpraInvestigationCrawler().crawl()
-        logger.warn('Complaint crawler is starting! {num_links} is ready to be crawled'.format(num_links=len(links)))
+        logger.info('Complaint crawler is starting! {num_links} is ready to be crawled'.format(num_links=len(links)))
         incidents = []
 
         for link in links:
-            logger.warn('Crawling {link}'.format(link=link))
+            logger.info('Crawling {link}'.format(link=link))
             incidents.append(ComplaintCrawler(link).crawl())
 
         return incidents
 
     @staticmethod
-    def import_allegation_and_attachments(incidents):
-        for incident in incidents:
-            crid = incident['allegation']['crid']
-            logger.warn('Importing allegation with crid: {crid}'.format(crid=crid))
+    def get_or_update_allegation(allegation_dict):
+        crid = allegation_dict['crid']
+        logger.info('Importing allegation with crid: {crid}'.format(crid=crid))
+        try:
+            allegation = Allegation.objects.get(crid=crid)
+        except Allegation.DoesNotExist:
+            return None
+
+        subjects = [subject for subject in allegation_dict['subjects'] if subject and subject.lower() != 'unknown']
+        if set(allegation.subjects) != set(subjects):
+            allegation.subjects = subjects
+            allegation.save()
+        return allegation
+
+    @staticmethod
+    def update_attachments(allegation, attachment_dicts):
+        num_created = num_updated = 0
+        for attachment_dict in attachment_dicts:
+            attachment_dict['allegation'] = allegation
 
             try:
-                allegation = Allegation.objects.get(crid=crid)
+                attachment = AttachmentFile.objects.get(
+                    external_id=attachment_dict['original_url'],
+                    source_type=AttachmentSourceType.COPA,
+                    allegation=allegation
+                )
+                created = False
+            except AttachmentFile.DoesNotExist:
+                attachment, created = AttachmentFile.objects.get_or_create(
+                    external_id=attachment_dict['original_url'],
+                    source_type='',
+                    allegation=allegation,
+                    defaults=attachment_dict
+                )
 
-                subjects = [subject for subject in incident['allegation']['subjects']
-                            if subject and subject.lower() != 'unknown']
-                if set(allegation.subjects) != set(subjects):
-                    allegation.subjects = subjects
-                    allegation.save()
+            if created:
+                num_created += 1
+            else:
+                updating_fields = [
+                    'file_type', 'title', 'url', 'original_url', 'tag', 'last_updated', 'source_type'
+                ]
+                updated = False
+                for field in updating_fields:
+                    if getattr(attachment, field) != attachment_dict[field]:
+                        setattr(attachment, field, attachment_dict[field])
+                        attachment.save()
+                        updated = True
+                if updated:
+                    num_updated += 1
+        return num_created, num_updated
 
-                for attachment in incident['allegation']['attachment_files']:
-                    attachment['allegation'] = allegation
-                    AttachmentFile.objects.get_or_create(
-                        original_url=attachment['original_url'],
-                        allegation=allegation,
-                        defaults=attachment
-                    )
-            except ObjectDoesNotExist:
-                pass
+    @staticmethod
+    def import_allegation_and_attachments(incidents):
+        num_new_attachments = num_updated_attachments = 0
+
+        for incident in incidents:
+            allegation = AutoOpenIPRA.get_or_update_allegation(incident['allegation'])
+            if allegation:
+                num_created, num_updated = AutoOpenIPRA.update_attachments(
+                    allegation,
+                    incident['allegation']['attachment_files']
+                )
+                num_new_attachments += num_created
+                num_updated_attachments += num_updated
+
+        num_documents = AttachmentFile.objects.filter(source_type=AttachmentSourceType.COPA).count()
+        DocumentCrawler.objects.create(
+            source_type=AttachmentSourceType.COPA,
+            num_documents=num_documents,
+            num_new_documents=num_new_attachments,
+            num_updated_documents=num_updated_attachments
+        )
+        logger.info('Done importing! {num_created} created, {num_updated} updated in {total} copa attachments'.format(
+            num_created=num_new_attachments,
+            num_updated=num_updated_attachments,
+            total=num_documents
+        ))
 
     @staticmethod
     def import_new():
         records = AutoOpenIPRA.crawl_open_ipra()
-        logger.warn('Done crawling!')
+        logger.info('Done crawling!')
         incidents = AutoOpenIPRA.parse_incidents(records)
-        logger.warn('Parsed {num_incidents} crawled incidents'.format(num_incidents=len(incidents)))
+        logger.info('Parsed {num_incidents} crawled incidents'.format(num_incidents=len(incidents)))
         incidents = AutoOpenIPRA.fill_category(incidents)
         AutoOpenIPRA.import_allegation_and_attachments(incidents)

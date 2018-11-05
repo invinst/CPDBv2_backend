@@ -3,6 +3,10 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 from datetime import datetime
 
+import iso8601
+
+from data.constants import AttachmentSourceType
+
 
 class Field(object):
     pass
@@ -101,7 +105,9 @@ class AttachmentFileField(object):
             'title': CharField(field_name='title'),
             'url': CharField(field_name='link'),
             'original_url': CharField(field_name='link'),
-            'tag': TagField(field_name='title')
+            'tag': TagField(field_name='title'),
+            'source_type': Just(AttachmentSourceType.COPA),
+            'last_updated': DateTimeField(field_name='last_updated'),
         })
         return schema.parse(record)
 
@@ -134,5 +140,10 @@ class DateTimeField(SimpleField):
                 return datetime.strptime(value, pattern)
             except ValueError:
                 pass
+
+        try:
+            return iso8601.parse_date(value)
+        except iso8601.ParseError:
+            pass
 
         raise NotSupportedDateFormatException(value)

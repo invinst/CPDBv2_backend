@@ -706,7 +706,7 @@ class Investigator(models.Model):
 
     @property
     def num_cases(self):
-        return self.investigatorallegation_set.all().count()
+        return self.investigatorallegation_set.count()
 
     @property
     def full_name(self):
@@ -991,7 +991,7 @@ class Involvement(models.Model):
 
 
 class AttachmentFile(models.Model):
-    external_id = models.CharField(max_length=50, null=True, db_index=True)
+    external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, db_index=True)
@@ -999,6 +999,7 @@ class AttachmentFile(models.Model):
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+    source_type = models.CharField(max_length=255, db_index=True)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
@@ -1006,7 +1007,7 @@ class AttachmentFile(models.Model):
     last_updated = models.DateTimeField(null=True)
 
     class Meta:
-        unique_together = (('allegation', 'original_url'),)
+        unique_together = (('allegation', 'external_id', 'source_type'),)
 
 
 class Award(models.Model):

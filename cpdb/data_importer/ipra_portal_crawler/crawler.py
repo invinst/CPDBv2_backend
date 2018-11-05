@@ -76,6 +76,9 @@ class ComplaintCrawler(BaseComplaintCrawler):
 
         return results
 
+    def _parse_last_updated(self):
+        return self.soup.select('.entry-date.published')[0]['datetime']
+
     def _parse_log_number(self):
         return self._complaint_info()[0].text.strip()
 
