@@ -7,6 +7,7 @@ env = environ.Env()
 
 CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
+    'staging.cpdp.co',
     'staging.cpdb.co',
 )
 
