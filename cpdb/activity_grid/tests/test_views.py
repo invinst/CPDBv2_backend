@@ -35,6 +35,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             complaint_percentile=50.0,
             allegation_count=6,
             sustained_count=2,
+            rank='Police Officer',
         )
         officer2 = OfficerFactory(
             first_name='Raymond',
@@ -46,6 +47,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             complaint_percentile=0.0,
             allegation_count=1,
             sustained_count=1,
+            rank='Police Officer',
         )
         allegation = AllegationFactory(incident_date=datetime(2014, 1, 1, tzinfo=pytz.utc))
         OfficerAllegationFactory(
@@ -93,6 +95,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_percentile': 50.0,
             'race': 'Asian',
             'gender': 'Male',
+            'rank': 'Police Officer',
             'percentile': {
                 'id': officer1.id,
                 'year': 2016,
@@ -111,6 +114,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_percentile': 0.0,
             'race': 'White',
             'gender': 'Male',
+            'rank': 'Police Officer',
             'percentile': {
                 'id': officer2.id,
                 'year': 2016,
@@ -127,6 +131,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'birth_year': 1950,
                 'race': 'Asian',
                 'gender': 'Male',
+                'rank': 'Police Officer',
                 'percentile': {
                     'id': officer1.id,
                     'year': 2016,
@@ -142,6 +147,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'birth_year': 1960,
                 'race': 'White',
                 'gender': 'Male',
+                'rank': 'Police Officer',
                 'percentile': {
                     'id': officer2.id,
                     'year': 2016,

@@ -1,5 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
+from datetime import timedelta
+
 import environ
 
 
@@ -116,8 +118,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         'DIRS': [
-            str(APPS_DIR.path('templates')),
-            '/www/static/templates/',
+            str(APPS_DIR.path('templates'))
         ],
         'OPTIONS': {
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
@@ -126,7 +127,7 @@ TEMPLATES = [
             # https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types
             'loaders': [
                 'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.app_directories.Loader'
             ],
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
             'context_processors': [
@@ -241,8 +242,6 @@ TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
 TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
 TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
-V1_URL = 'https://data.cpdp.co'
-
 ELASTICSEARCH_HOSTS = ['localhost:9200']
 
 LOGGING = {
@@ -332,3 +331,6 @@ AIRTABLE_TABLE_NAME = env.str('AIRTABLE_TABLE_NAME', 'Request a FOIA')
 
 AIRTABLE_COPA_AGENCY_ID = ''
 AIRTABLE_CPD_AGENCY_ID = ''
+
+TEMPLATE_TIME_TO_LIVE = timedelta(minutes=5)
+AZURE_TEMPLATE_CONTAINER = 'templates'
