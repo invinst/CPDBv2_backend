@@ -9,15 +9,4 @@ ENV POSTGRES_NUMERACY_PASSWORD numeracy
 ENV POSTGRES_NOTEBOOK_PASSWORD notebook
 ENV POSTGRES_CIVIS_PASSWORD civis
 
-ADD postgresql.conf /etc/postgresql/
-
 COPY init-scripts/* /docker-entrypoint-initdb.d/
-
-RUN mkdir -p /var/lib/postgresql/ssl && \
-  chown postgres /var/lib/postgresql/ssl
-
-COPY entry-point.sh /usr/local/bin/
-
-ENTRYPOINT [ "entry-point.sh" ]
-
-CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]

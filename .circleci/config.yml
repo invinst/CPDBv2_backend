@@ -5,7 +5,6 @@ jobs:
       - image: cpdbdev/backend:latest
         user: gunicorn
       - image: cpdbdev/postgres:9.6
-        command: postgres -c ssl=off
       - image: elasticsearch:5-alpine
         name: elasticsearch
       - image: selenium/standalone-chrome:3.11
@@ -236,37 +235,6 @@ jobs:
             kubectl create secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
             templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --namespace=$NAMESPACE -f -
 
-  create_sql_dump_file:
-    docker:
-      - image: cpdbdev/postgres:9.6
-    steps:
-      - run:
-          name: Create SQL Dump file
-          command: |
-            PGPASSWORD=$POSTGRES_APP_PASSWORD pg_dump \
-              --username $POSTGRES_APP_USER \
-              --host="$POSTGRES_HOST" \
-              --port=5432 \
-              "sslmode=require dbname=$POSTGRES_APP_DB" > cpdb_production_dump.sql.gz
-      - persist_to_workspace:
-          root: .
-          paths:
-            - cpdb_production_dump.sql.gz
-
-  upload_sql_file_to_azure:
-    docker:
-      - image: emeraldsquad/azcopy
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Copy SQL file to Azure Blob storage
-          command: |
-            azcopy \
-              --source /tmp/workspace/cpdb_production_dump.sql.gz \
-              --destination https://$PG_BACKUP_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$PG_BACKUP_CONTAINER/cpdb_production_dump_$(date +%Y-%m-%d-%H:%M:%S).sql.gz \
-              --dest-key $PG_BACKUP_STORAGE_ACCOUNT_KEY
-
 
 workflows:
   version: 2
@@ -327,20 +295,6 @@ workflows:
             - rebuild_index
             - rebuild_search_index
             - django_collect_static
-
-  daily_backup:
-    triggers:
-      - schedule:
-          cron: "0 7 * * *"
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
-      - create_sql_dump_file
-      - upload_sql_file_to_azure:
-          requires:
-            - create_sql_dump_file
 
   deploy_cpdpbot:
     jobs:
