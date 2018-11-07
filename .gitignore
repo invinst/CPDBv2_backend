@@ -60,9 +60,6 @@ Pipfile*
 .gitsecret/keys/random_seed
 
 # Terraform secrets
-.terraform
-secrets.auto.tfvars
-backend.tf
 prod.env
 local.env
 staging.env
