@@ -41,23 +41,23 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
 JOB_STATUS="$(BACKEND_IMAGE_TAG=$imagetag templater kubernetes/jobs/$MANIFEST_FILE -f $ENV_FILE | kubectl apply -f - --namespace $NAMESPACE)"
-JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch\/([a-z-]+) .+/\1/p')"
+echo $JOB_STATUS
+JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch "([a-z-]+)" .+/\1/p')"
 
-SUCCEEDED=0
-printf "The job output will be printed as soon as it's done. Please be patient...\n"
-while [ "$SUCCEEDED" != "1" ]
+PHASE=Pending
+while [ "$PHASE" == "Pending" ]
 do
-  printf "."
-  FAILED=$(kubectl get jobs $JOB_NAME -n $NAMESPACE -o go-template --template={{.status.failed}})
-  if [ "$FAILED" == "1" ]; then
-    printf "\nJob failed with following error:\n"
-    kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
-    kubectl delete job $JOB_NAME -n $NAMESPACE
-    exit 1
-  fi
-  SUCCEEDED=$(kubectl get jobs $JOB_NAME -n $NAMESPACE -o go-template --template={{.status.succeeded}})
-  sleep 10
+  PHASE=$(kubectl get pods -l job-name=$JOB_NAME -n $NAMESPACE -o go-template --template="{{(index .items 0).status.phase}}")
+  sleep 1
 done
-printf "\n"
-kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
+
+NAME=$(kubectl get pods -l job-name=$JOB_NAME -n $NAMESPACE -o go-template --template="{{(index .items 0).metadata.name}}")
+kubectl logs $NAME -n $NAMESPACE -f
+
+FAILED=$(kubectl get jobs $JOB_NAME -n $NAMESPACE -o go-template --template={{.status.failed}})
+
 kubectl delete job $JOB_NAME -n $NAMESPACE
+
+if [ "$FAILED" == "1" ]; then
+    exit 1
+fi
