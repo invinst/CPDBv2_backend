@@ -289,12 +289,12 @@ class DateOfficerWorkerTestCase(IndexMixin, TestCase):
         officer_4 = OfficerFactory(id=4)
 
         allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
-        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 06))
+        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 6))
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_2)
 
         TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
-        TRRFactory(trr_datetime=timezone.datetime(2010, 05, 07), officer=officer_4)
+        TRRFactory(trr_datetime=timezone.datetime(2010, 5, 7), officer=officer_4)
 
         self.rebuild_index()
         self.refresh_index()
