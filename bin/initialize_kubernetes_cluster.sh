@@ -27,14 +27,13 @@ kubectl apply -f kubernetes/namespaces.yml
 kubectl apply -f kubernetes/secrets.yml -n $NAMESPACE
 
 # Create nginx ingress controller
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
 templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
 
-# Deploy postgres
-echo "Specify postgres image tag:"
-read postgrestag
-POSTGRES_IMAGE_TAG=$postgrestag templater kubernetes/postgres.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
+# Deploy cloud sql proxy
+templater kubernetes/pg_proxy.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
 
 # Deploy Elasticsearch
 kubectl apply -f kubernetes/elasticsearch.yml -n $NAMESPACE
