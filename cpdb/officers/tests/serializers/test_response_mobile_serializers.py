@@ -16,6 +16,7 @@ from officers.serializers.response_mobile_serializers import (
     CRNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
+    OfficerCardMobileSerializer
 )
 from data.factories import (
     OfficerFactory, PoliceUnitFactory, OfficerBadgeNumberFactory,
@@ -59,8 +60,8 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             first_name='Michael',
             last_name='Flynn',
             last_unit=unit,
-            appointed_date=date(2000, 01, 02),
-            resignation_date=date(2010, 02, 03),
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
             active='Yes',
             rank='Sergeant',
             race='Black',
@@ -166,7 +167,7 @@ class RankChangeNewTimelineMobileSerializerTestCase(TestCase):
         officer = OfficerFactory(id=123)
         salary = SalaryFactory(
             officer=officer,
-            spp_date=date(2002, 02, 03),
+            spp_date=date(2002, 2, 3),
             rank='Police Officer',
         )
         setattr(salary, 'unit_name', 'Unit 001')
@@ -178,14 +179,14 @@ class RankChangeNewTimelineMobileSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 25,
             'kind': 'RANK_CHANGE',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
 
 class JoinedNewTimelineMobileSerializerTestCase(TestCase):
     def test_serialization(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2002, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2002, 2, 3))
         setattr(officer, 'unit_name', 'Unit 001')
         setattr(officer, 'unit_description', 'District 001')
         setattr(officer, 'rank_name', 'Police Officer')
@@ -196,7 +197,7 @@ class JoinedNewTimelineMobileSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 10,
             'kind': 'JOINED',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
@@ -212,7 +213,7 @@ class UnitChangeNewTimelineMobileSerializerTestCase(TestCase):
         officer_history = OfficerHistoryFactory(
             officer=officer,
             unit=unit,
-            effective_date=date(2002, 02, 03)
+            effective_date=date(2002, 2, 3)
         )
         setattr(officer_history, 'rank_name', 'Police Officer')
 
@@ -222,7 +223,7 @@ class UnitChangeNewTimelineMobileSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 20,
             'kind': 'UNIT_CHANGE',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
@@ -238,7 +239,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(
             officer=officer,
             allegation=allegation,
-            start_date=date(2002, 02, 03),
+            start_date=date(2002, 2, 3),
             allegation_category=allegation_category,
             final_finding='SU',
             final_outcome='9 Day Suspension'
@@ -263,7 +264,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 30,
             'kind': 'CR',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'crid': 'CR123',
             'category': 'some category',
@@ -307,7 +308,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
 class AwardNewTimelineMobileSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(id=123)
-        award = AwardFactory(officer=officer, start_date=date(2002, 02, 03), award_type='Life Saving Award')
+        award = AwardFactory(officer=officer, start_date=date(2002, 2, 3), award_type='Life Saving Award')
 
         setattr(award, 'unit_name', 'Unit 001')
         setattr(award, 'unit_description', 'District 001')
@@ -319,7 +320,7 @@ class AwardNewTimelineMobileSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 40,
             'kind': 'AWARD',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'award_type': 'Life Saving Award'
         })
@@ -331,7 +332,7 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         trr = TRRFactory(
             id=456,
             officer=officer,
-            trr_datetime=datetime(2002, 02, 03, tzinfo=pytz.utc),
+            trr_datetime=datetime(2002, 2, 3, tzinfo=pytz.utc),
             point=Point([0.01, 0.02]),
             taser=True,
             firearm_used=False
@@ -348,7 +349,7 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
             'priority_sort': 50,
             'kind': 'FORCE',
             'trr_id': 456,
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'taser': True,
             'firearm_used': False,
@@ -366,3 +367,33 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         setattr(trr, 'rank_name', 'Police Officer')
 
         expect(TRRNewTimelineMobileSerializer(trr).data).to.exclude('point')
+
+
+class OfficerCardMobileSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(
+            id=123,
+            first_name='Jame',
+            last_name='Bone',
+            allegation_count=2,
+            sustained_count=1,
+            birth_year=1950,
+            race='White',
+            gender='M',
+            resignation_date=date(2000, 1, 1),
+            complaint_percentile='99.9900',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+
+        expect(OfficerCardMobileSerializer(officer).data).to.eq({
+            'id': 123,
+            'full_name': 'Jame Bone',
+            'complaint_count': 2,
+            'percentile': {
+                'percentile_allegation_civilian': '88.8800',
+                'percentile_allegation_internal': '77.7700',
+                'percentile_trr': '66.6600',
+            }
+        })
