@@ -18,6 +18,7 @@ elif [ -z "$1" ]; then
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
     SERVICE=pg-proxy
+    exit 0
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     SERVICE=pg-proxy
@@ -35,10 +36,22 @@ if [ -z "$2" ]; then
 fi
 
 source $ENV_FILE
-export $(cut -d= -f1 $ENV_FILE)
 
 docker-compose up -d $SERVICE
-docker-compose run -v $FILE_DIR:/app psql bash -c "psql -U postgres -h $SERVICE $POSTGRES_APP_DB < /app/$(basename $2)"
+docker-compose run -v $FILE_DIR:/app psql bash -c "psql -U postgres -h $SERVICE $POSTGRES_APP_DB <<-EOSQL
+    CREATE USER $POSTGRES_APP_USER;
+    ALTER USER $POSTGRES_APP_USER WITH ENCRYPTED PASSWORD '$POSTGRES_APP_PASSWORD';
+    ALTER USER $POSTGRES_APP_USER WITH SUPERUSER;
+    CREATE DATABASE $POSTGRES_APP_DB;
+    GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_APP_DB TO $POSTGRES_APP_USER;
+    CREATE USER numeracy;
+    ALTER USER numeracy WITH ENCRYPTED PASSWORD '$POSTGRES_NUMERACY_PASSWORD';
+    CREATE USER notebook;
+    ALTER USER notebook WITH ENCRYPTED PASSWORD '$POSTGRES_NOTEBOOK_PASSWORD';
+    CREATE USER civis;
+    ALTER USER notebook WITH ENCRYPTED PASSWORD '$POSTGRES_CIVIS_PASSWORD';
+    GRANT $POSTGRES_APP_USER TO postgres;
+EOSQL"
 
 if [ "$SERVICE" == "pg-proxy" ]; then
     docker-compose kill pg-proxy

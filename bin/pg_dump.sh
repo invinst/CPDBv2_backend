@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR/..
+
+FILE_DIR="$(cd "$(dirname "$2")"; pwd)"
+
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Dump data from PostgreSQL database."
     echo ""
@@ -12,11 +17,13 @@ elif [ -z "$1" ]; then
     exit 1
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
-    exit 0
+    SERVICE=pg-proxy
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
+    SERVICE=pg-proxy
 elif [ "$1" == "--local" ]; then
     ENV_FILE=local.env
+    SERVICE=postgres
 else
     echo "Unrecognized first argument. See help with --help"
     exit 1
@@ -27,9 +34,12 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/..
 source $ENV_FILE
+export $(cut -d= -f1 $ENV_FILE)
 
-PGPASSWORD=$POSTGRES_APP_PASSWORD pg_dump \
-    --username $POSTGRES_APP_USER --host="$POSTGRES_HOST" --port=5432 $POSTGRES_APP_DB > $2
+docker-compose up -d $SERVICE
+docker-compose run -v $FILE_DIR:/app psql bash -c "pg_dump --username postgres --host=$SERVICE $POSTGRES_APP_DB > /app/$(basename $2)"
+
+if [ "$SERVICE" == "pg-proxy" ]; then
+    docker-compose kill pg-proxy
+fi

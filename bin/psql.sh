@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR/..
+
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Connect to app database on production or staging or local using psql."
     echo ""
@@ -9,18 +12,24 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
     exit 0
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
+    SERVICE=pg-proxy
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
+    SERVICE=pg-proxy
 elif [ "$1" == "--local" ]; then
     ENV_FILE=local.env
+    SERVICE=postgres
 else
     echo "Must specify either --production or --staging or --local."
     exit 1
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/..
 source $ENV_FILE
+export $(cut -d= -f1 $ENV_FILE)
 
-PGPASSWORD=$POSTGRES_APP_PASSWORD psql \
-    --username $POSTGRES_APP_USER --host="$POSTGRES_HOST" --port=5432 $POSTGRES_APP_DB
+docker-compose up -d $SERVICE
+docker-compose run psql psql -U postgres -h $SERVICE $POSTGRES_APP_DB
+
+if [ "$SERVICE" == "pg-proxy" ]; then
+    docker-compose kill pg-proxy
+fi
