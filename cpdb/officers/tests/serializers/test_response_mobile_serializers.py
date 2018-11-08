@@ -231,7 +231,12 @@ class UnitChangeNewTimelineMobileSerializerTestCase(TestCase):
 class CRNewTimelineMobileSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(id=123)
-        allegation = AllegationFactory(crid='CR123', coaccused_count=3, point=Point([0.01, 0.02]))
+        allegation = AllegationFactory(
+            crid='CR123',
+            incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc),
+            coaccused_count=3,
+            point=Point([0.01, 0.02])
+        )
         allegation_category = AllegationCategoryFactory(
             category='some category',
             allegation_name='some sub category'
@@ -239,7 +244,6 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(
             officer=officer,
             allegation=allegation,
-            start_date=date(2002, 2, 3),
             allegation_category=allegation_category,
             final_finding='SU',
             final_outcome='9 Day Suspension'

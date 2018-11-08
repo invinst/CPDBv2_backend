@@ -25,13 +25,16 @@ class _AttachmentSerializer(BaseSerializer):
 
 
 class CRNewTimelineSerializer(BaseSerializer):
+    def _get_date_sort(self, obj):
+        return obj['incident_date'].date()
+
     def __init__(self, *args, **kwargs):
         super(CRNewTimelineSerializer, self).__init__(*args, **kwargs)
         self._fields = {
             'officer_id': get('officer_id'),
-            'date_sort': get('start_date'),
+            'date_sort': self._get_date_sort,
             'priority_sort': literal(30),
-            'date': get_date('start_date'),
+            'date': get_date('incident_date'),
             'kind': literal('CR'),
             'crid': get('crid'),
             'category': get('allegation_category__category'),

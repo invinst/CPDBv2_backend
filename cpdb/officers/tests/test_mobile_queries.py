@@ -21,9 +21,9 @@ class OfficerTimelineMobileQueryTestCase(TestCase):
     )
     def test_cr_timeline(self, cr_new_timeline_serializer_mock):
         officer = OfficerFactory(id=123)
-        OfficerAllegationFactory(id=1, officer=officer, start_date=date(2002, 2, 3))
-        OfficerAllegationFactory(id=2, officer=officer, start_date=date(2003, 1, 5))
-        OfficerAllegationFactory(id=3, officer=officer, start_date=None)
+        OfficerAllegationFactory(id=1, officer=officer, allegation__incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc))
+        OfficerAllegationFactory(id=2, officer=officer, allegation__incident_date=datetime(2003, 1, 5, tzinfo=pytz.utc))
+        OfficerAllegationFactory(id=3, officer=officer, allegation__incident_date=None)
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')

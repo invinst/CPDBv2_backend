@@ -1,8 +1,9 @@
-from datetime import date
+from datetime import date, datetime
 
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 
+import pytz
 from robber import expect
 
 from officers.indexers import CRNewTimelineEventIndexer, CRNewTimelineEventPartialIndexer
@@ -26,11 +27,12 @@ class CRNewTimelineIndexerTestCase(TestCase):
         officer = OfficerFactory(id=123123)
         allegation = AllegationFactory(
             crid='123456',
-            point=Point(35.5, 68.9))
+            point=Point(35.5, 68.9),
+            incident_date=datetime(2012, 1, 1, tzinfo=pytz.utc)
+        )
         OfficerAllegationFactory(
             officer=officer,
             allegation=allegation,
-            start_date=date(2012, 1, 1),
             allegation_category__category='Illegal Search',
             allegation_category__allegation_name='Search of premise/vehicle without warrant',
             final_finding='UN',
