@@ -59,7 +59,7 @@ Pipfile*
 /htmlcov/
 .gitsecret/keys/random_seed
 
-# Terraform secrets
+# Kubernetes secrets
 prod.env
 local.env
 staging.env
