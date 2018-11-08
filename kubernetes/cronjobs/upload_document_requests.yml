@@ -22,10 +22,19 @@ spec:
             - name: DB_HOST
               value: pg-proxy
             - name: DJANGO_SETTINGS_MODULE
-              value: "{{DJANGO_SETTINGS_MODULE}}"
+              valueFrom:
+                secretKeyRef:
+                  name: django
+                  key: setting-module
             - name: AIRTABLE_API_KEY
-              value: "{{AIRTABLE_API_KEY}}"
+              valueFrom:
+                secretKeyRef:
+                  name: airtable
+                  key: api-key
             - name: AIRTABLE_PROJECT_KEY
-              value: "{{AIRTABLE_PROJECT_KEY}}"
+              valueFrom:
+                secretKeyRef:
+                  name: airtable
+                  key: project-key
           restartPolicy: "Never"
   concurrencyPolicy: Replace

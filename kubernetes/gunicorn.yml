@@ -41,47 +41,114 @@ spec:
         - name: GUNICORN_WORKERS
           value: "2"
         - name: DJANGO_SETTINGS_MODULE
-          value: "{{DJANGO_SETTINGS_MODULE}}"
+          valueFrom:
+            secretKeyRef:
+              name: django
+              key: setting-module
         - name: DJANGO_SECRET_KEY
-          value: "{{DJANGO_SECRET_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: django
+              key: secret-key
         - name: MAILCHIMP_API_KEY
-          value: "{{MAILCHIMP_API_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: mailchimp
+              key: api-key
         - name: MAILCHIMP_USER
-          value: "{{MAILCHIMP_USER}}"
+          valueFrom:
+            secretKeyRef:
+              name: mailchimp
+              key: user
         - name: AZURE_STORAGE_ACCOUNT_NAME
-          value: "{{AZURE_STORAGE_ACCOUNT_NAME}}"
+          valueFrom:
+            secretKeyRef:
+              name: azure-storage-account
+              key: name
         - name: AZURE_STORAGE_ACCOUNT_KEY
-          value: "{{AZURE_STORAGE_ACCOUNT_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: azure-storage-account
+              key: key
         - name: TWITTERBOT_STORAGE_ACCOUNT_NAME
-          value: "{{TWITTERBOT_STORAGE_ACCOUNT_NAME}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: name
         - name: TWITTERBOT_STORAGE_ACCOUNT_KEY
-          value: "{{TWITTERBOT_STORAGE_ACCOUNT_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: key
         - name: DATA_PIPELINE_STORAGE_ACCOUNT_NAME
-          value: "{{DATA_PIPELINE_STORAGE_ACCOUNT_NAME}}"
+          valueFrom:
+            secretKeyRef:
+              name: datapipeline-storage-account
+              key: name
         - name: DATA_PIPELINE_STORAGE_ACCOUNT_KEY
-          value: "{{DATA_PIPELINE_STORAGE_ACCOUNT_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: datapipeline-storage-account
+              key: key
         - name: DOCUMENTCLOUD_USER
-          value: "{{DOCUMENTCLOUD_USER}}"
+          valueFrom:
+            secretKeyRef:
+              name: documentcloud
+              key: user
         - name: DOCUMENTCLOUD_PASSWORD
-          value: "{{DOCUMENTCLOUD_PASSWORD}}"
+          valueFrom:
+            secretKeyRef:
+              name: documentcloud
+              key: password
         - name: AIRTABLE_API_KEY
-          value: "{{AIRTABLE_API_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: airtable
+              key: api-key
         - name: AIRTABLE_PROJECT_KEY
-          value: "{{AIRTABLE_PROJECT_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: airtable
+              key: project-key
         - name: TWITTER_CONSUMER_KEY
-          value: "{{TWITTER_CONSUMER_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-app
+              key: consumer-key
         - name: TWITTER_CONSUMER_SECRET
-          value: "{{TWITTER_CONSUMER_SECRET}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-app
+              key: consumer-secret
         - name: TWITTER_APP_TOKEN_KEY
-          value: "{{TWITTER_APP_TOKEN_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-app
+              key: app-token-key
         - name: TWITTER_APP_TOKEN_SECRET
-          value: "{{TWITTER_APP_TOKEN_SECRET}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-app
+              key: app-token-secret
         - name: MAILGUN_API_KEY
-          value: "{{MAILGUN_API_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: mailgun
+              key: api-key
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/google_creds/google-nl-api.json"
         - name: PROFILER
           value: "0"
+        - name: PAPERTRAIL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: endpoint
+        - name: PAPERTRAIL_PORT
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: port
         ports:
         - containerPort: 80
         volumeMounts:

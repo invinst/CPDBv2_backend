@@ -63,6 +63,7 @@ Pipfile*
 prod.env
 local.env
 staging.env
-kubernetes/secrets.yml
+kubernetes/secrets-staging.yml
+kubernetes/secrets-production.yml
 
 staging-pg-credentials.json

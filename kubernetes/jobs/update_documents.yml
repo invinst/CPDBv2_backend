@@ -19,10 +19,19 @@ spec:
         - name: DB_HOST
           value: pg-proxy
         - name: DJANGO_SETTINGS_MODULE
-          value: "{{DJANGO_SETTINGS_MODULE}}"
+          valueFrom:
+            secretKeyRef:
+              name: django
+              key: setting-module
         - name: DOCUMENTCLOUD_USER
-          value: "{{DOCUMENTCLOUD_USER}}"
+          valueFrom:
+            secretKeyRef:
+              name: documentcloud
+              key: user
         - name: DOCUMENTCLOUD_PASSWORD
-          value: "{{DOCUMENTCLOUD_PASSWORD}}"
+          valueFrom:
+            secretKeyRef:
+              name: documentcloud
+              key: password
       restartPolicy: Never
   backoffLimit: 4

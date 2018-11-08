@@ -23,18 +23,42 @@ spec:
         - name: AZURE_QUEUE_NAME
           value: "cpdpbot"
         - name: TWITTER_CONSUMER_KEY
-          value: "{{CPDPBOT_TWITTER_CONSUMER_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: consumer-key
         - name: TWITTER_CONSUMER_SECRET
-          value: "{{CPDPBOT_TWITTER_CONSUMER_SECRET}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: consumer-secret
         - name: TWITTER_APP_TOKEN_KEY
-          value: "{{CPDPBOT_TWITTER_APP_TOKEN_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: app-token-key
         - name: TWITTER_APP_TOKEN_SECRET
-          value: "{{CPDPBOT_TWITTER_APP_TOKEN_SECRET}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: app-token-secret
         - name: AZURE_STORAGE_ACCOUNT_NAME
-          value: "{{AZURE_QUEUE_STORAGE_ACCOUNT_NAME}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: name
         - name: AZURE_STORAGE_ACCOUNT_KEY
-          value: "{{AZURE_QUEUE_STORAGE_ACCOUNT_KEY}}"
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: key
         - name: PAPERTRAIL_ENDPOINT
-          value: "{{PAPERTRAIL_ENDPOINT}}"
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: endpoint
         - name: PAPERTRAIL_PORT
-          value: "{{PAPERTRAIL_PORT}}"
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: port
