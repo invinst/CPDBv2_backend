@@ -204,7 +204,7 @@ class TRRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
             return None
 
 
-class OfficerMobilePercentileSerializer(NoNullSerializer):
+class OfficerPercentileMobileSerializer(NoNullSerializer):
     percentile_trr = serializers.DecimalField(
         source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_civilian = serializers.DecimalField(
@@ -213,7 +213,7 @@ class OfficerMobilePercentileSerializer(NoNullSerializer):
         source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
-class OfficerCardMobileSerializer(NoNullSerializer):
+class CoaccusalCardMobileSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     rank = serializers.CharField()
@@ -221,4 +221,4 @@ class OfficerCardMobileSerializer(NoNullSerializer):
     coaccusal_count = serializers.IntegerField()
 
     def get_percentile(self, obj):
-        return OfficerMobilePercentileSerializer(obj).data
+        return OfficerPercentileMobileSerializer(obj).data

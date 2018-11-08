@@ -16,7 +16,7 @@ from officers.serializers.response_mobile_serializers import (
     CRNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
-    OfficerCardMobileSerializer,
+    CoaccusalCardMobileSerializer,
 )
 from data.factories import (
     OfficerFactory, PoliceUnitFactory, OfficerBadgeNumberFactory,
@@ -369,7 +369,7 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         expect(TRRNewTimelineMobileSerializer(trr).data).to.exclude('point')
 
 
-class OfficerCardMobileSerializerTestCase(TestCase):
+class CoaccusalCardMobileSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(
             id=123456,
@@ -389,7 +389,7 @@ class OfficerCardMobileSerializerTestCase(TestCase):
 
         setattr(officer, 'coaccusal_count', 7)
 
-        expect(OfficerCardMobileSerializer(officer).data).to.eq({
+        expect(CoaccusalCardMobileSerializer(officer).data).to.eq({
             'id': 123456,
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 7,
