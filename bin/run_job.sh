@@ -40,7 +40,10 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-JOB_STATUS="$(BACKEND_IMAGE_TAG=$imagetag templater kubernetes/jobs/$MANIFEST_FILE -f $ENV_FILE | kubectl apply -f - --namespace $NAMESPACE)"
+export BACKEND_IMAGE_TAG=$imagetag
+source $ENV_FILE
+export $(cut -d= -f1 $ENV_FILE)
+JOB_STATUS="$(cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl apply -f - --namespace $NAMESPACE)"
 echo $JOB_STATUS
 JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch "([a-z-]+)" .+/\1/p')"
 

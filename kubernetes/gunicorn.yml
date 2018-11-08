@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: gunicorn
-        image: cpdbdev/backend:{{BACKEND_IMAGE_TAG}}
+        image: cpdbdev/backend:${BACKEND_IMAGE_TAG}
         imagePullPolicy: Always
         resources:
           requests:
@@ -21,11 +21,11 @@ spec:
             memory: 1Gi
         env:
         - name: DB_NAME
-          value: "{{POSTGRES_APP_DB}}"
+          value: "${POSTGRES_APP_DB}"
         - name: DB_USER
-          value: "{{POSTGRES_APP_USER}}"
+          value: "${POSTGRES_APP_USER}"
         - name: DB_PASSWORD
-          value: "{{POSTGRES_APP_PASSWORD}}"
+          value: "${POSTGRES_APP_PASSWORD}"
         - name: DB_HOST
           value: pg-proxy
         - name: GUNICORN_WORKERS

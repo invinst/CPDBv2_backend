@@ -22,18 +22,19 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 source $ENV_FILE
+export $(cut -d= -f1 $ENV_FILE)
 
 kubectl apply -f kubernetes/namespaces.yml
-kubectl apply -f kubernetes/secrets.yml -n $NAMESPACE
+kubectl apply -f kubernetes/secrets-$NAMESPACE.yml
 
 # Create nginx ingress controller
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
-templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
+cat kubernetes/ingress.yml | envsubst | kubectl apply -f - -n $NAMESPACE
 
 # Deploy cloud sql proxy
-templater kubernetes/pg_proxy.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
+cat kubernetes/pg_proxy.yml | envsubst | kubectl apply -f - -n $NAMESPACE
 
 # Deploy Elasticsearch
 kubectl apply -f kubernetes/elasticsearch.yml -n $NAMESPACE
@@ -44,4 +45,5 @@ kubectl apply -f kubernetes/redis.yml -n $NAMESPACE
 # Deploy backend
 echo "Specify backend image tag:"
 read backendtag
-BACKEND_IMAGE_TAG=$backendtag templater kubernetes/gunicorn.yml -f $ENV_FILE | kubectl apply -f - -n $NAMESPACE
+export BACKEND_IMAGE_TAG=$backendtag
+cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - -n $NAMESPACE

@@ -7,26 +7,26 @@ metadata:
 spec:
   tls:
   - hosts:
-    - {{DESKTOP_DOMAIN}}
-    - {{MOBILE_DOMAIN}}
-    - {{API_DOMAIN}}
+    - ${DESKTOP_DOMAIN}
+    - ${MOBILE_DOMAIN}
+    - ${API_DOMAIN}
     secretName: tls-secret
   rules:
-  - host: {{DESKTOP_DOMAIN}}
+  - host: ${DESKTOP_DOMAIN}
     http:
       paths:
       - path: /
         backend:
           serviceName: desktop-frontend
           servicePort: 80
-  - host: {{MOBILE_DOMAIN}}
+  - host: ${MOBILE_DOMAIN}
     http:
       paths:
       - path: /
         backend:
           serviceName: mobile-frontend
           servicePort: 80
-  - host: {{API_DOMAIN}}
+  - host: ${API_DOMAIN}
     http:
       paths:
       - path: /

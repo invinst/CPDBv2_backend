@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: cpdpbot
-        image: cpdbdev/cpdpbot:{{CPDPBOT_IMAGE_TAG}}
+        image: cpdbdev/cpdpbot:${CPDPBOT_IMAGE_TAG}
         imagePullPolicy: Always
         resources:
           requests:

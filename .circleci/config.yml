@@ -45,18 +45,31 @@ jobs:
 
   django_collect_static:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Reveal secrets
           command: |
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Start job
           command: |
@@ -70,18 +83,31 @@ jobs:
 
   django_migrate:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Reveal secrets
           command: |
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
       - run:
           name: Start job
           command: |
@@ -95,7 +121,12 @@ jobs:
 
   rebuild_index:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
@@ -106,14 +137,27 @@ jobs:
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Start job
           command: bin/run_job.sh --production rebuild_index.yml $(cat /tmp/workspace/buildnum)
 
   rebuild_search_index:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
@@ -124,14 +168,27 @@ jobs:
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Start job
           command: bin/run_job.sh --production rebuild_search_index.yml $(cat /tmp/workspace/buildnum)
 
   deploy_backend:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
@@ -142,7 +199,15 @@ jobs:
             echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Apply deployment
           command: |
@@ -154,7 +219,10 @@ jobs:
               export NAMESPACE=staging
               export ENV_FILE=staging.env
             fi
-            BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/gunicorn.yml -f $ENV_FILE | kubectl apply -f - --namespace=$NAMESPACE
+            export BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
+            source $ENV_FILE
+            export $(cut -d= -f1 $ENV_FILE)
+            cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace=$NAMESPACE
       - run:
           name: Setup cronjobs
           command: |
@@ -186,12 +254,25 @@ jobs:
 
   deploy_cpdpbot:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: google/cloud-sdk
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Reveal secrets
           command: |
@@ -200,40 +281,11 @@ jobs:
             git secret reveal
       - run:
           name: Deploy cpdpbot
-          command: CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum) templater kubernetes/cpdpbot.yml -f prod.env | kubectl apply --namespace=production -f -
-
-  deploy_ingress:
-    docker:
-      - image: cpdbdev/kubectl:v1.11.3
-    steps:
-      - checkout
-      - run: echo $KUBECONFIG_JSON > /home/kubectl/.kube/config
-      - run:
-          name: Reveal secrets
           command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
-      - run:
-          name: Install nginx ingress controller
-          command: |
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
-      - run:
-          name: Apply ingress
-          command: |
-            if [ $CIRCLE_BRANCH == "master" ]
-            then
-              export NAMESPACE=production
-              export ENV_FILE=prod.env
-            else
-              export NAMESPACE=staging
-              export ENV_FILE=staging.env
-            fi
-            set +e
-            kubectl apply -f kubernetes/namespaces.yml
-            kubectl create secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
-            templater kubernetes/ingress.yml -f $ENV_FILE | kubectl apply --namespace=$NAMESPACE -f -
+            export CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
+            source prod.env
+            export $(cut -d= -f1 prod.env)
+            cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
 
 workflows:
@@ -308,13 +360,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
-
-  deploy_ingress:
-    jobs:
-      - deploy_ingress:
-          filters:
-            branches:
-              only:
-                - staging
                 - master

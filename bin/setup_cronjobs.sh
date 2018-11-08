@@ -30,7 +30,11 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
+export BACKEND_IMAGE_TAG=$imagetag
+source $ENV_FILE
+export $(cut -d= -f1 $ENV_FILE)
+
 kubectl delete cronjob --all -n $NAMESPACE
 for manifest_file in kubernetes/cronjobs/*.yml; do
-    BACKEND_IMAGE_TAG=$imagetag templater $manifest_file -f $ENV_FILE | kubectl apply -f - --namespace $NAMESPACE
+    cat $manifest_file | envsubst | kubectl apply -f - --namespace $NAMESPACE
 done
