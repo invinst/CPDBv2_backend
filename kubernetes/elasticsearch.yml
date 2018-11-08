@@ -68,9 +68,6 @@ spec:
           requests:
             cpu: 500m
             memory: 4Gi
-          limits:
-            cpu: 1
-            memory: 6Gi
         ports:
         - containerPort: 9200
         env:
