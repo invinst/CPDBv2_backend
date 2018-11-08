@@ -12,16 +12,6 @@ spec:
         app: gunicorn
     spec:
       containers:
-      - name: remote-syslog2
-        image: cpdbdev/remote_syslog2:latest
-        imagePullPolicy: Always
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        volumeMounts:
-        - name: logfiles
-          mountPath: /logfiles
       - name: gunicorn
         image: cpdbdev/backend:{{BACKEND_IMAGE_TAG}}
         imagePullPolicy: Always
@@ -155,14 +145,10 @@ spec:
         - name: google-creds
           mountPath: "/google_creds"
           readOnly: true
-        - name: logfiles
-          mountPath: /logfiles
       volumes:
       - name: google-creds
         secret:
           secretName: google-nl-api-credentials
-      - name: logfiles
-        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

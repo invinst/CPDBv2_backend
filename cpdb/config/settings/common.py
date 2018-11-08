@@ -276,45 +276,19 @@ LOGGING = {
         },
     },
     'handlers': {
-        'error-file': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/logfiles/django-error.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 10,
-            'formatter': 'standard',
-        },
         'console': {
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'twitterbot-log': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/logfiles/twitterbot-webhook.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 10,
-            'formatter': 'standard',
-        }
     },
     'loggers': {
-        'django': {
-            'handlers': ['error-file'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
         'django.command': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
-        'twitterbot': {
-            'handlers': ['twitterbot-log'],
-            'level': 'INFO',
-            'propagate': True,
-        }
     },
 }
 
