@@ -40,7 +40,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-BACKEND_IMAGE_TAG=$imagetag
+export BACKEND_IMAGE_TAG=$imagetag
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
 
