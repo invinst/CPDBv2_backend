@@ -1,5 +1,4 @@
 from .common import *  # NOQA
-from .common import LOGGING
 
 
 import environ
@@ -41,29 +40,5 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
-    }
-}
-
-LOGGING['handlers']['Papertrail'] = {
-    'level': 'INFO',
-    'class': 'logging.handlers.SysLogHandler',
-    'formatter': 'standard',
-    'address': (env.str('PAPERTRAIL_ENDPOINT', ''), env.int('PAPERTRAIL_PORT', 40000))
-}
-LOGGING['loggers'] = {
-    'django': {
-        'handlers': ['Papertrail'],
-        'level': 'ERROR',
-        'propagate': True,
-    },
-    'django.command': {
-        'handlers': ['console'],
-        'level': 'INFO',
-        'propagate': True,
-    },
-    'twitterbot': {
-        'handlers': ['Papertrail'],
-        'level': 'INFO',
-        'propagate': True,
     }
 }
