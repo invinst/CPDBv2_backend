@@ -45,7 +45,7 @@ jobs:
 
   django_collect_static:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -58,7 +58,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -83,7 +82,7 @@ jobs:
 
   django_migrate:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -96,7 +95,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -121,7 +119,7 @@ jobs:
 
   rebuild_index:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -140,7 +138,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -152,7 +149,7 @@ jobs:
 
   rebuild_search_index:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -171,7 +168,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -183,7 +179,7 @@ jobs:
 
   deploy_backend:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -202,7 +198,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -254,7 +249,7 @@ jobs:
 
   deploy_cpdpbot:
     docker:
-      - image: google/cloud-sdk
+      - image: cpdbdev/google-cloud-sdk:latest
     environment:
       PROJECT_NAME: "CPDB"
       GOOGLE_PROJECT_ID: "twitterbot-180604"
@@ -267,7 +262,6 @@ jobs:
       - run:
           name: Setup Google Cloud SDK
           command: |
-            apt-get install -qq -y gettext
             echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
