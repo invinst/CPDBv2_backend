@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test_backend:
+  test:
     docker:
       - image: cpdbdev/backend:latest
         user: gunicorn
@@ -290,9 +290,9 @@ jobs:
 
 workflows:
   version: 2
-  test_backend:
+  test:
     jobs:
-      - test_backend:
+      - test:
           filters:
             branches:
               ignore:
@@ -300,13 +300,13 @@ workflows:
                 - master
   deploy_backend_staging:
     jobs:
-      - test_backend:
+      - test:
           filters:
             branches:
               only: staging
       - push_backend_image:
           requires:
-            - test_backend
+            - test
       - django_collect_static:
           requires:
             - push_backend_image
@@ -319,13 +319,13 @@ workflows:
             - django_collect_static
   deploy_backend_production:
     jobs:
-      - test_backend:
+      - test:
           filters:
             branches:
               only: master
       - push_backend_image:
           requires:
-            - test_backend
+            - test
       - django_collect_static:
           requires:
             - push_backend_image

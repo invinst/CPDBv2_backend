@@ -13,10 +13,8 @@
 # Setup production/staging
 
 1. `git secret reveal`
-2. `az aks get-credentials --output json --resource-group terraformed --name cpdp-aks-cluster` - get kubectl credentials.
-2. `terraform apply --target azurerm_kubernetes_cluster.cpdp_aks_cluster terraform` - create or change Azure AKS config which back our kubernetes cluster. Note that you should not run this unless there is a change in terraform config.
-3. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
-4. `bin/setup_cronjobs.sh` - setup cronjobs either for staging or production. For now only setup cronjob for production.
+2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
+3. `bin/setup_cronjobs.sh` - setup cronjobs either for staging or production. For now only setup cronjob for production.
 
 # Deployment
 
@@ -30,9 +28,10 @@ Content of `kubernetes` folder:
 - `gunicorn.yml` - Gunicorn deployment and service.
 - `ingress.yml` - Main ingress.
 - `namespaces.yml` - All namespaces.
-- `postgres.yml` - Postgres deployment and service.
+- `pg_proxy.yml` - Postgres CloudSQL Proxy
 - `redis.yml` - Redis deployment and service.
-- `secrets.yml` - Secrets
+- `secrets-production.yml` - Secrets for production
+- `secrets-staging.yml` - Secrets for staging
 - `jobs` - manifest files of all jobs.
 - `cronjobs` - manifest files of all cronjobs.
 
@@ -45,9 +44,16 @@ Most of our resources are deployed into 2 namespaces: `staging` and `production`
 
 The following Docker images rarely change so you have to update and build/push them manually when there is a change. Run the following snippets depending on which docker image you changed:
 
-- `docker build -t cpdbdev/kubectl:latest docker/kubectl && docker push cpdbdev/kubectl:latest`
 - `docker build -t cpdbdev/postgres:9.6 docker/postgres && docker push cpdbdev/postgres:9.6`
 - `docker build -t cpdbdev/remote_syslog2:latest docker/remote_syslog2 && docker push cpdbdev/remote_syslog2:latest`
+
+# Add kubernetes secrets
+
+Secrets for staging and production are stored in following files `kubernetes/secrets-staging.yml.secret` and `kubernetes/secrets-production.yml.secret`
+Run `git secret reveal` to show the secret manifest file.
+
+Secret values are all base64 encoded by running `echo -n <value> | base64`
+To reveal the secret value `echo <base64 encoded string> | base64 -D`
 
 # Twitter bot
 
@@ -78,5 +84,3 @@ Some other available commands:
 # Miscelaneous
 
 - [API standards](docs/api-standards.md)
-- [Backup Elasticsearch via snapshot](docs/backup-elasticsearch-snapshot.md)
-
