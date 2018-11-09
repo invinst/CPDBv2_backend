@@ -45,7 +45,7 @@ source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
 JOB_STATUS="$(cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl apply -f - --namespace $NAMESPACE)"
 echo $JOB_STATUS
-JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch "([a-z-]+)" .+/\1/p')"
+JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch[ "\/]+([a-z-]+)" .+/\1/p')"
 
 PHASE=Pending
 while [ "$PHASE" == "Pending" ]
