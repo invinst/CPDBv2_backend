@@ -40,12 +40,16 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-export BACKEND_IMAGE_TAG=$imagetag
+BACKEND_IMAGE_TAG=$imagetag
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
+
+cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl delete -f - -n $NAMESPACE || true
+
 JOB_STATUS="$(cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl apply -f - --namespace $NAMESPACE)"
 echo $JOB_STATUS
-JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch[ "\/]+([a-z-]+)" .+/\1/p')"
+JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch[ "\/]+([a-z-]+)"? .+/\1/p')"
+echo $JOB_NAME
 
 PHASE=Pending
 while [ "$PHASE" == "Pending" ]
