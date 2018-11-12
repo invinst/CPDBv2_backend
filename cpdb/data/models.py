@@ -15,7 +15,7 @@ from django_bulk_update.manager import BulkUpdateManager
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, MEDIA_IPRA_COPA_HIDING_TAGS
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -830,6 +830,12 @@ class Allegation(models.Model):
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
+    @property
+    def filtered_attachment_files(self):
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide those documents
+        return self.attachment_files.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
+
     @staticmethod
     def get_cr_with_new_documents(limit):
         return Allegation.objects.prefetch_related(
@@ -837,8 +843,11 @@ class Allegation(models.Model):
                 'attachment_files',
                 queryset=AttachmentFile.objects.annotate(
                     last_created_at=Max('created_at')
+                ).exclude(
+                    tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
                 ).filter(
-                    file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))
+                    file_type=MEDIA_TYPE_DOCUMENT,
+                    created_at__gte=(F('last_created_at') - timedelta(days=30))
                 ).order_by('created_at'),
                 to_attr='latest_documents'
             )
@@ -939,6 +948,10 @@ class OfficerAllegation(models.Model):
     @property
     def attachments(self):
         return self.allegation.attachment_files.all()
+
+    @property
+    def filtered_attachments(self):
+        return self.allegation.filtered_attachment_files.all()
 
 
 class PoliceWitness(models.Model):

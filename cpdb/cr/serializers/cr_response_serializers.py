@@ -124,7 +124,7 @@ class CRSerializer(NoNullSerializer):
     location = serializers.CharField()
     beat = serializers.SerializerMethodField()
     involvements = serializers.SerializerMethodField()
-    attachments = AttachmentFileSerializer(source='attachment_files', many=True)
+    attachments = AttachmentFileSerializer(source='filtered_attachment_files', many=True)
 
     def get_coaccused(self, obj):
         officer_allegations = obj.officer_allegations.select_related(

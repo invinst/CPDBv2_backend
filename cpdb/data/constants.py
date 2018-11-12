@@ -78,6 +78,8 @@ MEDIA_TYPE_CHOICES = [
     [MEDIA_TYPE_DOCUMENT, 'Document']
 ]
 
+MEDIA_IPRA_COPA_HIDING_TAGS = ['OCIR', 'AR']
+
 BACKGROUND_COLOR_SCHEME = {
     '00': '#f5f4f4',
     '10': '#edf0fa',
