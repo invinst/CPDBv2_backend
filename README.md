@@ -10,17 +10,31 @@
 - `bin/manage.sh` - run any and all of your Django command in Django development container.
 - **important:** If you ever need to SSH into container, look it up yourself. It should not be necessary in 99% of cases. And if you ever need to SSH in then you should really know what you're doing so no guidance is provided.
 
+# Gain access to kubernetes cluster
+
+- `brew install gettext`
+- [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [install gcloud](https://cloud.google.com/sdk/docs/downloads-interactive)
+- `gcloud auth login`
+- `gcloud container clusters get-credentials cpdp-gke-clone-1 --zone us-central1-a --project twitterbot-180604`
+
 # Setup production/staging
 
 1. `git secret reveal`
 2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
 3. `bin/setup_cronjobs.sh` - setup cronjobs either for staging or production. For now only setup cronjob for production.
 
+# Run Django command on staging or production
+
+First make sure there is a manifest file for the job at folder `kubernetes/jobs`. Then use `bin/run_job.sh` e.g. `bin/run_job.sh --staging cache_data.yml latest`. Check `bin/run_job.sh -h` for usage.
+
+# Setup cronjob on staging or production
+
+First make sure that the cronjob manifest file exists in folder `kubernetes/cronjobs`. Then run `bin/setup_cronjobs.sh` to setup all cronjobs or `bin/run_cronjob.sh` to run individual cronjobs.
+
 # Deployment
 
 Deployment should be almost automatic depending on which branch you pushed. `master` branch push will trigger production deploy whereas `staging` branch push will trigger staging deploy. Staging deployment is completely automated but production deployment require your approval (to proceed) between `django_migrate` step and `rebuild_index` step so that you have the chance to run a command that alter data such as `cache_data`. If you want to see each step, look at `.circleci/config.yml`.
-
-If you need to run any command on production/staging, use `bin/run_job.sh` e.g. `bin/run_job.sh --staging cache_data.yml latest`
 
 Content of `kubernetes` folder:
 - `cpdpbot.yml` - cpdpbot (Twitter bot) deployment.
