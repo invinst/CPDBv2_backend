@@ -29,7 +29,7 @@ services:
       - esdata:/usr/share/elasticsearch/data
   cpdpbot:
     build: ./docker/cpdpbot
-    env_file: local.env
+    env_file: .env
   pg-proxy:
     image: gcr.io/cloudsql-docker/gce-proxy:1.11
     volumes:

@@ -17,7 +17,7 @@ elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     SERVICE=pg-proxy
 elif [ "$1" == "--local" ]; then
-    ENV_FILE=local.env
+    ENV_FILE=.env
     SERVICE=postgres
 else
     echo "Must specify either --production or --staging or --local."
