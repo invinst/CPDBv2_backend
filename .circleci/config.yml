@@ -223,7 +223,8 @@ jobs:
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              bin/setup_cronjobs.sh --production $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             fi
 
   build_cpdpbot:

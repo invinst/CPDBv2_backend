@@ -4,10 +4,10 @@ set -e
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Run a job on production or staging."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging} <manifest_file> <backend_image_tag>"
+    echo "Usage: `basename $0` {--production|--staging} <django_command> <backend_image_tag>"
     echo "       `basename $0` {-h|--help}"
     echo "Example:"
-    echo "    $ `basename $0` --staging rebuild_index.yml latest"
+    echo "    $ `basename $0` --staging rebuild_index latest"
     exit 0
 elif [ -z "$1" ]; then
     echo "Must specify either --production or --staging."
@@ -27,29 +27,45 @@ if [ -z "$2" ]; then
     echo "Must specify manifest file as second argument."
     exit 1
 else
-    MANIFEST_FILE="$2"
+    JOB_COMMAND="$2"
 fi
 
 if [ -z "$3" ]; then
     echo "Must specify backend image tag as third argument."
     exit 1
 else
-    imagetag="$3"
+    IMAGE_TAG="$3"
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-export BACKEND_IMAGE_TAG=$imagetag
+JOB_NAME="$(echo $JOB_COMMAND | tr -s '_' | tr '_' '-')"
+echo $JOB_NAME
+
+export BACKEND_IMAGE_TAG=$IMAGE_TAG
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
+export JOB_NAME=$JOB_NAME
+export JOB_COMMAND=$JOB_COMMAND
 
-cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl delete -f - -n $NAMESPACE || true
+cat kubernetes/job.yml | envsubst | kubectl delete -f - -n $NAMESPACE || true
 
-JOB_STATUS="$(cat kubernetes/jobs/$MANIFEST_FILE | envsubst | kubectl apply -f - --namespace $NAMESPACE)"
+trap stop_job_or_not 2
+
+function stop_job_or_not() {
+    dodelete=n
+    echo "Do you want to stop job as well? (y|N)"
+    read dodelete
+    dodelete_lower="$(echo $dodelete | tr '[:upper:]' '[:lower:]')"
+    if [ "$dodelete_lower" == "y" ]; then
+        kubectl delete job $JOB_NAME -n $NAMESPACE
+    fi
+    exit 0
+}
+
+JOB_STATUS="$(cat kubernetes/job.yml | envsubst | kubectl apply -f - --namespace $NAMESPACE)"
 echo $JOB_STATUS
-JOB_NAME="$(echo $JOB_STATUS | sed -En 's/job.batch[ "\/]+([a-z-]+)"? .+/\1/p')"
-echo $JOB_NAME
 
 PHASE=Pending
 while [ "$PHASE" == "Pending" ]

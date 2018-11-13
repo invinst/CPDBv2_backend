@@ -22,15 +22,14 @@
 
 1. `git secret reveal`
 2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
-3. `bin/setup_cronjobs.sh` - setup cronjobs either for staging or production. For now only setup cronjob for production.
 
 # Run Django command on staging or production
 
-First make sure there is a manifest file for the job at folder `kubernetes/jobs`. Then use `bin/run_job.sh` e.g. `bin/run_job.sh --staging cache_data.yml latest`. Check `bin/run_job.sh -h` for usage.
+Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging cache_data latest`. Check `bin/run_job.sh -h` for usage.
 
 # Setup cronjob on staging or production
 
-First make sure that the cronjob manifest file exists in folder `kubernetes/cronjobs`. Then run `bin/setup_cronjobs.sh` to setup all cronjobs or `bin/run_cronjob.sh` to run individual cronjobs.
+Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents @daily latest`. Check `bin/run_cronjob.sh -h` for usage.
 
 # Deployment
 
@@ -46,8 +45,8 @@ Content of `kubernetes` folder:
 - `redis.yml` - Redis deployment and service.
 - `secrets-production.yml` - Secrets for production
 - `secrets-staging.yml` - Secrets for staging
-- `jobs` - manifest files of all jobs.
-- `cronjobs` - manifest files of all cronjobs.
+- `job` - manifest file for job.
+- `cronjob` - manifest file for cronjob.
 
 Most of our resources are deployed into 2 namespaces: `staging` and `production` therefore most commands should specify either of these 2 namespaces e.g.
 - `kubectl get pods -n staging` - look up all pods in namespace staging

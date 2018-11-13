@@ -1,0 +1,117 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: ${CRONJOB_NAME}
+spec:
+  schedule: "${CRONJOB_SCHEDULE}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: gunicorn
+            image: cpdbdev/backend:${BACKEND_IMAGE_TAG}
+            command: ["cpdb/manage.py",  "${CRONJOB_COMMAND}"]
+            env:
+            - name: DB_NAME
+              value: "${POSTGRES_APP_DB}"
+            - name: DB_USER
+              value: "${POSTGRES_APP_USER}"
+            - name: DB_PASSWORD
+              value: "${POSTGRES_APP_PASSWORD}"
+            - name: DB_HOST
+              value: pg-proxy
+            - name: DJANGO_SETTINGS_MODULE
+              valueFrom:
+                secretKeyRef:
+                  name: django
+                  key: setting-module
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django
+                  key: secret-key
+            - name: AZURE_STORAGE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-account
+                  key: name
+            - name: AZURE_STORAGE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-account
+                  key: key
+            - name: TWITTERBOT_STORAGE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: twitterbot-storage-account
+                  key: name
+            - name: TWITTERBOT_STORAGE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twitterbot-storage-account
+                  key: key
+            - name: DATA_PIPELINE_STORAGE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: datapipeline-storage-account
+                  key: name
+            - name: DATA_PIPELINE_STORAGE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: datapipeline-storage-account
+                  key: key
+            - name: DOCUMENTCLOUD_USER
+              valueFrom:
+                secretKeyRef:
+                  name: documentcloud
+                  key: user
+            - name: DOCUMENTCLOUD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: documentcloud
+                  key: password
+            - name: AIRTABLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airtable
+                  key: api-key
+            - name: AIRTABLE_PROJECT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airtable
+                  key: project-key
+            - name: TWITTER_CONSUMER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-cpdpbot-app
+                  key: consumer-key
+            - name: TWITTER_CONSUMER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-cpdpbot-app
+                  key: consumer-secret
+            - name: TWITTER_APP_TOKEN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-cpdpbot-app
+                  key: app-token-key
+            - name: TWITTER_APP_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-cpdpbot-app
+                  key: app-token-secret
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/google_creds/google-nl-api.json"
+            - name: PAPERTRAIL_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail
+                  key: endpoint
+            - name: PAPERTRAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail
+                  key: port
+          restartPolicy: "Never"
+  concurrencyPolicy: Replace
