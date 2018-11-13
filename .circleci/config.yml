@@ -224,7 +224,12 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production crawl_ipra_portal_data @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
+            else
+              bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --staging crawl_ipra_portal_data @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             fi
 
   build_cpdpbot:
