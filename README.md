@@ -16,7 +16,7 @@
 - [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [install gcloud](https://cloud.google.com/sdk/docs/downloads-interactive)
 - `gcloud auth login`
-- `gcloud container clusters get-credentials cpdp-gke-clone-1 --zone us-central1-a --project twitterbot-180604`
+- `gcloud container clusters get-credentials cpdp-gke --zone us-central1-a --project twitterbot-180604`
 
 # Setup production/staging
 
