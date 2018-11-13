@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker-compose run --service-ports web cpdb/manage.py $@
+docker-compose run web cpdb/manage.py $@
