@@ -47,7 +47,7 @@ class InvestigatorMobileSerializer(NoNullSerializer):
     officer_id = serializers.IntegerField(source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    current_rank = serializers.CharField()
+    badge = serializers.CharField(source='investigator.badge')
 
     percentile_allegation_civilian = serializers.FloatField(
         source='investigator.officer.civilian_allegation_percentile')
