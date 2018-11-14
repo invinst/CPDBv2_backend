@@ -16,7 +16,7 @@ gunicorn_max_requests: 0
 gunicorn_timeout_seconds: 300
 
 # Nginx settings.
-nginx_server_name: staging.cpdp.co
+nginx_server_name: stagingapi.cpdp.co
 nginx_mobile_server_name: ms.cpdp.co
 nginx_template: "nginx_site_config"
 

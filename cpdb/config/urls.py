@@ -18,7 +18,6 @@ from django.conf.urls.static import static
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic.base import RedirectView
 
 from rest_framework import routers
@@ -26,12 +25,11 @@ from rest_framework import routers
 from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
-from .views import index_view, officer_view, complaint_view, embed_view
 from search.views import SearchV2ViewSet, SearchV1ViewSet
 from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
-from officers.views import OfficersViewSet, OfficersMobileViewSet
+from officers.views import OfficersDesktopViewSet, OfficersMobileViewSet
 from old_officers.views import OldOfficersViewSet, OldOfficersMobileViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
@@ -56,7 +54,7 @@ router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
 router_v2.register(r'old/officers', OldOfficersViewSet, base_name='officers-old')
-router_v2.register(r'officers', OfficersViewSet, base_name='officers')
+router_v2.register(r'officers', OfficersDesktopViewSet, base_name='officers')
 router_v2.register(r'mobile/old/officers', OldOfficersMobileViewSet, base_name='officers-mobile-old')
 router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
 router_v2.register(r'old/cr', OldCRViewSet, base_name='cr-old')
@@ -79,21 +77,6 @@ urlpatterns = [
     url(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
     url(r'^api/v1/', include(router_v1.urls, namespace='api')),
     url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
-    url(r'^(?:(?P<path>'
-        r'collaborate|search(?:/terms)?|'
-        r'resolving(?:/(?:officer-matching|officer-merging|dedupe-training|search-tracking)?)?|'
-        r'unit/\d+|'
-        r'trr/\d+|'
-        r'edit(?:/(?:search(?:/alias(?:/form)?)?)(?:/\d+)?)?'
-        r')/)?$', ensure_csrf_cookie(index_view), name='index'),
-    url(r'^(?:(?P<path>'
-        r'embed/top-officers-page|'
-        r'embed/map|'
-        r')/)?$', ensure_csrf_cookie(embed_view), name='index'),
-    url(
-        r'^officer/(?P<officer_id>\d+)(?P<slug>/[\-a-z]+)?/$',
-        ensure_csrf_cookie(officer_view), name='officer'),
-    url(r'^complaint/(?P<crid>\w+)(?:/(?P<officer_id>\d+))?/$', ensure_csrf_cookie(complaint_view), name='complaint'),
     url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),

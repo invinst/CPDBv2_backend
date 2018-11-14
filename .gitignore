@@ -68,3 +68,7 @@ local.env
 
 # Azure kube config file
 azurek8s
+
+# TLS certificate and key
+tls_cert
+tls_key

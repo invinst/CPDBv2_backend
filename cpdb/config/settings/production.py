@@ -9,6 +9,7 @@ DEBUG = False
 
 CORS_ORIGIN_WHITELIST = (
     'm.cpdp.co',
+    'cpdp.co',
     'beta.cpdb.co',
 )
 
