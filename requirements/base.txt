@@ -1,4 +1,4 @@
-Django==1.11.4
+Django==1.11.15
 django-environ==0.4.0
 django-filter==1.0.4
 djangorestframework==3.6.3
@@ -7,7 +7,7 @@ psycopg2==2.7.3
 django-cors-headers==2.4.0
 iso8601==0.1.11
 tqdm==4.17.1
-requests==2.11.1
+requests==2.20.0
 elasticsearch-dsl==5.1.0
 azure==4.0.0
 azure-mgmt-storage==2.0.0
@@ -36,3 +36,4 @@ zipcodes==1.0.4
 sortedcontainers==2.0.5
 airtable-python-wrapper==0.11.3
 django_bulk_update==2.2.0
+cryptography==2.3.1

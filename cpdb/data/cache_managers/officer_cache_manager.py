@@ -1,5 +1,5 @@
 from django.db import connection
-from django.db.models import OuterRef, Subquery, Count
+from django.db.models import OuterRef, Subquery, Count, Exists
 from django.db.models.functions import Lower
 from tqdm import tqdm
 
@@ -86,6 +86,13 @@ def build_cached_columns():
             Salary.objects.filter(
                 officer_id=OuterRef('id'),
             ).order_by('-year').values('salary')[:1]
+        ),
+        has_unique_name=~Exists(
+            Officer.objects.exclude(
+                id=OuterRef('id')
+            ).filter(
+                first_name=OuterRef('first_name'), last_name=OuterRef('last_name')
+            )
         )
     )
 
