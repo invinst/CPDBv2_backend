@@ -36,10 +36,10 @@ jobs:
             - buildnum
       - restore_cache:
           keys:
-            - v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
-            - v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
-            - v1-{{ checksum "Dockerfile" }}
-            - v1
+            - v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+            - v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
+            - v2-{{ checksum "Dockerfile" }}
+            - v2
           paths:
             - /caches/app.tar
       - run:
@@ -63,7 +63,7 @@ jobs:
             mkdir -p /caches
             docker save -o /caches/app.tar cpdbdev/backend
       - save_cache:
-          key: v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+          key: v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
           paths:
             - /caches/app.tar
 
