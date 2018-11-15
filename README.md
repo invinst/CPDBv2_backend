@@ -25,7 +25,7 @@
 
 # Run Django command on staging or production
 
-Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging cache_data latest`. Check `bin/run_job.sh -h` for usage.
+Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging latest cache_data`. Check `bin/run_job.sh -h` for usage.
 
 # Setup cronjob on staging or production
 

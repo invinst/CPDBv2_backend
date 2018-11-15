@@ -102,7 +102,7 @@ jobs:
             else
               export ENVFLAG=--staging
             fi
-            bin/run_job.sh $ENVFLAG collectstatic $(cat /tmp/workspace/buildnum)
+            bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) collectstatic --no-input
 
   django_migrate:
     docker:
@@ -139,7 +139,7 @@ jobs:
             else
               export ENVFLAG=--staging
             fi
-            bin/run_job.sh $ENVFLAG migrate $(cat /tmp/workspace/buildnum)
+            bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) migrate
 
   rebuild_index:
     docker:
@@ -169,7 +169,7 @@ jobs:
             gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Start job
-          command: bin/run_job.sh --production rebuild_index $(cat /tmp/workspace/buildnum)
+          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_index
 
   rebuild_search_index:
     docker:
@@ -199,7 +199,7 @@ jobs:
             gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Start job
-          command: bin/run_job.sh --production rebuild_search_index $(cat /tmp/workspace/buildnum)
+          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_search_index
 
   deploy_backend:
     docker:

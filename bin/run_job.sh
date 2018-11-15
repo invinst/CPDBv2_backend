@@ -4,10 +4,10 @@ set -e
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Run a job on production or staging."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging} <django_command> <backend_image_tag>"
+    echo "Usage: `basename $0` {--production|--staging} <backend_image_tag> <django_command> [additional_flags]"
     echo "       `basename $0` {-h|--help}"
     echo "Example:"
-    echo "    $ `basename $0` --staging rebuild_index latest"
+    echo "    $ `basename $0` --staging latest rebuild_index"
     exit 0
 elif [ -z "$1" ]; then
     echo "Must specify either --production or --staging."
@@ -24,17 +24,20 @@ else
 fi
 
 if [ -z "$2" ]; then
-    echo "Must specify manifest file as second argument."
+    echo "Must specify backend image tag as second argument."
     exit 1
 else
-    JOB_COMMAND="$2"
+    IMAGE_TAG="$2"
 fi
 
 if [ -z "$3" ]; then
-    echo "Must specify backend image tag as third argument."
+    echo "Must specify command as third argument."
     exit 1
 else
-    IMAGE_TAG="$3"
+    shift
+    shift
+    REST="$*"
+    JOB_COMMAND="$1"
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -47,7 +50,7 @@ export BACKEND_IMAGE_TAG=$IMAGE_TAG
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
 export JOB_NAME
-export JOB_COMMAND
+export COMMAND="$(echo $REST | sed 's/ /\", \"/g')"
 
 cat kubernetes/job.yml | envsubst | kubectl delete -f - -n $NAMESPACE || true
 
