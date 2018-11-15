@@ -36,10 +36,10 @@ jobs:
             - buildnum
       - restore_cache:
           keys:
-            - v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
-            - v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
-            - v2-{{ checksum "Dockerfile" }}
-            - v2
+            - v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+            - v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
+            - v3-{{ checksum "Dockerfile" }}
+            - v3
           paths:
             - /home/circleci/caches/app.tar
       - run:
@@ -50,8 +50,7 @@ jobs:
       - run:
           name: Build image
           command: |
-            docker build --cache-from=cpdbdev/backend:latest -t cpdbdev/backend:$(cat buildnum) .
-            docker build --cache-from=cpdbdev/backend:latest -t cpdbdev/backend .
+            docker build -t cpdbdev/backend:$(cat buildnum) .
       - run:
           name: Push image
           command: |
@@ -61,9 +60,9 @@ jobs:
           name: Save Docker image layer cache
           command: |
             mkdir -p /home/circleci/caches
-            docker save -o /home/circleci/caches/app.tar cpdbdev/backend
+            docker save -o /home/circleci/caches/app.tar $(docker images -a -q | tr '\r\n' ' ')
       - save_cache:
-          key: v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+          key: v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
           paths:
             - /home/circleci/caches/app.tar
 
