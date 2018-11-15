@@ -41,12 +41,12 @@ jobs:
             - v2-{{ checksum "Dockerfile" }}
             - v2
           paths:
-            - /caches/app.tar
+            - /home/circleci/caches/app.tar
       - run:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i /caches/app.tar | true
+            docker load -i /home/circleci/caches/app.tar | true
       - run:
           name: Build image
           command: |
@@ -60,12 +60,12 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            mkdir -p /caches
-            docker save -o /caches/app.tar cpdbdev/backend
+            mkdir -p /home/circleci/caches
+            docker save -o /home/circleci/caches/app.tar cpdbdev/backend
       - save_cache:
           key: v2-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
           paths:
-            - /caches/app.tar
+            - /home/circleci/caches/app.tar
 
   django_collect_static:
     docker:
