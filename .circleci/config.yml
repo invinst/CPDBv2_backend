@@ -50,8 +50,8 @@ jobs:
       - run:
           name: Build image
           command: |
-            docker build --cache-from=cpdbdev/backend -t cpdbdev/backend:$(cat buildnum) .
-            docker build --cache-from=cpdbdev/backend -t cpdbdev/backend .
+            docker build --cache-from=cpdbdev/backend:latest -t cpdbdev/backend:$(cat buildnum) .
+            docker build --cache-from=cpdbdev/backend:latest -t cpdbdev/backend .
       - run:
           name: Push image
           command: |
