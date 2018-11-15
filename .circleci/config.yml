@@ -34,14 +34,38 @@ jobs:
           root: .
           paths:
             - buildnum
+      - restore_cache:
+          keys:
+            - v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+            - v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
+            - v1-{{ checksum "Dockerfile" }}
+            - v1
+          paths:
+            - /caches/app.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/app.tar | true
       - run:
           name: Build image
-          command: docker build -t cpdbdev/backend:$(cat buildnum) .
+          command: |
+            docker build --cache-from=cpdbdev/backend -t cpdbdev/backend:$(cat buildnum) .
+            docker build --cache-from=cpdbdev/backend -t cpdbdev/backend .
       - run:
           name: Push image
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push cpdbdev/backend:$(cat buildnum)
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar cpdbdev/backend
+      - save_cache:
+          key: v1-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+          paths:
+            - /caches/app.tar
 
   django_collect_static:
     docker:
