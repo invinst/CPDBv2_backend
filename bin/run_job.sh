@@ -41,13 +41,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
 JOB_NAME="$(echo $JOB_COMMAND | tr -s '_' | tr '_' '-')"
-echo $JOB_NAME
+echo "Running $JOB_NAME with image cpdbdev/bachend:$IMAGE_TAG"
 
 export BACKEND_IMAGE_TAG=$IMAGE_TAG
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
-export JOB_NAME=$JOB_NAME
-export JOB_COMMAND=$JOB_COMMAND
+export JOB_NAME
+export JOB_COMMAND
 
 cat kubernetes/job.yml | envsubst | kubectl delete -f - -n $NAMESPACE || true
 
@@ -81,6 +81,6 @@ FAILED=$(kubectl get jobs $JOB_NAME -n $NAMESPACE -o go-template --template={{.s
 
 kubectl delete job $JOB_NAME -n $NAMESPACE
 
-if [ "$FAILED" == "1" ]; then
+if [ -n "$FAILED" ] && [ "$FAILED" -eq "$FAILED" ] 2>/dev/null; then
     exit 1
 fi
