@@ -32,6 +32,7 @@ kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-ad
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
 cat kubernetes/ingress.yml | envsubst | kubectl apply -f - -n $NAMESPACE
+kubectl apply -f kubernetes/redirect-ingress.yml
 
 # Deploy cloud sql proxy
 cat kubernetes/pg_proxy.yml | envsubst | kubectl apply -f - -n $NAMESPACE
