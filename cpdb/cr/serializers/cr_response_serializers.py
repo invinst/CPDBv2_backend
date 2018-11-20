@@ -70,7 +70,7 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
     officer_id = serializers.IntegerField(source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    badge = serializers.SerializerMethodField()
+    badge = serializers.CharField(source='investigator.badge')
 
     percentile_allegation_civilian = serializers.FloatField(
         source='investigator.officer.civilian_allegation_percentile')
@@ -84,9 +84,6 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
 
     def get_full_name(self, obj):
         return getattr(obj.investigator.officer, 'full_name', obj.investigator.full_name)
-
-    def get_badge(self, obj):
-        return obj.investigator.badge
 
 
 class PoliceWitnessSerializer(NoNullSerializer):
