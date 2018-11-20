@@ -380,6 +380,8 @@ workflows:
                 - staging
                 - master
       - deploy_cpdpbot:
+          requires:
+           - build_cpdpbot
           filters:
             branches:
               only:

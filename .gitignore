@@ -67,3 +67,4 @@ kubernetes/secrets-staging.yml
 kubernetes/secrets-production.yml
 
 staging-pg-credentials.json
+pg-credentials.json

@@ -10,7 +10,6 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
     NAMESPACE=production
-    exit 0
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     NAMESPACE=staging
