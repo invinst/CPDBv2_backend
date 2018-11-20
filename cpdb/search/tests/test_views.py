@@ -179,11 +179,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'term': '2004-10-10'
         })
         results = response.data['DATE > OFFICERS']
-        expect(results).to.have.length(2)
-        expect(results[0]['id']).to.eq('1')
-        expect(results[0]['name']).to.eq('Jerome Finnigan')
-        expect(results[1]['id']).to.eq('2')
-        expect(results[1]['name']).to.eq('Edward May')
+        expect({record['id'] for record in results}).to.eq({'1', '2'})
 
     def test_retrieve_single_search_date_officers_result(self):
         officer_1 = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
@@ -208,11 +204,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'contentType': 'DATE > OFFICERS'
         })
         results = response.data['results']
-        expect(results).to.have.length(2)
-        expect(results[0]['id']).to.eq('1')
-        expect(results[0]['name']).to.eq('Jerome Finnigan')
-        expect(results[1]['id']).to.eq('2')
-        expect(results[1]['name']).to.eq('Edward May')
+        expect({record['id'] for record in results}).to.eq({'1', '2'})
 
 
 class SearchV2ViewSetTestCase(APITestCase):
