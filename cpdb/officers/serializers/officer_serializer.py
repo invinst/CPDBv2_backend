@@ -265,6 +265,18 @@ class OfficerSerializer(BaseSerializer):
         except ValueError:
             return None
 
+    def get_trr_datetimes(self, obj):
+        return [
+            trr_datetime.date().strftime(format='%Y-%m-%d') for trr_datetime in obj['trr_datetimes']
+            if trr_datetime
+        ]
+
+    def get_cr_incident_dates(self, obj):
+        return [
+            cr_incident_date.date().strftime(format='%Y-%m-%d') for cr_incident_date in obj['cr_incident_dates']
+            if cr_incident_date
+        ]
+
     def __init__(self, *args, **kwargs):
         super(OfficerSerializer, self).__init__(*args, **kwargs)
         self._fields = {
@@ -299,5 +311,7 @@ class OfficerSerializer(BaseSerializer):
             'unsustained_count': get('unsustained_complaint_count'),
             'coaccusals': self.get_coaccusals,
             'current_allegation_percentile': self.get_current_allegation_percentile,
-            'percentiles': get('percentiles')
+            'percentiles': get('percentiles'),
+            'cr_incident_dates': self.get_cr_incident_dates,
+            'trr_datetimes': self.get_trr_datetimes,
         }

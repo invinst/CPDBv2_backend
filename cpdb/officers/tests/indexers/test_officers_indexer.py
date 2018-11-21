@@ -44,7 +44,7 @@ class OfficersIndexerTestCase(TestCase):
             honorable_mention_percentile=98,
             tags=['Jason VanDyke']
         )
-        TRRFactory(officer=officer)
+        TRRFactory(officer=officer, trr_datetime=datetime(2002, 9, 29, tzinfo=pytz.utc))
         SalaryFactory(officer=officer, salary=9000)
         AwardFactory(
             officer=officer,
@@ -93,7 +93,7 @@ class OfficersIndexerTestCase(TestCase):
             current=False
         )
 
-        allegation = AllegationFactory()
+        allegation = AllegationFactory(incident_date=datetime(2000, 4, 26, tzinfo=pytz.utc))
         OfficerAllegationFactory(
             officer=officer,
             final_finding='SU',
@@ -190,7 +190,9 @@ class OfficersIndexerTestCase(TestCase):
             'unsustained_count': 0,
             'coaccusals': [],
             'current_allegation_percentile': None,
-            'percentiles': []
+            'percentiles': [],
+            'cr_incident_dates': ['2000-04-26'],
+            'trr_datetimes': ['2002-09-29']
         })
 
     def test_has_visual_token(self):
