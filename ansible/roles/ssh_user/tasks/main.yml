@@ -1,5 +1,0 @@
-- include: create_user.yml
-  tags: base
-
-- include: setup_ssh.yml
-  tags: base

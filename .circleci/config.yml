@@ -2,17 +2,18 @@ version: 2
 jobs:
   test:
     docker:
-      - image: cpdbdev/cpdbv2_backend:0.1.0
-      - image: cpdbdev/postgis:9.6-alpine
-        command: postgres
+      - image: cpdbdev/backend:latest
+        user: gunicorn
+      - image: cpdbdev/postgres:9.6
       - image: elasticsearch:5-alpine
+        name: elasticsearch
       - image: selenium/standalone-chrome:3.11
     environment:
-      - DJANGO_SETTINGS_MODULE: config.settings.circleci
-      - DB_HOST: localhost
-      - DB_USER: cpdb
-      - DB_PASSWORD: password
-      - DB_NAME: cpdb
+      DJANGO_SETTINGS_MODULE: config.settings.circleci
+      DB_HOST: localhost
+      DB_USER: cpdb
+      DB_PASSWORD: password
+      DB_NAME: cpdb
     steps:
       - checkout
       - run: pip install --user -r requirements/test.txt
@@ -22,41 +23,69 @@ jobs:
       - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
       - run: coveralls
       - store_artifacts:
-          path: /home/deploy/project/cpdb/test_visual_token_media
+          path: /usr/src/app/project/cpdb/test_visual_token_media
 
-  deploy:
-    docker:
-      - image: cpdbdev/cpdbv2_backend:0.1.0
-    environment:
-      - ANSIBLE_HOST_KEY_CHECKING: False
-    steps:
-      - checkout
-      - run:
-          command: bin/circleci_deploy_staging
-          no_output_timeout: 60m
-
-  build_cpdpbot:
+  push_backend_image:
     machine: true
     steps:
       - checkout
+      - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
+      - persist_to_workspace:
+          root: .
+          paths:
+            - buildnum
+      - restore_cache:
+          keys:
+            - v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+            - v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
+            - v3-{{ checksum "Dockerfile" }}
+            - v3
+          paths:
+            - /home/circleci/caches/app.tar
       - run:
-          name: Build cpdpbot image
-          command: docker build -t cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) docker/cpdpbot
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /home/circleci/caches/app.tar | true
       - run:
-          name: Test cpdpbot image
-          command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION) python -m cpdpbot.test
+          name: Build image
+          command: |
+            docker build -t cpdbdev/backend:$(cat buildnum) .
       - run:
-          name: Push cpdpbot image
+          name: Push image
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push cpdbdev/cpdpbot:$(cat docker/cpdpbot/VERSION)
+            docker push cpdbdev/backend:$(cat buildnum)
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /home/circleci/caches
+            docker save -o /home/circleci/caches/app.tar $(docker images -a -q | tr '\r\n' ' ')
+      - save_cache:
+          key: v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
+          paths:
+            - /home/circleci/caches/app.tar
 
-  deploy_ingress:
+  django_collect_static:
     docker:
-      - image: cpdbdev/kubectl:v1.11.3
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
     steps:
       - checkout
-      - run: echo $KUBECONFIG_JSON > kubeconfig.json
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - run:
           name: Reveal secrets
           command: |
@@ -64,12 +93,141 @@ jobs:
             gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
             git secret reveal
       - run:
-          name: Install nginx ingress controller
+          name: Start job
           command: |
-            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
-            kubectl apply --kubeconfig=kubeconfig.json -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENVFLAG=--production
+            else
+              export ENVFLAG=--staging
+            fi
+            bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) collectstatic --no-input
+
+  django_migrate:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Apply ingress
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Start job
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENVFLAG=--production
+            else
+              export ENVFLAG=--staging
+            fi
+            bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) migrate
+
+  rebuild_index:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run:
+          name: Start job
+          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_index
+
+  rebuild_search_index:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run:
+          name: Start job
+          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_search_index
+
+  deploy_backend:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run:
+          name: Apply deployment
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
@@ -79,24 +237,141 @@ jobs:
               export NAMESPACE=staging
               export ENV_FILE=staging.env
             fi
-            set +e
-            kubectl create --kubeconfig=kubeconfig.json secret tls tls-secret --key tls_key --cert tls_cert --namespace=$NAMESPACE || true
-            templater ingress.yml -f $ENV_FILE | kubectl apply --kubeconfig=kubeconfig.json --namespace=$NAMESPACE -f -
+            export BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
+            source $ENV_FILE
+            export $(cut -d= -f1 $ENV_FILE)
+            cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace=$NAMESPACE
+      - run:
+          name: Setup cronjobs
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production crawl_ipra_portal_data @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
+            else
+              bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --staging crawl_ipra_portal_data @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
+            fi
+
+  build_cpdpbot:
+    machine: true
+    steps:
+      - checkout
+      - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
+      - persist_to_workspace:
+          root: .
+          paths:
+            - buildnum
+      - run:
+          name: Build cpdpbot image
+          command: docker build -t cpdbdev/cpdpbot:$(cat buildnum) docker/cpdpbot
+      - run:
+          name: Test cpdpbot image
+          command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat buildnum) python -m cpdpbot.test
+      - run:
+          name: Push cpdpbot image
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push cpdbdev/cpdpbot:$(cat buildnum)
+
+  deploy_cpdpbot:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run:
+          name: Reveal secrets
+          command: |
+            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+            git secret reveal
+      - run:
+          name: Deploy cpdpbot
+          command: |
+            export CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
+            source prod.env
+            export $(cut -d= -f1 prod.env)
+            cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
 
 workflows:
   version: 2
-  test_and_deploy:
+  test:
     jobs:
-      - test
-      - deploy:
-          requires:
-            - test
+      - test:
+          filters:
+            branches:
+              ignore:
+                - staging
+                - master
+  deploy_backend_staging:
+    jobs:
+      - test:
           filters:
             branches:
               only: staging
+      - push_backend_image:
+          requires:
+            - test
+      - django_collect_static:
+          requires:
+            - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      - deploy_backend:
+          requires:
+            - django_migrate
+            - django_collect_static
+  deploy_backend_production:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: master
+      - push_backend_image:
+          requires:
+            - test
+      - django_collect_static:
+          requires:
+            - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      - run_cache_data:
+          type: approval
+          requires:
+           - django_migrate
+      - rebuild_index:
+          requires:
+            - run_cache_data
+      - rebuild_search_index:
+          requires:
+            - run_cache_data
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
+            - django_collect_static
 
-  test_build_cpdpbot:
+  deploy_cpdpbot:
     jobs:
       - build_cpdpbot:
           filters:
@@ -104,12 +379,10 @@ workflows:
               only:
                 - staging
                 - master
-
-  deploy_ingress:
-    jobs:
-      - deploy_ingress:
+      - deploy_cpdpbot:
+          requires:
+           - build_cpdpbot
           filters:
             branches:
               only:
-                - staging
                 - master
