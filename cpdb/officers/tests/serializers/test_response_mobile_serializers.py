@@ -16,6 +16,7 @@ from officers.serializers.response_mobile_serializers import (
     CRNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
+    CoaccusalCardMobileSerializer,
     OfficerCardMobileSerializer
 )
 from data.factories import (
@@ -367,6 +368,39 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         setattr(trr, 'rank_name', 'Police Officer')
 
         expect(TRRNewTimelineMobileSerializer(trr).data).to.exclude('point')
+
+
+class CoaccusalCardMobileSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(
+            id=123456,
+            first_name='Jerome',
+            last_name='Finnigan',
+            rank='Police Officer',
+            race='Black',
+            gender='F',
+            birth_year=1950,
+            allegation_count=20,
+            sustained_count=4,
+            complaint_percentile='99.9900',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+
+        setattr(officer, 'coaccusal_count', 7)
+
+        expect(CoaccusalCardMobileSerializer(officer).data).to.eq({
+            'id': 123456,
+            'full_name': 'Jerome Finnigan',
+            'coaccusal_count': 7,
+            'rank': 'Police Officer',
+            'percentile': {
+                'percentile_allegation_civilian': '88.8800',
+                'percentile_allegation_internal': '77.7700',
+                'percentile_trr': '66.6600',
+            },
+        })
 
 
 class OfficerCardMobileSerializerTestCase(TestCase):

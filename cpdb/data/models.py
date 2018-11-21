@@ -287,6 +287,7 @@ class Officer(TaggableModel):
     current_badge = models.CharField(max_length=10, null=True)
     last_unit = models.ForeignKey(PoliceUnit, null=True)
     current_salary = models.PositiveIntegerField(null=True)
+    has_unique_name = models.BooleanField(default=False)
 
     objects = BulkUpdateManager()
 

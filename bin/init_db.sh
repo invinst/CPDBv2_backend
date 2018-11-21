@@ -18,7 +18,6 @@ elif [ -z "$1" ]; then
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
     SERVICE=pg-proxy
-    exit 0
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     SERVICE=pg-proxy

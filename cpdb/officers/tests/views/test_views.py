@@ -29,7 +29,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             active=ACTIVE_YES_CHOICE, birth_year=1910, complaint_percentile=32.5,
             sustained_count=1, allegation_count=1, discipline_count=1, trr_count=1,
             civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
-            last_unit_id=1, current_badge='123456', current_salary=90000
+            last_unit_id=1, current_badge='123456', current_salary=90000, has_unique_name=True
         )
         allegation = AllegationFactory()
         allegation_category = AllegationCategoryFactory(category='Use of Force')
@@ -91,6 +91,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'percentiles': [],
             'tags': [],
             'historic_badges': [],
+            'has_unique_name': True
         }
         expect(response.data).to.eq(expected_data)
 
