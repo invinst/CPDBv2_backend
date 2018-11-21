@@ -2,14 +2,17 @@
 
 from subprocess import check_output
 import os
-import urllib2
 import json
+import urllib2
+import csv
 import sys
 from datetime import datetime
+
 import requests
 
 PROJECT_ID = 1340138
 REPO = 'CPDBv2_backend'
+gs_bucket = 'cpdp-deploy-artifacts'
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.join(dir_path, '..')
@@ -120,12 +123,14 @@ def build_pr_body(pr_ids, pt_stories, pr_deploy_notes):
 
 def get_pr_deploy_notes(pr_ids, github_token):
     pr_deploy_notes = []
+    prs = []
 
     for pr_id in pr_ids:
         req = urllib2.Request('https://api.github.com/repos/EastAgile/%s/pulls/%s' % (REPO, pr_id))
         req.add_header('Authorization', 'token %s' % github_token)
         response = urllib2.urlopen(req)
         pr = json.loads(response.read())
+        prs.append(pr)
         body = pr['body'].split('\r\n')
         i = 0
         deploy_section = False
@@ -146,7 +151,7 @@ def get_pr_deploy_notes(pr_ids, github_token):
         if len(deploy_notes) > 0:
             pr_deploy_notes.append((pr_id, [note for note in deploy_notes if note]))
 
-    return pr_deploy_notes
+    return pr_deploy_notes, prs
 
 
 def create_deployment_pr(pr_body, github_token):
@@ -176,6 +181,31 @@ def create_deployment_pr(pr_body, github_token):
     print(result['html_url'])
 
 
+def get_develop_hash():
+    call_cmd('git checkout develop')
+    return call_cmd('git --no-pager show HEAD --pretty=%h').strip()
+
+
+def upload_deploy_prs(prs, dev_hash):
+    file_path = os.path.join(root_dir, 'deploy_prs_%s_%s.csv' % (REPO, dev_hash))
+    with open(file_path, 'w') as f:
+        csv_writer = csv.writer(f)
+        for pr in prs:
+            csv_writer.writerow([pr['html_url'], pr['title']])
+    call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
+    call_cmd('rm %s' % file_path)
+
+
+def upload_deploy_stories(stories, dev_hash):
+    file_path = os.path.join(root_dir, 'deploy_stories_%s_%s.csv' % (REPO, dev_hash))
+    with open(file_path, 'w') as f:
+        csv_writer = csv.writer(f)
+        for story in stories:
+            csv_writer.writerow([story['url'], story['name']])
+    call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
+    call_cmd('rm %s' % file_path)
+
+
 if __name__ == "__main__":
     get_latest_code()
 
@@ -192,7 +222,12 @@ if __name__ == "__main__":
         'Enter Gihub API token (with repos permission): '
     )
 
-    pr_deploy_notes = get_pr_deploy_notes(pr_ids, github_token)
+    pr_deploy_notes, prs = get_pr_deploy_notes(pr_ids, github_token)
     deployment_pr_body = build_pr_body(pr_ids, pt_stories, pr_deploy_notes)
+
+    dev_hash = get_develop_hash()
+
+    upload_deploy_prs(prs, dev_hash)
+    upload_deploy_stories(pt_stories, dev_hash)
 
     create_deployment_pr(deployment_pr_body, github_token)

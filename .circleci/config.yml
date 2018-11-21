@@ -310,6 +310,13 @@ jobs:
             export $(cut -d= -f1 prod.env)
             cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
+  notfiy_slack:
+    docker:
+      - image: alpine/git:latest
+    steps:
+      - checkout
+      - run: bin/notfiy_slack.sh
+
 
 workflows:
   version: 2
@@ -370,6 +377,12 @@ workflows:
             - rebuild_index
             - rebuild_search_index
             - django_collect_static
+      - notfiy_slack:
+          requires:
+            - deploy_backend
+          filters:
+            branches:
+              only: master
 
   deploy_cpdpbot:
     jobs:
