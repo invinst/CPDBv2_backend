@@ -35,6 +35,7 @@ class OfficerTweetHandler(SubEventHandler):
         self.incoming_tweet = TweetContext(self.event_data, self._context)
         self._context['incoming_tweet'] = self.incoming_tweet
         self.original_event = original_event
+        self.officer_pipelines = (pipeline() for pipeline in self.officer_extractor_pipelines)
 
     def match_tweet(self):
         return not self.incoming_tweet.is_unfollow_tweet
@@ -81,7 +82,7 @@ class OfficerTweetHandler(SubEventHandler):
         # Extract officers:
         officer_extractor_pipeline_results = [
             pipeline.extract(tweets)
-            for pipeline in self.officer_extractor_pipelines
+            for pipeline in self.officer_pipelines
         ]
 
         # Eliminate duplicate officers

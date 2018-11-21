@@ -1,0 +1,8 @@
+files:
+  - /logfiles/django-error.log
+  - /logfiles/twitterbot-webhook.log
+destination:
+  host: logs7.papertrailapp.com
+  port: 41386
+  protocol: tls
+pid_file: /var/run/remote_syslog.pid

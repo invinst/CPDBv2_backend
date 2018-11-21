@@ -19,7 +19,6 @@ newrelic==2.68.0.50
 django-anymail==4.2
 django-nose==1.4.4
 beautifulsoup4==4.6.0
-rosette_api==1.7.0
 selenium==3.11.0
 google-cloud-language==0.29.0
 python-documentcloud==1.0.4
@@ -28,8 +27,6 @@ sh==1.12.14
 Faker==0.9.0
 python-dateutil==2.6.1
 Twisted[tls]==18.4.0
-moviepy==0.2.3.5
-gizeh==0.1.10
 dateparser==0.7.0
 tweepy==3.6.0
 zipcodes==1.0.4
@@ -37,3 +34,5 @@ sortedcontainers==2.0.5
 airtable-python-wrapper==0.11.3
 django_bulk_update==2.2.0
 cryptography==2.3.1
+gunicorn==19.9.0
+django-redis==4.9.0
