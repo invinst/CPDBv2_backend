@@ -34,37 +34,28 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
         AllegationFactory(point=Point([21, 22]), incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc))
         AllegationFactory(point=Point([22, 22]), incident_date=datetime(1987, 12, 31, tzinfo=pytz.utc))
         AllegationFactory(point=Point([23, 22]), incident_date=datetime.now(pytz.utc))
-        expect(self.command.get_heatmap_cluster_data()).to.eq(json.dumps({
-            'type': 'FeatureCollection',
-            'features': [{
-                'type': 'Feature',
-                'geometry': {
-                    'coordinates': [20.0, 22.0],
-                    'type': 'Point'
-                },
-                'properties': {
-                    'weight': 1
-                }
-            }, {
-                'type': 'Feature',
-                'geometry': {
-                    'coordinates': [21.0, 22.0],
-                    'type': 'Point'
-                },
-                'properties': {
-                    'weight': 1
-                }
-            }, {
-                'type': 'Feature',
-                'geometry': {
-                    'coordinates': [23.0, 22.0],
-                    'type': 'Point'
-                },
-                'properties': {
-                    'weight': 1
-                }
-            }]
-        }))
+
+        heatmap_cluster_json = json.loads(self.command.get_heatmap_cluster_data())
+        expect(heatmap_cluster_json['type']).to.eq('FeatureCollection')
+        expect(heatmap_cluster_json['features']).to.have.length(3)
+
+        expect(heatmap_cluster_json['features']).to.have.length(3)
+
+        expect_features = [{
+            'type': 'Feature',
+            'geometry': {'coordinates': [20.0, 22.0], 'type': 'Point'},
+            'properties': {'weight': 1}
+        }, {
+            'type': 'Feature',
+            'geometry': {'coordinates': [21.0, 22.0], 'type': 'Point'},
+            'properties': {'weight': 1}
+        }, {
+            'type': 'Feature',
+            'geometry': {'coordinates': [23.0, 22.0], 'type': 'Point'},
+            'properties': {'weight': 1}
+        }]
+        for expect_feature in expect_features:
+            expect(expect_feature in heatmap_cluster_json['features']).to.be.true()
 
     def test_save_to_gzip_file(self):
         expected_content = 'Sample Content'

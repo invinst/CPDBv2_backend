@@ -24,7 +24,7 @@ class OfficerSerializer(serializers.ModelSerializer):
         model = Officer
         fields = [
             'id', 'full_name', 'race', 'appointed_date', 'birth_year',
-            'resignation_date', 'last_unit', 'gender',
+            'resignation_date', 'last_unit', 'gender', 'rank',
             'percentile_allegation_civilian', 'percentile_allegation_internal', 'percentile_trr'
         ]
 
