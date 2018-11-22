@@ -201,7 +201,11 @@ def upload_deploy_stories(stories, dev_hash):
     with open(file_path, 'w') as f:
         csv_writer = csv.writer(f)
         for story in stories:
-            csv_writer.writerow([story['url'], story['name']])
+            try:
+                csv_writer.writerow([story['url'], story['name']])
+            except Exception:
+                import pdb
+                pdb.set_trace()
     call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
     call_cmd('rm %s' % file_path)
 
