@@ -51,6 +51,8 @@ class OfficerInfoDocType(DocType):
     allegation_count = Long()
     has_visual_token = Boolean()
     complaint_percentile = Float()
+    cr_incident_dates = Date()
+    trr_datetimes = Date()
 
     historic_units = Nested(properties={
         'id': Integer(),

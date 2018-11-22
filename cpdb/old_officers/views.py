@@ -26,7 +26,9 @@ _ALLOWED_FILTERS = [
 class OldOfficersViewSet(viewsets.ViewSet):
     @detail_route(methods=['get'])
     def summary(self, request, pk):
-        query = OfficerInfoDocType().search().query('term', id=pk)
+        query = OfficerInfoDocType().search().source(
+            excludes=['cr_incident_dates', 'trr_datetimes']
+        ).query('term', id=pk)
         search_result = query.execute()
         try:
             return Response(search_result[0].to_dict())
