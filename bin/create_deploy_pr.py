@@ -5,6 +5,8 @@ import os
 import json
 import urllib2
 import csv
+import cStringIO
+import codecs
 import sys
 from datetime import datetime
 
@@ -16,6 +18,36 @@ gs_bucket = 'cpdp-deploy-artifacts'
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.join(dir_path, '..')
+
+
+class UnicodeWriter(object):
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, encoding='utf-8', **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode('utf-8') for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode('utf-8')
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
 
 
 def call_cmd(cmd):
@@ -189,7 +221,7 @@ def get_develop_hash():
 def upload_deploy_prs(prs, dev_hash):
     file_path = os.path.join(root_dir, 'deploy_prs_%s_%s.csv' % (REPO, dev_hash))
     with open(file_path, 'w') as f:
-        csv_writer = csv.writer(f)
+        csv_writer = UnicodeWriter(f)
         for pr in prs:
             csv_writer.writerow([pr['html_url'], pr['title']])
     call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
@@ -199,7 +231,7 @@ def upload_deploy_prs(prs, dev_hash):
 def upload_deploy_stories(stories, dev_hash):
     file_path = os.path.join(root_dir, 'deploy_stories_%s_%s.csv' % (REPO, dev_hash))
     with open(file_path, 'w') as f:
-        csv_writer = csv.writer(f)
+        csv_writer = UnicodeWriter(f)
         for story in stories:
             csv_writer.writerow([story['url'], story['name']])
     call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
