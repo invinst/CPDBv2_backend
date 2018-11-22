@@ -65,5 +65,5 @@ class TweetResponseRoundRobin(models.Model):
 
 
 class TwitterBotVisitLog(models.Model):
-    response_log = models.ForeignKey(TwitterBotResponseLog)
+    response_log = models.ForeignKey(TwitterBotResponseLog, on_delete=models.SET_NULL)
     request_path = models.CharField(max_length=255)

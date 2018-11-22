@@ -18,7 +18,7 @@ class CryptographyTestCase(SimpleTestCase):
                 return_value='hash_abc'
             )
         )
-        base64.b64encode.return_value = 'encoded_hash_abc'
+        base64.b64encode.return_value = bytes('encoded_hash_abc', 'utf-8')
 
         token = get_hash_token('key', msg='abc')
 

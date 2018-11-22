@@ -57,7 +57,7 @@ def bulk_create_update(klass, rows, all_fields=None):
     if old_objects:
         update_fields = [f for f in all_fields if f != 'id']
 
-        print 'Updating {} old objects'.format(len(old_objects))
+        print('Updating {} old objects'.format(len(old_objects)))
         batch_size = 1000
         for i in tqdm(range(0, len(old_objects), batch_size)):
             batch_old_objects = old_objects[i:i + batch_size]

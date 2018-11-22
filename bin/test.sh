@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-bin/manage.sh test $@
+bin/manage.sh --local test $@

@@ -43,7 +43,6 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'data',
-    'data_versioning',
     'search',
     'vftg',
     'cms',

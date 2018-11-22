@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.gis.geos import Point
 from django.utils.timezone import now
 
