@@ -312,10 +312,12 @@ jobs:
 
   notfiy_slack:
     docker:
-      - image: alpine/git:latest
+      - image: python:3.7-alpine
     steps:
+      - run: apk add git
+      - run: pip install requests
       - checkout
-      - run: bin/notfiy_slack.sh
+      - run: bin/notfiy_slack.py
 
 
 workflows:
