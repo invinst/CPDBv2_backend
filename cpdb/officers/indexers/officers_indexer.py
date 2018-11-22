@@ -1,6 +1,7 @@
 import itertools
 
 from django.db import models
+from django.contrib.postgres.aggregates import ArrayAgg
 
 from data import officer_percentile
 from data.constants import (
@@ -180,7 +181,9 @@ class OfficersIndexer(BaseIndexer):
             .annotate(sustained_complaint_count=SQCount(sustained_count.values('id')))\
             .annotate(discipline_complaint_count=SQCount(discipline_count.values('id')))\
             .annotate(annotated_trr_count=SQCount(trr_count.values('id')))\
-            .annotate(unsustained_complaint_count=SQCount(unsustained_count.values('id')))
+            .annotate(unsustained_complaint_count=SQCount(unsustained_count.values('id')))\
+            .annotate(trr_datetimes=ArrayAgg('trr__trr_datetime'))\
+            .annotate(cr_incident_dates=ArrayAgg('officerallegation__allegation__incident_date'))
 
     def extract_datum(self, obj):
         datum = obj.__dict__
