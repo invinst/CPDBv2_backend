@@ -1,0 +1,13 @@
+# ignore everything except cpdb, requirements and gunicorn.conf
+*
+!cpdb
+!requirements
+!gunicorn.conf
+
+# further stuffs to ignore
+cpdb/static
+cpdb/staticfiles
+cpdb/media
+cpdb/data_importer/cleaned_data
+cpdb/data_importer/original_data
+**/*.pyc

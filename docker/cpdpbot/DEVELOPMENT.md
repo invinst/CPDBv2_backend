@@ -2,7 +2,7 @@
 
 - Make sure you have revealed secrets (`git secret reveal`)
 - Download and install [Microsoft Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/). This is the tool to push message into queue and test that it works for your twitterbot.
-- In Azure Storage Explorer, log into storage account using `AZURE_STORAGE_ACCOUNT_NAME` and `AZURE_STORAGE_ACCOUNT_KEY` in `local.env`
+- In Azure Storage Explorer, log into storage account using `AZURE_STORAGE_ACCOUNT_NAME` and `AZURE_STORAGE_ACCOUNT_KEY` in `.env`
 - `docker-compose build`
 - Run the cpdpbot: `docker-compose up cpdpbot` - Logs should show up for you now.
 - In Azure Storage Explorer, there should be a queue named `cpdpbot` created within the storage account that you logged in as. Add a message like this and it should be processed by cpdpbot

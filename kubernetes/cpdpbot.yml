@@ -1,0 +1,64 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cpdpbot
+  labels:
+    app: cpdpbot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cpdpbot
+    spec:
+      containers:
+      - name: cpdpbot
+        image: cpdbdev/cpdpbot:${CPDPBOT_IMAGE_TAG}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        env:
+        - name: AZURE_QUEUE_NAME
+          value: "cpdpbot"
+        - name: TWITTER_CONSUMER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: consumer-key
+        - name: TWITTER_CONSUMER_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: consumer-secret
+        - name: TWITTER_APP_TOKEN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: app-token-key
+        - name: TWITTER_APP_TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twitter-cpdpbot-account
+              key: app-token-secret
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: name
+        - name: AZURE_STORAGE_ACCOUNT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitterbot-storage-account
+              key: key
+        - name: PAPERTRAIL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: endpoint
+        - name: PAPERTRAIL_PORT
+          valueFrom:
+            secretKeyRef:
+              name: papertrail
+              key: port
