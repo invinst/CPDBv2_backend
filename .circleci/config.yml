@@ -310,14 +310,14 @@ jobs:
             export $(cut -d= -f1 prod.env)
             cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
-  notfiy_slack:
+  notify_slack:
     docker:
       - image: python:3.7-alpine
     steps:
       - run: apk add git
       - run: pip install requests
       - checkout
-      - run: bin/notfiy_slack.py
+      - run: bin/notify_slack.py
 
 
 workflows:
@@ -364,22 +364,18 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
-      - run_cache_data:
-          type: approval
-          requires:
-           - django_migrate
       - rebuild_index:
           requires:
-            - run_cache_data
+            - django_migrate
       - rebuild_search_index:
           requires:
-            - run_cache_data
+            - django_migrate
       - deploy_backend:
           requires:
             - rebuild_index
             - rebuild_search_index
             - django_collect_static
-      - notfiy_slack:
+      - notify_slack:
           requires:
             - deploy_backend
           filters:
