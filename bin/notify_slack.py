@@ -15,7 +15,7 @@ root_dir = os.path.join(dir_path, '..')
 def call_cmd(cmd):
     return check_output(
         cmd, shell=True, cwd=root_dir
-    ).strip()
+    ).decode('utf-8').strip()
 
 
 def download_file(file):
@@ -44,7 +44,7 @@ def file_to_message_json(file_path, title, color):
 
 
 if __name__ == "__main__":
-    DEV_SHA = call_cmd("git --no-pager show HEAD^2 --pretty=%h")
+    DEV_SHA = call_cmd("git --no-pager show origin/develop --pretty=%h")
     PR_FILE = "deploy_prs_%s_%s.csv" % (REPOSITORY, DEV_SHA)
     STORIES_FILE = "deploy_stories_%s_%s.csv" % (REPOSITORY, DEV_SHA)
 
