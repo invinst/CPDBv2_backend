@@ -363,10 +363,10 @@ class OfficerCacheManagerTestCase(TestCase):
                 }
             }
         }
-        for officer_id, expected_yearly_percentiles in expected_officer_yearly_percentiles.iteritems():
+        for officer_id, expected_yearly_percentiles in expected_officer_yearly_percentiles.items():
             yearly_percentiles = OfficerYearlyPercentile.objects.filter(officer_id=officer_id)
             expect(yearly_percentiles.count()).to.eq(len(expected_yearly_percentiles.keys()))
-            for year, expected_percentile in expected_yearly_percentiles.iteritems():
+            for year, expected_percentile in expected_yearly_percentiles.items():
                 percentile = yearly_percentiles.get(year=year)
-                for attr, value in expected_percentile.iteritems():
+                for attr, value in expected_percentile.items():
                     expect("{0:.2f}".format(getattr(percentile, attr))).to.eq("{0:.2f}".format(value))

@@ -16,7 +16,7 @@ class SearchTermCategory(SortableMixin):
         ordering = ['order_number']
         verbose_name_plural = 'Search term categories'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -46,7 +46,7 @@ class SearchTermItem(SortableMixin):
     class Meta:
         ordering = ['order_number']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @property

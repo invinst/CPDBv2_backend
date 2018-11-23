@@ -30,6 +30,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='allegation',
-            index=models.Index(fields=[b'crid'], name='data_allega_crid_15bee0_idx'),
+            index=models.Index(fields=['crid'], name='data_allega_crid_15bee0_idx'),
         ),
     ]

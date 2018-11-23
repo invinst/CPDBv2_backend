@@ -158,7 +158,9 @@ class RebuildIndexCommandTestCase(TestCase):
 
     def test_rebuild_index_from_file(self):
         Indexer1 = self._prepare_data()
-        with patch('__builtin__.open', mock_open(read_data='{"test": ["*"]}')) as mock_file:
+        with patch(
+                'es_index.management.commands.rebuild_index.open',
+                mock_open(read_data='{"test": ["*"]}')) as mock_file:
             call_command('rebuild_index', '--from-file=indexers.json')
             mock_file.assert_called_with('indexers.json')
         Indexer1.create_mapping.assert_called_once()

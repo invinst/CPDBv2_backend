@@ -113,7 +113,7 @@ class BaseCMSPageSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         validated_data.pop('id', None)
-        for key, val in validated_data.iteritems():
+        for key, val in validated_data.items():
             if isinstance(val, dict):
                 getattr(instance, key).update(val)
             elif isinstance(instance._meta.get_field(key), models.ManyToManyField):

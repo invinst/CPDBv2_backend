@@ -1,4 +1,4 @@
-import urllib
+from urllib.parse import urlencode
 
 from django.conf import settings
 
@@ -26,7 +26,7 @@ class AreaTermBuilder:
                 'name': area.name,
                 'link': '%s/url-mediator/session-builder?%s' % (
                     settings.V1_URL,
-                    urllib.urlencode({cls.query_key: area.name})
+                    urlencode({cls.query_key: area.name})
                 )
             }
             for area in Area.objects.filter(area_type=cls.slug)
@@ -80,7 +80,7 @@ class OfficerRankTermBuilder:
                 'name': rank,
                 'link': '%s/url-mediator/session-builder?%s' % (
                     settings.V1_URL,
-                    urllib.urlencode({'officer__rank': rank})
+                    urlencode({'officer__rank': rank})
                 )
             }
             for rank in Officer.objects.values_list('rank', flat=True).distinct()
@@ -98,7 +98,7 @@ class PoliceUnitTermBuilder:
                 'name': description,
                 'link': '%s/url-mediator/session-builder?%s' % (
                     settings.V1_URL,
-                    urllib.urlencode({'officer__unit': unit_name})
+                    urlencode({'officer__unit': unit_name})
                 )
             }
             for (unit_name, description) in PoliceUnit.objects.values_list('unit_name', 'description')

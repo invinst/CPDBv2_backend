@@ -59,7 +59,7 @@ class DateUtilTestCase(SimpleTestCase):
             '2004 2001 feb 12 j an 1': [datetime(2001, 2, 12)]
         }
 
-        for string, dates in test_cases.iteritems():
+        for string, dates in test_cases.items():
             expect(find_dates_from_string(string)).to.eq(dates)
 
     def test_find_dates_from_string_multiple_dates(self):
@@ -70,7 +70,7 @@ class DateUtilTestCase(SimpleTestCase):
             '2001-01-01 de 2014 Jan 12': [datetime(2001, 1, 1), datetime(2014, 1, 12)],
         }
 
-        for string, dates in test_cases.iteritems():
+        for string, dates in test_cases.items():
             expect(find_dates_from_string(string)).to.eq(dates)
 
     def test_find_dates_from_string_invalid_dates(self):

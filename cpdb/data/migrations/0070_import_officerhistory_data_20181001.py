@@ -84,7 +84,7 @@ def import_data(apps, schema_editor):
                 if key not in all_fields:
                     row.pop(key)
 
-            for key, val in row.iteritems():
+            for key, val in row.items():
                 if val == '':
                     row[key] = blank_or_null[key]
 

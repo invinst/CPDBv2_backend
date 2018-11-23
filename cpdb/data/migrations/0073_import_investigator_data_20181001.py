@@ -79,7 +79,7 @@ def import_data(apps, schema_editor):
         }
 
         def clean(row):
-            for key, val in row.iteritems():
+            for key, val in row.items():
                 if val == '':
                     row[key] = blank_or_null[key]
             row['id'] = int(row.pop('pk'))

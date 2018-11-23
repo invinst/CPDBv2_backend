@@ -75,12 +75,14 @@ urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
     # The index_redirect url is redirecting 'admin' without slash too, we need to manually do this.
     re_path(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
-    re_path(r'^api/v1/', include(router_v1.urls, namespace='api')),
-    re_path(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
+    re_path(r'^api/v1/', include((router_v1.urls, 'api'), namespace='api')),
+    re_path(r'^api/v2/', include((router_v2.urls, 'api-v2'), namespace='api-v2')),
     re_path(
         r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
-        auth_views.password_reset_confirm, name='password_reset_confirm'),
-    re_path(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
+        auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    re_path(
+        r'^reset-password-complete/$',
+        auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     re_path(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

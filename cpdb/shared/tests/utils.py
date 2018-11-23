@@ -10,7 +10,7 @@ def create_object(dict_object):
 
 
 def validate_object(obj, data):
-    for key, value in data.iteritems():
+    for key, value in data.items():
         expect(getattr(obj, key, None)).to.eq(value)
 
 

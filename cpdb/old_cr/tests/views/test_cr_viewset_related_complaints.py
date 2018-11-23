@@ -1,4 +1,4 @@
-import urllib
+from urllib.parse import urlencode
 
 from django.urls import reverse
 from django.contrib.gis.geos import Point
@@ -23,7 +23,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
         return self.client.get(
             '%s?%s' % (
                 reverse('api-v2:cr-old-related-complaints', kwargs={'pk': crid}),
-                urllib.urlencode(params)
+                urlencode(params)
             )
         )
 

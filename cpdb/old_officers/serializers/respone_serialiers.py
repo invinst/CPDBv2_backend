@@ -35,6 +35,17 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
     percentile_allegation_internal = serializers.DecimalField(
         allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
+    @property
+    def data(self):
+        """
+        Drop None fields
+        """
+        data = super().data
+        return {
+            key: val for key, val in data.items()
+            if val is not None
+        }
+
 
 class PoliceUnitSerializer(serializers.Serializer):
     unit_id = serializers.IntegerField(source='id')
@@ -65,3 +76,14 @@ class OfficerMobileSerializer(serializers.Serializer):
     trr_count = serializers.IntegerField(read_only=True, allow_null=True)
     major_award_count = serializers.IntegerField(read_only=True, allow_null=True)
     honorable_mention_percentile = serializers.FloatField(read_only=True, allow_null=True)
+
+    @property
+    def data(self):
+        """
+        Drop None fields
+        """
+        data = super().data
+        return {
+            key: val for key, val in data.items()
+            if val is not None
+        }

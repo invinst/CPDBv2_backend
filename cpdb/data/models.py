@@ -24,7 +24,7 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
 class TaggableModel(models.Model):
-    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
+    tags = ArrayField(models.CharField(null=True, max_length=20), default=list)
 
     class Meta:
         abstract = True
@@ -985,7 +985,7 @@ class AttachmentFile(models.Model):
     additional_info = JSONField()
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
-    allegation = models.ForeignKey(Allegation, on_delete=models.SET_NULL, related_name='attachment_files')
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, related_name='attachment_files')
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
