@@ -14,7 +14,6 @@ import requests
 
 PROJECT_ID = 1340138
 REPO = 'CPDBv2_backend'
-gs_bucket = 'cpdp-deploy-artifacts'
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.join(dir_path, '..')
@@ -213,31 +212,6 @@ def create_deployment_pr(pr_body, github_token):
     print(result['html_url'])
 
 
-def get_develop_hash():
-    call_cmd('git checkout develop')
-    return call_cmd('git --no-pager show HEAD --pretty=%h').strip()
-
-
-def upload_deploy_prs(prs, dev_hash):
-    file_path = os.path.join(root_dir, 'deploy_prs_%s_%s.csv' % (REPO, dev_hash))
-    with open(file_path, 'w') as f:
-        csv_writer = UnicodeWriter(f)
-        for pr in prs:
-            csv_writer.writerow([pr['html_url'], pr['title']])
-    call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
-    call_cmd('rm %s' % file_path)
-
-
-def upload_deploy_stories(stories, dev_hash):
-    file_path = os.path.join(root_dir, 'deploy_stories_%s_%s.csv' % (REPO, dev_hash))
-    with open(file_path, 'w') as f:
-        csv_writer = UnicodeWriter(f)
-        for story in stories:
-            csv_writer.writerow([story['url'], story['name']])
-    call_cmd('gsutil cp %s gs://%s/' % (file_path, gs_bucket))
-    call_cmd('rm %s' % file_path)
-
-
 if __name__ == "__main__":
     get_latest_code()
 
@@ -256,10 +230,5 @@ if __name__ == "__main__":
 
     pr_deploy_notes, prs = get_pr_deploy_notes(pr_ids, github_token)
     deployment_pr_body = build_pr_body(pr_ids, pt_stories, pr_deploy_notes)
-
-    dev_hash = get_develop_hash()
-
-    upload_deploy_prs(prs, dev_hash)
-    upload_deploy_stories(pt_stories, dev_hash)
 
     create_deployment_pr(deployment_pr_body, github_token)
