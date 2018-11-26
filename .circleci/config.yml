@@ -319,6 +319,41 @@ jobs:
       - checkout
       - run: bin/notify_slack.py
 
+  reset_staging_db:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment:
+      PROJECT_NAME: "CPDB"
+      GOOGLE_PROJECT_ID: "twitterbot-180604"
+      GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+      PROD_DB_INSTANCE: "cpdp-production"
+      STAGING_DB_INSTANCE: "cpdp"
+    steps:
+      - run:
+          name: Setup Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run: gcloud sql backups create --instance $PROD_DB_INSTANCE
+      - run:
+          name: Restore production backup onto staging
+          command: |
+            export BACKUP_ID=$(gcloud sql backups list --instance $PROD_DB_INSTANCE --limit 1 --uri | sed -En 's/.+\/([0-9]+)$/\1/p')
+            echo "Start restoring backup $BACKUP_ID onto staging"
+            gcloud sql backups restore $BACKUP_ID --restore-instance=$STAGING_DB_INSTANCE --backup-instance=$PROD_DB_INSTANCE --quiet
+
+  reset_staging_branch:
+    docker:
+      - image: alpine/git:latest
+    steps:
+      - checkout
+      - run: git checkout staging
+      - run: git reset --hard origin/develop
+      - run: git push --force origin staging
 
 workflows:
   version: 2
@@ -330,6 +365,18 @@ workflows:
               ignore:
                 - staging
                 - master
+      - reset_staging_db:
+          requires:
+            - test
+          filters:
+            branches:
+              only: feature/557-upgrading-django-to-v2.1
+      - reset_staging_branch:
+          requires:
+            - test
+          filters:
+            branches:
+              only: feature/557-upgrading-django-to-v2.1
   deploy_backend_staging:
     jobs:
       - test:
@@ -376,6 +423,18 @@ workflows:
             - rebuild_search_index
             - django_collect_static
       - notify_slack:
+          requires:
+            - deploy_backend
+          filters:
+            branches:
+              only: master
+      - reset_staging_db:
+          requires:
+            - deploy_backend
+          filters:
+            branches:
+              only: master
+      - reset_staging_branch:
           requires:
             - deploy_backend
           filters:
