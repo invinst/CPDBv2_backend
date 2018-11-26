@@ -89,7 +89,7 @@ class CRRequestAirTableUploader(AirTableUploader):
         requested_for = "CR {crid}".format(crid=allegation.crid)
         agencies = [
             settings.AIRTABLE_CPD_AGENCY_ID
-            if document_request.investigated_by_cpd()
+            if allegation.incident_date.year < 2006 or document_request.investigated_by_cpd()
             else settings.AIRTABLE_COPA_AGENCY_ID
         ]
         return explanation, requested_for, agencies
