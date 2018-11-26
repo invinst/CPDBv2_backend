@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from shared.serializer import NoNullSerializer
+
 
 class DesktopTimelineSerializer(serializers.Serializer):
     def to_representation(self, obj):
@@ -23,7 +25,7 @@ class MobileTimelineSerializer(serializers.Serializer):
         return item
 
 
-class OfficerYearlyPercentileSerializer(serializers.Serializer):
+class OfficerYearlyPercentileSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     year = serializers.IntegerField()
     percentile_trr = serializers.DecimalField(
@@ -34,17 +36,6 @@ class OfficerYearlyPercentileSerializer(serializers.Serializer):
         allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_internal = serializers.DecimalField(
         allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-
-    @property
-    def data(self):
-        """
-        Drop None fields
-        """
-        data = super().data
-        return {
-            key: val for key, val in data.items()
-            if val is not None
-        }
 
 
 class PoliceUnitSerializer(serializers.Serializer):
