@@ -1,7 +1,6 @@
 from elasticsearch_dsl.query import Q
 
-from search.doc_types import ZipCodeDocType
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType
+from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -35,11 +34,12 @@ class Worker(object):
 
 
 class DateWorker(Worker):
-    date_field = ''
+    date_fields = []
 
     def query(self, term, **kwargs):
         dates = kwargs.get('dates', [])
-        return self._searcher.filter('terms', **{self.date_field: dates})
+        queries = [Q('terms',  **{date_field: dates}) for date_field in self.date_fields]
+        return self._searcher.query(Q('bool', should=queries))
 
 
 class ReportWorker(Worker):
@@ -162,7 +162,7 @@ class RankWorker(Worker):
 
 class DateCRWorker(DateWorker):
     doc_type_klass = CrDocType
-    date_field = 'incident_date'
+    date_fields = ['incident_date']
 
 
 class CRWorker(Worker):
@@ -172,7 +172,12 @@ class CRWorker(Worker):
 
 class DateTRRWorker(DateWorker):
     doc_type_klass = TRRDocType
-    date_field = 'trr_datetime'
+    date_fields = ['trr_datetime']
+
+
+class DateOfficerWorker(DateWorker):
+    doc_type_klass = OfficerInfoDocType
+    date_fields = ['cr_incident_dates', 'trr_datetimes']
 
 
 class TRRWorker(Worker):

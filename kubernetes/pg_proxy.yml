@@ -1,0 +1,43 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: pg-proxy
+  labels:
+    app: pg-proxy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pg-proxy
+    spec:
+      containers:
+      - name: pg-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy",
+                  "-instances=${PGCLOUD_INSTANCE}=tcp:0.0.0.0:5432",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        securityContext:
+          runAsUser: 2  # non-root user
+          allowPrivilegeEscalation: false
+        volumeMounts:
+          - name: cloudsql-postgres-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+        ports:
+        - containerPort: 5432
+      volumes:
+      - name: cloudsql-postgres-credentials
+        secret:
+          secretName: cloudsql-postgres-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-proxy
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+  selector:
+    app: pg-proxy

@@ -219,6 +219,17 @@ class OfficerPercentileMobileSerializer(NoNullSerializer):
         source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
+class CoaccusalCardMobileSerializer(NoNullSerializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    rank = serializers.CharField()
+    percentile = serializers.SerializerMethodField()
+    coaccusal_count = serializers.IntegerField()
+
+    def get_percentile(self, obj):
+        return OfficerPercentileMobileSerializer(obj).data
+
+
 class OfficerCardMobileSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()

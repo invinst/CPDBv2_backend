@@ -3,159 +3,75 @@
 
 # Development
 
-Please make sure that you have `vagrant 1.8.6` and `ansible 2.1.3.0` on your machine, we use them as isolated development environment and automation tools.
+- `docker-compose build` - build everything needed for local development.
+- `docker-compose up web` - start Django development container. It should automatically reload when code change.
+- `bin/test.sh` - run all tests in Django development container.
+- `bin/coverage.sh` - run all tests and print code coverage in Django development container.
+- `bin/manage.sh` - run any and all of your Django command in production, staging or local environment. See `bin/manage.sh -h` for detail usage.
+- **important:** If you ever need to SSH into container, look it up yourself. It should not be necessary in 99% of cases. And if you ever need to SSH in then you should really know what you're doing so no guidance is provided.
 
-You'll then need to manually create these files - ask the team to give them to you:
+# Gain access to kubernetes cluster
 
-- `../vault_pass.txt` (parent dir of this repo): This file is used to decrypt ansible variables contained in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files.
-- `./initial_dump.sql`: Initial Db dump. Running `vagrant provision` should pick this up and delete it automatically after importing.
+- `brew install gettext`
+- [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [install gcloud](https://cloud.google.com/sdk/docs/downloads-interactive)
+- `gcloud auth login`
+- `gcloud container clusters get-credentials cpdp-gke --zone us-central1-a --project twitterbot-180604`
 
+# Setup production/staging
 
-Ansible variables in `ansible/env_vars/secrets.yml` and `ansible/env_vars/vagrant-secrets.yml` files:
-- `ssl_key_password`: password for ssl key
-- `ssl_crt`: ssl certificate
-- `ssl_key`: ssl key
-- `db_user`: Database user name
-- `db_name`: Database name
-- `db_password`: Database password
-- `django_settings_module`: Django settings module
-- `django_debug`: Debug mode
-- `database_url`: Database url
-- `django_secret_key`: Django secret key
-- `mailchimp_api_key`: Mailchimp api key
-- `mailchimp_user`: Mailchimp user name
-- `azure_storage_account_name`: Azure storage account name
-- `azure_storage_account_key`: Azure store account key
-- `mailgun_api_key`: Mailgun api key
-- `newrelic_license`: Newrelic license key
+1. `git secret reveal`
+2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
 
-Then just `vagrant up --provision` and wait for ansible to do its things. When the provision is done, you may find your application running at ip `192.168.50.100` (you can change them in `Vagrantfile`). We have small script `bin/add_host_for_dev.sh` which alias this ip to `api.cpdb.me` if you like.
+# Run Django command on staging or production
 
-When provisioning is done, remember to generate initial data (run this inside VM):
+Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging latest cache_data`. Check `bin/run_job.sh -h` for usage.
 
-```bash
-./cpdb/manage.py cms_create_initial_data
-```
+# Setup cronjob on staging or production
 
-For the development instance, do everything with `vagrant` user so that you don't have to deal with permission issues. Currently, you can choose how to develop the backend:
-- You can use django development server by ssh to your vagrant instance and run `./manage.py runserver` or use `bin/start_dev.sh` script (need to turn off gunicorn for safety)
-- If you like, current gunicorn on vagrant is configured to be reloadable, it will do the reload when your code changes, log will be outputted to file instead of console.
-
-# Setup the production/staging
-
-Our ansible scripts are production-ready. You can use them for automating your server setup steps. You only need to put your ssh keys to the server, we give you the small script name upload_ssh_keys.sh in bin folder which help you to transfer your ssh keys to the server (it will automatically change your filename to `id_rsa` and `id_rsa.pub`).
-
-``` bash
-bin/upload_ssh_keys.sh <your_ssh_key> <remote_user> <server_ip>
-```
-
-After that, you just need to run the `setup_staging` command and ansbile will help you to do the rest.
-``` bash
-bin/setup_staging
-```
+Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents @daily latest`. Check `bin/run_cronjob.sh -h` for usage.
 
 # Deployment
 
-If you already setup your infrastructure with ansible, you can run deploy everytime by:
+Deployment should be almost automatic depending on which branch you pushed. `master` branch push will trigger production deploy whereas `staging` branch push will trigger staging deploy. Staging deployment is completely automated but production deployment require your approval (to proceed) between `django_migrate` step and `rebuild_index` step so that you have the chance to run a command that alter data such as `cache_data`. If you want to see each step, look at `.circleci/config.yml`.
 
-``` bash
-bin/deploy_staging
-```
-Since deploy_staging command will NOT rebuild_index since it take great time. We recommend one should ssh to staging then 
-run `rebuild_index` separately with specific doc_type
+Content of `kubernetes` folder:
+- `cpdpbot.yml` - cpdpbot (Twitter bot) deployment.
+- `elasticsearch.yml` - Elasticsearch deployment and service.
+- `gunicorn.yml` - Gunicorn deployment and service.
+- `ingress.yml` - Main ingress.
+- `namespaces.yml` - All namespaces.
+- `pg_proxy.yml` - Postgres CloudSQL Proxy
+- `redis.yml` - Redis deployment and service.
+- `secrets-production.yml` - Secrets for production
+- `secrets-staging.yml` - Secrets for staging
+- `job` - manifest file for job.
+- `cronjob` - manifest file for cronjob.
 
-Currently, we are using azure blob storage to serve our heatmap cluster. In order to make the heatmap cluster available you will need to run the upload command:
-```
-cpdb/manage.py upload_heatmap_geojson
-```
+Most of our resources are deployed into 2 namespaces: `staging` and `production` therefore most commands should specify either of these 2 namespaces e.g.
+- `kubectl get pods -n staging` - look up all pods in namespace staging
+- `kubectl get services -n staging` - look up all services in namespace staging
+- `kubectl logs update-documents-69567775bc-hr86t -n staging` - look at logs from pod `update-documents-69567775bc-hr86t`
 
-In fact, our CircleCI is currently set up to automatically deploy the `staging` branch. In cases where the feature being merged into staging requires rebuilding the
-Elasticsearch index, you must tell the deploy script to do so by including `[rebuild_index]` in the merge commit's message:
+# Make changes to Docker images
 
-```bash
-# Do work on feature branch, commit & push as usual:
-git commit
-git push
-# Checkout staging and merge said branch:
-git checkout staging && git pull
-git merge feature/my-feature-branch  # merge commit message editor opens - include `[rebuild_index]` here
-git push  # remember to test locally before pushing of course!
-```
-**NOTE:** `[rebuild_index]` will rebuild ALL index, so it take 6 hours and impossible for CI to finish task. 
-We suggest that commit message should specific which doc_type should be rebuild; i.e. 
-``` Commit Message
-[c] 000 - Some commit description here
-[rebuild_index officers.officer_percentile_doc_type officers.officer_metrics_doc_type units]
-```
+The following Docker images rarely change so you have to update and build/push them manually when there is a change. Run the following snippets depending on which docker image you changed:
 
+- `docker build -t cpdbdev/postgres:9.6 docker/postgres && docker push cpdbdev/postgres:9.6`
+- `docker build -t cpdbdev/remote_syslog2:latest docker/remote_syslog2 && docker push cpdbdev/remote_syslog2:latest`
 
-# Update Docker images
+# Add kubernetes secrets
 
-We're using CircleCI version 2.0. As thus has moved on to running tests and deployment via Docker images. After you make changes to the Docker files, bump up the version and run following commands:
+Secrets for staging and production are stored in following files `kubernetes/secrets-staging.yml.secret` and `kubernetes/secrets-production.yml.secret`
+Run `git secret reveal` to show the secret manifest file.
 
-```
-docker login
-docker build -t cpdbdev/cpdbv2_backend:0.1.0 .circleci/docker
-docker push cpdbdev/cpdbv2_backend:0.1.0
-docker build -t cpdbdev/postgis:9.6-alpine .circleci/postgis-docker
-docker push cpdbdev/postgis:9.6-alpine
-```
-
-# Keep secrets with git-secret
-
-Please read instructions at http://git-secret.io/ to understand how it work. We have a few files encrypted this way. Generate a gpg key and give it's public key to your teammate to access those files.
-
-# Managed infrastructure with Terraform
-
-Get started by running these commands:
-
-- `az login`
-- `terraform init`
-- `terraform refresh`
-
-# Kubernetes
-
-To interact with our kubernetes cluster via command line:
-
-- [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- `echo "$(terraform output kube_config)" > ./azurek8s`
-- `export KUBECONFIG=./azurek8s`
-- Now you should be able to run all kubectl commands such as `kubectl get nodes`
-
-# Azure database for PostgreSQL
-
-After you have access to git secrets and refreshed terraform, there are 2 commands that will make working with PostgreSQL easier:
-
-- `bin/initialize_database.sh` Initialize database on staging or production. Can optionally provide a SQL dump file. Type `bin/initialize_database.sh -h` to read usage.
-- `bin/psql.sh`: Quickly launch PostgreSQL terminal to access staging or production database. Type `bin/psql.sh -h` to read usage.
-
-# Backup and Restore Elastic Search snapshot
-## Backup
-On local enviroment of elasticsearch:
-```
-curl -X PUT "localhost:9200/_snapshot/cpdp_es/snapshot_1?wait_for_completion=true" & tar -cvzf es_snapshot.tar.gz /backup/cpdp_es/
-```
-
-## Restore
-With zipped snapshot
-```
-tar -xvf es_snapshot.tar.gz -C /backup/cpdp_es/
-curl -X POST "localhost:9200/_snapshot/cpdp_es/snapshot_1/_restore"
-```
-
-# Removed apps
-
-The following apps are removed: `landing_page`, `story`. Therefore if you come upon PostgreS tables that begin with `landing_page_` or `story_`, it should be safe to remove them.
-
-# Infrastructure changes
-
-For any infrastructure changes, please add a new Ansible role to set it up. Changes that are needed to run every deployment, please put the tag `deploy`.
-
-For any changes in infrastructures, please put it into `Notes` section of the pull request.
-
-Regarding to the nginx changes, please update both files: with and without https.
+Secret values are all base64 encoded by running `echo -n <value> | base64`
+To reveal the secret value `echo <base64 encoded string> | base64 -D`
 
 # Twitter bot
+
+Twitter bot (@CPDPbot) is made of 2 parts: webhook run in Django and cpdpbot worker. Below is guidance for webhook. To know how to change cpdpbot worker, look at `docker/cpdpbot/DEVELOPMENT.md`.
+
 ## Development
 Please make sure you have correct development tokens on local environment (.env file)
 - Install `ngrok` to expose webhook to twitter.
@@ -166,7 +82,7 @@ Please make sure you have correct development tokens on local environment (.env 
 
 ## Deployment
 This only needs to be done once unless the webhook url or subscrition was changed.
-- Run command `manage.py register_webhook --url=https://beta.cpdp.co/api/v2/twitter/webhook/` to register webhook.
+- Run command `manage.py register_webhook --url=https://cpdp.co/api/v2/twitter/webhook/` to register webhook.
 - Run command `manage.py add_account_subscription`.
 - Go to the provided authenticaton url and login using CPDPBot account (get from 1Password) to get PIN number.
 - Input PIN number to continue.
@@ -178,10 +94,6 @@ Some other available commands:
 - `add_owner_subscription` quick command to subscribe the owner of the twitter app.
 - `remove_subscription` to remove subscription account.
 
-# Documentation
-- [API standards](docs/api-standards.md)
-
 # Miscelaneous
 
-- [Snapshot test](docs/snapshot-test.md)
-- [Visual tokens](docs/visual-tokens.md)
+- [API standards](docs/api-standards.md)

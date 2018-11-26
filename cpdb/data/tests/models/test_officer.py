@@ -77,16 +77,6 @@ class OfficerTestCase(TestCase):
             officer = OfficerFactory(allegation_count=cr_count)
             expect(officer.visual_token_background_color).to.eq(color)
 
-    @override_settings(VISUAL_TOKEN_STORAGEACCOUNTNAME='cpdbdev')
-    def test_visual_token_png_url(self):
-        officer = OfficerFactory(id=90)
-        expect(officer.visual_token_png_url).to.eq('https://cpdbdev.blob.core.windows.net/visual-token/officer_90.png')
-
-    @override_settings(VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER='media_folder')
-    def test_visual_token_png_path(self):
-        officer = OfficerFactory(id=90)
-        expect(officer.visual_token_png_path).to.eq('media_folder/officer_90.png')
-
     def test_get_unit_by_date(self):
         officer = OfficerFactory()
         unit_100 = PoliceUnitFactory()

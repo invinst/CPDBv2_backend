@@ -8,7 +8,8 @@ from data.models import Officer, OfficerAlias
 from officers.serializers.response_serializers import (
     OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer
 )
-from officers.serializers.response_mobile_serializers import OfficerInfoMobileSerializer, OfficerCardMobileSerializer
+from officers.serializers.response_mobile_serializers import OfficerInfoMobileSerializer, \
+    CoaccusalCardMobileSerializer, OfficerCardMobileSerializer
 from officers.queries import OfficerTimelineQuery, OfficerTimelineMobileQuery
 
 _ALLOWED_FILTERS = [
@@ -105,6 +106,13 @@ class OfficersMobileViewSet(OfficerBaseViewSet):
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineMobileQuery(officer).execute())
+
+    @detail_route(methods=['get'])
+    def coaccusals(self, _, pk):
+        officer_id = self.get_officer_id(pk)
+        queryset = Officer.objects.all()
+        officer = get_object_or_404(queryset, id=officer_id)
+        return Response(CoaccusalCardMobileSerializer(officer.coaccusals, many=True).data)
 
     def list(self, request):
         ids_str = request.GET.get('ids', '')

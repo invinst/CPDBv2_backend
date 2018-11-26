@@ -1,5 +1,51 @@
 version: '3'
 services:
+  web:
+    build: .
+    environment:
+      GUNICORN_RELOAD: "True"
+      GOOGLE_APPLICATION_CREDENTIALS: "/usr/src/app/twitterbot-nl-api.json"
+    ports:
+      - "8000:80"
+    depends_on:
+      - postgres
+      - elasticsearch
+    volumes:
+      - .:/usr/src/app
+      - logfiles:/logfiles
+    command: cpdb/manage.py runserver 0.0.0.0:80
+    tty: true
+    stdin_open: true
+  postgres:
+    build: ./docker/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: postgres -c ssl=off
+  elasticsearch:
+    image: elasticsearch:5-alpine
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
   cpdpbot:
     build: ./docker/cpdpbot
-    env_file: local.env
+    env_file: .env
+  pg-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.11
+    volumes:
+      - .:/app
+    command: ["/cloud_sql_proxy",
+                  "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432",
+                  "-credential_file=$PG_CREDENTIAL_FILE"]
+  psql:
+    image: postgres:9.6-alpine
+    environment:
+      PGPASSWORD: $PGPASSWORD
+    command: "psql -h postgres -U cpdb postgres"
+
+volumes:
+  pgdata:
+  esdata:
+  logfiles:
