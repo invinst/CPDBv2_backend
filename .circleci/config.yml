@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: cpdbdev/backend:latest
+      - image: cpdbdev/backend:py3
         user: gunicorn
       - image: cpdbdev/postgres:9.6
       - image: elasticsearch:5-alpine
