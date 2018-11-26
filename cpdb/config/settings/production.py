@@ -57,10 +57,10 @@ LOGGING = {
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
-        # 'syslog_formatter': {
-        #     'format': '%(asctime)s %(environment)s [%(levelname)s] %(name)s: %(message)s',
-        #     'datefmt': '%Y-%m-%dT%H:%M:%S'
-        # }
+        'syslog_formatter': {
+            'format': '%(asctime)s %(environment)s [%(levelname)s] %(name)s: %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S'
+        }
     },
     'filters': {
         'require_debug_true': {
@@ -80,9 +80,9 @@ LOGGING = {
         'syslog': {
             'level': 'INFO',
             'class': 'tlssyslog.TLSSysLogHandler',
-            'formatter': 'simple',
+            'formatter': 'syslog_formatter',
             'address': (env.str('PAPERTRAIL_ENDPOINT'), env.int('PAPERTRAIL_PORT')),
-            # 'filters': ['context'],
+            'filters': ['context'],
             'ssl_kwargs': {
                 'cert_reqs': ssl.CERT_REQUIRED,
                 'ssl_version': ssl.PROTOCOL_TLS,
