@@ -365,18 +365,6 @@ workflows:
               ignore:
                 - staging
                 - master
-      - reset_staging_db:
-          requires:
-            - test
-          filters:
-            branches:
-              only: feature/557-upgrading-django-to-v2.1
-      - reset_staging_branch:
-          requires:
-            - test
-          filters:
-            branches:
-              only: feature/557-upgrading-django-to-v2.1
   deploy_backend_staging:
     jobs:
       - test:
