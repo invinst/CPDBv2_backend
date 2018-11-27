@@ -14,7 +14,7 @@ def send_forgot_password_email(request, user):
         'email': user.email,
         'domain': domain,
         'site_name': site_name,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode('utf-8'),
         'user': user,
         'token': default_token_generator.make_token(user),
         'protocol': 'https' if request.is_secure() else 'http',

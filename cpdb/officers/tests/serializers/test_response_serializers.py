@@ -42,7 +42,7 @@ class OfficerCardSerializerTestCase(TestCase):
             birth_year=1950,
             race='White',
             gender='M',
-            resignation_date=date(2000, 01, 01),
+            resignation_date=date(2000, 1, 1),
             complaint_percentile='99.9900',
             civilian_allegation_percentile='88.8800',
             internal_allegation_percentile='77.7700',
@@ -105,8 +105,8 @@ class OfficerSummarySerializerTestCase(TestCase):
             first_name='Michael',
             last_name='Flynn',
             last_unit=unit,
-            appointed_date=date(2000, 01, 02),
-            resignation_date=date(2010, 02, 03),
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
             active='Yes',
             rank='Sergeant',
             race='Black',
@@ -128,8 +128,8 @@ class OfficerSummarySerializerTestCase(TestCase):
             star='456'
         )
 
-        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 01, 02))
-        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 01, 02))
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
 
         expect(OfficerSummarySerializer(officer).data).to.eq({
             'id': 123,
@@ -202,8 +202,8 @@ class OfficerInfoSerializerTestCase(TestCase):
             first_name='Michael',
             last_name='Flynn',
             last_unit=unit,
-            appointed_date=date(2000, 01, 02),
-            resignation_date=date(2010, 02, 03),
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
             active='Yes',
             rank='Sergeant',
             race='Black',
@@ -235,8 +235,8 @@ class OfficerInfoSerializerTestCase(TestCase):
             star='456'
         )
 
-        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 01, 02))
-        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 01, 02))
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
 
         OfficerYearlyPercentileFactory(
             officer=officer,
@@ -337,7 +337,7 @@ class RankChangeNewTimelineSerializerTestCase(TestCase):
         officer = OfficerFactory(id=123)
         salary = SalaryFactory(
             officer=officer,
-            spp_date=date(2002, 02, 03),
+            spp_date=date(2002, 2, 3),
             rank='Police Officer',
         )
         setattr(salary, 'unit_name', 'Unit 001')
@@ -349,14 +349,14 @@ class RankChangeNewTimelineSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 25,
             'kind': 'RANK_CHANGE',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
 
 class JoinedNewTimelineSerializerTestCase(TestCase):
     def test_serialization(self):
-        officer = OfficerFactory(id=123, appointed_date=date(2002, 02, 03))
+        officer = OfficerFactory(id=123, appointed_date=date(2002, 2, 3))
         setattr(officer, 'unit_name', 'Unit 001')
         setattr(officer, 'unit_description', 'District 001')
         setattr(officer, 'rank_name', 'Police Officer')
@@ -367,7 +367,7 @@ class JoinedNewTimelineSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 10,
             'kind': 'JOINED',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
@@ -383,7 +383,7 @@ class UnitChangeNewTimelineSerializerTestCase(TestCase):
         officer_history = OfficerHistoryFactory(
             officer=officer,
             unit=unit,
-            effective_date=date(2002, 02, 03)
+            effective_date=date(2002, 2, 3)
         )
         setattr(officer_history, 'rank_name', 'Police Officer')
 
@@ -393,7 +393,7 @@ class UnitChangeNewTimelineSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 20,
             'kind': 'UNIT_CHANGE',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03'
         })
 
@@ -414,6 +414,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(
             officer=officer,
             allegation=allegation,
+            start_date=date(2002, 2, 3),
             allegation_category=allegation_category,
             final_finding='SU',
             final_outcome='9 Day Suspension'
@@ -438,7 +439,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 30,
             'kind': 'CR',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'crid': 'CR123',
             'category': 'some category',
@@ -482,7 +483,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
 class AwardNewTimelineSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(id=123)
-        award = AwardFactory(officer=officer, start_date=date(2002, 02, 03), award_type='Life Saving Award')
+        award = AwardFactory(officer=officer, start_date=date(2002, 2, 3), award_type='Life Saving Award')
 
         setattr(award, 'unit_name', 'Unit 001')
         setattr(award, 'unit_description', 'District 001')
@@ -494,7 +495,7 @@ class AwardNewTimelineSerializerTestCase(TestCase):
             'rank': 'Police Officer',
             'priority_sort': 40,
             'kind': 'AWARD',
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'award_type': 'Life Saving Award'
         })
@@ -506,7 +507,7 @@ class TRRNewTimelineSerializerTestCase(TestCase):
         trr = TRRFactory(
             id=456,
             officer=officer,
-            trr_datetime=datetime(2002, 02, 03, tzinfo=pytz.utc),
+            trr_datetime=datetime(2002, 2, 3, tzinfo=pytz.utc),
             point=Point([0.01, 0.02]),
             taser=True,
             firearm_used=False
@@ -523,7 +524,7 @@ class TRRNewTimelineSerializerTestCase(TestCase):
             'priority_sort': 50,
             'kind': 'FORCE',
             'trr_id': 456,
-            'date_sort': date(2002, 02, 03),
+            'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'taser': True,
             'firearm_used': False,

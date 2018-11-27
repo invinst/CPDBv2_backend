@@ -15,7 +15,7 @@ class BaseSerializer(object):
     def serialize(self, obj):
         return {
             k: v(obj)
-            for k, v in self._fields.iteritems()
+            for k, v in self._fields.items()
         }
 
 

@@ -34,7 +34,7 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
         AllegationFactory(point=Point([21, 22]), incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc))
         AllegationFactory(point=Point([22, 22]), incident_date=datetime(1987, 12, 31, tzinfo=pytz.utc))
         AllegationFactory(point=Point([23, 22]), incident_date=datetime.now(pytz.utc))
-        expect(self.command.get_heatmap_cluster_data()).to.eq(json.dumps({
+        expect(json.loads(self.command.get_heatmap_cluster_data())).to.eq({
             'type': 'FeatureCollection',
             'features': [{
                 'type': 'Feature',
@@ -64,13 +64,12 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
                     'weight': 1
                 }
             }]
-        }))
+        })
 
     def test_save_to_gzip_file(self):
-        expected_content = 'Sample Content'
-        file_name = self.command.save_to_gzip_file(expected_content)
+        file_name = self.command.save_to_gzip_file('Sample Content')
         with gzip.open(file_name) as f:
-            expect(f.read()).to.eq(expected_content)
+            expect(f.read()).to.eq(b'Sample Content')
 
     @patch(
         'heatmap.management.commands.upload_heatmap_geojson.ALLEGATION_MIN_DATETIME',

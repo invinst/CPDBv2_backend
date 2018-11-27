@@ -43,7 +43,6 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'data',
-    'data_versioning',
     'search',
     'vftg',
     'cms',
@@ -75,7 +74,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware',

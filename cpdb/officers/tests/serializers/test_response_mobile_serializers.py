@@ -91,8 +91,8 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             star='456'
         )
 
-        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 01, 02))
-        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 01, 02))
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
 
         OfficerYearlyPercentileFactory(
             officer=officer,

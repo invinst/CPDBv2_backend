@@ -8,7 +8,7 @@ class CharInFilter(BaseInFilter, CharFilter):
 
 
 class SearchTrackingFilterSet(FilterSet):
-    query_types = CharInFilter(name='query_type', lookup_expr='in')
+    query_types = CharInFilter(field_name='query_type', lookup_expr='in')
 
     class Meta:
         model = SearchTracking

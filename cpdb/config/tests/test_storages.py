@@ -65,7 +65,7 @@ class AzureStorageTestCase(SimpleTestCase):
         storage = AzureStorage()
         content = Mock(
             file=Mock(content_type='text/html'),
-            chunks=Mock(return_value=['a', 'b']))
+            chunks=Mock(return_value=[b'a', b'b']))
         name = 'index.html'
         content_settings = Mock()
         with patch('config.storages.ContentSettings', return_value=content_settings) as ContentSettingsMock:

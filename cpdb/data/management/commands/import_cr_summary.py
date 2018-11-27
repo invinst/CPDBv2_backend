@@ -23,7 +23,7 @@ class Command(BaseCommand):
             for row in tqdm(reader, desc='Updating summary'):
                 try:
                     cr = Allegation.objects.get(crid=row['crid'])
-                    summary = row['summary'].decode('ascii', 'ignore')
+                    summary = row['summary']
                     if cr and cr.summary != summary:
                         cr.summary = summary
                         cr.save()
