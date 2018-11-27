@@ -1,4 +1,5 @@
 from django.test.testcases import SimpleTestCase
+
 from mock import MagicMock, patch
 from robber import expect
 

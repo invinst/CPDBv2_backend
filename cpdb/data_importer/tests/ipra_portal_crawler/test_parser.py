@@ -1,7 +1,8 @@
+import pytz
 from datetime import datetime
 
-import pytz
 from django.test.testcases import SimpleTestCase
+
 from mock import MagicMock
 from robber import expect
 
