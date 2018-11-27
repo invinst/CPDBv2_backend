@@ -240,8 +240,7 @@ jobs:
             export BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
             source $ENV_FILE
             export $(cut -d= -f1 $ENV_FILE)
-            cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace=$NAMESPACE
-            bin/check_gunicorn_deployment.py -n $NAMESPACE
+            bin/ensure_gunicorn_deployment.py -n $NAMESPACE
       - run:
           name: Check API is still alive
           command: |
