@@ -246,9 +246,9 @@ jobs:
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export DOMAIN=cpdp.co
+              export DOMAIN=api.cpdp.co
             else
-              export DOMAIN=staging.cpdp.co
+              export DOMAIN=stagingapi.cpdp.co
             fi
             curl -f https://$DOMAIN/api/v2/officers/top-by-allegation/
       - run:
