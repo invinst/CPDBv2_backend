@@ -87,9 +87,10 @@ class CRRequestAirTableUploader(AirTableUploader):
         ]
         explanation = "Officers: {}".format(', '.join(officers_info)) if officers_info else ''
         requested_for = "CR {crid}".format(crid=allegation.crid)
+        pre_2006 = allegation.incident_date and allegation.incident_date.year < 2006
         agencies = [
             settings.AIRTABLE_CPD_AGENCY_ID
-            if allegation.incident_date.year < 2006 or document_request.investigated_by_cpd()
+            if pre_2006 or document_request.investigated_by_cpd()
             else settings.AIRTABLE_COPA_AGENCY_ID
         ]
         return explanation, requested_for, agencies

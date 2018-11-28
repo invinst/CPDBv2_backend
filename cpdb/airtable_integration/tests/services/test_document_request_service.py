@@ -97,6 +97,40 @@ class DocumentRequestServiceTestCase(TestCase):
 
     @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006_but_no_incident_date(self, airtable_mock):
+        allegation = AllegationFactory(crid='123456', incident_date=None)
+        attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation':  'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        expect(attachment_request.added_to_foia_airtable).to.be.false()
+
+        CRRequestAirTableUploader.upload()
+        attachment_request.refresh_from_db()
+
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.added_to_foia_airtable).to.be.true()
+
+    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_copa(self, airtable_mock):
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
