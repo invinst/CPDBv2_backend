@@ -46,7 +46,7 @@ def import_data(apps, schema_editor):
 
     with csv_from_azure('20180518_trr.csv') as reader:
         for row in reader:
-            for key, val in row.iteritems():
+            for key, val in row.items():
                 if val == '':
                     row[key] = blank_or_null[key]
                 elif key in boolean_fields:

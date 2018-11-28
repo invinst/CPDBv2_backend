@@ -172,7 +172,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='allegation',
             name='areas',
-            field=models.ManyToManyField(to=b'data.Area'),
+            field=models.ManyToManyField(to='data.Area'),
         ),
         migrations.AddField(
             model_name='allegation',
@@ -187,7 +187,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='allegation',
             name='line_areas',
-            field=models.ManyToManyField(to=b'data.LineArea'),
+            field=models.ManyToManyField(to='data.LineArea'),
         ),
         migrations.AlterUniqueTogether(
             name='officeralias',

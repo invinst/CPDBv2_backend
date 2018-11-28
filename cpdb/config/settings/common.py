@@ -15,7 +15,7 @@ environ.Env.read_env("{root}/.env".format(root=ROOT_DIR))  # reading .env file
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('DJANGO_SECRET_KEY')
+SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='django')
 
 ALLOWED_HOSTS = ['*']
 
@@ -43,7 +43,6 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'data',
-    'data_versioning',
     'search',
     'vftg',
     'cms',
@@ -54,7 +53,6 @@ LOCAL_APPS = (
     'units',
     'alias',
     'twitterbot',
-    'visual_token',
     'activity_grid',
     'document_cloud',
     'search_terms',
@@ -70,17 +68,30 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIDDLEWARE CONFIGURATION
 # ------------------------------------------------------------------------------
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware'
+    'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
+
+# CACHES CONFIGURATION
+# ------------------------------------------------------------------------------
+CACHE_MIDDLEWARE_SECONDS = 3600
+CACHE_MIDDLEWARE_KEY_PREFIX = 'django'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -100,11 +111,11 @@ DATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': env.str('DB_HOST'),
-        'NAME': env.str('DB_NAME'),
-        'PASSWORD': env.str('DB_PASSWORD'),
+        'HOST': env.str('DB_HOST', 'postgres'),
+        'NAME': env.str('DB_NAME', 'cpdb'),
+        'PASSWORD': env.str('DB_PASSWORD', 'password'),
         'PORT': 5432,
-        'USER': env.str('DB_USER')
+        'USER': env.str('DB_USER', 'cpdb')
     }
 }
 
@@ -243,7 +254,9 @@ TWITTER_CONSUMER_SECRET = env.str('TWITTER_CONSUMER_SECRET', default='')
 TWITTER_APP_TOKEN_KEY = env.str('TWITTER_APP_TOKEN_KEY', default='')
 TWITTER_APP_TOKEN_SECRET = env.str('TWITTER_APP_TOKEN_SECRET', default='')
 
-ELASTICSEARCH_HOSTS = ['localhost:9200']
+V1_URL = 'https://data.cpdp.co'
+
+ELASTICSEARCH_HOSTS = ['elasticsearch:9200']
 
 LOGGING = {
     'version': 1,
@@ -262,53 +275,23 @@ LOGGING = {
         },
     },
     'handlers': {
-        'error-file': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/pyenv/versions/cpdb/logs/django-error.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 10,
-            'formatter': 'standard',
-        },
         'console': {
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'twitterbot-log': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/pyenv/versions/cpdb/logs/twitterbot-webhook.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 10,
-            'formatter': 'standard',
-        }
     },
     'loggers': {
-        'django': {
-            'handlers': ['error-file'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
         'django.command': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
-        'twitterbot': {
-            'handlers': ['twitterbot-log'],
-            'level': 'INFO',
-            'propagate': True,
-        }
     },
 }
 
 TEST = False
-
-VISUAL_TOKEN_SOCIAL_MEDIA_FOLDER = str(APPS_DIR.path('visual_token_media'))
-VISUAL_TOKEN_STORAGEACCOUNTNAME = env.str('VISUAL_TOKEN_STORAGEACCOUNTNAME', default='cpdbdev')
-VISUAL_TOKEN_STORAGEACCOUNTKEY = env.str('VISUAL_TOKEN_STORAGEACCOUNTKEY', default='')
 
 RUNNING_PORT = '80'
 

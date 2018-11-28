@@ -32,7 +32,7 @@ class TextPipelineTestCase(RebuildIndexMixin, TestCase):
         parse.return_value = [('some-source', 'Don Juan')]
         get_officers.return_value = [('some-source', matching_officer)]
 
-        officers = TextPipeline.extract([tweet1, tweet2])
+        officers = TextPipeline().extract([tweet1, tweet2])
 
         for tweet, extract_func in itertools.product([tweet1, tweet2], (text_extract, hash_extract, url_extract)):
             expect(extract_func).to.be.ever_called_with(tweet)
@@ -57,7 +57,7 @@ class UrlPipelineTestCase(RebuildIndexMixin, TestCase):
                 'http://some-external-site.com/officer/2345/'
             ])
         ]
-        expect(UrlPipeline.extract(tweets)).to.eq(
+        expect(UrlPipeline().extract(tweets)).to.eq(
             [('cpdb-url', {'allegation_count': 0, 'percentiles': [], 'id': 1234, 'full_name': u'James Lynch'})]
         )
 
@@ -67,4 +67,4 @@ class UrlPipelineTestCase(RebuildIndexMixin, TestCase):
         tweets = [Mock(urls=[
             'http://foo.com/officer/4567/'
         ])]
-        expect(UrlPipeline.extract(tweets)).to.eq([])
+        expect(UrlPipeline().extract(tweets)).to.eq([])

@@ -131,8 +131,8 @@ class AttachmentFileMobileSerializer(NoNullSerializer):
 
 
 class CRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
-    date_sort = serializers.DateField(source='start_date', format=None)
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    date_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
@@ -142,6 +142,12 @@ class CRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
     attachments = AttachmentFileMobileSerializer(many=True, source='filtered_attachments')
     point = serializers.SerializerMethodField()
     victims = VictimMobileSerializer(many=True)
+
+    def get_date_sort(self, obj):
+        return obj.allegation.incident_date.date()
+
+    def get_date(self, obj):
+        return obj.allegation.incident_date.date().strftime(format='%Y-%m-%d')
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -202,3 +208,33 @@ class TRRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
             }
         except AttributeError:
             return None
+
+
+class OfficerPercentileMobileSerializer(NoNullSerializer):
+    percentile_trr = serializers.DecimalField(
+        source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+    percentile_allegation_civilian = serializers.DecimalField(
+        source='civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+    percentile_allegation_internal = serializers.DecimalField(
+        source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+
+
+class CoaccusalCardMobileSerializer(NoNullSerializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    rank = serializers.CharField()
+    percentile = serializers.SerializerMethodField()
+    coaccusal_count = serializers.IntegerField()
+
+    def get_percentile(self, obj):
+        return OfficerPercentileMobileSerializer(obj).data
+
+
+class OfficerCardMobileSerializer(NoNullSerializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    complaint_count = serializers.IntegerField(source='allegation_count')
+    percentile = serializers.SerializerMethodField()
+
+    def get_percentile(self, obj):
+        return OfficerPercentileMobileSerializer(obj).data

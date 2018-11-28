@@ -1,11 +1,11 @@
-from models import SearchTracking
+from .models import SearchTracking
 
 
 class QueryTrackingSearchHook(object):
     @staticmethod
     def _count_result(results):
         results = results or {}
-        return sum(len(value) for _, value in results.iteritems())
+        return sum(len(value) for _, value in results.items())
 
     @staticmethod
     def execute(term, content_type=None, results={}):

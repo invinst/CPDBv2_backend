@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.gis.geos import Point
 
 from rest_framework.test import APITestCase
@@ -96,7 +96,6 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         InvestigatorAllegationFactory(
             allegation=allegation,
             investigator=investigator,
-            current_rank='IPRA investigator'
         )
 
         AttachmentFileFactory(
@@ -164,7 +163,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'involved_type': 'investigator',
                     'officer_id': 1,
                     'full_name': 'Ellis Skol',
-                    'current_rank': 'IPRA investigator',
+                    'badge': 'CPD',
                     'percentile_allegation_civilian': 7.7,
                     'percentile_allegation_internal': 8.8,
                 },

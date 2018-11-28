@@ -63,15 +63,15 @@ class OfficerTimelineBaseQuery(object):
     @property
     def _cr_timeline(self):
         cr_timeline_queryset = self.officer.officerallegation_set.filter(
-            start_date__isnull=False,
+            allegation__incident_date__isnull=False,
         ).select_related(
             'allegation', 'allegation_category'
         ).prefetch_related(
             'allegation__victims', 'allegation__attachment_files'
         ).annotate(
-            **self.unit_subqueries('start_date')
+            **self.unit_subqueries('allegation__incident_date')
         ).annotate(
-            **self.rank_subquery('start_date')
+            **self.rank_subquery('allegation__incident_date')
         )
 
         return self.cr_new_timeline_serializer(cr_timeline_queryset, many=True).data

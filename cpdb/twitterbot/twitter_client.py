@@ -1,4 +1,4 @@
-import urlparse
+from urllib.parse import parse_qs
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -57,7 +57,7 @@ class TwitterClient(object):
         response.raise_for_status()
         self.requested_token = {
             key: value[0]
-            for key, value in urlparse.parse_qs(response.content).items()
+            for key, value in parse_qs(response.content).items()
         }
 
         return self.requested_token
@@ -85,7 +85,7 @@ class TwitterClient(object):
             auth=account_auth
         )
         response.raise_for_status()
-        token_response = urlparse.parse_qs(response.content)
+        token_response = parse_qs(response.content)
 
         return {
             'account_token': token_response['oauth_token'][0],

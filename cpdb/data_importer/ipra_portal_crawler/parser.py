@@ -38,7 +38,7 @@ class CharField(SimpleField):
         if not value:
             return ''
 
-        return unicode(value).strip()
+        return value.strip()
 
 
 class MediaTypeField(CharField):

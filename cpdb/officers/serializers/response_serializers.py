@@ -56,6 +56,7 @@ class OfficerSummarySerializer(NoNullSerializer):
     active = serializers.SerializerMethodField()
     rank = serializers.CharField()
     full_name = serializers.CharField()
+    has_unique_name = serializers.BooleanField()
     race = serializers.CharField()
     badge = serializers.SerializerMethodField()
     historic_badges = serializers.ListField(child=serializers.CharField())
@@ -188,8 +189,8 @@ class AttachmentFileSerializer(NoNullSerializer):
 
 
 class CRNewTimelineSerializer(BaseTimelineSerializer):
-    date_sort = serializers.DateField(source='start_date', format=None)
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    date_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
@@ -199,6 +200,12 @@ class CRNewTimelineSerializer(BaseTimelineSerializer):
     attachments = AttachmentFileSerializer(many=True, source='filtered_attachments')
     point = serializers.SerializerMethodField()
     victims = VictimSerializer(many=True)
+
+    def get_date_sort(self, obj):
+        return obj.allegation.incident_date.date()
+
+    def get_date(self, obj):
+        return obj.allegation.incident_date.date().strftime(format='%Y-%m-%d')
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'

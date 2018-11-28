@@ -81,23 +81,23 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='officerbadgenumber',
-            index=models.Index(fields=[b'current'], name='data_office_current_f8bc5a_idx'),
+            index=models.Index(fields=['current'], name='data_office_current_f8bc5a_idx'),
         ),
         migrations.AddIndex(
             model_name='salary',
-            index=models.Index(fields=[b'year'], name='data_salary_year_51b276_idx'),
+            index=models.Index(fields=['year'], name='data_salary_year_51b276_idx'),
         ),
         migrations.AddIndex(
             model_name='officerallegation',
-            index=models.Index(fields=[b'start_date'], name='data_office_start_d_8e9651_idx'),
+            index=models.Index(fields=['start_date'], name='data_office_start_d_8e9651_idx'),
         ),
         migrations.AddIndex(
             model_name='officerhistory',
-            index=models.Index(fields=[b'end_date'], name='data_office_end_dat_a1e9be_idx'),
+            index=models.Index(fields=['end_date'], name='data_office_end_dat_a1e9be_idx'),
         ),
         migrations.AddIndex(
             model_name='officerhistory',
-            index=models.Index(fields=[b'effective_date'], name='data_office_effecti_f0cc97_idx'),
+            index=models.Index(fields=['effective_date'], name='data_office_effecti_f0cc97_idx'),
         ),
         migrations.AddField(
             model_name='officeryearlypercentile',
@@ -106,6 +106,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='officeryearlypercentile',
-            index=models.Index(fields=[b'year'], name='data_office_year_c8b488_idx'),
+            index=models.Index(fields=['year'], name='data_office_year_c8b488_idx'),
         ),
     ]

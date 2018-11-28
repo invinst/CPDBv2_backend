@@ -59,16 +59,12 @@ Pipfile*
 /htmlcov/
 .gitsecret/keys/random_seed
 
-# Terraform secrets
-.terraform
-secrets.auto.tfvars
-backend.tf
+# Kubernetes secrets
 prod.env
 local.env
+staging.env
+kubernetes/secrets-staging.yml
+kubernetes/secrets-production.yml
 
-# Azure kube config file
-azurek8s
-
-# TLS certificate and key
-tls_cert
-tls_key
+staging-pg-credentials.json
+pg-credentials.json

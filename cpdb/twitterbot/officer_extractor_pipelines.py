@@ -1,6 +1,6 @@
 import itertools
 import re
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,35 +15,35 @@ from .serializers import OfficerSerializer
 
 
 class TextPipeline(object):
-    text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
-    name_parser = GoogleNaturalLanguageNameParser()
-    officer_from_name_extractor = ElasticSearchOfficerExtractor()
+    def __init__(self):
+        self.text_extractors = (TweetTextExtractor(), HashTagTextExtractor(), URLContentTextExtractor())
+        self.name_parser = GoogleNaturalLanguageNameParser()
+        self.officer_from_name_extractor = ElasticSearchOfficerExtractor()
 
-    @classmethod
-    def extract(cls, tweets):
+    def extract(self, tweets):
         texts = []
-        for tweet, text_extractor in itertools.product(tweets, cls.text_extractors):
+        for tweet, text_extractor in itertools.product(tweets, self.text_extractors):
             texts += text_extractor.extract(tweet)
         officer_names = []
         for text_source, text in texts:
             officer_names += [
-                (source, name) for source, name in cls.name_parser.parse((text_source, text))
+                (source, name) for source, name in self.name_parser.parse((text_source, text))
                 if (source, name) not in officer_names
             ]
 
-        return cls.officer_from_name_extractor.get_officers(officer_names)
+        return self.officer_from_name_extractor.get_officers(officer_names)
 
 
 class UrlPipeline(object):
-    site_netloc = urlparse(settings.DOMAIN).netloc
+    def __init__(self):
+        self.site_netloc = urlparse(settings.DOMAIN).netloc
 
-    @classmethod
-    def extract(cls, tweets):
+    def extract(self, tweets):
         results = []
         for tweet in tweets:
             for url in tweet.urls:
                 parsed = urlparse(url)
-                if parsed.netloc == cls.site_netloc:
+                if parsed.netloc == self.site_netloc:
                     matches = re.match('^/officer/(\d+)', parsed.path)
                     try:
                         officer_id = matches.group(1)
