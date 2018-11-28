@@ -15,6 +15,10 @@ spec:
   - host: ${DESKTOP_DOMAIN}
     http:
       paths:
+      - path: /admin
+        backend:
+          serviceName: gunicorn
+          servicePort: 80
       - path: /
         backend:
           serviceName: desktop-frontend
@@ -22,6 +26,10 @@ spec:
   - host: ${MOBILE_DOMAIN}
     http:
       paths:
+      - path: /admin
+        backend:
+          serviceName: gunicorn
+          servicePort: 80
       - path: /
         backend:
           serviceName: mobile-frontend
