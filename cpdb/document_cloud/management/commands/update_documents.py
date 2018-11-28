@@ -8,11 +8,10 @@ from documentcloud import DocumentCloud
 
 from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
+from document_cloud.utils import parse_crid_from_title, parse_id, parse_link
+from document_cloud.services import rebuild_related_cr_indexes
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
-from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
-from cr.indexers import CRPartialIndexer
-from officers.indexers import CRNewTimelineEventPartialIndexer
 
 
 logger = logging.getLogger('django.command')
@@ -31,8 +30,7 @@ class Command(BaseCommand):
     help = 'Update complaint documents info'
 
     def process_documentcloud_document(self, cloud_document, document_type):
-        documentcloud_service = DocumentcloudService()
-        crid = documentcloud_service.parse_crid_from_title(cloud_document.title, document_type)
+        crid = parse_crid_from_title(cloud_document.title, document_type)
         if not crid:
             return
         try:
@@ -40,7 +38,7 @@ class Command(BaseCommand):
         except Allegation.DoesNotExist:
             return
 
-        documentcloud_id = documentcloud_service.parse_id(cloud_document.id)
+        documentcloud_id = parse_id(cloud_document.id)
         if documentcloud_id is None:
             return
 
@@ -61,7 +59,7 @@ class Command(BaseCommand):
 
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', r'\g<1> \g<2>', cloud_document.title)
-            additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
+            additional_info = parse_link(cloud_document.canonical_url)
 
             logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
                 url=cloud_document.canonical_url,
@@ -129,15 +127,6 @@ class Command(BaseCommand):
 
         return list(cleaned_results.values())
 
-    def rebuild_related_elasticsearch_docs(self, crids):
-        if not crids:
-            return
-
-        for indexer_klass in [CRPartialIndexer, CRNewTimelineEventPartialIndexer]:
-            indexer = indexer_klass(updating_keys=crids)
-            with indexer.index_alias.indexing():
-                indexer.reindex()
-
     def handle(self, *args, **options):
         logger.info('Documentcloud crawling process is about to start...')
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
@@ -169,11 +158,10 @@ class Command(BaseCommand):
         deleted_attachments = AttachmentFile.objects.filter(
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).exclude(id__in=all_attachment_ids)
-        crids = set(attachment.allegation.crid for attachment in changed_attachments + list(deleted_attachments))
         logger.info('Deleting {num} attachments'.format(num=deleted_attachments.count()))
         deleted_attachments.delete()
 
-        self.rebuild_related_elasticsearch_docs(crids=crids)
+        rebuild_related_cr_indexes(changed_attachments + list(deleted_attachments))
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
