@@ -113,7 +113,7 @@ class Command(BaseCommand):
     def save_to_gzip_file(self, content):
         tmp_file = NamedTemporaryFile(delete=False)
         with gzip.open(tmp_file.name, 'wb') as f:
-            f.write(content)
+            f.write(content.encode('utf-8'))
         return tmp_file.name
 
     def handle(self, *args, **options):

@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 
 from django.test import SimpleTestCase
 from django.core.management import call_command
@@ -26,6 +26,7 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.management.commands.add_account_subscription.get_user_input', return_value='123')
     def test_add_account_subscription_fail(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
+        twitter_client_mock.get_auth_url.return_value = 'auth_url'
         exception = HTTPError(response=Mock(content=[]))
         twitter_client_mock.get_user_access_token.side_effect = exception
         stdout, stderr = StringIO(), StringIO()
@@ -38,6 +39,7 @@ class CommandTestCase(SimpleTestCase):
     @patch('twitterbot.management.commands.add_account_subscription.get_user_input', return_value='123')
     def test_add_account_subscription_success(self, get_user_input, TwitterClient):
         twitter_client_mock = TwitterClient()
+        twitter_client_mock.get_auth_url.return_value = 'auth_url'
         twitter_client_mock.subscription = Mock(add=Mock(return_value=[]))
         twitter_client_mock.get_user_access_token.return_value = {
             'account_token': 'token',

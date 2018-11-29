@@ -12,7 +12,7 @@ def cache_data():
 def build_cached_rank_changes():
     salaries = Salary.objects.exclude(spp_date__isnull=True).order_by('officer_id', 'year')
     rank_change_ids = [
-        grouped_salaries.next().id
+        list(grouped_salaries)[0].id
         for _, grouped_salaries in groupby(salaries, key=attrgetter('officer_id', 'rank'))
     ]
 

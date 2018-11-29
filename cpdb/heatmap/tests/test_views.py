@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from freezegun import freeze_time
 from robber import expect

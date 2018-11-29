@@ -1,5 +1,5 @@
 import re
-from utils import web_parsing
+from .utils import web_parsing
 
 
 class TweetTextExtractor:

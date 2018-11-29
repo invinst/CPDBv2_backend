@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.gis.geos import Point
 
 from rest_framework.test import APITestCase
@@ -99,7 +99,12 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory(
+            tag='TRR',
             allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+        )
+        AttachmentFileFactory(
+            tag='AR',
+            allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
 
         officer_cache_manager.build_cached_columns()

@@ -99,7 +99,7 @@ class OfficerTweetHandler(SubEventHandler):
             recipients += [
                 name for name in recipient_extractor.extract(tweets, self._context) if name not in recipients]
 
-        for recipient, builder in itertools.product(recipients, self.response_builders):
+        for recipient, builder in itertools.product(sorted(recipients), self.response_builders):
             responses = builder.build(officers, {'user_name': recipient}, self._context)
             for response in responses:
                 self.tweet(response)

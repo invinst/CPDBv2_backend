@@ -1,6 +1,6 @@
 import datetime
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import pytz
 from robber import expect
@@ -14,7 +14,7 @@ from analytics.factories import SearchTrackingFactory
 
 class EventsViewTestCase(APITestCase):
 
-    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
+    @freeze_time('2017-01-14 12:00:01')
     def test_create(self):
         data = {
             'id': 12,
@@ -35,7 +35,7 @@ class EventsViewTestCase(APITestCase):
 
 
 class SearchTrackingViewTestCase(APITestCase):
-    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
+    @freeze_time('2017-01-14 12:00:01-06:00')
     def setUp(self):
         SearchTrackingFactory(id=1, query='query', usages=1, results=1, query_type='free_text')
         SearchTrackingFactory(id=2, query='qu', usages=2, results=2, query_type='no_interaction')
@@ -52,14 +52,14 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 1,
                 'results': 1,
                 'query_type': 'free_text',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }, {
                 'id': 2,
                 'query': 'qu',
                 'usages': 2,
                 'results': 2,
                 'query_type': 'no_interaction',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -78,7 +78,7 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 1,
                 'results': 1,
                 'query_type': 'free_text',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -94,7 +94,7 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 2,
                 'results': 2,
                 'query_type': 'no_interaction',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -108,14 +108,14 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 2,
                 'results': 2,
                 'query_type': 'no_interaction',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }, {
                 'id': 1,
                 'query': 'query',
                 'usages': 1,
                 'results': 1,
                 'query_type': 'free_text',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -129,7 +129,7 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 2,
                 'results': 2,
                 'query_type': 'no_interaction',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -141,14 +141,14 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 1,
                 'results': 1,
                 'query_type': 'free_text',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }, {
                 'id': 2,
                 'query': 'qu',
                 'usages': 2,
                 'results': 2,
                 'query_type': 'no_interaction',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
 
@@ -162,6 +162,6 @@ class SearchTrackingViewTestCase(APITestCase):
                 'usages': 1,
                 'results': 1,
                 'query_type': 'free_text',
-                'last_entered': '2017-01-14T12:00:01Z'
+                'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )

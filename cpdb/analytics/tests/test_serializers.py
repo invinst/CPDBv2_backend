@@ -25,7 +25,7 @@ class EventSerializerTestCase(SimpleTestCase):
 
 
 class SearchTrackingSerializerTestCase(TestCase):
-    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
+    @freeze_time('2017-01-14 12:00:01-06:00')
     def test_serialize(self):
         search_tracking = SearchTrackingFactory(
             id=1, query='query', usages=1, results=1, query_type='free_text'
@@ -36,5 +36,5 @@ class SearchTrackingSerializerTestCase(TestCase):
             'usages': 1,
             'results': 1,
             'query_type': 'free_text',
-            'last_entered': '2017-01-14T12:00:01Z'
+            'last_entered': '2017-01-14T12:00:01-06:00'
         })
