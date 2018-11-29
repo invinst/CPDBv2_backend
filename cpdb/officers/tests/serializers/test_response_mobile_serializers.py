@@ -251,10 +251,19 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
         )
 
         AttachmentFileFactory(
+            tag='Other',
             allegation=allegation,
             title='title',
             url='url',
             preview_image_url='preview_image_url',
+            file_type='document'
+        )
+        AttachmentFileFactory(
+            tag='AR',
+            allegation=allegation,
+            title='title 2',
+            url='url_2',
+            preview_image_url='preview_image_url_2',
             file_type='document'
         )
         VictimFactory(allegation=allegation, gender='M', race='Black', age=30)

@@ -14,7 +14,7 @@ from django_bulk_update.manager import BulkUpdateManager
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, MEDIA_IPRA_COPA_HIDING_TAGS
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -694,7 +694,7 @@ class Investigator(models.Model):
 
     @property
     def num_cases(self):
-        return self.investigatorallegation_set.all().count()
+        return self.investigatorallegation_set.count()
 
     @property
     def full_name(self):
@@ -735,6 +735,7 @@ class Allegation(models.Model):
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
+    subjects = ArrayField(models.CharField(max_length=255), default=[])
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey(AllegationCategory, on_delete=models.SET_NULL, null=True)
@@ -817,6 +818,12 @@ class Allegation(models.Model):
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
+    @property
+    def filtered_attachment_files(self):
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide those documents
+        return self.attachment_files.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
+
     @staticmethod
     def get_cr_with_new_documents(limit):
         return Allegation.objects.prefetch_related(
@@ -824,8 +831,11 @@ class Allegation(models.Model):
                 'attachment_files',
                 queryset=AttachmentFile.objects.annotate(
                     last_created_at=Max('created_at')
+                ).exclude(
+                    tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
                 ).filter(
-                    file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))
+                    file_type=MEDIA_TYPE_DOCUMENT,
+                    created_at__gte=(F('last_created_at') - timedelta(days=30))
                 ).order_by('created_at'),
                 to_attr='latest_documents'
             )
@@ -927,6 +937,10 @@ class OfficerAllegation(models.Model):
     def attachments(self):
         return self.allegation.attachment_files.all()
 
+    @property
+    def filtered_attachments(self):
+        return self.allegation.filtered_attachment_files.all()
+
 
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, null=True)
@@ -978,14 +992,15 @@ class Involvement(models.Model):
 
 
 class AttachmentFile(models.Model):
-    external_id = models.CharField(max_length=50, null=True, db_index=True)
+    external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, db_index=True)
-    additional_info = JSONField()
+    additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, related_name='attachment_files')
+    source_type = models.CharField(max_length=255, db_index=True)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
@@ -993,7 +1008,7 @@ class AttachmentFile(models.Model):
     last_updated = models.DateTimeField(null=True)
 
     class Meta:
-        unique_together = (('allegation', 'original_url'),)
+        unique_together = (('allegation', 'external_id', 'source_type'),)
 
 
 class Award(models.Model):

@@ -60,6 +60,7 @@ LOCAL_APPS = (
     'trr',
     'popup',
     'airtable_integration',
+    'data_importer',
     'status'
 )
 

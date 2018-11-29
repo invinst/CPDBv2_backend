@@ -78,6 +78,8 @@ MEDIA_TYPE_CHOICES = [
     [MEDIA_TYPE_DOCUMENT, 'Document']
 ]
 
+MEDIA_IPRA_COPA_HIDING_TAGS = ['OCIR', 'AR']
+
 BACKGROUND_COLOR_SCHEME = {
     '00': '#f5f4f4',
     '10': '#edf0fa',
@@ -162,3 +164,8 @@ TRR_MAX_DATETIME = datetime.strptime(settings.TRR_MAX, '%Y-%m-%d').replace(tzinf
 
 MIN_VISUAL_TOKEN_YEAR = min(INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME.year, TRR_MIN_DATETIME.year)
 MAX_VISUAL_TOKEN_YEAR = max(INTERNAL_CIVILIAN_ALLEGATION_MAX_DATETIME.year, TRR_MAX_DATETIME.year)
+
+
+class AttachmentSourceType(object):
+    COPA = 'COPA'
+    DOCUMENTCLOUD = 'DOCUMENTCLOUD'

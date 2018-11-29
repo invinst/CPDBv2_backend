@@ -3,6 +3,7 @@ from django.test import TestCase
 from mock import patch, MagicMock
 from robber import expect
 
+from data.constants import AttachmentSourceType
 from data.factories import AttachmentFileFactory
 
 
@@ -11,12 +12,14 @@ class UpdateDocumentsCommandTestCase(TestCase):
         with patch('document_cloud.management.commands.upload_ipra_documents.DocumentCloud') as mock_documentcloud:
             update_doc = AttachmentFileFactory(
                 file_type='document',
+                source_type=AttachmentSourceType.COPA,
                 original_url='http://www.chicagocopa.org/wp-content/uploads/2016/05/CHI-R-00000105.pdf',
                 url='http://www.chicagocopa.org/wp-content/uploads/2016/05/CHI-R-00000105.pdf'
             )
             AttachmentFileFactory(file_type='video')
             AttachmentFileFactory(
                 file_type='document',
+                source_type=AttachmentSourceType.COPA,
                 original_url='http://www.chicagocopa.org/wp-content/uploads/2017/05/Arrest-Acuna-REDACTED.pdf',
                 url='https://www.documentcloud.org/documents/4195522-CRID-1081170-AR-Acuna.html'
             )

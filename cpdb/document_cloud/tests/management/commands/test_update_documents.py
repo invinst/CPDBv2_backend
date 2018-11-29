@@ -7,7 +7,7 @@ from mock import patch, MagicMock, call
 from robber import expect
 import pytz
 
-from data.constants import MEDIA_TYPE_DOCUMENT
+from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from data.factories import AllegationFactory, AttachmentFileFactory, OfficerAllegationFactory
 from data.models import AttachmentFile, Allegation
 from document_cloud.factories import DocumentCloudSearchQueryFactory
@@ -64,11 +64,11 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             mock_search.assert_called_once_with(queries[0].query)
 
     def test_create_crawler_log(self):
-        expect(DocumentCrawler.objects.all().count()).to.eq(0)
+        expect(DocumentCrawler.objects.count()).to.eq(0)
 
         management.call_command('update_documents')
 
-        expect(DocumentCrawler.objects.all().count()).to.eq(1)
+        expect(DocumentCrawler.objects.count()).to.eq(1)
 
     def test_clean_results_remove_duplicate(self):
         command = Command()
@@ -87,8 +87,8 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         command.process_documentcloud_document(MagicMock(title='new'), 'CR')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().title).to.eq('old')
 
     def test_process_invalid_crid(self):
         command = Command()
@@ -96,8 +96,8 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         command.process_documentcloud_document(MagicMock(title='CRID 12 CR'), 'CR')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().title).to.eq('old')
 
     def test_process_invalid_document_cloud_id(self):
         command = Command()
@@ -106,13 +106,14 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         command.process_documentcloud_document(MagicMock(title='CRID 123456 CR', id='invalid id'), 'CR')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        expect(AttachmentFile.objects.all()[0].title).to.eq('old')
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().title).to.eq('old')
 
     def test_update_title_if_title_changed(self):
         command = Command()
         allegation = AllegationFactory(crid='123456')
         AttachmentFileFactory(
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             external_id='789',
             title='CRID 123456 CR',
             allegation=allegation,
@@ -131,14 +132,48 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        expect(AttachmentFile.objects.all()[0].title).to.eq('CRID 123456 CR New')
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().title).to.eq('CRID 123456 CR New')
+        expect(AttachmentFile.objects.first().source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
+
+    def test_update_source_type_if_empty(self):
+        command = Command()
+        allegation = AllegationFactory(crid='123456')
+        AttachmentFileFactory(
+            source_type='',
+            external_id='789',
+            title='CRID 123456 CR',
+            allegation=allegation,
+            original_url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
+            created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+            last_updated=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+            preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html'
+        )
+
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().source_type).to.eq('')
+
+        command.process_documentcloud_document(
+            create_object({
+                'title': 'CRID 123456 CR',
+                'id': '789-CRID-123456-CR',
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'}),
+            }), 'CR'
+        )
+
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.first().source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
 
     def test_insert_new_document_if_allegation_existed(self):
         command = Command()
         allegation = AllegationFactory(crid='123456')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
         command.process_documentcloud_document(
             create_object({
@@ -152,9 +187,10 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        media = AttachmentFile.objects.all()[0]
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        media = AttachmentFile.objects.first()
         expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf')
         expect(media.allegation.id).to.eq(allegation.id)
 
@@ -162,7 +198,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         command = Command()
         allegation = AllegationFactory(crid='123456')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
         command.process_documentcloud_document(
             create_object({
@@ -175,18 +211,18 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        media = AttachmentFile.objects.all()[0]
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        media = AttachmentFile.objects.first()
         expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
-
         expect(media.allegation.id).to.eq(allegation.id)
 
     def test_insert_new_document_with_missing_resources_pdf_link(self):
         command = Command()
         allegation = AllegationFactory(crid='123456')
 
-        expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
         command.process_documentcloud_document(
             create_object({
@@ -200,16 +236,17 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        expect(AttachmentFile.objects.all().count()).to.eq(1)
-        media = AttachmentFile.objects.all()[0]
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        media = AttachmentFile.objects.first()
         expect(media.title).to.eq('CRID 123456 CR')
+        expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
         expect(media.allegation.id).to.eq(allegation.id)
 
     def test_not_process_if_allegation_not_existed(self):
         command = Command()
 
-        expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
         command.process_documentcloud_document(
             create_object({
@@ -223,7 +260,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        expect(AttachmentFile.objects.all().count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
     def test_replace_hyphen_with_space(self):
         command = Command()
@@ -252,13 +289,15 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             }), 'CR'
         )
 
-        media = AttachmentFile.objects.first()
-        expect(media.title).to.eq('CRID 123456 CR new document')
-        expect(media.allegation.id).to.eq(allegation.id)
+        media456 = AttachmentFile.objects.first()
+        expect(media456.allegation.id).to.eq(allegation.id)
+        expect(media456.external_id).to.eq('456')
+        expect(media456.title).to.eq('CRID 123456 CR new document')
 
-        media = AttachmentFile.objects.all()[1]
-        expect(media.title).to.eq('CRID 123456 CR new - document')
-        expect(media.allegation.id).to.eq(allegation.id)
+        media789 = AttachmentFile.objects.last()
+        expect(media789.allegation.id).to.eq(allegation.id)
+        expect(media789.external_id).to.eq('789')
+        expect(media789.title).to.eq('CRID 123456 CR new - document')
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
     def test_rebuild_index_updated_allegation_and_officer_new_timeline(
@@ -350,6 +389,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(cr_timeline_doc_2['attachments'][0]['title']).to.eq('CRID 789 CRID')
 
         crawling_log = DocumentCrawler.objects.last()
+        expect(crawling_log.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(crawling_log.num_documents).to.equal(2)
         expect(crawling_log.num_new_documents).to.equal(2)
         expect(crawling_log.num_updated_documents).to.equal(0)
@@ -360,6 +400,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
             external_id='456',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='To be deleted',
@@ -367,6 +408,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         )
         AttachmentFileFactory(
             external_id='789',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='To be updated',
@@ -457,6 +499,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
             external_id='789',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='CRID 123456 CR',
@@ -497,6 +540,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
             external_id='789',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             file_type=MEDIA_TYPE_DOCUMENT,
             allegation=allegation,
             title='CRID 123456 CR',
