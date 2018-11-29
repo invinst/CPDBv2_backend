@@ -40,6 +40,7 @@ from activity_grid.views import ActivityGridViewSet
 from search_terms.views import SearchTermCategoryViewSet
 from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
+from status.views import StatusViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -70,6 +71,7 @@ router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_na
 router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary')
 router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
+router_v2.register(r'status', StatusViewSet, base_name='status')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

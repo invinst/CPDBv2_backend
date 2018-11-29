@@ -212,7 +212,7 @@ jobs:
             else
               export DOMAIN=stagingapi.cpdp.co
             fi
-            curl -f https://$DOMAIN/api/v2/officers/top-by-allegation/
+            curl -f https://$DOMAIN/api/v2/status/
       - run:
           name: Setup cronjobs
           command: |
