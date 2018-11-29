@@ -1,6 +1,9 @@
+from datetime import datetime
+
 from django.core import management
 from django.test import TestCase
 
+import pytz
 from mock import patch, call
 from robber import expect
 
@@ -16,7 +19,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
     @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_document_requests(self, airtable_mock):
-        allegation123 = AllegationFactory(crid='123')
+        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation123, officer=officer_1)
@@ -32,7 +35,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
             email='requester2@example.com',
             added_to_foia_airtable=True)
 
-        allegation456 = AllegationFactory(crid='456')
+        allegation456 = AllegationFactory(crid='456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_3 = OfficerFactory(id=3, first_name='Marry', last_name='Jane')
         officer_4 = OfficerFactory(id=4, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation456, officer=officer_3)
