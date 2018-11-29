@@ -197,7 +197,7 @@ class CRNewTimelineSerializer(BaseTimelineSerializer):
     finding = serializers.CharField(source='final_finding_display')
     outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
-    attachments = AttachmentFileSerializer(many=True)
+    attachments = AttachmentFileSerializer(many=True, source='filtered_attachments')
     point = serializers.SerializerMethodField()
     victims = VictimSerializer(many=True)
 
