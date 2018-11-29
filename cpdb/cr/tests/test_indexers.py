@@ -123,12 +123,22 @@ class CRIndexerTestCase(TestCase):
         )
 
         AttachmentFileFactory(
+            tag='Other',
             allegation=allegation,
             file_type='document',
             title='CR document',
             url='http://foo.com/',
             preview_image_url='http://web.com/image'
         )
+        AttachmentFileFactory(
+            allegation=allegation,
+            file_type='document',
+            tag='OCIR',
+            title='CR document',
+            url='http://foo.com/',
+            preview_image_url='http://web.com/image'
+        )
+
         indexer = CRIndexer()
         rows = list(indexer.get_queryset())
         row = [obj for obj in rows if obj['crid'] == '12345'][0]

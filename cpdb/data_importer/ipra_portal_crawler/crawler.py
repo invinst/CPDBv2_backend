@@ -1,7 +1,7 @@
 import inspect
 import re
-
 import requests
+
 from bs4 import BeautifulSoup
 
 HEADERS = {
@@ -11,15 +11,20 @@ HEADERS = {
 
 
 class OpenIpraInvestigationCrawler(object):
-    URL = 'http://www.chicagocopa.org/wp-content/themes/copa/DynamicSearch.php'
+    URL = 'https://www.chicagocopa.org/wp-content/themes/copa/DynamicSearch.php'
 
     def __init__(self, url=URL):
         response = requests.get(url, headers=HEADERS)
         content = response.json()['caseSearch']['items']
-        self._soup = BeautifulSoup(content, 'html.parser')
+        self.soup = BeautifulSoup(content, 'html.parser')
 
     def crawl(self):
-        return [element['href'] for element in self._soup.find_all('a')]
+        list_items = self.soup.select('tr th a')
+        links = []
+        for item in list_items:
+            links.append(item.get('href'))
+
+        return links
 
 
 class BaseComplaintCrawler(object):
@@ -51,7 +56,8 @@ class ComplaintCrawler(BaseComplaintCrawler):
     DOCUMENT_FILE_SELECTOR = 'fa-file-pdf-o'
 
     def _complaint_info(self):
-        return self.soup.select('.entry-content .table-responsive')[0].select('td')
+        info_row = self.soup.select('.entry-content .table-responsive.hidden-sm.hidden-xs tbody tr')[0]
+        return info_row.select('th') + info_row.select('td')
 
     def _crawl_media(self, klass_name, link_getter):
         types_dictionary = {self.AUDIO_FILE_SELECTOR: 'audio', self.VIDEO_FILE_SELECTOR: 'video',
@@ -60,7 +66,8 @@ class ComplaintCrawler(BaseComplaintCrawler):
         results = []
 
         for entry in entries:
-            if klass_name in entry.find('span', attrs={'class': 'fa'}).get('class'):
+            fa_span = entry.find('span', attrs={'class': 'fa'})
+            if fa_span and klass_name in fa_span.get('class'):
                 record = {'type': types_dictionary[klass_name], 'link': link_getter(entry),
                           'title': entry.select('.modal-title')[0].text.strip() if entry.select(
                               '.modal-title') else entry.text.strip()}
@@ -68,6 +75,9 @@ class ComplaintCrawler(BaseComplaintCrawler):
                 results.append(record)
 
         return results
+
+    def _parse_last_updated(self):
+        return self.soup.select('.entry-date.published')[0]['datetime']
 
     def _parse_log_number(self):
         return self._complaint_info()[0].text.strip()
@@ -102,6 +112,8 @@ class ComplaintCrawler(BaseComplaintCrawler):
         elif self.soup.select('.entry-content p'):
             subject_item = self.soup.select('.entry-content p')[0]
             subject_pattern = re.compile(r"Subject[^<:]*:([^<:]+)")
-            subjects.append(subject_pattern.search(subject_item.text).groups()[0].strip())
+            found = subject_pattern.search(subject_item.text)
+            if found:
+                subjects.append(found.groups()[0].strip())
 
         return subjects
