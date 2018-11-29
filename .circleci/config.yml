@@ -1,3 +1,24 @@
+---
+defaults:
+  - &setup-gcloud
+    name: Setup Google Cloud SDK
+    command: |
+      echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+      gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+      gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+      gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+      gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+  - &reveal-git-secret
+    name: Reveal git secrets
+    command: |
+      echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
+      gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
+      git secret reveal
+  - &gcloud-env
+    PROJECT_NAME: "CPDB"
+    GOOGLE_PROJECT_ID: "twitterbot-180604"
+    GOOGLE_COMPUTE_ZONE: "us-central1-a"
+    GOOGLE_CLUSTER_NAME: "cpdp-gke"
 version: 2
 jobs:
   test:
@@ -69,29 +90,13 @@ jobs:
   django_collect_static:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-      - run:
-          name: Reveal secrets
-          command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
+      - run: *setup-gcloud
+      - run: *reveal-git-secret
       - run:
           name: Start job
           command: |
@@ -106,29 +111,13 @@ jobs:
   django_migrate:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-      - run:
-          name: Reveal secrets
-          command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
+      - run: *setup-gcloud
+      - run: *reveal-git-secret
       - run:
           name: Start job
           command: |
@@ -140,32 +129,37 @@ jobs:
             fi
             bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) migrate
 
-  rebuild_index:
+  clear_cache:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
+      - run: *setup-gcloud
+      - run: *reveal-git-secret
       - run:
-          name: Reveal secrets
+          name: Start job
           command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENVFLAG=--production
+            else
+              export ENVFLAG=--staging
+            fi
+            bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) clear_cache
+
+  rebuild_index:
+    docker:
+      - image: cpdbdev/google-cloud-sdk:latest
+    environment: *gcloud-env
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: *reveal-git-secret
+      - run: *setup-gcloud
       - run:
           name: Start job
           command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_index
@@ -173,29 +167,13 @@ jobs:
   rebuild_search_index:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run:
-          name: Reveal secrets
-          command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run: *reveal-git-secret
+      - run: *setup-gcloud
       - run:
           name: Start job
           command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_search_index
@@ -203,29 +181,13 @@ jobs:
   deploy_backend:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run:
-          name: Reveal secrets
-          command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run: *reveal-git-secret
+      - run: *setup-gcloud
       - run:
           name: Apply deployment
           command: |
@@ -240,7 +202,17 @@ jobs:
             export BACKEND_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
             source $ENV_FILE
             export $(cut -d= -f1 $ENV_FILE)
-            cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace=$NAMESPACE
+            bin/ensure_gunicorn_deployment.py -n $NAMESPACE
+      - run:
+          name: Check API is still alive
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export DOMAIN=api.cpdp.co
+            else
+              export DOMAIN=stagingapi.cpdp.co
+            fi
+            curl -f https://$DOMAIN/api/v2/status/
       - run:
           name: Setup cronjobs
           command: |
@@ -279,29 +251,13 @@ jobs:
   deploy_cpdpbot:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
-    environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+    environment: *gcloud-env
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-      - run:
-          name: Reveal secrets
-          command: |
-            echo $GPG_PRIVATE_KEY | base64 -d > /tmp/gpg_private.gpg
-            gpg --allow-secret-key-import --import /tmp/gpg_private.gpg
-            git secret reveal
+      - run: *setup-gcloud
+      - run: *reveal-git-secret
       - run:
           name: Deploy cpdpbot
           command: |
@@ -323,21 +279,11 @@ jobs:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
     environment:
-      PROJECT_NAME: "CPDB"
-      GOOGLE_PROJECT_ID: "twitterbot-180604"
-      GOOGLE_COMPUTE_ZONE: "us-central1-a"
-      GOOGLE_CLUSTER_NAME: "cpdp-gke"
+      <<: *gcloud-env
       PROD_DB_INSTANCE: "cpdp-production"
       STAGING_DB_INSTANCE: "cpdp"
     steps:
-      - run:
-          name: Setup Google Cloud SDK
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run: *setup-gcloud
       - run: gcloud sql backups create --instance $PROD_DB_INSTANCE
       - run:
           name: Restore production backup onto staging
@@ -384,6 +330,9 @@ workflows:
           requires:
             - django_migrate
             - django_collect_static
+      - clear_cache:
+          requires:
+            - deploy_backend
   deploy_backend_production:
     jobs:
       - test:
@@ -410,24 +359,18 @@ workflows:
             - rebuild_index
             - rebuild_search_index
             - django_collect_static
+      - clear_cache:
+          requires:
+            - deploy_backend
       - notify_slack:
           requires:
             - deploy_backend
-          filters:
-            branches:
-              only: master
       - reset_staging_db:
           requires:
             - deploy_backend
-          filters:
-            branches:
-              only: master
       - reset_staging_branch:
           requires:
             - deploy_backend
-          filters:
-            branches:
-              only: master
 
   deploy_cpdpbot:
     jobs:
@@ -439,7 +382,7 @@ workflows:
                 - master
       - deploy_cpdpbot:
           requires:
-           - build_cpdpbot
+            - build_cpdpbot
           filters:
             branches:
               only:
