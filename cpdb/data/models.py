@@ -735,7 +735,7 @@ class Allegation(models.Model):
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
-    subjects = ArrayField(models.CharField(max_length=255), default=[])
+    subjects = ArrayField(models.CharField(max_length=255), default=list)
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey(AllegationCategory, on_delete=models.SET_NULL, null=True)

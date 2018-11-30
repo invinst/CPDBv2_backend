@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker-compose run web sh -c "coverage run cpdb/manage.py test && coverage report && coverage html"
+docker-compose run web sh -c "cpdb/manage.py makemigrations --dry-run && coverage run cpdb/manage.py test && coverage report && coverage html"

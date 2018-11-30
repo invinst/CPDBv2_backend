@@ -21,6 +21,22 @@ defaults:
     GOOGLE_CLUSTER_NAME: "cpdp-gke"
 version: 2
 jobs:
+  validate_migrations:
+    docker:
+      - image: cpdbdev/backend:py3
+        user: gunicorn
+      - image: cpdbdev/postgres:9.6
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DB_HOST: localhost
+      DB_USER: cpdb
+      DB_PASSWORD: password
+      DB_NAME: cpdb
+    steps:
+      - checkout
+      - run: pip install --user -r requirements/test.txt
+      - run: ./cpdb/manage.py makemigrations --dry-run
+
   test:
     docker:
       - image: cpdbdev/backend:py3
@@ -305,7 +321,15 @@ workflows:
   version: 2
   test:
     jobs:
+      - validate_migrations:
+          filters:
+            branches:
+              ignore:
+                - staging
+                - master
       - test:
+          requires:
+            - validate_migrations
           filters:
             branches:
               ignore:
@@ -313,7 +337,13 @@ workflows:
                 - master
   deploy_backend_staging:
     jobs:
+      - validate_migrations:
+          filters:
+            branches:
+              only: staging
       - test:
+          requires:
+            - validate_migrations
           filters:
             branches:
               only: staging
@@ -335,7 +365,13 @@ workflows:
             - deploy_backend
   deploy_backend_production:
     jobs:
+      - validate_migrations:
+          filters:
+            branches:
+              only: master
       - test:
+          requires:
+            - validate_migrations
           filters:
             branches:
               only: master
