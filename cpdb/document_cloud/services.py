@@ -4,16 +4,12 @@ from django.conf import settings
 from documentcloud import DocumentCloud
 from tqdm import tqdm
 
-from document_cloud.utils import parse_id, parse_link, get_url
+from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 
 
 logger = logging.getLogger('django.command')
-
-
-def format_copa_documentcloud_title(crid, attachment_title):
-    return f'CRID {crid} CR {attachment_title}'
 
 
 def upload_copa_documents():
@@ -24,11 +20,9 @@ def upload_copa_documents():
     logger.info(f'Uploading {len(attachments)} documents to DocumentCloud')
 
     for attachment in tqdm(attachments):
-
         cloud_document = client.documents.upload(
             attachment.original_url,
             format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
-            related_article=attachment.original_url,
             access='public'
         )
 
@@ -40,4 +34,3 @@ def upload_copa_documents():
         attachment.additional_info = parse_link(cloud_document.canonical_url)
         attachment.preview_image_url = cloud_document.normal_image_url
         attachment.save()
-

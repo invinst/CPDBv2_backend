@@ -15,7 +15,7 @@ from data_importer.ipra_portal_crawler.parser import (
     SimpleField
 )
 from document_cloud.models import DocumentCrawler
-from document_cloud.services import format_copa_documentcloud_title
+from document_cloud.utils import format_copa_documentcloud_title
 
 logger = logging.getLogger('django.command')
 

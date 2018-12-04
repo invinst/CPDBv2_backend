@@ -53,3 +53,7 @@ def get_url(document):
     except AttributeError:
         pass
     return document_url
+
+
+def format_copa_documentcloud_title(crid, attachment_title):
+    return f'CRID {crid} CR {attachment_title}'

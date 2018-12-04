@@ -8,14 +8,12 @@ from robber import expect
 import pytz
 
 from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
-from data.factories import AllegationFactory, AttachmentFileFactory, OfficerAllegationFactory
+from data.factories import AllegationFactory, AttachmentFileFactory
 from data.models import AttachmentFile, Allegation
 from document_cloud.factories import DocumentCloudSearchQueryFactory
 from document_cloud.management.commands.update_documents import Command
 from document_cloud.models import DocumentCrawler
-from cr.doc_types import CRDocType
 from document_cloud.tests.mixins import DocumentcloudTestCaseMixin
-from officers.doc_types import OfficerNewTimelineEventDocType
 from shared.tests.utils import create_object
 
 
