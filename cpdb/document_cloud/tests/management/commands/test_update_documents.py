@@ -81,6 +81,18 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
         expect(results).to.eq(raw_results[:1])
 
+    @patch('document_cloud.management.commands.update_documents.AUTO_UPLOAD_DESCRIPTION', 'AUTO_UPLOAD_DESCRIPTION')
+    def test_clean_results_remove_invalid_source(self):
+        command = Command()
+        raw_results = [
+            MagicMock(title='abc 1', description=''),
+            MagicMock(title='abc 2', description='AUTO_UPLOAD_DESCRIPTION')
+        ]
+
+        results = command.clean_documents(raw_results)
+
+        expect(results).to.eq(raw_results[:1])
+
     def test_process_no_crid(self):
         command = Command()
         AttachmentFileFactory(title='old')
