@@ -1,41 +1,43 @@
-from documentcloud import DocumentCloud
+import logging
 from django.conf import settings
 
-from document_cloud.utils import parse_id, parse_link
+from documentcloud import DocumentCloud
+from tqdm import tqdm
+
+from document_cloud.utils import parse_id, parse_link, get_url
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
-from cr.indexers import CRPartialIndexer
-from officers.indexers import CRNewTimelineEventPartialIndexer
 
 
-def rebuild_related_cr_indexes(attachments):
-    crids = list(set([attachment.allegation.crid for attachment in attachments if attachment.allegation]))
-    if crids:
-        for indexer_klass in [CRPartialIndexer, CRNewTimelineEventPartialIndexer]:
-            indexer = indexer_klass(updating_keys=crids)
-            with indexer.index_alias.indexing():
-                indexer.reindex()
+logger = logging.getLogger('django.command')
 
 
-def upload_documents_from_copa_source():
+def format_copa_documentcloud_title(crid, attachment_title):
+    return f'CRID {crid} CR {attachment_title}'
+
+
+def upload_copa_documents():
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
     attachments = AttachmentFile.objects.filter(source_type=AttachmentSourceType.COPA, file_type=MEDIA_TYPE_DOCUMENT)
 
-    for attachment in attachments:
-        cloud_document = client.documents.upload(attachment.original_url, f'CRID {attachment.allegation.crid} CR')
+    logger.info(f'Uploading {len(attachments)} documents to DocumentCloud')
+
+    for attachment in tqdm(attachments):
+
+        cloud_document = client.documents.upload(
+            attachment.original_url,
+            format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
+            related_article=attachment.original_url,
+            access='public'
+        )
+
         attachment.external_id = parse_id(cloud_document.id)
-        attachment.source_type = AttachmentSourceType.DOCUMENTCLOUD
-        attachment.original_url = cloud_document.url
-        attachment.url = cloud_document.url
+        attachment.source_type = AttachmentSourceType.COPA_DOCUMENTCLOUD
         attachment.title = cloud_document.title
-        attachment.preview_image_url = cloud_document.normal_image_url,
-        attachment.created_at = cloud_document.created_at,
-        attachment.last_updated = cloud_document.updated_at
-
-        additional_info = parse_link(cloud_document.canonical_url)
-        attachment.additional_info = additional_info
-
+        attachment.url = get_url(cloud_document)
+        attachment.tag = 'CR'
+        attachment.additional_info = parse_link(cloud_document.canonical_url)
+        attachment.preview_image_url = cloud_document.normal_image_url
         attachment.save()
 
-        rebuild_related_cr_indexes(attachments)

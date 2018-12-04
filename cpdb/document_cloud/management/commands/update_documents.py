@@ -8,22 +8,12 @@ from documentcloud import DocumentCloud
 
 from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
-from document_cloud.utils import parse_crid_from_title, parse_id, parse_link
-from document_cloud.services import rebuild_related_cr_indexes
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
+from document_cloud.utils import parse_crid_from_title, parse_id, parse_link, get_url
 
 
 logger = logging.getLogger('django.command')
-
-
-def _get_url(document):
-    document_url = document.canonical_url
-    try:
-        document_url = document.resources.pdf or document_url
-    except AttributeError:
-        pass
-    return document_url
 
 
 class Command(BaseCommand):
@@ -31,18 +21,19 @@ class Command(BaseCommand):
 
     def process_documentcloud_document(self, cloud_document, document_type):
         crid = parse_crid_from_title(cloud_document.title, document_type)
-        if not crid:
-            return
-        try:
-            allegation = Allegation.objects.get(crid=crid)
-        except Allegation.DoesNotExist:
-            return
-
         documentcloud_id = parse_id(cloud_document.id)
-        if documentcloud_id is None:
+        allegation = Allegation.objects.filter(crid=crid).first()
+        if not crid \
+            or not allegation \
+            or documentcloud_id is None \
+            or not AttachmentFile.objects.filter(  # No updating CloudDocument files from COPA
+                    allegation=allegation,
+                    source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                    external_id=documentcloud_id
+                ).exist():
             return
 
-        setattr(cloud_document, 'url', _get_url(cloud_document))
+        setattr(cloud_document, 'url', get_url(cloud_document))
         setattr(cloud_document, 'source_type', AttachmentSourceType.DOCUMENTCLOUD)
 
         try:
@@ -61,10 +52,7 @@ class Command(BaseCommand):
             title = re.sub(r'([^\s])-([^\s])', r'\g<1> \g<2>', cloud_document.title)
             additional_info = parse_link(cloud_document.canonical_url)
 
-            logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
-                url=cloud_document.canonical_url,
-                crid=crid
-            ))
+            logger.info(f'Updating documentcloud attachment url={cloud_document.canonical_url} with crid={crid}')
             new_attachment = AttachmentFile.objects.create(
                 external_id=documentcloud_id,
                 allegation=allegation,
@@ -84,7 +72,6 @@ class Command(BaseCommand):
     def update_mismatched_existing_data(self, attachment, document, document_type):
         should_save = False
         mapping_fields = [
-            ('source_type', 'source_type'),
             ('url', 'url'),
             ('title', 'title'),
             ('preview_image_url', 'normal_image_url'),
@@ -102,10 +89,10 @@ class Command(BaseCommand):
 
         if should_save:
             try:
-                logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
-                    url=attachment.original_url,
-                    crid=attachment.allegation.crid
-                ))
+                logger.info(
+                    'Updating documentcloud attachment '
+                    f'url={attachment.original_url} with crid={attachment.allegation.crid}'
+                )
                 attachment.save()
                 return True
             except ValueError:
@@ -138,7 +125,7 @@ class Command(BaseCommand):
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
         for document_type, syntax in search_syntaxes:
             if syntax:
-                logger.info('Searching Documentcloud for {syntax}'.format(syntax=syntax))
+                logger.info(f'Searching Documentcloud for {syntax}')
                 documents = self.clean_documents(client.documents.search(syntax))
                 for document in documents:
                     result = self.process_documentcloud_document(document, document_type)
@@ -158,10 +145,8 @@ class Command(BaseCommand):
         deleted_attachments = AttachmentFile.objects.filter(
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).exclude(id__in=all_attachment_ids)
-        logger.info('Deleting {num} attachments'.format(num=deleted_attachments.count()))
+        logger.info(f'Deleting {deleted_attachments.count()} attachments')
         deleted_attachments.delete()
-
-        rebuild_related_cr_indexes(changed_attachments + list(deleted_attachments))
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -173,8 +158,7 @@ class Command(BaseCommand):
             num_new_documents=num_new_attachments,
             num_updated_documents=num_updated_attachments
         )
-        logger.info('Done! {num_created} created, {num_updated} updated in {num} documentcloud attachments'.format(
-            num_created=num_new_attachments,
-            num_updated=num_updated_attachments,
-            num=num_documents
-        ))
+        logger.info(
+            f'Done! {num_new_attachments} created, {num_updated_attachments} updated '
+            f'in {num_documents} documentcloud attachments'
+        )

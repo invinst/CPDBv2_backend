@@ -44,3 +44,12 @@ def parse_crid_from_title(documentcloud_title, document_type='CR'):
         return matched.group('crid')
 
     return
+
+
+def get_url(document):
+    document_url = document.canonical_url
+    try:
+        document_url = document.resources.pdf or document_url
+    except AttributeError:
+        pass
+    return document_url

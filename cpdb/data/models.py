@@ -1005,6 +1005,8 @@ class AttachmentFile(models.Model):
     created_at = models.DateTimeField(null=True)
     last_updated = models.DateTimeField(null=True)
 
+    objects = BulkUpdateManager()
+
     class Meta:
         unique_together = (('allegation', 'external_id', 'source_type'),)
 

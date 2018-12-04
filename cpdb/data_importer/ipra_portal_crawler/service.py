@@ -1,5 +1,7 @@
 import logging
 
+from tqdm import tqdm
+
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile, Allegation, AllegationCategory
 from data_importer.ipra_portal_crawler.crawler import OpenIpraInvestigationCrawler, ComplaintCrawler
@@ -13,8 +15,13 @@ from data_importer.ipra_portal_crawler.parser import (
     SimpleField
 )
 from document_cloud.models import DocumentCrawler
+from document_cloud.services import format_copa_documentcloud_title
 
 logger = logging.getLogger('django.command')
+
+
+def _get_chicagocopa_external_id(copa_url):
+    return copa_url[copa_url.rindex('/') + 1:] if '/' in copa_url else copa_url
 
 
 class AutoOpenIPRA(object):
@@ -54,8 +61,7 @@ class AutoOpenIPRA(object):
         logger.info('Complaint crawler is starting! {num_links} is ready to be crawled'.format(num_links=len(links)))
         incidents = []
 
-        for link in links:
-            logger.info('Crawling {link}'.format(link=link))
+        for link in tqdm(links):
             incidents.append(ComplaintCrawler(link).crawl())
 
         return incidents
@@ -63,7 +69,6 @@ class AutoOpenIPRA(object):
     @staticmethod
     def get_or_update_allegation(allegation_dict):
         crid = allegation_dict['crid']
-        logger.info('Importing allegation with crid: {crid}'.format(crid=crid))
         try:
             allegation = Allegation.objects.get(crid=crid)
         except Allegation.DoesNotExist:
@@ -79,36 +84,33 @@ class AutoOpenIPRA(object):
     def update_attachments(allegation, attachment_dicts):
         num_created = num_updated = 0
         for attachment_dict in attachment_dicts:
-            attachment_dict['allegation'] = allegation
-
-            try:
-                attachment = AttachmentFile.objects.get(
-                    external_id=attachment_dict['original_url'],
-                    source_type=AttachmentSourceType.COPA,
-                    allegation=allegation
-                )
-                created = False
-            except AttachmentFile.DoesNotExist:
-                attachment, created = AttachmentFile.objects.get_or_create(
-                    external_id=attachment_dict['original_url'],
-                    source_type='',
-                    allegation=allegation,
-                    defaults=attachment_dict
-                )
+            chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
+            attachment, created = AttachmentFile.objects.exclude(
+                source_type=AttachmentSourceType.DOCUMENTCLOUD
+            ).get_or_create(
+                external_id=chicagocopa_external_id,
+                allegation=allegation,
+                defaults=attachment_dict
+            )
 
             if created:
                 num_created += 1
             else:
-                updating_fields = [
-                    'file_type', 'title', 'url', 'original_url', 'tag', 'last_updated', 'source_type'
-                ]
+                if attachment.source_type == AttachmentSourceType.COPA_DOCUMENTCLOUD:
+                    updating_fields = ['title', 'original_url', 'last_updated']
+                    attachment_dict['title'] = format_copa_documentcloud_title(
+                        allegation.crid, attachment_dict['title']
+                    )
+                else:
+                    updating_fields = ['file_type', 'title', 'url', 'original_url', 'last_updated', 'source_type']
+
                 updated = False
                 for field in updating_fields:
                     if getattr(attachment, field) != attachment_dict[field]:
                         setattr(attachment, field, attachment_dict[field])
-                        attachment.save()
                         updated = True
                 if updated:
+                    attachment.save()
                     num_updated += 1
         return num_created, num_updated
 
@@ -116,7 +118,7 @@ class AutoOpenIPRA(object):
     def import_allegation_and_attachments(incidents):
         num_new_attachments = num_updated_attachments = 0
 
-        for incident in incidents:
+        for incident in tqdm(incidents):
             allegation = AutoOpenIPRA.get_or_update_allegation(incident['allegation'])
             if allegation:
                 num_created, num_updated = AutoOpenIPRA.update_attachments(
@@ -126,24 +128,25 @@ class AutoOpenIPRA(object):
                 num_new_attachments += num_created
                 num_updated_attachments += num_updated
 
-        num_documents = AttachmentFile.objects.filter(source_type=AttachmentSourceType.COPA).count()
+        num_documents = AttachmentFile.objects.filter(
+            source_type__in=[AttachmentSourceType.COPA, AttachmentSourceType.COPA_DOCUMENTCLOUD]
+        ).count()
         DocumentCrawler.objects.create(
             source_type=AttachmentSourceType.COPA,
             num_documents=num_documents,
             num_new_documents=num_new_attachments,
             num_updated_documents=num_updated_attachments
         )
-        logger.info('Done importing! {num_created} created, {num_updated} updated in {total} copa attachments'.format(
-            num_created=num_new_attachments,
-            num_updated=num_updated_attachments,
-            total=num_documents
-        ))
+        logger.info(
+            f'Done importing! {num_new_attachments} created, '
+            f'{num_updated_attachments} updated in {num_documents} copa attachments'
+        )
 
     @staticmethod
     def import_new():
         records = AutoOpenIPRA.crawl_open_ipra()
         logger.info('Done crawling!')
         incidents = AutoOpenIPRA.parse_incidents(records)
-        logger.info('Parsed {num_incidents} crawled incidents'.format(num_incidents=len(incidents)))
+        logger.info(f'Parsed {len(incidents)} crawled incidents')
         incidents = AutoOpenIPRA.fill_category(incidents)
         AutoOpenIPRA.import_allegation_and_attachments(incidents)
