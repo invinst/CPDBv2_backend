@@ -26,11 +26,11 @@ class Command(BaseCommand):
         if not crid \
             or not allegation \
             or documentcloud_id is None \
-            or not AttachmentFile.objects.filter(  # No updating CloudDocument files from COPA
+            or AttachmentFile.objects.filter(  # No updating CloudDocument files from COPA
                     allegation=allegation,
                     source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
                     external_id=documentcloud_id
-                ).exist():
+                ).exists():
             return
 
         setattr(cloud_document, 'url', get_url(cloud_document))
@@ -78,6 +78,10 @@ class Command(BaseCommand):
             ('last_updated', 'updated_at'),
             ('created_at', 'created_at')
         ]
+
+        if not attachment.source_type:
+            attachment.source_type = AttachmentSourceType.DOCUMENTCLOUD
+            should_save = True
 
         for (model_field, doc_field) in mapping_fields:
             if getattr(attachment, model_field) != getattr(document, doc_field):

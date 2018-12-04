@@ -85,13 +85,20 @@ class AutoOpenIPRA(object):
         num_created = num_updated = 0
         for attachment_dict in attachment_dicts:
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
-            attachment, created = AttachmentFile.objects.exclude(
-                source_type=AttachmentSourceType.DOCUMENTCLOUD
-            ).get_or_create(
-                external_id=chicagocopa_external_id,
-                allegation=allegation,
-                defaults=attachment_dict
-            )
+            try:
+                attachment = AttachmentFile.objects.get(
+                    source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                    allegation=allegation,
+                    orignal_url__endswith=chicagocopa_external_id
+                )
+                created = False
+            except AttachmentFile.DoesNotExist:
+                attachment, created = AttachmentFile.objects.get_or_create(
+                    source_type=AttachmentSourceType.COPA,
+                    external_id=chicagocopa_external_id,
+                    allegation=allegation,
+                    defaults=attachment_dict
+                )
 
             if created:
                 num_created += 1

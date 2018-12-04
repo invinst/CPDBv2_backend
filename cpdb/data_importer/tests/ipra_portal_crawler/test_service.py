@@ -66,14 +66,14 @@ class AutoOpenIPRATest(TestCase):
             'attachments': [
                 {
                     'type': 'Audio',
-                    'link': 'http://audio_link',
+                    'link': 'http://chicagocopa.org/audio_link.mp3',
                     'title': 'Audio Clip',
                     'last_updated': '2018-10-30T15:00:03+00:00'
                 },
                 {
                     'type': 'Document',
-                    'link': 'http://document_link',
-                    'title': 'Audio Clip',
+                    'link': 'http://chicagocopa.org/document.pdf',
+                    'title': 'Some Document',
                     'last_updated': '2017-10-30T15:00:03+00:00'
                 }
             ],
@@ -87,8 +87,8 @@ class AutoOpenIPRATest(TestCase):
             'attachments': [
                 {
                     'type': 'Document',
-                    'link': 'http://pdf_link',
-                    'title': 'Audio Clip',
+                    'link': 'http://chicagocopa.org/other.pdf',
+                    'title': 'Some PDF',
                     'last_updated': '2017-10-30T15:00:03+00:00'
                 }
             ],
@@ -103,8 +103,8 @@ class AutoOpenIPRATest(TestCase):
         attachment_file = AttachmentFileFactory(
             allegation=allegation,
             source_type='',
-            external_id='http://document_link',
-            original_url='http://document_link')
+            external_id='document.pdf',
+            original_url='http://chicagocopa.org/document.pdf')
         expect(DocumentCrawler.objects.count()).to.eq(0)
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
@@ -129,7 +129,7 @@ class AutoOpenIPRATest(TestCase):
             'attachments': [
                 {
                     'type': 'Document',
-                    'link': 'http://document_link',
+                    'link': 'http://chicagocopa.org/document.pdf',
                     'title': 'pdf file',
                     'last_updated': '2018-10-30T15:00:03+00:00'
                 }
@@ -145,8 +145,8 @@ class AutoOpenIPRATest(TestCase):
             allegation__crid='123',
             title='old_title',
             source_type=AttachmentSourceType.COPA,
-            external_id='http://document_link',
-            original_url='http://document_link')
+            external_id='document.pdf',
+            original_url='http://chicagocopa.org/document.pdf')
 
         AutoOpenIPRA.import_new()
 
