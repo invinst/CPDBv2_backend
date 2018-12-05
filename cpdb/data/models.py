@@ -579,20 +579,6 @@ class OfficerHistory(models.Model):
         return self.unit.description
 
 
-class AreaObjectManager(models.Manager):
-    def with_allegation_per_capita(self):
-        racepopulation = RacePopulation.objects.filter(area=models.OuterRef('pk')).values('area')
-        population = racepopulation.annotate(s=models.Sum('count')).values('s')
-        query = Area.objects.annotate(
-            population=models.Subquery(population),
-            complaint_count=Count('allegation', distinct=True))
-        query = query.annotate(
-            allegation_per_capita=models.ExpressionWrapper(
-                Cast(F('complaint_count'), models.FloatField()) / F('population'),
-                output_field=models.FloatField()))
-        return query
-
-
 class Area(TaggableModel):
     SESSION_BUILDER_MAPPING = {
         'neighborhoods': 'neighborhood',
@@ -617,7 +603,19 @@ class Area(TaggableModel):
         help_text="This beat contains police-district HQ"
     )
 
-    objects = AreaObjectManager()
+    @classmethod
+    def police_districts_with_allegation_per_capita(cls):
+        racepopulation = RacePopulation.objects.filter(area=models.OuterRef('pk')).values('area')
+        population = racepopulation.annotate(s=models.Sum('count')).values('s')
+        return cls.objects.filter(area_type='police-districts').annotate(
+            population=models.Subquery(population),
+            complaint_count=Count('allegation', distinct=True)
+        ).filter(population__isnull=False).annotate(
+            allegation_per_capita=models.ExpressionWrapper(
+                Cast(F('complaint_count'), models.FloatField()) / F('population'),
+                output_field=models.FloatField()
+            )
+        )
 
     def get_most_common_complaint(self):
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
