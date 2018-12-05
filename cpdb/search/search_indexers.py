@@ -73,17 +73,16 @@ class AreaIndexer(BaseIndexer):
     doc_type_klass = AreaDocType
     _percentiles = {}
 
-    def _compute_police_district_percentiles(self, query):
-        scores = query.filter(area_type='police-districts').order_by('allegation_per_capita')
+    def _compute_police_district_percentiles(self):
+        scores = Area.police_districts_with_allegation_per_capita()
         return {
             district.id: district.percentile_allegation_per_capita
             for district in percentile(scores, key='allegation_per_capita')
         }
 
     def get_queryset(self):
-        queryset = Area.objects.with_allegation_per_capita()
-        self._percentiles = self._compute_police_district_percentiles(queryset)
-        return queryset
+        self._percentiles = self._compute_police_district_percentiles()
+        return Area.objects.all()
 
     def _get_area_tag(self, area_type):
         return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
