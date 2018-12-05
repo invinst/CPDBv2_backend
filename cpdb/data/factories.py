@@ -178,6 +178,8 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
     original_url = factory.LazyFunction(lambda: fake.url())
+    source_type = factory.LazyFunction(lambda: fake.word())
+    external_id = factory.LazyFunction(lambda: fake.word())
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):

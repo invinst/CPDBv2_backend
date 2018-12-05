@@ -57,8 +57,8 @@ class Command(BaseCommand):
         return sorted(
             indexers,
             key=lambda x: (
-                getattr(x, 'parent_doc_type_property', None),
-                getattr(x, 'op_type', None)
+                getattr(x, 'parent_doc_type_property', ''),
+                getattr(x, 'op_type', '')
             )
         )
 

@@ -44,17 +44,17 @@ class CoaccusedMobileSerializer(NoNullSerializer):
 
 
 class InvestigatorMobileSerializer(NoNullSerializer):
-    officer_id = serializers.IntegerField(source='investigator.officer.id')
+    officer_id = serializers.IntegerField(required=False, source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
     badge = serializers.CharField(source='investigator.badge')
 
     percentile_allegation_civilian = serializers.FloatField(
-        source='investigator.officer.civilian_allegation_percentile')
+        required=False, source='investigator.officer.civilian_allegation_percentile')
     percentile_allegation_internal = serializers.FloatField(
-        source='investigator.officer.internal_allegation_percentile')
+        required=False, source='investigator.officer.internal_allegation_percentile')
     percentile_trr = serializers.FloatField(
-        source='investigator.officer.trr_percentile')
+        required=False, source='investigator.officer.trr_percentile')
 
     def get_involved_type(self, obj):
         return 'investigator'
@@ -94,7 +94,7 @@ class CRMobileSerializer(NoNullSerializer):
     beat = serializers.SerializerMethodField()
     involvements = serializers.SerializerMethodField()
 
-    attachments = AttachmentFileMobileSerializer(source='attachment_files', many=True)
+    attachments = AttachmentFileMobileSerializer(source='filtered_attachment_files', many=True)
 
     def get_coaccused(self, obj):
         officer_allegations = obj.officer_allegations.select_related(

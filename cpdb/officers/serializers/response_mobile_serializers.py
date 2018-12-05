@@ -131,17 +131,23 @@ class AttachmentFileMobileSerializer(NoNullSerializer):
 
 
 class CRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
-    date_sort = serializers.DateField(source='start_date', format=None)
-    date = serializers.DateField(source='start_date', format='%Y-%m-%d')
+    date_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     subcategory = serializers.CharField()
     finding = serializers.CharField(source='final_finding_display')
     outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
-    attachments = AttachmentFileMobileSerializer(many=True)
+    attachments = AttachmentFileMobileSerializer(many=True, source='filtered_attachments')
     point = serializers.SerializerMethodField()
     victims = VictimMobileSerializer(many=True)
+
+    def get_date_sort(self, obj):
+        return obj.allegation.incident_date.date()
+
+    def get_date(self, obj):
+        return obj.allegation.incident_date.date().strftime(format='%Y-%m-%d')
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'

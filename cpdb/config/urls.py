@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.conf.urls import url, include
+from django.urls import re_path, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import RedirectView
@@ -40,6 +40,7 @@ from activity_grid.views import ActivityGridViewSet
 from search_terms.views import SearchTermCategoryViewSet
 from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
+from status.views import StatusViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -70,21 +71,25 @@ router_v2.register(r'search-term-categories', SearchTermCategoryViewSet, base_na
 router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary')
 router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
+router_v2.register(r'status', StatusViewSet, base_name='status')
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    re_path(r'^admin/', admin.site.urls),
     # The index_redirect url is redirecting 'admin' without slash too, we need to manually do this.
-    url(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
-    url(r'^api/v1/', include(router_v1.urls, namespace='api')),
-    url(r'^api/v2/', include(router_v2.urls, namespace='api-v2')),
-    url(r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
-        auth_views.password_reset_confirm, name='password_reset_confirm'),
-    url(r'^reset-password-complete/$', auth_views.password_reset_complete, name='password_reset_complete'),
-    url(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
+    re_path(r'^admin$', RedirectView.as_view(url='/admin/', permanent=True), name='admin_redirect'),
+    re_path(r'^api/v1/', include((router_v1.urls, 'api'), namespace='api')),
+    re_path(r'^api/v2/', include((router_v2.urls, 'api-v2'), namespace='api-v2')),
+    re_path(
+        r'^reset-password-confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
+        auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    re_path(
+        r'^reset-password-complete/$',
+        auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    re_path(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:  # pragma: no cover
     import debug_toolbar
     urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
+        re_path(r'^__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns

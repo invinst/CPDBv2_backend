@@ -180,10 +180,11 @@ class TRR(models.Model):
     firearm_used = models.NullBooleanField()
     number_of_officers_using_firearm = models.PositiveSmallIntegerField(null=True)
     point = models.PointField(srid=4326, null=True)
-    officer = models.ForeignKey('data.Officer', null=True)
+    officer = models.ForeignKey('data.Officer', on_delete=models.CASCADE, null=True)
     officer_assigned_beat = models.CharField(max_length=16, null=True)
-    officer_unit = models.ForeignKey('data.PoliceUnit', null=True)
-    officer_unit_detail = models.ForeignKey('data.PoliceUnit', null=True, related_name='trr_unit_detail_reverse')
+    officer_unit = models.ForeignKey('data.PoliceUnit', on_delete=models.SET_NULL, null=True)
+    officer_unit_detail = models.ForeignKey(
+        'data.PoliceUnit', on_delete=models.SET_NULL, null=True, related_name='trr_unit_detail_reverse')
     officer_on_duty = models.NullBooleanField()
     officer_in_uniform = models.NullBooleanField()
     officer_injured = models.NullBooleanField()
@@ -221,7 +222,7 @@ class TRR(models.Model):
 
 
 class ActionResponse(models.Model):
-    trr = models.ForeignKey(TRR)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     person = models.CharField(max_length=16, null=True, choices=ACTION_PERSON_CHOICES)
     resistance_type = models.CharField(max_length=32, null=True, choices=RESISTANCE_TYPE_CHOICES)
     action = models.CharField(max_length=64, null=True)
@@ -234,7 +235,7 @@ class ActionResponse(models.Model):
 
 
 class WeaponDischarge(models.Model):
-    trr = models.ForeignKey(TRR)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     weapon_type = models.CharField(max_length=32, null=True)
     weapon_type_description = models.CharField(max_length=32, null=True)
     firearm_make = models.CharField(max_length=64, null=True)
@@ -255,7 +256,7 @@ class WeaponDischarge(models.Model):
 
 
 class Charge(models.Model):
-    trr = models.ForeignKey(TRR)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     sr_no = models.PositiveIntegerField(null=True)
     statute = models.CharField(max_length=64, null=True)
     description = models.CharField(max_length=64, null=True)
@@ -263,8 +264,8 @@ class Charge(models.Model):
 
 
 class TRRStatus(models.Model):
-    trr = models.ForeignKey(TRR)
-    officer = models.ForeignKey('data.officer', null=True)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
+    officer = models.ForeignKey('data.officer', on_delete=models.CASCADE, null=True)
     rank = models.CharField(max_length=16, null=True)
     star = models.CharField(max_length=10, null=True)
     status = models.CharField(max_length=16, null=True, choices=TRR_STATUS_CHOICES)
@@ -273,14 +274,14 @@ class TRRStatus(models.Model):
 
 
 class SubjectWeapon(models.Model):
-    trr = models.ForeignKey(TRR)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     weapon_type = models.CharField(max_length=64, null=True)
     firearm_caliber = models.CharField(max_length=16, null=True)
     weapon_description = models.CharField(max_length=64, null=True)
 
 
 class TRRAttachmentRequest(models.Model):
-    trr = models.ForeignKey(TRR)
+    trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -289,5 +290,5 @@ class TRRAttachmentRequest(models.Model):
     class Meta:
         unique_together = (('trr', 'email'),)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s - %s' % (self.email, self.trr.id)

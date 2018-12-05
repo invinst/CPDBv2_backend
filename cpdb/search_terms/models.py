@@ -16,7 +16,7 @@ class SearchTermCategory(SortableMixin):
         ordering = ['order_number']
         verbose_name_plural = 'Search term categories'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -32,7 +32,7 @@ SEARCH_TERM_CTA_TYPES = (
 
 class SearchTermItem(SortableMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    category = SortableForeignKey(SearchTermCategory)
+    category = SortableForeignKey(SearchTermCategory, on_delete=models.CASCADE)
     slug = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=60)
     description = models.TextField(null=True, blank=True)
@@ -46,7 +46,7 @@ class SearchTermItem(SortableMixin):
     class Meta:
         ordering = ['order_number']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @property

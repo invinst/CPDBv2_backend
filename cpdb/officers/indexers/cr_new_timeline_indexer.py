@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.constants import MEDIA_IPRA_COPA_HIDING_TAGS
 from data.models import (
     OfficerAllegation, AttachmentFile, Victim, Allegation
 )
@@ -33,7 +34,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     def _populate_allegation_dict(self):
         allegations = Allegation.objects.all()\
             .annotate(annotated_coaccused_count=models.Count('officerallegation'))\
-            .values('id', 'annotated_coaccused_count', 'point', 'crid')
+            .values('id', 'annotated_coaccused_count', 'point', 'crid', 'incident_date')
         self._allegation_dict = {
             obj['id']: obj
             for obj in allegations
@@ -49,14 +50,14 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     @timing_validate('CRNewTimelineEventIndexer: Populating attachments dict...')
     def _populate_attachments_dict(self):
         self._attachments_dict = dict()
-        attachments = AttachmentFile.objects.all().values(
+        attachments = AttachmentFile.objects.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
             'title', 'url', 'preview_image_url', 'file_type', 'allegation_id'
         )
         for obj in attachments:
             self._attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
 
     def get_queryset(self):
-        return OfficerAllegation.objects.filter(start_date__isnull=False)\
+        return OfficerAllegation.objects.filter(allegation__incident_date__isnull=False)\
             .select_related('allegation_category')
 
     def extract_datum(self, obj):
@@ -64,11 +65,13 @@ class CRNewTimelineEventIndexer(BaseIndexer):
         datum['allegation_category__category'] = getattr(obj.allegation_category, 'category', 'Unknown')
         datum['allegation_category__allegation_name'] = getattr(obj.allegation_category, 'allegation_name', None)
         officer_id = datum['officer_id']
-        datum['rank'] = get_officer_rank_by_date(officer_id, datum['start_date'])
-        datum['unit_name'], datum['unit_description'] = get_officer_unit_by_date(officer_id, datum['start_date'])
 
         allegation_id = datum['allegation_id']
         allegation = self._allegation_dict[allegation_id]
+        incident_date = allegation['incident_date']
+        datum['incident_date'] = incident_date
+        datum['rank'] = get_officer_rank_by_date(officer_id, incident_date)
+        datum['unit_name'], datum['unit_description'] = get_officer_unit_by_date(officer_id, incident_date)
         datum['crid'] = allegation['crid']
         datum['annotated_coaccused_count'] = allegation['annotated_coaccused_count']
         datum['point'] = allegation['point']
@@ -81,7 +84,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
 class CRNewTimelineEventPartialIndexer(PartialIndexer, CRNewTimelineEventIndexer):
     def get_batch_queryset(self, keys):
         return OfficerAllegation.objects\
-            .filter(start_date__isnull=False, allegation__crid__in=keys)\
+            .filter(allegation__incident_date__isnull=False, allegation__crid__in=keys)\
             .select_related('allegation_category')
 
     def get_batch_update_docs_queries(self, keys):

@@ -275,19 +275,28 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Honorable Mention')
         AwardFactory(officer=officer, start_date=date(2015, 3, 23), award_type='Complimentary Letter')
         AwardFactory(officer=officer, start_date=date(2011, 3, 23), award_type='Life Saving Award')
-        allegation = AllegationFactory(crid='123456', coaccused_count=4)
+        allegation = AllegationFactory(
+            crid='123456',
+            coaccused_count=4,
+            incident_date=datetime(2011, 8, 23, tzinfo=pytz.utc)
+        )
         VictimFactory(allegation=allegation, gender='M', race='White', age=34)
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='Unknown',
-            officer=officer, start_date=date(2011, 8, 23), allegation=allegation,
+            officer=officer, allegation=allegation,
             allegation_category=AllegationCategoryFactory(category='category', allegation_name='sub category')
         )
         OfficerAllegationFactory.create_batch(3, allegation=allegation)
 
-        allegation2 = AllegationFactory(crid='654321', point=Point(35.5, 68.9), coaccused_count=1)
+        allegation2 = AllegationFactory(
+            crid='654321',
+            point=Point(35.5, 68.9),
+            coaccused_count=1,
+            incident_date=datetime(2015, 8, 23, tzinfo=pytz.utc)
+        )
         OfficerAllegationFactory(
             final_finding='UN', final_outcome='9 Day Suspension',
-            officer=officer, start_date=date(2015, 8, 23), allegation=allegation2,
+            officer=officer, allegation=allegation2,
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
 

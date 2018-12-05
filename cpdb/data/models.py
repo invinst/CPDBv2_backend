@@ -14,7 +14,7 @@ from django_bulk_update.manager import BulkUpdateManager
 from data.constants import (
     ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, CITIZEN_DEPTS, CITIZEN_CHOICE, AREA_CHOICES,
     LINE_AREA_CHOICES, FINDINGS, GENDER_DICT, FINDINGS_DICT,
-    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME,
+    MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, BACKGROUND_COLOR_SCHEME, MEDIA_IPRA_COPA_HIDING_TAGS
 )
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -24,7 +24,7 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 
 class TaggableModel(models.Model):
-    tags = ArrayField(models.CharField(null=True, max_length=20), default=[])
+    tags = ArrayField(models.CharField(null=True, max_length=20), default=list)
 
     class Meta:
         abstract = True
@@ -285,7 +285,7 @@ class Officer(TaggableModel):
     trr_count = models.IntegerField(default=0, null=True)
     major_award_count = models.IntegerField(default=0, null=True)
     current_badge = models.CharField(max_length=10, null=True)
-    last_unit = models.ForeignKey(PoliceUnit, null=True)
+    last_unit = models.ForeignKey(PoliceUnit, on_delete=models.SET_NULL, null=True)
     current_salary = models.PositiveIntegerField(null=True)
     has_unique_name = models.BooleanField(default=False)
 
@@ -527,7 +527,7 @@ class Officer(TaggableModel):
 
 
 class OfficerYearlyPercentile(models.Model):
-    officer = models.ForeignKey(Officer, null=False)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=False)
     year = models.IntegerField()
     percentile_trr = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     percentile_allegation = models.DecimalField(max_digits=6, decimal_places=4, null=True)
@@ -541,7 +541,7 @@ class OfficerYearlyPercentile(models.Model):
 
 
 class OfficerBadgeNumber(models.Model):
-    officer = models.ForeignKey(Officer, null=True)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
     star = models.CharField(max_length=10)
     current = models.BooleanField(default=False)
 
@@ -557,8 +557,8 @@ class OfficerBadgeNumber(models.Model):
 
 
 class OfficerHistory(models.Model):
-    officer = models.ForeignKey(Officer, null=True)
-    unit = models.ForeignKey(PoliceUnit, null=True)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
+    unit = models.ForeignKey(PoliceUnit, on_delete=models.CASCADE, null=True)
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
 
@@ -608,10 +608,11 @@ class Area(TaggableModel):
     area_type = models.CharField(max_length=30, choices=AREA_CHOICES)
     polygon = models.MultiPolygonField(srid=4326, null=True)
     median_income = models.CharField(max_length=100, null=True)
-    commander = models.ForeignKey(Officer, null=True)
+    commander = models.ForeignKey(Officer, on_delete=models.SET_NULL, null=True)
     alderman = models.CharField(max_length=255, null=True, help_text="Alderman of Ward")
     police_hq = models.ForeignKey(
         'data.Area',
+        on_delete=models.SET_NULL,
         null=True,
         help_text="This beat contains police-district HQ"
     )
@@ -670,7 +671,7 @@ class Area(TaggableModel):
 class RacePopulation(models.Model):
     race = models.CharField(max_length=255)
     count = models.PositiveIntegerField()
-    area = models.ForeignKey(Area)
+    area = models.ForeignKey(Area, on_delete=models.CASCADE)
 
 
 class LineArea(models.Model):
@@ -685,7 +686,7 @@ class Investigator(models.Model):
     middle_initial = models.CharField(max_length=5, null=True)
     suffix_name = models.CharField(max_length=5, null=True)
     appointed_date = models.DateField(null=True)
-    officer = models.ForeignKey(Officer, null=True)
+    officer = models.ForeignKey(Officer, on_delete=models.SET_NULL, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
 
@@ -693,7 +694,7 @@ class Investigator(models.Model):
 
     @property
     def num_cases(self):
-        return self.investigatorallegation_set.all().count()
+        return self.investigatorallegation_set.count()
 
     @property
     def full_name(self):
@@ -729,14 +730,15 @@ class Allegation(models.Model):
     areas = models.ManyToManyField(Area)
     line_areas = models.ManyToManyField(LineArea)
     point = models.PointField(srid=4326, null=True)
-    beat = models.ForeignKey(Area, null=True, related_name='beats')
+    beat = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, related_name='beats')
     source = models.CharField(blank=True, max_length=20)
     is_officer_complaint = models.BooleanField(default=False)
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
+    subjects = ArrayField(models.CharField(max_length=255), default=list)
 
     # CACHED COLUMNS
-    most_common_category = models.ForeignKey(AllegationCategory, null=True)
+    most_common_category = models.ForeignKey(AllegationCategory, on_delete=models.SET_NULL, null=True)
     first_start_date = models.DateField(null=True)
     first_end_date = models.DateField(null=True)
     coaccused_count = models.IntegerField(default=0, null=True)
@@ -816,6 +818,12 @@ class Allegation(models.Model):
     def documents(self):
         return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
 
+    @property
+    def filtered_attachment_files(self):
+        # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
+        # We need to hide those documents
+        return self.attachment_files.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
+
     @staticmethod
     def get_cr_with_new_documents(limit):
         return Allegation.objects.prefetch_related(
@@ -823,8 +831,11 @@ class Allegation(models.Model):
                 'attachment_files',
                 queryset=AttachmentFile.objects.annotate(
                     last_created_at=Max('created_at')
+                ).exclude(
+                    tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
                 ).filter(
-                    file_type=MEDIA_TYPE_DOCUMENT, created_at__gte=(F('last_created_at') - timedelta(days=30))
+                    file_type=MEDIA_TYPE_DOCUMENT,
+                    created_at__gte=(F('last_created_at') - timedelta(days=30))
                 ).order_by('created_at'),
                 to_attr='latest_documents'
             )
@@ -848,20 +859,20 @@ class Allegation(models.Model):
 
 
 class InvestigatorAllegation(models.Model):
-    investigator = models.ForeignKey(Investigator)
-    allegation = models.ForeignKey(Allegation)
+    investigator = models.ForeignKey(Investigator, on_delete=models.CASCADE)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE)
     current_star = models.CharField(max_length=10, null=True)
     current_rank = models.CharField(max_length=100, null=True)
-    current_unit = models.ForeignKey(PoliceUnit, null=True)
+    current_unit = models.ForeignKey(PoliceUnit, on_delete=models.SET_NULL, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
 
     objects = BulkUpdateManager()
 
 
 class OfficerAllegation(models.Model):
-    allegation = models.ForeignKey(Allegation, null=True)
-    allegation_category = models.ForeignKey(AllegationCategory, to_field='id', null=True)
-    officer = models.ForeignKey(Officer, null=True)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, null=True)
+    allegation_category = models.ForeignKey(AllegationCategory, on_delete=models.SET_NULL, to_field='id', null=True)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     officer_age = models.IntegerField(null=True)
@@ -926,16 +937,20 @@ class OfficerAllegation(models.Model):
     def attachments(self):
         return self.allegation.attachment_files.all()
 
+    @property
+    def filtered_attachments(self):
+        return self.allegation.filtered_attachment_files.all()
+
 
 class PoliceWitness(models.Model):
-    allegation = models.ForeignKey(Allegation, null=True)
-    officer = models.ForeignKey(Officer, null=True)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, null=True)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
 
     objects = BulkUpdateManager()
 
 
 class Complainant(models.Model):
-    allegation = models.ForeignKey(Allegation, null=True)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
@@ -953,15 +968,15 @@ class Complainant(models.Model):
 
 class OfficerAlias(models.Model):
     old_officer_id = models.IntegerField()
-    new_officer = models.ForeignKey(Officer)
+    new_officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('old_officer_id', 'new_officer')
 
 
 class Involvement(models.Model):
-    allegation = models.ForeignKey(Allegation)
-    officer = models.ForeignKey(Officer, null=True)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE)
+    officer = models.ForeignKey(Officer, on_delete=models.SET_NULL, null=True)
     full_name = models.CharField(max_length=50)
     involved_type = models.CharField(max_length=25)
     gender = models.CharField(max_length=1, null=True)
@@ -977,14 +992,15 @@ class Involvement(models.Model):
 
 
 class AttachmentFile(models.Model):
-    external_id = models.CharField(max_length=50, null=True, db_index=True)
+    external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, db_index=True)
-    additional_info = JSONField()
+    additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
-    allegation = models.ForeignKey(Allegation, related_name='attachment_files')
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, related_name='attachment_files')
+    source_type = models.CharField(max_length=255, db_index=True)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
@@ -992,11 +1008,11 @@ class AttachmentFile(models.Model):
     last_updated = models.DateTimeField(null=True)
 
     class Meta:
-        unique_together = (('allegation', 'original_url'),)
+        unique_together = (('allegation', 'external_id', 'source_type'),)
 
 
 class Award(models.Model):
-    officer = models.ForeignKey(Officer)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
     award_type = models.CharField(max_length=255)
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
@@ -1010,7 +1026,7 @@ class Award(models.Model):
 
 
 class Victim(models.Model):
-    allegation = models.ForeignKey(Allegation, related_name='victims')
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, related_name='victims')
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
@@ -1027,7 +1043,7 @@ class Victim(models.Model):
 
 
 class AttachmentRequest(models.Model):
-    allegation = models.ForeignKey(Allegation)
+    allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -1100,7 +1116,7 @@ class Salary(models.Model):
     start_date = models.DateField(null=True)
     year = models.PositiveSmallIntegerField()
     age_at_hire = models.PositiveSmallIntegerField(null=True)
-    officer = models.ForeignKey(Officer)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
     rank_changed = models.BooleanField(default=False)
 
     objects = SalaryManager()

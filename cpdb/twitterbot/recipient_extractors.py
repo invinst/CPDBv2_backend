@@ -10,4 +10,4 @@ class TweetMentionRecipientExtractor:
         screen_name = context['client'].get_user(context['for_user_id']).screen_name
         for tweet in tweets:
             screen_names += tweet.user_mention_screen_names
-        return filter(lambda name: name != screen_name, list(set(screen_names)))
+        return list(filter(lambda name: name != screen_name, list(set(screen_names))))

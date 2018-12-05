@@ -25,5 +25,5 @@ def send_tweet(tweet_message, in_reply_to, entity):
 
     queue_service.put_message(
         queue_name,
-        unicode(base64.b64encode(json.dumps(queue_message)), 'utf-8')
+        str(base64.b64encode(json.dumps(queue_message)))
     )

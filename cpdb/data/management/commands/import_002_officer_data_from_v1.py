@@ -141,7 +141,7 @@ class Command(BaseCommand):
 
                 try:
                     obj = model.objects.get(pk=int(value_dict['pk']))
-                    for key, val in value_dict.iteritems():
+                    for key, val in value_dict.items():
                         setattr(obj, key, val)
                     obj.save()
                 except model.DoesNotExist:
