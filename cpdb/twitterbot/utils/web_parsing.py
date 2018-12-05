@@ -1,6 +1,5 @@
 import logging
-from urllib import urlencode
-import urlparse
+from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 
 import requests
 
@@ -38,8 +37,8 @@ def parse(url):
 
 
 def add_params(url, params):
-    url_parts = list(urlparse.urlparse(url))
-    query = urlparse.parse_qs(url_parts[4])
+    url_parts = list(urlparse(url))
+    query = parse_qs(url_parts[4])
     query.update(params)
     url_parts[4] = urlencode(query, True)
-    return urlparse.urlunparse(url_parts)
+    return urlunparse(url_parts)

@@ -47,7 +47,7 @@ class StringField(BaseCMSField):
         }
 
     def validate_value(self, value):
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise serializers.ValidationError({self.field_name: 'Value is not string'})
 
 
@@ -101,7 +101,7 @@ class RichTextField(DraftEditorField):
 
     def fake_value(self, value=None):
         if value is not None:
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = [value]
             return value
         if self._fake_value is None:

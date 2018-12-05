@@ -10,7 +10,7 @@ def create_object(dict_object):
 
 
 def validate_object(obj, data):
-    for key, value in data.iteritems():
+    for key, value in data.items():
         expect(getattr(obj, key, None)).to.eq(value)
 
 
@@ -21,9 +21,9 @@ def diff_dict(dict_1, dict_2):
     keys_a = keys1 - keys2
     keys_b = keys2 - keys1
     if keys_a:
-        print '=== dict_1 - dict_2', keys_a
+        print('=== dict_1 - dict_2', keys_a)
     if keys_b:
-        print '=== dict_2 - dict_1', keys_b
+        print('=== dict_2 - dict_1', keys_b)
 
     for key in list(keys1.union(keys2)):
         value_1 = dict_1.get(key, None)
@@ -37,15 +37,15 @@ def diff(data_1, data_2):
         len_1 = len(data_1)
         len_2 = len(data_2)
         if len_1 != len_2:
-            print '=== Different length', len_1, len_2
+            print('=== Different length', len_1, len_2)
             if len_1 > len_2:
-                print data_1[len_2:]
+                print(data_1[len_2:])
             else:
-                print data_2[len_1:]
+                print(data_2[len_1:])
         for idx, (dict_1, dict_2) in enumerate(zip(data_1, data_2)):
-            print 'compare item[{}]'.format(idx)
+            print('compare item[{}]'.format(idx))
             diff(dict_1, dict_2)
     elif isinstance(data_1, dict) and isinstance(data_2, dict):
         diff_dict(data_1, data_2)
     else:
-        print '=== Data type miss-match', type(data_1), type(data_2)
+        print('=== Data type miss-match', type(data_1), type(data_2))

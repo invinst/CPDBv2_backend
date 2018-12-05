@@ -7,6 +7,7 @@ from data.models import (
     Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation,
     AttachmentFile, Complainant, Victim
 )
+from data.constants import MEDIA_IPRA_COPA_HIDING_TAGS
 from data.utils.subqueries import SQCount
 from .doc_types import CRDocType
 from .index_aliases import cr_index_alias
@@ -93,7 +94,7 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating attachments dict...')
     def populate_attachments_dict(self):
         self.attachments_dict = dict()
-        queryset = AttachmentFile.objects.all().values(
+        queryset = AttachmentFile.objects.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
             'allegation_id', 'title', 'url', 'preview_image_url', 'file_type',
         )
         for obj in queryset:

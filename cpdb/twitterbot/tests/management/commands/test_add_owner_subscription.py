@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 
 from django.test import SimpleTestCase
 from django.core.management import call_command

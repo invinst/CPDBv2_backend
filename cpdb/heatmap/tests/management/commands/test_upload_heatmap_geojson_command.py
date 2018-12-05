@@ -58,10 +58,9 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
             expect(expect_feature in heatmap_cluster_json['features']).to.be.true()
 
     def test_save_to_gzip_file(self):
-        expected_content = 'Sample Content'
-        file_name = self.command.save_to_gzip_file(expected_content)
+        file_name = self.command.save_to_gzip_file('Sample Content')
         with gzip.open(file_name) as f:
-            expect(f.read()).to.eq(expected_content)
+            expect(f.read()).to.eq(b'Sample Content')
 
     @patch(
         'heatmap.management.commands.upload_heatmap_geojson.ALLEGATION_MIN_DATETIME',

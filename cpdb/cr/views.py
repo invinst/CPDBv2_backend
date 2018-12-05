@@ -67,7 +67,7 @@ class CRViewSet(viewsets.ViewSet):
 
     @list_route(methods=['GET'], url_path='list-by-new-document')
     def allegations_with_new_documents(self, request):
-        limit = request.GET.get('limit', 40)
+        limit = int(request.GET.get('limit', 40))
         results = Allegation.get_cr_with_new_documents(limit)
         serializer = AllegationWithNewDocumentsSerializer(results, many=True)
         return Response(serializer.data)
@@ -92,10 +92,10 @@ class CRViewSet(viewsets.ViewSet):
             }
 
             if request_serializer.validated_data['match'] == 'categories':
-                categories = filter(None, [
+                categories = list(filter(None, [
                     obj.category
                     for obj in allegation.officerallegation_set.all()
-                ])
+                ]))
                 if len(categories) == 0:
                     raise NoCategoryError()
 
@@ -112,10 +112,10 @@ class CRViewSet(viewsets.ViewSet):
                     filter=query_filter
                 )
             elif request_serializer.validated_data['match'] == 'officers':
-                officers = filter(None, [
+                officers = list(filter(None, [
                     obj.officer_id
                     for obj in allegation.officerallegation_set.all()
-                ])
+                ]))
                 if len(officers) == 0:
                     raise NoOfficerError()
 

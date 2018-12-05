@@ -48,10 +48,10 @@ class CoaccusedSerializer(BaseSerializer):
 class InvestigatorSerializer(BaseSerializer):
     def get_full_name(self, obj):
         if obj['investigator__officer__first_name'] is not None:
-            return ' '.join(filter(None, [
+            return ' '.join(list(filter(None, [
                 obj['investigator__officer__first_name'], obj['investigator__officer__last_name']
-            ]))
-        return ' '.join(filter(None, [obj['investigator__first_name'], obj['investigator__last_name']]))
+            ])))
+        return ' '.join(list(filter(None, [obj['investigator__first_name'], obj['investigator__last_name']])))
 
     def get_abbr_name(self, obj):
         if obj['investigator__officer__first_name'] is not None and obj['investigator__officer__last_name'] is not None:
@@ -160,8 +160,8 @@ class AllegationSerializer(BaseSerializer):
     def get_address(self, obj):
         if obj['old_complaint_address'] is not None:
             return obj['old_complaint_address']
-        result = ' '.join(filter(None, [obj['add1'], obj['add2']]))
-        return ', '.join(filter(None, [result, obj['city']]))
+        result = ' '.join(list(filter(None, [obj['add1'], obj['add2']])))
+        return ', '.join(list(filter(None, [result, obj['city']])))
 
     def get_involvements(self, obj):
         return AllegationSerializer.investigator_serializer(obj) + \

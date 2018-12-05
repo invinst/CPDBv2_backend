@@ -15,7 +15,7 @@ class TweetAuthorRecipientExtractorTestCase(SimpleTestCase):
         tweet1 = TweetFactory(author_screen_name='abc')
         tweet2 = TweetFactory(author_screen_name='def')
         extractor = TweetAuthorRecipientExtractor()
-        expect(extractor.extract([tweet1, tweet2], self.context)).to.eq(['abc', 'def'])
+        expect(set(extractor.extract([tweet1, tweet2], self.context))).to.eq(set(['abc', 'def']))
 
     def test_remove_duplicate(self):
         tweet1 = TweetFactory(author_screen_name='abc')
@@ -45,7 +45,7 @@ class TweetMentionRecipientExtractorTestCase(SimpleTestCase):
         tweet1 = TweetFactory(user_mentions=[{'screen_name': 'abc'}])
         tweet2 = TweetFactory(user_mentions=[{'screen_name': 'abc'}, {'screen_name': 'def'}])
         extractor = TweetMentionRecipientExtractor()
-        expect(extractor.extract([tweet1, tweet2], self.context)).to.eq(['abc', 'def'])
+        expect(set(extractor.extract([tweet1, tweet2], self.context))).to.eq(set(['abc', 'def']))
 
     def test_exclude_self(self):
         tweet1 = TweetFactory(user_mentions=[{'screen_name': 'abc'}])

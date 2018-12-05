@@ -1,6 +1,6 @@
-import allegation_cache_manager
-import officer_cache_manager
-import salary_cache_manager
+from . import allegation_cache_manager
+from . import officer_cache_manager
+from . import salary_cache_manager
 
 
 managers = [allegation_cache_manager, officer_cache_manager, salary_cache_manager]

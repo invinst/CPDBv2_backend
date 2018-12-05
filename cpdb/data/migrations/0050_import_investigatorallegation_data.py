@@ -37,7 +37,7 @@ def import_data(apps, schema_editor):
 
     with csv_from_azure('20180530_investigatorallegation.csv') as reader:
         for row in reader:
-            for key, val in row.iteritems():
+            for key, val in row.items():
                 if val == '':
                     row[key] = blank_or_null[key]
             pk = int(row.pop('pk'))

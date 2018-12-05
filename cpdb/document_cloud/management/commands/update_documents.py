@@ -1,4 +1,5 @@
 import re
+import logging
 from collections import OrderedDict
 
 from django.core.management.base import BaseCommand
@@ -6,11 +7,15 @@ from django.conf import settings
 from documentcloud import DocumentCloud
 
 from data.models import AttachmentFile, Allegation
-from data.constants import MEDIA_TYPE_DOCUMENT
+from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
+from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
 from cr.indexers import CRPartialIndexer
 from officers.indexers import CRNewTimelineEventPartialIndexer
+
+
+logger = logging.getLogger('django.command')
 
 
 def _get_url(document):
@@ -40,10 +45,17 @@ class Command(BaseCommand):
             return
 
         setattr(cloud_document, 'url', _get_url(cloud_document))
+        setattr(cloud_document, 'source_type', AttachmentSourceType.DOCUMENTCLOUD)
 
         try:
+            try:
+                updated_attachment = AttachmentFile.objects.get(
+                    allegation=allegation, source_type=AttachmentSourceType.DOCUMENTCLOUD, external_id=documentcloud_id)
+            except AttachmentFile.DoesNotExist:
+                updated_attachment = AttachmentFile.objects.get(
+                    allegation=allegation, source_type='', original_url=cloud_document.url)
+
             # update if current info is mismatched
-            updated_attachment = AttachmentFile.objects.get(allegation=allegation, external_id=documentcloud_id)
             updated = self.update_mismatched_existing_data(updated_attachment, cloud_document, document_type)
             return {'attachment': updated_attachment, 'is_new_attachment': False, 'updated': updated}
 
@@ -51,9 +63,14 @@ class Command(BaseCommand):
             title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', cloud_document.title)
             additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
 
+            logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
+                url=cloud_document.canonical_url,
+                crid=crid
+            ))
             new_attachment = AttachmentFile.objects.create(
                 external_id=documentcloud_id,
                 allegation=allegation,
+                source_type=AttachmentSourceType.DOCUMENTCLOUD,
                 title=title,
                 url=cloud_document.url,
                 file_type=MEDIA_TYPE_DOCUMENT,
@@ -69,6 +86,7 @@ class Command(BaseCommand):
     def update_mismatched_existing_data(self, attachment, document, document_type):
         should_save = False
         mapping_fields = [
+            ('source_type', 'source_type'),
             ('url', 'url'),
             ('title', 'title'),
             ('preview_image_url', 'normal_image_url'),
@@ -86,6 +104,10 @@ class Command(BaseCommand):
 
         if should_save:
             try:
+                logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
+                    url=attachment.original_url,
+                    crid=attachment.allegation.crid
+                ))
                 attachment.save()
                 return True
             except ValueError:
@@ -100,7 +122,9 @@ class Command(BaseCommand):
         cleaned_results = OrderedDict()
 
         for cloud_document in cloud_documents:
-            if cloud_document.title not in cleaned_results:
+            auto_uploaded = hasattr(cloud_document, 'description') and \
+                            cloud_document.description == AUTO_UPLOAD_DESCRIPTION
+            if not auto_uploaded and cloud_document.title not in cleaned_results:
                 cleaned_results[cloud_document.title] = cloud_document
 
         return list(cleaned_results.values())
@@ -115,6 +139,7 @@ class Command(BaseCommand):
                 indexer.reindex()
 
     def handle(self, *args, **options):
+        logger.info('Documentcloud crawling process is about to start...')
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
         kept_attachments = []
@@ -124,6 +149,7 @@ class Command(BaseCommand):
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
         for document_type, syntax in search_syntaxes:
             if syntax:
+                logger.info('Searching Documentcloud for {syntax}'.format(syntax=syntax))
                 documents = self.clean_documents(client.documents.search(syntax))
                 for document in documents:
                     result = self.process_documentcloud_document(document, document_type)
@@ -141,19 +167,26 @@ class Command(BaseCommand):
 
         all_attachment_ids = set(attachment.id for attachment in kept_attachments + changed_attachments)
         deleted_attachments = AttachmentFile.objects.filter(
-            url__icontains='documentcloud'
+            source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).exclude(id__in=all_attachment_ids)
         crids = set(attachment.allegation.crid for attachment in changed_attachments + list(deleted_attachments))
+        logger.info('Deleting {num} attachments'.format(num=deleted_attachments.count()))
         deleted_attachments.delete()
 
         self.rebuild_related_elasticsearch_docs(crids=crids)
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
-            url__icontains='documentcloud'
+            source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).count()
         DocumentCrawler.objects.create(
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
             num_documents=num_documents,
             num_new_documents=num_new_attachments,
             num_updated_documents=num_updated_attachments
         )
+        logger.info('Done! {num_created} created, {num_updated} updated in {num} documentcloud attachments'.format(
+            num_created=num_new_attachments,
+            num_updated=num_updated_attachments,
+            num=num_documents
+        ))

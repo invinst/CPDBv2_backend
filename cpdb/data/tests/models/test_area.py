@@ -142,15 +142,13 @@ class AreaTestCase(TestCase):
         area = AreaFactory.build(area_type='whatever', name='abc')
         expect(area.v1_url).to.eq('domain')
 
-
-class AreaObjectManagerTestCase(TestCase):
-    def test_with_allegation_per_capita(self):
-        area = AreaFactory(area_type='police-district', name='abc')
+    def test_police_districts_with_allegation_per_capita(self):
+        area = AreaFactory(area_type='police-districts', name='abc')
         RacePopulationFactory(race='White', count=150, area=area)
         RacePopulationFactory(race='Black', count=50, area=area)
         AllegationFactory.create_batch(4, areas=[area])
 
-        results = Area.objects.with_allegation_per_capita() \
+        results = Area.police_districts_with_allegation_per_capita() \
             .values('id', 'complaint_count', 'population', 'allegation_per_capita')
         expect(list(results)).to.eq([{
             'id': area.id,

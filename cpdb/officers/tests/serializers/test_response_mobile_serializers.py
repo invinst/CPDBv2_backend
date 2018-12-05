@@ -91,8 +91,8 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             star='456'
         )
 
-        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 01, 02))
-        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 01, 02))
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
 
         OfficerYearlyPercentileFactory(
             officer=officer,
@@ -232,7 +232,12 @@ class UnitChangeNewTimelineMobileSerializerTestCase(TestCase):
 class CRNewTimelineMobileSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(id=123)
-        allegation = AllegationFactory(crid='CR123', coaccused_count=3, point=Point([0.01, 0.02]))
+        allegation = AllegationFactory(
+            crid='CR123',
+            incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc),
+            coaccused_count=3,
+            point=Point([0.01, 0.02])
+        )
         allegation_category = AllegationCategoryFactory(
             category='some category',
             allegation_name='some sub category'
@@ -240,17 +245,25 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(
             officer=officer,
             allegation=allegation,
-            start_date=date(2002, 2, 3),
             allegation_category=allegation_category,
             final_finding='SU',
             final_outcome='9 Day Suspension'
         )
 
         AttachmentFileFactory(
+            tag='Other',
             allegation=allegation,
             title='title',
             url='url',
             preview_image_url='preview_image_url',
+            file_type='document'
+        )
+        AttachmentFileFactory(
+            tag='AR',
+            allegation=allegation,
+            title='title 2',
+            url='url_2',
+            preview_image_url='preview_image_url_2',
             file_type='document'
         )
         VictimFactory(allegation=allegation, gender='M', race='Black', age=30)

@@ -4,7 +4,7 @@ import sys
 
 if __name__ == "__main__":
     if 'test' in sys.argv:
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test")
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test_without_migrations")
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")  # pragma: no cover
 

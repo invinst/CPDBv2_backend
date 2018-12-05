@@ -195,7 +195,7 @@ def _compute_metric(year_end, percentile_group):
     query = query.annotate(year=models.Value(year_end, output_field=IntegerField()))
 
     func_map = PERCENTILE_MAP[percentile_group]['percentile_funcs']
-    for metric, func in func_map.iteritems():
+    for metric, func in func_map.items():
         num_key = 'num_{}'.format(metric)
         metric_key = 'metric_{}'.format(metric)
 
