@@ -111,8 +111,12 @@ class AreaIndexerTestCase(TestCase):
         RacePopulationFactory(race='Black', count=100, area=area2)
         AllegationFactory(areas=[area2])
 
+        area3 = AreaFactory(area_type='community')
+        RacePopulationFactory(race='Black', count=10, area=area3)
+        AllegationFactory.create_batch(3, areas=[area3])
+
         area_indexer = AreaIndexer()
-        expect(area_indexer.get_queryset().count()).to.eq(2)
+        expect(area_indexer.get_queryset().count()).to.eq(3)
         expect(area_indexer._percentiles).to.eq({
             area1.id: 0.0,
             area2.id: 50.0
