@@ -7,6 +7,7 @@ from documentcloud import DocumentCloud
 
 from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT
+from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
 from cr.indexers import CRPartialIndexer
@@ -100,7 +101,9 @@ class Command(BaseCommand):
         cleaned_results = OrderedDict()
 
         for cloud_document in cloud_documents:
-            if cloud_document.title not in cleaned_results:
+            auto_uploaded = hasattr(cloud_document, 'description') and \
+                            cloud_document.description == AUTO_UPLOAD_DESCRIPTION
+            if not auto_uploaded and cloud_document.title not in cleaned_results:
                 cleaned_results[cloud_document.title] = cloud_document
 
         return list(cleaned_results.values())
