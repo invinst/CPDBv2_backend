@@ -87,9 +87,9 @@ class AutoOpenIPRA(object):
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
             try:
                 attachment = AttachmentFile.objects.get(
-                    source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                    source_type__in=['', AttachmentSourceType.COPA_DOCUMENTCLOUD],
                     allegation=allegation,
-                    orignal_url__endswith=chicagocopa_external_id
+                    original_url__endswith=chicagocopa_external_id
                 )
                 created = False
             except AttachmentFile.DoesNotExist:
