@@ -22,8 +22,9 @@ def upload_copa_documents():
     for attachment in tqdm(attachments):
         cloud_document = client.documents.upload(
             attachment.original_url,
-            format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
-            access='public'
+            title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
+            access='public',
+            force_ocr=True
         )
 
         attachment.external_id = parse_id(cloud_document.id)

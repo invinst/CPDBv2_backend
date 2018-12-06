@@ -50,8 +50,9 @@ class DocumentcloudServicesTestCase(TestCase):
         )
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
-            'CRID 123 CR Tactical Response Report',
-            access='public'
+            title='CRID 123 CR Tactical Response Report',
+            access='public',
+            force_ocr=True
         )
 
     @patch('document_cloud.services.DocumentCloud')
