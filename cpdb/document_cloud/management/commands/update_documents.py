@@ -92,15 +92,12 @@ class Command(BaseCommand):
             should_save = True
 
         if should_save:
-            try:
-                logger.info(
-                    'Updating documentcloud attachment '
-                    f'url={attachment.original_url} with crid={attachment.allegation.crid}'
-                )
-                attachment.save()
-                return True
-            except ValueError:
-                return False
+            logger.info(
+                'Updating documentcloud attachment '
+                f'url={attachment.original_url} with crid={attachment.allegation.crid}'
+            )
+            attachment.save()
+            return True
 
         return False
 

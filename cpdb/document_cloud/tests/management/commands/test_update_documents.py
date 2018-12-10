@@ -371,3 +371,44 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_documents).to.equal(2)
         expect(crawling_log.num_new_documents).to.equal(1)
         expect(crawling_log.num_updated_documents).to.equal(1)
+
+    @patch('document_cloud.management.commands.update_documents.DocumentCloud')
+    def test_attachments_unchanged(self, DocumentCloudMock):
+        DocumentCloudSearchQueryFactory(type='CR', query='CR')
+        AttachmentFileFactory(
+            external_id='789',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            allegation__crid='123456',
+            title='CRID 123456 CR',
+            tag='CR',
+            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
+            preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+            last_updated=datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+            created_at=datetime.datetime(2017, 1, 1, tzinfo=pytz.utc)
+        )
+
+        DocumentCloudMock().documents.search.return_value = [
+            create_object({
+                'id': '789-CRID-123456-CR',
+                'title': 'CRID 123456 CR',
+                'url': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
+                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'updated_at': datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+                'created_at': datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'}),
+            })
+        ]
+
+        management.call_command('update_documents')
+
+        cr = Allegation.objects.get(crid='123456')
+        expect(cr.attachment_files.count()).to.eq(1)
+        titles = set([attachment.title for attachment in cr.attachment_files.all()])
+        expect(titles).to.eq({'CRID 123456 CR'})
+
+        crawling_log = DocumentCrawler.objects.last()
+        expect(crawling_log.num_documents).to.equal(1)
+        expect(crawling_log.num_new_documents).to.equal(0)
+        expect(crawling_log.num_updated_documents).to.equal(0)

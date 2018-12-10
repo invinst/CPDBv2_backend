@@ -151,3 +151,36 @@ class AutoOpenIPRATest(TestCase):
         AutoOpenIPRA.import_new()
 
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('pdf file')
+
+    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
+    def test_update_COPA_DOCUMENTCLOUD_file(self, open_ipra):
+        open_ipra.return_value = [{
+            'attachments': [
+                {
+                    'type': 'Document',
+                    'link': 'http://chicagocopa.org/document.pdf',
+                    'title': 'pdf file',
+                    'last_updated': '2018-10-30T15:00:03+00:00'
+                }
+            ],
+            'date': '04-30-2013',
+            'log_number': '123',
+            'time': '04-30-2013 9:30 pm',
+            'type': 'Allegation Name',
+            'subjects': ['Subject', '', 'Unknown'],
+        }]
+        AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
+        attachment_file = AttachmentFileFactory(
+            allegation__crid='123',
+            title='old_title',
+            source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            external_id='document.pdf',
+            original_url='http://chicagocopa.org/document.pdf',
+            last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
+        )
+
+        AutoOpenIPRA.import_new()
+
+        updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
+        expect(updated_attachment_file.title).to.eq('CRID 123 CR pdf file')
+        expect(updated_attachment_file.last_updated).to.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
