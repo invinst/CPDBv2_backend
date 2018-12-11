@@ -4,7 +4,6 @@ from django.conf import settings
 
 from airtable import Airtable
 from requests.exceptions import HTTPError
-from tqdm import tqdm
 
 from data.models import AttachmentRequest
 from trr.models import TRRAttachmentRequest
@@ -47,11 +46,11 @@ class AirTableUploader(object):
     def _delay_upload(cls, raw_object):
         record = cls._build_record(raw_object)
         try:
-            cls._get_foia_airtable().insert(record)
+            res = cls._get_foia_airtable().insert(record)
             time.sleep(cls.API_LIMIT)
+            return res['id']
         except HTTPError:
-            return False
-        return True
+            return ''
 
     @classmethod
     def _get_uploaded_objects(cls):
@@ -97,16 +96,21 @@ class CRRequestAirTableUploader(AirTableUploader):
 
     @classmethod
     def _get_uploaded_objects(cls):
-        return AttachmentRequest.objects.filter(added_to_foia_airtable=False)
+        return AttachmentRequest.objects.filter(airtable_id='')
 
     @classmethod
     def _post_handle(cls, uploaded_results):
-        uploaded_success = [document_request.id for document_request, success in uploaded_results if success]
+        uploaded_attachment_requests = []
+        for attachment_request, record_id in uploaded_results:
+            if record_id:
+                attachment_request.airtable_id = record_id
+                uploaded_attachment_requests.append(attachment_request)
 
-        batch_size = 1000
-        for i in tqdm(range(0, len(uploaded_success), batch_size)):
-            batch_ids = uploaded_success[i:i + batch_size]
-            AttachmentRequest.objects.filter(id__in=batch_ids).update(added_to_foia_airtable=True)
+        AttachmentRequest.objects.bulk_update(
+            uploaded_attachment_requests,
+            update_fields=['airtable_id'],
+            batch_size=1000
+        )
 
 
 class TRRRequestAirTableUploader(AirTableUploader):
@@ -123,13 +127,18 @@ class TRRRequestAirTableUploader(AirTableUploader):
 
     @classmethod
     def _get_uploaded_objects(cls):
-        return TRRAttachmentRequest.objects.filter(added_to_foia_airtable=False)
+        return TRRAttachmentRequest.objects.filter(airtable_id='')
 
     @classmethod
     def _post_handle(cls, uploaded_results):
-        uploaded_success = [document_request.id for document_request, success in uploaded_results if success]
+        uploaded_attachment_requests = []
+        for attachment_request, record_id in uploaded_results:
+            if record_id:
+                attachment_request.airtable_id = record_id
+                uploaded_attachment_requests.append(attachment_request)
 
-        batch_size = 1000
-        for i in tqdm(range(0, len(uploaded_success), batch_size)):
-            batch_ids = uploaded_success[i:i + batch_size]
-            TRRAttachmentRequest.objects.filter(id__in=batch_ids).update(added_to_foia_airtable=True)
+        TRRAttachmentRequest.objects.bulk_update(
+            uploaded_attachment_requests,
+            update_fields=['airtable_id'],
+            batch_size=1000
+        )

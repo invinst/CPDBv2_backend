@@ -28,6 +28,8 @@ class DocumentRequestServiceTestCase(TestCase):
     @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
@@ -53,17 +55,19 @@ class DocumentRequestServiceTestCase(TestCase):
             ]
         }
 
-        expect(attachment_request.added_to_foia_airtable).to.be.false()
+        expect(attachment_request.airtable_id).to.be.eq('')
 
         CRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
-        expect(attachment_request.added_to_foia_airtable).to.be.true()
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
     @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
@@ -87,17 +91,19 @@ class DocumentRequestServiceTestCase(TestCase):
             ]
         }
 
-        expect(attachment_request.added_to_foia_airtable).to.be.false()
+        expect(attachment_request.airtable_id).to.be.eq('')
 
         CRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
-        expect(attachment_request.added_to_foia_airtable).to.be.true()
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
     @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006_but_no_incident_date(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         allegation = AllegationFactory(crid='123456', incident_date=None)
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
@@ -121,17 +127,19 @@ class DocumentRequestServiceTestCase(TestCase):
             ]
         }
 
-        expect(attachment_request.added_to_foia_airtable).to.be.false()
+        expect(attachment_request.airtable_id).to.be.eq('')
 
         CRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
-        expect(attachment_request.added_to_foia_airtable).to.be.true()
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
     @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_copa(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
@@ -155,16 +163,18 @@ class DocumentRequestServiceTestCase(TestCase):
             ]
         }
 
-        expect(attachment_request.added_to_foia_airtable).to.be.false()
+        expect(attachment_request.airtable_id).to.be.eq('')
 
         CRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
-        expect(attachment_request.added_to_foia_airtable).to.be.true()
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_trr_attachment_request_to_foia_with_copa(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         officer = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         trr = TRRFactory(id='123456', officer=officer)
         attachment_request = TRRAttachmentRequestFactory(trr=trr, email='requester@example.com')
@@ -185,16 +195,18 @@ class DocumentRequestServiceTestCase(TestCase):
             ]
         }
 
-        expect(attachment_request.added_to_foia_airtable).to.be.false()
+        expect(attachment_request.airtable_id).to.be.eq('')
 
         TRRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
-        expect(attachment_request.added_to_foia_airtable).to.be.true()
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
-    def test_AirTableUploader_raise_NotImplementedError(self, _):
+    def test_AirTableUploader_raise_NotImplementedError(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
         allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
@@ -205,7 +217,7 @@ class DocumentRequestServiceTestCase(TestCase):
         cr_request_1 = AttachmentRequestFactory(
             allegation=allegation123,
             email='requester1@example.com',
-            added_to_foia_airtable=False)
+            airtable_id='')
 
         allegation456 = AllegationFactory(crid='456')
         officer_3 = OfficerFactory(id=3, first_name='Marry', last_name='Jane')
@@ -215,7 +227,7 @@ class DocumentRequestServiceTestCase(TestCase):
         cr_request_2 = AttachmentRequestFactory(
             allegation=allegation456,
             email='requester2@example.com',
-            added_to_foia_airtable=False)
+            airtable_id='')
 
         expect(AirTableUploader.upload).to.throw(NotImplementedError)
 
@@ -242,7 +254,7 @@ class DocumentRequestServiceTestCase(TestCase):
     @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_Airtable_insert_raise_HTTPError(self, airtable_mock):
-        AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[True, HTTPError])
+        AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[{'id': 'some_airtable_record_id'}, HTTPError])
 
         allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
@@ -260,8 +272,8 @@ class DocumentRequestServiceTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation456, officer=officer_4)
         attachment_request_2 = AttachmentRequestFactory(allegation=allegation456, email='requester2@example.com')
 
-        expect(attachment_request_1.added_to_foia_airtable).to.be.false()
-        expect(attachment_request_2.added_to_foia_airtable).to.be.false()
+        expect(attachment_request_1.airtable_id).to.eq('')
+        expect(attachment_request_2.airtable_id).to.eq('')
 
         CRRequestAirTableUploader.upload()
         attachment_request_1.refresh_from_db()
@@ -301,8 +313,8 @@ class DocumentRequestServiceTestCase(TestCase):
         ]
         airtable_mock.insert.assert_has_calls(expected_calls, any_order=True)
 
-        expect(attachment_request_1.added_to_foia_airtable).to.be.true()
-        expect(attachment_request_2.added_to_foia_airtable).to.be.false()
+        expect(attachment_request_1.airtable_id).to.eq('some_airtable_record_id')
+        expect(attachment_request_2.airtable_id).to.eq('')
 
     @patch('airtable_integration.services.document_request_service.Airtable')
     def test_AirTableUploader_lazy_evaluate_airtable(self, airtable_cls_mock):
