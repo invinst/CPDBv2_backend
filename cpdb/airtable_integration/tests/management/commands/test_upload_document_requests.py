@@ -30,7 +30,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation123, officer=officer_2)
         investigator = InvestigatorFactory(officer=officer_1)
         InvestigatorAllegationFactory(allegation=allegation123, investigator=investigator)
-        AttachmentRequestFactory(
+        cr_request_1 = AttachmentRequestFactory(
             allegation=allegation123,
             email='requester1@example.com',
             airtable_id='')
@@ -44,7 +44,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         officer_4 = OfficerFactory(id=4, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation456, officer=officer_3)
         OfficerAllegationFactory(allegation=allegation456, officer=officer_4)
-        AttachmentRequestFactory(
+        cr_request_2 = AttachmentRequestFactory(
             allegation=allegation456,
             email='requester3@example.com',
             airtable_id='')
@@ -54,7 +54,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
             airtable_id='cr4444')
 
         trr = TRRFactory(id='123456', officer=officer_1)
-        TRRAttachmentRequestFactory(
+        trr_request = TRRAttachmentRequestFactory(
             trr=trr,
             email='requester@example1.com',
             airtable_id='')
@@ -82,7 +82,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': cr_request_1.timestamp.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation': 'Officers: John Henry(ID 4), Marry Jane(ID 3)',
@@ -97,7 +98,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': cr_request_2.timestamp.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation':  'Officer: Marry Jane(ID 1)',
@@ -112,7 +114,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': trr_request.timestamp.strftime(format='%Y-%m-%d')
             })
         ]
 

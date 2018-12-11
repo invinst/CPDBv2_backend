@@ -52,7 +52,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -88,7 +89,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -124,7 +126,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -162,7 +165,8 @@ class DocumentRequestServiceTestCase(TestCase):
                     'email': 'rajiv@invisibleinstitute.com',
                     'name': 'Rajiv Sinclair'
                 }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -202,7 +206,8 @@ class DocumentRequestServiceTestCase(TestCase):
                     'email': 'rajiv@invisibleinstitute.com',
                     'name': 'Rajiv Sinclair'
                 }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -238,7 +243,8 @@ class DocumentRequestServiceTestCase(TestCase):
                     'email': 'rajiv@invisibleinstitute.com',
                     'name': 'Rajiv Sinclair'
                 }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -272,7 +278,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -312,7 +319,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -351,7 +359,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -389,7 +398,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -428,7 +438,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -459,7 +470,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -495,7 +507,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         TRRRequestAirTableUploader.upload(update_all_records=True)
@@ -594,7 +607,8 @@ class DocumentRequestServiceTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': attachment_request_1.timestamp.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation': 'Officers: John Henry(ID 4), Marry Jane(ID 3)',
@@ -609,7 +623,8 @@ class DocumentRequestServiceTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': attachment_request_2.timestamp.strftime(format='%Y-%m-%d')
             })
         ]
         airtable_mock.insert.assert_has_calls(expected_calls, any_order=True)

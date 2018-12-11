@@ -39,7 +39,8 @@ class AirTableUploader(object):
                     'email': 'rajiv@invisibleinstitute.com',
                     'name': 'Rajiv Sinclair'
                 }
-            ]
+            ],
+            'Date requested by user': raw_object.timestamp.strftime(format='%Y-%m-%d')
         }
 
     @classmethod
