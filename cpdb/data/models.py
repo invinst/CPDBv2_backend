@@ -1045,7 +1045,9 @@ class AttachmentRequest(models.Model):
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
-    added_to_foia_airtable = models.BooleanField(default=False)
+    airtable_id = models.CharField(max_length=255, blank=True, default='')
+
+    objects = BulkUpdateManager()
 
     class Meta:
         unique_together = (('allegation', 'email'),)
