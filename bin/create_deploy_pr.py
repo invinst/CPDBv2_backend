@@ -66,18 +66,18 @@ def get_deploy_prs_and_stories():
     current_branch = call_cmd("git branch | grep \\* | cut -d ' ' -f2")
     call_cmd('git checkout master')
     cur_id = call_cmd("git rev-parse HEAD")
-    call_cmd(f'git checkout -b master-{cur_id}')
+    call_cmd('git checkout -b master-%s' % cur_id)
     call_cmd('git merge develop -q -m "Merge changes from develop"')
     prs = call_cmd(
-        f"git --no-pager log {cur_id}..HEAD --pretty=oneline --abbrev-commit --grep 'Merge pull request' | "
-        "sed -E 's/.+Merge pull request #([0-9]+).+/\\1/p' | sort -u -"
+        "git --no-pager log %s..HEAD --pretty=oneline --abbrev-commit --grep 'Merge pull request' | "
+        "sed -E 's/.+Merge pull request #([0-9]+).+/\\1/p' | sort -u -" % cur_id
     )
     stories = call_cmd(
-        f"git --no-pager log {cur_id}..HEAD --abbrev-commit | grep -E 'pivotaltracker' | "
-        "sed -E 's/.+pivotaltracker.com\\/story\\/show\\/([0-9]+).*/\\1/p' | sort -u -"
+        "git --no-pager log %s..HEAD --abbrev-commit | grep -E 'pivotaltracker' | "
+        "sed -E 's/.+pivotaltracker.com\\/story\\/show\\/([0-9]+).*/\\1/p' | sort -u -" % cur_id
     )
-    call_cmd(f'git checkout {current_branch}')
-    call_cmd(f'git branch -D master-{cur_id}')
+    call_cmd('git checkout %s' % current_branch)
+    call_cmd('git branch -D master-%s' % cur_id)
     return filter(None, prs.split('\n')), filter(None, stories.split('\n'))
 
 
@@ -86,11 +86,11 @@ def get_auth_token(name, file_path, prompt):
         token_file = open(file_path)
         return token_file.read()
     except IOError:
-        print(f'{name} token is not found.')
+        print('%s token is not found.' % name)
         token = raw_input(prompt)
         with open(file_path, 'w') as token_file:
             token_file.write(token)
-        print(f'Token saved to file {file_path}')
+        print('Token saved to file %s' % file_path)
         return token
 
 
@@ -99,7 +99,7 @@ def check_story_statuses(stories):
     if len(unaccepted_stories) > 0:
         print('The following stories have not been accepted yet:')
         for s in unaccepted_stories:
-            print(f"{s['name']} - {s['url']}")
+            print('%s - %s' % (s['name'], s['url']))
         confirm = raw_input('Do you want to continue? [Y/n]')
         if confirm.lower() == 'n':
             sys.exit(0)
@@ -115,7 +115,8 @@ def get_pt_stories(story_ids):
         'Enter Pivotaltracker token: '
     )
     req = urllib2.Request(
-        f"https://www.pivotaltracker.com/services/v5/projects/{PROJECT_ID}/stories?filter=id:{','.join(story_ids)}"
+        'https://www.pivotaltracker.com/services/v5/projects/%s/stories?filter=id:%s' %
+        (PROJECT_ID, ','.join(story_ids))
     )
     req.add_header('X-TrackerToken', pt_token)
     response = urllib2.urlopen(req)
@@ -134,19 +135,19 @@ def build_pr_body(pr_ids, pt_stories, pr_deploy_notes):
     result += ['Pull requests', '--', '']
 
     for pr_id in pr_ids:
-        result.append(f'- #{pr_id}')
+        result.append('- #%s' % pr_id)
 
     if len(pt_stories) > 0:
         result += ['', 'Pivotal tracker stories', '--', '']
         for story in pt_stories:
-            result.append(f"- [{story['name']}]({story['url']})")
+            result.append('- [%s](%s)' % (story['name'], story['url']))
 
     if len(pr_deploy_notes) > 0:
         result += ['', 'Deploy Notes', '--', '']
         for pr_id, deploy_note in pr_deploy_notes:
-            result.append(f'- #{pr_id}')
+            result.append('- #%s' % pr_id)
             for note in deploy_note:
-                result.append(f'  {note}')
+                result.append('  %s' % note)
 
     return '\r\n'.join(result)
 
@@ -156,8 +157,8 @@ def get_pr_deploy_notes(pr_ids, github_token):
     prs = []
 
     for pr_id in pr_ids:
-        req = urllib2.Request(f'https://api.github.com/repos/EastAgile/{REPO}/pulls/{pr_id}')
-        req.add_header('Authorization', f'token {github_token}')
+        req = urllib2.Request('https://api.github.com/repos/EastAgile/%s/pulls/%s' % (REPO, pr_id))
+        req.add_header('Authorization', 'token %s' % github_token)
         response = urllib2.urlopen(req)
         pr = json.loads(response.read())
         prs.append(pr)
@@ -186,7 +187,7 @@ def get_pr_deploy_notes(pr_ids, github_token):
 
 def create_deployment_pr(pr_body, github_token):
     pr_data = {
-        'title': f'Production deploy {datetime.now()}',
+        'title': 'Production deploy %s' % datetime.now(),
         'body': pr_body,
         'head': 'develop',
         'base': 'master'
@@ -194,11 +195,11 @@ def create_deployment_pr(pr_body, github_token):
 
     data = json.dumps(pr_data)
     headers = {
-        'Authorization': f'token {github_token}'
+        'Authorization': 'token %s' % github_token
     }
 
     response = requests.post(
-        url=f'https://api.github.com/repos/EastAgile/{REPO}/pulls',
+        url='https://api.github.com/repos/EastAgile/%s/pulls' % REPO,
         headers=headers,
         data=data
     )
