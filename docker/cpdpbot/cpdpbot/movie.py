@@ -44,7 +44,7 @@ def draw_frame(data, duration):
 
 
 def write_mp4(data, yd, fps):
-    filename = f"/tmp/{data['id']}.mp4"
+    filename = '/tmp/%s.mp4' % data['id']
 
     percentiles = [
         {

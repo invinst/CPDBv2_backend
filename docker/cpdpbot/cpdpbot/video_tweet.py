@@ -25,7 +25,7 @@ class VideoTweet(object):
                 error_msg, api_error_code = \
                     JSONParser().parse_error(response.text)
             except Exception:
-                error_msg = f'Twitter error response: status code = {response.status_code}'
+                error_msg = "Twitter error response: status code = %s" % response.status_code
                 api_error_code = None
 
             if is_rate_limit_error_message(error_msg):
