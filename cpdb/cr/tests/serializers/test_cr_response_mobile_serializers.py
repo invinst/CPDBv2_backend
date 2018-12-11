@@ -100,6 +100,7 @@ class InvestigatorAllegationMobileSerializerTestCase(TestCase):
             investigator__first_name='German',
             investigator__last_name='Lauren'
         )
+        setattr(investigator_allegation, 'has_badge_number', True)
 
         result = InvestigatorMobileSerializer(investigator_allegation).data
         expect(result['full_name']).to.eq('German Lauren')
