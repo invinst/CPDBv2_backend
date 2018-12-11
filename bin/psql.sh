@@ -7,7 +7,7 @@ cd $DIR/..
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Connect to app database on production or staging or local using psql."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging|--local}"
+    echo "Usage: `basename $0` {--production|--staging|--local(default)}"
     echo "       `basename $0` {-h|--help}"
     exit 0
 elif [ "$1" == "--production" ]; then
@@ -16,12 +16,9 @@ elif [ "$1" == "--production" ]; then
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     SERVICE=pg-proxy
-elif [ "$1" == "--local" ]; then
+else
     ENV_FILE=.env
     SERVICE=postgres
-else
-    echo "Must specify either --production or --staging or --local."
-    exit 1
 fi
 
 source $ENV_FILE
