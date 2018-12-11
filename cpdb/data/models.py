@@ -8,6 +8,7 @@ from django.db.models import F, Q, Value, Max, Count, Prefetch
 from django.db.models.functions import Concat, ExtractYear, Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
+from django.db.models import Exists, OuterRef
 
 from django_bulk_update.manager import BulkUpdateManager
 
@@ -1040,6 +1041,23 @@ class Victim(models.Model):
             return self.gender
 
 
+class AttachmentRequestManager(models.Manager):
+    def annotate_investigated_by_cpd(self):
+        return self.annotate(has_badge_number=Exists(Allegation.objects.filter(
+            id=OuterRef('allegation_id'),
+            investigatorallegation__investigator__officer__officerbadgenumber__isnull=False
+        ))).annotate(has_current_star=Exists(Allegation.objects.filter(
+            id=OuterRef('allegation_id'),
+            investigatorallegation__current_star__isnull=False
+        ))).annotate(investigated_by_cpd=models.Case(
+            models.When(allegation__incident_date__year__lt=2006, then=True),
+            models.When(has_current_star=True, then=True),
+            models.When(has_badge_number=True, then=True),
+            default=False,
+            output_field=models.BooleanField()
+        ))
+
+
 class AttachmentRequest(models.Model):
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
@@ -1047,7 +1065,9 @@ class AttachmentRequest(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
 
-    objects = BulkUpdateManager()
+    bulk_objects = BulkUpdateManager()
+
+    objects = AttachmentRequestManager()
 
     class Meta:
         unique_together = (('allegation', 'email'),)
@@ -1068,10 +1088,6 @@ class AttachmentRequest(models.Model):
         investigators = [ia.investigator.full_name for ia in investigatorallegation_set.all()]
         return ', '.join(investigators)
     investigator_names.short_description = 'Investigators'
-
-    def investigated_by_cpd(self):
-        return self.allegation.investigatorallegation_set.filter(investigator__officer_id__isnull=False).exists()
-    investigated_by_cpd.boolean = True
 
 
 class SalaryManager(models.Manager):

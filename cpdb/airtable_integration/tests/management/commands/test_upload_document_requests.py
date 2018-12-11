@@ -23,7 +23,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
     def test_upload_document_requests(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'airtable_id'}
 
-        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation123, officer=officer_1)
