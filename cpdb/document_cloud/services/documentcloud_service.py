@@ -33,9 +33,7 @@ class DocumentcloudService(object):
         '''
         Parse title to get allegation CRID
         '''
-        pattern = re.compile(
-            r'^CRID([- ])(?P<crid>\d+)([- ])(?P<document_type>{document_type}).*'.format(document_type=document_type)
-        )
+        pattern = re.compile(fr'^CRID([- ])(?P<crid>\d+)([- ])(?P<document_type>{document_type}).*')
 
         matched = re.match(pattern, documentcloud_title)
         if matched:

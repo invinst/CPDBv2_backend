@@ -7,7 +7,7 @@ from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, MAJOR_AWARDS
 
 class _UnitSerializer(BaseSerializer):
     def get_long_unit_name(self, obj):
-        return 'Unit %s' % obj['unit__unit_name'] if obj['unit__unit_name'] else 'Unit'
+        return f"Unit {obj['unit__unit_name']}" if obj['unit__unit_name'] else 'Unit'
 
     def __init__(self, *args, **kwargs):
         super(_UnitSerializer, self).__init__(*args, **kwargs)
@@ -238,12 +238,10 @@ class OfficerSerializer(BaseSerializer):
         )
 
     def get_url(self, obj):
-        return '{domain}/officer/{slug}/{pk}'.format(
-            domain=settings.V1_URL, slug=slugify(self.get_full_name(obj)), pk=obj['id']
-        )
+        return f"{settings.V1_URL}/officer/{slugify(self.get_full_name(obj))}/{obj['id']}"
 
     def get_to(self, obj):
-        return '/officer/%d/%s/' % (obj['id'], slugify(self.get_full_name(obj)))
+        return f"/officer/{obj['id']}/{slugify(self.get_full_name(obj))}/"
 
     def get_current_salary(self, obj):
         try:

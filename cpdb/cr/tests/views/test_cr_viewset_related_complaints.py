@@ -21,10 +21,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
 
     def search(self, crid, params):
         return self.client.get(
-            '%s?%s' % (
-                reverse('api-v2:cr-related-complaints', kwargs={'pk': crid}),
-                urlencode(params)
-            )
+            f"{reverse('api-v2:cr-related-complaints', kwargs={'pk': crid})}?{urlencode(params)}"
         )
 
     def expect_empty_result(self, response):

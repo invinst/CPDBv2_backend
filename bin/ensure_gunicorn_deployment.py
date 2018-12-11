@@ -24,13 +24,13 @@ def call_cmd(cmd):
 
 
 def get_pod_states(namespace):
-    pod_output = call_cmd('kubectl get pods -l app=%s -n %s -o json' % (DEPLOYMENT_NAME, namespace))
+    pod_output = call_cmd(f'kubectl get pods -l app={DEPLOYMENT_NAME} -n {namespace} -o json')
     pod_state = json.loads(pod_output)
     return pod_state['items']
 
 
 def exit_with_log(container_name, pod_name, namespace):
-    log = call_cmd('kubectl logs %s %s -n %s' % (pod_name, container_name, namespace))
+    log = call_cmd(f'kubectl logs {pod_name} {container_name} -n {namespace}')
     print(log)
     sys.stdout.flush()
     sys.exit(1)
@@ -53,40 +53,33 @@ def check_pod_status(namespace, pod_names_before_deploy):
 
             if pod['status']['phase'] == 'Pending':
                 waiting = True
-                print('Pod %s Pending...' % pod_name)
+                print(f'Pod {pod_name} Pending...')
                 continue
 
             for container_status in pod['status']['containerStatuses']:
                 container_name = container_status['name']
 
                 if container_status['ready']:
-                    print('Container %s %s ready' % (pod_name, container_name))
+                    print(f'Container {pod_name} {container_name} ready')
                     continue
 
                 if 'terminated' in container_status['state']:
-                    print('Container %s %s terminated with following log' % (pod_name, container_name))
-                    exit_with_log(
-                        container_name, pod_name, namespace
-                    )
+                    print(f'Container {pod_name} {container_name} terminated with following log')
+                    exit_with_log(container_name, pod_name, namespace)
 
                 if 'waiting' in container_status['state']:
                     if container_status['restartCount'] > 0:
-                        print('Container %s %s failed with following log' % (pod_name, container_name))
-                        exit_with_log(
-                            container_name, pod_name, namespace
-                        )
+                        print(f'Container {pod_name} {container_name} failed with following log')
+                        exit_with_log(container_name, pod_name, namespace)
                     else:
                         waiting = True
-                        print('Container %s %s waiting...' % (pod_name, container_name))
+                        print(f'Container {pod_name} {container_name} waiting...')
         if not waiting:
             break
         sys.stdout.flush()
         time.sleep(PENDING_CHECK_INTERVAL)
     else:
-        print(
-            'Deployment takes too long! Doesnt finish in %d x %d seconds' %
-            (PENDING_CHECK_ATTEMPS, PENDING_CHECK_INTERVAL)
-        )
+        print(f'Deployment takes too long! Doesnt finish in {PENDING_CHECK_ATTEMPS} x {PENDING_CHECK_INTERVAL} seconds')
         sys.stdout.flush()
         sys.exit(1)
 
@@ -105,8 +98,8 @@ if __name__ == "__main__":
     namespace = args.namespace
 
     pod_names_before_deploy = get_pod_names(namespace)
-    print('Pods from previous deploy: %s' % ', '.join(pod_names_before_deploy))
+    print(f"Pods from previous deploy: {', '.join(pod_names_before_deploy)}")
 
-    call_cmd('cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace=%s' % namespace)
+    call_cmd(f'cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - --namespace={namespace}')
 
     check_pod_status(namespace, pod_names_before_deploy)

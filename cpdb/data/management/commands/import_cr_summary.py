@@ -29,4 +29,4 @@ class Command(BaseCommand):
                         cr.save()
                 except Allegation.DoesNotExist:
                     # TODO: since it is not enough data, we not yet import to real db
-                    logger.warning('cr {} does not exist'.format(row['crid']))
+                    logger.warning(f"cr {row['crid']} does not exist")

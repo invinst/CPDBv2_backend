@@ -29,7 +29,7 @@ class BaseResponseBuilder:
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
 
             if len(tweet_content) > 140:
-                tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
+                tweet_content = tweet_content.replace(f"@{variables_set['user_name']} ", '')
             yield {
                 'source': source,
                 'tweet_content': tweet_content,
@@ -50,7 +50,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
             yield {
                 'officer': Officer.objects.get(pk=officer['id']),
                 '_entity': officer,
-                '_url': '%s%s' % (settings.DOMAIN, '/officer/%s/' % officer['id']),
+                '_url': f"{settings.DOMAIN}/officer/{officer['id']}/",
                 'source': (source, )
             }
 
@@ -86,6 +86,4 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
 
         except AttributeError:
             raise StopIteration()
-        yield {
-            '_url': settings.DOMAIN
-        }
+        yield {'_url': settings.DOMAIN}

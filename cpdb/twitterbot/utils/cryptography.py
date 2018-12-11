@@ -10,4 +10,4 @@ def get_hash_token(key, msg):
         digestmod=hashlib.sha256
     ).digest()
 
-    return 'sha256=%s' % base64.b64encode(hash_digest).decode()
+    return f'sha256={base64.b64encode(hash_digest).decode()}'

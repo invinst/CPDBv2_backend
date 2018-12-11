@@ -26,12 +26,12 @@ def call_cmd(cmd):
 
 
 def get_pr(pr_num):
-    pr_endpoint = 'https://api.github.com/repos/EastAgile/%s/pulls/%s' % (repository, pr_num)
-    return requests.get(pr_endpoint, headers={'Authorization': 'token %s' % github_token}).json()
+    pr_endpoint = f'https://api.github.com/repos/EastAgile/{repository}/pulls/{pr_num}'
+    return requests.get(pr_endpoint, headers={f'Authorization': 'token {github_token}'}).json()
 
 
 def get_commits(pr):
-    return requests.get(pr['commits_url'], headers={'Authorization': 'token %s' % github_token}).json()
+    return requests.get(pr['commits_url'], headers={'Authorization': f'token {github_token}'}).json()
 
 
 def extract_ptid_from_commit_message(msg):
@@ -51,8 +51,7 @@ def get_stories(pr):
         return []
     ptids = list(set(ptids))
     return requests.get(
-        'https://www.pivotaltracker.com/services/v5/projects/%s/stories?filter=id:%s' %
-        (project_id, ','.join(ptids)),
+        f"https://www.pivotaltracker.com/services/v5/projects/{project_id}/stories?filter=id:{','.join(ptids)}",
         headers={'X-TrackerToken': pt_token}
     ).json()
 
@@ -122,7 +121,7 @@ def notify_slack(prs=None, stories=None):
         os.environ['CPDP_DEPLOY_NOTIFIER_WEBHOOK'],
         headers={'Content-type': 'application/json'},
         data=json.dumps({
-            'text': 'Finished deploy for repo %s.' % repository,
+            'text': f'Finished deploy for repo {repository}.',
             'attachments': attachments
         }))
 
@@ -163,5 +162,5 @@ if __name__ == "__main__":
         notify_slack(prs=child_prs, stories=child_stories)
 
     else:
-        print("Pull request head is neither hotfix nor develop (%s). Don't know what to do." % pr['head']['ref'])
+        print(f"Pull request head is neither hotfix nor develop ({pr['head']['ref']}). Don't know what to do.")
         sys.exit(0)
