@@ -19,6 +19,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             last_name='Vu',
             race='White',
             gender='M',
+            rank='Detective',
             appointed_date=date(2000, 1, 1),
             birth_year=1980,
             civilian_allegation_percentile=11.1111,
@@ -61,6 +62,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             'officer_on_duty': False,
             'officer': {
                 'id': officer.id,
+                'rank': 'Detective',
                 'gender': 'Male',
                 'race': 'White',
                 'full_name': 'Vinh Vu',
