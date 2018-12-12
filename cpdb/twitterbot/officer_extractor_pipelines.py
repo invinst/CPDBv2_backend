@@ -44,7 +44,7 @@ class UrlPipeline(object):
             for url in tweet.urls:
                 parsed = urlparse(url)
                 if parsed.netloc == self.site_netloc:
-                    matches = re.match('^/officer/(\d+)', parsed.path)
+                    matches = re.match(r'^/officer/(\d+)', parsed.path)
                     try:
                         officer_id = matches.group(1)
                         officer = OfficerInfoDocType().get(officer_id)
