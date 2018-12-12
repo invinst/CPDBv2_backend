@@ -10,7 +10,7 @@ POPULAR_IRISH_O_NAMES_REGEX = '|'.join(POPULAR_IRISH_O_NAMES)
 
 def remove_wrong_spacing(name):
     # John Hollowell  Jr. -> John Hollowell Jr.
-    return re.sub('\s+', ' ', name)
+    return re.sub(r'\s+', ' ', name)
 
 
 def capitalise_generation_suffix(name):

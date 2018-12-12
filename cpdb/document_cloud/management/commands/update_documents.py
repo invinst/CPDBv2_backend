@@ -60,7 +60,7 @@ class Command(BaseCommand):
             return {'attachment': updated_attachment, 'is_new_attachment': False, 'updated': updated}
 
         except AttachmentFile.DoesNotExist:
-            title = re.sub(r'([^\s])-([^\s])', '\g<1> \g<2>', cloud_document.title)
+            title = re.sub(r'([^\s])-([^\s])', r'\g<1> \g<2>', cloud_document.title)
             additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
 
             logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(

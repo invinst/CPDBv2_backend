@@ -2,9 +2,10 @@ import re
 
 
 class DocumentcloudService(object):
-    DOCUMENTCLOUD_LINK_PATTERN = ('https://www.documentcloud\.org/documents/'
-                                  '(?P<documentcloud_id>\d+)-(?P<normalized_title>[^/]+)\.html')
-    DOCUMENTCLOUD_ID_PATTERN = '(?P<documentcloud_id>\d+)-.*'
+    DOCUMENTCLOUD_LINK_PATTERN = (
+        r'https://www.documentcloud\.org/documents/(?P<documentcloud_id>\d+)-(?P<normalized_title>[^/]+)\.html'
+    )
+    DOCUMENTCLOUD_ID_PATTERN = r'(?P<documentcloud_id>\d+)-.*'
 
     def parse_link(self, link):
         '''
@@ -33,7 +34,7 @@ class DocumentcloudService(object):
         Parse title to get allegation CRID
         '''
         pattern = re.compile(
-            '^CRID(-| )(?P<crid>\d+)(-| )(?P<document_type>{document_type}).*'.format(document_type=document_type)
+            r'^CRID([- ])(?P<crid>\d+)([- ])(?P<document_type>{document_type}).*'.format(document_type=document_type)
         )
 
         matched = re.match(pattern, documentcloud_title)
