@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
+from operator import itemgetter
 
 from django.test import TestCase, override_settings
 
@@ -455,8 +456,7 @@ class OfficersIndexerTestCase(TestCase):
             officer=officer1,
             trr_datetime=datetime(2016, 3, 15, tzinfo=pytz.utc),
         )
-        rows = self.extract_data()
-
+        rows = sorted(self.extract_data(), key=itemgetter('id'))
         expect(rows).to.have.length(3)
         expect(rows[0]['current_allegation_percentile']).to.eq('33.3333')
         expect(rows[0]['percentiles']).to.eq([
