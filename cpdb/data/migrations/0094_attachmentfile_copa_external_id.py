@@ -26,7 +26,7 @@ def use_url_for_external_id(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data', '0091_correct_allegations_subjects_default'),
+        ('data', '0093_attachment_request_add_airtable_record_id'),
     ]
 
     operations = [
