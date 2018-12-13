@@ -172,6 +172,161 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_update_cr_attachment_request_to_foia_with_empty_airtable_id(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'airtable_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(
+            allegation=allegation,
+            email='requester@example.com',
+            airtable_id=''
+        )
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation':  'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        expect(attachment_request.airtable_id).to.be.eq('')
+        CRRequestAirTableUploader.upload(update_all_records=True)
+        attachment_request.refresh_from_db()
+
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('airtable_id')
+
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_update_cr_attachment_request_to_foia_with_valid_airtable_id(self, airtable_mock):
+        airtable_mock.update = Mock(side_effect=[HTTPError('500')])
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(
+            allegation=allegation,
+            email='requester@example.com',
+            airtable_id='airtable_id'
+        )
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation':  'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        CRRequestAirTableUploader.upload(update_all_records=True)
+        attachment_request.refresh_from_db()
+
+        airtable_mock.update.assert_called_with('airtable_id', expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('airtable_id')
+
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_update_cr_attachment_request_to_foia_with_valid_airtable_id_with_error(self, airtable_mock):
+        airtable_mock.update.return_value = {'id': 'airtable_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(
+            allegation=allegation,
+            email='requester@example.com',
+            airtable_id='airtable_id'
+        )
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation':  'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        CRRequestAirTableUploader.upload(update_all_records=True)
+        attachment_request.refresh_from_db()
+
+        airtable_mock.update.assert_called_with('airtable_id', expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('airtable_id')
+
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_update_cr_attachment_request_to_foia_with_invalid_airtable_id(self, airtable_mock):
+        airtable_mock.update = Mock(side_effect=[HTTPError('404')])
+        airtable_mock.insert.return_value = {'id': 'airtable_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(
+            allegation=allegation,
+            email='requester@example.com',
+            airtable_id='invalid_airtable_id'
+        )
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation':  'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        CRRequestAirTableUploader.upload(update_all_records=True)
+        attachment_request.refresh_from_db()
+
+        airtable_mock.update.assert_called_with('invalid_airtable_id', expected_airtable_data)
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('airtable_id')
+
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_trr_attachment_request_to_foia_with_copa(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
@@ -203,6 +358,40 @@ class DocumentRequestServiceTestCase(TestCase):
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_update_trr_attachment_request_to_foia_with_valid_airtable_id(self, airtable_mock):
+        airtable_mock.update.return_value = {'id': 'airtable_id'}
+
+        officer = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        trr = TRRFactory(id='123456', officer=officer)
+        attachment_request = TRRAttachmentRequestFactory(
+            trr=trr,
+            email='requester@example.com',
+            airtable_id='airtable_id'
+        )
+
+        expected_airtable_data = {
+            'Explanation':  'Officer: Marry Jane(ID 1)',
+            'Project': [
+              'CPDP'
+            ],
+            'Agency': [],
+            'Requested For': 'TRR 123456',
+            'Requestor': [
+              {
+                'id': 'usrGiZFcyZ6wHTYWd',
+                'email': 'rajiv@invisibleinstitute.com',
+                'name': 'Rajiv Sinclair'
+              }
+            ]
+        }
+
+        TRRRequestAirTableUploader.upload(update_all_records=True)
+        attachment_request.refresh_from_db()
+
+        airtable_mock.update.assert_called_with('airtable_id', expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('airtable_id')
 
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_AirTableUploader_raise_NotImplementedError(self, airtable_mock):

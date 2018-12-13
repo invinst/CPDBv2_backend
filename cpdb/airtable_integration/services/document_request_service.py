@@ -45,15 +45,35 @@ class AirTableUploader(object):
     @classmethod
     def _delay_upload(cls, raw_object):
         record = cls._build_record(raw_object)
+
+        if raw_object.airtable_id:
+            airtable_id = cls._update_airtable_row(raw_object.airtable_id, record)
+        else:
+            airtable_id = cls._add_airtable_row(record)
+        time.sleep(cls.API_LIMIT)
+        return airtable_id
+
+    @classmethod
+    def _add_airtable_row(cls, record):
         try:
             res = cls._get_foia_airtable().insert(record)
-            time.sleep(cls.API_LIMIT)
             return res['id']
         except HTTPError:
             return ''
 
     @classmethod
-    def _get_uploaded_objects(cls):
+    def _update_airtable_row(cls, airtable_id, record):
+        try:
+            res = cls._get_foia_airtable().update(airtable_id, record)
+            return res['id']
+        except HTTPError as err:
+            if '404' in err.args[0].split(' '):
+                return cls._add_airtable_row(record)
+            else:
+                return airtable_id
+
+    @classmethod
+    def _get_uploaded_objects(cls, update_all_records=False):
         raise NotImplementedError
 
     @classmethod
@@ -61,8 +81,8 @@ class AirTableUploader(object):
         raise NotImplementedError
 
     @classmethod
-    def upload(cls):
-        raw_objects = cls._get_uploaded_objects()
+    def upload(cls, update_all_records=False):
+        raw_objects = cls._get_uploaded_objects(update_all_records)
 
         uploaded_results = [
             (raw_object, cls._delay_upload(raw_object))
@@ -95,8 +115,13 @@ class CRRequestAirTableUploader(AirTableUploader):
         return explanation, requested_for, agencies
 
     @classmethod
-    def _get_uploaded_objects(cls):
-        return AttachmentRequest.objects.filter(airtable_id='')
+    def _get_uploaded_objects(cls, update_all_records=False):
+        records = AttachmentRequest.objects.all()
+
+        if not update_all_records:
+            records = records.filter(airtable_id='')
+
+        return records
 
     @classmethod
     def _post_handle(cls, uploaded_results):
@@ -126,8 +151,13 @@ class TRRRequestAirTableUploader(AirTableUploader):
         return explanation, requested_for, []
 
     @classmethod
-    def _get_uploaded_objects(cls):
-        return TRRAttachmentRequest.objects.filter(airtable_id='')
+    def _get_uploaded_objects(cls, update_all_records=False):
+        records = TRRAttachmentRequest.objects.all()
+
+        if not update_all_records:
+            records = records.filter(airtable_id='')
+
+        return records
 
     @classmethod
     def _post_handle(cls, uploaded_results):
