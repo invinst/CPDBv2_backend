@@ -100,7 +100,7 @@ class AutoOpenIPRA(object):
                 num_created += 1
             else:
                 updating_fields = [
-                    'file_type', 'title', 'url', 'original_url', 'tag', 'last_updated', 'source_type'
+                    'file_type', 'title', 'url', 'original_url', 'tag', 'external_last_updated', 'source_type'
                 ]
                 updated = False
                 for field in updating_fields:

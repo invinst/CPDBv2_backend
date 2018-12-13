@@ -158,8 +158,8 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             allegation=allegation,
             original_url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
             url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
-            created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-            last_updated=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
+            external_created_at=datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
+            external_last_updated=datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
             preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html'
         )
 
@@ -517,8 +517,8 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             title='CRID 123456 CR',
             url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
             preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-            last_updated=updated_date,
-            created_at=created_date,
+            external_last_updated=updated_date,
+            external_created_at=created_date,
             tag='CR'
         )
 

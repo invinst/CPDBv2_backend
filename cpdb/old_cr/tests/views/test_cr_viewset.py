@@ -276,7 +276,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url',
-            created_at=six_month_ago + timedelta(days=10)
+            external_created_at=six_month_ago + timedelta(days=10)
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -284,7 +284,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=six_month_ago + timedelta(days=5)
+            external_created_at=six_month_ago + timedelta(days=5)
         )
 
         allegation2 = AllegationFactory(crid='112')
@@ -295,7 +295,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            created_at=six_month_ago + timedelta(days=6)
+            external_created_at=six_month_ago + timedelta(days=6)
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
