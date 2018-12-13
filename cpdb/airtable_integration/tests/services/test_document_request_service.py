@@ -440,8 +440,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 ):
                     AirTableUploader.upload()
 
-    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
-    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID', AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_Airtable_insert_raise_HTTPError(self, airtable_mock):
         AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[{'id': 'some_airtable_record_id'}, HTTPError])

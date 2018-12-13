@@ -271,12 +271,13 @@ class OfficerCacheManagerTestCase(TestCase):
         expect(officer_4.trr_percentile).to.eq(Decimal('66.6667'))
         expect(officer_4.honorable_mention_percentile).to.be.none()
 
-    @override_settings(ALLEGATION_MIN='1988-01-01')
-    @override_settings(ALLEGATION_MAX='2016-07-01')
-    @override_settings(INTERNAL_CIVILIAN_ALLEGATION_MIN='2000-01-01')
-    @override_settings(INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01')
-    @override_settings(TRR_MIN='2004-01-08')
-    @override_settings(TRR_MAX='2016-04-12')
+    @override_settings(
+        ALLEGATION_MIN='1988-01-01',
+        ALLEGATION_MAX='2016-07-01',
+        INTERNAL_CIVILIAN_ALLEGATION_MIN='2000-01-01',
+        INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01',
+        TRR_MIN='2004-01-08',
+        TRR_MAX='2016-04-12')
     def test_build_cached_yearly_percentiles(self):
         officer_1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
         officer_2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))

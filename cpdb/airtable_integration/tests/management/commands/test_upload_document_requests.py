@@ -17,8 +17,7 @@ from trr.models import TRRAttachmentRequest
 
 
 class UpdateDocumentsCommandTestCase(TestCase):
-    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
-    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID', AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_document_requests(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'airtable_id'}
