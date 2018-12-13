@@ -11,6 +11,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
 from document_cloud.utils import parse_crid_from_title, parse_id, parse_link, get_url
+from email_service.service import send_attachment_available_notification
 
 
 logger = logging.getLogger('django.command')
@@ -121,7 +122,7 @@ class Command(BaseCommand):
 
         kept_attachments = []
         changed_attachments = []
-        num_new_attachments = 0
+        new_attachments = []
         num_updated_attachments = 0
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
         for document_type, syntax in search_syntaxes:
@@ -135,7 +136,7 @@ class Command(BaseCommand):
 
                         if result['is_new_attachment']:
                             changed_attachments.append(attachment)
-                            num_new_attachments += 1
+                            new_attachments.append(attachment)
                         elif result['updated']:
                             changed_attachments.append(attachment)
                             num_updated_attachments += 1
@@ -149,6 +150,7 @@ class Command(BaseCommand):
         logger.info(f'Deleting {deleted_attachments.count()} attachments')
         deleted_attachments.delete()
 
+        num_new_attachments = len(new_attachments)
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
             source_type=AttachmentSourceType.DOCUMENTCLOUD
@@ -163,3 +165,5 @@ class Command(BaseCommand):
             f'Done! {num_new_attachments} created, {num_updated_attachments} updated '
             f'in {num_documents} documentcloud attachments'
         )
+
+        send_attachment_available_notification(new_attachments)
