@@ -3,7 +3,7 @@ import json
 import pytz
 from datetime import datetime
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.core.management import call_command
 from robber import expect
@@ -28,7 +28,7 @@ class UploadHeatmapGeoJSONCommandTestCase(TestCase):
                 **kwargs
             )
 
-    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
+    @override_settings(ALLEGATION_MIN='1988-01-01')
     def test_get_heatmap_cluster_data(self):
         AllegationFactory(point=Point([20, 22]), incident_date=datetime(1988, 1, 1, tzinfo=pytz.utc))
         AllegationFactory(point=Point([21, 22]), incident_date=datetime(2016, 7, 1, tzinfo=pytz.utc))

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.test import override_settings
 from django.test.testcases import TestCase
 from django.conf import settings
 
@@ -25,7 +26,7 @@ from trr.factories import TRRAttachmentRequestFactory, TRRFactory
 
 
 class DocumentRequestServiceTestCase(TestCase):
-    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
@@ -63,7 +64,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
-    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
@@ -99,7 +100,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006_but_no_incident_date(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
@@ -135,7 +136,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_copa(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
@@ -171,7 +172,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_update_cr_attachment_request_to_foia_with_empty_airtable_id(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'airtable_id'}
@@ -210,7 +211,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('airtable_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_update_cr_attachment_request_to_foia_with_valid_airtable_id(self, airtable_mock):
         airtable_mock.update = Mock(side_effect=[HTTPError('500')])
@@ -248,7 +249,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.update.assert_called_with('airtable_id', expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('airtable_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_update_cr_attachment_request_to_foia_with_valid_airtable_id_with_error(self, airtable_mock):
         airtable_mock.update.return_value = {'id': 'airtable_id'}
@@ -286,7 +287,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.update.assert_called_with('airtable_id', expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('airtable_id')
 
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_update_cr_attachment_request_to_foia_with_invalid_airtable_id(self, airtable_mock):
         airtable_mock.update = Mock(side_effect=[HTTPError('404')])
@@ -439,8 +440,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 ):
                     AirTableUploader.upload()
 
-    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
-    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
+    @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_Airtable_insert_raise_HTTPError(self, airtable_mock):
         AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[{'id': 'some_airtable_record_id'}, HTTPError])
