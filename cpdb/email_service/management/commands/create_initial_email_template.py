@@ -10,7 +10,7 @@ class Command(BaseCommand):
             type=ATTACHMENT_REQUEST,
             defaults={
                 'subject': 'Document request success',
-                'body': '''Dear *{name}*,
+                'body': '''Dear **{name}**,
 
 Your document request for allegation {crid} has been recorded.
 We will send an email to you when any new document is available.
@@ -24,7 +24,7 @@ CPDP team''',
             type=ATTACHMENT_AVAILABLE,
             defaults={
                 'subject': 'Document for {crid} now available',
-                'body': '''Dear *{name}*,
+                'body': '''Dear **{name}**,
 
 There are new documents for allegation {crid}.
 To see them, please go to {cr_page_url}
