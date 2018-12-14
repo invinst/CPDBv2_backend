@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from django.urls import reverse
 from django.contrib.gis.geos import Point
 from django.utils.timezone import now
+from mock import patch
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -453,7 +454,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_request_document(self):
+    @patch('cr.views.send_attachment_request_email')
+    def test_request_document(self, mock_send_attachment_request_email):
         EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         AllegationFactory(crid='112233')
         response = self.client.post(
@@ -465,6 +467,11 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             'message': 'Thanks for subscribing',
             'crid': '112233'
         })
+        expect(mock_send_attachment_request_email).to.be.called_once_with(
+            'valid_email@example.com',
+            attachment_type='cr_request',
+            pk='112233',
+        )
 
     def test_request_same_document_twice(self):
         EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)

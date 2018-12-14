@@ -317,8 +317,9 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(media789.external_id).to.eq('789')
         expect(media789.title).to.eq('CRID 123456 CR new - document')
 
+    @patch('document_cloud.management.commands.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    def test_clean_not_exist_attachments(self, DocumentCloudMock):
+    def test_clean_not_exist_attachments(self, DocumentCloudMock, mock_send_cr_attachment_available_email):
         EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         allegation = AllegationFactory(crid=123456)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
@@ -381,8 +382,12 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_new_documents).to.equal(1)
         expect(crawling_log.num_updated_documents).to.equal(1)
 
+        to_be_sent_attachment = AttachmentFile.objects.get(external_id='012')
+        expect(mock_send_cr_attachment_available_email).to.be.called_once_with([to_be_sent_attachment])
+
+    @patch('document_cloud.management.commands.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    def test_attachments_unchanged(self, DocumentCloudMock):
+    def test_attachments_unchanged(self, DocumentCloudMock, mock_send_cr_attachment_available_email):
         EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
@@ -422,3 +427,4 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_documents).to.equal(1)
         expect(crawling_log.num_new_documents).to.equal(0)
         expect(crawling_log.num_updated_documents).to.equal(0)
+        mock_send_cr_attachment_available_email.assert_called_once_with([])
