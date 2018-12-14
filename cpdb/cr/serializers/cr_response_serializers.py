@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Exists, OuterRef
 
 from data.constants import MAX_VISUAL_TOKEN_YEAR
-from data.models import AttachmentRequest
+from data.models import AttachmentRequest, Investigator
 from shared.serializer import NoNullSerializer
 
 
@@ -70,7 +70,7 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
     officer_id = serializers.IntegerField(required=False, source='investigator.officer.id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    badge = serializers.CharField(source='investigator.badge')
+    badge = serializers.SerializerMethodField()
 
     percentile_allegation_civilian = serializers.FloatField(
         required=False, source='investigator.officer.civilian_allegation_percentile')
@@ -84,6 +84,15 @@ class InvestigatorAllegationSerializer(NoNullSerializer):
 
     def get_full_name(self, obj):
         return getattr(obj.investigator.officer, 'full_name', obj.investigator.full_name)
+
+    def get_badge(self, obj):
+        incident_date = obj.allegation.incident_date
+
+        pre_2006 = incident_date and incident_date.year < 2006
+        if pre_2006 or obj.current_star or obj.has_badge_number:
+            return 'CPD'
+        else:
+            return 'COPA/IPRA'
 
 
 class PoliceWitnessSerializer(NoNullSerializer):
@@ -143,7 +152,16 @@ class CRSerializer(NoNullSerializer):
         )
 
     def get_investigator_allegation(self, obj):
-        return obj.investigatorallegation_set.prefetch_related(Prefetch('investigator__officer'))
+        return obj.investigatorallegation_set\
+            .prefetch_related(Prefetch('investigator__officer'))\
+            .annotate(
+                has_badge_number=Exists(
+                    Investigator.objects.filter(
+                        id=OuterRef('investigator_id'),
+                        officer__officerbadgenumber__isnull=False
+                    )
+                )
+            )
 
     def get_beat(self, obj):
         return obj.beat.name if obj.beat is not None else None
