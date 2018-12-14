@@ -30,4 +30,4 @@ def send_attachment_request_welcome_email(email, crid):
     email_template = EmailTemplate.objects.get(type=ATTACHMENT_REQUEST)
     name = re.match(r'.+?(?=@)', email).group(0)
     message = email_template.create_message([email], crid=crid, name=name)
-    send_mail(*message)
+    send_mail(**message)
