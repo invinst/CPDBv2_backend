@@ -198,6 +198,8 @@ class TRR(models.Model):
     subject_birth_year = models.PositiveSmallIntegerField(null=True)
     subject_gender = models.CharField(max_length=1, null=True, choices=GENDER)
     subject_race = models.CharField(max_length=32, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def force_category(self):
@@ -233,6 +235,8 @@ class ActionResponse(models.Model):
     action_sub_category = models.CharField(max_length=3, null=True)
     action_category = models.CharField(max_length=1, null=True)
     resistance_level = models.CharField(max_length=16, null=True, choices=RESISTANCE_LEVEL_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class WeaponDischarge(models.Model):
@@ -254,6 +258,8 @@ class WeaponDischarge(models.Model):
     discharge_distance = models.CharField(max_length=16, null=True)
     object_struck_of_discharge = models.CharField(max_length=32, null=True, choices=OBJECT_STRUCK_OF_DISCHARGE_CHOICES)
     discharge_position = models.CharField(max_length=32, null=True, choices=DISCHARGE_POSITION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Charge(models.Model):
@@ -262,6 +268,8 @@ class Charge(models.Model):
     statute = models.CharField(max_length=64, null=True)
     description = models.CharField(max_length=64, null=True)
     subject_no = models.PositiveIntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class TRRStatus(models.Model):
@@ -272,6 +280,8 @@ class TRRStatus(models.Model):
     status = models.CharField(max_length=16, null=True, choices=TRR_STATUS_CHOICES)
     status_datetime = models.DateTimeField(null=True)
     age = models.SmallIntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class SubjectWeapon(models.Model):
@@ -279,6 +289,8 @@ class SubjectWeapon(models.Model):
     weapon_type = models.CharField(max_length=64, null=True)
     firearm_caliber = models.CharField(max_length=16, null=True)
     weapon_description = models.CharField(max_length=64, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class TRRAttachmentRequest(models.Model):
@@ -287,6 +299,7 @@ class TRRAttachmentRequest(models.Model):
     status = models.BooleanField(default=False)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 

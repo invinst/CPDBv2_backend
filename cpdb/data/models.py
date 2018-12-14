@@ -25,6 +25,8 @@ AREA_CHOICES_DICT = dict(AREA_CHOICES)
 
 class TaggableModel(models.Model):
     tags = ArrayField(models.CharField(null=True, max_length=20), default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -34,6 +36,8 @@ class PoliceUnit(TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
     active = models.NullBooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.unit_name
@@ -269,6 +273,8 @@ class Officer(TaggableModel):
     rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # CACHED COLUMNS
     complaint_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
@@ -544,6 +550,8 @@ class OfficerBadgeNumber(models.Model):
     officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
     star = models.CharField(max_length=10)
     current = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -561,6 +569,8 @@ class OfficerHistory(models.Model):
     unit = models.ForeignKey(PoliceUnit, on_delete=models.CASCADE, null=True)
     effective_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -602,6 +612,8 @@ class Area(TaggableModel):
         null=True,
         help_text="This beat contains police-district HQ"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     @classmethod
     def police_districts_with_allegation_per_capita(cls):
@@ -670,12 +682,16 @@ class RacePopulation(models.Model):
     race = models.CharField(max_length=255)
     count = models.PositiveIntegerField()
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class LineArea(models.Model):
     name = models.CharField(max_length=100)
     linearea_type = models.CharField(max_length=30, choices=LINE_AREA_CHOICES)
     geom = models.MultiLineStringField(srid=4326, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Investigator(models.Model):
@@ -687,6 +703,8 @@ class Investigator(models.Model):
     officer = models.ForeignKey(Officer, on_delete=models.SET_NULL, null=True)
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -709,6 +727,8 @@ class AllegationCategory(models.Model):
     allegation_name = models.CharField(max_length=255, blank=True)
     on_duty = models.BooleanField(default=False)
     citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -730,6 +750,8 @@ class Allegation(models.Model):
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField(Officer, through='PoliceWitness')
     subjects = ArrayField(models.CharField(max_length=255), default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey(AllegationCategory, on_delete=models.SET_NULL, null=True)
@@ -859,6 +881,8 @@ class InvestigatorAllegation(models.Model):
     current_rank = models.CharField(max_length=100, null=True)
     current_unit = models.ForeignKey(PoliceUnit, on_delete=models.SET_NULL, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -879,6 +903,8 @@ class OfficerAllegation(models.Model):
     final_outcome = models.CharField(max_length=32, blank=True)
     final_outcome_class = models.CharField(max_length=20, blank=True)
     disciplined = models.NullBooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -939,6 +965,8 @@ class OfficerAllegation(models.Model):
 class PoliceWitness(models.Model):
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, null=True)
     officer = models.ForeignKey(Officer, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -949,6 +977,8 @@ class Complainant(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -963,6 +993,8 @@ class Complainant(models.Model):
 class OfficerAlias(models.Model):
     old_officer_id = models.IntegerField()
     new_officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('old_officer_id', 'new_officer')
@@ -976,6 +1008,8 @@ class Involvement(models.Model):
     gender = models.CharField(max_length=1, null=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def gender_display(self):
@@ -995,6 +1029,8 @@ class AttachmentFile(models.Model):
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE, related_name='attachment_files')
     source_type = models.CharField(max_length=255, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
@@ -1017,6 +1053,8 @@ class Award(models.Model):
     requester_full_name = models.CharField(max_length=255, null=True)
     ceremony_date = models.DateField(null=True)
     tracking_no = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Victim(models.Model):
@@ -1025,6 +1063,8 @@ class Victim(models.Model):
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])
     age = models.IntegerField(null=True)
     birth_year = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
@@ -1115,6 +1155,8 @@ class Salary(models.Model):
     age_at_hire = models.PositiveSmallIntegerField(null=True)
     officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
     rank_changed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = SalaryManager()
 

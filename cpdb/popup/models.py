@@ -1,11 +1,13 @@
-from django.db.models import Model, CharField, TextField
+from django.db import models
 
 
-class Popup(Model):
-    name = CharField(max_length=64)
-    page = CharField(max_length=32)
-    title = CharField(max_length=255)
-    text = TextField()
+class Popup(models.Model):
+    name = models.CharField(max_length=64)
+    page = models.CharField(max_length=32)
+    title = models.CharField(max_length=255)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

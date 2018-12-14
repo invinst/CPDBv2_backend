@@ -11,6 +11,8 @@ class SearchTermCategory(SortableMixin):
     name = models.CharField(max_length=60)
     order_number = models.PositiveIntegerField(default=0, editable=False, db_index=True)
     description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['order_number']
@@ -42,6 +44,8 @@ class SearchTermItem(SortableMixin):
     call_to_action_text = models.CharField(max_length=255, null=True, blank=True)
     link = models.CharField(max_length=200, null=True, blank=True)
     order_number = models.PositiveIntegerField(default=0, editable=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['order_number']

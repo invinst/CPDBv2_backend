@@ -5,6 +5,8 @@ class ActivityCard(models.Model):
     officer = models.OneToOneField('data.Officer', on_delete=models.CASCADE, related_name='activity_card')
     important = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class ActivityPairCard(models.Model):
@@ -12,3 +14,5 @@ class ActivityPairCard(models.Model):
     officer2 = models.ForeignKey('data.Officer', on_delete=models.CASCADE, related_name='activity_pair_card2')
     important = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

@@ -6,8 +6,9 @@ from .constants import QUERY_TYPES
 
 class Event(models.Model):
     name = models.CharField(max_length=255)
-    created = models.DateTimeField(auto_now_add=True)
     data = JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class SearchTracking(models.Model):
@@ -15,4 +16,5 @@ class SearchTracking(models.Model):
     usages = models.PositiveIntegerField(default=0)
     results = models.PositiveIntegerField(default=0)
     query_type = models.CharField(choices=QUERY_TYPES, max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
     last_entered = models.DateTimeField(auto_now=True)
