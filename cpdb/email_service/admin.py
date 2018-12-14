@@ -3,7 +3,7 @@ from .models import EmailTemplate
 
 
 class EmailTemplateAdmin(admin.ModelAdmin):
-    list_display = ('type', 'subject', 'from_email')
+    list_display = ('type', 'subject', 'body', 'from_email')
 
     def has_add_permission(self, request):
         return False  # pragma: no cover

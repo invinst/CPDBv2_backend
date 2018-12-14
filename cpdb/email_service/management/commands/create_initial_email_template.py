@@ -10,12 +10,13 @@ class Command(BaseCommand):
             type=ATTACHMENT_REQUEST,
             defaults={
                 'subject': 'Document request success',
-                'body': (
-                    'Dear citizen,\n\n'
-                    '\tWe received your document request for allegation {crid}. '
-                    'We will send an email to you when any document is available.\n\n'
-                    'Thank you!\nCPDP team'
-                ),
+                'body': '''Dear citizen,
+
+Your document request for allegation {crid} has been recorded.
+We will send an email to you when any new document is available.
+
+Regards,
+CPDP team''',
                 'from_email': 'info@cpdp.co'
             }
         )
@@ -23,12 +24,13 @@ class Command(BaseCommand):
             type=ATTACHMENT_AVAILABLE,
             defaults={
                 'subject': 'Document for {crid} now available',
-                'body': (
-                    'Dear citizen,\n\n'
-                    'We have new documents for allegation {crid}. '
-                    'To see them, please go to {cr_page_url}.\n\n'
-                    'Sincerely!\nCPDP team'
-                ),
+                'body': '''Dear citizen,
+
+There are new documents for allegation {crid}.
+To see them, please go to {cr_page_url}
+
+Regards,
+CPDP team''',
                 'from_email': 'info@cpdp.co'
             }
         )

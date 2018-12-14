@@ -6,7 +6,7 @@ class EmailTemplate(models.Model):
     type = models.CharField(
         choices=[(ATTACHMENT_REQUEST, ATTACHMENT_REQUEST), (ATTACHMENT_AVAILABLE, ATTACHMENT_AVAILABLE)],
         max_length=255)
-    subject = models.TextField()
+    subject = models.CharField(max_length=255)
     body = models.TextField()
     from_email = models.EmailField(max_length=255)
 
