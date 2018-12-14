@@ -1,3 +1,5 @@
+import re
+
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -26,6 +28,6 @@ def send_attachment_available_notification(new_attachments):
 
 def send_attachment_request_welcome_email(email, crid):
     email_template = EmailTemplate.objects.get(type=ATTACHMENT_REQUEST)
-
-    message = email_template.create_message([email], crid=crid)
+    name = re.match(r'.+?(?=@)', email).group(0)
+    message = email_template.create_message([email], crid=crid, name=name)
     send_mail(*message)

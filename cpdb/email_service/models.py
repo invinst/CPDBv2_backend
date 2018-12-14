@@ -1,3 +1,5 @@
+from markdown2 import markdown
+
 from django.db import models
 from .constants import ATTACHMENT_REQUEST, ATTACHMENT_AVAILABLE
 
@@ -11,4 +13,4 @@ class EmailTemplate(models.Model):
     from_email = models.EmailField(max_length=255)
 
     def create_message(self, to, **kwargs):
-        return self.subject.format(**kwargs), self.body.format(**kwargs), self.from_email, to
+        return self.subject.format(**kwargs), markdown(self.body.format(**kwargs)), self.from_email, to
