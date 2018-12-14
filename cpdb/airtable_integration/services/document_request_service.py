@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 from django.conf import settings
 
@@ -126,14 +127,16 @@ class CRRequestAirTableUploader(AirTableUploader):
     @classmethod
     def _post_handle(cls, uploaded_results):
         uploaded_attachment_requests = []
+        now = datetime.now()
         for attachment_request, record_id in uploaded_results:
             if record_id:
                 attachment_request.airtable_id = record_id
+                attachment_request.updated_at = now
                 uploaded_attachment_requests.append(attachment_request)
 
         AttachmentRequest.objects.bulk_update(
             uploaded_attachment_requests,
-            update_fields=['airtable_id'],
+            update_fields=['airtable_id', 'updated_at'],
             batch_size=1000
         )
 
@@ -162,13 +165,15 @@ class TRRRequestAirTableUploader(AirTableUploader):
     @classmethod
     def _post_handle(cls, uploaded_results):
         uploaded_attachment_requests = []
+        now = datetime.now()
         for attachment_request, record_id in uploaded_results:
             if record_id:
                 attachment_request.airtable_id = record_id
+                attachment_request.updated_at = now
                 uploaded_attachment_requests.append(attachment_request)
 
         TRRAttachmentRequest.objects.bulk_update(
             uploaded_attachment_requests,
-            update_fields=['airtable_id'],
+            update_fields=['airtable_id', 'updated_at'],
             batch_size=1000
         )
