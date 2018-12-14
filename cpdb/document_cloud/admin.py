@@ -4,7 +4,7 @@ from .models import DocumentCrawler, DocumentCloudSearchQuery
 
 class DocumentCrawlerAdmin(admin.ModelAdmin):
     readonly_fields = list_display = (
-        'id', 'source_type', 'num_documents', 'num_new_documents', 'num_updated_documents', 'timestamp'
+        'id', 'source_type', 'num_documents', 'num_new_documents', 'num_updated_documents', 'created_at'
     )
 
     def has_add_permission(self, request):

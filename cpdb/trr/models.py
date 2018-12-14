@@ -285,8 +285,8 @@ class TRRAttachmentRequest(models.Model):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = BulkUpdateManager()
 
