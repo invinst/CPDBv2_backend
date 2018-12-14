@@ -15,13 +15,13 @@ from document_cloud.management.commands.update_documents import Command
 from document_cloud.models import DocumentCrawler
 from document_cloud.tests.mixins import DocumentcloudTestCaseMixin
 from email_service.factories import EmailTemplateFactory
-from email_service.constants import ATTACHMENT_AVAILABLE
+from email_service.constants import CR_ATTACHMENT_AVAILABLE
 from shared.tests.utils import create_object
 
 
 class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
     def test_get_search_syntaxes(self):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
 
         queries = DocumentCloudSearchQueryFactory.create_batch(2)
 
@@ -36,7 +36,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             ])
 
     def test_get_call_process_documentcloud_document(self):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         query = DocumentCloudSearchQueryFactory()
 
         with patch('document_cloud.management.commands.update_documents.DocumentCloud') as mock_documentcloud:
@@ -53,7 +53,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
                 mock_process.assert_called_with(cleaned_result, query.type)
 
     def test_skip_empty_syntaxes(self):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         queries = [
             DocumentCloudSearchQueryFactory(),
             DocumentCloudSearchQueryFactory(query='')
@@ -68,7 +68,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             mock_search.assert_called_once_with(queries[0].query)
 
     def test_create_crawler_log(self):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
 
         expect(DocumentCrawler.objects.count()).to.eq(0)
 
@@ -319,7 +319,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
     def test_clean_not_exist_attachments(self, DocumentCloudMock):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         allegation = AllegationFactory(crid=123456)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
@@ -383,7 +383,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
     def test_attachments_unchanged(self, DocumentCloudMock):
-        EmailTemplateFactory(type=ATTACHMENT_AVAILABLE)
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
             external_id='789',

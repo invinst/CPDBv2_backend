@@ -15,9 +15,10 @@ from cr.serializers.cr_response_serializers import (
     AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer, CRRelatedComplaintSerializer
 )
 from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
+from email_service.constants import CR_ATTACHMENT_REQUEST
 from es_index.pagination import ESQueryPagination
 from data.models import Allegation
-from email_service.service import send_attachment_request_welcome_email
+from email_service.service import send_attachment_request_email
 
 
 class NoCategoryError(Exception):
@@ -61,7 +62,7 @@ class CRViewSet(viewsets.ViewSet):
             if e.get_codes() == {'non_field_errors': ['unique']}:
                 return Response({'message': 'Email already added', 'crid': pk}, status=status.HTTP_400_BAD_REQUEST)
             return Response({'message': 'Please enter a valid email'}, status=status.HTTP_400_BAD_REQUEST)
-        send_attachment_request_welcome_email(data['email'], crid=pk)
+        send_attachment_request_email(data['email'], attachment_type=CR_ATTACHMENT_REQUEST, pk=pk)
         return Response({'message': 'Thanks for subscribing', 'crid': pk})
 
     @list_route(methods=['GET'], url_path='list-by-new-document')
@@ -167,6 +168,7 @@ class CRMobileViewSet(viewsets.ViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            send_attachment_request_email(data['email'], attachment_type=CR_ATTACHMENT_REQUEST, pk=pk)
             return Response({'message': 'Thanks for subscribing', 'crid': pk})
 
         except ValidationError as e:

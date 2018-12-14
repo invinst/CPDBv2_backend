@@ -11,7 +11,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
 from document_cloud.utils import parse_crid_from_title, parse_id, parse_link, get_url
-from email_service.service import send_attachment_available_notification
+from email_service.service import send_cr_attachment_available_email
 
 
 logger = logging.getLogger('django.command')
@@ -166,4 +166,4 @@ class Command(BaseCommand):
             f'in {num_documents} documentcloud attachments'
         )
 
-        send_attachment_available_notification(new_attachments)
+        send_cr_attachment_available_email(new_attachments)

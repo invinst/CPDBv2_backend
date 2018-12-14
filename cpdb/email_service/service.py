@@ -6,12 +6,12 @@ from django.conf import settings
 from tqdm import tqdm
 
 from email_service.models import EmailTemplate
-from email_service.constants import ATTACHMENT_AVAILABLE, ATTACHMENT_REQUEST
+from email_service.constants import CR_ATTACHMENT_AVAILABLE, CR_ATTACHMENT_REQUEST
 from data.models import Allegation, AttachmentRequest
 
 
-def send_attachment_available_notification(new_attachments):
-    email_template = EmailTemplate.objects.get(type=ATTACHMENT_AVAILABLE)
+def send_cr_attachment_available_email(new_attachments):
+    email_template = EmailTemplate.objects.get(type=CR_ATTACHMENT_AVAILABLE)
 
     crids = {attachment.allegation.crid for attachment in new_attachments}
     for crid in tqdm(crids, desc='Sending notification emails'):
@@ -19,15 +19,15 @@ def send_attachment_available_notification(new_attachments):
         for attachment_request in allegation.attachmentrequest_set.filter(noti_email_sent=False):
             send_mail(*email_template.create_message(
                 [attachment_request.email],
-                crid=crid,
-                cr_page_url=f'{settings.DOMAIN}{allegation.v2_to}'
+                pk=crid,
+                url=f'{settings.DOMAIN}{allegation.v2_to}'
             ))
 
     AttachmentRequest.objects.filter(allegation__crid__in=crids).update(noti_email_sent=True)
 
 
-def send_attachment_request_welcome_email(email, crid):
-    email_template = EmailTemplate.objects.get(type=ATTACHMENT_REQUEST)
+def send_attachment_request_email(email, attachment_type, **kwargs):
+    email_template = EmailTemplate.objects.get(type=attachment_type)
     name = re.match(r'.+?(?=@)', email).group(0)
-    message = email_template.create_message([email], crid=crid, name=name)
+    message = email_template.create_message([email], name=name, **kwargs)
     send_mail(**message)

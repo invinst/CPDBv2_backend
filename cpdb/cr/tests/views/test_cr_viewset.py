@@ -19,7 +19,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.factories import EmailTemplateFactory
-from email_service.constants import ATTACHMENT_REQUEST
+from email_service.constants import CR_ATTACHMENT_REQUEST
 
 
 class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -454,7 +454,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_request_document(self):
-        EmailTemplateFactory(type=ATTACHMENT_REQUEST)
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         AllegationFactory(crid='112233')
         response = self.client.post(
             reverse('api-v2:cr-request-document', kwargs={'pk': '112233'}),
@@ -467,7 +467,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         })
 
     def test_request_same_document_twice(self):
-        EmailTemplateFactory(type=ATTACHMENT_REQUEST)
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         allegation = AllegationFactory(crid='112233')
         self.client.post(
             reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
