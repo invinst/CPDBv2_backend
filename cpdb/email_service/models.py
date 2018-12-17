@@ -16,7 +16,7 @@ class EmailTemplate(models.Model):
     from_email = models.EmailField(max_length=255)
 
     def create_message(self, recipient_list, **kwargs):
-        html_message = markdown(self.body.format(**kwargs))
+        html_message = markdown(self.body.format(**kwargs), extras=['break-on-newline', 'cuddled-lists', 'tables'])
         return {
             'subject': self.subject.format(**kwargs),
             'message': strip_tags(html_message),
