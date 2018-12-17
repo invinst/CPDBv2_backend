@@ -1,6 +1,6 @@
 -r base.txt
 
-flake8==2.5.4
+flake8==3.6.0
 coverage==4.0.3
 coveralls==1.1
 factory-boy==2.11.1

@@ -36,6 +36,7 @@ jobs:
       DB_PASSWORD: password
       DB_NAME: cpdb
     steps:
+      - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
       - checkout
       - run: pip install --user -r requirements/test.txt
       - run: flake8

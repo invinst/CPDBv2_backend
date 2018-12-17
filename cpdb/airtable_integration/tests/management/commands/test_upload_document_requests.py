@@ -12,12 +12,16 @@ from data.factories import (
     AllegationFactory, InvestigatorAllegationFactory, InvestigatorFactory
 )
 from trr.factories import TRRFactory, TRRAttachmentRequestFactory
+from data.models import AttachmentRequest
+from trr.models import TRRAttachmentRequest
 
 
 class UpdateDocumentsCommandTestCase(TestCase):
     @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID', AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_document_requests(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'airtable_id'}
+
         allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
@@ -25,53 +29,43 @@ class UpdateDocumentsCommandTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation123, officer=officer_2)
         investigator = InvestigatorFactory(officer=officer_1)
         InvestigatorAllegationFactory(allegation=allegation123, investigator=investigator)
-        cr_request_1 = AttachmentRequestFactory(
+        AttachmentRequestFactory(
             allegation=allegation123,
             email='requester1@example.com',
-            added_to_foia_airtable=False)
-        cr_request_2 = AttachmentRequestFactory(
+            airtable_id='')
+        AttachmentRequestFactory(
             allegation=allegation123,
             email='requester2@example.com',
-            added_to_foia_airtable=True)
+            airtable_id='cr2222')
 
         allegation456 = AllegationFactory(crid='456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
         officer_3 = OfficerFactory(id=3, first_name='Marry', last_name='Jane')
         officer_4 = OfficerFactory(id=4, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation456, officer=officer_3)
         OfficerAllegationFactory(allegation=allegation456, officer=officer_4)
-        cr_request_3 = AttachmentRequestFactory(
+        AttachmentRequestFactory(
             allegation=allegation456,
             email='requester3@example.com',
-            added_to_foia_airtable=False)
-        cr_request_4 = AttachmentRequestFactory(
+            airtable_id='')
+        AttachmentRequestFactory(
             allegation=allegation456,
             email='requester4@example.com',
-            added_to_foia_airtable=True)
+            airtable_id='cr4444')
 
         trr = TRRFactory(id='123456', officer=officer_1)
-        trr_request_1 = TRRAttachmentRequestFactory(
+        TRRAttachmentRequestFactory(
             trr=trr,
             email='requester@example1.com',
-            added_to_foia_airtable=False)
-        trr_request_2 = TRRAttachmentRequestFactory(
+            airtable_id='')
+        TRRAttachmentRequestFactory(
             trr=trr,
             email='requester@example2.com',
-            added_to_foia_airtable=True)
+            airtable_id='trr2222')
 
-        expect(cr_request_1.added_to_foia_airtable).to.be.false()
-        expect(cr_request_2.added_to_foia_airtable).to.be.true()
-        expect(cr_request_3.added_to_foia_airtable).to.be.false()
-        expect(cr_request_4.added_to_foia_airtable).to.be.true()
-        expect(trr_request_1.added_to_foia_airtable).to.be.false()
-        expect(trr_request_2.added_to_foia_airtable).to.be.true()
+        expect(AttachmentRequest.objects.filter(airtable_id='').count()).to.eq(2)
+        expect(TRRAttachmentRequest.objects.filter(airtable_id='').count()).to.eq(1)
 
         management.call_command('upload_document_requests')
-        cr_request_1.refresh_from_db()
-        cr_request_2.refresh_from_db()
-        cr_request_3.refresh_from_db()
-        cr_request_4.refresh_from_db()
-        trr_request_1.refresh_from_db()
-        trr_request_2.refresh_from_db()
 
         expected_calls = [
             call({
@@ -123,9 +117,5 @@ class UpdateDocumentsCommandTestCase(TestCase):
 
         airtable_mock.insert.assert_has_calls(expected_calls, any_order=True)
 
-        expect(cr_request_1.added_to_foia_airtable).to.be.true()
-        expect(cr_request_2.added_to_foia_airtable).to.be.true()
-        expect(cr_request_3.added_to_foia_airtable).to.be.true()
-        expect(cr_request_4.added_to_foia_airtable).to.be.true()
-        expect(trr_request_1.added_to_foia_airtable).to.be.true()
-        expect(trr_request_2.added_to_foia_airtable).to.be.true()
+        expect(AttachmentRequest.objects.filter(airtable_id='').count()).to.eq(0)
+        expect(TRRAttachmentRequest.objects.filter(airtable_id='').count()).to.eq(0)
