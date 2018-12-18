@@ -1,3 +1,5 @@
+from smtplib import SMTPException
+
 from django.test.testcases import TestCase
 
 from mock import patch
@@ -41,7 +43,7 @@ class EmailServicesTestCase(TestCase):
     def test_send_cr_attachment_available_email(self, mock_send_email):
         EmailTemplateFactory(
             subject='To {name}',
-            body='This message is related to crid {crid} with url {url}',
+            body='This message is related to crid {pk} with url {url}',
             from_email='test.email@cpdp.co',
             type=CR_ATTACHMENT_AVAILABLE
         )
@@ -98,3 +100,56 @@ class EmailServicesTestCase(TestCase):
                 email='still.waiting@citizen.com'
             ).noti_email_sent
         ).to.be.false()
+
+    @patch('email_service.service.send_mail')
+    def test_send_cr_attachment_available_email_raise_error(self, mock_send_email):
+        mock_send_email.side_effect = [None, SMTPException('Sending failed'), None]
+
+        EmailTemplateFactory(
+            subject='To {name}',
+            body='This message is related to crid {pk} with url {url}',
+            from_email='test.email@cpdp.co',
+            type=CR_ATTACHMENT_AVAILABLE
+        )
+
+        allegation_123 = AllegationFactory(crid='123')
+        allegation_456 = AllegationFactory(crid='456')
+        allegation_789 = AllegationFactory(crid='789')
+        AttachmentRequestFactory(
+            allegation=allegation_123, email='to.be.notified@citizen.com', noti_email_sent=False)
+        AttachmentRequestFactory(
+            allegation=allegation_456, email='to.be.notified@citizen.com', noti_email_sent=False)
+        AttachmentRequestFactory(
+            allegation=allegation_789, email='to.be.notified@citizen.com', noti_email_sent=False)
+
+        AttachmentFileFactory.create_batch(2, allegation=allegation_123)
+        AttachmentFileFactory.create_batch(2, allegation=allegation_456)
+        AttachmentFileFactory(allegation=allegation_789)
+        new_attachments = AttachmentFile.objects.all()
+
+        send_cr_attachment_available_email(new_attachments)
+
+        expect(AttachmentRequest.objects.filter(noti_email_sent=True).count()).to.eq(2)
+        expect(AttachmentRequest.objects.filter(noti_email_sent=False).count()).to.eq(1)
+
+        mock_send_email.assert_any_call(
+            subject='To to.be.notified',
+            message='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
+            html_message='<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n',
+            from_email='test.email@cpdp.co',
+            recipient_list=['to.be.notified@citizen.com']
+        )
+        mock_send_email.assert_any_call(
+            subject='To to.be.notified',
+            message='This message is related to crid 456 with url http://foo.com/complaint/456/\n',
+            html_message='<p>This message is related to crid 456 with url http://foo.com/complaint/456/</p>\n',
+            from_email='test.email@cpdp.co',
+            recipient_list=['to.be.notified@citizen.com']
+        )
+        mock_send_email.assert_any_call(
+            subject='To to.be.notified',
+            message='This message is related to crid 789 with url http://foo.com/complaint/789/\n',
+            html_message='<p>This message is related to crid 789 with url http://foo.com/complaint/789/</p>\n',
+            from_email='test.email@cpdp.co',
+            recipient_list=['to.be.notified@citizen.com']
+        )
