@@ -38,7 +38,8 @@ THIRD_PARTY_APPS = (
     'taggit',
     'anymail',
     'corsheaders',
-    'adminsortable'
+    'adminsortable',
+    'bandit'
 )
 
 LOCAL_APPS = (
