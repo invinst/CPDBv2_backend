@@ -29,7 +29,7 @@ class AttachmentRequest(TimeStampsModel):
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
-    noti_email_sent = models.BooleanField(default=False)
+    noti_email_sent = models.BooleanField(default=False, verbose_name='Notification email sent')
 
     bulk_objects = BulkUpdateManager()
 
