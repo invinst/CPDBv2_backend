@@ -1,4 +1,4 @@
-from mock import Mock
+from mock import Mock, PropertyMock
 
 from django.test import SimpleTestCase
 
@@ -7,7 +7,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter
 )
 
 
@@ -302,4 +302,25 @@ class ZipCodeFormatterTestCase(SimpleTestCase):
         expect(ZipCodeFormatter().doc_format(doc)).to.eq({
             'name': '666666',
             'url': 'cpdp.com'
+        })
+
+
+class SearchTermFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(
+            slug='communities',
+            category_name='Geography',
+            description='Community description',
+            call_to_action_type='view_all',
+            link='http://lvh.me',
+        )
+        type(doc).name = PropertyMock(return_value='Communities')
+
+        expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
+            'id': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': 'http://lvh.me'
         })

@@ -116,3 +116,15 @@ class ZipCodeFormatter(SimpleFormatter):
             'name': serialized_doc['zip_code'],
             'url': serialized_doc['url']
         }
+
+
+class SearchTermFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        return {
+            'id': doc.slug,
+            'name': doc.name,
+            'category_name': doc.category_name,
+            'description': doc.description,
+            'call_to_action_type': doc.call_to_action_type,
+            'link': doc.link,
+        }

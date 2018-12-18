@@ -7,13 +7,15 @@ from robber import expect
 import pytz
 
 from search.search_indexers import (
-    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer, SearchTermItemIndexer
 )
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory,
-    SalaryFactory, AllegationCategoryFactory)
+    SalaryFactory, AllegationCategoryFactory
+)
+from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 
 
@@ -449,4 +451,29 @@ class RankIndexerTestCase(TestCase):
         expect(RankIndexer().extract_datum(salary)).to.eq({
             'rank': 'Police Officer',
             'tags': ['rank']
+        })
+
+
+class SearchTermItemIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(SearchTermItemIndexer().get_queryset()).to.have.length(0)
+        SearchTermItemFactory()
+        expect(SearchTermItemIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        search_term_item = SearchTermItemFactory(
+            slug='communities',
+            name='Communities',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='http://lvh.me'
+        )
+        expect(SearchTermItemIndexer().extract_datum(search_term_item)).to.eq({
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': 'http://lvh.me',
         })

@@ -9,6 +9,7 @@ from robber import expect
 
 from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory, \
     OfficerAllegationFactory
+from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
 
@@ -205,6 +206,40 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         })
         results = response.data['results']
         expect({record['id'] for record in results}).to.eq({'1', '2'})
+
+    def test_search_terms_results(self):
+        SearchTermItemFactory(
+            slug='communities',
+            name='Communities',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='http://lvh.me'
+        )
+        SearchTermItemFactory(
+            slug='wards',
+            name='Wards',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Ward description',
+            call_to_action_type='view_all',
+            link='http://lvh.me'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'Geography',
+        })
+
+        results = response.data['SEARCH-TERMS']
+        expect(results).to.have.length(2)
+
+        expect(results[0]['name']).to.eq('Communities')
+        expect(results[0]['category_name']).to.eq('Geography')
+        expect(results[0]['description']).to.eq('Community description')
+        expect(results[0]['call_to_action_type']).to.eq('view_all')
 
 
 class SearchV2ViewSetTestCase(APITestCase):
