@@ -120,11 +120,12 @@ class ZipCodeFormatter(SimpleFormatter):
 
 class SearchTermFormatter(SimpleFormatter):
     def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
         return {
-            'id': doc.slug,
-            'name': doc.name,
-            'category_name': doc.category_name,
-            'description': doc.description,
-            'call_to_action_type': doc.call_to_action_type,
-            'link': doc.link,
+            'id': serialized_doc['slug'],
+            'name': serialized_doc['name'],
+            'category_name': serialized_doc.get('category_name', ''),
+            'description': serialized_doc.get('description', ''),
+            'call_to_action_type': serialized_doc.get('call_to_action_type', ''),
+            'link': serialized_doc.get('link', ''),
         }

@@ -1,4 +1,4 @@
-from mock import Mock, PropertyMock
+from mock import Mock
 
 from django.test import SimpleTestCase
 
@@ -307,14 +307,14 @@ class ZipCodeFormatterTestCase(SimpleTestCase):
 
 class SearchTermFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        doc = Mock(
-            slug='communities',
-            category_name='Geography',
-            description='Community description',
-            call_to_action_type='view_all',
-            link='http://lvh.me',
-        )
-        type(doc).name = PropertyMock(return_value='Communities')
+        doc = Mock(to_dict=Mock(return_value={
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': 'http://lvh.me',
+        }))
 
         expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
             'id': 'communities',
