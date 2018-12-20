@@ -65,10 +65,7 @@ class TwitterClient(object):
     def get_auth_url(self):
         requested_token = self.get_requested_token()
 
-        return (
-            'https://api.twitter.com/oauth/authorize?oauth_token=%s&force_login=true'
-            % requested_token['oauth_token']
-        )
+        return f"https://api.twitter.com/oauth/authorize?oauth_token={requested_token['oauth_token']}&force_login=true"
 
     def get_user_access_token(self, pin):
         requested_token = self.get_requested_token()
@@ -81,7 +78,7 @@ class TwitterClient(object):
         )
 
         response = requests.post(
-            url='https://api.twitter.com/oauth/access_token?oauth_verifier=%s' % pin,
+            url=f'https://api.twitter.com/oauth/access_token?oauth_verifier={pin}',
             auth=account_auth
         )
         response.raise_for_status()

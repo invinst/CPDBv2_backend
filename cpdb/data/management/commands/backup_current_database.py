@@ -12,13 +12,8 @@ from sh import pwd
 class Command(BaseCommand):
     help = 'Dump current database and upload to azure'
     db_config = settings.DATABASES['default']
-    database_url = 'postgres://{user}:{password}@{host}:{port}/{db_name}'.format(
-        user=db_config['USER'],
-        password=db_config['PASSWORD'],
-        host=db_config['HOST'],
-        port=db_config['PORT'],
-        db_name=db_config['NAME'],
-    )
+    database_url = f"postgres://{db_config['USER']}:{db_config['PASSWORD']}@{db_config['HOST']}:{db_config['PORT']}" \
+        f"/{db_config['NAME']}"
 
     def add_arguments(self, parser):
         parser.add_argument('--prefix', default='cpdp_production', help='Prefix of dump file')

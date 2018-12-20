@@ -60,7 +60,7 @@ class OfficerTweetHandler(SubEventHandler):
 
         if entity_url:
             entity_url = add_params(entity_url, {'twitterbot_log_id': response_log.id})
-            tweet_content = '%s %s' % (tweet_content, entity_url)
+            tweet_content = f'{tweet_content} {entity_url}'
 
         send_tweet(tweet_content, in_reply_to=self._context['first_non_retweet'].id, entity=entity)
 
@@ -70,12 +70,13 @@ class OfficerTweetHandler(SubEventHandler):
         response_log.original_event_object = self.original_event
         response_log.save()
 
-        logger.info('%s - tweet "%s"' % (self.__class__.__name__, tweet_content))
+        logger.info(f'{self.__class__.__name__} - tweet "{tweet_content}"')
 
     def handle(self):
-        logger.info('%s - received tweet: "%s" from %s %s' % (
-            self.__class__.__name__, self.incoming_tweet.text, self.incoming_tweet.screen_name, self.incoming_tweet.url
-        ))
+        logger.info(
+            f'{self.__class__.__name__} - received tweet: "{self.incoming_tweet.text}"'
+            f' from {self.incoming_tweet.screen_name} {self.incoming_tweet.url}'
+        )
 
         tweets = self.tweet_extractor.extract(self.incoming_tweet, self._context)
 

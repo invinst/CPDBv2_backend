@@ -21,8 +21,6 @@ class FollowEventHandler(EventHandler):
     def handle(self):
         from_user = self.event_data.get('source')
         if from_user.get('id') != str(self.client.get_current_user().id):
-            logger.info('%s - unfollow %s' % (
-                self.__class__.__name__, from_user.get('screen_name')
-            ))
+            logger.info(f"{self.__class__.__name__} - unfollow {from_user.get('screen_name')}")
 
             self.client.follow(from_user.get('id'))

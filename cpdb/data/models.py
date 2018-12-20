@@ -40,13 +40,11 @@ class PoliceUnit(TaggableModel):
 
     @property
     def v2_to(self):
-        return '/unit/%s/' % self.unit_name
+        return f'/unit/{self.unit_name}/'
 
     @property
     def v1_url(self):
-        return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(
-            domain=settings.V1_URL, unit_name=self.unit_name
-        )
+        return f'{settings.V1_URL}/url-mediator/session-builder?unit={self.unit_name}'
 
     @property
     def member_count(self):
@@ -296,7 +294,7 @@ class Officer(TaggableModel):
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
 
     @property
     def historic_badges(self):
@@ -316,7 +314,7 @@ class Officer(TaggableModel):
 
     @property
     def v1_url(self):
-        return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
+        return f'{settings.V1_URL}/officer/{slugify(self.full_name)}/{self.pk}'
 
     @property
     def current_age(self):
@@ -324,14 +322,14 @@ class Officer(TaggableModel):
 
     @property
     def v2_to(self):
-        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=slugify(self.full_name))
+        return f'/officer/{self.pk}/{slugify(self.full_name)}/'
 
     def get_absolute_url(self):
-        return '/officer/%d/' % self.pk
+        return f'/officer/{self.pk}/'
 
     @property
     def abbr_name(self):
-        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+        return f'{self.first_name[0].upper()}. {self.last_name}'
 
     @property
     def visual_token_background_color(self):
@@ -339,9 +337,7 @@ class Officer(TaggableModel):
 
         cr_threshold = cr_scale.interpolate(self.allegation_count)
 
-        return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
-            cr_threshold=cr_threshold
-        )]
+        return BACKGROUND_COLOR_SCHEME[f'{cr_threshold}0']
 
     def get_unit_by_date(self, query_date):
         try:
@@ -553,7 +549,7 @@ class OfficerBadgeNumber(models.Model):
         ]
 
     def __str__(self):
-        return '%s - %s' % (self.officer, self.star)
+        return f'{self.officer} - {self.star}'
 
 
 class OfficerHistory(models.Model):
@@ -655,15 +651,11 @@ class Area(TaggableModel):
 
     @property
     def v1_url(self):
-        base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
+        base_url = f'{settings.V1_URL}/url-mediator/session-builder'
 
         if self.area_type not in self.SESSION_BUILDER_MAPPING:
             return settings.V1_URL
-        return '{base_url}?{keyword}={name}'.format(
-            base_url=base_url,
-            keyword=self.SESSION_BUILDER_MAPPING[self.area_type],
-            name=self.name
-        )
+        return f'{base_url}?{self.SESSION_BUILDER_MAPPING[self.area_type]}={self.name}'
 
 
 class RacePopulation(models.Model):
@@ -696,11 +688,11 @@ class Investigator(models.Model):
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name,)
+        return f'{self.first_name} {self.last_name}'
 
     @property
     def abbr_name(self):
-        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+        return f'{self.first_name[0].upper()}. {self.last_name}'
 
 
 class AllegationCategory(models.Model):
@@ -842,14 +834,14 @@ class Allegation(models.Model):
     @property
     def v2_to(self):
         if self.officerallegation_set.count() == 0:
-            return '/complaint/%s/' % self.crid
+            return f'/complaint/{self.crid}/'
 
         officer_allegations = self.officerallegation_set.filter(officer__isnull=False)
 
         if officer_allegations.count() == 0:
-            return '/complaint/%s/' % self.crid
+            return f'/complaint/{self.crid}/'
 
-        return '/complaint/%s/%s/' % (self.crid, officer_allegations.first().officer.pk)
+        return f'/complaint/{self.crid}/{officer_allegations.first().officer.pk}/'
 
 
 class InvestigatorAllegation(models.Model):
@@ -1049,7 +1041,7 @@ class AttachmentRequest(models.Model):
         unique_together = (('allegation', 'email'),)
 
     def __str__(self):
-        return '%s - %s' % (self.email, self.allegation.crid)
+        return f'{self.email} - {self.allegation.crid}'
 
     @property
     def crid(self):
