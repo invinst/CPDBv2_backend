@@ -2,6 +2,7 @@ from django_bulk_update.manager import BulkUpdateManager
 from django.contrib.gis.db import models
 
 from data.constants import GENDER
+from data.models import TimeStampsModel
 
 
 DIRECTION_WEST = 'West'
@@ -159,7 +160,7 @@ TRR_STATUS_CHOICES = (
 )
 
 
-class TRR(models.Model):
+class TRR(TimeStampsModel):
     beat = models.PositiveSmallIntegerField(null=True)
     block = models.CharField(max_length=8, null=True)
     direction = models.CharField(max_length=8, null=True, choices=DIRECTION_CHOICES)
@@ -198,8 +199,6 @@ class TRR(models.Model):
     subject_birth_year = models.PositiveSmallIntegerField(null=True)
     subject_gender = models.CharField(max_length=1, null=True, choices=GENDER)
     subject_race = models.CharField(max_length=32, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def force_category(self):
@@ -224,7 +223,7 @@ class TRR(models.Model):
         return '/trr/%s/' % self.id
 
 
-class ActionResponse(models.Model):
+class ActionResponse(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     person = models.CharField(max_length=16, null=True, choices=ACTION_PERSON_CHOICES)
     resistance_type = models.CharField(max_length=32, null=True, choices=RESISTANCE_TYPE_CHOICES)
@@ -235,11 +234,9 @@ class ActionResponse(models.Model):
     action_sub_category = models.CharField(max_length=3, null=True)
     action_category = models.CharField(max_length=1, null=True)
     resistance_level = models.CharField(max_length=16, null=True, choices=RESISTANCE_LEVEL_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class WeaponDischarge(models.Model):
+class WeaponDischarge(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     weapon_type = models.CharField(max_length=32, null=True)
     weapon_type_description = models.CharField(max_length=32, null=True)
@@ -258,21 +255,17 @@ class WeaponDischarge(models.Model):
     discharge_distance = models.CharField(max_length=16, null=True)
     object_struck_of_discharge = models.CharField(max_length=32, null=True, choices=OBJECT_STRUCK_OF_DISCHARGE_CHOICES)
     discharge_position = models.CharField(max_length=32, null=True, choices=DISCHARGE_POSITION_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class Charge(models.Model):
+class Charge(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     sr_no = models.PositiveIntegerField(null=True)
     statute = models.CharField(max_length=64, null=True)
     description = models.CharField(max_length=64, null=True)
     subject_no = models.PositiveIntegerField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class TRRStatus(models.Model):
+class TRRStatus(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     officer = models.ForeignKey('data.officer', on_delete=models.CASCADE, null=True)
     rank = models.CharField(max_length=16, null=True)
@@ -280,26 +273,20 @@ class TRRStatus(models.Model):
     status = models.CharField(max_length=16, null=True, choices=TRR_STATUS_CHOICES)
     status_datetime = models.DateTimeField(null=True)
     age = models.SmallIntegerField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class SubjectWeapon(models.Model):
+class SubjectWeapon(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     weapon_type = models.CharField(max_length=64, null=True)
     firearm_caliber = models.CharField(max_length=16, null=True)
     weapon_description = models.CharField(max_length=64, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class TRRAttachmentRequest(models.Model):
+class TRRAttachmentRequest(TimeStampsModel):
     trr = models.ForeignKey(TRR, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BulkUpdateManager()
 
