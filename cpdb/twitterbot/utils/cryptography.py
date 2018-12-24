@@ -4,9 +4,13 @@ import hmac
 
 
 def get_hash_token(key, msg):
+    try:
+        msg = msg.encode('utf-8')
+    except AttributeError:
+        pass
     hash_digest = hmac.new(
         key.encode('utf-8'),
-        msg=msg.encode('utf-8'),
+        msg=msg,
         digestmod=hashlib.sha256
     ).digest()
 
