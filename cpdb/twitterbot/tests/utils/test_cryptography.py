@@ -25,3 +25,19 @@ class CryptographyTestCase(SimpleTestCase):
         hmac.new.assert_called_with(b'key', msg=b'abc', digestmod=hashlib.sha256)
         base64.b64encode.assert_called_with('hash_abc')
         expect(token).to.eq('sha256=encoded_hash_abc')
+
+    @patch('twitterbot.utils.cryptography.hmac')
+    @patch('twitterbot.utils.cryptography.base64')
+    def test_get_hash_token_bytes_msg(self, base64, hmac):
+        hmac.new.return_value = Mock(
+            digest=Mock(
+                return_value='hash_abc'
+            )
+        )
+        base64.b64encode.return_value = bytes('encoded_hash_abc', 'utf-8')
+
+        token = get_hash_token('key', msg=b'abc')
+
+        hmac.new.assert_called_with(b'key', msg=b'abc', digestmod=hashlib.sha256)
+        base64.b64encode.assert_called_with('hash_abc')
+        expect(token).to.eq('sha256=encoded_hash_abc')
