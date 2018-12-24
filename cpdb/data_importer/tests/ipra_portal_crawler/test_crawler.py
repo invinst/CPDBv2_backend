@@ -7,6 +7,7 @@ from data_importer.ipra_portal_crawler.crawler import (
     OpenIpraInvestigationCrawler,
     BaseComplaintCrawler,
     ComplaintCrawler,
+    VimeoSimpleAPI
 )
 
 
@@ -231,3 +232,34 @@ class ComplaintCrawlerTest(SimpleTestCase):
         get_html_content.return_value = self.HTML_CONTENT % multiple_subject_content
         subjects = ['Barry Hayes', 'Deandre Atwood', 'Donald Harris']
         expect(ComplaintCrawler(url=self.URL).crawl()['subjects']).to.be.eq(subjects)
+
+
+class VimeoSimpleAPITestCase(SimpleTestCase):
+    @patch('data_importer.ipra_portal_crawler.crawler.VimeoSimpleAPI.get_json_content')
+    def test_parse(self, get_json_content):
+        content = {
+            'id': 307768537,
+            'title': 'Log# 1082195 3rd Party Clip',
+            'description': 'Log# 1082195 3rd Party Clip',
+            'url': 'https://vimeo.com/307768537',
+            'upload_date': '2018-12-21 15:47:48',
+            'thumbnail_small': 'https://i.vimeocdn.com/video/747800241_100x75.webp',
+            'thumbnail_medium': 'https://i.vimeocdn.com/video/747800241_200x150.webp',
+            'thumbnail_large': 'https://i.vimeocdn.com/video/747800241_640.webp',
+            'user_id': 51379210, 'user_name': 'COPA Chicago', 'user_url': 'https://vimeo.com/user51379210',
+            'user_portrait_small': 'https://i.vimeocdn.com/portrait/21078020_30x30.webp',
+            'user_portrait_medium': 'https://i.vimeocdn.com/portrait/21078020_75x75.webp',
+            'user_portrait_large': 'https://i.vimeocdn.com/portrait/21078020_100x100.webp',
+            'user_portrait_huge': 'https://i.vimeocdn.com/portrait/21078020_300x300.webp',
+            'stats_number_of_likes': 0,
+            'stats_number_of_plays': 16,
+            'stats_number_of_comments': 0,
+            'duration': 604,
+            'width': 1280,
+            'height': 720,
+            'tags': '',
+            'embed_privacy': 'anywhere'
+        }
+        get_json_content.return_value = content
+
+        expect(VimeoSimpleAPI(video_id=307768537).crawl()).to.be.eq(content)
