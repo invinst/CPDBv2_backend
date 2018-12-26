@@ -39,7 +39,8 @@ class AirTableUploader(object):
                     'email': 'rajiv@invisibleinstitute.com',
                     'name': 'Rajiv Sinclair'
                 }
-            ]
+            ],
+            'Date requested by user': raw_object.timestamp.strftime(format='%Y-%m-%d')
         }
 
     @classmethod
@@ -103,17 +104,16 @@ class CRRequestAirTableUploader(AirTableUploader):
         ]
         explanation = f"Officers: {', '.join(officers_info)}" if officers_info else ''
         requested_for = f'CR {allegation.crid}'
-        pre_2006 = allegation.incident_date and allegation.incident_date.year < 2006
         agencies = [
             settings.AIRTABLE_CPD_AGENCY_ID
-            if pre_2006 or document_request.investigated_by_cpd()
+            if document_request.investigated_by_cpd
             else settings.AIRTABLE_COPA_AGENCY_ID
         ]
         return explanation, requested_for, agencies
 
     @classmethod
     def _get_uploaded_objects(cls, update_all_records=False):
-        records = AttachmentRequest.objects.all()
+        records = AttachmentRequest.objects.annotate_investigated_by_cpd().select_related('allegation')
 
         if not update_all_records:
             records = records.filter(airtable_id='')
@@ -128,7 +128,7 @@ class CRRequestAirTableUploader(AirTableUploader):
                 attachment_request.airtable_id = record_id
                 uploaded_attachment_requests.append(attachment_request)
 
-        AttachmentRequest.objects.bulk_update(
+        AttachmentRequest.bulk_objects.bulk_update(
             uploaded_attachment_requests,
             update_fields=['airtable_id'],
             batch_size=1000
