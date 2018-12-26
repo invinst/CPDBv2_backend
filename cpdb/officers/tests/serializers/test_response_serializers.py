@@ -300,7 +300,7 @@ class OfficerInfoSerializerTestCase(TestCase):
             'major_award_count': 8,
             'honorable_mention_percentile': 88.88,
             'to': '/officer/123/michael-flynn/',
-            'url': '{domain}/officer/michael-flynn/123'.format(domain=settings.V1_URL),
+            'url': f'{settings.V1_URL}/officer/michael-flynn/123',
             'tags': ['tag1', 'tag2'],
             'coaccusals': [{
                 'id': 789,

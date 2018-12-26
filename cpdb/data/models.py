@@ -8,6 +8,7 @@ from django.db.models import F, Q, Value, Max, Count, Prefetch
 from django.db.models.functions import Concat, ExtractYear, Cast
 from django.utils.text import slugify
 from django.utils.timezone import now, timedelta
+from django.db.models import Exists, OuterRef
 
 from django_bulk_update.manager import BulkUpdateManager
 
@@ -48,13 +49,11 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
 
     @property
     def v2_to(self):
-        return '/unit/%s/' % self.unit_name
+        return f'/unit/{self.unit_name}/'
 
     @property
     def v1_url(self):
-        return '{domain}/url-mediator/session-builder?unit={unit_name}'.format(
-            domain=settings.V1_URL, unit_name=self.unit_name
-        )
+        return f'{settings.V1_URL}/url-mediator/session-builder?unit={self.unit_name}'
 
     @property
     def member_count(self):
@@ -304,7 +303,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
 
     @property
     def historic_badges(self):
@@ -324,7 +323,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def v1_url(self):
-        return '{domain}/officer/{slug}/{pk}'.format(domain=settings.V1_URL, slug=slugify(self.full_name), pk=self.pk)
+        return f'{settings.V1_URL}/officer/{slugify(self.full_name)}/{self.pk}'
 
     @property
     def current_age(self):
@@ -332,14 +331,14 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def v2_to(self):
-        return '/officer/{pk}/{slug}/'.format(pk=self.pk, slug=slugify(self.full_name))
+        return f'/officer/{self.pk}/{slugify(self.full_name)}/'
 
     def get_absolute_url(self):
-        return '/officer/%d/' % self.pk
+        return f'/officer/{self.pk}/'
 
     @property
     def abbr_name(self):
-        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+        return f'{self.first_name[0].upper()}. {self.last_name}'
 
     @property
     def visual_token_background_color(self):
@@ -347,9 +346,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
         cr_threshold = cr_scale.interpolate(self.allegation_count)
 
-        return BACKGROUND_COLOR_SCHEME['{cr_threshold}0'.format(
-            cr_threshold=cr_threshold
-        )]
+        return BACKGROUND_COLOR_SCHEME[f'{cr_threshold}0']
 
     def get_unit_by_date(self, query_date):
         try:
@@ -561,7 +558,7 @@ class OfficerBadgeNumber(TimeStampsModel):
         ]
 
     def __str__(self):
-        return '%s - %s' % (self.officer, self.star)
+        return f'{self.officer} - {self.star}'
 
 
 class OfficerHistory(TimeStampsModel):
@@ -663,15 +660,11 @@ class Area(TimeStampsModel, TaggableModel):
 
     @property
     def v1_url(self):
-        base_url = '{domain}/url-mediator/session-builder'.format(domain=settings.V1_URL)
+        base_url = f'{settings.V1_URL}/url-mediator/session-builder'
 
         if self.area_type not in self.SESSION_BUILDER_MAPPING:
             return settings.V1_URL
-        return '{base_url}?{keyword}={name}'.format(
-            base_url=base_url,
-            keyword=self.SESSION_BUILDER_MAPPING[self.area_type],
-            name=self.name
-        )
+        return f'{base_url}?{self.SESSION_BUILDER_MAPPING[self.area_type]}={self.name}'
 
 
 class RacePopulation(TimeStampsModel):
@@ -704,11 +697,11 @@ class Investigator(TimeStampsModel):
 
     @property
     def full_name(self):
-        return '%s %s' % (self.first_name, self.last_name,)
+        return f'{self.first_name} {self.last_name}'
 
     @property
     def abbr_name(self):
-        return '%s. %s' % (self.first_name[0].upper(), self.last_name)
+        return f'{self.first_name[0].upper()}. {self.last_name}'
 
 
 class AllegationCategory(TimeStampsModel):
@@ -850,14 +843,14 @@ class Allegation(TimeStampsModel):
     @property
     def v2_to(self):
         if self.officerallegation_set.count() == 0:
-            return '/complaint/%s/' % self.crid
+            return f'/complaint/{self.crid}/'
 
         officer_allegations = self.officerallegation_set.filter(officer__isnull=False)
 
         if officer_allegations.count() == 0:
-            return '/complaint/%s/' % self.crid
+            return f'/complaint/{self.crid}/'
 
-        return '/complaint/%s/%s/' % (self.crid, officer_allegations.first().officer.pk)
+        return f'/complaint/{self.crid}/{officer_allegations.first().officer.pk}/'
 
 
 class InvestigatorAllegation(TimeStampsModel):
@@ -1044,19 +1037,38 @@ class Victim(TimeStampsModel):
             return self.gender
 
 
+class AttachmentRequestManager(models.Manager):
+    def annotate_investigated_by_cpd(self):
+        return self.annotate(has_badge_number=Exists(Allegation.objects.filter(
+            id=OuterRef('allegation_id'),
+            investigatorallegation__investigator__officer__officerbadgenumber__isnull=False
+        ))).annotate(has_current_star=Exists(Allegation.objects.filter(
+            id=OuterRef('allegation_id'),
+            investigatorallegation__current_star__isnull=False
+        ))).annotate(investigated_by_cpd=models.Case(
+            models.When(allegation__incident_date__year__lt=2006, then=True),
+            models.When(has_current_star=True, then=True),
+            models.When(has_badge_number=True, then=True),
+            default=False,
+            output_field=models.BooleanField()
+        ))
+
+
 class AttachmentRequest(TimeStampsModel):
     allegation = models.ForeignKey(Allegation, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
 
-    objects = BulkUpdateManager()
+    bulk_objects = BulkUpdateManager()
+
+    objects = AttachmentRequestManager()
 
     class Meta:
         unique_together = (('allegation', 'email'),)
 
     def __str__(self):
-        return '%s - %s' % (self.email, self.allegation.crid)
+        return f'{self.email} - {self.allegation.crid}'
 
     @property
     def crid(self):
@@ -1071,10 +1083,6 @@ class AttachmentRequest(TimeStampsModel):
         investigators = [ia.investigator.full_name for ia in investigatorallegation_set.all()]
         return ', '.join(investigators)
     investigator_names.short_description = 'Investigators'
-
-    def investigated_by_cpd(self):
-        return self.allegation.investigatorallegation_set.filter(investigator__officer_id__isnull=False).exists()
-    investigated_by_cpd.boolean = True
 
 
 class SalaryManager(models.Manager):

@@ -9,7 +9,7 @@ ROOT_DIR = environ.Path(__file__) - 4  # (/root/cpdb/config/settings/myfile.py -
 APPS_DIR = ROOT_DIR.path('cpdb')
 
 env = environ.Env()
-environ.Env.read_env("{root}/.env".format(root=ROOT_DIR))  # reading .env file
+environ.Env.read_env(f'{ROOT_DIR}/.env')  # reading .env file
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/

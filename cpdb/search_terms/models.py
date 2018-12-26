@@ -52,6 +52,4 @@ class SearchTermItem(TimeStampsModel, SortableMixin):
 
     @property
     def v1_url(self):
-        return '{domain}{path}'.format(
-            domain=settings.V1_URL, path=self.link
-        )
+        return f'{settings.V1_URL}{self.link}'

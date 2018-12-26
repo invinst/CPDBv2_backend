@@ -94,7 +94,7 @@ class Command(BaseCommand):
                 model._meta.get_field(field_names[ind]).many_to_many
             ]
 
-            for row in tqdm(reader, desc='Importing %s' % file_name):
+            for row in tqdm(reader, desc=f'Importing {file_name}'):
                 # set row value to None for any nullable field
                 row = [
                     None if field_names[ind] != 'pk' and field_names[ind] not in ignore_fields and

@@ -27,7 +27,7 @@ class ParseTestCase(SimpleTestCase):
         with patch('requests.get', side_effect=ConnectionError()):
             with patch('twitterbot.utils.web_parsing.logger.error') as mock_error:
                 expect(parse(url)).to.eq('')
-                mock_error.assert_called_with('ConnectionError while parsing %s' % url)
+                mock_error.assert_called_with(f'ConnectionError while parsing {url}')
 
     def test_parse_with_unicode_error(self):
         url = 'http://foo.com'
@@ -36,7 +36,7 @@ class ParseTestCase(SimpleTestCase):
             with patch('twitterbot.utils.web_parsing.logger.error') as mock_error:
                 parse(url)
                 mock_response.content.decode.assert_called_with('utf-8', 'replace')
-                mock_error.assert_called_with('UnicodeError while parsing %s' % url)
+                mock_error.assert_called_with(f'UnicodeError while parsing {url}')
 
     def test_ignore_unnecessary_tags(self):
         text_content = """

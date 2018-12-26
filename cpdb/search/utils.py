@@ -12,8 +12,6 @@ class ZipCode(object):
 def chicago_zip_codes():
     results = []
     for index, zip_code in enumerate(zipcodes.filter_by(zipcodes.list_all(), active=True, city='CHICAGO')):
-        url = '{domain}/url-mediator/session-builder?zip_code={zip_code}'.format(
-            domain=settings.V1_URL, zip_code=zip_code['zip_code']
-        )
+        url = f"{settings.V1_URL}/url-mediator/session-builder?zip_code={zip_code['zip_code']}"
         results.append(ZipCode(pk=index, zip_code=zip_code['zip_code'], url=url))
     return results

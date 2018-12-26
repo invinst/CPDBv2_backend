@@ -24,10 +24,7 @@ class AreaTermBuilder:
         return [
             {
                 'name': area.name,
-                'link': '%s/url-mediator/session-builder?%s' % (
-                    settings.V1_URL,
-                    urlencode({cls.query_key: area.name})
-                )
+                'link': f'{settings.V1_URL}/url-mediator/session-builder?{urlencode({cls.query_key: area.name})}'
             }
             for area in Area.objects.filter(area_type=cls.slug)
         ]
@@ -78,10 +75,7 @@ class OfficerRankTermBuilder:
         return [
             {
                 'name': rank,
-                'link': '%s/url-mediator/session-builder?%s' % (
-                    settings.V1_URL,
-                    urlencode({'officer__rank': rank})
-                )
+                'link': f"{settings.V1_URL}/url-mediator/session-builder?{urlencode({'officer__rank': rank})}"
             }
             for rank in Officer.objects.values_list('rank', flat=True).distinct()
         ]
@@ -96,10 +90,7 @@ class PoliceUnitTermBuilder:
         return [
             {
                 'name': description,
-                'link': '%s/url-mediator/session-builder?%s' % (
-                    settings.V1_URL,
-                    urlencode({'officer__unit': unit_name})
-                )
+                'link': f"{settings.V1_URL}/url-mediator/session-builder?{urlencode({'officer__unit': unit_name})}"
             }
             for (unit_name, description) in PoliceUnit.objects.values_list('unit_name', 'description')
         ]

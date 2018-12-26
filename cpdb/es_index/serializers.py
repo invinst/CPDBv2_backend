@@ -57,11 +57,11 @@ def get_age_range(ranges, key, default_value=None):
         for ind, val in enumerate(ranges):
             if age < val:
                 if ind == 0:
-                    return '<%d' % val
+                    return f'<{val}'
                 else:
-                    return '%d-%d' % (ranges[ind-1], val)
+                    return f'{ranges[ind-1]}-{val}'
             elif ind == len_ranges - 1:
-                return '%d+' % val
+                return f'{val}+'
     return func
 
 

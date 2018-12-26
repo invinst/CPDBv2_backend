@@ -11,5 +11,5 @@ def timeit(func, start_message=None):
     print(start_message)
     start_time = time.time()
     res = func()
-    print("Finished on --- %s seconds ---" % (time.time() - start_time))
+    print(f'Finished on --- {time.time() - start_time} seconds ---')
     return res

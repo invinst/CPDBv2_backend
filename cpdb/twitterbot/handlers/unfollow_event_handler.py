@@ -20,6 +20,7 @@ class UnfollowEventHandler(SubEventHandler):
         return self.incoming_tweet.is_unfollow_tweet
 
     def handle(self):
-        logger.info('%s - unfollow %s %s' % (
-            self.__class__.__name__, self.incoming_tweet.screen_name, self.incoming_tweet.url))
+        logger.info(
+            f'{self.__class__.__name__} - unfollow {self.incoming_tweet.screen_name} {self.incoming_tweet.url}'
+        )
         self.client.unfollow(self.incoming_tweet.user_id)

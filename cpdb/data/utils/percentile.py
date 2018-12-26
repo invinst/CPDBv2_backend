@@ -8,8 +8,8 @@ def percentile(objects, percentile_type='', key=None, percentile_rank=0.0, decim
     Otherwise it added a stub (item, rank)
     :return:
     """
-    metric_key = key if key else 'metric_{}'.format(percentile_type)
-    percentile_key = 'percentile_{}'.format(key if key else percentile_type)
+    metric_key = key if key else f'metric_{percentile_type}'
+    percentile_key = f'percentile_{key or percentile_type}'
 
     in_ranking = [obj for obj in objects if hasattr(obj, metric_key)]
     if not in_ranking:
@@ -32,7 +32,7 @@ def percentile(objects, percentile_type='', key=None, percentile_rank=0.0, decim
 
 
 def merge_metric(objects, new_metric_query_set, percentile_types):
-    attr_names = ['metric_{}'.format(percentile_type) for percentile_type in percentile_types]
+    attr_names = [f'metric_{percentile_type}' for percentile_type in percentile_types]
 
     existing_ids = [obj.id for obj in objects]
     new_objects = list(new_metric_query_set.exclude(id__in=existing_ids))

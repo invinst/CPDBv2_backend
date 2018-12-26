@@ -63,10 +63,7 @@ class Command(BaseCommand):
             title = re.sub(r'([^\s])-([^\s])', r'\g<1> \g<2>', cloud_document.title)
             additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
 
-            logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
-                url=cloud_document.canonical_url,
-                crid=crid
-            ))
+            logger.info(f'Updating documentcloud attachment url={cloud_document.canonical_url} with crid={crid}')
             new_attachment = AttachmentFile.objects.create(
                 external_id=documentcloud_id,
                 allegation=allegation,
@@ -104,10 +101,10 @@ class Command(BaseCommand):
 
         if should_save:
             try:
-                logger.info('Updating documentcloud attachment url={url} with crid={crid}'.format(
-                    url=attachment.original_url,
-                    crid=attachment.allegation.crid
-                ))
+                logger.info(
+                    f'Updating documentcloud attachment url={attachment.original_url}'
+                    f' with crid={attachment.allegation.crid}'
+                )
                 attachment.save()
                 return True
             except ValueError:
@@ -149,7 +146,7 @@ class Command(BaseCommand):
         search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
         for document_type, syntax in search_syntaxes:
             if syntax:
-                logger.info('Searching Documentcloud for {syntax}'.format(syntax=syntax))
+                logger.info(f'Searching Documentcloud for {syntax}')
                 documents = self.clean_documents(client.documents.search(syntax))
                 for document in documents:
                     result = self.process_documentcloud_document(document, document_type)
@@ -170,7 +167,7 @@ class Command(BaseCommand):
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).exclude(id__in=all_attachment_ids)
         crids = set(attachment.allegation.crid for attachment in changed_attachments + list(deleted_attachments))
-        logger.info('Deleting {num} attachments'.format(num=deleted_attachments.count()))
+        logger.info(f'Deleting {deleted_attachments.count()} attachments')
         deleted_attachments.delete()
 
         self.rebuild_related_elasticsearch_docs(crids=crids)
@@ -185,8 +182,7 @@ class Command(BaseCommand):
             num_new_documents=num_new_attachments,
             num_updated_documents=num_updated_attachments
         )
-        logger.info('Done! {num_created} created, {num_updated} updated in {num} documentcloud attachments'.format(
-            num_created=num_new_attachments,
-            num_updated=num_updated_attachments,
-            num=num_documents
-        ))
+        logger.info(
+            f'Done! {num_new_attachments} created, {num_updated_attachments}'
+            f' updated in {num_documents} documentcloud attachments'
+        )
