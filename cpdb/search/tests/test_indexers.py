@@ -368,7 +368,10 @@ class CrIndexerTestCase(TestCase):
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
+        allegation = AllegationFactory(
+            crid='123456',
+            incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc),
+            summary='abc')
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
@@ -384,11 +387,15 @@ class CrIndexerTestCase(TestCase):
             'crid': '123456',
             'category': 'Abc',
             'incident_date': '2017-07-27',
+            'summary': 'abc',
             'to': '/complaint/123456/'
         })
 
     def test_extract_datum_with_missing_incident_date_and_category(self):
-        allegation = AllegationFactory(crid='123456', incident_date=None)
+        allegation = AllegationFactory(
+            crid='123456',
+            incident_date=None,
+            summary='')
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer, allegation_category=None)
 
@@ -398,6 +405,7 @@ class CrIndexerTestCase(TestCase):
             'crid': '123456',
             'category': None,
             'incident_date': None,
+            'summary': '',
             'to': '/complaint/123456/'
         })
 
