@@ -13,8 +13,9 @@ class LogTwitterbotLinkVisitMiddleware(object):
         param = 'twitterbot_log_id'
         if param in request.GET:
             response_log = TwitterBotResponseLog.objects.get(id=request.GET[param])
-            logger.info('%s - Someone visit %s from status %s' % (
-                self.__class__.__name__, request.path, response_log.tweet_url))
+            logger.info(
+                f'{self.__class__.__name__} - Someone visit {request.path} from status {response_log.tweet_url}'
+            )
             TwitterBotVisitLog.objects.create(request_path=request.path, response_log=response_log)
 
         response = self.get_response(request)

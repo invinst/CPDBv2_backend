@@ -10,12 +10,12 @@ from .utils import per_run_uuid, timing_validate
 class IndexAlias:
     def __init__(self, name):
         self.name = name
-        self.new_index_name = '%s_%s' % (name, per_run_uuid)
+        self.new_index_name = f'{name}_{per_run_uuid}'
         self.read_index = Index(name)
         self.write_index = Index(self.new_index_name)
         if getattr(settings, 'TEST', False):
-            self.new_index_name = 'test_%s' % self.new_index_name
-            self.name = 'test_%s' % self.name
+            self.new_index_name = f'test_{self.new_index_name}'
+            self.name = f'test_{self.name}'
 
     def doc_type(self, doc_type):
         return self.read_index.doc_type(doc_type)

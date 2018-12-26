@@ -51,11 +51,11 @@ class AutoOpenIPRA(object):
     def crawl_open_ipra():
         logger.info('Crawling process is about to start...')
         links = OpenIpraInvestigationCrawler().crawl()
-        logger.info('Complaint crawler is starting! {num_links} is ready to be crawled'.format(num_links=len(links)))
+        logger.info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         incidents = []
 
         for link in links:
-            logger.info('Crawling {link}'.format(link=link))
+            logger.info(f'Crawling {link}')
             incidents.append(ComplaintCrawler(link).crawl())
 
         return incidents
@@ -63,7 +63,7 @@ class AutoOpenIPRA(object):
     @staticmethod
     def get_or_update_allegation(allegation_dict):
         crid = allegation_dict['crid']
-        logger.info('Importing allegation with crid: {crid}'.format(crid=crid))
+        logger.info(f'Importing allegation with crid: {crid}')
         try:
             allegation = Allegation.objects.get(crid=crid)
         except Allegation.DoesNotExist:
@@ -133,17 +133,16 @@ class AutoOpenIPRA(object):
             num_new_documents=num_new_attachments,
             num_updated_documents=num_updated_attachments
         )
-        logger.info('Done importing! {num_created} created, {num_updated} updated in {total} copa attachments'.format(
-            num_created=num_new_attachments,
-            num_updated=num_updated_attachments,
-            total=num_documents
-        ))
+        logger.info(
+            f'Done importing! {num_new_attachments} created, {num_updated_attachments} updated '
+            f'in {num_documents} copa attachments'
+        )
 
     @staticmethod
     def import_new():
         records = AutoOpenIPRA.crawl_open_ipra()
         logger.info('Done crawling!')
         incidents = AutoOpenIPRA.parse_incidents(records)
-        logger.info('Parsed {num_incidents} crawled incidents'.format(num_incidents=len(incidents)))
+        logger.info(f'Parsed {len(incidents)} crawled incidents')
         incidents = AutoOpenIPRA.fill_category(incidents)
         AutoOpenIPRA.import_allegation_and_attachments(incidents)

@@ -21,7 +21,7 @@ from data.factories import (
     OfficerFactory,
     InvestigatorAllegationFactory,
     InvestigatorFactory,
-)
+    OfficerBadgeNumberFactory)
 from trr.factories import TRRAttachmentRequestFactory, TRRFactory
 
 
@@ -31,7 +31,7 @@ class DocumentRequestServiceTestCase(TestCase):
     def test_upload_cr_attachment_request_to_foia_with_cpd(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
 
-        allegation = AllegationFactory(crid='123456', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
         attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
@@ -53,7 +53,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -89,7 +90,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -125,10 +127,126 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
+
+        CRRequestAirTableUploader.upload()
+        attachment_request.refresh_from_db()
+
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+
+    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_upload_cr_attachment_request_to_foia_with_cpd_after_2006_has_current_star(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        InvestigatorAllegationFactory(allegation=allegation, current_star='123456')
+        InvestigatorAllegationFactory(allegation=allegation, current_star='456789')
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation': 'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+                'CPDP'
+            ],
+            'Agency': ['CPD_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+                {
+                    'id': 'usrGiZFcyZ6wHTYWd',
+                    'email': 'rajiv@invisibleinstitute.com',
+                    'name': 'Rajiv Sinclair'
+                }
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+        }
+
+        CRRequestAirTableUploader.upload()
+        attachment_request.refresh_from_db()
+
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+
+    @patch('django.conf.settings.AIRTABLE_CPD_AGENCY_ID', 'CPD_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_upload_cr_attachment_request_to_foia_with_cpd_after_2006_has_badge_number(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        OfficerBadgeNumberFactory(officer=officer_1, star='12345')
+        OfficerBadgeNumberFactory(officer=officer_2, star='56789')
+        investigator_1 = InvestigatorFactory(officer=officer_1)
+        investigator_2 = InvestigatorFactory(officer=officer_1)
+        InvestigatorAllegationFactory(allegation=allegation, current_star=None, investigator=investigator_1)
+        InvestigatorAllegationFactory(allegation=allegation, current_star=None, investigator=investigator_2)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation': 'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+                'CPDP'
+            ],
+            'Agency': ['CPD_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+                {
+                    'id': 'usrGiZFcyZ6wHTYWd',
+                    'email': 'rajiv@invisibleinstitute.com',
+                    'name': 'Rajiv Sinclair'
+                }
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+        }
+
+        CRRequestAirTableUploader.upload()
+        attachment_request.refresh_from_db()
+
+        airtable_mock.insert.assert_called_with(expected_airtable_data)
+        expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+
+    @patch('django.conf.settings.AIRTABLE_COPA_AGENCY_ID', 'COPA_AGENCY_ID')
+    @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
+    def test_upload_cr_attachment_request_to_foia_with_cpd_after_2006(self, airtable_mock):
+        airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
+
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
+        attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
+        officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
+        officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
+        InvestigatorAllegationFactory(allegation=allegation, current_star=None)
+        InvestigatorAllegationFactory(allegation=allegation, current_star=None)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_1)
+        OfficerAllegationFactory(allegation=allegation, officer=officer_2)
+
+        expected_airtable_data = {
+            'Explanation': 'Officers: John Henry(ID 2), Marry Jane(ID 1)',
+            'Project': [
+                'CPDP'
+            ],
+            'Agency': ['COPA_AGENCY_ID'],
+            'Requested For': 'CR 123456',
+            'Requestor': [
+                {
+                    'id': 'usrGiZFcyZ6wHTYWd',
+                    'email': 'rajiv@invisibleinstitute.com',
+                    'name': 'Rajiv Sinclair'
+                }
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+        }
 
         CRRequestAirTableUploader.upload()
         attachment_request.refresh_from_db()
@@ -161,7 +279,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -201,7 +320,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -240,7 +360,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -278,7 +399,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -317,7 +439,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -348,7 +471,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -384,7 +508,8 @@ class DocumentRequestServiceTestCase(TestCase):
                 'email': 'rajiv@invisibleinstitute.com',
                 'name': 'Rajiv Sinclair'
               }
-            ]
+            ],
+            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
         }
 
         TRRRequestAirTableUploader.upload(update_all_records=True)
@@ -445,7 +570,7 @@ class DocumentRequestServiceTestCase(TestCase):
     def test_Airtable_insert_raise_HTTPError(self, airtable_mock):
         AirTableUploader._get_foia_airtable().insert = Mock(side_effect=[{'id': 'some_airtable_record_id'}, HTTPError])
 
-        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation123, officer=officer_1)
@@ -482,7 +607,8 @@ class DocumentRequestServiceTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': attachment_request_1.timestamp.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation': 'Officers: John Henry(ID 4), Marry Jane(ID 3)',
@@ -497,7 +623,8 @@ class DocumentRequestServiceTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': attachment_request_2.timestamp.strftime(format='%Y-%m-%d')
             })
         ]
         airtable_mock.insert.assert_has_calls(expected_calls, any_order=True)

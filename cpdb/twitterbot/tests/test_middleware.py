@@ -19,7 +19,7 @@ class LogTwitterbotLinkVisitMiddlewareTestCase(TestCase):
         expect(TwitterBotVisitLog.objects.count()).to.equal(0)
         with patch('twitterbot.middleware.logger.info') as info:
             expect(middleware(request)).to.eq(response)
-            info.assert_called_with('LogTwitterbotLinkVisitMiddleware - Someone visit /foo/ from status %s' % tweet_url)
+            info.assert_called_with(f'LogTwitterbotLinkVisitMiddleware - Someone visit /foo/ from status {tweet_url}')
         expect(TwitterBotVisitLog.objects.count()).to.equal(1)
         visit_log = TwitterBotVisitLog.objects.first()
         expect(visit_log.request_path).to.eq('/foo/')

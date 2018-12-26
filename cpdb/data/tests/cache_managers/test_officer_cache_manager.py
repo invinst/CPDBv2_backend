@@ -371,4 +371,4 @@ class OfficerCacheManagerTestCase(TestCase):
             for year, expected_percentile in expected_yearly_percentiles.items():
                 percentile = yearly_percentiles.get(year=year)
                 for attr, value in expected_percentile.items():
-                    expect("{0:.2f}".format(getattr(percentile, attr))).to.eq("{0:.2f}".format(value))
+                    expect(f'{getattr(percentile, attr):.2f}').to.eq(f'{value:.2f}')

@@ -41,8 +41,7 @@ class BaseIndexer(object):
     def docs(self):
         for datum in tqdm(
                 self.get_queryset(),
-                desc='Indexing {doc_type_name}'.format(
-                    doc_type_name=self.doc_type_klass._doc_type.name)):
+                desc=f'Indexing {self.doc_type_klass._doc_type.name}'):
             extracted_data = self.extract_datum_with_id(datum)
             if isinstance(extracted_data, list):
                 for entry in extracted_data:
@@ -60,7 +59,7 @@ class UnitIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'name': datum.unit_name,
-            'long_name': 'Unit {}'.format(datum.unit_name) if datum.unit_name else 'Unit',
+            'long_name': f'Unit {datum.unit_name}' if datum.unit_name else 'Unit',
             'description': datum.description,
             'url': datum.v1_url,
             'to': datum.v2_to,
@@ -181,8 +180,8 @@ class CrIndexer(BaseIndexer):
         return {
             'crid': datum.crid,
             'category': self.get_most_common_category(datum.id),
-            'incident_date': datum.incident_date.strftime("%Y-%m-%d") if datum.incident_date else None,
-            'to': '/complaint/%s/' % datum.crid
+            'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
+            'to': f'/complaint/{datum.crid}/'
         }
 
 
@@ -209,7 +208,7 @@ class TRRIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'id': datum.id,
-            'trr_datetime': datum.trr_datetime.strftime("%Y-%m-%d") if datum.trr_datetime else None,
+            'trr_datetime': datum.trr_datetime.strftime('%Y-%m-%d') if datum.trr_datetime else None,
             'force_type': self.top_forcetype_dict.get(datum.id, None),
             'to': datum.v2_to
         }

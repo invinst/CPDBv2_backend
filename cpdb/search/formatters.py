@@ -67,7 +67,7 @@ class OfficerV2Formatter(SimpleFormatter):
 
         return {
             'result_text': serialized_doc['full_name'],
-            'result_extra_information': badge and 'Badge # {badge}'.format(badge=badge) or '',
+            'result_extra_information': badge and f'Badge # {badge}' or '',
             'to': serialized_doc['to'],
             'tags': tags
         }

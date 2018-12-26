@@ -18,10 +18,10 @@ def parse(url):
         response = requests.get(url, headers={'User-Agent': USER_AGENT})
         html = response.content.decode('utf-8')
     except ConnectionError:
-        logger.error('ConnectionError while parsing %s' % url)
+        logger.error(f'ConnectionError while parsing {url}')
         return ''
     except UnicodeError:
-        logger.error('UnicodeError while parsing %s' % url)
+        logger.error(f'UnicodeError while parsing {url}')
         html = response.content.decode('utf-8', 'replace')
     soup = BeautifulSoup(html, 'html.parser')
     [s.decompose() for s in soup([
