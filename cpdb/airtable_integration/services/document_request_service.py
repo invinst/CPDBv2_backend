@@ -41,7 +41,7 @@ class AirTableUploader(object):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': raw_object.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': raw_object.created_at.strftime(format='%Y-%m-%d')
         }
 
     @classmethod
