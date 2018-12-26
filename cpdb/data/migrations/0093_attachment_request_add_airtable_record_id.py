@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0091_correct_allegations_subjects_default'),
+        ('data', '0092_normalize_officer_rank'),
     ]
 
     operations = [

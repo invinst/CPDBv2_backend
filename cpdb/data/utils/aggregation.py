@@ -19,15 +19,15 @@ def get_num_range_case(field, ranges):
         kwargs = dict()
 
         if ind == 0 and val == 0:
-            kwargs['%s__lte' % field] = ranges[ind + 1]
-            then = '<%d' % ranges[ind + 1]
+            kwargs[f'{field}__lte'] = ranges[ind + 1]
+            then = f'<{ranges[ind + 1]}'
         elif ind < len_ranges-1:
-            kwargs['%s__gte' % field] = val
-            kwargs['%s__lte' % field] = ranges[ind + 1]
-            then = '%d-%d' % (val, ranges[ind + 1])
+            kwargs[f'{field}__gte'] = val
+            kwargs[f'{field}__lte'] = ranges[ind + 1]
+            then = f'{val}-{ranges[ind + 1]}'
         else:
-            kwargs['%s__gte' % field] = val
-            then = '%d+' % val
+            kwargs[f'{field}__gte'] = val
+            then = f'{val}+'
         kwargs['then'] = Value(then)
 
         whens.append(When(**kwargs))

@@ -219,7 +219,7 @@ class TRR(models.Model):
 
     @property
     def v2_to(self):
-        return '/trr/%s/' % self.id
+        return f'/trr/{self.id}/'
 
 
 class ActionResponse(models.Model):
@@ -294,4 +294,4 @@ class TRRAttachmentRequest(models.Model):
         unique_together = (('trr', 'email'),)
 
     def __str__(self):
-        return '%s - %s' % (self.email, self.trr.id)
+        return f'{self.email} - {self.trr.id}'

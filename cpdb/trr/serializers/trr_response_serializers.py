@@ -13,6 +13,7 @@ class OfficerSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=255)
     gender = serializers.CharField(max_length=255)
     race = serializers.CharField(max_length=50)
+    rank = serializers.CharField(max_length=100)
     appointed_date = serializers.DateField(allow_null=True)
     birth_year = serializers.IntegerField(allow_null=True)
     resignation_date = serializers.DateField(read_only=True, allow_null=True)

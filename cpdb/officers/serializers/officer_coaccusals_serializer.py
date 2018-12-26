@@ -3,7 +3,7 @@ from es_index.serializers import BaseSerializer, get, get_gender
 
 class OfficerCoaccusalSerializer(BaseSerializer):
     def get_full_name(self, obj):
-        return '%s %s' % (obj['first_name'], obj['last_name'])
+        return f"{obj['first_name']} {obj['last_name']}"
 
     def get_float(self, field):
         def func(obj):

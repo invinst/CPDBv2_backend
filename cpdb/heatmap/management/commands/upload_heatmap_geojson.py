@@ -1,19 +1,18 @@
-import json
 import gzip
+import json
 from tempfile import NamedTemporaryFile
 
-from django.core.management import BaseCommand
-from django.conf import settings
-from django.db import connection
-from django.db.models import Count, Sum
-from django.contrib.gis.geos.factory import fromstr
-
-from tqdm import tqdm
 from azure.storage.blob import BlockBlobService, PublicAccess, ContentSettings
 from azure.storage.common.models import CorsRule
+from django.conf import settings
+from django.contrib.gis.geos.factory import fromstr
+from django.core.management import BaseCommand
+from django.db import connection
+from django.db.models import Count, Sum
+from tqdm import tqdm
 
-from data.models import Area, OfficerAllegation, Officer
 from data.constants import COMMUNITY_AREA_CHOICE, ALLEGATION_MIN_DATETIME
+from data.models import Area, OfficerAllegation, Officer
 
 
 # pragma: no cover
@@ -30,18 +29,17 @@ class Command(BaseCommand):
 
         grid_size = 0.0005
 
-        kursor.execute('''
+        kursor.execute(f'''
             SELECT
                 COUNT( point ) AS count,
                 ST_AsText( ST_Centroid(ST_Collect( point )) ) AS center
             FROM data_allegation
             WHERE
-                incident_date >= \'%s 00:00:00\'
+                incident_date >= \'{settings.ALLEGATION_MIN} 00:00:00\'
                 AND point IS NOT NULL
             GROUP BY
-                ST_SnapToGrid( ST_SetSRID(point, 4326), %s, %s)
-            ''' % (settings.ALLEGATION_MIN, grid_size, grid_size)
-            )
+                ST_SnapToGrid( ST_SetSRID(point, 4326), {grid_size}, {grid_size})
+            ''')
         kclusters = kursor.fetchall()
         ret = {'features': [], 'type': 'FeatureCollection'}
 

@@ -99,14 +99,11 @@ class CRRequestAirTableUploader(AirTableUploader):
         officer_allegations = allegation.officerallegation_set.select_related('officer')\
             .order_by('officer__first_name', 'officer__last_name')
         officers_info = [
-            "{officer_name}(ID {officer_id})".format(
-                officer_id=officer_allegation.officer.id,
-                officer_name=officer_allegation.officer.full_name
-            )
+            f'{officer_allegation.officer.full_name}(ID {officer_allegation.officer.id})'
             for officer_allegation in officer_allegations if officer_allegation.officer
         ]
-        explanation = "Officers: {}".format(', '.join(officers_info)) if officers_info else ''
-        requested_for = "CR {crid}".format(crid=allegation.crid)
+        explanation = f"Officers: {', '.join(officers_info)}" if officers_info else ''
+        requested_for = f'CR {allegation.crid}'
         agencies = [
             settings.AIRTABLE_CPD_AGENCY_ID
             if document_request.investigated_by_cpd
@@ -142,12 +139,9 @@ class TRRRequestAirTableUploader(AirTableUploader):
     @classmethod
     def _build_data(cls, document_request):
         officer = document_request.trr.officer
-        explanation = "Officer: {officer_name}(ID {officer_id})".format(
-            officer_id=officer.id,
-            officer_name=officer.full_name
-        ) if officer else ''
+        explanation = f'Officer: {officer.full_name}(ID {officer.id})' if officer else ''
 
-        requested_for = "TRR {trrid}".format(trrid=document_request.trr_id)
+        requested_for = f'TRR {document_request.trr_id}'
         return explanation, requested_for, []
 
     @classmethod

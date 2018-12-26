@@ -11,7 +11,7 @@ def timing_validate(message):
             print(message)
             start_time = time()
             return_value = func(*args, **kwargs)
-            print('Done in {}'.format(time() - start_time))
+            print(f'Done in {time() - start_time}')
             return return_value
         return wrapper
     return real_decorator

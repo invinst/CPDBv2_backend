@@ -5,13 +5,13 @@ from dateparser import parse
 
 
 MIN_DATE_STRING = 6
-DIGITS_MODIFIER_PATTERN = '\d{1,2}st|\d{1,2}nd|\d{1,2}rd|\d{1,2}th'
-DIGITS_PATTERN = '\d{1,4}'
+DIGITS_MODIFIER_PATTERN = r'\d{1,2}st|\d{1,2}nd|\d{1,2}rd|\d{1,2}th'
+DIGITS_PATTERN = r'\d{1,4}'
 MONTHS_PATTERN = 'january|february|march|april|may|june|july|august|september|october|november|december|' \
                  'jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec'
-DELIMITERS_PATTERN = '[/\:\-\,\s\_\+\@]'
-COMPONENT_PATTERN = '({}|{}|{})\,?'.format(MONTHS_PATTERN, DIGITS_MODIFIER_PATTERN, DIGITS_PATTERN)
-DATE_PATTERN = '^({})({}({}))*$'.format(COMPONENT_PATTERN, DELIMITERS_PATTERN, COMPONENT_PATTERN)
+DELIMITERS_PATTERN = r'[/\:\-\,\s\_\+\@]'
+COMPONENT_PATTERN = fr'({MONTHS_PATTERN}|{DIGITS_MODIFIER_PATTERN}|{DIGITS_PATTERN})\,?'
+DATE_PATTERN = f'^({COMPONENT_PATTERN})({DELIMITERS_PATTERN}({COMPONENT_PATTERN}))*$'
 SPLIT_DATE_TOKEN = 'SPLIT_DATE_TOKEN'
 
 

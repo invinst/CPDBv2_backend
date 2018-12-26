@@ -30,7 +30,7 @@ def csv_from_azure(filename):
 def import_data(apps, schema_editor):
     WeaponDischarge = apps.get_model('trr', 'WeaponDischarge')
     blank_or_null = {
-        '%s_id' % field.name if field.is_relation else field.name: None if field.null else ''
+        f'{field.name}_id' if field.is_relation else field.name: None if field.null else ''
         for field in WeaponDischarge._meta.get_fields()
     }
     boolean_fields = [

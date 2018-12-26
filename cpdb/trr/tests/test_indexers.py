@@ -23,6 +23,7 @@ class TRRIndexerTestCase(TestCase):
             first_name='Vinh',
             last_name='Vu',
             race='White',
+            rank='Police Officer',
             gender='M',
             appointed_date=date(2000, 1, 1),
             birth_year=1980,
@@ -63,6 +64,7 @@ class TRRIndexerTestCase(TestCase):
             'officer_in_uniform': True,
             'officer_on_duty': False,
             'officer': {
+                'rank': 'Police Officer',
                 'gender': 'Male',
                 'resignation_date': None,
                 'race': 'White',
@@ -133,6 +135,7 @@ class TRRIndexerTestCase(TestCase):
             last_name='Vu',
             race='White',
             gender='M',
+            rank='Police Officer',
             appointed_date=date(2000, 1, 1),
             birth_year=1980,
             resignation_date=date(2000, 8, 1),
@@ -162,6 +165,7 @@ class TRRIndexerTestCase(TestCase):
             'officer_in_uniform': True,
             'officer_on_duty': False,
             'officer': {
+                'rank': 'Police Officer',
                 'gender': 'Male',
                 'resignation_date': '2000-08-01',
                 'race': 'White',
@@ -190,6 +194,7 @@ class TRRIndexerTestCase(TestCase):
         unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
         officer = OfficerFactory(
             id=1,
+            rank='Detective',
             first_name='Vinh',
             last_name='Vu',
             race='White',
@@ -225,6 +230,7 @@ class TRRIndexerTestCase(TestCase):
             'officer_in_uniform': True,
             'officer_on_duty': False,
             'officer': {
+                'rank': 'Detective',
                 'gender': 'Male',
                 'resignation_date': '2000-08-01',
                 'race': 'White',

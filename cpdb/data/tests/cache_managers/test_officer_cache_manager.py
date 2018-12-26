@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 
 import pytz
+from django.test import override_settings
 from django.test.testcases import TestCase
 
 from mock import patch, Mock
@@ -270,12 +271,13 @@ class OfficerCacheManagerTestCase(TestCase):
         expect(officer_4.trr_percentile).to.eq(Decimal('66.6667'))
         expect(officer_4.honorable_mention_percentile).to.be.none()
 
-    @patch('django.conf.settings.ALLEGATION_MIN', '1988-01-01')
-    @patch('django.conf.settings.ALLEGATION_MAX', '2016-07-01')
-    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MIN', '2000-01-01')
-    @patch('django.conf.settings.INTERNAL_CIVILIAN_ALLEGATION_MAX', '2016-07-01')
-    @patch('django.conf.settings.TRR_MIN', '2004-01-08')
-    @patch('django.conf.settings.TRR_MAX', '2016-04-12')
+    @override_settings(
+        ALLEGATION_MIN='1988-01-01',
+        ALLEGATION_MAX='2016-07-01',
+        INTERNAL_CIVILIAN_ALLEGATION_MIN='2000-01-01',
+        INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01',
+        TRR_MIN='2004-01-08',
+        TRR_MAX='2016-04-12')
     def test_build_cached_yearly_percentiles(self):
         officer_1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
         officer_2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
@@ -369,4 +371,4 @@ class OfficerCacheManagerTestCase(TestCase):
             for year, expected_percentile in expected_yearly_percentiles.items():
                 percentile = yearly_percentiles.get(year=year)
                 for attr, value in expected_percentile.items():
-                    expect("{0:.2f}".format(getattr(percentile, attr))).to.eq("{0:.2f}".format(value))
+                    expect(f'{getattr(percentile, attr):.2f}').to.eq(f'{value:.2f}')

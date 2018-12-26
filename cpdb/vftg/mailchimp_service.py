@@ -17,7 +17,7 @@ class MailchimpAPIError(Exception):
 
 class MailchimpService:
     dc = settings.MAILCHIMP_API_KEY[-3:]
-    list_member_url = 'https://%s.api.mailchimp.com/3.0/lists/%s/members/' % (dc, settings.VFTG_LIST_ID)
+    list_member_url = f'https://{dc}.api.mailchimp.com/3.0/lists/{settings.VFTG_LIST_ID}/members/'
 
     @classmethod
     def subscribe(cls, email):
