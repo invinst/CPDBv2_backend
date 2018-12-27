@@ -1,1 +1,1 @@
-from .popup import *
+from .popup import Popup  # noqa: F401

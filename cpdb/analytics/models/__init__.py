@@ -1,2 +1,2 @@
-from .event import *
-from .search_tracking import *
+from .event import Event  # noqa: F401
+from .search_tracking import SearchTracking  # noqa: F401

@@ -1,23 +1,23 @@
-from .common import *
-from .allegation import *
-from .allegation_category import *
-from .area import *
-from .attachment_file import *
-from .attachment_request import *
-from .award import *
-from .complainant import *
-from .investigator import *
-from .investigator_allegation import *
-from .involvement import *
-from .line_area import *
-from .officer import *
-from .officer_alias import *
-from .officer_allegation import *
-from .officer_badge_number import *
-from .officer_history import *
-from .officer_yearly_percentile import *
-from .police_unit import *
-from .police_witness import *
-from .race_population import *
-from .salary import *
-from .victim import *
+from .common import TaggableModel  # noqa: F401
+from .allegation import Allegation  # noqa: F401
+from .allegation_category import AllegationCategory  # noqa: F401
+from .area import Area  # noqa: F401
+from .attachment_file import AttachmentFile  # noqa: F401
+from .attachment_request import AttachmentRequest  # noqa: F401
+from .award import Award  # noqa: F401
+from .complainant import Complainant  # noqa: F401
+from .investigator import Investigator  # noqa: F401
+from .investigator_allegation import InvestigatorAllegation  # noqa: F401
+from .involvement import Involvement  # noqa: F401
+from .line_area import LineArea  # noqa: F401
+from .officer import Officer  # noqa: F401
+from .officer_alias import OfficerAlias  # noqa: F401
+from .officer_allegation import OfficerAllegation  # noqa: F401
+from .officer_badge_number import OfficerBadgeNumber  # noqa: F401
+from .officer_history import OfficerHistory  # noqa: F401
+from .officer_yearly_percentile import OfficerYearlyPercentile  # noqa: F401
+from .police_unit import PoliceUnit  # noqa: F401
+from .police_witness import PoliceWitness  # noqa: F401
+from .race_population import RacePopulation  # noqa: F401
+from .salary import Salary  # noqa: F401
+from .victim import Victim  # noqa: F401
