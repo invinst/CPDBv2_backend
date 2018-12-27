@@ -1,23 +1,28 @@
-from .common import TaggableModel  # noqa: F401
-from .allegation import Allegation  # noqa: F401
-from .allegation_category import AllegationCategory  # noqa: F401
-from .area import Area  # noqa: F401
-from .attachment_file import AttachmentFile  # noqa: F401
-from .attachment_request import AttachmentRequest  # noqa: F401
-from .award import Award  # noqa: F401
-from .complainant import Complainant  # noqa: F401
-from .investigator import Investigator  # noqa: F401
-from .investigator_allegation import InvestigatorAllegation  # noqa: F401
-from .involvement import Involvement  # noqa: F401
-from .line_area import LineArea  # noqa: F401
-from .officer import Officer  # noqa: F401
-from .officer_alias import OfficerAlias  # noqa: F401
-from .officer_allegation import OfficerAllegation  # noqa: F401
-from .officer_badge_number import OfficerBadgeNumber  # noqa: F401
-from .officer_history import OfficerHistory  # noqa: F401
-from .officer_yearly_percentile import OfficerYearlyPercentile  # noqa: F401
-from .police_unit import PoliceUnit  # noqa: F401
-from .police_witness import PoliceWitness  # noqa: F401
-from .race_population import RacePopulation  # noqa: F401
-from .salary import Salary  # noqa: F401
-from .victim import Victim  # noqa: F401
+from .allegation import Allegation
+from .allegation_category import AllegationCategory
+from .area import Area
+from .attachment_file import AttachmentFile
+from .attachment_request import AttachmentRequest
+from .award import Award
+from .complainant import Complainant
+from .investigator import Investigator
+from .investigator_allegation import InvestigatorAllegation
+from .involvement import Involvement
+from .line_area import LineArea
+from .officer import Officer
+from .officer_alias import OfficerAlias
+from .officer_allegation import OfficerAllegation
+from .officer_badge_number import OfficerBadgeNumber
+from .officer_history import OfficerHistory
+from .officer_yearly_percentile import OfficerYearlyPercentile
+from .police_unit import PoliceUnit
+from .police_witness import PoliceWitness
+from .race_population import RacePopulation
+from .salary import Salary
+from .victim import Victim
+
+__all__ = [
+    Allegation, AllegationCategory, Area, AttachmentFile, AttachmentRequest, Award, Complainant, Investigator,
+    InvestigatorAllegation, Involvement, LineArea, Officer, OfficerAlias, OfficerAllegation, OfficerBadgeNumber,
+    OfficerHistory, OfficerYearlyPercentile, PoliceUnit, PoliceWitness, RacePopulation, Salary, Victim
+]

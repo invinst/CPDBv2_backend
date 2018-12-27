@@ -9,7 +9,7 @@ from django.utils.text import slugify
 from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, GENDER_DICT, BACKGROUND_COLOR_SCHEME
-from data.models import TaggableModel
+from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race

@@ -5,7 +5,7 @@ from django.db.models import F, Value, Count
 from django.db.models.functions import Concat, Cast
 
 from data.constants import AREA_CHOICES
-from data.models import TaggableModel
+from .common import TaggableModel
 
 
 class Area(TaggableModel):

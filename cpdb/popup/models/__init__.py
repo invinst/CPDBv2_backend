@@ -1,1 +1,3 @@
-from .popup import Popup  # noqa: F401
+from .popup import Popup
+
+__all__ = [Popup]

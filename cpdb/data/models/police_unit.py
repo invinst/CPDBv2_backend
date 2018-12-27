@@ -5,8 +5,8 @@ from django.utils.timezone import now
 
 from data.constants import GENDER_DICT
 from data.models import Officer, OfficerAllegation, Complainant
-from data.models import TaggableModel
 from data.utils.aggregation import get_num_range_case
+from .common import TaggableModel
 
 
 class PoliceUnit(TaggableModel):

@@ -1,1 +1,3 @@
-from .slug_page import SlugPage  # noqa: F401
+from .slug_page import SlugPage
+
+__all__ = [SlugPage]
