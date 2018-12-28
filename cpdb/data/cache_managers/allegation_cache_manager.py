@@ -38,4 +38,4 @@ def cache_data():
     ]
 
     for column in count_columns:
-        Allegation.objects.filter(**{'{}__isnull'.format(column): True}).update(**{column: 0})
+        Allegation.objects.filter(**{f'{column}__isnull': True}).update(**{column: 0})

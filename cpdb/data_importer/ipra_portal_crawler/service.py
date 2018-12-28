@@ -58,7 +58,7 @@ class AutoOpenIPRA(object):
     def crawl_open_ipra():
         logger.info('Crawling process is about to start...')
         links = OpenIpraInvestigationCrawler().crawl()
-        logger.info('Complaint crawler is starting! {num_links} is ready to be crawled'.format(num_links=len(links)))
+        logger.info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         incidents = []
 
         for link in tqdm(links):

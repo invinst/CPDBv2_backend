@@ -15,7 +15,7 @@ class IndexersTestCase(SimpleTestCase):
         expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
 
     def test_extract_datum(self):
-        expect(lambda: BaseIndexer().extract_datum()).to.throw(NotImplementedError)
+        expect(lambda: BaseIndexer().extract_datum(None)).to.throw(NotImplementedError)
 
     def test_docs_when_extract_datum_is_generator(self):
         class MyDocType(DocType):

@@ -196,8 +196,8 @@ def _compute_metric(year_end, percentile_group):
 
     func_map = PERCENTILE_MAP[percentile_group]['percentile_funcs']
     for metric, func in func_map.items():
-        num_key = 'num_{}'.format(metric)
-        metric_key = 'metric_{}'.format(metric)
+        num_key = f'num_{metric}'
+        metric_key = f'metric_{metric}'
 
         query = query.annotate(**{num_key: func(min_datetime, max_datetime)})
         query = query.annotate(**{

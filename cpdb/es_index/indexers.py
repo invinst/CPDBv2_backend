@@ -2,12 +2,10 @@ import copy
 import types
 
 from django.utils.module_loading import autodiscover_modules
-
-from tqdm import tqdm
 from elasticsearch.helpers import bulk
+from tqdm import tqdm
 
-from es_index import es_client
-from es_index import indexer_klasses
+from es_index import es_client, indexer_klasses
 
 
 class BaseIndexer(object):
@@ -19,7 +17,7 @@ class BaseIndexer(object):
     def get_queryset(self):
         raise NotImplementedError
 
-    def extract_datum(self):
+    def extract_datum(self, datum):
         raise NotImplementedError
 
     def _embed_update_script(self, doc):
@@ -32,11 +30,12 @@ class BaseIndexer(object):
                     self.parent_doc_type_property: [raw_doc]
                 }
             }
+            property = self.parent_doc_type_property
             doc['_source']['script'] = {
-                "inline": "if (!ctx._source.containsKey('{property}')) {{ ctx._source.{property} = [] }} "
-                          "ctx._source.{property}.add(params.new_doc)".format(property=self.parent_doc_type_property),
-                "lang": "painless",
-                "params": {"new_doc": raw_doc}
+                'inline': f"if (!ctx._source.containsKey('{property}')) {{ ctx._source.{property} = [] }} "
+                          f'ctx._source.{property}.add(params.new_doc)',
+                'lang': 'painless',
+                'params': {'new_doc': raw_doc}
             }
         else:
             raw_doc.pop('id', None)
@@ -58,11 +57,9 @@ class BaseIndexer(object):
 
     def docs(self):
         for datum in tqdm(
-                self.get_queryset(),
-                desc='Indexing {doc_type_name}({indexer_name})'.format(
-                    doc_type_name=self.doc_type_klass._doc_type.name,
-                    indexer_name=self.__class__.__name__
-                )):
+            self.get_queryset(),
+            desc=f'Indexing {self.doc_type_klass._doc_type.name}({self.__class__.__name__})'
+        ):
             result = self.extract_datum(datum)
             if isinstance(result, types.GeneratorType):
                 for obj in result:
@@ -151,10 +148,6 @@ class PartialIndexer(BaseIndexer):
 
         if num_postgres_rows != num_es_docs:
             raise ValueError(
-                (
-                    'Can not update index for %s. '
-                    'Number of ES doc (%d) is not equal to number of PostgreS rows (%d)'
-                ) % (
-                    self.doc_type_klass._doc_type.name, num_es_docs, num_postgres_rows
-                )
+                f'Can not update index for {self.doc_type_klass._doc_type.name}. '
+                f'Number of ES doc ({num_es_docs}) is not equal to number of PostgreS rows ({num_postgres_rows})'
             )

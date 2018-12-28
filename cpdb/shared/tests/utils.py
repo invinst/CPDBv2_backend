@@ -43,7 +43,7 @@ def diff(data_1, data_2):
             else:
                 print(data_2[len_1:])
         for idx, (dict_1, dict_2) in enumerate(zip(data_1, data_2)):
-            print('compare item[{}]'.format(idx))
+            print(f'compare item[{idx}]')
             diff(dict_1, dict_2)
     elif isinstance(data_1, dict) and isinstance(data_2, dict):
         diff_dict(data_1, data_2)

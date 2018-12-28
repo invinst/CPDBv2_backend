@@ -7,7 +7,7 @@ from twitterbot.message_queue import send_tweet
 
 class MessageQueueTestCase(SimpleTestCase):
     @override_settings(AZURE_QUEUE_NAME='queue_bot')
-    @patch('twitterbot.message_queue.base64.b64encode', return_value='encoded_text')
+    @patch('twitterbot.message_queue.base64.b64encode', return_value=b'encoded_text')
     @patch('twitterbot.message_queue.json.dumps')
     @patch('twitterbot.message_queue.QueueService')
     def test_send_tweet(self, QueueService, dumps, _):

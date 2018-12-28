@@ -364,11 +364,10 @@ class OfficerTweetHandlerTestCase(RebuildIndexMixin, TestCase):
         handler.handle()
 
         response_log = TwitterBotResponseLog.objects.all().first()
-        entity_url = 'http://foo.com/officer/1/?twitterbot_log_id=%d' % (response_log.id)
+        entity_url = f'http://foo.com/officer/1/?twitterbot_log_id={response_log.id}'
         expect(response_log.sources).to.eq('text')
         expect(response_log.entity_url).to.eq(entity_url)
-        expect(response_log.tweet_content).to.eq(
-            '@abc Jerome Finnigan has 1 complaints %s' % (entity_url))
+        expect(response_log.tweet_content).to.eq(f'@abc Jerome Finnigan has 1 complaints {entity_url}')
         expect(response_log.created_at).to.eq(datetime(2017, 8, 3, 12, 0, 1, tzinfo=pytz.utc))
         expect(response_log.incoming_tweet_username).to.eq('abc')
         expect(response_log.incoming_tweet_url).to.eq('https://twitter.com/abc/status/1/')

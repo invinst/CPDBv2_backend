@@ -52,10 +52,8 @@ class Command(BaseCommand):
 
     def geocode_api_url(self, address):
         return (
-            (
-                'https://maps.googleapis.com/maps/api/geocode/json?address=%s'
-                '&components=country:US&key=%s'
-            ) % (urllib.quote_plus(address), settings.GOOGLE_GEOCODE_APIKEY)
+            f'https://maps.googleapis.com/maps/api/geocode/json?address={urllib.quote_plus(address)}'
+            f'&components=country:US&key={settings.GOOGLE_GEOCODE_APIKEY}'
         ).encode('ascii', 'ignore')
 
     def handle_readbody_err(self, failure):

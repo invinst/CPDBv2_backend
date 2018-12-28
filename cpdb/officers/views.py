@@ -86,7 +86,7 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
 
         if invalid_officer_ids:
             return Response(
-                'Invalid officer ids: {}'.format(', '.join(map(str, invalid_officer_ids))),
+                f"Invalid officer ids: {', '.join(map(str, invalid_officer_ids))}",
                 status.HTTP_400_BAD_REQUEST
             )
 
@@ -132,7 +132,7 @@ class OfficersMobileViewSet(OfficerBaseViewSet):
 
         if invalid_officer_ids:
             return Response(
-                'Invalid officer ids: {}'.format(', '.join(map(str, invalid_officer_ids))),
+                f"Invalid officer ids: {', '.join(map(str, invalid_officer_ids))}",
                 status.HTTP_400_BAD_REQUEST
             )
         return Response(OfficerCardMobileSerializer(officers, many=True).data)
