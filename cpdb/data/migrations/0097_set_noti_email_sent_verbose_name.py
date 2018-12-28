@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0095_attachmentrequest_noti_email_sent'),
+        ('data', '0096_attachmentrequest_noti_email_sent'),
     ]
 
     operations = [

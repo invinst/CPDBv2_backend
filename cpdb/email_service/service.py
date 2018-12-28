@@ -37,7 +37,7 @@ def send_cr_attachment_available_email(new_attachments):
             except SMTPException:
                 pass
 
-    AttachmentRequest.objects.bulk_update(sent_attachment_requests, update_fields=['noti_email_sent'])
+    AttachmentRequest.bulk_objects.bulk_update(sent_attachment_requests, update_fields=['noti_email_sent'])
 
 
 def send_attachment_request_email(email, attachment_type, **kwargs):

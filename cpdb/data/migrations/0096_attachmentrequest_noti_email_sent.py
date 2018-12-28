@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0094_attachmentfile_copa_external_id'),
+        ('data', '0095_attachmentfile_copa_external_id'),
     ]
 
     operations = [
