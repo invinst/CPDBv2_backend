@@ -7,19 +7,6 @@ from adminsortable.models import SortableMixin
 from adminsortable.fields import SortableForeignKey
 
 
-class SearchTermCategory(SortableMixin):
-    name = models.CharField(max_length=60)
-    order_number = models.PositiveIntegerField(default=0, editable=False, db_index=True)
-    description = models.TextField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['order_number']
-        verbose_name_plural = 'Search term categories'
-
-    def __str__(self):
-        return self.name
-
-
 VIEW_ALL_CTA_TYPE = 'view_all'
 PLAIN_TEXT_CTA_TYPE = 'plain_text'
 LINK_CTA_TYPE = 'link'
@@ -32,7 +19,7 @@ SEARCH_TERM_CTA_TYPES = (
 
 class SearchTermItem(SortableMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    category = SortableForeignKey(SearchTermCategory, on_delete=models.CASCADE)
+    category = SortableForeignKey('search_terms.SearchTermCategory', on_delete=models.CASCADE)
     slug = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=60)
     description = models.TextField(null=True, blank=True)

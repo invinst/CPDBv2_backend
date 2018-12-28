@@ -5,7 +5,7 @@ from rest_framework import status
 
 from robber import expect
 
-from search_terms.models import VIEW_ALL_CTA_TYPE, PLAIN_TEXT_CTA_TYPE, LINK_CTA_TYPE
+from search_terms.models.search_term_item import VIEW_ALL_CTA_TYPE, PLAIN_TEXT_CTA_TYPE, LINK_CTA_TYPE
 from search_terms.factories import SearchTermCategoryFactory, SearchTermItemFactory
 
 
