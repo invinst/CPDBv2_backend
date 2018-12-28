@@ -210,11 +210,13 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         AllegationFactory(
             id=1,
             crid=123,
+            incident_date='2007-12-27',
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
             id=2,
             crid=456,
+            incident_date='2000-12-27',
             summary='the officer pointed a knife at the victim'
         )
 
@@ -232,6 +234,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'id': '1',
             'crid': '123',
             'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
             'highlight': {
                 'summary': ['the officer pointed a <em>gun</em> at the victim']
             }
@@ -241,11 +244,13 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         AllegationFactory(
             id=1,
             crid=123,
+            incident_date='2007-12-27',
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
             id=2,
             crid=456,
+            incident_date='2000-12-27',
             summary='the officer pointed a knife at the victim'
         )
 
@@ -263,6 +268,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'id': '1',
             'crid': '123',
             'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
             'highlight': {
                 'summary': ['the officer pointed a <em>gun</em> at the victim']
             }

@@ -102,7 +102,8 @@ class CRFormatter(SimpleFormatter):
     def doc_format(self, doc):
         return {
             'crid': doc.crid,
-            'to': doc.to
+            'to': doc.to,
+            'incident_date': doc.incident_date,
         }
 
 
