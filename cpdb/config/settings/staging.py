@@ -23,4 +23,4 @@ AIRTABLE_CPD_AGENCY_ID = 'rec6zglKh8mWa4Ycg'
 ENVIRONMENT = 'staging'
 
 EMAIL_BACKEND = 'email_service.backend.MailGunHijackBackend'
-BANDIT_EMAIL = 'cpdb.dev+hijack@eastagile.com'
+BANDIT_EMAIL = ['cpdb.dev+hijack@eastagile.com', 'cpdp+notifications@invisibleinstitute.com']
