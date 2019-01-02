@@ -7,7 +7,7 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0093_attachment_request_add_airtable_record_id'),
+        ('data', '0094_attachmentfile_copa_external_id'),
     ]
 
     operations = [

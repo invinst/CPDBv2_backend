@@ -8,14 +8,12 @@ from robber import expect
 import pytz
 
 from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
-from data.factories import AllegationFactory, AttachmentFileFactory, OfficerAllegationFactory
+from data.factories import AllegationFactory, AttachmentFileFactory
 from data.models import AttachmentFile, Allegation
 from document_cloud.factories import DocumentCloudSearchQueryFactory
 from document_cloud.management.commands.update_documents import Command
 from document_cloud.models import DocumentCrawler
-from cr.doc_types import CRDocType
 from document_cloud.tests.mixins import DocumentcloudTestCaseMixin
-from officers.doc_types import OfficerNewTimelineEventDocType
 from shared.tests.utils import create_object
 
 
@@ -97,7 +95,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         command = Command()
         AttachmentFileFactory(title='old')
 
-        command.process_documentcloud_document(MagicMock(title='new'), 'CR')
+        command.process_documentcloud_document(MagicMock(title='new', id='456-CRID-123456-CR'), 'CR')
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('old')
@@ -106,7 +104,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         command = Command()
         AttachmentFileFactory(title='old')
 
-        command.process_documentcloud_document(MagicMock(title='CRID 12 CR'), 'CR')
+        command.process_documentcloud_document(MagicMock(title='CRID 12 CR', id='456-CRID-123456-CR'), 'CR')
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('old')
@@ -312,101 +310,6 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(media789.title).to.eq('CRID 123456 CR new - document')
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    def test_rebuild_index_updated_allegation_and_officer_new_timeline(
-        self,
-        DocumentCloudMock
-    ):
-        allegation_1 = AllegationFactory(crid='123456')
-        allegation_2 = AllegationFactory(crid='789')
-        OfficerAllegationFactory(allegation=allegation_1)
-        OfficerAllegationFactory(allegation=allegation_2)
-        DocumentCloudSearchQueryFactory(type='CR', query='CR')
-        DocumentCloudSearchQueryFactory(type='CRID', query='CRID')
-
-        mock_search_map = {
-            'CR': [
-                create_object({
-                    'title': 'CRID 123456 CR',
-                    'id': '789-CRID-123456-CR',
-                    'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                    'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                    'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
-                    'resources': create_object(
-                        {'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
-                })
-            ],
-            'CRID': [
-                create_object({
-                    'title': 'CRID 789 CRID',
-                    'id': '789-CRID-789-CR',
-                    'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-789-CR.html',
-                    'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-789-CR.html',
-                    'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                    'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
-                    'resources': create_object(
-                        {'pdf': 'https://www.documentcloud.org/documents/789/CRID-789-CR.pdf'})
-                })
-            ]
-        }
-
-        def mock_search_side_effect(syntax):
-            return mock_search_map[syntax]
-
-        DocumentCloudMock().documents.search.side_effect = mock_search_side_effect
-
-        CRDocType(meta={'id': '1'}, **{
-            'crid': '123456',
-            'address': '30XX E NEW YORK ST , AURORA IL',
-            'attachments': [],
-            'beat': '3100',
-            'category_names': [],
-        }).save()
-
-        CRDocType(meta={'id': '2'}, **{
-            'crid': '789',
-            'address': 'AURORA IL',
-            'attachments': [],
-            'beat': '300',
-            'category_names': [],
-        }).save()
-
-        OfficerNewTimelineEventDocType(meta={'id': '1'}, **{
-            'crid': '123456',
-            'kind': 'CR',
-        }).save()
-
-        OfficerNewTimelineEventDocType(meta={'id': '2'}, **{
-            'crid': '789',
-            'kind': 'CR',
-        }).save()
-
-        self.refresh_index()
-
-        management.call_command('update_documents')
-
-        expect(Allegation.objects.get(crid='123456').attachment_files.count()).to.eq(1)
-        expect(Allegation.objects.get(crid='789').attachment_files.count()).to.eq(1)
-
-        expect(CRDocType().search().query('terms', crid=['123456', '789']).count()).to.eq(2)
-        cr_doc = CRDocType().search().query('term', crid='123456').execute()[0].to_dict()
-        expect(cr_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
-        cr_doc_2 = CRDocType().search().query('term', crid='789').execute()[0].to_dict()
-        expect(cr_doc_2['attachments'][0]['title']).to.eq('CRID 789 CRID')
-
-        expect(OfficerNewTimelineEventDocType().search().query('terms', crid=['123456', '789']).count()).to.eq(2)
-        cr_timeline_doc = OfficerNewTimelineEventDocType().search().query('term', crid='123456').execute()[0].to_dict()
-        expect(cr_timeline_doc['attachments'][0]['title']).to.eq('CRID 123456 CR')
-        cr_timeline_doc_2 = OfficerNewTimelineEventDocType().search().query('term', crid='789').execute()[0].to_dict()
-        expect(cr_timeline_doc_2['attachments'][0]['title']).to.eq('CRID 789 CRID')
-
-        crawling_log = DocumentCrawler.objects.last()
-        expect(crawling_log.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
-        expect(crawling_log.num_documents).to.equal(2)
-        expect(crawling_log.num_new_documents).to.equal(2)
-        expect(crawling_log.num_updated_documents).to.equal(0)
-
-    @patch('document_cloud.management.commands.update_documents.DocumentCloud')
     def test_clean_not_exist_attachments(self, DocumentCloudMock):
         allegation = AllegationFactory(crid=123456)
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
@@ -448,43 +351,17 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
             })
         ]
 
-        CRDocType(meta={'id': '1'}, **{
-            'crid': '123456',
-            'address': '30XX E NEW YORK ST , AURORA IL',
-            'attachments': [
-                {
-                    'file_type': 'document',
-                    'preview_image_url': '',
-                    'title': 'To be deleted',
-                    'url': 'https://www.documentcloud.org/documents/456/to-be-deleted-CRID-123456-CR.pdf'
-                },
-                {
-                    'file_type': 'document',
-                    'preview_image_url': '',
-                    'title': 'To be updated',
-                    'url': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'
-                }
-            ],
-            'beat': '3100',
-            'category_names': [],
-        }).save()
-        self.refresh_index()
-        old_cr_docs = CRDocType().search().query('term', crid='123456').execute()
-        expect(len(old_cr_docs.hits)).to.eq(1)
-
-        old_cr_doc = old_cr_docs[0].to_dict()
-        expect(len(old_cr_doc['attachments'])).to.eq(2)
-        old_titles = set([attachment['title'] for attachment in old_cr_doc['attachments']])
+        old_cr = Allegation.objects.get(crid='123456')
+        expect(old_cr.attachment_files.count()).to.eq(2)
+        old_titles = set([attachment.title for attachment in old_cr.attachment_files.all()])
         expect(old_titles).to.eq({'To be deleted', 'To be updated'})
 
         management.call_command('update_documents')
 
-        cr_docs = CRDocType().search().query('term', crid='123456').execute()
-        expect(len(cr_docs.hits)).to.eq(1)
+        cr = Allegation.objects.get(crid='123456')
 
-        cr_doc = cr_docs[0].to_dict()
-        expect(len(cr_doc['attachments'])).to.eq(2)
-        titles = set([attachment['title'] for attachment in cr_doc['attachments']])
+        expect(cr.attachment_files.count()).to.eq(2)
+        titles = set([attachment.title for attachment in cr.attachment_files.all()])
         expect(titles).to.eq({'CRID 123456 CR', 'CRID 123456 CR 2'})
 
         expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
@@ -496,85 +373,42 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(crawling_log.num_updated_documents).to.equal(1)
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.CRPartialIndexer')
-    @patch('document_cloud.management.commands.update_documents.CRNewTimelineEventPartialIndexer')
-    def test_no_rebuild_index_if_no_change(
-        self,
-        CRNewTimelineEventPartialIndexerMock,
-        CRPartialIndexerMock,
-        DocumentCloudMock,
-    ):
-        updated_date = datetime.datetime(2015, 12, 31, tzinfo=pytz.utc)
-        created_date = datetime.datetime(2016, 1, 1, tzinfo=pytz.utc)
-
-        allegation = AllegationFactory(crid='123456')
+    def test_attachments_unchanged(self, DocumentCloudMock):
         DocumentCloudSearchQueryFactory(type='CR', query='CR')
         AttachmentFileFactory(
             external_id='789',
             source_type=AttachmentSourceType.DOCUMENTCLOUD,
             file_type=MEDIA_TYPE_DOCUMENT,
-            allegation=allegation,
+            allegation__crid='123456',
             title='CRID 123456 CR',
+            tag='CR',
             url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
             preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-            external_last_updated=updated_date,
-            external_created_at=created_date,
-            tag='CR'
+            external_last_updated=datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+            external_created_at=datetime.datetime(2017, 1, 1, tzinfo=pytz.utc)
         )
 
         DocumentCloudMock().documents.search.return_value = [
             create_object({
-                'title': 'CRID 123456 CR',
                 'id': '789-CRID-123456-CR',
-                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'title': 'CRID 123456 CR',
+                'url': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
                 'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                'updated_at': updated_date,
-                'created_at': created_date,
-                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
+                'updated_at': datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+                'created_at': datetime.datetime(2017, 1, 1, tzinfo=pytz.utc),
+                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
+                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'}),
             })
         ]
 
         management.call_command('update_documents')
 
-        expect(CRPartialIndexerMock).not_to.be.called()
-        expect(CRNewTimelineEventPartialIndexerMock).not_to.be.called()
+        cr = Allegation.objects.get(crid='123456')
+        expect(cr.attachment_files.count()).to.eq(1)
+        titles = set([attachment.title for attachment in cr.attachment_files.all()])
+        expect(titles).to.eq({'CRID 123456 CR'})
 
-    @patch('document_cloud.management.commands.update_documents.DocumentCloud')
-    @patch('document_cloud.management.commands.update_documents.CRPartialIndexer')
-    @patch('document_cloud.management.commands.update_documents.CRNewTimelineEventPartialIndexer')
-    def test_updating_attachment_error_and_no_rebuild_if_no_change(
-        self,
-        CRNewTimelineEventPartialIndexerMock,
-        CRPartialIndexerMock,
-        DocumentCloudMock,
-    ):
-        allegation = AllegationFactory(crid='123456')
-        DocumentCloudSearchQueryFactory(type='CR', query='CR')
-        AttachmentFileFactory(
-            external_id='789',
-            source_type=AttachmentSourceType.DOCUMENTCLOUD,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            allegation=allegation,
-            title='CRID 123456 CR',
-            url='https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf',
-            preview_image_url='https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-            tag='CR'
-        )
-
-        DocumentCloudMock().documents.search.return_value = [
-            create_object({
-                'title': 'CRID 123456 CR New',
-                'id': '789-CRID-123456-CR',
-                'canonical_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                'normal_image_url': 'https://www.documentcloud.org/documents/789-CRID-123456-CR.html',
-                'created_at': datetime.datetime(2015, 12, 31, tzinfo=pytz.utc),
-                'updated_at': datetime.datetime(2016, 1, 1, tzinfo=pytz.utc),
-                'resources': create_object({'pdf': 'https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf'})
-            })
-        ]
-
-        with patch.object(AttachmentFile, 'save', side_effect=ValueError('save() prohibited)')):
-            management.call_command('update_documents')
-
-            expect(CRPartialIndexerMock).not_to.be.called()
-            expect(CRNewTimelineEventPartialIndexerMock).not_to.be.called()
+        crawling_log = DocumentCrawler.objects.last()
+        expect(crawling_log.num_documents).to.equal(1)
+        expect(crawling_log.num_new_documents).to.equal(0)
+        expect(crawling_log.num_updated_documents).to.equal(0)

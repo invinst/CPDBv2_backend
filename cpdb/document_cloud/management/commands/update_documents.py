@@ -9,42 +9,31 @@ from documentcloud import DocumentCloud
 from data.models import AttachmentFile, Allegation
 from data.constants import MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
-from document_cloud.services.documentcloud_service import DocumentcloudService
 from document_cloud.models import DocumentCrawler, DocumentCloudSearchQuery
-from cr.indexers import CRPartialIndexer
-from officers.indexers import CRNewTimelineEventPartialIndexer
+from document_cloud.utils import parse_crid_from_title, parse_id, parse_link, get_url
 
 
 logger = logging.getLogger('django.command')
-
-
-def _get_url(document):
-    document_url = document.canonical_url
-    try:
-        document_url = document.resources.pdf or document_url
-    except AttributeError:
-        pass
-    return document_url
 
 
 class Command(BaseCommand):
     help = 'Update complaint documents info'
 
     def process_documentcloud_document(self, cloud_document, document_type):
-        documentcloud_service = DocumentcloudService()
-        crid = documentcloud_service.parse_crid_from_title(cloud_document.title, document_type)
-        if not crid:
-            return
-        try:
-            allegation = Allegation.objects.get(crid=crid)
-        except Allegation.DoesNotExist:
+        crid = parse_crid_from_title(cloud_document.title, document_type)
+        documentcloud_id = parse_id(cloud_document.id)
+        allegation = Allegation.objects.filter(crid=crid).first()
+        if not crid \
+            or not allegation \
+            or documentcloud_id is None \
+            or AttachmentFile.objects.filter(  # No updating CloudDocument files from COPA
+                    allegation=allegation,
+                    source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                    external_id=documentcloud_id
+                ).exists():
             return
 
-        documentcloud_id = documentcloud_service.parse_id(cloud_document.id)
-        if documentcloud_id is None:
-            return
-
-        setattr(cloud_document, 'url', _get_url(cloud_document))
+        setattr(cloud_document, 'url', get_url(cloud_document))
         setattr(cloud_document, 'source_type', AttachmentSourceType.DOCUMENTCLOUD)
 
         try:
@@ -61,7 +50,7 @@ class Command(BaseCommand):
 
         except AttachmentFile.DoesNotExist:
             title = re.sub(r'([^\s])-([^\s])', r'\g<1> \g<2>', cloud_document.title)
-            additional_info = documentcloud_service.parse_link(cloud_document.canonical_url)
+            additional_info = parse_link(cloud_document.canonical_url)
 
             logger.info(f'Updating documentcloud attachment url={cloud_document.canonical_url} with crid={crid}')
             new_attachment = AttachmentFile.objects.create(
@@ -83,13 +72,16 @@ class Command(BaseCommand):
     def update_mismatched_existing_data(self, attachment, document, document_type):
         should_save = False
         mapping_fields = [
-            ('source_type', 'source_type'),
             ('url', 'url'),
             ('title', 'title'),
             ('preview_image_url', 'normal_image_url'),
             ('external_last_updated', 'updated_at'),
             ('external_created_at', 'created_at')
         ]
+
+        if not attachment.source_type:
+            attachment.source_type = AttachmentSourceType.DOCUMENTCLOUD
+            should_save = True
 
         for (model_field, doc_field) in mapping_fields:
             if getattr(attachment, model_field) != getattr(document, doc_field):
@@ -100,15 +92,12 @@ class Command(BaseCommand):
             should_save = True
 
         if should_save:
-            try:
-                logger.info(
-                    f'Updating documentcloud attachment url={attachment.original_url}'
-                    f' with crid={attachment.allegation.crid}'
-                )
-                attachment.save()
-                return True
-            except ValueError:
-                return False
+            logger.info(
+                'Updating documentcloud attachment '
+                f'url={attachment.original_url} with crid={attachment.allegation.crid}'
+            )
+            attachment.save()
+            return True
 
         return False
 
@@ -125,15 +114,6 @@ class Command(BaseCommand):
                 cleaned_results[cloud_document.title] = cloud_document
 
         return list(cleaned_results.values())
-
-    def rebuild_related_elasticsearch_docs(self, crids):
-        if not crids:
-            return
-
-        for indexer_klass in [CRPartialIndexer, CRNewTimelineEventPartialIndexer]:
-            indexer = indexer_klass(updating_keys=crids)
-            with indexer.index_alias.indexing():
-                indexer.reindex()
 
     def handle(self, *args, **options):
         logger.info('Documentcloud crawling process is about to start...')
@@ -166,11 +146,8 @@ class Command(BaseCommand):
         deleted_attachments = AttachmentFile.objects.filter(
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         ).exclude(id__in=all_attachment_ids)
-        crids = set(attachment.allegation.crid for attachment in changed_attachments + list(deleted_attachments))
         logger.info(f'Deleting {deleted_attachments.count()} attachments')
         deleted_attachments.delete()
-
-        self.rebuild_related_elasticsearch_docs(crids=crids)
 
         num_documents = AttachmentFile.objects.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -183,6 +160,6 @@ class Command(BaseCommand):
             num_updated_documents=num_updated_attachments
         )
         logger.info(
-            f'Done! {num_new_attachments} created, {num_updated_attachments}'
-            f' updated in {num_documents} documentcloud attachments'
+            f'Done! {num_new_attachments} created, {num_updated_attachments} updated '
+            f'in {num_documents} documentcloud attachments'
         )

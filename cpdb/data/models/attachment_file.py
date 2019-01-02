@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
+from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import MEDIA_TYPE_CHOICES
 from .common import TimeStampsModel
@@ -20,6 +21,8 @@ class AttachmentFile(TimeStampsModel):
     preview_image_url = models.CharField(max_length=255, null=True)
     external_created_at = models.DateTimeField(null=True)
     external_last_updated = models.DateTimeField(null=True)
+
+    objects = BulkUpdateManager()
 
     class Meta:
         unique_together = (('allegation', 'external_id', 'source_type'),)
