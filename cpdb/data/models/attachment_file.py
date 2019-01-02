@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
+from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import MEDIA_TYPE_CHOICES
 
@@ -19,6 +20,8 @@ class AttachmentFile(models.Model):
     preview_image_url = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=True)
     last_updated = models.DateTimeField(null=True)
+
+    objects = BulkUpdateManager()
 
     class Meta:
         unique_together = (('allegation', 'external_id', 'source_type'),)
