@@ -2,9 +2,10 @@ from django.contrib.gis.db import models
 from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import FINDINGS, FINDINGS_DICT
+from .common import TimeStampsModel
 
 
-class OfficerAllegation(models.Model):
+class OfficerAllegation(TimeStampsModel):
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE, null=True)
     allegation_category = models.ForeignKey(
         'data.AllegationCategory', on_delete=models.SET_NULL, to_field='id', null=True)

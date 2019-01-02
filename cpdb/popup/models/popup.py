@@ -1,11 +1,13 @@
-from django.db.models import Model, CharField, TextField
+from django.db import models
+
+from data.models.common import TimeStampsModel
 
 
-class Popup(Model):
-    name = CharField(max_length=64)
-    page = CharField(max_length=32)
-    title = CharField(max_length=255)
-    text = TextField()
+class Popup(TimeStampsModel):
+    name = models.CharField(max_length=64)
+    page = models.CharField(max_length=32)
+    title = models.CharField(max_length=255)
+    text = models.TextField()
 
     def __str__(self):
         return self.name

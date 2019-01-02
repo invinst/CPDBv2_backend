@@ -3,6 +3,8 @@ from django.contrib.gis.db import models
 from django.db.models import Exists, OuterRef
 from django_bulk_update.manager import BulkUpdateManager
 
+from .common import TimeStampsModel
+
 
 class AttachmentRequestManager(models.Manager):
     def annotate_investigated_by_cpd(self):
@@ -22,11 +24,10 @@ class AttachmentRequestManager(models.Manager):
         ))
 
 
-class AttachmentRequest(models.Model):
+class AttachmentRequest(TimeStampsModel):
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
     status = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
     airtable_id = models.CharField(max_length=255, blank=True, default='')
 
     bulk_objects = BulkUpdateManager()

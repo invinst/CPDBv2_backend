@@ -1,8 +1,10 @@
 from django.contrib.gis.db import models
 from django_bulk_update.manager import BulkUpdateManager
 
+from .common import TimeStampsModel
 
-class OfficerHistory(models.Model):
+
+class OfficerHistory(TimeStampsModel):
     officer = models.ForeignKey('data.Officer', on_delete=models.CASCADE, null=True)
     unit = models.ForeignKey('data.PoliceUnit', on_delete=models.CASCADE, null=True)
     effective_date = models.DateField(null=True)

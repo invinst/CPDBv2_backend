@@ -6,10 +6,10 @@ from django.utils.timezone import now
 from data.constants import GENDER_DICT
 from data.models import Officer, OfficerAllegation, Complainant
 from data.utils.aggregation import get_num_range_case
-from .common import TaggableModel
+from .common import TaggableModel, TimeStampsModel
 
 
-class PoliceUnit(TaggableModel):
+class PoliceUnit(TimeStampsModel, TaggableModel):
     unit_name = models.CharField(max_length=5)
     description = models.CharField(max_length=255, null=True)
     active = models.NullBooleanField()

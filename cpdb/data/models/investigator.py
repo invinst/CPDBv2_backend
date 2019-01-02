@@ -2,9 +2,10 @@ from django.contrib.gis.db import models
 from django_bulk_update.manager import BulkUpdateManager
 
 from data.validators import validate_race
+from .common import TimeStampsModel
 
 
-class Investigator(models.Model):
+class Investigator(TimeStampsModel):
     first_name = models.CharField(max_length=255, db_index=True, null=True)
     last_name = models.CharField(max_length=255, db_index=True, null=True)
     middle_initial = models.CharField(max_length=5, null=True)

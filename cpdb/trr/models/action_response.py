@@ -5,9 +5,10 @@ from trr.constants import (
     RESISTANCE_TYPE_CHOICES,
     RESISTANCE_LEVEL_CHOICES,
 )
+from data.models.common import TimeStampsModel
 
 
-class ActionResponse(models.Model):
+class ActionResponse(TimeStampsModel):
     trr = models.ForeignKey('trr.TRR', on_delete=models.CASCADE)
     person = models.CharField(max_length=16, null=True, choices=ACTION_PERSON_CHOICES)
     resistance_type = models.CharField(max_length=32, null=True, choices=RESISTANCE_TYPE_CHOICES)

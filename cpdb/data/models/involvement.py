@@ -2,9 +2,10 @@ from django.contrib.gis.db import models
 
 from data.constants import GENDER_DICT
 from data.validators import validate_race
+from .common import TimeStampsModel
 
 
-class Involvement(models.Model):
+class Involvement(TimeStampsModel):
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE)
     officer = models.ForeignKey('data.Officer', on_delete=models.SET_NULL, null=True)
     full_name = models.CharField(max_length=50)

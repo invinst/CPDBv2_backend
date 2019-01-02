@@ -104,12 +104,14 @@ class AutoOpenIPRA(object):
                 num_created += 1
             else:
                 if attachment.source_type == AttachmentSourceType.COPA_DOCUMENTCLOUD:
-                    updating_fields = ['title', 'original_url', 'last_updated']
+                    updating_fields = ['title', 'original_url', 'external_last_updated']
                     attachment_dict['title'] = format_copa_documentcloud_title(
                         allegation.crid, attachment_dict['title']
                     )
                 else:
-                    updating_fields = ['file_type', 'title', 'url', 'original_url', 'last_updated', 'source_type']
+                    updating_fields = [
+                        'file_type', 'title', 'url', 'original_url', 'external_last_updated', 'source_type'
+                    ]
 
                 updated = False
                 for field in updating_fields:

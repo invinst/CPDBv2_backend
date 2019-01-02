@@ -5,10 +5,10 @@ from django.db.models import F, Value, Count
 from django.db.models.functions import Concat, Cast
 
 from data.constants import AREA_CHOICES
-from .common import TaggableModel
+from .common import TaggableModel, TimeStampsModel
 
 
-class Area(TaggableModel):
+class Area(TimeStampsModel, TaggableModel):
     SESSION_BUILDER_MAPPING = {
         'neighborhoods': 'neighborhood',
         'community': 'community',

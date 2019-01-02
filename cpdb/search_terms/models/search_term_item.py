@@ -5,6 +5,7 @@ from django.db import models
 
 from adminsortable.models import SortableMixin
 from adminsortable.fields import SortableForeignKey
+from data.models.common import TimeStampsModel
 
 
 VIEW_ALL_CTA_TYPE = 'view_all'
@@ -17,7 +18,7 @@ SEARCH_TERM_CTA_TYPES = (
 )
 
 
-class SearchTermItem(SortableMixin):
+class SearchTermItem(TimeStampsModel, SortableMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = SortableForeignKey('search_terms.SearchTermCategory', on_delete=models.CASCADE)
     slug = models.CharField(max_length=30, unique=True)

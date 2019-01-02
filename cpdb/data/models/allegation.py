@@ -7,9 +7,10 @@ from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import GENDER_DICT, MEDIA_TYPE_DOCUMENT, MEDIA_IPRA_COPA_HIDING_TAGS
 from data.utils.aggregation import get_num_range_case
+from .common import TimeStampsModel
 
 
-class Allegation(models.Model):
+class Allegation(TimeStampsModel):
     crid = models.CharField(max_length=30, blank=True)
     summary = models.TextField(blank=True)
     location = models.CharField(max_length=64, blank=True)
@@ -121,17 +122,17 @@ class Allegation(models.Model):
             Prefetch(
                 'attachment_files',
                 queryset=AttachmentFile.objects.annotate(
-                    last_created_at=Max('created_at')
+                    last_created_at=Max('external_created_at')
                 ).exclude(
                     tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
                 ).filter(
                     file_type=MEDIA_TYPE_DOCUMENT,
-                    created_at__gte=(F('last_created_at') - timedelta(days=30))
-                ).order_by('created_at'),
+                    external_created_at__gte=(F('last_created_at') - timedelta(days=30))
+                ).order_by('external_created_at'),
                 to_attr='latest_documents'
             )
         ).annotate(
-            latest_document_created_at=Max('attachment_files__created_at')
+            latest_document_created_at=Max('attachment_files__external_created_at')
         ).filter(
             latest_document_created_at__isnull=False
         ).order_by('-latest_document_created_at')[:limit]

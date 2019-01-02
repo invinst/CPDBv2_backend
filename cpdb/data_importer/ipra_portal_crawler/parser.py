@@ -107,7 +107,7 @@ class AttachmentFileField(object):
             'original_url': CharField(field_name='link'),
             'tag': TagField(field_name='title'),
             'source_type': Just(AttachmentSourceType.COPA),
-            'last_updated': DateTimeField(field_name='last_updated'),
+            'external_last_updated': DateTimeField(field_name='last_updated'),
         })
         return schema.parse(record)
 

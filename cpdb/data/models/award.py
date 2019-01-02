@@ -1,7 +1,9 @@
 from django.contrib.gis.db import models
 
+from .common import TimeStampsModel
 
-class Award(models.Model):
+
+class Award(TimeStampsModel):
     officer = models.ForeignKey('data.Officer', on_delete=models.CASCADE)
     award_type = models.CharField(max_length=255)
     start_date = models.DateField(null=True)

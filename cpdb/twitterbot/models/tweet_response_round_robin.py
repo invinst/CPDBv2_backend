@@ -2,6 +2,7 @@ from django.db import models
 from django.apps import apps
 
 from twitterbot.constants import RESPONSE_TYPE_CHOICES
+from data.models.common import TimeStampsModel
 
 
 class TweetResponseRoundRobinManager(models.Manager):
@@ -19,7 +20,7 @@ class TweetResponseRoundRobinManager(models.Manager):
         return templates[response_round_robin.last_index]
 
 
-class TweetResponseRoundRobin(models.Model):
+class TweetResponseRoundRobin(TimeStampsModel):
     username = models.CharField(max_length=15)
     response_type = models.CharField(max_length=20, choices=RESPONSE_TYPE_CHOICES)
     last_index = models.PositiveIntegerField(default=0)

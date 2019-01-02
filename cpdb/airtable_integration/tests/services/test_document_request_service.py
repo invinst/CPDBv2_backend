@@ -8,6 +8,7 @@ import pytz
 from mock import patch, call, Mock
 from robber import expect
 from requests.exceptions import HTTPError
+from freezegun import freeze_time
 
 from airtable_integration.services.document_request_service import (
     CRRequestAirTableUploader,
@@ -54,7 +55,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -65,13 +66,14 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
 
-    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID')
+    @override_settings(AIRTABLE_CPD_AGENCY_ID='CPD_AGENCY_ID', TIME_ZONE='UTC')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_cr_attachment_request_to_foia_with_cpd_for_pre_2006(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
 
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
-        attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
+        with freeze_time(lambda: datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
+            attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation, officer=officer_1)
@@ -91,16 +93,19 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
+        expect(attachment_request.updated_at).to.eq(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc))
 
-        CRRequestAirTableUploader.upload()
-        attachment_request.refresh_from_db()
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            CRRequestAirTableUploader.upload()
+            attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+        expect(attachment_request.updated_at).to.eq(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc))
 
     @override_settings(AIRTABLE_COPA_AGENCY_ID='COPA_AGENCY_ID')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
@@ -128,7 +133,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -167,7 +172,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -208,7 +213,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -245,7 +250,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload()
@@ -280,7 +285,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -321,7 +326,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
@@ -361,7 +366,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -400,7 +405,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -440,7 +445,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         CRRequestAirTableUploader.upload(update_all_records=True)
@@ -450,13 +455,15 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('airtable_id')
 
+    @override_settings(TIME_ZONE='UTC')
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_upload_trr_attachment_request_to_foia_with_copa(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
 
         officer = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         trr = TRRFactory(id='123456', officer=officer)
-        attachment_request = TRRAttachmentRequestFactory(trr=trr, email='requester@example.com')
+        with freeze_time(lambda: datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
+            attachment_request = TRRAttachmentRequestFactory(trr=trr, email='requester@example.com')
 
         expected_airtable_data = {
             'Explanation':  'Officer: Marry Jane(ID 1)',
@@ -472,16 +479,19 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         expect(attachment_request.airtable_id).to.be.eq('')
+        expect(attachment_request.updated_at).to.eq(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc))
 
-        TRRRequestAirTableUploader.upload()
-        attachment_request.refresh_from_db()
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            TRRRequestAirTableUploader.upload()
+            attachment_request.refresh_from_db()
 
         airtable_mock.insert.assert_called_with(expected_airtable_data)
         expect(attachment_request.airtable_id).to.be.eq('some_airtable_record_id')
+        expect(attachment_request.updated_at).to.eq(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc))
 
     @patch('airtable_integration.services.document_request_service.AirTableUploader._lazy_airtable')
     def test_update_trr_attachment_request_to_foia_with_valid_airtable_id(self, airtable_mock):
@@ -509,7 +519,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.timestamp.strftime(format='%Y-%m-%d')
+            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d')
         }
 
         TRRRequestAirTableUploader.upload(update_all_records=True)
@@ -608,7 +618,7 @@ class DocumentRequestServiceTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': attachment_request_1.timestamp.strftime(format='%Y-%m-%d')
+                'Date requested by user': attachment_request_1.created_at.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation': 'Officers: John Henry(ID 4), Marry Jane(ID 3)',
@@ -624,7 +634,7 @@ class DocumentRequestServiceTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': attachment_request_2.timestamp.strftime(format='%Y-%m-%d')
+                'Date requested by user': attachment_request_2.created_at.strftime(format='%Y-%m-%d')
             })
         ]
         airtable_mock.insert.assert_has_calls(expected_calls, any_order=True)

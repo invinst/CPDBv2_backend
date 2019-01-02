@@ -1,6 +1,8 @@
 from django.contrib.gis.db import models
 from django.db.models import F
 
+from .common import TimeStampsModel
+
 
 class SalaryManager(models.Manager):
     def rank_histories_without_joined(self):
@@ -34,7 +36,7 @@ class SalaryManager(models.Manager):
         return ranks
 
 
-class Salary(models.Model):
+class Salary(TimeStampsModel):
     pay_grade = models.CharField(max_length=16)
     rank = models.CharField(max_length=64, null=True)
     salary = models.PositiveIntegerField()

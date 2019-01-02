@@ -6,9 +6,10 @@ from trr.constants import (
     OBJECT_STRUCK_OF_DISCHARGE_CHOICES,
     DISCHARGE_POSITION_CHOICES,
 )
+from data.models.common import TimeStampsModel
 
 
-class WeaponDischarge(models.Model):
+class WeaponDischarge(TimeStampsModel):
     trr = models.ForeignKey('trr.TRR', on_delete=models.CASCADE)
     weapon_type = models.CharField(max_length=32, null=True)
     weapon_type_description = models.CharField(max_length=32, null=True)

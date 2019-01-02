@@ -3,9 +3,10 @@ from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import MEDIA_TYPE_CHOICES
+from .common import TimeStampsModel
 
 
-class AttachmentFile(models.Model):
+class AttachmentFile(TimeStampsModel):
     external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -18,8 +19,8 @@ class AttachmentFile(models.Model):
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
-    created_at = models.DateTimeField(null=True)
-    last_updated = models.DateTimeField(null=True)
+    external_created_at = models.DateTimeField(null=True)
+    external_last_updated = models.DateTimeField(null=True)
 
     objects = BulkUpdateManager()
 

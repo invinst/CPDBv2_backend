@@ -12,4 +12,4 @@ class EventSerializer(serializers.ModelSerializer):
 class SearchTrackingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SearchTracking
-        fields = '__all__'
+        fields = ('id', 'query', 'usages', 'results', 'query_type', 'last_entered')

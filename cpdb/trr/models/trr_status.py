@@ -1,9 +1,10 @@
 from django.contrib.gis.db import models
 
 from trr.constants import TRR_STATUS_CHOICES
+from data.models.common import TimeStampsModel
 
 
-class TRRStatus(models.Model):
+class TRRStatus(TimeStampsModel):
     trr = models.ForeignKey('trr.TRR', on_delete=models.CASCADE)
     officer = models.ForeignKey('data.officer', on_delete=models.CASCADE, null=True)
     rank = models.CharField(max_length=16, null=True)

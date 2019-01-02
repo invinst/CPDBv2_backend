@@ -13,9 +13,10 @@ from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
+from .common import TimeStampsModel
 
 
-class Officer(TaggableModel):
+class Officer(TimeStampsModel, TaggableModel):
     first_name = models.CharField(max_length=255, db_index=True)
     last_name = models.CharField(max_length=255, db_index=True)
     middle_initial = models.CharField(max_length=5, null=True)

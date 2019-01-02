@@ -64,8 +64,8 @@ class Command(BaseCommand):
                 additional_info=additional_info,
                 original_url=cloud_document.url,
                 preview_image_url=cloud_document.normal_image_url,
-                created_at=cloud_document.created_at,
-                last_updated=cloud_document.updated_at
+                external_created_at=cloud_document.created_at,
+                external_last_updated=cloud_document.updated_at
             )
             return {'attachment': new_attachment, 'is_new_attachment': True}
 
@@ -75,8 +75,8 @@ class Command(BaseCommand):
             ('url', 'url'),
             ('title', 'title'),
             ('preview_image_url', 'normal_image_url'),
-            ('last_updated', 'updated_at'),
-            ('created_at', 'created_at')
+            ('external_last_updated', 'updated_at'),
+            ('external_created_at', 'created_at')
         ]
 
         if not attachment.source_type:

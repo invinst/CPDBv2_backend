@@ -42,7 +42,7 @@ class AutoOpenIPRATest(TestCase):
                     'original_url': 'http://audio_link',
                     'tag': 'Audio',
                     'source_type': 'COPA',
-                    'last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
+                    'external_last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
                 }],
                 'subjects': ['Subject1', 'Unknown']
             },
@@ -176,11 +176,11 @@ class AutoOpenIPRATest(TestCase):
             source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf',
-            last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
+            external_last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
         )
 
         AutoOpenIPRA.import_new()
 
         updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
         expect(updated_attachment_file.title).to.eq('CRID 123 CR pdf file')
-        expect(updated_attachment_file.last_updated).to.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
+        expect(updated_attachment_file.external_last_updated).to.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))

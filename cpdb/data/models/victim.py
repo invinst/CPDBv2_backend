@@ -3,9 +3,10 @@ from django_bulk_update.manager import BulkUpdateManager
 
 from data.constants import GENDER_DICT
 from data.validators import validate_race
+from .common import TimeStampsModel
 
 
-class Victim(models.Model):
+class Victim(TimeStampsModel):
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE, related_name='victims')
     gender = models.CharField(max_length=1, blank=True)
     race = models.CharField(max_length=50, default='Unknown', validators=[validate_race])

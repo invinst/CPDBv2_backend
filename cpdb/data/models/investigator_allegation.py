@@ -1,8 +1,10 @@
 from django.contrib.gis.db import models
 from django_bulk_update.manager import BulkUpdateManager
 
+from .common import TimeStampsModel
 
-class InvestigatorAllegation(models.Model):
+
+class InvestigatorAllegation(TimeStampsModel):
     investigator = models.ForeignKey('data.Investigator', on_delete=models.CASCADE)
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE)
     current_star = models.CharField(max_length=10, null=True)

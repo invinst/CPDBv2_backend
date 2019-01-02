@@ -8,9 +8,10 @@ from trr.constants import (
     WEATHER_CONDITION_CHOICES,
     PARTY_FIRED_FIRST_CHOICES,
 )
+from data.models.common import TimeStampsModel
 
 
-class TRR(models.Model):
+class TRR(TimeStampsModel):
     beat = models.PositiveSmallIntegerField(null=True)
     block = models.CharField(max_length=8, null=True)
     direction = models.CharField(max_length=8, null=True, choices=DIRECTION_CHOICES)
