@@ -129,3 +129,6 @@ class SearchTermFormatter(SimpleFormatter):
             'call_to_action_type': serialized_doc.get('call_to_action_type', ''),
             'link': serialized_doc.get('link', ''),
         }
+
+    def process_doc(self, doc):
+        return self.doc_format(doc)

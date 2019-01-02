@@ -236,6 +236,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['SEARCH-TERMS']
         expect(results).to.have.length(2)
 
+        expect(results[0]['id']).to.eq('communities')
         expect(results[0]['name']).to.eq('Communities')
         expect(results[0]['category_name']).to.eq('Geography')
         expect(results[0]['description']).to.eq('Community description')
