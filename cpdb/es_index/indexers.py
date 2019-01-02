@@ -17,7 +17,7 @@ class BaseIndexer(object):
     def get_queryset(self):
         raise NotImplementedError
 
-    def extract_datum(self):
+    def extract_datum(self, datum):
         raise NotImplementedError
 
     def _embed_update_script(self, doc):

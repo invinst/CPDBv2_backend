@@ -1,6 +1,6 @@
 from django.db import models
 
-from data.models import TimeStampsModel
+from data.models.common import TimeStampsModel
 
 
 class Popup(TimeStampsModel):

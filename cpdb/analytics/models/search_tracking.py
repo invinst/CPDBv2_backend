@@ -1,13 +1,6 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 
-from .constants import QUERY_TYPES
-from data.models import TimeStampsModel
-
-
-class Event(TimeStampsModel):
-    name = models.CharField(max_length=255)
-    data = JSONField()
+from analytics.constants import QUERY_TYPES
 
 
 class SearchTracking(models.Model):

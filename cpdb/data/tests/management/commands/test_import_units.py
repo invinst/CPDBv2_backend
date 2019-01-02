@@ -56,7 +56,7 @@ class CommandTestCase(TestCase):
     def test_handle(self):
         unit = PoliceUnitFactory(unit_name='001', description='')
 
-        call_command('import_units', file_path='cpdb/data/tests/data_sample/units.csv')
+        call_command('import_units', file_path='data/tests/data_sample/units.csv')
 
         unit.refresh_from_db()
         expect(unit.description).be.eq('District 001')

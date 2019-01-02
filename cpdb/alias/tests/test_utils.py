@@ -5,7 +5,7 @@ from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 from data.factories import OfficerFactory
 from data.models import Officer
-from cpdb.alias.utils import set_aliases
+from alias.utils import set_aliases
 
 
 class AliasUtilsTestCase(IndexMixin, TestCase):

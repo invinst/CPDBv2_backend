@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
-from data.models import TimeStampsModel
+from data.models.common import TimeStampsModel
 
 
 class SlugPage(TimeStampsModel):

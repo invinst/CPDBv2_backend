@@ -55,8 +55,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            officer=officer1, allegation=allegation,
+            final_finding='SU', disciplined=True,
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -133,6 +135,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
@@ -233,7 +236,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -351,6 +355,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',

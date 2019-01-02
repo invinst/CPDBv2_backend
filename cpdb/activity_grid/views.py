@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from activity_grid.models import ActivityCard, ActivityPairCard
 from activity_grid.serializers import OfficerCardSerializer, SimpleCardSerializer
 from officers.doc_types import OfficerInfoDocType
-from twitterbot.models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR
+from twitterbot.constants import RESPONSE_TYPE_SINGLE_OFFICER, RESPONSE_TYPE_COACCUSED_PAIR
 
 
 class ActivityGridViewSet(viewsets.ViewSet):
@@ -34,7 +34,7 @@ class ActivityGridViewSet(viewsets.ViewSet):
             result['important'] = card.important
             result['null_position'] = card.null_position
             result['last_activity'] = card.last_activity
-            result['type'] = TYPE_SINGLE_OFFICER
+            result['type'] = RESPONSE_TYPE_SINGLE_OFFICER
             results.append(result)
         return results
 
@@ -72,7 +72,7 @@ class ActivityGridViewSet(viewsets.ViewSet):
                 'important': pair.important,
                 'null_position': pair.null_position,
                 'last_activity': pair.last_activity,
-                'type': TYPE_COACCUSED_PAIR
+                'type': RESPONSE_TYPE_COACCUSED_PAIR
             })
         return results
 
