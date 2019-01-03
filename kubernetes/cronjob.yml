@@ -4,9 +4,9 @@ metadata:
   name: ${CRONJOB_NAME}
 spec:
   schedule: "${CRONJOB_SCHEDULE}"
-  backoffLimit: 0
   jobTemplate:
     spec:
+      backoffLimit: 0
       template:
         spec:
           containers:
