@@ -3,6 +3,7 @@ from django.test import TestCase
 from mock import patch, PropertyMock
 from robber import expect
 
+from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.services import upload_copa_documents
 from data.models import AttachmentFile
 from data.factories import AttachmentFileFactory, AllegationFactory
@@ -51,6 +52,7 @@ class DocumentcloudServicesTestCase(TestCase):
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
             title='CRID 123 CR Tactical Response Report',
+            description=AUTO_UPLOAD_DESCRIPTION,
             access='public',
             force_ocr=True
         )
