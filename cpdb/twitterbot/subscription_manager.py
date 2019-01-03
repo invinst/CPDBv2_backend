@@ -11,8 +11,8 @@ class SubscriptionsManager(object):
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         environment_name = settings.TWITTERBOT_ENV
-        self.list_endpoint = TWITTER_ACTIVITY_API + '%s/subscriptions/list.json' % environment_name
-        self.endpoint = TWITTER_ACTIVITY_API + '%s/subscriptions.json' % environment_name
+        self.list_endpoint = f'{TWITTER_ACTIVITY_API}{environment_name}/subscriptions/list.json'
+        self.endpoint = f'{TWITTER_ACTIVITY_API}{environment_name}/subscriptions.json'
 
     def get_account_oauth(self, account_token, account_token_secret):
         return OAuth1(
@@ -25,7 +25,7 @@ class SubscriptionsManager(object):
     def all(self, app_bearer_token):
         response = requests.get(
             url=self.list_endpoint,
-            headers={'Authorization': 'Bearer %s' % app_bearer_token}
+            headers={'Authorization': f'Bearer {app_bearer_token}'}
         )
         response.raise_for_status()
         return response.json()

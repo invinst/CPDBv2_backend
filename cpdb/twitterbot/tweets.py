@@ -85,7 +85,7 @@ class TweetContext(object):
 
     @property
     def url(self):
-        return 'https://twitter.com/%s/status/%s/' % (self.screen_name, self.id)
+        return f'https://twitter.com/{self.screen_name}/status/{self.id}/'
 
     @property
     def created_at(self):
@@ -107,9 +107,8 @@ class TweetContext(object):
 
     @property
     def is_unfollow_tweet(self):
-        return self.text.strip().lower() == '@{bot} stop'.format(
-            bot=self._context['client'].get_user(self._context['for_user_id']).screen_name.lower()
-        )
+        bot = self._context['client'].get_user(self._context['for_user_id']).screen_name.lower()
+        return self.text.strip().lower() == f'@{bot} stop'
 
     @property
     def is_mentioning_twitterbot(self):

@@ -25,12 +25,12 @@ def correct_irish_name(name):
     # Eric O suoji -> Eric O'Suoji
     # Eric Obrien -> Erc O'Brien
     def fix_irish_name(match):
-        return 'O\'{capitalized}'.format(capitalized=match.group('word').capitalize())
+        return f"O'{match.group('word').capitalize()}"
 
     def fix_irish_name_2(match):
         name = match.group(0)
         rest_part = name[1:]
-        return 'O\'{name}'.format(name=rest_part.capitalize())
+        return f"O'{rest_part.capitalize()}"
 
     if re.search(POPULAR_IRISH_O_NAMES_REGEX, name, re.IGNORECASE):
         return re.sub(POPULAR_IRISH_O_NAMES_REGEX, fix_irish_name_2, name, flags=re.IGNORECASE)
@@ -41,7 +41,7 @@ def correct_irish_name(name):
 def correct_suffix_jr_sr(name):
     # Clarence Pendleton jr -> Clarence Pendleton Jr.
     def fix_suffix(match):
-        return '{suffix}.'.format(suffix=match.group(1).capitalize())
+        return f'{match.group(1).capitalize()}.'
 
     return re.sub(r'\b(jr|sr)\.?$', fix_suffix, name, flags=re.IGNORECASE)
 
@@ -50,7 +50,7 @@ def correct_suffix_dot(name):
     # Neil Shelton El. -> Neil Shelton El
     def fix_suffix(match):
         if re.match(r'(?:jr|sr)', match.group(1), re.IGNORECASE):
-            return '{suffix}.'.format(suffix=match.group(1).capitalize())
+            return f'{match.group(1).capitalize()}.'
         return match.group(1).capitalize()
 
     return re.sub(r'\b(\w{2,})\.', fix_suffix, name, flags=re.IGNORECASE)
@@ -62,7 +62,7 @@ def correct_initial(name):
         if match.group('initial').endswith('.'):
             return match.group('initial')
         else:
-            return '{initial}.'.format(initial=match.group('initial'))
+            return f"{match.group('initial')}."
 
     return re.sub(r'(?<!\')\b(?P<initial>\w\.?)(?=\s|$)', fix_initial, name)
 

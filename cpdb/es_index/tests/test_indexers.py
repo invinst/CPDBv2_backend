@@ -15,7 +15,7 @@ class IndexersTestCase(SimpleTestCase):
         expect(lambda: BaseIndexer().get_queryset()).to.throw(NotImplementedError)
 
     def test_extract_datum(self):
-        expect(lambda: BaseIndexer().extract_datum()).to.throw(NotImplementedError)
+        expect(lambda: BaseIndexer().extract_datum(None)).to.throw(NotImplementedError)
 
     def test_docs_when_extract_datum_is_generator(self):
         class MyDocType(DocType):
@@ -176,7 +176,7 @@ class IndexersTestCase(SimpleTestCase):
         expect(mock_write_index.close.called).to.be.true()
         expect(mock_write_index.settings.called).to.be.true()
         expect(mock_init.called).to.be.true()
-        expect(mock_bulk.calledWith(es_client, [1]))
+        expect(mock_bulk).to.be.called_with(es_client, [1])
 
 
 my_index_alias = IndexAlias('my_alias')

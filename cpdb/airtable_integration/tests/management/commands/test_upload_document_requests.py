@@ -22,14 +22,14 @@ class UpdateDocumentsCommandTestCase(TestCase):
     def test_upload_document_requests(self, airtable_mock):
         airtable_mock.insert.return_value = {'id': 'airtable_id'}
 
-        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc))
+        allegation123 = AllegationFactory(crid='123', incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc))
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation123, officer=officer_1)
         OfficerAllegationFactory(allegation=allegation123, officer=officer_2)
         investigator = InvestigatorFactory(officer=officer_1)
         InvestigatorAllegationFactory(allegation=allegation123, investigator=investigator)
-        AttachmentRequestFactory(
+        cr_request_1 = AttachmentRequestFactory(
             allegation=allegation123,
             email='requester1@example.com',
             airtable_id='')
@@ -43,7 +43,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
         officer_4 = OfficerFactory(id=4, first_name='John', last_name='Henry')
         OfficerAllegationFactory(allegation=allegation456, officer=officer_3)
         OfficerAllegationFactory(allegation=allegation456, officer=officer_4)
-        AttachmentRequestFactory(
+        cr_request_2 = AttachmentRequestFactory(
             allegation=allegation456,
             email='requester3@example.com',
             airtable_id='')
@@ -53,7 +53,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
             airtable_id='cr4444')
 
         trr = TRRFactory(id='123456', officer=officer_1)
-        TRRAttachmentRequestFactory(
+        trr_request = TRRAttachmentRequestFactory(
             trr=trr,
             email='requester@example1.com',
             airtable_id='')
@@ -81,7 +81,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': cr_request_1.created_at.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation': 'Officers: John Henry(ID 4), Marry Jane(ID 3)',
@@ -96,7 +97,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': cr_request_2.created_at.strftime(format='%Y-%m-%d')
             }),
             call({
                 'Explanation':  'Officer: Marry Jane(ID 1)',
@@ -111,7 +113,8 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'email': 'rajiv@invisibleinstitute.com',
                         'name': 'Rajiv Sinclair'
                     }
-                ]
+                ],
+                'Date requested by user': trr_request.created_at.strftime(format='%Y-%m-%d')
             })
         ]
 

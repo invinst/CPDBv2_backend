@@ -180,6 +180,7 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     original_url = factory.LazyFunction(lambda: fake.url())
     source_type = factory.LazyFunction(lambda: fake.word())
     external_id = factory.LazyFunction(lambda: fake.word())
+    title = factory.LazyFunction(lambda: fake.sentence())
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):

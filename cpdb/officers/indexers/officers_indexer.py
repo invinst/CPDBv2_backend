@@ -63,7 +63,7 @@ class OfficersIndexer(BaseIndexer):
                         'percentile_allegation_civilian',
                         'percentile_allegation_internal']:
                     if hasattr(officer, attr):
-                        officer_dict[attr] = '%.4f' % getattr(officer, attr)
+                        officer_dict[attr] = f'{getattr(officer, attr):.4f}'
                 officer_list.append(officer_dict)
 
     def get_complainant_dict(self):

@@ -153,7 +153,7 @@ class UnitOfficerWorker(Worker):
         return self._searcher.query('nested', path='historic_units', query=Q(
             'multi_match',
             operator='and',
-            fields=['historic_units.{}'.format(field) for field in self.fields],
+            fields=[f'historic_units.{field}' for field in self.fields],
             query=term
         )).sort(*self.sort_order)
 

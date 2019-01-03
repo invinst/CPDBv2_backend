@@ -108,7 +108,7 @@ def build_cached_columns():
     ]
 
     for column in count_columns:
-        Officer.objects.filter(**{'{}__isnull'.format(column): True}).update(**{column: 0})
+        Officer.objects.filter(**{f'{column}__isnull': True}).update(**{column: 0})
 
 
 def build_cached_yearly_percentiles():
@@ -127,7 +127,7 @@ def build_cached_yearly_percentiles():
         results.extend(filter(_not_retired, officers))
 
     cursor = connection.cursor()
-    cursor.execute("TRUNCATE TABLE {}".format(OfficerYearlyPercentile._meta.db_table))
+    cursor.execute(f'TRUNCATE TABLE {OfficerYearlyPercentile._meta.db_table}')
 
     OfficerYearlyPercentile.objects.bulk_create(
         OfficerYearlyPercentile(

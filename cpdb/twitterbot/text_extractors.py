@@ -14,7 +14,7 @@ class HashTagTextExtractor:
         for hashtag in tweet.hashtags:
             words = re.findall('[A-Za-z][a-z]*', hashtag)
             text = ' '.join([word.title() for word in words])
-            source = '#%s' % hashtag
+            source = f'#{hashtag}'
             text_sources.append((source, text))
         return text_sources
 

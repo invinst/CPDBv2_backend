@@ -43,4 +43,4 @@ class TRRTestCase(TestCase):
 
     def test_v2_to(self):
         trr = TRRFactory()
-        expect(trr.v2_to).to.eq('/trr/{}/'.format(trr.id))
+        expect(trr.v2_to).to.eq(f'/trr/{trr.id}/')

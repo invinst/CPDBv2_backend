@@ -16,7 +16,7 @@ class BaseCMSField(serializers.Field):
             return {
                 'name': self.field_name,
                 'type': self._type,
-                'value': fields['%s_value' % self.field_name]
+                'value': fields[f'{self.field_name}_value']
             }
         except KeyError:
             return None
@@ -24,8 +24,8 @@ class BaseCMSField(serializers.Field):
     def to_internal_value(self, data):
         self.validate_value(data)
         return {
-            '%s_type' % self.field_name: self._type,
-            '%s_value' % self.field_name: data
+            f'{self.field_name}_type': self._type,
+            f'{self.field_name}_value': data
         }
 
 

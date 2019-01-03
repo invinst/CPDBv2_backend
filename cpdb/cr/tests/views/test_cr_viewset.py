@@ -55,8 +55,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            officer=officer1, allegation=allegation,
+            final_finding='SU', disciplined=True,
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -133,6 +135,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
@@ -233,7 +236,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -351,6 +355,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
@@ -539,7 +544,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url',
-            created_at=six_month_ago + timedelta(days=10)
+            external_created_at=six_month_ago + timedelta(days=10)
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -547,7 +552,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=six_month_ago + timedelta(days=5)
+            external_created_at=six_month_ago + timedelta(days=5)
         )
 
         allegation2 = AllegationFactory(crid='112')
@@ -558,7 +563,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            created_at=six_month_ago + timedelta(days=6)
+            external_created_at=six_month_ago + timedelta(days=6)
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')

@@ -3,7 +3,7 @@ import itertools
 from django.conf import settings
 from django.template import Context, Template
 
-from .models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR, TYPE_NOT_FOUND
+from twitterbot.constants import RESPONSE_TYPE_SINGLE_OFFICER, RESPONSE_TYPE_COACCUSED_PAIR, RESPONSE_TYPE_NOT_FOUND
 from data.models import Allegation, Officer
 from twitterbot.models import TweetResponseRoundRobin
 
@@ -29,7 +29,7 @@ class BaseResponseBuilder:
             tweet_content = Template(response_template.syntax).render(Context(variables_set))
 
             if len(tweet_content) > 140:
-                tweet_content = tweet_content.replace('@{user_name} '.format(user_name=variables_set['user_name']), '')
+                tweet_content = tweet_content.replace(f"@{variables_set['user_name']} ", '')
             yield {
                 'source': source,
                 'tweet_content': tweet_content,
@@ -43,20 +43,20 @@ class BaseResponseBuilder:
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_SINGLE_OFFICER
+    response_type = RESPONSE_TYPE_SINGLE_OFFICER
 
     def get_variables_sets(self, entities, context):
         for (source, officer) in entities:
             yield {
                 'officer': Officer.objects.get(pk=officer['id']),
                 '_entity': officer,
-                '_url': '%s%s' % (settings.DOMAIN, '/officer/%s/' % officer['id']),
+                '_url': f"{settings.DOMAIN}/officer/{officer['id']}/",
                 'source': (source, )
             }
 
 
 class CoaccusedPairResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_COACCUSED_PAIR
+    response_type = RESPONSE_TYPE_COACCUSED_PAIR
 
     def get_variables_sets(self, entities, context):
         for (source1, officer1), (source2, officer2) in itertools.combinations(entities, 2):
@@ -72,7 +72,7 @@ class CoaccusedPairResponseBuilder(BaseResponseBuilder):
 
 
 class NotFoundResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_NOT_FOUND
+    response_type = RESPONSE_TYPE_NOT_FOUND
 
     def get_variables_sets(self, entities, context):
         try:
@@ -86,6 +86,4 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
 
         except AttributeError:
             raise StopIteration()
-        yield {
-            '_url': settings.DOMAIN
-        }
+        yield {'_url': settings.DOMAIN}
