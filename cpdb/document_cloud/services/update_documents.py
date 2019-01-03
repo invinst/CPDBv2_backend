@@ -33,13 +33,13 @@ def get_attachment(cloud_document):
 
 
 mapping_fields = {
-    ('url', 'url'),
-    ('title', 'title'),
-    ('preview_image_url', 'normal_image_url'),
-    ('external_last_updated', 'updated_at'),
-    ('external_created_at', 'created_at'),
-    ('tag', 'document_type'),
-    ('source_type', 'source_type'),
+    'url': 'url',
+    'title': 'title',
+    'preview_image_url': 'normal_image_url',
+    'external_last_updated': 'updated_at',
+    'external_created_at': 'created_at',
+    'tag': 'document_type',
+    'source_type': 'source_type',
 }
 
 
@@ -47,32 +47,10 @@ def update_attachment(attachment, cloud_document):
     changed = attachment.external_last_updated < cloud_document.updated_at or not attachment.source_type
     if changed:
         attachment.text_content = get_full_text(cloud_document)
-        for model_field, doc_field in mapping_fields:
+        for model_field, doc_field in mapping_fields.items():
             setattr(attachment, model_field, getattr(cloud_document, doc_field))
 
     return changed
-
-
-def create_attachment(cloud_document):
-    logger.info(
-        'Creating documentcloud attachment '
-        f'url={cloud_document.canonical_url} '
-        f'crid={cloud_document.allegation.crid}'
-    )
-    return AttachmentFile(
-        external_id=cloud_document.documentcloud_id,
-        allegation=cloud_document.allegation,
-        source_type=cloud_document.source_type,
-        title=cloud_document.title,
-        url=cloud_document.url,
-        file_type=MEDIA_TYPE_DOCUMENT,
-        tag=cloud_document.document_type,
-        additional_info=parse_link(cloud_document.canonical_url),
-        original_url=cloud_document.url,
-        preview_image_url=cloud_document.normal_image_url,
-        external_created_at=cloud_document.created_at,
-        external_last_updated=cloud_document.updated_at
-    )
 
 
 def save_attachments(kept_attachments, new_attachments, updated_attachments):
@@ -103,7 +81,6 @@ def save_attachments(kept_attachments, new_attachments, updated_attachments):
 
 def log_changes(num_new_attachments, num_updated_attachments):
     num_documents = AttachmentFile.objects.filter(
-        file_type=MEDIA_TYPE_DOCUMENT,
         source_type__in=[AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]
     ).count()
     DocumentCrawler.objects.create(
@@ -131,6 +108,24 @@ def update_documents():
                 else:
                     kept_attachments.append(attachment)
             else:
-                new_attachments.append(create_attachment(cloud_document))
-
+                logger.info(
+                    'Creating documentcloud attachment '
+                    f'url={cloud_document.canonical_url} '
+                    f'crid={cloud_document.allegation.crid}'
+                )
+                new_attachment = AttachmentFile(
+                    external_id=cloud_document.documentcloud_id,
+                    allegation=cloud_document.allegation,
+                    source_type=cloud_document.source_type,
+                    title=cloud_document.title,
+                    url=cloud_document.url,
+                    file_type=MEDIA_TYPE_DOCUMENT,
+                    tag=cloud_document.document_type,
+                    additional_info=parse_link(cloud_document.canonical_url),
+                    original_url=cloud_document.url,
+                    preview_image_url=cloud_document.normal_image_url,
+                    external_created_at=cloud_document.created_at,
+                    external_last_updated=cloud_document.updated_at
+                )
+                new_attachments.append(new_attachment)
     save_attachments(kept_attachments, new_attachments, updated_attachments)

@@ -2,7 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from document_cloud.services import update_documents
+from document_cloud.services.update_documents import update_documents
 
 logger = logging.getLogger('django.command')
 

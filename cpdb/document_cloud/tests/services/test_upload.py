@@ -1,23 +1,28 @@
+from datetime import datetime
+
+import pytz
 from django.test import TestCase
 
 from mock import patch, PropertyMock
 from robber import expect
 
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
-from document_cloud.services import upload_copa_documents
+from document_cloud.services.upload import upload_copa_documents
 from data.models import AttachmentFile
 from data.factories import AttachmentFileFactory, AllegationFactory
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO
 
 
-class DocumentcloudServicesTestCase(TestCase):
-    @patch('document_cloud.services.DocumentCloud')
+class UploadServiceTestCase(TestCase):
+    @patch('document_cloud.services.upload.DocumentCloud')
     def test_upload_copa_documents(self, DocumentCloudMock):
         DocumentCloudMock().documents.upload.return_value = PropertyMock(
             id='5396984-crid-123-cr-tactical-response-report',
             title='CRID 123 CR Tactical Response Report',
             canonical_url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
             normal_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
+            created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
+            updated_at=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
             resources=None
         )
 
@@ -47,6 +52,8 @@ class DocumentcloudServicesTestCase(TestCase):
             title='CRID 123 CR Tactical Response Report',
             url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
             tag='CR',
+            external_created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
+            external_last_updated=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
             preview_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
         )
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
@@ -57,7 +64,7 @@ class DocumentcloudServicesTestCase(TestCase):
             force_ocr=True
         )
 
-    @patch('document_cloud.services.DocumentCloud')
+    @patch('document_cloud.services.upload.DocumentCloud')
     def test_upload_copa_documents_no_upload(self, DocumentCloudMock):
         AttachmentFileFactory(
             external_id='456-OCIR-2-Redacted.pdf',
