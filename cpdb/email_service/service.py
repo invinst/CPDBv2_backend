@@ -1,3 +1,4 @@
+import logging
 import re
 from smtplib import SMTPException
 
@@ -9,6 +10,8 @@ from tqdm import tqdm
 from email_service.models import EmailTemplate
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
 from data.models import Allegation, AttachmentRequest
+
+logger = logging.getLogger('email_service')
 
 
 def _get_name_from_email(email):
@@ -35,7 +38,7 @@ def send_cr_attachment_available_email(new_attachments):
                 attachment_request.noti_email_sent = True
                 sent_attachment_requests.append(attachment_request)
             except SMTPException:
-                pass
+                logger.info(f'Cannot send notification email for crid {crid} to {attachment_request.email}')
 
     AttachmentRequest.bulk_objects.bulk_update(sent_attachment_requests, update_fields=['noti_email_sent'])
 

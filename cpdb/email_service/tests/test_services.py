@@ -153,3 +153,30 @@ class EmailServicesTestCase(TestCase):
             from_email='test.email@cpdp.co',
             recipient_list=['to.be.notified@citizen.com']
         )
+
+    @patch('email_service.service.logger')
+    @patch('email_service.service.send_mail')
+    def test_logging_when_sending_cr_attachment_available_email_raise_error(self, mock_send_email, mock_logger):
+        mock_send_email.side_effect = SMTPException('Sending failed')
+
+        EmailTemplateFactory(
+            subject='To {name}',
+            body='This message is related to crid {pk} with url {url}',
+            from_email='test.email@cpdp.co',
+            type=CR_ATTACHMENT_AVAILABLE
+        )
+
+        allegation_123 = AllegationFactory(crid='123')
+        AttachmentRequestFactory(allegation=allegation_123, email='to.be.notified@citizen.com', noti_email_sent=False)
+
+        AttachmentFileFactory(allegation=allegation_123)
+        new_attachments = AttachmentFile.objects.all()
+
+        send_cr_attachment_available_email(new_attachments)
+
+        expect(AttachmentRequest.objects.filter(noti_email_sent=True).count()).to.eq(0)
+        expect(AttachmentRequest.objects.filter(noti_email_sent=False).count()).to.eq(1)
+
+        expect(mock_logger.info).to.be.called_with(
+            'Cannot send notification email for crid 123 to to.be.notified@citizen.com'
+        )
