@@ -28,6 +28,7 @@ class CRIndexerTestCase(TestCase):
         indexer = CRIndexer()
         return [indexer.extract_datum(obj) for obj in indexer.get_queryset()]
 
+    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def test_emit_correct_format(self):
         allegation = AllegationFactory(
             crid='12345',

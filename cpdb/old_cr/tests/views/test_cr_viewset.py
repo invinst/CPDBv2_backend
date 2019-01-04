@@ -25,6 +25,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         super(CRViewSetTestCase, self).setUp()
         self.maxDiff = None
 
+    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(

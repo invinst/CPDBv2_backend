@@ -258,6 +258,7 @@ class CrFormatterTestCase(SimpleTestCase):
             to='/complaint/123456/',
             summary='abc',
             _id='123',
+            incident_date='1990-01-02',
             meta=Mock(
                 highlight=AttrDict({
                     'summary': AttrList([
@@ -274,6 +275,7 @@ class CrFormatterTestCase(SimpleTestCase):
             'crid': '123456',
             'to': '/complaint/123456/',
             'id': '123',
+            'incident_date': '1990-01-02',
             'highlight': {
                 'summary': [
                     'fired a <em>gun</em> at the victims',
