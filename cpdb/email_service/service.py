@@ -11,7 +11,7 @@ from email_service.models import EmailTemplate
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
 from data.models import Allegation, AttachmentRequest
 
-logger = logging.getLogger('email_service')
+logger = logging.getLogger(__name__)
 
 
 def _get_name_from_email(email):
