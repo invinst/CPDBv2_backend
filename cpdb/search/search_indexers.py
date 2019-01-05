@@ -218,7 +218,7 @@ class RankIndexer(BaseIndexer):
     doc_type_klass = RankDocType
 
     def get_queryset(self):
-        return Salary.objects.rank_objects()
+        return Salary.objects.rank_objects
 
     def extract_datum(self, datum):
         return {

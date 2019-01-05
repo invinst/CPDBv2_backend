@@ -442,8 +442,9 @@ class TRRIndexerTestCase(TestCase):
 class RankIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(RankIndexer().get_queryset()).to.have.length(0)
-        SalaryFactory()
-        expect(RankIndexer().get_queryset()).to.have.length(1)
+        SalaryFactory(rank='Officer', officer__rank='Officer')
+        OfficerFactory(rank='Detective')
+        expect(RankIndexer().get_queryset()).to.have.length(2)
 
     def test_extract_datum(self):
         salary = SalaryFactory(rank='Police Officer')

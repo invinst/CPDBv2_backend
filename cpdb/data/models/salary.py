@@ -1,10 +1,12 @@
 from django.contrib.gis.db import models
 from django.db.models import F
 
+from data.models import Officer
 from .common import TimeStampsModel
 
 
 class SalaryManager(models.Manager):
+    @property
     def rank_histories_without_joined(self):
         salaries = self.exclude(
             spp_date__isnull=True
@@ -23,17 +25,18 @@ class SalaryManager(models.Manager):
             last_salary = salary
         return result
 
+    @property
     def rank_objects(self):
         class Rank(object):
             def __init__(self, pk, rank):
                 self.pk = pk
                 self.rank = rank
 
-        ranks = []
-        for index, salary in enumerate(Salary.objects.values_list('rank', flat=True).distinct()):
-            ranks.append(Rank(pk=index, rank=salary))
+        salary_ranks = list(Salary.objects.values_list('rank', flat=True).distinct())
+        officer_ranks = list(Officer.objects.values_list('rank', flat=True).distinct())
+        ranks = sorted(set(salary_ranks + officer_ranks))
 
-        return ranks
+        return [Rank(pk=index, rank=rank) for index, rank in enumerate(ranks)]
 
 
 class Salary(TimeStampsModel):

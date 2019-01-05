@@ -39,4 +39,13 @@ class SalaryManagerTestCase(TestCase):
             officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
             start_date=date(2005, 1, 1)
         )
-        expect(Salary.objects.rank_histories_without_joined()).to.eq([salary1, salary2])
+        expect(Salary.objects.rank_histories_without_joined).to.eq([salary1, salary2])
+
+    def test_rank_objects(self):
+        SalaryFactory(rank='Detective', officer__rank='Officer')
+        SalaryFactory(rank='Officer', officer__rank='Officer')
+        OfficerFactory(rank='Senior Police Officer')
+
+        ranks = Salary.objects.rank_objects
+        expect([rank.pk for rank in ranks]).to.eq([0, 1, 2])
+        expect([rank.rank for rank in ranks]).to.eq(['Detective', 'Officer', 'Senior Police Officer'])
