@@ -7,6 +7,7 @@ from robber import expect
 import pytz
 
 from data.constants import ACTIVE_YES_CHOICE
+from data.models import Salary
 from search.search_indexers import (
     CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 )
@@ -447,10 +448,10 @@ class RankIndexerTestCase(TestCase):
         expect(RankIndexer().get_queryset()).to.have.length(2)
 
     def test_extract_datum(self):
-        salary = SalaryFactory(rank='Police Officer')
-        OfficerFactory(rank='Police Officer', active=ACTIVE_YES_CHOICE)
+        officer = OfficerFactory(rank='Police Officer', active=ACTIVE_YES_CHOICE)
+        SalaryFactory(rank='Police Officer', officer=officer)
 
-        expect(RankIndexer().extract_datum(salary)).to.eq({
+        expect(RankIndexer().extract_datum(Salary.objects.rank_objects[0])).to.eq({
             'rank': 'Police Officer',
             'tags': ['rank'],
             'active_officers_count': 1,
