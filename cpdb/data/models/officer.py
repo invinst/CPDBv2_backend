@@ -1,6 +1,7 @@
 from datetime import datetime
 from itertools import groupby
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import Q, Count
@@ -8,7 +9,14 @@ from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
 from django_bulk_update.manager import BulkUpdateManager
 
-from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, GENDER_DICT, BACKGROUND_COLOR_SCHEME
+from data.constants import (
+    ACTIVE_CHOICES,
+    ACTIVE_UNKNOWN_CHOICE,
+    GENDER_DICT,
+    BACKGROUND_COLOR_SCHEME,
+    ACTIVE_YES_CHOICE,
+)
+from data.utils.getters import get_officers_most_complaints_from_query
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -282,3 +290,13 @@ class Officer(TimeStampsModel, TaggableModel):
                 return rank_histories[i-1]['rank']
             if query_date == rank_histories[i]['date']:
                 return rank_histories[i]['rank']
+
+    @classmethod
+    def get_active_officers(cls, rank):
+        return cls.objects.filter(rank=rank, active=ACTIVE_YES_CHOICE)
+
+    @staticmethod
+    def get_officers_most_complaints(rank):
+        OfficerAllegation = apps.get_app_config('data').get_model('OfficerAllegation')
+        query = OfficerAllegation.objects.filter(officer__rank=rank)
+        return get_officers_most_complaints_from_query(query)

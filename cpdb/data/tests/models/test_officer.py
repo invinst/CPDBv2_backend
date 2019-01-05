@@ -1,17 +1,19 @@
 from datetime import date
+from operator import itemgetter
 
-import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
 
+import pytz
 from freezegun import freeze_time
 from robber.expect import expect
 
+from data.constants import ACTIVE_YES_CHOICE, ACTIVE_NO_CHOICE
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
 )
-from data.models import Officer, Salary
+from data.models import Officer
 
 
 class OfficerTestCase(TestCase):
@@ -380,37 +382,38 @@ class OfficerTestCase(TestCase):
         officer = OfficerFactory()
         expect(officer.get_rank_by_date(date(2007, 1, 1))).to.be.none()
 
+    def test_get_active_officers(self):
+        officer = OfficerFactory(rank='Officer', active=ACTIVE_YES_CHOICE)
+        OfficerFactory(rank='Officer', active=ACTIVE_YES_CHOICE)
+        OfficerFactory(rank='Officer', active=ACTIVE_NO_CHOICE)
+        OfficerFactory(rank='Senior Police Officer')
+        OfficerFactory(rank='')
+        SalaryFactory(rank='Police Officer', officer=officer)
 
-class SalaryManagerTestCase(TestCase):
-    def test_rank_histories_without_joined(self):
-        officer1 = OfficerFactory(appointed_date=date(2005, 1, 1))
-        officer2 = OfficerFactory(appointed_date=date(2005, 1, 1))
-        SalaryFactory(
-            officer=officer1, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer1, salary=10000, year=2006, rank='Police Officer', spp_date=None,
-            start_date=date(2005, 1, 1)
-        )
-        salary1 = SalaryFactory(
-            officer=officer1, salary=15000, year=2007, rank='Sergeant', spp_date=date(2007, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer2, salary=5000, year=2005, rank='Police Officer', spp_date=date(2005, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        salary2 = SalaryFactory(
-            officer=officer2, salary=15000, year=2006, rank='Detective', spp_date=date(2006, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        SalaryFactory(
-            officer=officer2, salary=20000, year=2007, rank='Detective', spp_date=date(2006, 1, 1),
-            start_date=date(2005, 1, 1)
-        )
-        expect(Salary.objects.rank_histories_without_joined()).to.eq([salary1, salary2])
+        expect(Officer.get_active_officers(rank='Officer')).to.have.length(2)
+        expect(Officer.get_active_officers(rank='Police Officer')).to.have.length(0)
+
+    def test_get_officers_most_complaints(self):
+        officer123 = OfficerFactory(id=123, rank='Officer', first_name='Jerome', last_name='Finnigan')
+        officer456 = OfficerFactory(id=456, rank='Officer', first_name='Ellis', last_name='Skol')
+        OfficerFactory(id=789, rank='Senior Police Officer', first_name='Raymond', last_name='Piwinicki')
+
+        OfficerAllegationFactory(officer=officer123)
+        OfficerAllegationFactory(officer=officer123)
+        OfficerAllegationFactory(officer=officer456)
+
+        officers = sorted(Officer.get_officers_most_complaints(rank='Officer'), key=itemgetter('id'))
+        expected = [
+            {
+                'id': 123,
+                'name': 'Jerome Finnigan',
+                'count': 2,
+            },
+            {
+                'id': 456,
+                'name': 'Ellis Skol',
+                'count': 1,
+            }
+        ]
+        sub_items_getter = itemgetter('id', 'name', 'count')
+        expect(list(map(sub_items_getter, officers))).to.eq(list(map(sub_items_getter, expected)))

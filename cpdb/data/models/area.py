@@ -1,8 +1,8 @@
 from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.db.models import F, Value, Count
-from django.db.models.functions import Concat, Cast
+from django.db.models import F, Count
+from django.db.models.functions import Cast
 
 from data.constants import AREA_CHOICES
 from data.utils.getters import get_officers_most_complaints_from_query
