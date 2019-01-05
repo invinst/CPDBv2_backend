@@ -2,7 +2,7 @@ from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
-from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation
+from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer
 from data.utils.percentile import percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from search.indices import autocompletes_alias
@@ -223,7 +223,9 @@ class RankIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'rank': datum.rank,
-            'tags': ['rank']
+            'tags': ['rank'],
+            'active_officers_count': Officer.get_active_officers(datum.rank).count(),
+            'officers_most_complaints': list(Officer.get_officers_most_complaints(datum.rank)),
         }
 
 

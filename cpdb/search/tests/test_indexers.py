@@ -6,6 +6,7 @@ from django.test import SimpleTestCase, TestCase
 from robber import expect
 import pytz
 
+from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
     CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 )
@@ -446,7 +447,11 @@ class RankIndexerTestCase(TestCase):
 
     def test_extract_datum(self):
         salary = SalaryFactory(rank='Police Officer')
+        OfficerFactory(rank='Police Officer', active=ACTIVE_YES_CHOICE)
+
         expect(RankIndexer().extract_datum(salary)).to.eq({
             'rank': 'Police Officer',
-            'tags': ['rank']
+            'tags': ['rank'],
+            'active_officers_count': 1,
+            'officers_most_complaints': []
         })
