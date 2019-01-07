@@ -6,7 +6,7 @@ from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation,
 from data.utils.percentile import percentile
 from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
 from search.indices import autocompletes_alias
-from search.serializers import RacePopulationSerializer
+from search.serializers import RacePopulationSerializer, OfficerMostComplaintsSerializer
 from search.utils import chicago_zip_codes
 from trr.models import TRR, ActionResponse
 
@@ -96,7 +96,10 @@ class AreaIndexer(BaseIndexer):
         if datum.area_type == 'police-districts':
             name = datum.description if datum.description else datum.name
 
-        officers_most_complaint = list(datum.get_officers_most_complaints())
+        officers_most_complaint = OfficerMostComplaintsSerializer(
+            list(datum.get_officers_most_complaints()),
+            many=True
+        ).data
 
         return {
             'name': name,
@@ -225,7 +228,10 @@ class RankIndexer(BaseIndexer):
             'rank': datum,
             'tags': ['rank'],
             'active_officers_count': Officer.get_active_officers(datum).count(),
-            'officers_most_complaints': list(Officer.get_officers_most_complaints(datum)),
+            'officers_most_complaints': OfficerMostComplaintsSerializer(
+                Officer.get_officers_most_complaints(datum),
+                many=True
+            ).data
         }
 
 

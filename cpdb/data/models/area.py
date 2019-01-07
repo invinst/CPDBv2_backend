@@ -5,7 +5,6 @@ from django.db.models import F, Count
 from django.db.models.functions import Cast
 
 from data.constants import AREA_CHOICES
-from data.utils.getters import get_officers_most_complaints_from_query
 from .common import TaggableModel, TimeStampsModel
 
 
@@ -60,9 +59,10 @@ class Area(TimeStampsModel, TaggableModel):
         return query.values('id', 'name', 'count')
 
     def get_officers_most_complaints(self):
-        OfficerAllegation = apps.get_app_config('data').get_model('OfficerAllegation')
-        query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
-        return get_officers_most_complaints_from_query(query)
+        Officer = apps.get_app_config('data').get_model('Officer')
+        return Officer.objects.filter(
+            officerallegation__allegation__areas=self
+        ).distinct().order_by('-allegation_count')[:3]
 
     @property
     def allegation_count(self):

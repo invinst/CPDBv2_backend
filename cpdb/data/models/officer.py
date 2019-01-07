@@ -1,7 +1,6 @@
 from datetime import datetime
 from itertools import groupby
 
-from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import Q, Count
@@ -16,7 +15,6 @@ from data.constants import (
     BACKGROUND_COLOR_SCHEME,
     ACTIVE_YES_CHOICE,
 )
-from data.utils.getters import get_officers_most_complaints_from_query
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -295,8 +293,6 @@ class Officer(TimeStampsModel, TaggableModel):
     def get_active_officers(cls, rank):
         return cls.objects.filter(rank=rank, active=ACTIVE_YES_CHOICE)
 
-    @staticmethod
-    def get_officers_most_complaints(rank):
-        OfficerAllegation = apps.get_app_config('data').get_model('OfficerAllegation')
-        query = OfficerAllegation.objects.filter(officer__rank=rank)
-        return get_officers_most_complaints_from_query(query)
+    @classmethod
+    def get_officers_most_complaints(cls, rank):
+        return cls.objects.filter(rank=rank).exclude(allegation_count=0).order_by('-allegation_count')[:3]

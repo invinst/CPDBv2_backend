@@ -1,5 +1,6 @@
 from mock import Mock, patch
 from datetime import datetime
+from decimal import Decimal
 
 from django.test import SimpleTestCase, TestCase
 
@@ -7,7 +8,6 @@ from robber import expect
 import pytz
 
 from data.constants import ACTIVE_YES_CHOICE
-from data.models import Salary
 from search.search_indexers import (
     CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 )
@@ -17,6 +17,7 @@ from data.factories import (
     OfficerAllegationFactory, RacePopulationFactory,
     SalaryFactory, AllegationCategoryFactory)
 from trr.factories import TRRFactory, ActionResponseFactory
+from shared.tests.utils import create_object
 
 
 def mock_object(**kwargs):
@@ -48,12 +49,10 @@ class BaseIndexerTestCase(SimpleTestCase):
         })
 
     def test_extract_datum_with_no_id_datum_dict(self):
-        datum = Mock()
+        datum = create_object({'foo': 'bar'})
         indexer = BaseIndexer()
-        indexer.extract_datum = Mock(return_value={'foo': 'bar'})
-        expect(indexer.extract_datum_with_id(datum)).to.eq({
-            'foo': 'bar',
-        })
+        indexer.extract_datum = lambda a: {'foo': a.foo}
+        expect(indexer.extract_datum_with_id(datum)).to.eq({'foo': 'bar'})
 
     def test_extract_datum_with_id_datum_list(self):
         datum = Mock(pk='11')
@@ -273,35 +272,33 @@ class AreaIndexerTestCase(TestCase):
             alderman='IronMan',
         )
         area.get_officers_most_complaints = Mock(return_value=[
-            {
-                'id': 123,
-                'name': 'A B',
-                'count': 5,
-                'percentile_allegation_civilian': 0,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 0,
-                'percentile_allegation': 0,
-            }, {
-                'id': 456,
-                'name': 'E F',
-                'count': 3,
-                'percentile_allegation_civilian': 33.3333,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 33.3333,
-                'percentile_allegation': 33.3333,
-            }, {
-                'id': 789,
-                'name': 'C D',
-                'count': 2,
-                'percentile_allegation_civilian': 66.6667,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 66.6667,
-                'percentile_allegation': 66.6667,
-            }, {
-                'id': 999,
-                'name': 'X Y',
-                'count': 2
-            }
+            OfficerFactory.build(
+                id=123,
+                first_name='A',
+                last_name='B',
+                allegation_count=5,
+                civilian_allegation_percentile=0,
+                internal_allegation_percentile=0,
+                trr_percentile=0,
+                complaint_percentile=0
+            ),
+            OfficerFactory.build(
+                id=456,
+                first_name='E',
+                last_name='F',
+                allegation_count=3,
+                civilian_allegation_percentile=Decimal(33.3333),
+                internal_allegation_percentile=0,
+                trr_percentile=Decimal(33.3333),
+                complaint_percentile=Decimal(33.3333)
+            ),
+            OfficerFactory.build(
+                id=999,
+                first_name='X',
+                last_name='Y',
+                allegation_count=2,
+                complaint_percentile=None
+            )
         ])
         area_indexer = AreaIndexer()
 
@@ -323,26 +320,18 @@ class AreaIndexerTestCase(TestCase):
                     'id': 123,
                     'name': 'A B',
                     'count': 5,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
-                    'percentile_allegation': 0,
+                    'percentile_allegation_civilian': 0.0,
+                    'percentile_allegation_internal': 0.0,
+                    'percentile_trr': 0.0,
+                    'percentile_allegation': 0.0,
                 }, {
                     'id': 456,
                     'name': 'E F',
                     'count': 3,
                     'percentile_allegation_civilian': 33.3333,
-                    'percentile_allegation_internal': 0,
+                    'percentile_allegation_internal': 0.0,
                     'percentile_trr': 33.3333,
                     'percentile_allegation': 33.3333,
-                }, {
-                    'id': 789,
-                    'name': 'C D',
-                    'count': 2,
-                    'percentile_allegation_civilian': 66.6667,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 66.6667,
-                    'percentile_allegation': 66.6667,
                 }, {
                     'id': 999,
                     'name': 'X Y',

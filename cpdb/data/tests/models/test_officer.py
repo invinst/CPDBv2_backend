@@ -1,5 +1,4 @@
 from datetime import date
-from operator import itemgetter
 
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
@@ -394,26 +393,28 @@ class OfficerTestCase(TestCase):
         expect(Officer.get_active_officers(rank='Police Officer')).to.have.length(0)
 
     def test_get_officers_most_complaints(self):
-        officer123 = OfficerFactory(id=123, rank='Officer', first_name='Jerome', last_name='Finnigan')
-        officer456 = OfficerFactory(id=456, rank='Officer', first_name='Ellis', last_name='Skol')
-        OfficerFactory(id=789, rank='Senior Police Officer', first_name='Raymond', last_name='Piwinicki')
+        officer123 = OfficerFactory(
+            id=123,
+            rank='Officer',
+            first_name='Jerome',
+            last_name='Finnigan',
+            allegation_count=2,
+        )
+        officer456 = OfficerFactory(
+            id=456,
+            rank='Officer',
+            first_name='Ellis',
+            last_name='Skol',
+            allegation_count=1,
+        )
+        OfficerFactory(
+            id=789,
+            rank='Senior Police Officer',
+            first_name='Raymond',
+            last_name='Piwinicki',
+            allegation_count=0,
+        )
 
-        OfficerAllegationFactory(officer=officer123)
-        OfficerAllegationFactory(officer=officer123)
-        OfficerAllegationFactory(officer=officer456)
-
-        officers = sorted(Officer.get_officers_most_complaints(rank='Officer'), key=itemgetter('id'))
-        expected = [
-            {
-                'id': 123,
-                'name': 'Jerome Finnigan',
-                'count': 2,
-            },
-            {
-                'id': 456,
-                'name': 'Ellis Skol',
-                'count': 1,
-            }
-        ]
-        sub_items_getter = itemgetter('id', 'name', 'count')
-        expect(list(map(sub_items_getter, officers))).to.eq(list(map(sub_items_getter, expected)))
+        expect(list(Officer.get_officers_most_complaints(rank='Officer'))).to.eq([
+            officer123, officer456
+        ])
