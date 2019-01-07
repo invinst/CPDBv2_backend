@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: http://cpdp.apiblueprint.org/
+HOST: https://cpdp.docs.apiary.io/
 
 # CPDP
 
@@ -579,7 +579,6 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         }
 
-
 ## Analytic events [/events/]
 
 ### Create Event [POST]
@@ -918,9 +917,9 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-## Officer timeline items list [/officers/{officer_id}/timeline-items]
+## Officer new timeline items list [/officers/{officer_id}/new-timeline-items]
 
-### Get Officer timeline items list [GET]
+### Get Officer new timeline items list [GET]
 
 + Parameters
     + officer_id (number) - number ID of the officer
@@ -1442,8 +1441,7 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-
-## CR Documents [/mobile/cr/{crid}/request-document/]
+## CR Mobile Documents [/mobile/cr/{crid}/request-document/]
 
 ### Request document [POST]
 
@@ -1487,7 +1485,6 @@ This api require an api access token set in `Authorization` header. To get an ap
         {
             "message": "Please enter a valid email"
         }
-
 
 ## CR [/cr/{crid}/]
 
@@ -1637,7 +1634,6 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-
 ## Related Complaints [/cr/{crid}/related-complaints/{?match,distance,offset,limit}]
 
 ### Get related complaints [GET]
@@ -1690,7 +1686,6 @@ This api require an api access token set in `Authorization` header. To get an ap
             ]
         }
 
-
 ## Search Aliases [/aliases/{aliasType}/{id}/]
 
 ### Update search aliases for a search result [POST]
@@ -1725,7 +1720,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "aliases": ["Ensure this field has no more than 20 characters."]
             }
         }
-
 
 ## CR Documents [/cr/{crid}/request-document/]
 
@@ -1772,7 +1766,7 @@ This api require an api access token set in `Authorization` header. To get an ap
             "message": "Please enter a valid email"
         }
 
-## CR Documents [/cr/list-by-new-document]
+## CR new documents [/cr/list-by-new-document]
 
 ### List document which has new documents (in document-cloud) [GET]
 
@@ -1800,8 +1794,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "num_recent_documents": 1
             },
         ]
-
-
 
 ## Unit summary [/units/{unit_id}/summary]
 
@@ -1914,7 +1906,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 ]
             }
         }
-
 
 ## Activity grid [/activity-grid/]
 
@@ -2315,7 +2306,6 @@ This api require an api access token set in `Authorization` header. To get an ap
           ]
         }
 
-
 ## Specific type search [/v1/suggestion/{term}/single/{?contentType,offset,limit}]
 
 + Parameters
@@ -2372,7 +2362,6 @@ This api require an api access token set in `Authorization` header. To get an ap
           ]
         }
 
-
 ## City Summary [/v2/city-summary/]
 
 ### Get city summary [GET]
@@ -2397,7 +2386,6 @@ This api require an api access token set in `Authorization` header. To get an ap
             ],
             "discipline_count": 6404
         }
-
 
 ## Popup [/v2/popup/]
 
