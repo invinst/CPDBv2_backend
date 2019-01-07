@@ -30,7 +30,7 @@ class BaseIndexer(object):
         multiple documents cannot share the same ID.
         '''
         extracted_data = self.extract_datum(datum)
-        if not isinstance(extracted_data, list):
+        if not isinstance(extracted_data, list) and hasattr(datum, 'pk'):
             extracted_data['meta'] = {'id': datum.pk}
         return extracted_data
 
@@ -218,14 +218,14 @@ class RankIndexer(BaseIndexer):
     doc_type_klass = RankDocType
 
     def get_queryset(self):
-        return Salary.objects.rank_objects
+        return Salary.objects.ranks
 
     def extract_datum(self, datum):
         return {
-            'rank': datum.rank,
+            'rank': datum,
             'tags': ['rank'],
-            'active_officers_count': Officer.get_active_officers(datum.rank).count(),
-            'officers_most_complaints': list(Officer.get_officers_most_complaints(datum.rank)),
+            'active_officers_count': Officer.get_active_officers(datum).count(),
+            'officers_most_complaints': list(Officer.get_officers_most_complaints(datum)),
         }
 
 

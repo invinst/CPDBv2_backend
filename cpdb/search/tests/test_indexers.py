@@ -47,6 +47,14 @@ class BaseIndexerTestCase(SimpleTestCase):
             }
         })
 
+    def test_extract_datum_with_no_id_datum_dict(self):
+        datum = Mock()
+        indexer = BaseIndexer()
+        indexer.extract_datum = Mock(return_value={'foo': 'bar'})
+        expect(indexer.extract_datum_with_id(datum)).to.eq({
+            'foo': 'bar',
+        })
+
     def test_extract_datum_with_id_datum_list(self):
         datum = Mock(pk='11')
         indexer = BaseIndexer()
@@ -451,7 +459,7 @@ class RankIndexerTestCase(TestCase):
         officer = OfficerFactory(rank='Police Officer', active=ACTIVE_YES_CHOICE)
         SalaryFactory(rank='Police Officer', officer=officer)
 
-        expect(RankIndexer().extract_datum(Salary.objects.rank_objects[0])).to.eq({
+        expect(RankIndexer().extract_datum('Police Officer')).to.eq({
             'rank': 'Police Officer',
             'tags': ['rank'],
             'active_officers_count': 1,

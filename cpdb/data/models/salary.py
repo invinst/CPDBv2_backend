@@ -26,17 +26,10 @@ class SalaryManager(models.Manager):
         return result
 
     @property
-    def rank_objects(self):
-        class Rank(object):
-            def __init__(self, pk, rank):
-                self.pk = pk
-                self.rank = rank
-
+    def ranks(self):
         salary_ranks = list(Salary.objects.values_list('rank', flat=True).distinct())
         officer_ranks = list(Officer.objects.values_list('rank', flat=True).distinct())
-        ranks = sorted(set(salary_ranks + officer_ranks))
-
-        return [Rank(pk=index, rank=rank) for index, rank in enumerate(ranks)]
+        return sorted(set(salary_ranks + officer_ranks))
 
 
 class Salary(TimeStampsModel):
