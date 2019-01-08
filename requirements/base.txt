@@ -40,3 +40,4 @@ redis==2.10.6
 tls-syslog==0.1.3
 markdown2==2.3.7
 django-email-bandit==1.5
+openpyxl==2.5.12
