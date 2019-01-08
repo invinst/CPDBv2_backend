@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='complainant',
             name='allegation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
         ),
         migrations.AlterField(
             model_name='investigatorallegation',
@@ -39,12 +39,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='officerallegation',
             name='allegation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
         ),
         migrations.AlterField(
             model_name='policewitness',
             name='allegation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='data.Allegation'),
         ),
         migrations.AlterField(
             model_name='victim',
