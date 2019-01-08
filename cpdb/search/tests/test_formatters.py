@@ -286,10 +286,14 @@ class AreaFormatterTestCase(SimpleTestCase):
 class RankFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
-            'rank': 'Police Officer'
+            'rank': 'Police Officer',
+            'active_officers_count': 1,
+            'officers_most_complaints': ['Raymond', 'Jason']
         }))
         expect(RankFormatter().doc_format(doc)).to.eq({
-            'name': 'Police Officer'
+            'name': 'Police Officer',
+            'active_officers_count': 1,
+            'officers_most_complaints': ['Raymond', 'Jason']
         })
 
 

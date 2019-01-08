@@ -250,22 +250,23 @@ class DateTRRWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class RankWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search_by_rank(self):
-        doc = RankDocType(rank='Rank')
-        doc.save()
+        RankDocType(rank='Officer').save()
 
         self.refresh_index()
 
-        response = RankWorker().search('Rank')
+        response = RankWorker().search('Officer')
         expect(response.hits.total).to.equal(1)
 
     def test_search_by_tag(self):
-        doc = RankDocType(tags='rank')
-        doc.save()
+        RankDocType(tags=['rank'], rank='Civilian', active_officers_count=1).save()
+        RankDocType(tags=['rank'], rank='Detective', active_officers_count=2).save()
+        RankDocType(tags=['rank'], rank='Officer', active_officers_count=3).save()
 
         self.refresh_index()
 
         response = RankWorker().search('rank')
-        expect(response.hits.total).to.equal(1)
+        expect(response.hits.total).to.equal(3)
+        expect([record.rank for record in response.hits]).to.eq(['Officer', 'Detective', 'Civilian'])
 
 
 class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):
