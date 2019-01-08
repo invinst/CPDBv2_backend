@@ -64,7 +64,8 @@ LOCAL_APPS = (
     'data_importer',
     'status',
     'email_service',
-    'social_graph'
+    'social_graph',
+    'xlsx',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

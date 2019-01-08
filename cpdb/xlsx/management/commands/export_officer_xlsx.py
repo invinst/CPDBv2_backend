@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 
 from data.models import Officer
-from officers.services.export_xlsx.accused import AccusedExcelWriter
+from xlsx.services.export_xlsx import AccusedExcelWriter
 
 
 class Command(BaseCommand):
