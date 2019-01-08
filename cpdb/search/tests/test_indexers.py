@@ -467,7 +467,7 @@ class SearchTermItemIndexerTestCase(TestCase):
             category=SearchTermCategoryFactory(name='Geography'),
             description='Community description',
             call_to_action_type='view_all',
-            link='http://lvh.me'
+            link='/url-mediator/session-builder/?community=123456'
         )
         expect(SearchTermItemIndexer().extract_datum(search_term_item)).to.eq({
             'slug': 'communities',
@@ -475,5 +475,5 @@ class SearchTermItemIndexerTestCase(TestCase):
             'category_name': 'Geography',
             'description': 'Community description',
             'call_to_action_type': 'view_all',
-            'link': 'http://lvh.me',
+            'link': 'http://cpdb.lvh.me/url-mediator/session-builder/?community=123456',
         })

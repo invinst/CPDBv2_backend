@@ -214,7 +214,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             category=SearchTermCategoryFactory(name='Geography'),
             description='Community description',
             call_to_action_type='view_all',
-            link='http://lvh.me'
+            link='/url-mediator/session-builder/?community=123456'
         )
         SearchTermItemFactory(
             slug='wards',
@@ -222,7 +222,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             category=SearchTermCategoryFactory(name='Geography'),
             description='Ward description',
             call_to_action_type='view_all',
-            link='http://lvh.me'
+            link='/url-mediator/session-builder/?community=654321'
         )
 
         self.rebuild_index()
@@ -241,6 +241,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results[0]['category_name']).to.eq('Geography')
         expect(results[0]['description']).to.eq('Community description')
         expect(results[0]['call_to_action_type']).to.eq('view_all')
+        expect(results[0]['link']).to.eq('http://cpdb.lvh.me/url-mediator/session-builder/?community=123456')
 
 
 class SearchV2ViewSetTestCase(APITestCase):

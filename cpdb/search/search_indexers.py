@@ -259,5 +259,5 @@ class SearchTermItemIndexer(BaseIndexer):
             'category_name': datum.category.name if datum.category else None,
             'description': datum.description,
             'call_to_action_type': datum.call_to_action_type,
-            'link': datum.link,
+            'link': datum.v1_url,
         }
