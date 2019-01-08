@@ -106,12 +106,12 @@ class OfficersIndexer(BaseIndexer):
     def populate_allegation_dict(self):
         complainant_dict = self.get_complainant_dict()
         officer_allegation_dict = self.get_officer_allegation_dict()
-        allegations = Allegation.objects.all().values('id', 'crid')
+        allegations = Allegation.objects.all().values('crid')
         self.allegation_dict = dict()
         self.coaccusals = dict()
         for allegation in allegations:
-            allegation['complainants'] = complainant_dict.get(allegation['id'], [])
-            allegation['complaints'] = officer_allegation_dict.get(allegation['id'], [])
+            allegation['complainants'] = complainant_dict.get(allegation['crid'], [])
+            allegation['complaints'] = officer_allegation_dict.get(allegation['crid'], [])
             self.transform_demographic(allegation)
             for complaint in allegation['complaints']:
                 self.allegation_dict.setdefault(complaint['officer_id'], []).append(allegation)

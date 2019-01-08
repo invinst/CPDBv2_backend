@@ -34,9 +34,9 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     def _populate_allegation_dict(self):
         allegations = Allegation.objects.all()\
             .annotate(annotated_coaccused_count=models.Count('officerallegation'))\
-            .values('id', 'annotated_coaccused_count', 'point', 'crid', 'incident_date')
+            .values('crid', 'annotated_coaccused_count', 'point', 'crid', 'incident_date')
         self._allegation_dict = {
-            obj['id']: obj
+            obj['crid']: obj
             for obj in allegations
         }
 

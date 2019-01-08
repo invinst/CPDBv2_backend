@@ -22,7 +22,8 @@ from .salary import Salary
 from .victim import Victim
 
 __all__ = [
-    Allegation, AllegationCategory, Area, AttachmentFile, AttachmentRequest, Award, Complainant, Investigator,
-    InvestigatorAllegation, Involvement, LineArea, Officer, OfficerAlias, OfficerAllegation, OfficerBadgeNumber,
-    OfficerHistory, OfficerYearlyPercentile, PoliceUnit, PoliceWitness, RacePopulation, Salary, Victim
+    'Allegation', 'AllegationCategory', 'Area', 'AttachmentFile', 'AttachmentRequest', 'Award', 'Complainant',
+    'Investigator', 'InvestigatorAllegation', 'Involvement', 'LineArea', 'Officer', 'OfficerAlias', 'OfficerAllegation',
+    'OfficerBadgeNumber', 'OfficerHistory', 'OfficerYearlyPercentile', 'PoliceUnit', 'PoliceWitness', 'RacePopulation',
+    'Salary', 'Victim',
 ]

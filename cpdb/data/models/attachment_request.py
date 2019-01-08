@@ -10,10 +10,10 @@ class AttachmentRequestManager(models.Manager):
     def annotate_investigated_by_cpd(self):
         Allegation = apps.get_app_config('data').get_model('Allegation')
         return self.annotate(has_badge_number=Exists(Allegation.objects.filter(
-            id=OuterRef('allegation_id'),
+            crid=OuterRef('allegation_id'),
             investigatorallegation__investigator__officer__officerbadgenumber__isnull=False
         ))).annotate(has_current_star=Exists(Allegation.objects.filter(
-            id=OuterRef('allegation_id'),
+            crid=OuterRef('allegation_id'),
             investigatorallegation__current_star__isnull=False
         ))).annotate(investigated_by_cpd=models.Case(
             models.When(allegation__incident_date__year__lt=2006, then=True),

@@ -202,7 +202,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(media.title).to.eq('CRID 123456 CR')
         expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789/CRID-123456-CR.pdf')
-        expect(media.allegation.id).to.eq(allegation.id)
+        expect(media.allegation.crid).to.eq(allegation.crid)
 
     def test_insert_new_document_with_missing_resources_object(self):
         command = Command()
@@ -226,7 +226,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(media.title).to.eq('CRID 123456 CR')
         expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
-        expect(media.allegation.id).to.eq(allegation.id)
+        expect(media.allegation.crid).to.eq(allegation.crid)
 
     def test_insert_new_document_with_missing_resources_pdf_link(self):
         command = Command()
@@ -251,7 +251,7 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         expect(media.title).to.eq('CRID 123456 CR')
         expect(media.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(media.url).to.eq('https://www.documentcloud.org/documents/789-CRID-123456-CR.html')
-        expect(media.allegation.id).to.eq(allegation.id)
+        expect(media.allegation.crid).to.eq(allegation.crid)
 
     def test_not_process_if_allegation_not_existed(self):
         command = Command()
@@ -300,12 +300,12 @@ class UpdateDocumentsCommandTestCase(DocumentcloudTestCaseMixin, TestCase):
         )
 
         media456 = AttachmentFile.objects.first()
-        expect(media456.allegation.id).to.eq(allegation.id)
+        expect(media456.allegation.crid).to.eq(allegation.crid)
         expect(media456.external_id).to.eq('456')
         expect(media456.title).to.eq('CRID 123456 CR new document')
 
         media789 = AttachmentFile.objects.last()
-        expect(media789.allegation.id).to.eq(allegation.id)
+        expect(media789.allegation.crid).to.eq(allegation.crid)
         expect(media789.external_id).to.eq('789')
         expect(media789.title).to.eq('CRID 123456 CR new - document')
 
