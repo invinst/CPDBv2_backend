@@ -1,3 +1,5 @@
+import responses
+
 from django.test.testcases import SimpleTestCase
 
 from mock import MagicMock, patch
@@ -235,9 +237,9 @@ class ComplaintCrawlerTest(SimpleTestCase):
 
 
 class VimeoSimpleAPITestCase(SimpleTestCase):
-    @patch('data_importer.ipra_portal_crawler.crawler.VimeoSimpleAPI.get_json_content')
-    def test_parse(self, get_json_content):
-        content = {
+    @responses.activate
+    def test_parse(self,):
+        content = [{
             'id': 307768537,
             'title': 'Log# 1082195 3rd Party Clip',
             'description': 'Log# 1082195 3rd Party Clip',
@@ -259,7 +261,21 @@ class VimeoSimpleAPITestCase(SimpleTestCase):
             'height': 720,
             'tags': '',
             'embed_privacy': 'anywhere'
-        }
-        get_json_content.return_value = content
+        }]
+        responses.add(
+            responses.GET,
+            'http://vimeo.com/api/v2/video/307768537.json',
+            json=content,
+            status=200
+        )
 
-        expect(VimeoSimpleAPI(video_id=307768537).crawl()).to.be.eq(content)
+        expect(VimeoSimpleAPI(video_id=307768537).crawl()).to.be.eq(content[0])
+
+    @responses.activate
+    def test_parse_no_content(self):
+        responses.add(
+            responses.GET,
+            'http://vimeo.com/api/v2/video/307768537.json',
+            status=404
+        )
+        expect(VimeoSimpleAPI(video_id=307768537).crawl()).to.be.eq(None)
