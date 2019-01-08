@@ -43,6 +43,7 @@ class AreaDocType(DocType):
 class RankDocType(DocType):
     rank = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    active_officers_count = Integer()
 
     class Meta:
         doc_type = 'rank'

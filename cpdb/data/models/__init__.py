@@ -25,5 +25,5 @@ __all__ = [
     'Allegation', 'AllegationCategory', 'Area', 'AttachmentFile', 'AttachmentRequest', 'Award', 'Complainant',
     'Investigator', 'InvestigatorAllegation', 'Involvement', 'LineArea', 'Officer', 'OfficerAlias', 'OfficerAllegation',
     'OfficerBadgeNumber', 'OfficerHistory', 'OfficerYearlyPercentile', 'PoliceUnit', 'PoliceWitness', 'RacePopulation',
-    'Salary', 'Victim',
+    'Salary', 'Victim'
 ]

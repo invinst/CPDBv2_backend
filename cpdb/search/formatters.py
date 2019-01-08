@@ -106,6 +106,8 @@ class RankFormatter(SimpleFormatter):
         serialized_doc = doc.to_dict()
         return {
             'name': serialized_doc['rank'],
+            'active_officers_count': serialized_doc['active_officers_count'],
+            'officers_most_complaints': serialized_doc.get('officers_most_complaints', []),
         }
 
 

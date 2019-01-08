@@ -158,6 +158,7 @@ class UnitOfficerWorker(Worker):
 class RankWorker(Worker):
     doc_type_klass = RankDocType
     fields = ['rank', 'tags']
+    sort_order = ['-active_officers_count']
 
 
 class DateCRWorker(DateWorker):

@@ -17,7 +17,7 @@ class RankChangeNewTimelineEventIndexer(BaseIndexer):
 
     def get_queryset(self):
         initialize_unit_by_date_helper()
-        return Salary.objects.rank_histories_without_joined()
+        return Salary.objects.rank_histories_without_joined
 
     def extract_datum(self, obj):
         datum = obj.__dict__
