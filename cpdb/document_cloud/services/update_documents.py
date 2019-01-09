@@ -8,6 +8,7 @@ from document_cloud.models import DocumentCrawler
 from document_cloud.services.search import search_all
 from document_cloud.utils import parse_link
 from .common import get_full_text
+from email_service.service import send_cr_attachment_available_email
 
 logger = logging.getLogger('django.command')
 
@@ -129,3 +130,4 @@ def update_documents():
                 )
                 new_attachments.append(new_attachment)
     save_attachments(kept_attachments, new_attachments, updated_attachments)
+    send_cr_attachment_available_email(new_attachments)

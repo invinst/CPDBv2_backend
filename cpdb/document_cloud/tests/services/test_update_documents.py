@@ -13,11 +13,14 @@ from document_cloud.models import DocumentCrawler
 from document_cloud.services.update_documents import (
     get_attachment, update_documents, update_attachment, save_attachments,
 )
+from email_service.constants import CR_ATTACHMENT_AVAILABLE
+from email_service.factories import EmailTemplateFactory
 from shared.tests.utils import create_object
 
 
 class UpdateDocumentsServiceTestCase(TestCase):
     def test_create_crawler_log(self):
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
         expect(DocumentCrawler.objects.count()).to.eq(0)
 
         update_documents()
@@ -210,8 +213,11 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(log_changes_mock).to.be.called_with(1, 1)
 
+    @patch('document_cloud.services.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.services.update_documents.search_all')
-    def test_update_documents(self, search_all_mock):
+    def test_update_documents(self, search_all_mock, send_cr_attachment_available_email_mock):
+        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
+
         allegation = AllegationFactory(crid='234')
         new_document = create_object({
             'documentcloud_id': '999',
@@ -293,7 +299,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(4)
         expect(AttachmentFile.objects.filter(external_id='666').count()).to.eq(0)
-        AttachmentFile.objects.get(external_id='999')
+        new_attachment = AttachmentFile.objects.get(external_id='999')
         AttachmentFile.objects.get(external_id='2')
         updated_attachment = AttachmentFile.objects.get(external_id='1')
 
@@ -312,3 +318,5 @@ class UpdateDocumentsServiceTestCase(TestCase):
             num_new_documents=1,
             num_updated_documents=1
         )
+
+        expect(send_cr_attachment_available_email_mock).to.be.called_once_with([new_attachment])

@@ -72,6 +72,11 @@ spec:
                 secretKeyRef:
                   name: documentcloud
                   key: password
+            - name: MAILGUN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun
+                  key: api-key
             - name: AIRTABLE_API_KEY
               valueFrom:
                 secretKeyRef:

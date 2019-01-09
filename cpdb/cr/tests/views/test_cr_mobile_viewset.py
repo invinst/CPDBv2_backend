@@ -2,6 +2,7 @@ from datetime import datetime, date
 
 from django.urls import reverse
 from django.contrib.gis.geos import Point
+from mock import patch
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -16,6 +17,8 @@ from data.factories import (
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from email_service.constants import CR_ATTACHMENT_REQUEST
+from email_service.factories import EmailTemplateFactory
 
 
 class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -417,7 +420,9 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:cr-mobile-detail', kwargs={'pk': '45678'}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_request_document(self):
+    @patch('cr.views.send_attachment_request_email')
+    def test_request_document(self, mock_send_attachment_request_email):
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         AllegationFactory(crid='112233')
         response = self.client.post(
             reverse('api-v2:cr-mobile-request-document', kwargs={'pk': '112233'}),
@@ -428,8 +433,14 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
             'message': 'Thanks for subscribing',
             'crid': '112233'
         })
+        expect(mock_send_attachment_request_email).to.be.called_once_with(
+            'valid_email@example.com',
+            attachment_type='cr_request',
+            pk='112233',
+        )
 
     def test_request_same_document_twice(self):
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         allegation = AllegationFactory(crid='112233')
         self.client.post(
             reverse('api-v2:cr-mobile-request-document', kwargs={'pk': allegation.crid}),
