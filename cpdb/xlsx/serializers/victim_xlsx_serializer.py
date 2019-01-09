@@ -1,7 +1,7 @@
 from rest_framework.serializers import Serializer, CharField, IntegerField
 
 
-class VictimExcelSerializer(Serializer):
+class VictimXlsxSerializer(Serializer):
     crid = CharField(source='allegation.crid')
     gender = CharField(source='gender_display', allow_blank=True)
     race = CharField()

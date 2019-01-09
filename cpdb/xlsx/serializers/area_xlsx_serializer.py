@@ -1,7 +1,7 @@
 from rest_framework.serializers import Serializer, CharField
 
 
-class AreaExcelSerializer(Serializer):
+class AreaXlsxSerializer(Serializer):
     name = CharField()
     area_type = CharField()
     median_income = CharField(allow_null=True)
