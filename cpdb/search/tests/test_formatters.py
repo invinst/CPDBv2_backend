@@ -313,7 +313,7 @@ class SearchTermFormatterTestCase(SimpleTestCase):
             'category_name': 'Geography',
             'description': 'Community description',
             'call_to_action_type': 'view_all',
-            'link': 'http://lvh.me',
+            'link': '/url-mediator/session-builder/?community=123456',
         }))
 
         expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
@@ -322,5 +322,23 @@ class SearchTermFormatterTestCase(SimpleTestCase):
             'category_name': 'Geography',
             'description': 'Community description',
             'call_to_action_type': 'view_all',
-            'link': 'http://lvh.me'
+            'link': 'http://cpdb.lvh.me/url-mediator/session-builder/?community=123456'
+        })
+
+    def test_doc_format_empty_link(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+        }))
+
+        expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
+            'id': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': ''
         })

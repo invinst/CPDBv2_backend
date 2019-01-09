@@ -475,5 +475,5 @@ class SearchTermItemIndexerTestCase(TestCase):
             'category_name': 'Geography',
             'description': 'Community description',
             'call_to_action_type': 'view_all',
-            'link': 'http://cpdb.lvh.me/url-mediator/session-builder/?community=123456',
+            'link': '/url-mediator/session-builder/?community=123456',
         })

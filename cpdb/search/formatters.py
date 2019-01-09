@@ -1,3 +1,6 @@
+from django.conf import settings
+
+
 class Formatter(object):
     def format(self):
         raise NotImplementedError
@@ -121,13 +124,14 @@ class ZipCodeFormatter(SimpleFormatter):
 class SearchTermFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()
+        link = serialized_doc.get('link', '')
         return {
             'id': serialized_doc['slug'],
             'name': serialized_doc['name'],
             'category_name': serialized_doc.get('category_name', ''),
             'description': serialized_doc.get('description', ''),
             'call_to_action_type': serialized_doc.get('call_to_action_type', ''),
-            'link': serialized_doc.get('link', ''),
+            'link': f'{settings.V1_URL}{link}' if link else '',
         }
 
     def process_doc(self, doc):
