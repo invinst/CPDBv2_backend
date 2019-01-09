@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0097_merge_20190101_2250'),
+        ('data', '0098_attachmentfile_text_content'),
     ]
 
     operations = [

@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from email_service.models import EmailTemplate
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
-from data.models import Allegation, AttachmentRequest
+from data.models import Allegation
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,6 @@ def send_cr_attachment_available_email(new_attachments):
 
     crids = {attachment.allegation.crid for attachment in new_attachments}
 
-    sent_attachment_requests = []
     for crid in tqdm(crids, desc='Sending notification emails'):
         allegation = Allegation.objects.get(crid=crid)
         for attachment_request in allegation.attachmentrequest_set.filter(noti_email_sent=False):
@@ -35,12 +34,11 @@ def send_cr_attachment_available_email(new_attachments):
             )
             try:
                 send_mail(**message)
-                attachment_request.noti_email_sent = True
-                sent_attachment_requests.append(attachment_request)
             except SMTPException:
                 logger.info(f'Cannot send notification email for crid {crid} to {attachment_request.email}')
-
-    AttachmentRequest.bulk_objects.bulk_update(sent_attachment_requests, update_fields=['noti_email_sent'])
+            else:
+                attachment_request.noti_email_sent = True
+                attachment_request.save()
 
 
 def send_attachment_request_email(email, attachment_type, **kwargs):

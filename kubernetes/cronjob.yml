@@ -6,6 +6,7 @@ spec:
   schedule: "${CRONJOB_SCHEDULE}"
   jobTemplate:
     spec:
+      backoffLimit: 0
       template:
         spec:
           containers:
