@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from django.urls import reverse
 from django.contrib.gis.geos import Point
 from django.utils.timezone import now
+from mock import patch
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -18,6 +19,8 @@ from data.factories import (
 from data.constants import MEDIA_TYPE_DOCUMENT
 from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from email_service.factories import EmailTemplateFactory
+from email_service.constants import CR_ATTACHMENT_REQUEST
 
 
 class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
@@ -55,8 +58,10 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            officer=officer1, allegation=allegation,
+            final_finding='SU', disciplined=True,
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -133,6 +138,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
@@ -233,7 +239,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         officer_allegation = OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
-            final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
+            final_outcome='Separation', recc_outcome='10 Day Suspension',
+            start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
                 allegation_name='Secondary/Special Employment'
@@ -351,6 +358,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'race': 'White',
                     'rank': 'Officer',
                     'birth_year': 1993,
+                    'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
                     'category': 'Operation/Personnel Violations',
@@ -446,7 +454,9 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:cr-detail', kwargs={'pk': 321}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    def test_request_document(self):
+    @patch('cr.views.send_attachment_request_email')
+    def test_request_document(self, mock_send_attachment_request_email):
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         AllegationFactory(crid='112233')
         response = self.client.post(
             reverse('api-v2:cr-request-document', kwargs={'pk': '112233'}),
@@ -457,8 +467,14 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             'message': 'Thanks for subscribing',
             'crid': '112233'
         })
+        expect(mock_send_attachment_request_email).to.be.called_once_with(
+            'valid_email@example.com',
+            attachment_type='cr_request',
+            pk='112233',
+        )
 
     def test_request_same_document_twice(self):
+        EmailTemplateFactory(type=CR_ATTACHMENT_REQUEST)
         allegation = AllegationFactory(crid='112233')
         self.client.post(
             reverse('api-v2:cr-request-document', kwargs={'pk': allegation.crid}),
@@ -539,7 +555,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url',
-            created_at=six_month_ago + timedelta(days=10)
+            external_created_at=six_month_ago + timedelta(days=10)
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -547,7 +563,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            created_at=six_month_ago + timedelta(days=5)
+            external_created_at=six_month_ago + timedelta(days=5)
         )
 
         allegation2 = AllegationFactory(crid='112')
@@ -558,7 +574,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            created_at=six_month_ago + timedelta(days=6)
+            external_created_at=six_month_ago + timedelta(days=6)
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')

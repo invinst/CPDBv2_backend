@@ -11,5 +11,5 @@ class CSMCreateInitialDataCommandTestCase(TestCase):
         slug_pages = SlugPage.objects.all()
         slug_names = set(page.slug for page in slug_pages)
 
-        expect(slug_pages.count()).to.equal(2)
-        expect(slug_names).to.eq({'officer-page', 'landing-page'})
+        expect(slug_pages.count()).to.equal(4)
+        expect(slug_names).to.eq({'officer-page', 'landing-page', 'cr-page', 'trr-page'})

@@ -206,6 +206,74 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['results']
         expect({record['id'] for record in results}).to.eq({'1', '2'})
 
+    def test_retrieve_single_cr_with_highlight(self):
+        AllegationFactory(
+            id=1,
+            crid=123,
+            incident_date='2007-12-27',
+            summary='the officer pointed a gun at the victim'
+        )
+        AllegationFactory(
+            id=2,
+            crid=456,
+            incident_date='2000-12-27',
+            summary='the officer pointed a knife at the victim'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-single')
+        response = self.client.get(url, {
+            'term': 'gun',
+            'contentType': 'CR',
+        })
+
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]).to.eq({
+            'id': '1',
+            'crid': '123',
+            'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
+            'highlight': {
+                'summary': ['the officer pointed a <em>gun</em> at the victim']
+            }
+        })
+
+    def test_retrieve_list_cr_with_highlight(self):
+        AllegationFactory(
+            id=1,
+            crid=123,
+            incident_date='2007-12-27',
+            summary='the officer pointed a gun at the victim'
+        )
+        AllegationFactory(
+            id=2,
+            crid=456,
+            incident_date='2000-12-27',
+            summary='the officer pointed a knife at the victim'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'gun',
+        })
+
+        results = response.data['CR']
+        expect(results).to.have.length(1)
+        expect(results[0]).to.eq({
+            'id': '1',
+            'crid': '123',
+            'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
+            'highlight': {
+                'summary': ['the officer pointed a <em>gun</em> at the victim']
+            }
+        })
+
 
 class SearchV2ViewSetTestCase(APITestCase):
     @patch('search.views.SearchManager.search')

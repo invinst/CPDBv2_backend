@@ -3,7 +3,7 @@ import itertools
 from django.conf import settings
 from django.template import Context, Template
 
-from .models import TYPE_SINGLE_OFFICER, TYPE_COACCUSED_PAIR, TYPE_NOT_FOUND
+from twitterbot.constants import RESPONSE_TYPE_SINGLE_OFFICER, RESPONSE_TYPE_COACCUSED_PAIR, RESPONSE_TYPE_NOT_FOUND
 from data.models import Allegation, Officer
 from twitterbot.models import TweetResponseRoundRobin
 
@@ -43,7 +43,7 @@ class BaseResponseBuilder:
 
 
 class SingleOfficerResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_SINGLE_OFFICER
+    response_type = RESPONSE_TYPE_SINGLE_OFFICER
 
     def get_variables_sets(self, entities, context):
         for (source, officer) in entities:
@@ -56,7 +56,7 @@ class SingleOfficerResponseBuilder(BaseResponseBuilder):
 
 
 class CoaccusedPairResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_COACCUSED_PAIR
+    response_type = RESPONSE_TYPE_COACCUSED_PAIR
 
     def get_variables_sets(self, entities, context):
         for (source1, officer1), (source2, officer2) in itertools.combinations(entities, 2):
@@ -72,7 +72,7 @@ class CoaccusedPairResponseBuilder(BaseResponseBuilder):
 
 
 class NotFoundResponseBuilder(BaseResponseBuilder):
-    response_type = TYPE_NOT_FOUND
+    response_type = RESPONSE_TYPE_NOT_FOUND
 
     def get_variables_sets(self, entities, context):
         try:

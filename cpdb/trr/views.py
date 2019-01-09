@@ -6,6 +6,8 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
+from email_service.constants import TRR_ATTACHMENT_REQUEST
+from email_service.service import send_attachment_request_email
 from trr.models import TRR
 from trr.serializers.trr_response_serializers import TRRSerializer, AttachmentRequestSerializer
 from .doc_types import TRRDocType
@@ -30,6 +32,7 @@ class TRRDesktopViewSet(viewsets.ViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            send_attachment_request_email(data['email'], attachment_type=TRR_ATTACHMENT_REQUEST, pk=pk)
             return Response({'message': 'Thanks for subscribing', 'trr_id': int(pk)})
 
         except ValidationError as e:
@@ -58,6 +61,7 @@ class TRRMobileViewSet(viewsets.ViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            send_attachment_request_email(data['email'], attachment_type=TRR_ATTACHMENT_REQUEST, pk=pk)
             return Response({'message': 'Thanks for subscribing', 'trr_id': int(pk)})
 
         except ValidationError as e:

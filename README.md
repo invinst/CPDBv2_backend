@@ -9,6 +9,7 @@
 - `bin/coverage.sh` - run all tests and print code coverage in Django development container.
 - `bin/manage.sh` - run any and all of your Django command in production, staging or local environment. See `bin/manage.sh -h` for detail usage.
 - **important:** If you ever need to SSH into container, look it up yourself. It should not be necessary in 99% of cases. And if you ever need to SSH in then you should really know what you're doing so no guidance is provided.
+- `bin/build_apiary.sh` - update apiary.apib file. Please run this when ever you change any apiary file. **Note**: please install [hercule](https://github.com/jamesramsay/hercule) first.
 
 # Gain access to kubernetes cluster
 

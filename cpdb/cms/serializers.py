@@ -253,6 +253,37 @@ class OfficerPageSerializer(SlugPageSerializer):
         model = SlugPage
 
 
+class CRPageSerializer(SlugPageSerializer):
+    document_request_instruction = RichTextField(
+        fake_value=['We’ll notify you when the document is made available.'],
+        source='fields'
+    )
+
+    no_attachment_text = RichTextField(
+        fake_value=['There are no documents that have been made public yet.'],
+        source='fields'
+    )
+
+    class Meta:
+        slug = 'cr-page'
+        model = SlugPage
+
+
+class TRRPageSerializer(SlugPageSerializer):
+    document_request_instruction = RichTextField(
+        fake_value=['We’ll notify you when the document is made available.'],
+        source='fields'
+    )
+    no_attachment_text = RichTextField(
+        fake_value=['There are no documents that have been made public yet.'],
+        source='fields'
+    )
+
+    class Meta:
+        slug = 'trr-page'
+        model = SlugPage
+
+
 def get_slug_page_serializer(cms_page):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if cms_page.serializer_class == name:

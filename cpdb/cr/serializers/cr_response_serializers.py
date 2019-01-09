@@ -34,6 +34,7 @@ class CoaccusedSerializer(NoNullSerializer):
     complaint_percentile = serializers.FloatField(
         read_only=True, allow_null=True, source='officer.complaint_percentile'
     )
+    recommended_outcome = serializers.CharField(source='recc_outcome')
     final_outcome = serializers.CharField()
     final_finding = serializers.CharField(source='final_finding_display')
     category = serializers.CharField()

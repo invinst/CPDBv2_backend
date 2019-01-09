@@ -1,15 +1,17 @@
-class Formatter(object):
-    def format(self):
-        raise NotImplementedError
-
-
-class SimpleFormatter(Formatter):
+class SimpleFormatter(object):
     def doc_format(self, doc):
         return doc.to_dict()
 
     def process_doc(self, doc):
         result = self.doc_format(doc)
         result['id'] = doc._id
+        try:
+            result['highlight'] = {
+                key: [el for el in val]
+                for key, val in doc.meta.highlight.to_dict().items()
+            }
+        except AttributeError:
+            pass
         return result
 
     def format(self, response):
@@ -96,7 +98,15 @@ class ReportFormatter(SimpleFormatter):
         }
 
 
-CRFormatter = SimpleFormatter
+class CRFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        return {
+            'crid': doc.crid,
+            'to': doc.to,
+            'incident_date': doc.incident_date,
+        }
+
+
 TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
 
@@ -106,6 +116,8 @@ class RankFormatter(SimpleFormatter):
         serialized_doc = doc.to_dict()
         return {
             'name': serialized_doc['rank'],
+            'active_officers_count': serialized_doc['active_officers_count'],
+            'officers_most_complaints': serialized_doc.get('officers_most_complaints', []),
         }
 
 

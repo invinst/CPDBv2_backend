@@ -15,7 +15,7 @@ from analytics.factories import SearchTrackingFactory
 class EventsViewTestCase(APITestCase):
 
     @freeze_time('2017-01-14 12:00:01')
-    def test_create(self):
+    def test_created_at(self):
         data = {
             'id': 12,
             'title': 'How accurate is the data?'
@@ -31,7 +31,7 @@ class EventsViewTestCase(APITestCase):
         event = Event.objects.first()
         expect(event.name).to.eq('some-click')
         expect(event.data).to.eq(data)
-        expect(event.created).to.eq(datetime.datetime(2017, 1, 14, 12, 0, 1, tzinfo=pytz.utc))
+        expect(event.created_at).to.eq(datetime.datetime(2017, 1, 14, 12, 0, 1, tzinfo=pytz.utc))
 
 
 class SearchTrackingViewTestCase(APITestCase):

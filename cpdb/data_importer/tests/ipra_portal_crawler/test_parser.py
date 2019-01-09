@@ -50,7 +50,7 @@ class AttachmentFileFieldTest(SimpleTestCase):
             'original_url': '//this_is_a_link',
             'tag': 'Other',
             'source_type': 'COPA',
-            'last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
+            'external_last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
         })
 
 
