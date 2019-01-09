@@ -184,6 +184,7 @@ class CrIndexer(BaseIndexer):
             'crid': datum.crid,
             'category': self.get_most_common_category(datum.id),
             'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
+            'summary': datum.summary,
             'to': f'/complaint/{datum.crid}/'
         }
 
