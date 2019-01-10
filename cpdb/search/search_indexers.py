@@ -2,7 +2,7 @@ from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
-from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation
+from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer
 from search_terms.models import SearchTermItem
 from trr.models import TRR, ActionResponse
 from data.utils.percentile import percentile
@@ -11,7 +11,7 @@ from search.doc_types import (
     RankDocType, ZipCodeDocType, SearchTermItemDocType
 )
 from search.indices import autocompletes_alias
-from search.serializers import RacePopulationSerializer
+from search.serializers import RacePopulationSerializer, OfficerMostComplaintsSerializer
 from search.utils import chicago_zip_codes
 
 
@@ -34,7 +34,7 @@ class BaseIndexer(object):
         multiple documents cannot share the same ID.
         '''
         extracted_data = self.extract_datum(datum)
-        if not isinstance(extracted_data, list):
+        if not isinstance(extracted_data, list) and hasattr(datum, 'pk'):
             extracted_data['meta'] = {'id': datum.pk}
         return extracted_data
 
@@ -100,7 +100,10 @@ class AreaIndexer(BaseIndexer):
         if datum.area_type == 'police-districts':
             name = datum.description if datum.description else datum.name
 
-        officers_most_complaint = list(datum.get_officers_most_complaints())
+        officers_most_complaint = OfficerMostComplaintsSerializer(
+            list(datum.get_officers_most_complaints()),
+            many=True
+        ).data
 
         return {
             'name': name,
@@ -185,6 +188,7 @@ class CrIndexer(BaseIndexer):
             'crid': datum.crid,
             'category': self.get_most_common_category(datum.id),
             'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
+            'summary': datum.summary,
             'to': f'/complaint/{datum.crid}/'
         }
 
@@ -222,12 +226,17 @@ class RankIndexer(BaseIndexer):
     doc_type_klass = RankDocType
 
     def get_queryset(self):
-        return Salary.objects.rank_objects()
+        return Salary.objects.ranks
 
     def extract_datum(self, datum):
         return {
-            'rank': datum.rank,
-            'tags': ['rank']
+            'rank': datum,
+            'tags': ['rank'],
+            'active_officers_count': Officer.get_active_officers(datum).count(),
+            'officers_most_complaints': OfficerMostComplaintsSerializer(
+                Officer.get_officers_most_complaints(datum),
+                many=True
+            ).data
         }
 
 

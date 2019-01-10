@@ -161,6 +161,7 @@ class UnitOfficerWorker(Worker):
 class RankWorker(Worker):
     doc_type_klass = RankDocType
     fields = ['rank', 'tags']
+    sort_order = ['-active_officers_count']
 
 
 class DateCRWorker(DateWorker):
@@ -170,7 +171,11 @@ class DateCRWorker(DateWorker):
 
 class CRWorker(Worker):
     doc_type_klass = CrDocType
-    fields = ['crid']
+
+    def query(self, term, **kwargs):
+        return self._searcher\
+            .query('multi_match', query=term, operator='and', fields=['crid', 'summary'])\
+            .highlight('summary')
 
 
 class DateTRRWorker(DateWorker):

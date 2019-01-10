@@ -1,3 +1,3 @@
 from .popup import Popup
 
-__all__ = [Popup]
+__all__ = ['Popup']

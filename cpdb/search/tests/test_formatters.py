@@ -3,6 +3,7 @@ from mock import Mock
 from django.test import SimpleTestCase
 
 from robber import expect
+from elasticsearch_dsl.utils import AttrDict, AttrList
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
@@ -27,22 +28,36 @@ class SimpleFormatterTestCase(SimpleTestCase):
     def test_format(self):
         doc1 = Mock(
             to_dict=Mock(return_value={'a': 'a'}),
-            _id='a_id'
+            _id='a_id',
+            meta=Mock(spec=[])
         )
         doc2 = Mock(
             to_dict=Mock(return_value={'b': 'b'}),
-            _id='b_id'
+            _id='b_id',
+            meta=Mock(
+                highlight=AttrDict({
+                    'abc': AttrList([
+                        'struck <em>gun</em> on victims head.'
+                    ])
+                })
+            )
         )
         response = Mock(hits=[doc1, doc2])
 
         expect(
             SimpleFormatter().format(response)
-        ).to.be.eq([{'a': 'a', 'id': 'a_id'}, {'b': 'b', 'id': 'b_id'}])
+        ).to.be.eq([
+            {'a': 'a', 'id': 'a_id'},
+            {'b': 'b', 'id': 'b_id', 'highlight': {
+                'abc': ['struck <em>gun</em> on victims head.']
+            }}
+        ])
 
     def test_serialize(self):
         doc = Mock(
             to_dict=Mock(return_value={'a': 'a'}),
-            _id='a_id'
+            _id='a_id',
+            meta=Mock(spec=[])
         )
         expect(SimpleFormatter().serialize([doc])).to.eq([{
             'a': 'a',
@@ -242,17 +257,36 @@ class ReportFormatterTestCase(SimpleTestCase):
 
 
 class CrFormatterTestCase(SimpleTestCase):
-    def test_doc_format(self):
-        doc = Mock(to_dict=Mock(return_value={
-            'crid': '123456',
-            'to': '/complaint/123456/'
-        }))
+    def test_process_doc(self):
+        doc = Mock(
+            crid='123456',
+            to='/complaint/123456/',
+            summary='abc',
+            _id='123',
+            incident_date='1990-01-02',
+            meta=Mock(
+                highlight=AttrDict({
+                    'summary': AttrList([
+                        'fired a <em>gun</em> at the victims',
+                        'struck Victim B on the head with a <em>gun</em>'
+                    ])
+                })
+            )
+        )
 
         expect(
-            CRFormatter().doc_format(doc)
+            CRFormatter().process_doc(doc)
         ).to.eq({
             'crid': '123456',
-            'to': '/complaint/123456/'
+            'to': '/complaint/123456/',
+            'id': '123',
+            'incident_date': '1990-01-02',
+            'highlight': {
+                'summary': [
+                    'fired a <em>gun</em> at the victims',
+                    'struck Victim B on the head with a <em>gun</em>'
+                ]
+            }
         })
 
 
@@ -286,10 +320,14 @@ class AreaFormatterTestCase(SimpleTestCase):
 class RankFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
         doc = Mock(to_dict=Mock(return_value={
-            'rank': 'Police Officer'
+            'rank': 'Police Officer',
+            'active_officers_count': 1,
+            'officers_most_complaints': ['Raymond', 'Jason']
         }))
         expect(RankFormatter().doc_format(doc)).to.eq({
-            'name': 'Police Officer'
+            'name': 'Police Officer',
+            'active_officers_count': 1,
+            'officers_most_complaints': ['Raymond', 'Jason']
         })
 
 

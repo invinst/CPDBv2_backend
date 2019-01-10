@@ -1,13 +1,13 @@
 import logging
-from django.conf import settings
 
+from django.conf import settings
 from documentcloud import DocumentCloud
 from tqdm import tqdm
 
-from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
+from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
-
+from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
 
 logger = logging.getLogger('django.command')
 
@@ -23,6 +23,7 @@ def upload_copa_documents():
         cloud_document = client.documents.upload(
             attachment.original_url,
             title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
+            description=AUTO_UPLOAD_DESCRIPTION,
             access='public',
             force_ocr=True
         )
@@ -34,4 +35,6 @@ def upload_copa_documents():
         attachment.tag = 'CR'
         attachment.additional_info = parse_link(cloud_document.canonical_url)
         attachment.preview_image_url = cloud_document.normal_image_url
+        attachment.external_last_updated = cloud_document.updated_at
+        attachment.external_created_at = cloud_document.created_at
         attachment.save()

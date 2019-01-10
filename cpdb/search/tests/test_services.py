@@ -150,7 +150,13 @@ class SearchManagerTestCase(IndexMixin, TestCase):
         expect(query).to.eq('abc')
 
     def test_get_formatted_results(self):
-        mock_document = Mock(to_dict=Mock(return_value={'a': 'b'}), _id=123)
+        mock_document = Mock(
+            to_dict=Mock(return_value={'a': 'b'}),
+            _id=123,
+            meta=Mock(
+                spec=[]
+            )
+        )
         formatted_results = SearchManager().get_formatted_results([mock_document], 'SIMPLE')
         expect(formatted_results).to.eq([{
             'a': 'b',
