@@ -9,10 +9,9 @@ class UseOfForceXlsxWriter(OfficerXlsxWriter):
         return f'use_of_force_{self.officer.id}.xlsx'
 
     def export_xlsx(self):
-        ws = self.wb.create_sheet('Allegation', 0)
+        ws = self.wb.create_sheet('Use Of Force', 0)
         trrs = TRR.objects.filter(
             officer=self.officer
         ).select_related('officer_unit', 'officer_unit_detail').order_by('id')
-        rows = TRRXlsxSerializer(trrs, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, trrs, TRRXlsxSerializer)
         self.save()

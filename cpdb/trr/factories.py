@@ -5,7 +5,7 @@ import factory
 from faker import Faker
 
 from trr.models import TRR, ActionResponse, TRRAttachmentRequest
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, PoliceUnitFactory
 
 fake = Faker()
 
@@ -22,6 +22,8 @@ class TRRFactory(factory.django.DjangoModelFactory):
     subject_race = 'White'
     subject_gender = factory.LazyFunction(lambda: random.choice(['M', 'F']))
     subject_birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
+    officer_unit = factory.SubFactory(PoliceUnitFactory)
+    officer_unit_detail = factory.SubFactory(PoliceUnitFactory)
 
 
 class ActionResponseFactory(factory.django.DjangoModelFactory):

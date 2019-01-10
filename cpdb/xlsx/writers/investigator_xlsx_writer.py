@@ -19,41 +19,35 @@ class InvestigatorXlsxWriter(OfficerXlsxWriter):
         officer_allegations = OfficerAllegation.objects.filter(
             allegation__investigatorallegation__investigator__officer=self.officer
         ).distinct().select_related('allegation').order_by('allegation__crid')
-        rows = OfficerAllegationXlsxSerializer(officer_allegations, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, officer_allegations, OfficerAllegationXlsxSerializer)
 
     def write_accused_officers_sheet(self):
         ws = self.wb.create_sheet('Accused Officer', 1)
-        InvestigatorAllegation.objects.filter()
         officer_allegations = OfficerAllegation.objects.filter(
             allegation__investigatorallegation__investigator__officer=self.officer
         ).distinct().select_related('allegation').order_by('allegation__crid')
-        rows = OfficerFromAllegationOfficerXlsxSerializer(officer_allegations, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, officer_allegations, OfficerFromAllegationOfficerXlsxSerializer)
 
     def write_police_witnesses_sheet(self):
         ws = self.wb.create_sheet('Police Witness', 2)
         police_witnesses = PoliceWitness.objects.filter(
             allegation__investigatorallegation__investigator__officer=self.officer
         ).distinct().select_related('officer', 'allegation').order_by('allegation__crid')
-        rows = PoliceWitnessXlsxSerializer(police_witnesses, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, police_witnesses, PoliceWitnessXlsxSerializer)
 
     def write_beat_sheet(self):
         ws = self.wb.create_sheet('Beat', 3)
         beats = Area.objects.filter(
             beats__investigatorallegation__investigator__officer=self.officer
         ).distinct().select_related('police_hq').order_by('id')
-        rows = AreaXlsxSerializer(beats, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, beats, AreaXlsxSerializer)
 
     def write_victim_sheet(self):
         ws = self.wb.create_sheet('Victim', 4)
         victims = Victim.objects.filter(
             allegation__investigatorallegation__investigator__officer=self.officer
         ).select_related('allegation').order_by('allegation__crid')
-        rows = VictimXlsxSerializer(victims, many=True).data
-        self.write_sheet(ws, rows)
+        self.write_sheet(ws, victims, VictimXlsxSerializer)
 
     def export_xlsx(self):
         self.write_allegation_sheet()

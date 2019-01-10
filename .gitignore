@@ -68,3 +68,7 @@ kubernetes/secrets-production.yml
 
 staging-pg-credentials.json
 pg-credentials.json
+
+# XLSX and CSV temporary files
+/*.csv
+/*.xlsx

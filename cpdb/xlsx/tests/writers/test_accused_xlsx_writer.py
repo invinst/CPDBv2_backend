@@ -17,32 +17,37 @@ class AccusedXlsxWriter(OfficerXlsxWriter):
         officer_allegations = OfficerAllegation.objects.filter(
             officer=self.officer
         ).select_related('allegation').order_by('allegation__crid')
-        self.write_sheet(ws, officer_allegations, OfficerAllegationXlsxSerializer)
+        rows = OfficerAllegationXlsxSerializer(officer_allegations, many=True).data
+        self.write_sheet(ws, rows)
 
     def write_coaccused_officers(self):
         ws = self.wb.create_sheet('Coaccused Officer', 1)
-        self.write_sheet(ws, self.officer.coaccusals, CoaccusedOfficerXlsxSerializer)
+        rows = CoaccusedOfficerXlsxSerializer(self.officer.coaccusals, many=True).data
+        self.write_sheet(ws, rows)
 
     def write_police_witnesses_sheet(self):
         ws = self.wb.create_sheet('Police Witness', 2)
         police_witnesses = PoliceWitness.objects.filter(
             allegation__officerallegation__officer=self.officer
         ).distinct().select_related('officer', 'allegation').order_by('allegation__crid')
-        self.write_sheet(ws, police_witnesses, PoliceWitnessXlsxSerializer)
+        rows = PoliceWitnessXlsxSerializer(police_witnesses, many=True).data
+        self.write_sheet(ws, rows)
 
     def write_beat_sheet(self):
         ws = self.wb.create_sheet('Beat', 3)
         beats = Area.objects.filter(
             beats__officerallegation__officer=self.officer
         ).distinct().select_related('police_hq').order_by('id')
-        self.write_sheet(ws, beats, AreaXlsxSerializer)
+        rows = AreaXlsxSerializer(beats, many=True).data
+        self.write_sheet(ws, rows)
 
     def write_victim_sheet(self):
         ws = self.wb.create_sheet('Victim', 4)
         victims = Victim.objects.filter(
             allegation__officerallegation__officer=self.officer
         ).select_related('allegation').order_by('allegation__crid')
-        self.write_sheet(ws, victims, VictimXlsxSerializer)
+        rows = VictimXlsxSerializer(victims, many=True).data
+        self.write_sheet(ws, rows)
 
     def export_xlsx(self):
         self.write_allegation_sheet()
