@@ -109,7 +109,7 @@ class AutoOpenIPRATest(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
@@ -122,6 +122,10 @@ class AutoOpenIPRATest(TestCase):
         expect(crawler_log.num_documents).to.eq(2)
         expect(crawler_log.num_new_documents).to.eq(1)
         expect(crawler_log.num_updated_documents).to.eq(1)
+
+        expect(new_attachments).to.have.length(1)
+        expect(new_attachments[0].title).to.eq('Audio Clip')
+        expect(new_attachments[0].url).to.eq('http://chicagocopa.org/audio_link.mp3')
 
     @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
     def test_update(self, open_ipra):
@@ -148,8 +152,9 @@ class AutoOpenIPRATest(TestCase):
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
 
+        expect(new_attachments).to.be.empty()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('pdf file')
 
     @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
@@ -252,7 +257,8 @@ class AutoOpenIPRATest(TestCase):
             external_last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
         )
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
+        expect(new_attachments).to.be.empty()
 
         updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
         expect(updated_attachment_file.title).to.eq('CRID 123 CR pdf file')

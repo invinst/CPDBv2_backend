@@ -21,6 +21,7 @@ class AttachmentFile(TimeStampsModel):
     preview_image_url = models.CharField(max_length=255, null=True)
     external_created_at = models.DateTimeField(null=True)
     external_last_updated = models.DateTimeField(null=True)
+    text_content = models.TextField(blank=True)
 
     objects = BulkUpdateManager()
 

@@ -9,6 +9,8 @@ from robber import expect
 import pytz
 
 from data.factories import PoliceUnitFactory, OfficerFactory, OfficerHistoryFactory, OfficerAllegationFactory
+from email_service.constants import TRR_ATTACHMENT_REQUEST
+from email_service.factories import EmailTemplateFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from trr.tests.mixins import TRRTestCaseMixin
 
@@ -183,6 +185,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
 
     def test_request_document(self):
+        EmailTemplateFactory(type=TRR_ATTACHMENT_REQUEST)
         TRRFactory(pk=112233)
         response = self.client.post(
             reverse('api-v2:trr-request-document', kwargs={'pk': 112233}),
@@ -195,6 +198,7 @@ class TRRViewSetTestCase(TRRTestCaseMixin, APITestCase):
         })
 
     def test_request_same_document_twice(self):
+        EmailTemplateFactory(type=TRR_ATTACHMENT_REQUEST)
         trr = TRRFactory(pk=112233)
         self.client.post(
             reverse('api-v2:trr-request-document', kwargs={'pk': trr.id}),

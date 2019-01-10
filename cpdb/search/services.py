@@ -23,16 +23,15 @@ class SearchManager(object):
         self.workers = workers or DEFAULT_SEARCH_WORKERS
         self.hooks = hooks or []
 
-    def search(self, term, content_type=None, limit=10000):
+    def search(self, term, content_type=None, limit=10):
         response = {}
 
-        _limit = limit if content_type else 10
         _workers = {content_type: self.workers[content_type]} if content_type else self.workers
         search_with_dates = any([isinstance(worker, DateWorker) for worker in _workers.values()])
         dates = [date.strftime('%Y-%m-%d') for date in find_dates_from_string(term)] if search_with_dates else []
 
         for _content_type, worker in _workers.items():
-            search_results = worker.search(term, size=_limit, dates=dates)
+            search_results = worker.search(term, size=limit, dates=dates)
             response[_content_type] = self._formatter_for(_content_type)().format(search_results)
 
         for hook in self.hooks:

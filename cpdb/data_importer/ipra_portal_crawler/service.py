@@ -86,7 +86,8 @@ class AutoOpenIPRA(object):
 
     @staticmethod
     def update_attachments(allegation, attachment_dicts):
-        num_created = num_updated = 0
+        created_attachments = []
+        num_updated = 0
         for attachment_dict in attachment_dicts:
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
             try:
@@ -110,7 +111,7 @@ class AutoOpenIPRA(object):
                 if vimeo_data is not None:
                     attachment_dict['preview_image_url'] = vimeo_data['thumbnail_small']
             if created:
-                num_created += 1
+                created_attachments.append(attachment)
             else:
                 if attachment.source_type == AttachmentSourceType.COPA_DOCUMENTCLOUD:
                     updating_fields = ['title', 'original_url', 'external_last_updated']
@@ -130,25 +131,28 @@ class AutoOpenIPRA(object):
                 if updated:
                     attachment.save()
                     num_updated += 1
-        return num_created, num_updated
+        return created_attachments, num_updated
 
     @staticmethod
     def import_allegation_and_attachments(incidents):
-        num_new_attachments = num_updated_attachments = 0
+        new_attachments = []
+        num_updated_attachments = 0
 
         for incident in tqdm(incidents):
             allegation = AutoOpenIPRA.get_or_update_allegation(incident['allegation'])
             if allegation:
-                num_created, num_updated = AutoOpenIPRA.update_attachments(
+                created_attachments, num_updated = AutoOpenIPRA.update_attachments(
                     allegation,
                     incident['allegation']['attachment_files']
                 )
-                num_new_attachments += num_created
+                new_attachments += created_attachments
                 num_updated_attachments += num_updated
 
         num_documents = AttachmentFile.objects.filter(
             source_type__in=[AttachmentSourceType.COPA, AttachmentSourceType.COPA_DOCUMENTCLOUD]
         ).count()
+        num_new_attachments = len(new_attachments)
+
         DocumentCrawler.objects.create(
             source_type=AttachmentSourceType.COPA,
             num_documents=num_documents,
@@ -159,6 +163,7 @@ class AutoOpenIPRA(object):
             f'Done importing! {num_new_attachments} created, '
             f'{num_updated_attachments} updated in {num_documents} copa attachments'
         )
+        return new_attachments
 
     @staticmethod
     def import_new():
@@ -167,4 +172,4 @@ class AutoOpenIPRA(object):
         incidents = AutoOpenIPRA.parse_incidents(records)
         logger.info(f'Parsed {len(incidents)} crawled incidents')
         incidents = AutoOpenIPRA.fill_category(incidents)
-        AutoOpenIPRA.import_allegation_and_attachments(incidents)
+        return AutoOpenIPRA.import_allegation_and_attachments(incidents)

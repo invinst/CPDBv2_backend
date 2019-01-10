@@ -1,11 +1,13 @@
 from mock import Mock, patch
 from datetime import datetime
+from decimal import Decimal
 
 from django.test import SimpleTestCase, TestCase
 
 from robber import expect
 import pytz
 
+from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
     CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
 )
@@ -15,6 +17,7 @@ from data.factories import (
     OfficerAllegationFactory, RacePopulationFactory,
     SalaryFactory, AllegationCategoryFactory)
 from trr.factories import TRRFactory, ActionResponseFactory
+from shared.tests.utils import create_object
 
 
 def mock_object(**kwargs):
@@ -44,6 +47,12 @@ class BaseIndexerTestCase(SimpleTestCase):
                 'id': '11'
             }
         })
+
+    def test_extract_datum_with_no_id_datum_dict(self):
+        datum = create_object({'foo': 'bar'})
+        indexer = BaseIndexer()
+        indexer.extract_datum = lambda a: {'foo': a.foo}
+        expect(indexer.extract_datum_with_id(datum)).to.eq({'foo': 'bar'})
 
     def test_extract_datum_with_id_datum_list(self):
         datum = Mock(pk='11')
@@ -263,35 +272,33 @@ class AreaIndexerTestCase(TestCase):
             alderman='IronMan',
         )
         area.get_officers_most_complaints = Mock(return_value=[
-            {
-                'id': 123,
-                'name': 'A B',
-                'count': 5,
-                'percentile_allegation_civilian': 0,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 0,
-                'percentile_allegation': 0,
-            }, {
-                'id': 456,
-                'name': 'E F',
-                'count': 3,
-                'percentile_allegation_civilian': 33.3333,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 33.3333,
-                'percentile_allegation': 33.3333,
-            }, {
-                'id': 789,
-                'name': 'C D',
-                'count': 2,
-                'percentile_allegation_civilian': 66.6667,
-                'percentile_allegation_internal': 0,
-                'percentile_trr': 66.6667,
-                'percentile_allegation': 66.6667,
-            }, {
-                'id': 999,
-                'name': 'X Y',
-                'count': 2
-            }
+            OfficerFactory.build(
+                id=123,
+                first_name='A',
+                last_name='B',
+                allegation_count=5,
+                civilian_allegation_percentile=0,
+                internal_allegation_percentile=0,
+                trr_percentile=0,
+                complaint_percentile=0
+            ),
+            OfficerFactory.build(
+                id=456,
+                first_name='E',
+                last_name='F',
+                allegation_count=3,
+                civilian_allegation_percentile=Decimal(33.3333),
+                internal_allegation_percentile=0,
+                trr_percentile=Decimal(33.3333),
+                complaint_percentile=Decimal(33.3333)
+            ),
+            OfficerFactory.build(
+                id=999,
+                first_name='X',
+                last_name='Y',
+                allegation_count=2,
+                complaint_percentile=None
+            )
         ])
         area_indexer = AreaIndexer()
 
@@ -313,26 +320,18 @@ class AreaIndexerTestCase(TestCase):
                     'id': 123,
                     'name': 'A B',
                     'count': 5,
-                    'percentile_allegation_civilian': 0,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 0,
-                    'percentile_allegation': 0,
+                    'percentile_allegation_civilian': 0.0,
+                    'percentile_allegation_internal': 0.0,
+                    'percentile_trr': 0.0,
+                    'percentile_allegation': 0.0,
                 }, {
                     'id': 456,
                     'name': 'E F',
                     'count': 3,
                     'percentile_allegation_civilian': 33.3333,
-                    'percentile_allegation_internal': 0,
+                    'percentile_allegation_internal': 0.0,
                     'percentile_trr': 33.3333,
                     'percentile_allegation': 33.3333,
-                }, {
-                    'id': 789,
-                    'name': 'C D',
-                    'count': 2,
-                    'percentile_allegation_civilian': 66.6667,
-                    'percentile_allegation_internal': 0,
-                    'percentile_trr': 66.6667,
-                    'percentile_allegation': 66.6667,
                 }, {
                     'id': 999,
                     'name': 'X Y',
@@ -368,7 +367,10 @@ class CrIndexerTestCase(TestCase):
         expect(CrIndexer().get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
+        allegation = AllegationFactory(
+            crid='123456',
+            incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc),
+            summary='abc')
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
@@ -384,11 +386,15 @@ class CrIndexerTestCase(TestCase):
             'crid': '123456',
             'category': 'Abc',
             'incident_date': '2017-07-27',
+            'summary': 'abc',
             'to': '/complaint/123456/'
         })
 
     def test_extract_datum_with_missing_incident_date_and_category(self):
-        allegation = AllegationFactory(crid='123456', incident_date=None)
+        allegation = AllegationFactory(
+            crid='123456',
+            incident_date=None,
+            summary='')
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer, allegation_category=None)
 
@@ -398,6 +404,7 @@ class CrIndexerTestCase(TestCase):
             'crid': '123456',
             'category': None,
             'incident_date': None,
+            'summary': '',
             'to': '/complaint/123456/'
         })
 
@@ -441,12 +448,17 @@ class TRRIndexerTestCase(TestCase):
 class RankIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(RankIndexer().get_queryset()).to.have.length(0)
-        SalaryFactory()
-        expect(RankIndexer().get_queryset()).to.have.length(1)
+        SalaryFactory(rank='Officer', officer__rank='Officer')
+        OfficerFactory(rank='Detective')
+        expect(RankIndexer().get_queryset()).to.have.length(2)
 
     def test_extract_datum(self):
-        salary = SalaryFactory(rank='Police Officer')
-        expect(RankIndexer().extract_datum(salary)).to.eq({
+        officer = OfficerFactory(rank='Police Officer', active=ACTIVE_YES_CHOICE)
+        SalaryFactory(rank='Police Officer', officer=officer)
+
+        expect(RankIndexer().extract_datum('Police Officer')).to.eq({
             'rank': 'Police Officer',
-            'tags': ['rank']
+            'tags': ['rank'],
+            'active_officers_count': 1,
+            'officers_most_complaints': []
         })
