@@ -53,18 +53,14 @@ class BaseComplaintCrawler(object):
 class VimeoSimpleAPI(object):
     def __init__(self, video_id):
         self.url = 'http://vimeo.com/api/v2/video/{video_id}.json'.format(video_id=video_id)
-        self.content = self.get_json_content(self.url)
 
-    def get_json_content(self, url):
-        response = requests.get(url, headers=HEADERS)
+    def crawl(self):
+        response = requests.get(self.url, headers=HEADERS)
         try:
             content = response.json()[0]
         except ValueError:
             content = None
         return content
-
-    def crawl(self):
-        return self.content
 
 
 class ComplaintCrawler(BaseComplaintCrawler):
