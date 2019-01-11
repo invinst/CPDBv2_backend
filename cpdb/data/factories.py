@@ -74,7 +74,6 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
     tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
     complaint_percentile = factory.LazyFunction(lambda: fake.pyfloat(left_digits=2, right_digits=1, positive=True))
-    last_unit = factory.SubFactory(PoliceUnitFactory)
 
 
 class InvestigatorFactory(factory.django.DjangoModelFactory):
@@ -83,7 +82,6 @@ class InvestigatorFactory(factory.django.DjangoModelFactory):
 
     first_name = factory.LazyFunction(lambda: fake.name())
     last_name = factory.LazyFunction(lambda: fake.name())
-    officer = factory.SubFactory(OfficerFactory)
 
 
 class AllegationFactory(factory.django.DjangoModelFactory):
@@ -91,7 +89,6 @@ class AllegationFactory(factory.django.DjangoModelFactory):
         model = Allegation
 
     crid = factory.LazyFunction(lambda: str(random.randint(100000, 999999)))
-    beat = factory.SubFactory(AreaFactory)
 
     # required for percentile calculation, we ensure all objects factoried in same data range
     incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(

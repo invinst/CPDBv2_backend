@@ -1,4 +1,4 @@
-from data.models import OfficerAllegation, InvestigatorAllegation, PoliceWitness, Victim, Area
+from data.models import OfficerAllegation, PoliceWitness, Victim, Area
 from xlsx.serializers.area_xlsx_serializer import AreaXlsxSerializer
 from xlsx.serializers.officer_allegation_xlsx_serializer import (
     OfficerAllegationXlsxSerializer,

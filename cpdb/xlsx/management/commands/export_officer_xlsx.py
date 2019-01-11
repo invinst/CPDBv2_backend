@@ -11,9 +11,6 @@ class Command(BaseCommand):
         parser.add_argument('officer_id')
         parser.add_argument('out_dir')
 
-    def export_investigations(self, officer):
-        pass
-
     def handle(self, officer_id, out_dir, *args, **kwargs):
         officer = Officer.objects.get(id=officer_id)
         AccusedXlsxWriter(officer, out_dir).export_xlsx()

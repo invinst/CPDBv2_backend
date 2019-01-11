@@ -1,14 +1,7 @@
-import shutil
-import filecmp
+from datetime import datetime, date
 from decimal import Decimal
 
 import pytz
-import os
-from subprocess import call
-from datetime import datetime, date
-
-from django.test.testcases import TestCase
-
 from robber.expect import expect
 
 from data.factories import (
@@ -20,49 +13,32 @@ from data.factories import (
     PoliceWitnessFactory,
     InvestigatorAllegationFactory,
     InvestigatorFactory,
+    PoliceUnitFactory,
+    AreaFactory,
 )
+from xlsx.tests.writer_base_test_case import WriterBaseTestCase
 from xlsx.writers.investigator_xlsx_writer import InvestigatorXlsxWriter
 
-test_dir = os.path.dirname(__file__)
-test_output_dir = f'{test_dir}/output'
 
-
-class InvestigatorXlsxWriterTestCase(TestCase):
-    def tearDown(self):
-        shutil.rmtree(test_output_dir, ignore_errors=True)
-
+class InvestigatorXlsxWriterTestCase(WriterBaseTestCase):
     def test_file_name(self):
         officer = OfficerFactory(id=1)
-        writer = InvestigatorXlsxWriter(officer, test_output_dir)
+        writer = InvestigatorXlsxWriter(officer, self.test_output_dir)
         expect(writer.file_name).to.eq('investigator_1.xlsx')
 
     def test_export_xlsx_empty(self):
         officer = OfficerFactory(id=1)
-        writer = InvestigatorXlsxWriter(officer, test_output_dir)
+        writer = InvestigatorXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        call([
-            'xlsx2csv', f'{test_output_dir}/investigator_1.xlsx', test_output_dir, '-a'
-        ])
-
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Allegation.csv', f'{test_dir}/csv/empty/Allegation.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Accused Officer.csv', f'{test_dir}/csv/empty/Accused Officer.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Beat.csv', f'{test_dir}/csv/empty/Beat.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Police Witness.csv', f'{test_dir}/csv/empty/Police Witness.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Victim.csv', f'{test_dir}/csv/empty/Victim.csv')
-        ).to.be.true()
+        self.covert_xlsx_to_csv('investigator_1.xlsx')
+        self.assert_csv_files_equal(
+            expectation_dir='empty',
+            sheet_names=['Allegation', 'Accused Officer', 'Beat', 'Police Witness', 'Victim']
+        )
 
     def test_export_xlsx(self):
-        investigator = InvestigatorFactory(officer__id=1234)
+        investigator = InvestigatorFactory(officer=OfficerFactory(id=1234))
         allegation = AllegationFactory(
             crid='1009678',
             location='Tavern/Liquor Store',
@@ -71,7 +47,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             city='CHICAGO IL',
             old_complaint_address=None,
             incident_date=datetime(2007, 9, 28, 0, 0, tzinfo=pytz.utc),
-            beat__name='0823',
+            beat=AreaFactory(name='0823'),
             is_officer_complaint=True,
             coaccused_count=19
         )
@@ -83,7 +59,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             city='CHICAGO IL',
             old_complaint_address=None,
             incident_date=datetime(2005, 11, 1, 0, 0, tzinfo=pytz.utc),
-            beat__name='2511',
+            beat=AreaFactory(name='2511'),
             is_officer_complaint=False,
             coaccused_count=9
         )
@@ -116,7 +92,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             trr_count=1,
             major_award_count=0,
             current_badge='5167',
-            last_unit__unit_name='003',
+            last_unit=PoliceUnitFactory(unit_name='003'),
             current_salary=73116,
         )
         officer1 = OfficerFactory(
@@ -146,7 +122,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             trr_count=7,
             major_award_count=0,
             current_badge='1424',
-            last_unit__unit_name='003',
+            last_unit=PoliceUnitFactory(unit_name='003'),
             current_salary=101442,
         )
         officer2 = OfficerFactory(
@@ -176,7 +152,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             trr_count=4,
             major_award_count=0,
             current_badge='20373',
-            last_unit__unit_name='001',
+            last_unit=PoliceUnitFactory(unit_name='001'),
             current_salary=94122,
         )
         allegation_category = AllegationCategoryFactory(
@@ -275,7 +251,7 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             trr_count=7,
             major_award_count=0,
             current_badge='1424',
-            last_unit__unit_name='003',
+            last_unit=PoliceUnitFactory(unit_name='003'),
             current_salary=101442,
         )
         PoliceWitnessFactory(
@@ -283,24 +259,12 @@ class InvestigatorXlsxWriterTestCase(TestCase):
             allegation=allegation,
         )
 
-        writer = InvestigatorXlsxWriter(investigator.officer, test_output_dir)
+        writer = InvestigatorXlsxWriter(investigator.officer, self.test_output_dir)
         writer.export_xlsx()
-        call([
-            'xlsx2csv', f'{test_output_dir}/investigator_1234.xlsx', test_output_dir, '-a'
-        ])
 
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Allegation.csv', f'{test_dir}/csv/investigator_1234/Allegation.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Accused Officer.csv', f'{test_dir}/csv/investigator_1234/Accused Officer.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Beat.csv', f'{test_dir}/csv/investigator_1234/Beat.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Police Witness.csv', f'{test_dir}/csv/investigator_1234/Police Witness.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Victim.csv', f'{test_dir}/csv/investigator_1234/Victim.csv')
-        ).to.be.true()
+        self.covert_xlsx_to_csv('investigator_1234.xlsx')
+
+        self.assert_csv_files_equal(
+            expectation_dir='investigator_1234',
+            sheet_names=['Allegation', 'Accused Officer', 'Beat', 'Police Witness', 'Victim']
+        )

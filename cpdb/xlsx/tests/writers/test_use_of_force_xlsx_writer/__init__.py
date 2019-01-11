@@ -1,41 +1,27 @@
-import shutil
-import filecmp
-import pytz
-import os
-from subprocess import call
 from datetime import datetime
 
-from django.test.testcases import TestCase
-
+import pytz
 from robber.expect import expect
 
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, PoliceUnitFactory
 from trr.factories import TRRFactory
+from xlsx.tests.writer_base_test_case import WriterBaseTestCase
 from xlsx.writers.use_of_force_xlsx_writer import UseOfForceXlsxWriter
 
-test_dir = os.path.dirname(__file__)
-test_output_dir = f'{test_dir}/output'
 
-
-class UseOfForceXlsxWriterTestCase(TestCase):
-    def tearDown(self):
-        shutil.rmtree(test_output_dir, ignore_errors=True)
-
+class UseOfForceXlsxWriterTestCase(WriterBaseTestCase):
     def test_file_name(self):
         officer = OfficerFactory(id=1)
-        writer = UseOfForceXlsxWriter(officer, test_output_dir)
+        writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
         expect(writer.file_name).to.eq('use_of_force_1.xlsx')
 
     def test_export_xlsx_empty(self):
         officer = OfficerFactory(id=1)
-        writer = UseOfForceXlsxWriter(officer, test_output_dir)
+        writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        call(['xlsx2csv', f'{test_output_dir}/use_of_force_1.xlsx', f'{test_output_dir}/use_of_force_1.csv'])
-
-        expect(
-            filecmp.cmp(f'{test_output_dir}/use_of_force_1.csv', f'{test_dir}/csv/use_of_force_empty.csv')
-        ).to.be.true()
+        self.covert_xlsx_to_csv('use_of_force_1.xlsx')
+        self.assert_csv_files_equal('empty', ['Use Of Force'])
 
     def test_export_xlsx(self):
         officer = OfficerFactory(id=1)
@@ -63,7 +49,7 @@ class UseOfForceXlsxWriterTestCase(TestCase):
             firearm_used=False,
             number_of_officers_using_firearm=0,
             officer_assigned_beat='1368A',
-            officer_unit__unit_name='1234',
+            officer_unit=PoliceUnitFactory(unit_name='1234'),
             officer_unit_detail=None,
             officer_on_duty=True,
             officer_in_uniform=False,
@@ -78,11 +64,8 @@ class UseOfForceXlsxWriterTestCase(TestCase):
             subject_gender='M',
             subject_race='HISPANIC',
         )
-        writer = UseOfForceXlsxWriter(officer, test_output_dir)
+        writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        call(['xlsx2csv', f'{test_output_dir}/use_of_force_1.xlsx', f'{test_output_dir}/use_of_force_1.csv'])
-
-        expect(
-            filecmp.cmp(f'{test_output_dir}/use_of_force_1.csv', f'{test_dir}/csv/use_of_force_1.csv')
-        ).to.be.true()
+        self.covert_xlsx_to_csv('use_of_force_1.xlsx')
+        self.assert_csv_files_equal('use_of_force_1', ['Use Of Force'])

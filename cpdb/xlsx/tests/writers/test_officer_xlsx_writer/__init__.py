@@ -1,19 +1,10 @@
-import filecmp
-import os
-import shutil
-from subprocess import call
-
-from django.test import TestCase
 from rest_framework.serializers import Serializer, CharField
-
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from data.models import Officer, Allegation
+from xlsx.tests.writer_base_test_case import WriterBaseTestCase
 from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
-
-test_dir = os.path.dirname(__file__)
-test_output_dir = f'{test_dir}/output'
 
 
 class OfficerTestSerializer(Serializer):
@@ -47,13 +38,7 @@ class OfficerTestWriter(OfficerXlsxWriter):
         self.save()
 
 
-class OfficerXlsxWriterTestCase(TestCase):
-    def setUp(self):
-        shutil.rmtree(test_output_dir, ignore_errors=True)
-
-    def tearDown(self):
-        shutil.rmtree(test_output_dir, ignore_errors=True)
-
+class OfficerXlsxWriterTestCase(WriterBaseTestCase):
     def test_export_xlsx_file_successfully(self):
         officer = OfficerFactory(
             id=8562,
@@ -67,7 +52,7 @@ class OfficerXlsxWriterTestCase(TestCase):
         )
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
-        writer = OfficerTestWriter(officer=officer, out_dir=test_output_dir)
+        writer = OfficerTestWriter(officer=officer, out_dir=self.test_output_dir)
         writer.export_xlsx()
 
         sheetnames = writer.wb.sheetnames
@@ -75,13 +60,11 @@ class OfficerXlsxWriterTestCase(TestCase):
         expect(sheetnames[0]).to.eq('Officer')
         expect(sheetnames[1]).to.eq('Allegation')
 
-        call([
-            'xlsx2csv', f'{test_output_dir}/officer_8562.xlsx', test_output_dir, '-a'
-        ])
+        self.covert_xlsx_to_csv('officer_8562.xlsx')
+        self.assert_csv_files_equal('', ['Officer', 'Allegation'])
 
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Officer.csv', f'{test_dir}/csv/officer.csv')
-        ).to.be.true()
-        expect(
-            filecmp.cmp(f'{test_output_dir}/Allegation.csv', f'{test_dir}/csv/Allegation.csv')
-        ).to.be.true()
+    def test_raise_NotImplementedError(self):
+        officer = OfficerFactory()
+        writer = OfficerXlsxWriter(officer=officer, out_dir=self.test_output_dir)
+        expect(lambda: writer.file_name).to.throw(NotImplementedError)
+        expect(writer.export_xlsx).to.throw(NotImplementedError)
