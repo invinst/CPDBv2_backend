@@ -1,0 +1,3 @@
+crid,address,old_complaint_address,incident_date,is_officer_complaint,beat,coaccused_count,category,subcategory,start_date,end_date,recc_finding,recc_outcome,final_finding,final_outcome,disciplined
+1009678,"37XX W 63RD ST, CHICAGO IL",,2007-09-28,TRUE,0823,19,Illegal Search,Improper Search Of Person,2007-09-28,,Unknown,Unknown,Unknown,Unknown,
+1012803,"31XX N NEWCASTLE AVE, CHICAGO IL",,2005-11-01,FALSE,2511,9,False Arrest,Illegal Arrest / False Arrest,2007-12-21,2008-05-29,Unknown,Unknown,Unknown,Unknown,

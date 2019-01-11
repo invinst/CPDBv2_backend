@@ -46,6 +46,7 @@ class AccusedXlsxWriter(OfficerXlsxWriter):
 
     def export_xlsx(self):
         self.write_allegation_sheet()
+        self.write_coaccused_officers()
         self.write_police_witnesses_sheet()
         self.write_beat_sheet()
         self.write_victim_sheet()
