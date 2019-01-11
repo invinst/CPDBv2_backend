@@ -6,6 +6,7 @@ from rest_framework.serializers import (
 class OfficerAllegationXlsxSerializer(Serializer):
     # from allegation
     crid = CharField(source='allegation.crid')
+    officer_name = CharField(allow_blank=True, source='officer.full_name')
     address = CharField(allow_blank=True, source='allegation.address')
     old_complaint_address = CharField(allow_null=True, source='allegation.old_complaint_address')
     incident_date = DateTimeField(format='%Y-%m-%d', allow_null=True, source='allegation.incident_date')

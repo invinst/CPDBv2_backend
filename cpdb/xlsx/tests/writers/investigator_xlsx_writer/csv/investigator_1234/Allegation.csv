@@ -1,3 +1,5 @@
 crid,officer_name,address,old_complaint_address,incident_date,is_officer_complaint,beat,coaccused_count,category,subcategory,start_date,end_date,recc_finding,recc_outcome,final_finding,final_outcome,disciplined
 1009678,Jerome Finnigan,"37XX W 63RD ST, CHICAGO IL",,2007-09-28,TRUE,0823,19,Illegal Search,Improper Search Of Person,2007-09-28,,Unknown,Unknown,Unknown,Unknown,
+1009678,Jeffery Aaron,"37XX W 63RD ST, CHICAGO IL",,2007-09-28,TRUE,0823,19,Illegal Search,Improper Search Of Person,1967-10-21,1980-08-01,Unknown,Unknown,Sustained,30 Day Suspension,TRUE
+1009678,Karina Aaron,"37XX W 63RD ST, CHICAGO IL",,2007-09-28,TRUE,0823,19,Illegal Search,Improper Search Of Person,1970-08-13,1973-09-15,Unknown,Unknown,Sustained,Suspended Over 30 Days,TRUE
 1012803,Jerome Finnigan,"31XX N NEWCASTLE AVE, CHICAGO IL",,2005-11-01,FALSE,2511,9,False Arrest,Illegal Arrest / False Arrest,2007-12-21,2008-05-29,Unknown,Unknown,Unknown,Unknown,

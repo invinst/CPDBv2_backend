@@ -52,14 +52,6 @@ class LineAreaFactory(factory.django.DjangoModelFactory):
     ))
 
 
-class InvestigatorFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Investigator
-
-    first_name = factory.LazyFunction(lambda: fake.name())
-    last_name = factory.LazyFunction(lambda: fake.name())
-
-
 class PoliceUnitFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PoliceUnit
@@ -83,6 +75,15 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
     complaint_percentile = factory.LazyFunction(lambda: fake.pyfloat(left_digits=2, right_digits=1, positive=True))
     last_unit = factory.SubFactory(PoliceUnitFactory)
+
+
+class InvestigatorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Investigator
+
+    first_name = factory.LazyFunction(lambda: fake.name())
+    last_name = factory.LazyFunction(lambda: fake.name())
+    officer = factory.SubFactory(OfficerFactory)
 
 
 class AllegationFactory(factory.django.DjangoModelFactory):
