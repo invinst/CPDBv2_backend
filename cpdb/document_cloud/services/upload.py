@@ -9,10 +9,10 @@ from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
 
-logger = logging.getLogger('django.command')
+_logger = logging.getLogger(__name__)
 
 
-def upload_copa_documents():
+def upload_copa_documents(logger=_logger):
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
     attachments = AttachmentFile.objects.filter(source_type=AttachmentSourceType.COPA, file_type=MEDIA_TYPE_DOCUMENT)

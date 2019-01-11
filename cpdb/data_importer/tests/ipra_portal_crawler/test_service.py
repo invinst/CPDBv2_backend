@@ -9,11 +9,11 @@ from robber import expect
 from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
-from data_importer.ipra_portal_crawler.service import AutoOpenIPRA
+from data_importer.ipra_portal_crawler import crawl_and_update_attachments, parse_incidents, crawl_open_ipra
 from data.constants import AttachmentSourceType
 
 
-class AutoOpenIPRATest(TestCase):
+class CrawlerUtilsTestCase(TestCase):
     def test_parse_incidents(self):
         incidents = [{
             'attachments': [
@@ -31,7 +31,7 @@ class AutoOpenIPRATest(TestCase):
             'type': 'Allegation Name',
             'subjects': ['Subject1', 'Unknown'],
         }]
-        expect(AutoOpenIPRA.parse_incidents(incidents)).to.be.eq([{
+        expect(parse_incidents(incidents)).to.be.eq([{
             'allegation': {
                 'crid': '1',
                 'incident_date': datetime(2013, 4, 30, 21, 30),
@@ -53,15 +53,15 @@ class AutoOpenIPRATest(TestCase):
             'police_shooting': True
         }])
 
-    @patch('data_importer.ipra_portal_crawler.service.OpenIpraInvestigationCrawler')
-    @patch('data_importer.ipra_portal_crawler.service.ComplaintCrawler')
+    @patch('data_importer.ipra_portal_crawler.OpenIpraInvestigationCrawler')
+    @patch('data_importer.ipra_portal_crawler.ComplaintCrawler')
     def test_crawl_open_ipra(self, complaint_crawler, link_crawler):
         link_crawler.return_value.crawl.return_value = ['link 1']
         complaint_crawler.return_value.crawl.return_value = 'something'
-        expect(AutoOpenIPRA.crawl_open_ipra()).to.be.eq(['something'])
+        expect(crawl_open_ipra()).to.be.eq(['something'])
 
-    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
-    def test_import_new(self, open_ipra):
+    @patch('data_importer.ipra_portal_crawler.crawl_open_ipra')
+    def test_crawl_and_update_attachments(self, open_ipra):
         open_ipra.return_value = [{
             'attachments': [
                 {
@@ -109,7 +109,7 @@ class AutoOpenIPRATest(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        new_attachments = AutoOpenIPRA.import_new()
+        new_attachments = crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
@@ -127,7 +127,7 @@ class AutoOpenIPRATest(TestCase):
         expect(new_attachments[0].title).to.eq('Audio Clip')
         expect(new_attachments[0].url).to.eq('http://chicagocopa.org/audio_link.mp3')
 
-    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
+    @patch('data_importer.ipra_portal_crawler.crawl_open_ipra')
     def test_update(self, open_ipra):
         open_ipra.return_value = [{
             'attachments': [
@@ -152,12 +152,12 @@ class AutoOpenIPRATest(TestCase):
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
 
-        new_attachments = AutoOpenIPRA.import_new()
+        new_attachments = crawl_and_update_attachments()
 
         expect(new_attachments).to.be.empty()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('pdf file')
 
-    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
+    @patch('data_importer.ipra_portal_crawler.crawl_open_ipra')
     def test_update_COPA_DOCUMENTCLOUD_file(self, open_ipra):
         open_ipra.return_value = [{
             'attachments': [
@@ -184,7 +184,7 @@ class AutoOpenIPRATest(TestCase):
             external_last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
         )
 
-        new_attachments = AutoOpenIPRA.import_new()
+        new_attachments = crawl_and_update_attachments()
         expect(new_attachments).to.be.empty()
 
         updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
