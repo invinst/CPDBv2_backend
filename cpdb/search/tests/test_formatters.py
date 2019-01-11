@@ -7,9 +7,14 @@ from elasticsearch_dsl.utils import AttrDict, AttrList
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
-    NameV2Formatter, ReportFormatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter
+    NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter
 )
+
+
+class FormatterTestCase(SimpleTestCase):
+    def test_format(self):
+        expect(Formatter().format).to.throw(NotImplementedError)
 
 
 class SimpleFormatterTestCase(SimpleTestCase):
@@ -335,4 +340,43 @@ class ZipCodeFormatterTestCase(SimpleTestCase):
         expect(ZipCodeFormatter().doc_format(doc)).to.eq({
             'name': '666666',
             'url': 'cpdp.com'
+        })
+
+
+class SearchTermFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': '/url-mediator/session-builder/?community=123456',
+        }))
+
+        expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
+            'id': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': 'http://cpdb.lvh.me/url-mediator/session-builder/?community=123456'
+        })
+
+    def test_doc_format_empty_link(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+        }))
+
+        expect(SearchTermFormatter().doc_format(doc)).to.be.eq({
+            'id': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': ''
         })
