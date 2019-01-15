@@ -103,3 +103,5 @@ LOGGING = {
         }
     },
 }
+
+S3_BUCKET_OFFICER_CONTENT = 'officer-content'

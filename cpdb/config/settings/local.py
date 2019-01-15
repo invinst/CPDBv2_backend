@@ -44,3 +44,5 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] += ('rest_framework.renderers.Browsab
 INTERNAL_IPS = ['10.0.2.2']
 
 TWITTERBOT_ENV = 'dev'
+
+S3_BUCKET_OFFICER_CONTENT = 'officer-content-staging'
