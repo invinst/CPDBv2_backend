@@ -4,9 +4,7 @@ from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
 
 
 class UseOfForceXlsxWriter(OfficerXlsxWriter):
-    @property
-    def file_name(self):
-        return f'use_of_force.xlsx'
+    file_name = 'use_of_force.xlsx'
 
     def export_xlsx(self):
         ws = self.wb.create_sheet('Use Of Force', 0)

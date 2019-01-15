@@ -4,6 +4,8 @@ from openpyxl import Workbook
 
 
 class OfficerXlsxWriter(object):
+    file_name = 'officer.xlsx'
+
     def __init__(self, officer, out_dir):
         self.officer = officer
         self.out_dir = out_dir
@@ -19,10 +21,6 @@ class OfficerXlsxWriter(object):
         for row_idx, row in enumerate(rows):
             for column_idx, value in enumerate(row.values()):
                 ws.cell(row=row_idx + 2, column=column_idx + 1, value=value)
-
-    @property
-    def file_name(self):
-        raise NotImplementedError
 
     def export_xlsx(self):
         raise NotImplementedError

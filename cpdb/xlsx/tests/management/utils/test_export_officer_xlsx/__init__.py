@@ -1,9 +1,8 @@
 from datetime import datetime, date
 from decimal import Decimal
 
-from django.core.management import call_command
-
 import pytz
+from robber import expect
 
 from data.factories import (
     OfficerFactory,
@@ -19,9 +18,15 @@ from data.factories import (
 )
 from trr.factories import TRRFactory
 from xlsx.tests.writer_base_test_case import WriterBaseTestCase
+from xlsx.utils import export_officer_xlsx
 
 
-class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
+class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
+    def test_return_file_names(self):
+        OfficerFactory(id=1)
+        file_names = export_officer_xlsx('1', self.test_output_dir)
+        expect(file_names).to.eq(['accused.xlsx', 'use_of_force.xlsx', 'investigator.xlsx'])
+
     def test_export_officer_xlsx_accused(self):
         allegation = AllegationFactory(
             crid='1009678',
@@ -219,7 +224,7 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
             allegation=allegation,
         )
 
-        call_command('export_officer_xlsx', '8562', self.test_output_dir)
+        export_officer_xlsx('8562', self.test_output_dir)
 
         self.covert_xlsx_to_csv('accused.xlsx')
         self.assert_csv_files_equal(
@@ -449,7 +454,7 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
             allegation=allegation,
         )
 
-        call_command('export_officer_xlsx', '1234', self.test_output_dir)
+        export_officer_xlsx('1234', self.test_output_dir)
 
         self.covert_xlsx_to_csv('investigator.xlsx')
 
@@ -500,7 +505,7 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
             subject_race='HISPANIC',
         )
 
-        call_command('export_officer_xlsx', '1', self.test_output_dir)
+        export_officer_xlsx('1', self.test_output_dir)
 
         self.covert_xlsx_to_csv('use_of_force.xlsx')
         self.assert_csv_files_equal('use_of_force_1', ['Use Of Force'])

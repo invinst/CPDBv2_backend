@@ -8,9 +8,7 @@ from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
 
 
 class AccusedXlsxWriter(OfficerXlsxWriter):
-    @property
-    def file_name(self):
-        return f'accused.xlsx'
+    file_name = 'accused.xlsx'
 
     def write_allegation_sheet(self):
         ws = self.wb.create_sheet('Allegation', 0)
