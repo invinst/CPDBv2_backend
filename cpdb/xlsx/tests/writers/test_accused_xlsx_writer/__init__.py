@@ -22,14 +22,14 @@ class AccusedXlsxWriterTestCase(WriterBaseTestCase):
     def test_file_name(self):
         officer = OfficerFactory(id=1)
         writer = AccusedXlsxWriter(officer, self.test_output_dir)
-        expect(writer.file_name).to.eq('accused_1.xlsx')
+        expect(writer.file_name).to.eq('accused.xlsx')
 
     def test_export_xlsx_empty(self):
         officer = OfficerFactory(id=1)
         writer = AccusedXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        self.covert_xlsx_to_csv('accused_1.xlsx')
+        self.covert_xlsx_to_csv('accused.xlsx')
         self.assert_csv_files_equal('empty', ['Allegation', 'Coaccused Officer', 'Beat', 'Police Witness', 'Victim'])
 
     def test_export_xlsx(self):
@@ -232,7 +232,7 @@ class AccusedXlsxWriterTestCase(WriterBaseTestCase):
         writer = AccusedXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        self.covert_xlsx_to_csv('accused_8562.xlsx')
+        self.covert_xlsx_to_csv('accused.xlsx')
         self.assert_csv_files_equal(
             'accused_8562',
             ['Allegation', 'Coaccused Officer', 'Beat', 'Police Witness', 'Victim']

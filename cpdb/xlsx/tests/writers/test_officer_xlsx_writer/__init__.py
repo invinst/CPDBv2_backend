@@ -20,7 +20,7 @@ class AllegationTestSerializer(Serializer):
 class OfficerTestWriter(OfficerXlsxWriter):
     @property
     def file_name(self):
-        return f'officer_{self.officer.id}.xlsx'
+        return f'officer.xlsx'
 
     def write_officer_sheet(self):
         ws = self.wb.create_sheet('Officer', 0)
@@ -60,7 +60,7 @@ class OfficerXlsxWriterTestCase(WriterBaseTestCase):
         expect(sheetnames[0]).to.eq('Officer')
         expect(sheetnames[1]).to.eq('Allegation')
 
-        self.covert_xlsx_to_csv('officer_8562.xlsx')
+        self.covert_xlsx_to_csv('officer.xlsx')
         self.assert_csv_files_equal('', ['Officer', 'Allegation'])
 
     def test_raise_NotImplementedError(self):

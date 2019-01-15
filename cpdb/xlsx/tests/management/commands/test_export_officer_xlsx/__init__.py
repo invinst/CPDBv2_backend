@@ -221,7 +221,7 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
 
         call_command('export_officer_xlsx', '8562', self.test_output_dir)
 
-        self.covert_xlsx_to_csv('accused_8562.xlsx')
+        self.covert_xlsx_to_csv('accused.xlsx')
         self.assert_csv_files_equal(
             'accused_8562',
             ['Allegation', 'Coaccused Officer', 'Beat', 'Police Witness', 'Victim']
@@ -451,7 +451,7 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
 
         call_command('export_officer_xlsx', '1234', self.test_output_dir)
 
-        self.covert_xlsx_to_csv('investigator_1234.xlsx')
+        self.covert_xlsx_to_csv('investigator.xlsx')
 
         self.assert_csv_files_equal(
             expectation_dir='investigator_1234',
@@ -502,5 +502,5 @@ class ExportOfficerXlsxCommandTestCase(WriterBaseTestCase):
 
         call_command('export_officer_xlsx', '1', self.test_output_dir)
 
-        self.covert_xlsx_to_csv('use_of_force_1.xlsx')
+        self.covert_xlsx_to_csv('use_of_force.xlsx')
         self.assert_csv_files_equal('use_of_force_1', ['Use Of Force'])

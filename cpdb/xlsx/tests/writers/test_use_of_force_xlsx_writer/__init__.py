@@ -13,14 +13,14 @@ class UseOfForceXlsxWriterTestCase(WriterBaseTestCase):
     def test_file_name(self):
         officer = OfficerFactory(id=1)
         writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
-        expect(writer.file_name).to.eq('use_of_force_1.xlsx')
+        expect(writer.file_name).to.eq('use_of_force.xlsx')
 
     def test_export_xlsx_empty(self):
         officer = OfficerFactory(id=1)
         writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        self.covert_xlsx_to_csv('use_of_force_1.xlsx')
+        self.covert_xlsx_to_csv('use_of_force.xlsx')
         self.assert_csv_files_equal('empty', ['Use Of Force'])
 
     def test_export_xlsx(self):
@@ -67,5 +67,5 @@ class UseOfForceXlsxWriterTestCase(WriterBaseTestCase):
         writer = UseOfForceXlsxWriter(officer, self.test_output_dir)
         writer.export_xlsx()
 
-        self.covert_xlsx_to_csv('use_of_force_1.xlsx')
+        self.covert_xlsx_to_csv('use_of_force.xlsx')
         self.assert_csv_files_equal('use_of_force_1', ['Use Of Force'])
