@@ -3,12 +3,16 @@ from elasticsearch.helpers import bulk
 
 from es_index import es_client
 from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer
+from search_terms.models import SearchTermItem
+from trr.models import TRR, ActionResponse
 from data.utils.percentile import percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
+from search.doc_types import (
+    UnitDocType, AreaDocType, CrDocType, TRRDocType,
+    RankDocType, ZipCodeDocType, SearchTermItemDocType
+)
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer, OfficerMostComplaintsSerializer
 from search.utils import chicago_zip_codes
-from trr.models import TRR, ActionResponse
 
 
 class BaseIndexer(object):
@@ -248,4 +252,21 @@ class ZipCodeIndexer(BaseIndexer):
             'zip_code': datum.zip_code,
             'url': datum.url,
             'tags': ['zip code'],
+        }
+
+
+class SearchTermItemIndexer(BaseIndexer):
+    doc_type_klass = SearchTermItemDocType
+
+    def get_queryset(self):
+        return SearchTermItem.objects.prefetch_related('category')
+
+    def extract_datum(self, datum):
+        return {
+            'slug': datum.slug,
+            'name': datum.name,
+            'category_name': datum.category.name if datum.category else None,
+            'description': datum.description,
+            'call_to_action_type': datum.call_to_action_type,
+            'link': datum.link,
         }

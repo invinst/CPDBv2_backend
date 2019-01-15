@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer
+from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer, String
 
 from .indices import autocompletes_alias
 
@@ -76,3 +76,18 @@ class ZipCodeDocType(DocType):
 
     class Meta:
         doc_type = 'zip_code'
+
+
+@autocompletes_alias.doc_type
+class SearchTermItemDocType(DocType):
+    slug = String(index='not_analyzed')
+    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    category_name = Text(
+        fielddata=True,
+        analyzer=autocomplete,
+        search_analyzer=autocomplete_search,
+        fields={'keyword': Keyword()}
+    )
+
+    class Meta:
+        doc_type = 'search_term_item'

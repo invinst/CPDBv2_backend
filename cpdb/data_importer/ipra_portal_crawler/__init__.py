@@ -2,9 +2,13 @@ import logging
 
 from tqdm import tqdm
 
-from data.constants import AttachmentSourceType
+from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO
 from data.models import AttachmentFile, Allegation, AllegationCategory
-from data_importer.ipra_portal_crawler.crawler import OpenIpraInvestigationCrawler, ComplaintCrawler
+from data_importer.ipra_portal_crawler.crawler import (
+    OpenIpraInvestigationCrawler,
+    ComplaintCrawler,
+    VimeoSimpleAPI
+)
 from data_importer.ipra_portal_crawler.parser import (
     Just,
     DateTimeField,
@@ -99,6 +103,11 @@ def update_attachments(allegation, attachment_dicts):
                 defaults=attachment_dict
             )
 
+        attachment_dict['preview_image_url'] = None
+        if attachment_dict['file_type'] == MEDIA_TYPE_VIDEO and 'vimeo.com' in attachment_dict['original_url']:
+            vimeo_data = VimeoSimpleAPI(chicagocopa_external_id).crawl()
+            if vimeo_data is not None:
+                attachment_dict['preview_image_url'] = vimeo_data['thumbnail_small']
         if created:
             created_attachments.append(attachment)
         else:
@@ -109,7 +118,8 @@ def update_attachments(allegation, attachment_dicts):
                 )
             else:
                 updating_fields = [
-                    'file_type', 'title', 'url', 'original_url', 'external_last_updated', 'source_type'
+                    'file_type', 'title', 'url', 'original_url',
+                    'external_last_updated', 'source_type', 'preview_image_url'
                 ]
 
             updated = False
