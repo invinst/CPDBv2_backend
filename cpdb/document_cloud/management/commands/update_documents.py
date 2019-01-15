@@ -54,7 +54,14 @@ def get_full_text(cloud_document):
 
 
 def update_attachment(attachment, cloud_document):
-    changed = attachment.external_last_updated < cloud_document.updated_at or not attachment.source_type
+    changed = (
+        (
+            attachment.external_last_updated is not None and
+            attachment.external_last_updated < cloud_document.updated_at
+        )
+        or not attachment.source_type
+        or not attachment.external_last_updated
+    )
     if changed:
         attachment.text_content = get_full_text(cloud_document)
         for model_field, doc_field in mapping_fields.items():
