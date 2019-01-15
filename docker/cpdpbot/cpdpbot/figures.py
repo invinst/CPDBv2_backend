@@ -8,8 +8,8 @@ class ChartFigure:  # pragma: no cover
         self.width = width
         self.height = height
         self.surface = gizeh.Surface(width, height)
-        self.center = {'x': width / 2, 'y': height / 2}
         self.spine_length = 200
+        self.center = {'x': width / 2, 'y': height / 2 - self.spine_length / 4}
 
     def scale_percentile(self, val):
         return int((val - 0.0001) / 20) + 1 if val != 0 else 0
@@ -79,7 +79,7 @@ class ChartFigure:  # pragma: no cover
         soft_black_color = (0.137, 0.121, 0.125)
 
         gizeh.rectangle(
-            xy=(self.center['x'], self.center['y']),
+            xy=(self.width / 2, self.height / 2),
             lx=self.width,
             ly=self.height,
             fill=chart_color
