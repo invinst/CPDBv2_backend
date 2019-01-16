@@ -1,5 +1,9 @@
 from django.db.models import Case, When
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+
+import boto3
+import botocore
 from rest_framework import viewsets, status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
@@ -20,6 +24,8 @@ _ALLOWED_FILTERS = [
     'gender',
     'age',
 ]
+
+s3 = boto3.client('s3')
 
 
 class OfficerBaseViewSet(viewsets.ViewSet):
@@ -93,6 +99,33 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
             )
 
         return Response(OfficerCardSerializer(officers, many=True).data)
+
+    @detail_route(methods=['get'])
+    def request_download(self, _, pk):
+        officer_id = self.get_officer_id(pk)
+        queryset = Officer.objects.all()
+        officer = get_object_or_404(queryset, id=officer_id)
+
+        zip_key = f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{officer.id}.zip'
+
+        try:
+            s3.get_object(
+                Bucket=settings.S3_BUCKET_OFFICER_CONTENT,
+                Key=f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{officer.id}.zip'
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                return Response(status=status.HTTP_202_ACCEPTED)
+            raise e
+
+        url = s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': settings.S3_BUCKET_OFFICER_CONTENT,
+                'Key': zip_key,
+            }
+        )
+        return Response(data=url)
 
 
 class OfficersMobileViewSet(OfficerBaseViewSet):
