@@ -26,8 +26,7 @@ class OfficerXlsxWriter(object):
         raise NotImplementedError
 
     def save(self):
-        if not os.path.exists(self.out_dir):
-            os.mkdir(self.out_dir)
+        os.makedirs(self.out_dir, exist_ok=True)
 
         self.wb.remove(self.wb['Sheet'])
         self.wb.save(f'{self.out_dir}/{self.file_name}')

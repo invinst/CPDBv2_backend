@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 import shutil
 
 import boto3
@@ -13,18 +14,29 @@ from xlsx.utils import export_officer_xlsx
 s3 = boto3.client('s3')
 
 
+def upload_xlsx_files(officer):
+    tmp_dir = f'tmp/{officer.id}'
+    file_names = export_officer_xlsx(officer, tmp_dir)
+
+    for file_name in file_names:
+        s3.upload_file(
+            f'{tmp_dir}/{file_name}',
+            settings.S3_BUCKET_OFFICER_CONTENT,
+            f'{settings.S3_BUCKET_XLSX_DIRECTORY}/{officer.id}/{file_name}'
+        )
+
+    shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('officer_ids', nargs='*')
 
     def handle(self, officer_ids, *args, **kwargs):
-        _officer_ids = officer_ids or [officer.id for officer in Officer.objects.all().order_by('id')]
+        if officer_ids:
+            officers = Officer.objects.filter(id__in=officer_ids)
+        else:
+            officers = Officer.objects.all()
 
-        for officer_id in tqdm(_officer_ids, desc='Uploading officer xlsx'):
-            export_officer_xlsx(officer_id, 'tmp')
-            file_names = ['accused.xlsx', 'use_of_force.xlsx', 'investigator.xlsx']
-
-            for file_name in file_names:
-                s3.upload_file(f'tmp/{file_name}', settings.S3_BUCKET_OFFICER_CONTENT, f'xlsx/{officer_id}/{file_name}')
-
-            shutil.rmtree('tmp', ignore_errors=True)
+        with Pool(20) as p:
+            list(tqdm(p.imap(upload_xlsx_files, officers), desc='Uploading officer xlsx', total=officers.count()))
