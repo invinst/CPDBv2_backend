@@ -1,6 +1,7 @@
 from datetime import datetime
 from itertools import groupby
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import Q, Count
@@ -296,3 +297,19 @@ class Officer(TimeStampsModel, TaggableModel):
     @classmethod
     def get_officers_most_complaints(cls, rank):
         return cls.objects.filter(rank=rank).exclude(allegation_count=0).order_by('-allegation_count')[:3]
+
+    @property
+    def allegation_attachments(self):
+        AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
+        return AttachmentFile.objects.filter(allegation__officerallegation__officer=self).distinct('id')
+
+    @property
+    def investigator_attachments(self):
+        AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
+        return AttachmentFile.objects.filter(
+            allegation__investigatorallegation__investigator__officer=self
+        ).distinct('id')
+
+    @property
+    def zip_filename(self):
+        return f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{self.id}.zip'

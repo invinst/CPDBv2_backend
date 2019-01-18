@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import Case, When
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -26,6 +28,7 @@ _ALLOWED_FILTERS = [
 ]
 
 s3 = boto3.client('s3')
+lambda_client = boto3.client('lambda')
 
 
 class OfficerBaseViewSet(viewsets.ViewSet):
@@ -106,16 +109,17 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
 
-        zip_key = f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{officer.id}.zip'
+        zip_key = officer.zip_filename
 
         try:
             s3.get_object(
                 Bucket=settings.S3_BUCKET_OFFICER_CONTENT,
-                Key=f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{officer.id}.zip'
+                Key=zip_key
             )
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'NoSuchKey':
-                return Response(status=status.HTTP_202_ACCEPTED)
+                return Response()
+                # return Response(status=status.HTTP_202_ACCEPTED)
             raise e
 
         url = s3.generate_presigned_url(
@@ -126,6 +130,44 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
             }
         )
         return Response(data=url)
+
+    @detail_route(methods=['get'])
+    def create_zip_file(self, _, pk):
+        officer_id = self.get_officer_id(pk)
+        queryset = Officer.objects.all()
+        officer = get_object_or_404(queryset, id=officer_id)
+
+        zip_key = officer.zip_filename
+
+        try:
+            s3.get_object(
+                Bucket=settings.S3_BUCKET_OFFICER_CONTENT,
+                Key=zip_key
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                allegation_attachments_dict = {
+                    attachment.external_id: f'{attachment.title}.pdf'
+                    for attachment in officer.allegation_attachments
+                }
+                investigator_attachments_dict = {
+                    attachment.external_id: f'{attachment.title}.pdf'
+                    for attachment in officer.investigator_attachments
+                }
+
+                lambda_client.invoke_async(
+                    FunctionName='createOfficerZipFile',
+                    InvokeArgs=json.dumps(
+                        {
+                            'officer_id': officer.id,
+                            'key': zip_key,
+                            'allegation_attachments_dict': allegation_attachments_dict,
+                            'investigator_attachments_dict': investigator_attachments_dict
+                        }
+                    )
+                )
+        return Response()
+        # return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class OfficersMobileViewSet(OfficerBaseViewSet):
