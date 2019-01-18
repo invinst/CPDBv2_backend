@@ -1,6 +1,9 @@
+import json
 from datetime import datetime
 from itertools import groupby
 
+import boto3
+import botocore
 from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -21,6 +24,9 @@ from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
 from .common import TimeStampsModel
+
+s3 = boto3.client('s3')
+lambda_client = boto3.client('lambda')
 
 
 class Officer(TimeStampsModel, TaggableModel):
@@ -310,6 +316,56 @@ class Officer(TimeStampsModel, TaggableModel):
             allegation__investigatorallegation__investigator__officer=self
         ).distinct('id')
 
-    @property
-    def zip_filename(self):
-        return f'{settings.S3_BUCKET_ZIP_DIRECTORY}/{self.id}.zip'
+    def get_zip_filename(self, with_docs):
+        return f'{settings.S3_BUCKET_ZIP_DIRECTORY}{"_with_docs" if with_docs else "" }/{self.id}.zip'
+
+    def check_zip_file_exist(self, with_docs):
+        try:
+            s3.get_object(
+                Bucket=settings.S3_BUCKET_OFFICER_CONTENT,
+                Key=self.get_zip_filename(with_docs)
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                return False
+            raise e
+        else:
+            return True
+
+    def invoke_create_zip(self, with_docs):
+        if not self.check_zip_file_exist(with_docs):
+            zip_key = self.get_zip_filename(with_docs=with_docs)
+            if with_docs:
+                allegation_attachments_dict = {
+                    attachment.external_id: f'{attachment.title}.pdf'
+                    for attachment in self.allegation_attachments
+                }
+                investigator_attachments_dict = {
+                    attachment.external_id: f'{attachment.title}.pdf'
+                    for attachment in self.investigator_attachments
+                }
+            else:
+                allegation_attachments_dict = {}
+                investigator_attachments_dict = {}
+
+            lambda_client.invoke_async(
+                FunctionName='createOfficerZipFile',
+                InvokeArgs=json.dumps(
+                    {
+                        'officer_id': self.id,
+                        'key': zip_key,
+                        'allegation_attachments_dict': allegation_attachments_dict,
+                        'investigator_attachments_dict': investigator_attachments_dict
+                    }
+                )
+            )
+
+    def generate_presigned_zip_url(self, with_docs):
+        zip_key = self.get_zip_filename(with_docs=with_docs)
+        return s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': settings.S3_BUCKET_OFFICER_CONTENT,
+                'Key': zip_key,
+            }
+        )
