@@ -9,6 +9,7 @@ CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
     'staging.cpdp.co',
     'staging.cpdb.co',
+    'graph.cpdp.co'
 )
 
 V1_URL = 'https://staging.cpdb.co'
