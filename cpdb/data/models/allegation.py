@@ -11,7 +11,7 @@ from .common import TimeStampsModel
 
 
 class Allegation(TimeStampsModel):
-    crid = models.CharField(max_length=30, blank=True)
+    crid = models.CharField(max_length=30, primary_key=True)
     summary = models.TextField(blank=True)
     location = models.CharField(max_length=64, blank=True)
     add1 = models.CharField(max_length=16, blank=True)
@@ -35,11 +35,6 @@ class Allegation(TimeStampsModel):
     coaccused_count = models.IntegerField(default=0, null=True)
 
     objects = BulkUpdateManager()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['crid']),
-        ]
 
     @property
     def category_names(self):

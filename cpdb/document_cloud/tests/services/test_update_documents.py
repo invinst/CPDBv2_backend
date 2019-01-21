@@ -184,7 +184,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('title')
-        expect(AttachmentFile.objects.first().allegation).to.eq(allegation)
+        expect(AttachmentFile.objects.first().allegation.crid).to.eq(allegation.crid)
 
     def test_save_attachments_save_updated_attachments(self):
         attachment = AttachmentFileFactory(title='old title', source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD)
