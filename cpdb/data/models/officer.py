@@ -317,7 +317,9 @@ class Officer(TimeStampsModel, TaggableModel):
         ).distinct('id')
 
     def get_zip_filename(self, with_docs):
-        return f'{settings.S3_BUCKET_ZIP_DIRECTORY}{"_with_docs" if with_docs else "" }/{self.id}.zip'
+        if with_docs:
+            return f'{settings.S3_BUCKET_ZIP_DIRECTORY}_with_docs/Officer {self.id} with docs.zip'
+        return f'{settings.S3_BUCKET_ZIP_DIRECTORY}/Officer {self.id}.zip'
 
     def check_zip_file_exist(self, with_docs):
         try:
@@ -354,6 +356,9 @@ class Officer(TimeStampsModel, TaggableModel):
                     {
                         'officer_id': self.id,
                         'key': zip_key,
+                        'bucket': settings.S3_BUCKET_OFFICER_CONTENT,
+                        'xlsx_dir': settings.S3_BUCKET_XLSX_DIRECTORY,
+                        'pdf_dir': settings.S3_BUCKET_PDF_DIRECTORY,
                         'allegation_attachments_dict': allegation_attachments_dict,
                         'investigator_attachments_dict': investigator_attachments_dict
                     }

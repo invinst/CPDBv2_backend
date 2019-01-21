@@ -4,6 +4,7 @@ import boto3
 from tqdm import tqdm
 
 from django.core.management import BaseCommand
+from django.conf import settings
 
 from data.models import AttachmentFile
 
@@ -25,5 +26,9 @@ class Command(BaseCommand):
         for attachment in tqdm(attachments, desc='Send upload pdf requests'):
             lambda_client.invoke_async(
                 FunctionName='uploadPdf',
-                InvokeArgs=json.dumps({'url': attachment.url, 'key': attachment.external_id})
+                InvokeArgs=json.dumps({
+                    'url': attachment.url,
+                    'bucket': settings.S3_BUCKET_OFFICER_CONTENT,
+                    'key': f'{settings.S3_BUCKET_XLSX_DIRECTORY}{attachment.external_id}'
+                })
             )

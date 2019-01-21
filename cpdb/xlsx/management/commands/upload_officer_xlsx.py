@@ -5,10 +5,9 @@ import boto3
 from tqdm import tqdm
 
 from django.core.management import BaseCommand
-
-from data.models import Officer
 from django.conf import settings
 
+from data.models import Officer
 from xlsx.utils import export_officer_xlsx
 
 s3 = boto3.client('s3')

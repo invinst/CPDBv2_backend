@@ -42,3 +42,4 @@ markdown2==2.3.7
 django-email-bandit==1.5
 openpyxl==2.5.12
 boto3==1.9.79
+awscli==1.16.88

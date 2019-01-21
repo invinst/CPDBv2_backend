@@ -1,0 +1,2 @@
+zipstream==1.1.4
+smart_open==1.7.1
