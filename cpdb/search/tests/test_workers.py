@@ -4,12 +4,12 @@ from django.utils import timezone
 from robber import expect
 
 from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHistoryFactory, PoliceUnitFactory, \
-    AllegationFactory
+    AllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CRWorker, AreaWorker, TRRWorker, RankWorker,
     DateCRWorker, DateTRRWorker, ZipCodeWorker,
-    DateOfficerWorker, SearchTermItemWorker
+    DateOfficerWorker, SearchTermItemWorker, InvestigatorCRWorker
 )
 from search.doc_types import (
     ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType,
@@ -338,3 +338,25 @@ class SearchTermItemWorkerTestCase(IndexMixin, TestCase):
         expect(response_2.hits.total).to.eq(1)
         expect({hit.name for hit in response_1.hits}).to.be.eq({'Communities', 'Wards'})
         expect({hit.name for hit in response_2.hits}).to.be.eq({'Wards'})
+
+
+class InvestigatorCRWorkerTestCase(IndexMixin, TestCase):
+    def test_search(self):
+        allegation_1 = AllegationFactory(crid='123456')
+        allegation_2 = AllegationFactory(crid='654321')
+        officer = OfficerFactory(id=123, first_name='Edward', last_name='May')
+        investigator_1 = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
+        investigator_2 = InvestigatorFactory(officer=officer)
+        InvestigatorAllegationFactory(investigator=investigator_1, allegation=allegation_1)
+        InvestigatorAllegationFactory(investigator=investigator_2, allegation=allegation_2)
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        response_1 = InvestigatorCRWorker().search(term='Jerome')
+        response_2 = InvestigatorCRWorker().search(term='May')
+
+        expect(response_1.hits.total).to.eq(1)
+        expect(response_1.hits[0].investigator_names).to.eq(['Jerome Finnigan'])
+        expect(response_2.hits.total).to.eq(1)
+        expect(response_2.hits[0].investigator_names).to.eq(['Edward May'])

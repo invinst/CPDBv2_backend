@@ -1,3 +1,4 @@
+from datetime import datetime
 from mock import patch
 
 from django.urls import reverse
@@ -6,9 +7,10 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+import pytz
 
 from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory, \
-    OfficerAllegationFactory
+    OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
@@ -306,6 +308,45 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results[0]['description']).to.eq('Community description')
         expect(results[0]['call_to_action_type']).to.eq('view_all')
         expect(results[0]['link']).to.eq('http://cpdb.lvh.me/url-mediator/session-builder/?community=123456')
+
+    def test_search_investigator_cr_results(self):
+        allegation_1 = AllegationFactory(crid='123456', incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc))
+        allegation_2 = AllegationFactory(crid='654321', incident_date=datetime(2005, 2, 3, tzinfo=pytz.utc))
+        officer = OfficerFactory(id=123, first_name='Edward', last_name='May')
+        investigator_1 = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
+        investigator_2 = InvestigatorFactory(officer=officer)
+        InvestigatorAllegationFactory(investigator=investigator_1, allegation=allegation_1)
+        InvestigatorAllegationFactory(investigator=investigator_2, allegation=allegation_1)
+        InvestigatorAllegationFactory(investigator=investigator_1, allegation=allegation_2)
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'Jerome',
+        })
+
+        results = response.data['INVESTIGATOR > CR']
+        expect(results).to.have.length(2)
+
+        expected_results = {
+            '123456': {
+                'id': '123456',
+                'crid': '123456',
+                'to': '/complaint/123456/',
+                'incident_date': '2002-02-03',
+            },
+            '654321': {
+                'id': '654321',
+                'crid': '654321',
+                'to': '/complaint/654321/',
+                'incident_date': '2005-02-03',
+            }
+        }
+
+        for cr_data in results:
+            expect(cr_data).to.eq(expected_results[cr_data['id']])
 
 
 class SearchV2ViewSetTestCase(APITestCase):

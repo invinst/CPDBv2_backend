@@ -1,3 +1,7 @@
+from django.db import models
+from django.db.models.functions import Concat
+from django.contrib.postgres.aggregates import ArrayAgg
+
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
@@ -181,7 +185,20 @@ class CrIndexer(BaseIndexer):
             return None
 
     def get_queryset(self):
-        return Allegation.objects.all()
+        return Allegation.objects.all().annotate(
+            investigator_names=ArrayAgg(
+                models.Case(
+                    models.When(investigatorallegation__investigator__officer_id__isnull=False, then=Concat(
+                        'investigatorallegation__investigator__officer__first_name', models.Value(' '),
+                        'investigatorallegation__investigator__officer__last_name'
+                    )),
+                    default=Concat(
+                        'investigatorallegation__investigator__first_name', models.Value(' '),
+                        'investigatorallegation__investigator__last_name'
+                    )
+                )
+            )
+        )
 
     def extract_datum(self, datum):
         return {
@@ -189,7 +206,8 @@ class CrIndexer(BaseIndexer):
             'category': self.get_most_common_category(datum.crid),
             'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
             'summary': datum.summary,
-            'to': f'/complaint/{datum.crid}/'
+            'to': f'/complaint/{datum.crid}/',
+            'investigator_names': datum.investigator_names
         }
 
 
