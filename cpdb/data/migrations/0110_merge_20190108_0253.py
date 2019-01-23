@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0098_attachmentfile_text_content'),
+        ('data', '0099_attachmentrequest_noti_email_sent'),
         ('data', '0109_populate_areas_lineareas'),
     ]
 

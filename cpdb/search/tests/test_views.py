@@ -209,13 +209,11 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
 
     def test_retrieve_single_cr_with_highlight(self):
         AllegationFactory(
-            id=1,
             crid=123,
             incident_date='2007-12-27',
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
-            id=2,
             crid=456,
             incident_date='2000-12-27',
             summary='the officer pointed a knife at the victim'
@@ -232,7 +230,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
 
         expect(response.data['count']).to.eq(1)
         expect(response.data['results'][0]).to.eq({
-            'id': '1',
+            'id': '123',
             'crid': '123',
             'to': '/complaint/123/',
             'incident_date': '2007-12-27',
@@ -243,13 +241,11 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
 
     def test_retrieve_list_cr_with_highlight(self):
         AllegationFactory(
-            id=1,
             crid=123,
             incident_date='2007-12-27',
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
-            id=2,
             crid=456,
             incident_date='2000-12-27',
             summary='the officer pointed a knife at the victim'
@@ -266,7 +262,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['CR']
         expect(results).to.have.length(1)
         expect(results[0]).to.eq({
-            'id': '1',
+            'id': '123',
             'crid': '123',
             'to': '/complaint/123/',
             'incident_date': '2007-12-27',
