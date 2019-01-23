@@ -23,8 +23,8 @@ from xlsx.utils import export_officer_xlsx
 
 class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
     def test_return_file_names(self):
-        OfficerFactory(id=1)
-        file_names = export_officer_xlsx('1', self.test_output_dir)
+        officer = OfficerFactory(id=1)
+        file_names = export_officer_xlsx(officer, self.test_output_dir)
         expect(file_names).to.eq(['accused.xlsx', 'use_of_force.xlsx', 'investigator.xlsx'])
 
     def test_export_officer_xlsx_accused(self):
@@ -224,7 +224,7 @@ class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
             allegation=allegation,
         )
 
-        export_officer_xlsx('8562', self.test_output_dir)
+        export_officer_xlsx(officer, self.test_output_dir)
 
         self.covert_xlsx_to_csv('accused.xlsx')
         self.assert_csv_files_equal(
@@ -454,7 +454,7 @@ class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
             allegation=allegation,
         )
 
-        export_officer_xlsx('1234', self.test_output_dir)
+        export_officer_xlsx(investigator.officer, self.test_output_dir)
 
         self.covert_xlsx_to_csv('investigator.xlsx')
 
@@ -505,7 +505,7 @@ class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
             subject_race='HISPANIC',
         )
 
-        export_officer_xlsx('1', self.test_output_dir)
+        export_officer_xlsx(officer, self.test_output_dir)
 
         self.covert_xlsx_to_csv('use_of_force.xlsx')
         self.assert_csv_files_equal('use_of_force_1', ['Use Of Force'])

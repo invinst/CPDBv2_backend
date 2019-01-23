@@ -66,5 +66,4 @@ class OfficerXlsxWriterTestCase(WriterBaseTestCase):
     def test_raise_NotImplementedError(self):
         officer = OfficerFactory()
         writer = OfficerXlsxWriter(officer=officer, out_dir=self.test_output_dir)
-        expect(lambda: writer.file_name).to.throw(NotImplementedError)
         expect(writer.export_xlsx).to.throw(NotImplementedError)
