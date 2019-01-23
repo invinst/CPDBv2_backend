@@ -24,7 +24,7 @@ class SocialGraphDataQuery(object):
                    ROW_NUMBER() OVER (PARTITION BY A.officer_id, B.officer_id ORDER BY incident_date) AS accussed_count
             FROM data_officerallegation AS A
             INNER JOIN data_officerallegation AS B ON A.allegation_id = B.allegation_id
-            LEFT JOIN data_allegation ON data_allegation.id = A.allegation_id
+            LEFT JOIN data_allegation ON data_allegation.crid = A.allegation_id
             WHERE A.officer_id < B.officer_id
             AND B.officer_id IN ({officer_ids_string})
             AND A.officer_id IN ({officer_ids_string})
