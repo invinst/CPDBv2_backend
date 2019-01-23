@@ -109,7 +109,7 @@ class AutoOpenIPRATest(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
@@ -122,6 +122,10 @@ class AutoOpenIPRATest(TestCase):
         expect(crawler_log.num_documents).to.eq(2)
         expect(crawler_log.num_new_documents).to.eq(1)
         expect(crawler_log.num_updated_documents).to.eq(1)
+
+        expect(new_attachments).to.have.length(1)
+        expect(new_attachments[0].title).to.eq('Audio Clip')
+        expect(new_attachments[0].url).to.eq('http://chicagocopa.org/audio_link.mp3')
 
     @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
     def test_update(self, open_ipra):
@@ -148,9 +152,83 @@ class AutoOpenIPRATest(TestCase):
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
 
+        expect(new_attachments).to.be.empty()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('pdf file')
+
+    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
+    @patch('data_importer.ipra_portal_crawler.crawler.VimeoSimpleAPI.crawl')
+    def test_update_video_thumbnail(self, vimeo_api, open_ipra):
+        open_ipra.return_value = [{
+            'attachments': [
+                {
+                    'type': 'video',
+                    'link': 'https://player.vimeo.com/video/288225991',
+                    'title': 'video file',
+                    'last_updated': '2018-10-30T15:00:03+00:00',
+                }
+            ],
+            'date': '04-30-2013',
+            'log_number': '123',
+            'time': '04-30-2013 9:30 pm',
+            'type': 'Allegation Name',
+            'subjects': ['Subject', '', 'Unknown'],
+        }]
+        vimeo_api.return_value = {
+            'id': 288225991,
+            'title': 'Log# 1082195 3rd Party Clip',
+            'description': 'Log# 1082195 3rd Party Clip',
+            'url': 'https://vimeo.com/307768537',
+            'upload_date': '2018-12-21 15:47:48',
+            'thumbnail_small': 'https://i.vimeocdn.com/video/747800241_100x75.webp',
+            'thumbnail_medium': 'https://i.vimeocdn.com/video/747800241_200x150.webp',
+            'thumbnail_large': 'https://i.vimeocdn.com/video/747800241_640.webp',
+        }
+        AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
+        attachment_file = AttachmentFileFactory(
+            allegation__crid='123',
+            title='old_title',
+            source_type=AttachmentSourceType.COPA,
+            external_id='288225991',
+            original_url='https://player.vimeo.com/video/288225991',
+            preview_image_url=None
+        )
+
+        AutoOpenIPRA.import_new()
+        expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('video file')
+        expect(AttachmentFile.objects.get(pk=attachment_file.pk).preview_image_url). \
+            to.eq('https://i.vimeocdn.com/video/747800241_100x75.webp')
+
+    @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
+    def test_not_update_video_thumbnail_when_source_is_not_vimeo(self, open_ipra):
+        open_ipra.return_value = [{
+            'attachments': [
+                {
+                    'type': 'video',
+                    'link': 'https://player.fake_video.org/video/288225991',
+                    'title': 'video file',
+                    'last_updated': '2018-10-30T15:00:03+00:00',
+                }
+            ],
+            'date': '04-30-2013',
+            'log_number': '123',
+            'time': '04-30-2013 9:30 pm',
+            'type': 'Allegation Name',
+            'subjects': ['Subject', '', 'Unknown'],
+        }]
+        AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
+        attachment_file = AttachmentFileFactory(
+            allegation__crid='123',
+            title='old_title',
+            source_type=AttachmentSourceType.COPA,
+            external_id='288225991',
+            original_url='https://player.fake_video.org/video/288225991',
+            preview_image_url=None
+        )
+
+        AutoOpenIPRA.import_new()
+        expect(AttachmentFile.objects.get(pk=attachment_file.pk).preview_image_url).be.none()
 
     @patch('data_importer.ipra_portal_crawler.service.AutoOpenIPRA.crawl_open_ipra')
     def test_update_COPA_DOCUMENTCLOUD_file(self, open_ipra):
@@ -179,7 +257,8 @@ class AutoOpenIPRATest(TestCase):
             external_last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
         )
 
-        AutoOpenIPRA.import_new()
+        new_attachments = AutoOpenIPRA.import_new()
+        expect(new_attachments).to.be.empty()
 
         updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
         expect(updated_attachment_file.title).to.eq('CRID 123 CR pdf file')

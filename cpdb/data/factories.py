@@ -80,7 +80,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Allegation
 
-    crid = factory.LazyFunction(lambda: random.randint(100000, 999999))
+    crid = factory.LazyFunction(lambda: str(random.randint(100000, 999999)))
 
     # required for percentile calculation, we ensure all objects factoried in same data range
     incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(

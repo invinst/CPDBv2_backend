@@ -7,6 +7,8 @@ from rest_framework import status
 from robber import expect
 
 from data.factories import PoliceUnitFactory, OfficerFactory, OfficerHistoryFactory, OfficerAllegationFactory
+from email_service.constants import TRR_ATTACHMENT_REQUEST
+from email_service.factories import EmailTemplateFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from trr.tests.mixins import TRRTestCaseMixin
 
@@ -89,6 +91,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_request_document(self):
+        EmailTemplateFactory(type=TRR_ATTACHMENT_REQUEST)
         TRRFactory(pk=112233)
         response = self.client.post(
             reverse('api-v2:trr-mobile-request-document', kwargs={'pk': 112233}),
@@ -101,6 +104,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
         })
 
     def test_request_same_document_twice(self):
+        EmailTemplateFactory(type=TRR_ATTACHMENT_REQUEST)
         trr = TRRFactory(pk=112233)
         self.client.post(
             reverse('api-v2:trr-mobile-request-document', kwargs={'pk': trr.id}),

@@ -9,6 +9,7 @@ from robber import expect
 
 from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory, \
     OfficerAllegationFactory
+from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
 
@@ -205,6 +206,106 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         })
         results = response.data['results']
         expect({record['id'] for record in results}).to.eq({'1', '2'})
+
+    def test_retrieve_single_cr_with_highlight(self):
+        AllegationFactory(
+            crid=123,
+            incident_date='2007-12-27',
+            summary='the officer pointed a gun at the victim'
+        )
+        AllegationFactory(
+            crid=456,
+            incident_date='2000-12-27',
+            summary='the officer pointed a knife at the victim'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-single')
+        response = self.client.get(url, {
+            'term': 'gun',
+            'contentType': 'CR',
+        })
+
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]).to.eq({
+            'id': '123',
+            'crid': '123',
+            'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
+            'highlight': {
+                'summary': ['the officer pointed a <em>gun</em> at the victim']
+            }
+        })
+
+    def test_retrieve_list_cr_with_highlight(self):
+        AllegationFactory(
+            crid=123,
+            incident_date='2007-12-27',
+            summary='the officer pointed a gun at the victim'
+        )
+        AllegationFactory(
+            crid=456,
+            incident_date='2000-12-27',
+            summary='the officer pointed a knife at the victim'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'gun',
+        })
+
+        results = response.data['CR']
+        expect(results).to.have.length(1)
+        expect(results[0]).to.eq({
+            'id': '123',
+            'crid': '123',
+            'to': '/complaint/123/',
+            'incident_date': '2007-12-27',
+            'highlight': {
+                'summary': ['the officer pointed a <em>gun</em> at the victim']
+            }
+        })
+
+    def test_search_terms_results(self):
+        SearchTermItemFactory(
+            slug='communities',
+            name='Communities',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='/url-mediator/session-builder/?community=123456'
+        )
+        SearchTermItemFactory(
+            slug='wards',
+            name='Wards',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Ward description',
+            call_to_action_type='view_all',
+            link='/url-mediator/session-builder/?community=654321'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'Geography',
+        })
+
+        results = response.data['SEARCH-TERMS']
+        expect(results).to.have.length(2)
+
+        expect(results[0]['id']).to.eq('communities')
+        expect(results[0]['name']).to.eq('Communities')
+        expect(results[0]['category_name']).to.eq('Geography')
+        expect(results[0]['description']).to.eq('Community description')
+        expect(results[0]['call_to_action_type']).to.eq('view_all')
+        expect(results[0]['link']).to.eq('http://cpdb.lvh.me/url-mediator/session-builder/?community=123456')
 
 
 class SearchV2ViewSetTestCase(APITestCase):

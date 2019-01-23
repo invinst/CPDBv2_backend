@@ -1,3 +1,6 @@
+from django.conf import settings
+
+
 class Formatter(object):
     def format(self):
         raise NotImplementedError
@@ -10,6 +13,13 @@ class SimpleFormatter(Formatter):
     def process_doc(self, doc):
         result = self.doc_format(doc)
         result['id'] = doc._id
+        try:
+            result['highlight'] = {
+                key: [el for el in val]
+                for key, val in doc.meta.highlight.to_dict().items()
+            }
+        except AttributeError:
+            pass
         return result
 
     def format(self, response):
@@ -96,7 +106,15 @@ class ReportFormatter(SimpleFormatter):
         }
 
 
-CRFormatter = SimpleFormatter
+class CRFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        return {
+            'crid': doc.crid,
+            'to': doc.to,
+            'incident_date': doc.incident_date,
+        }
+
+
 TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
 
@@ -106,6 +124,8 @@ class RankFormatter(SimpleFormatter):
         serialized_doc = doc.to_dict()
         return {
             'name': serialized_doc['rank'],
+            'active_officers_count': serialized_doc['active_officers_count'],
+            'officers_most_complaints': serialized_doc.get('officers_most_complaints', []),
         }
 
 
@@ -116,3 +136,20 @@ class ZipCodeFormatter(SimpleFormatter):
             'name': serialized_doc['zip_code'],
             'url': serialized_doc['url']
         }
+
+
+class SearchTermFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+        link = serialized_doc.get('link', '')
+        return {
+            'id': serialized_doc['slug'],
+            'name': serialized_doc['name'],
+            'category_name': serialized_doc.get('category_name', ''),
+            'description': serialized_doc.get('description', ''),
+            'call_to_action_type': serialized_doc.get('call_to_action_type', ''),
+            'link': f'{settings.V1_URL}{link}' if link else '',
+        }
+
+    def process_doc(self, doc):
+        return self.doc_format(doc)

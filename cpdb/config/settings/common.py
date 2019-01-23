@@ -38,7 +38,8 @@ THIRD_PARTY_APPS = (
     'taggit',
     'anymail',
     'corsheaders',
-    'adminsortable'
+    'adminsortable',
+    'bandit'
 )
 
 LOCAL_APPS = (
@@ -62,6 +63,7 @@ LOCAL_APPS = (
     'airtable_integration',
     'data_importer',
     'status',
+    'email_service',
     'social_graph'
 )
 

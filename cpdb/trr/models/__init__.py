@@ -6,4 +6,4 @@ from .trr_attachment_request import TRRAttachmentRequest
 from .trr_status import TRRStatus
 from .weapon_discharge import WeaponDischarge
 
-__all__ = [ActionResponse, Charge, SubjectWeapon, TRR, TRRAttachmentRequest, TRRStatus, WeaponDischarge]
+__all__ = ['ActionResponse', 'Charge', 'SubjectWeapon', 'TRR', 'TRRAttachmentRequest', 'TRRStatus', 'WeaponDischarge']

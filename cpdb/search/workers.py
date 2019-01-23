@@ -1,6 +1,9 @@
 from elasticsearch_dsl.query import Q
 
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
+from .doc_types import (
+    UnitDocType, ReportDocType, AreaDocType, CrDocType,
+    TRRDocType, RankDocType, ZipCodeDocType, SearchTermItemDocType
+)
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -158,6 +161,7 @@ class UnitOfficerWorker(Worker):
 class RankWorker(Worker):
     doc_type_klass = RankDocType
     fields = ['rank', 'tags']
+    sort_order = ['-active_officers_count']
 
 
 class DateCRWorker(DateWorker):
@@ -167,7 +171,11 @@ class DateCRWorker(DateWorker):
 
 class CRWorker(Worker):
     doc_type_klass = CrDocType
-    fields = ['crid']
+
+    def query(self, term, **kwargs):
+        return self._searcher\
+            .query('multi_match', query=term, operator='and', fields=['crid', 'summary'])\
+            .highlight('summary')
 
 
 class DateTRRWorker(DateWorker):
@@ -188,3 +196,9 @@ class TRRWorker(Worker):
 class ZipCodeWorker(Worker):
     doc_type_klass = ZipCodeDocType
     fields = ['zip_code', 'tags']
+
+
+class SearchTermItemWorker(Worker):
+    doc_type_klass = SearchTermItemDocType
+    fields = ['name', 'category_name']
+    sort_order = ['category_name']

@@ -22,3 +22,6 @@ AIRTABLE_COPA_AGENCY_ID = 'recMBxxV8FCMqri2O'
 AIRTABLE_CPD_AGENCY_ID = 'rec6zglKh8mWa4Ycg'
 
 ENVIRONMENT = 'staging'
+
+EMAIL_BACKEND = 'email_service.backend.MailGunHijackBackend'
+BANDIT_EMAIL = ['cpdb.dev+hijack@eastagile.com', 'cpdp+notifications@invisibleinstitute.com']

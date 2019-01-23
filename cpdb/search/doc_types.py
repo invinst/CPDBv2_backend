@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer
+from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer, String
 
 from .indices import autocompletes_alias
 
@@ -43,6 +43,7 @@ class AreaDocType(DocType):
 class RankDocType(DocType):
     rank = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    active_officers_count = Integer()
 
     class Meta:
         doc_type = 'rank'
@@ -52,6 +53,7 @@ class RankDocType(DocType):
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     incident_date = Keyword()
+    summary = Text(analyzer='standard', store=True, term_vector="with_positions_offsets")
 
     class Meta:
         doc_type = 'cr'
@@ -74,3 +76,18 @@ class ZipCodeDocType(DocType):
 
     class Meta:
         doc_type = 'zip_code'
+
+
+@autocompletes_alias.doc_type
+class SearchTermItemDocType(DocType):
+    slug = String(index='not_analyzed')
+    name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
+    category_name = Text(
+        fielddata=True,
+        analyzer=autocomplete,
+        search_analyzer=autocomplete_search,
+        fields={'keyword': Keyword()}
+    )
+
+    class Meta:
+        doc_type = 'search_term_item'

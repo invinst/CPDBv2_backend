@@ -8,7 +8,13 @@ from django.db.models.functions import ExtractYear
 from django.utils.text import slugify
 from django_bulk_update.manager import BulkUpdateManager
 
-from data.constants import ACTIVE_CHOICES, ACTIVE_UNKNOWN_CHOICE, GENDER_DICT, BACKGROUND_COLOR_SCHEME
+from data.constants import (
+    ACTIVE_CHOICES,
+    ACTIVE_UNKNOWN_CHOICE,
+    GENDER_DICT,
+    BACKGROUND_COLOR_SCHEME,
+    ACTIVE_YES_CHOICE,
+)
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -282,3 +288,11 @@ class Officer(TimeStampsModel, TaggableModel):
                 return rank_histories[i-1]['rank']
             if query_date == rank_histories[i]['date']:
                 return rank_histories[i]['rank']
+
+    @classmethod
+    def get_active_officers(cls, rank):
+        return cls.objects.filter(rank=rank, active=ACTIVE_YES_CHOICE)
+
+    @classmethod
+    def get_officers_most_complaints(cls, rank):
+        return cls.objects.filter(rank=rank).exclude(allegation_count=0).order_by('-allegation_count')[:3]

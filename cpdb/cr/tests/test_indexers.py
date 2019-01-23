@@ -474,11 +474,11 @@ class CRPartialIndexerTestCase(TestCase):
         })
 
     def test_extra_data_populated(self):
-        allegation = AllegationFactory(id=1122)
+        allegation = AllegationFactory(crid='1122123')
         OfficerAllegationFactory(allegation=allegation)
         InvestigatorAllegationFactory(allegation=allegation)
         PoliceWitnessFactory(allegation=allegation)
         indexer = CRPartialIndexer(updating_keys=['123', '456'])
-        expect(indexer.coaccused_dict[1122]).to.have.length(1)
-        expect(indexer.investigator_dict[1122]).to.have.length(1)
-        expect(indexer.policewitness_dict[1122]).to.have.length(1)
+        expect(indexer.coaccused_dict['1122123']).to.have.length(1)
+        expect(indexer.investigator_dict['1122123']).to.have.length(1)
+        expect(indexer.policewitness_dict['1122123']).to.have.length(1)

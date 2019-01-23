@@ -9,10 +9,15 @@ from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CRWorker, AreaWorker, TRRWorker, RankWorker,
     DateCRWorker, DateTRRWorker, ZipCodeWorker,
-    DateOfficerWorker)
-from search.doc_types import ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
+    DateOfficerWorker, SearchTermItemWorker
+)
+from search.doc_types import (
+    ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType,
+    ZipCodeDocType
+)
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
+from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
 
 
@@ -250,22 +255,23 @@ class DateTRRWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class RankWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search_by_rank(self):
-        doc = RankDocType(rank='Rank')
-        doc.save()
+        RankDocType(rank='Officer').save()
 
         self.refresh_index()
 
-        response = RankWorker().search('Rank')
+        response = RankWorker().search('Officer')
         expect(response.hits.total).to.equal(1)
 
     def test_search_by_tag(self):
-        doc = RankDocType(tags='rank')
-        doc.save()
+        RankDocType(tags=['rank'], rank='Civilian', active_officers_count=1).save()
+        RankDocType(tags=['rank'], rank='Detective', active_officers_count=2).save()
+        RankDocType(tags=['rank'], rank='Officer', active_officers_count=3).save()
 
         self.refresh_index()
 
         response = RankWorker().search('rank')
-        expect(response.hits.total).to.equal(1)
+        expect(response.hits.total).to.equal(3)
+        expect([record.rank for record in response.hits]).to.eq(['Officer', 'Detective', 'Civilian'])
 
 
 class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):
@@ -301,3 +307,34 @@ class DateOfficerWorkerTestCase(IndexMixin, TestCase):
 
         response = DateOfficerWorker().search('', dates=['2004-10-10'])
         expect({record.id for record in response.hits}).to.eq({1, 2})
+
+
+class SearchTermItemWorkerTestCase(IndexMixin, TestCase):
+    def test_search(self):
+        SearchTermItemFactory(
+            slug='communities',
+            name='Communities',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='http://lvh.me'
+        )
+        SearchTermItemFactory(
+            slug='wards',
+            name='Wards',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='http://lvh.me'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        response_1 = SearchTermItemWorker().search('Geography')
+        response_2 = SearchTermItemWorker().search('Wards')
+
+        expect(response_1.hits.total).to.eq(2)
+        expect(response_2.hits.total).to.eq(1)
+        expect({hit.name for hit in response_1.hits}).to.be.eq({'Communities', 'Wards'})
+        expect({hit.name for hit in response_2.hits}).to.be.eq({'Wards'})

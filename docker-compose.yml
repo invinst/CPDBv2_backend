@@ -1,3 +1,4 @@
+---
 version: '3'
 services:
   web:
@@ -36,14 +37,23 @@ services:
     image: gcr.io/cloudsql-docker/gce-proxy:1.11
     volumes:
       - .:/app
-    command: ["/cloud_sql_proxy",
-                  "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432",
-                  "-credential_file=$PG_CREDENTIAL_FILE"]
+    command:
+      - "/cloud_sql_proxy"
+      - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
+      - "-credential_file=$PG_CREDENTIAL_FILE"
   psql:
     image: postgres:9.6-alpine
     environment:
       PGPASSWORD: $PGPASSWORD
     command: "psql -h postgres -U cpdb postgres"
+  kibana:
+    image: kibana:5
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
 
 volumes:
   pgdata:
