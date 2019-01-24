@@ -99,14 +99,13 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
 
         return Response(OfficerCardSerializer(officers, many=True).data)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], url_path='request-download')
     def request_download(self, request, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
 
         with_docs = request.GET.get('with-docs', '') == 'true'
-        print(officer.get_zip_filename(with_docs))
 
         if officer.check_zip_file_exist(with_docs=with_docs):
             url = officer.generate_presigned_zip_url(with_docs=with_docs)
@@ -114,7 +113,7 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
             url = ''
         return Response(data=url)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], url_path='create-zip-file')
     def create_zip_file(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
@@ -122,7 +121,6 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
         officer.invoke_create_zip(with_docs=True)
         officer.invoke_create_zip(with_docs=False)
         return Response()
-        # return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class OfficersMobileViewSet(OfficerBaseViewSet):

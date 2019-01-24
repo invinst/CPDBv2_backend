@@ -6,6 +6,7 @@ from tqdm import tqdm
 from django.core.management import BaseCommand
 from django.conf import settings
 
+from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
 
 
@@ -17,7 +18,9 @@ class Command(BaseCommand):
         parser.add_argument('external_ids', nargs='*')
 
     def handle(self, external_ids, *args, **kwargs):
-        queryset = AttachmentFile.objects.filter(source_type__in=['DOCUMENTCLOUD', 'COPA_DOCUMENTCLOUD'])
+        queryset = AttachmentFile.objects.filter(source_type__in=[
+            AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD
+        ])
 
         if external_ids:
             attachments = queryset.filter(external_id__in=external_ids)
@@ -29,6 +32,6 @@ class Command(BaseCommand):
                 InvokeArgs=json.dumps({
                     'url': attachment.url,
                     'bucket': settings.S3_BUCKET_OFFICER_CONTENT,
-                    'key': f'{settings.S3_BUCKET_XLSX_DIRECTORY}{attachment.external_id}'
+                    'key': attachment.s3_key
                 })
             )

@@ -307,13 +307,17 @@ class Officer(TimeStampsModel, TaggableModel):
     @property
     def allegation_attachments(self):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
-        return AttachmentFile.objects.filter(allegation__officerallegation__officer=self).distinct('id')
+        return AttachmentFile.objects.filter(
+            allegation__officerallegation__officer=self,
+            source_type__in=['DOCUMENTCLOUD', 'COPA_DOCUMENTCLOUD']
+        ).distinct('id')
 
     @property
     def investigator_attachments(self):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
         return AttachmentFile.objects.filter(
-            allegation__investigatorallegation__investigator__officer=self
+            allegation__investigatorallegation__investigator__officer=self,
+            source_type__in=['DOCUMENTCLOUD', 'COPA_DOCUMENTCLOUD']
         ).distinct('id')
 
     def get_zip_filename(self, with_docs):

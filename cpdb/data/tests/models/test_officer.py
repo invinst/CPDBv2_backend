@@ -1,16 +1,20 @@
+import json
 from datetime import date
 
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
 
 import pytz
+import botocore
 from freezegun import freeze_time
 from robber.expect import expect
+from mock import patch
 
 from data.constants import ACTIVE_YES_CHOICE, ACTIVE_NO_CHOICE
 from data.factories import (
     OfficerFactory, OfficerBadgeNumberFactory, OfficerHistoryFactory, PoliceUnitFactory,
     OfficerAllegationFactory, AllegationFactory, ComplainantFactory, AllegationCategoryFactory, SalaryFactory,
+    AttachmentFileFactory, InvestigatorFactory, InvestigatorAllegationFactory,
 )
 from data.models import Officer
 
@@ -418,3 +422,248 @@ class OfficerTestCase(TestCase):
         expect(list(Officer.get_officers_most_complaints(rank='Officer'))).to.eq([
             officer123, officer456
         ])
+
+    def test_allegation_attachments(self):
+        allegation = AllegationFactory(crid='123')
+        attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
+        attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+
+        officer = OfficerFactory(id=1)
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+
+        expect({attachment.id for attachment in officer.allegation_attachments}).to.eq({
+            attachment_1.id, attachment_2.id
+        })
+
+    def test_investigator_attachments(self):
+        allegation = AllegationFactory(crid='123')
+        attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
+        attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+
+        investigator = InvestigatorFactory(officer=OfficerFactory(id=1))
+        InvestigatorAllegationFactory(allegation=allegation, investigator=investigator)
+
+        expect({attachment.id for attachment in investigator.officer.investigator_attachments}).to.eq({
+            attachment_1.id, attachment_2.id
+        })
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip')
+    def test_get_zip_filename(self):
+        officer = OfficerFactory(id=1)
+        expect(officer.get_zip_filename(with_docs=False)).to.eq('zip/Officer_1.zip')
+        expect(officer.get_zip_filename(with_docs=True)).to.eq('zip_with_docs/Officer_1_with_docs.zip')
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
+    @patch('data.models.officer.s3.get_object')
+    def test_check_zip_file_exist(self, s3_get_object_mock):
+        s3_get_object_mock.return_value = {}
+        officer = OfficerFactory(id=1)
+
+        expect(officer.check_zip_file_exist(with_docs=False)).to.be.true()
+        expect(s3_get_object_mock).to.be.called_with(
+            Bucket='officer_content_bucket',
+            Key='zip/Officer_1.zip'
+        )
+
+        expect(officer.check_zip_file_exist(with_docs=True)).to.be.true()
+        expect(s3_get_object_mock).to.be.called_with(
+            Bucket='officer_content_bucket',
+            Key='zip_with_docs/Officer_1_with_docs.zip'
+        )
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
+    @patch('data.models.officer.s3.get_object')
+    def test_check_zip_file_exist_return_false(self, s3_get_object_mock):
+        exception = botocore.exceptions.ClientError(
+            error_response={'Error': {'Code': 'NoSuchKey'}},
+            operation_name='get_object'
+        )
+        s3_get_object_mock.side_effect = exception
+        officer = OfficerFactory(id=1)
+
+        expect(officer.check_zip_file_exist(with_docs=False)).to.be.false()
+        expect(officer.check_zip_file_exist(with_docs=True)).to.be.false()
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
+    @patch('data.models.officer.s3.get_object')
+    def test_check_zip_file_exist_raise_exception(self, s3_get_object_mock):
+        exception = Exception('some other exception')
+        setattr(exception, 'response', {'Error': {'Code': 'NoSuchKey'}})
+
+        s3_get_object_mock.side_effect = exception
+        officer = OfficerFactory(id=1)
+
+        expect(lambda: officer.check_zip_file_exist(with_docs=False)).to.throw(Exception)
+        expect(lambda: officer.check_zip_file_exist(with_docs=True)).to.throw(Exception)
+
+    @override_settings(
+        S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
+        S3_BUCKET_ZIP_DIRECTORY='zip',
+        S3_BUCKET_XLSX_DIRECTORY='xlsx',
+        S3_BUCKET_PDF_DIRECTORY='pdf'
+    )
+    @patch('data.models.officer.s3.get_object')
+    @patch('data.models.officer.lambda_client.invoke_async')
+    def test_invoke_create_zip(self, lambda_invoke_async_mock, s3_get_object_mock):
+        exception = botocore.exceptions.ClientError(
+            error_response={'Error': {'Code': 'NoSuchKey'}},
+            operation_name='get_object'
+        )
+        s3_get_object_mock.side_effect = exception
+
+        allegation = AllegationFactory(crid='1')
+        AttachmentFileFactory(
+            allegation=allegation,
+            source_type='DOCUMENTCLOUD',
+            external_id='ABC',
+            title='allegation 1 attachment'
+        )
+        AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+
+        officer = OfficerFactory(id=1)
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+
+        allegation_2 = AllegationFactory(crid='2')
+        AttachmentFileFactory(
+            allegation=allegation_2,
+            source_type='DOCUMENTCLOUD',
+            external_id='XYZ',
+            title='allegation 2 attachment'
+        )
+        AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+
+        investigator = InvestigatorFactory(officer=officer)
+        InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
+
+        officer.invoke_create_zip(with_docs=True)
+
+        allegation_attachments_dict = {'ABC': f'allegation 1 attachment.pdf'}
+        investigator_attachments_dict= {'XYZ': f'allegation 2 attachment.pdf'}
+        expected_InvokeArgs = json.dumps(
+            {
+                'officer_id': 1,
+                'key': 'zip_with_docs/Officer_1_with_docs.zip',
+                'bucket': 'officer_content_bucket',
+                'xlsx_dir': 'xlsx',
+                'pdf_dir': 'pdf',
+                'allegation_attachments_dict': allegation_attachments_dict,
+                'investigator_attachments_dict': investigator_attachments_dict
+            }
+        )
+
+        expect(s3_get_object_mock).to.be.called_with(
+            Bucket='officer_content_bucket',
+            Key='zip_with_docs/Officer_1_with_docs.zip'
+        )
+        expect(lambda_invoke_async_mock).to.be.called_with(
+            FunctionName='createOfficerZipFile',
+            InvokeArgs=expected_InvokeArgs
+        )
+
+    @override_settings(
+        S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
+        S3_BUCKET_ZIP_DIRECTORY='zip',
+        S3_BUCKET_XLSX_DIRECTORY='xlsx',
+        S3_BUCKET_PDF_DIRECTORY='pdf'
+    )
+    @patch('data.models.officer.s3.get_object')
+    @patch('data.models.officer.lambda_client.invoke_async')
+    def test_invoke_create_zip_without_docs(self, lambda_invoke_async_mock, s3_get_object_mock):
+        exception = botocore.exceptions.ClientError(
+            error_response={'Error': {'Code': 'NoSuchKey'}},
+            operation_name='get_object'
+        )
+        s3_get_object_mock.side_effect = exception
+
+        allegation = AllegationFactory(crid='1')
+        AttachmentFileFactory(
+            allegation=allegation,
+            source_type='DOCUMENTCLOUD',
+            external_id='ABC',
+            title='allegation 1 attachment'
+        )
+        AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+
+        officer = OfficerFactory(id=1)
+        OfficerAllegationFactory(officer=officer, allegation=allegation)
+
+        allegation_2 = AllegationFactory(crid='2')
+        AttachmentFileFactory(
+            allegation=allegation_2,
+            source_type='DOCUMENTCLOUD',
+            external_id='XYZ',
+            title='allegation 2 attachment'
+        )
+        AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
+        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+
+        investigator = InvestigatorFactory(officer=officer)
+        InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
+
+        officer.invoke_create_zip(with_docs=False)
+
+        expected_InvokeArgs = json.dumps(
+            {
+                'officer_id': 1,
+                'key': 'zip/Officer_1.zip',
+                'bucket': 'officer_content_bucket',
+                'xlsx_dir': 'xlsx',
+                'pdf_dir': 'pdf',
+                'allegation_attachments_dict': {},
+                'investigator_attachments_dict': {}
+            }
+        )
+
+        expect(s3_get_object_mock).to.be.called_with(
+            Bucket='officer_content_bucket',
+            Key='zip/Officer_1.zip'
+        )
+        expect(lambda_invoke_async_mock).to.be.called_with(
+            FunctionName='createOfficerZipFile',
+            InvokeArgs=expected_InvokeArgs
+        )
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
+    @patch('data.models.officer.s3.generate_presigned_url')
+    def test_generate_presigned_zip_url(self, s3_generate_presigned_url_mock):
+        s3_generate_presigned_url_mock.return_value = 'presigned_url'
+
+        officer = OfficerFactory(id=1)
+
+        expect(officer.generate_presigned_zip_url(with_docs=True)).to.eq('presigned_url')
+        expect(s3_generate_presigned_url_mock).to.be.called_with(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': 'officer_content_bucket',
+                'Key': 'zip_with_docs/Officer_1_with_docs.zip',
+            }
+        )
+
+    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
+    @patch('data.models.officer.s3.generate_presigned_url')
+    def test_generate_presigned_zip_url_without_docs(self, s3_generate_presigned_url_mock):
+        s3_generate_presigned_url_mock.return_value = 'presigned_url'
+
+        officer = OfficerFactory(id=1)
+
+        expect(officer.generate_presigned_zip_url(with_docs=False)).to.eq('presigned_url')
+        expect(s3_generate_presigned_url_mock).to.be.called_with(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': 'officer_content_bucket',
+                'Key': 'zip/Officer_1.zip',
+            }
+        )
