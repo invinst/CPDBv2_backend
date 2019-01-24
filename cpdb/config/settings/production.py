@@ -12,7 +12,7 @@ CORS_ORIGIN_WHITELIST = (
     'm.cpdp.co',
     'cpdp.co',
     'beta.cpdb.co',
-    'graph.cpdp.co'
+    'test-social-graph.herokuapp.com'
 )
 
 ANYMAIL = {
