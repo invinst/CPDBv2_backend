@@ -54,6 +54,7 @@ class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     incident_date = Keyword()
     summary = Text(analyzer='standard', store=True, term_vector="with_positions_offsets")
+    investigator_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'cr'
