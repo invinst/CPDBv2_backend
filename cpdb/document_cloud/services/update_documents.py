@@ -46,12 +46,9 @@ mapping_fields = {
 
 def update_attachment(attachment, cloud_document):
     changed = (
-        (
-            attachment.external_last_updated is not None and
-            attachment.external_last_updated < cloud_document.updated_at
-        )
-        or not attachment.source_type
-        or not attachment.external_last_updated
+        not attachment.source_type or
+        not attachment.external_last_updated or
+        attachment.external_last_updated < cloud_document.updated_at
     )
     if changed:
         attachment.text_content = get_full_text(cloud_document)
