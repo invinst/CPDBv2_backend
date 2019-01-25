@@ -1,9 +1,6 @@
-import boto3
 import botocore
 from zipstream import ZipFile
 from smart_open import smart_open
-
-s3 = boto3.client('s3')
 
 
 def write_file_to_zipfile(zf, s3_source, file_name):
@@ -62,5 +59,4 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': ''
     }

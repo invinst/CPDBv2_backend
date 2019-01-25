@@ -35,6 +35,7 @@ WORKDIR /usr/src/app
 RUN curl -o $PAPERTRAIL_CA_FILE https://papertrailapp.com/tools/papertrail-bundle.pem
 
 ADD requirements requirements
+ADD lambda lambda
 RUN pip install --no-cache-dir -r requirements/local.txt
 
 COPY . .
