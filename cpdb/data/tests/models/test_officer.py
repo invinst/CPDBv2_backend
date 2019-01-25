@@ -548,7 +548,7 @@ class OfficerTestCase(TestCase):
         officer.invoke_create_zip(with_docs=True)
 
         allegation_attachments_dict = {'ABC': f'allegation 1 attachment.pdf'}
-        investigator_attachments_dict= {'XYZ': f'allegation 2 attachment.pdf'}
+        investigator_attachments_dict = {'XYZ': f'allegation 2 attachment.pdf'}
         expected_InvokeArgs = json.dumps(
             {
                 'officer_id': 1,

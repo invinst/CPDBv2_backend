@@ -784,33 +784,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }
         )
 
-    @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.generate_presigned_url')
-    @patch('data.models.officer.s3.get_object')
-    def test_request_download_without_docs(self, s3_get_object_mock, s3_generate_presigned_url_mock):
-        s3_get_object_mock.return_value = {}
-        s3_generate_presigned_url_mock.return_value = 'presigned_url'
-
-        OfficerFactory(id=123)
-
-        base_url = reverse('api-v2:officers-request-download', kwargs={'pk': 123})
-        query = urlencode({'with-docs': 'false'})
-        response = self.client.get(f'{base_url}?{query}')
-
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq('presigned_url')
-        s3_get_object_mock.assert_called_with(
-            Bucket='officer_content_bucket',
-            Key='zip/Officer_123.zip'
-        )
-        s3_generate_presigned_url_mock.assert_called_with(
-            ClientMethod='get_object',
-            Params={
-                'Bucket': 'officer_content_bucket',
-                'Key': 'zip/Officer_123.zip',
-            }
-        )
-
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
         S3_BUCKET_ZIP_DIRECTORY='zip',
