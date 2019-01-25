@@ -493,13 +493,16 @@ class OfficerTestCase(TestCase):
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
     @patch('data.models.officer.s3.get_object')
     def test_check_zip_file_exist_raise_exception(self, s3_get_object_mock):
-        exception = Exception('some other exception')
-        setattr(exception, 'response', {'Error': {'Code': 'NoSuchKey'}})
+        client_exception = botocore.exceptions.ClientError(
+            error_response={'Error': {'Code': 'NoSuchBucket'}},
+            operation_name='get_object'
+        )
+        other_exception = Exception('some other exception')
 
-        s3_get_object_mock.side_effect = exception
+        s3_get_object_mock.side_effect = [client_exception, other_exception]
         officer = OfficerFactory(id=1)
 
-        expect(lambda: officer.check_zip_file_exist(with_docs=False)).to.throw(Exception)
+        expect(lambda: officer.check_zip_file_exist(with_docs=False)).to.throw(botocore.exceptions.ClientError)
         expect(lambda: officer.check_zip_file_exist(with_docs=True)).to.throw(Exception)
 
     @override_settings(

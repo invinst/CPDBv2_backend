@@ -40,6 +40,8 @@ if __name__ == '__main__':
     start_dir = args.s or './lambda/'
     pattern = args.p or 'test*.py'
 
+    exit_code = 0
+
     with patch.dict('os.environ', {
         'AWS_ACCESS_KEY_ID': '',
         'AWS_SECRET_ACCESS_KEY': '',
@@ -48,4 +50,9 @@ if __name__ == '__main__':
         loader = unittest.TestLoader()
         tests = loader.discover(top_level_dir='./lambda/', start_dir=start_dir, pattern=pattern)
         testRunner = unittest.TextTestRunner()
-        testRunner.run(tests)
+        result = testRunner.run(tests)
+
+        if result.failures or result.errors:
+            exit_code = 1
+
+    exit(exit_code)

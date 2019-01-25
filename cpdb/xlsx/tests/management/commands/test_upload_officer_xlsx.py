@@ -65,3 +65,48 @@ class UploadOfficerXlsxTestCase(TestCase):
         expect(mock_export_officer_xlsx).to.be.any_call(officer_3, 'tmp/3')
 
         expect(os.path.exists('tmp')).to.be.false()
+
+    @override_settings(S3_BUCKET_OFFICER_CONTENT='officer_content_bucket', S3_BUCKET_XLSX_DIRECTORY='xlsx')
+    @patch(
+        'xlsx.management.commands.upload_officer_xlsx.Pool',
+        return_value=MagicMock(__enter__=Mock(return_value=Mock(imap=map)))
+    )
+    @patch(
+        'xlsx.management.commands.upload_officer_xlsx.export_officer_xlsx',
+        return_value=['first.xlsx', 'second.xlsx'],
+        create=True
+    )
+    @patch('xlsx.management.commands.upload_officer_xlsx.s3.upload_file')
+    def test_upload_officer_xlsx_with_officer_id(self, mock_upload_file, mock_export_officer_xlsx, _):
+        officer_1 = OfficerFactory(id=1)
+        OfficerFactory(id=2)
+        officer_3 = OfficerFactory(id=3)
+        call_command('upload_officer_xlsx', '1', '3')
+
+        expect(mock_upload_file.call_count).to.eq(4)
+        expect(mock_upload_file).to.be.any_call(
+            'tmp/1/first.xlsx',
+            'officer_content_bucket',
+            'xlsx/1/first.xlsx'
+        )
+        expect(mock_upload_file).to.be.any_call(
+            'tmp/1/second.xlsx',
+            'officer_content_bucket',
+            'xlsx/1/second.xlsx'
+        )
+        expect(mock_upload_file).to.be.any_call(
+            'tmp/3/first.xlsx',
+            'officer_content_bucket',
+            'xlsx/3/first.xlsx'
+        )
+        expect(mock_upload_file).to.be.any_call(
+            'tmp/3/second.xlsx',
+            'officer_content_bucket',
+            'xlsx/3/second.xlsx'
+        )
+
+        expect(mock_export_officer_xlsx.call_count).to.eq(2)
+        expect(mock_export_officer_xlsx).to.be.any_call(officer_1, 'tmp/1')
+        expect(mock_export_officer_xlsx).to.be.any_call(officer_3, 'tmp/3')
+
+        expect(os.path.exists('tmp')).to.be.false()

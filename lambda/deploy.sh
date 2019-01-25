@@ -50,7 +50,10 @@ cd lambda
 if [ -z "$package" ]; then
   for dir in ./*/
   do
-    deploy_lambda $dir
+    if [[ -d $dir ]] && [[ $dir != './__pycache__/' ]]
+    then
+      deploy_lambda $dir
+    fi
   done
 else
   deploy_lambda $1
