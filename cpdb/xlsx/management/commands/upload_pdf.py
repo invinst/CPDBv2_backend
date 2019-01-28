@@ -1,13 +1,9 @@
-import json
+from django.core.management import BaseCommand
 
 from tqdm import tqdm
 
-from django.core.management import BaseCommand
-from django.conf import settings
-
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
-from shared.aws import aws
 
 
 class Command(BaseCommand):
@@ -24,11 +20,4 @@ class Command(BaseCommand):
         else:
             attachments = queryset
         for attachment in tqdm(attachments, desc='Send upload pdf requests'):
-            aws.lambda_client.invoke_async(
-                FunctionName='uploadPdf',
-                InvokeArgs=json.dumps({
-                    'url': attachment.url,
-                    'bucket': settings.S3_BUCKET_OFFICER_CONTENT,
-                    'key': attachment.s3_key
-                })
-            )
+            attachment.upload_to_s3()
