@@ -2,10 +2,9 @@ from urllib.request import urlopen
 
 import boto3
 
-s3 = boto3.client('s3')
-
 
 def lambda_handler(event, context):
+    s3 = boto3.client('s3')
     url = event['url']
     key = event['key']
     bucket = event['bucket']

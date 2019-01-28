@@ -460,46 +460,46 @@ class OfficerTestCase(TestCase):
         expect(officer.get_zip_filename(with_docs=True)).to.eq('zip_with_docs/Officer_1_with_docs.zip')
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.get_object')
-    def test_check_zip_file_exist(self, s3_get_object_mock):
-        s3_get_object_mock.return_value = {}
+    @patch('data.models.officer.aws')
+    def test_check_zip_file_exist(self, aws_mock):
+        aws_mock.s3.get_object.return_value = {}
         officer = OfficerFactory(id=1)
 
         expect(officer.check_zip_file_exist(with_docs=False)).to.be.true()
-        expect(s3_get_object_mock).to.be.called_with(
+        expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip/Officer_1.zip'
         )
 
         expect(officer.check_zip_file_exist(with_docs=True)).to.be.true()
-        expect(s3_get_object_mock).to.be.called_with(
+        expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip_with_docs/Officer_1_with_docs.zip'
         )
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.get_object')
-    def test_check_zip_file_exist_return_false(self, s3_get_object_mock):
+    @patch('data.models.officer.aws')
+    def test_check_zip_file_exist_return_false(self, aws_mock):
         exception = botocore.exceptions.ClientError(
             error_response={'Error': {'Code': 'NoSuchKey'}},
             operation_name='get_object'
         )
-        s3_get_object_mock.side_effect = exception
+        aws_mock.s3.get_object.side_effect = exception
         officer = OfficerFactory(id=1)
 
         expect(officer.check_zip_file_exist(with_docs=False)).to.be.false()
         expect(officer.check_zip_file_exist(with_docs=True)).to.be.false()
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.get_object')
-    def test_check_zip_file_exist_raise_exception(self, s3_get_object_mock):
+    @patch('data.models.officer.aws')
+    def test_check_zip_file_exist_raise_exception(self, aws_mock):
         client_exception = botocore.exceptions.ClientError(
             error_response={'Error': {'Code': 'NoSuchBucket'}},
             operation_name='get_object'
         )
         other_exception = Exception('some other exception')
 
-        s3_get_object_mock.side_effect = [client_exception, other_exception]
+        aws_mock.s3.get_object.side_effect = [client_exception, other_exception]
         officer = OfficerFactory(id=1)
 
         expect(lambda: officer.check_zip_file_exist(with_docs=False)).to.throw(botocore.exceptions.ClientError)
@@ -511,14 +511,13 @@ class OfficerTestCase(TestCase):
         S3_BUCKET_XLSX_DIRECTORY='xlsx',
         S3_BUCKET_PDF_DIRECTORY='pdf'
     )
-    @patch('data.models.officer.s3.get_object')
-    @patch('data.models.officer.lambda_client.invoke_async')
-    def test_invoke_create_zip(self, lambda_invoke_async_mock, s3_get_object_mock):
+    @patch('data.models.officer.aws')
+    def test_invoke_create_zip(self, aws_mock):
         exception = botocore.exceptions.ClientError(
             error_response={'Error': {'Code': 'NoSuchKey'}},
             operation_name='get_object'
         )
-        s3_get_object_mock.side_effect = exception
+        aws_mock.s3.get_object.side_effect = exception
 
         allegation = AllegationFactory(crid='1')
         AttachmentFileFactory(
@@ -564,11 +563,11 @@ class OfficerTestCase(TestCase):
             }
         )
 
-        expect(s3_get_object_mock).to.be.called_with(
+        expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip_with_docs/Officer_1_with_docs.zip'
         )
-        expect(lambda_invoke_async_mock).to.be.called_with(
+        expect(aws_mock.lambda_client.invoke_async).to.be.called_with(
             FunctionName='createOfficerZipFile',
             InvokeArgs=expected_InvokeArgs
         )
@@ -579,14 +578,13 @@ class OfficerTestCase(TestCase):
         S3_BUCKET_XLSX_DIRECTORY='xlsx',
         S3_BUCKET_PDF_DIRECTORY='pdf'
     )
-    @patch('data.models.officer.s3.get_object')
-    @patch('data.models.officer.lambda_client.invoke_async')
-    def test_invoke_create_zip_without_docs(self, lambda_invoke_async_mock, s3_get_object_mock):
+    @patch('data.models.officer.aws')
+    def test_invoke_create_zip_without_docs(self, aws_mock):
         exception = botocore.exceptions.ClientError(
             error_response={'Error': {'Code': 'NoSuchKey'}},
             operation_name='get_object'
         )
-        s3_get_object_mock.side_effect = exception
+        aws_mock.s3.get_object.side_effect = exception
 
         allegation = AllegationFactory(crid='1')
         AttachmentFileFactory(
@@ -630,24 +628,24 @@ class OfficerTestCase(TestCase):
             }
         )
 
-        expect(s3_get_object_mock).to.be.called_with(
+        expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip/Officer_1.zip'
         )
-        expect(lambda_invoke_async_mock).to.be.called_with(
+        expect(aws_mock.lambda_client.invoke_async).to.be.called_with(
             FunctionName='createOfficerZipFile',
             InvokeArgs=expected_InvokeArgs
         )
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.generate_presigned_url')
-    def test_generate_presigned_zip_url(self, s3_generate_presigned_url_mock):
-        s3_generate_presigned_url_mock.return_value = 'presigned_url'
+    @patch('data.models.officer.aws')
+    def test_generate_presigned_zip_url(self, aws_mock):
+        aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
         officer = OfficerFactory(id=1)
 
         expect(officer.generate_presigned_zip_url(with_docs=True)).to.eq('presigned_url')
-        expect(s3_generate_presigned_url_mock).to.be.called_with(
+        expect(aws_mock.s3.generate_presigned_url).to.be.called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',
@@ -656,14 +654,14 @@ class OfficerTestCase(TestCase):
         )
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
-    @patch('data.models.officer.s3.generate_presigned_url')
-    def test_generate_presigned_zip_url_without_docs(self, s3_generate_presigned_url_mock):
-        s3_generate_presigned_url_mock.return_value = 'presigned_url'
+    @patch('data.models.officer.aws')
+    def test_generate_presigned_zip_url_without_docs(self, aws_mock):
+        aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
         officer = OfficerFactory(id=1)
 
         expect(officer.generate_presigned_zip_url(with_docs=False)).to.eq('presigned_url')
-        expect(s3_generate_presigned_url_mock).to.be.called_with(
+        expect(aws_mock.s3.generate_presigned_url).to.be.called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',

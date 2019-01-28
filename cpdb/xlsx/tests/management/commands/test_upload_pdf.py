@@ -11,8 +11,8 @@ from data.factories import AttachmentFileFactory
 
 class UploadPdfCommandTestCase(TestCase):
     @override_settings(S3_BUCKET_OFFICER_CONTENT='officer_content_bucket', S3_BUCKET_PDF_DIRECTORY='pdf')
-    @patch('xlsx.management.commands.upload_pdf.lambda_client.invoke_async')
-    def test_upload_pdf(self, lambda_invoke_async_mock):
+    @patch('xlsx.management.commands.upload_pdf.aws')
+    def test_upload_pdf(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
             source_type='COPA',
@@ -31,8 +31,8 @@ class UploadPdfCommandTestCase(TestCase):
 
         call_command('upload_pdf')
 
-        expect(lambda_invoke_async_mock.call_count).to.eq(2)
-        expect(lambda_invoke_async_mock).to.be.any_call(
+        expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(2)
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
             FunctionName='uploadPdf',
             InvokeArgs=json.dumps({
                 'url': 'https://www.documentcloud.org/documents/2-CRID-123-CR.html',
@@ -40,7 +40,7 @@ class UploadPdfCommandTestCase(TestCase):
                 'key': 'pdf/123'
             })
         )
-        expect(lambda_invoke_async_mock).to.be.any_call(
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
             FunctionName='uploadPdf',
             InvokeArgs=json.dumps({
                 'url': 'https://www.documentcloud.org/documents/2-CRID-456-CR.html',
@@ -50,8 +50,8 @@ class UploadPdfCommandTestCase(TestCase):
         )
 
     @override_settings(S3_BUCKET_OFFICER_CONTENT='officer_content_bucket', S3_BUCKET_PDF_DIRECTORY='pdf')
-    @patch('xlsx.management.commands.upload_pdf.lambda_client.invoke_async')
-    def test_upload_pdf_with_external_ids(self, lambda_invoke_async_mock):
+    @patch('xlsx.management.commands.upload_pdf.aws')
+    def test_upload_pdf_with_external_ids(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
             source_type='COPA',
@@ -70,8 +70,8 @@ class UploadPdfCommandTestCase(TestCase):
 
         call_command('upload_pdf', '00000105', '123')
 
-        expect(lambda_invoke_async_mock).to.be.called_once()
-        expect(lambda_invoke_async_mock).to.be.called_with(
+        expect(aws_mock.lambda_client.invoke_async).to.be.called_once()
+        expect(aws_mock.lambda_client.invoke_async).to.be.called_with(
             FunctionName='uploadPdf',
             InvokeArgs=json.dumps({
                 'url': 'https://www.documentcloud.org/documents/2-CRID-123-CR.html',

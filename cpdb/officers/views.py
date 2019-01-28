@@ -1,7 +1,6 @@
 from django.db.models import Case, When
 from django.shortcuts import get_object_or_404
 
-import boto3
 from rest_framework import viewsets, status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
@@ -22,9 +21,6 @@ _ALLOWED_FILTERS = [
     'gender',
     'age',
 ]
-
-s3 = boto3.client('s3')
-lambda_client = boto3.client('lambda')
 
 
 class OfficerBaseViewSet(viewsets.ViewSet):

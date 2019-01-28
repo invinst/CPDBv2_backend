@@ -1,16 +1,14 @@
 from multiprocessing import Pool
 import shutil
 
-import boto3
-from tqdm import tqdm
-
 from django.core.management import BaseCommand
 from django.conf import settings
 
+from tqdm import tqdm
+
 from data.models import Officer
 from xlsx.utils import export_officer_xlsx
-
-s3 = boto3.client('s3')
+from shared.aws import aws
 
 
 def upload_xlsx_files(officer):
@@ -18,7 +16,7 @@ def upload_xlsx_files(officer):
     file_names = export_officer_xlsx(officer, tmp_dir)
 
     for file_name in file_names:
-        s3.upload_file(
+        aws.s3.upload_file(
             f'{tmp_dir}/{file_name}',
             settings.S3_BUCKET_OFFICER_CONTENT,
             f'{settings.S3_BUCKET_XLSX_DIRECTORY}/{officer.id}/{file_name}'

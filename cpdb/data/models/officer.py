@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from itertools import groupby
 
-import boto3
 import botocore
 from django.apps import apps
 from django.conf import settings
@@ -19,14 +18,12 @@ from data.constants import (
     BACKGROUND_COLOR_SCHEME,
     ACTIVE_YES_CHOICE,
 )
+from shared.aws import aws
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
 from .common import TimeStampsModel
-
-s3 = boto3.client('s3')
-lambda_client = boto3.client('lambda')
 
 
 class Officer(TimeStampsModel, TaggableModel):
@@ -327,7 +324,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
     def check_zip_file_exist(self, with_docs):
         try:
-            s3.get_object(
+            aws.s3.get_object(
                 Bucket=settings.S3_BUCKET_OFFICER_CONTENT,
                 Key=self.get_zip_filename(with_docs)
             )
@@ -354,7 +351,7 @@ class Officer(TimeStampsModel, TaggableModel):
                 allegation_attachments_dict = {}
                 investigator_attachments_dict = {}
 
-            lambda_client.invoke_async(
+            aws.lambda_client.invoke_async(
                 FunctionName='createOfficerZipFile',
                 InvokeArgs=json.dumps(
                     {
@@ -371,7 +368,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
     def generate_presigned_zip_url(self, with_docs):
         zip_key = self.get_zip_filename(with_docs=with_docs)
-        return s3.generate_presigned_url(
+        return aws.s3.generate_presigned_url(
             ClientMethod='get_object',
             Params={
                 'Bucket': settings.S3_BUCKET_OFFICER_CONTENT,

@@ -20,40 +20,40 @@ class UploadOfficerXlsxTestCase(TestCase):
         return_value=['first.xlsx', 'second.xlsx'],
         create=True
     )
-    @patch('xlsx.management.commands.upload_officer_xlsx.s3.upload_file')
-    def test_upload_officer_xlsx(self, mock_upload_file, mock_export_officer_xlsx, _):
+    @patch('xlsx.management.commands.upload_officer_xlsx.aws')
+    def test_upload_officer_xlsx(self, aws_mock, mock_export_officer_xlsx, _):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
         call_command('upload_officer_xlsx')
 
-        expect(mock_upload_file.call_count).to.eq(6)
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file.call_count).to.eq(6)
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/1/first.xlsx',
             'officer_content_bucket',
             'xlsx/1/first.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/1/second.xlsx',
             'officer_content_bucket',
             'xlsx/1/second.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/2/first.xlsx',
             'officer_content_bucket',
             'xlsx/2/first.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/2/second.xlsx',
             'officer_content_bucket',
             'xlsx/2/second.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/3/first.xlsx',
             'officer_content_bucket',
             'xlsx/3/first.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/3/second.xlsx',
             'officer_content_bucket',
             'xlsx/3/second.xlsx'
@@ -76,30 +76,30 @@ class UploadOfficerXlsxTestCase(TestCase):
         return_value=['first.xlsx', 'second.xlsx'],
         create=True
     )
-    @patch('xlsx.management.commands.upload_officer_xlsx.s3.upload_file')
-    def test_upload_officer_xlsx_with_officer_id(self, mock_upload_file, mock_export_officer_xlsx, _):
+    @patch('xlsx.management.commands.upload_officer_xlsx.aws')
+    def test_upload_officer_xlsx_with_officer_id(self, aws_mock, mock_export_officer_xlsx, _):
         officer_1 = OfficerFactory(id=1)
         OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
         call_command('upload_officer_xlsx', '1', '3')
 
-        expect(mock_upload_file.call_count).to.eq(4)
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file.call_count).to.eq(4)
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/1/first.xlsx',
             'officer_content_bucket',
             'xlsx/1/first.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/1/second.xlsx',
             'officer_content_bucket',
             'xlsx/1/second.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/3/first.xlsx',
             'officer_content_bucket',
             'xlsx/3/first.xlsx'
         )
-        expect(mock_upload_file).to.be.any_call(
+        expect(aws_mock.s3.upload_file).to.be.any_call(
             'tmp/3/second.xlsx',
             'officer_content_bucket',
             'xlsx/3/second.xlsx'

@@ -1,6 +1,5 @@
 import json
 
-import boto3
 from tqdm import tqdm
 
 from django.core.management import BaseCommand
@@ -8,9 +7,7 @@ from django.conf import settings
 
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
-
-
-lambda_client = boto3.client('lambda')
+from shared.aws import aws
 
 
 class Command(BaseCommand):
@@ -27,7 +24,7 @@ class Command(BaseCommand):
         else:
             attachments = queryset
         for attachment in tqdm(attachments, desc='Send upload pdf requests'):
-            lambda_client.invoke_async(
+            aws.lambda_client.invoke_async(
                 FunctionName='uploadPdf',
                 InvokeArgs=json.dumps({
                     'url': attachment.url,
