@@ -85,12 +85,46 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(get_attachment(document)).to.be.eq(None)
 
-    def test_update_attachment(self):
+    def test_update_attachment_external_created_at_not_none(self):
         attachment = AttachmentFileFactory(
             url='old_url',
             title='old title',
             preview_image_url='http://web.com/image',
             external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='old tag',
+            source_type=AttachmentSourceType.COPA,
+            text_content=''
+        )
+        document = create_object({
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            'full_text': 'text content'
+        })
+
+        changed = update_attachment(attachment, document)
+
+        expect(changed).to.be.true()
+        expect(attachment.url).to.eq('https://www.documentcloud.org/documents/1-CRID-123456-CR.html')
+        expect(attachment.title).to.eq('new title')
+        expect(attachment.preview_image_url).to.eq('http://web.com/new-image')
+        expect(attachment.external_last_updated).to.eq(datetime(2017, 1, 3, tzinfo=pytz.utc))
+        expect(attachment.external_created_at).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
+        expect(attachment.tag).to.eq('CR')
+        expect(attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
+        expect(attachment.text_content).to.eq('text content')
+
+    def test_update_attachment_external_created_at_is_none(self):
+        attachment = AttachmentFileFactory(
+            url='old_url',
+            title='old title',
+            preview_image_url='http://web.com/image',
+            external_last_updated=None,
             external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
             tag='old tag',
             source_type=AttachmentSourceType.COPA,
