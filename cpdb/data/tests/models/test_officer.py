@@ -428,8 +428,9 @@ class OfficerTestCase(TestCase):
         attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
         attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        allegation_456 = AllegationFactory(crid='456')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -440,11 +441,12 @@ class OfficerTestCase(TestCase):
 
     def test_investigator_attachments(self):
         allegation = AllegationFactory(crid='123')
+        allegation_456 = AllegationFactory(crid='456')
         attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
         attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=OfficerFactory(id=1))
         InvestigatorAllegationFactory(allegation=allegation, investigator=investigator)
@@ -520,6 +522,7 @@ class OfficerTestCase(TestCase):
         aws_mock.s3.get_object.side_effect = exception
 
         allegation = AllegationFactory(crid='1')
+        allegation_456 = AllegationFactory(crid='456')
         AttachmentFileFactory(
             allegation=allegation,
             source_type='DOCUMENTCLOUD',
@@ -527,13 +530,14 @@ class OfficerTestCase(TestCase):
             title='allegation 1 attachment'
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
+        allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
             allegation=allegation_2,
             source_type='DOCUMENTCLOUD',
@@ -541,8 +545,8 @@ class OfficerTestCase(TestCase):
             title='allegation 2 attachment'
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
@@ -587,6 +591,7 @@ class OfficerTestCase(TestCase):
         aws_mock.s3.get_object.side_effect = exception
 
         allegation = AllegationFactory(crid='1')
+        allegation_456 = AllegationFactory(crid='456')
         AttachmentFileFactory(
             allegation=allegation,
             source_type='DOCUMENTCLOUD',
@@ -594,13 +599,14 @@ class OfficerTestCase(TestCase):
             title='allegation 1 attachment'
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
+        allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
             allegation=allegation_2,
             source_type='DOCUMENTCLOUD',
@@ -608,8 +614,8 @@ class OfficerTestCase(TestCase):
             title='allegation 2 attachment'
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)

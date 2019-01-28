@@ -806,6 +806,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.side_effect = exception
 
         allegation = AllegationFactory(crid='1')
+        allegation_456 = AllegationFactory(crid='456')
+
         AttachmentFileFactory(
             allegation=allegation,
             source_type='DOCUMENTCLOUD',
@@ -813,13 +815,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             title='allegation 1 attachment'
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
+        allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
             allegation=allegation_2,
             source_type='DOCUMENTCLOUD',
@@ -827,8 +830,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             title='allegation 2 attachment'
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
@@ -884,6 +887,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.return_value = {}
 
         allegation = AllegationFactory(crid='1')
+        allegation_456 = AllegationFactory(crid='456')
+
         AttachmentFileFactory(
             allegation=allegation,
             source_type='DOCUMENTCLOUD',
@@ -891,13 +896,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             title='allegation 1 attachment'
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='456', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='456', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
+        allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
             allegation=allegation_2,
             source_type='DOCUMENTCLOUD',
@@ -905,8 +911,8 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             title='allegation 2 attachment'
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation__crid='789', source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation__crid='789', source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
