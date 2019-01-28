@@ -1,5 +1,5 @@
 # Environment variables
-.env
+/.env
 
 # Compiled python files
 *.pyc
