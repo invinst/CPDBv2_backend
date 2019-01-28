@@ -1028,6 +1028,28 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
+## Officer create zip file [/officers/{officer_id}/create-zip-file/]
+
+### Create zip file from excel and pdf files then save it on S3[GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+
++ Response 200 (application/json)
+
+## Officer create zip file [/officers/{officer_id}/request-download/{?with-docs}]
+
+### Create zip file from excel and pdf files then save it on S3[GET]
+
++ Parameters
+    + officer_id (number) - number ID of the officer
+    + offset (string, optional) - should the zip file contain docs or not
+        + Default: `false`
+
++ Response 200 (application/text)
+
+        "https://officer-content-staging.s3.amazonaws.com/zip_with_docs/Officer_1_with_docs.zip"
+
 ## Officer Mobile [/mobile/officers/{officer_id}/]
 
 ### Get Officer Summary (include yearly percentiles) [GET]
@@ -2049,7 +2071,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                   "name": "Freddie Frazier"
                 }
               ],
-              "allegation_count": 1081
+              "allegation_count": 1081,
               "id": "345"
             },
             {
@@ -2090,7 +2112,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                   "name": "Stephen Austin"
                 }
               ],
-              "allegation_count": 903
+              "allegation_count": 903,
               "id": "339"
             }
           ],
@@ -2098,13 +2120,13 @@ This api require an api access token set in `Authorization` header. To get an ap
             {
               "to": "/officer/28416/henry-thomas/",
               "result_extra_information": "Badge # 20455",
-              "result_reason": "coaccused with Walter Ware (17626)"
+              "result_reason": "coaccused with Walter Ware (17626)",
               "id": "AV_JHHFVEEvAIPTOfirI"
             },
             {
               "to": "/officer/32306/geno-rouse/",
               "result_extra_information": "Badge # 2155",
-              "result_reason": "coaccused with Walter Ware (17626)"
+              "result_reason": "coaccused with Walter Ware (17626)",
               "id": "AV_JHHFfEEvAIPTOfirL"
             },
           ],
@@ -2170,7 +2192,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                   "count": 0,
                   "race": "Asian"
                 }
-              ]
+              ],
               "id": "497"
             },
             {
@@ -2234,7 +2256,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                   "count": 9,
                   "race": "Asian"
                 }
-              ]
+              ],
               "id": "432"
             }
           ],
@@ -2296,7 +2318,7 @@ This api require an api access token set in `Authorization` header. To get an ap
               "salary": null,
               "tags": [],
               "to": "/officer/29841/tommy-walker/",
-              "race": "Black"
+              "race": "Black",
               "id": "29841"
             },
             {
@@ -2309,7 +2331,7 @@ This api require an api access token set in `Authorization` header. To get an ap
               "salary": null,
               "tags": [],
               "to": "/officer/29833/corey-walker/",
-              "race": "Black"
+              "race": "Black",
               "id": "29833"
             },
           ],
