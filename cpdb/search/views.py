@@ -13,7 +13,7 @@ from .formatters import (
 from .workers import (
     DateCRWorker, DateTRRWorker, OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
     TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker,
-    RankWorker, SearchTermItemWorker
+    RankWorker, SearchTermItemWorker, InvestigatorCRWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -85,6 +85,7 @@ class SearchV1ViewSet(SearchViewSet):
         'RANK': RankFormatter,
         'TRR': TRRFormatter,
         'ZIP-CODE': ZipCodeFormatter,
+        'INVESTIGATOR > CR': CRFormatter,
     }
     workers = {
         'SEARCH-TERMS': SearchTermItemWorker(),
@@ -104,6 +105,7 @@ class SearchV1ViewSet(SearchViewSet):
         'RANK': RankWorker(),
         'TRR': TRRWorker(),
         'ZIP-CODE': ZipCodeWorker(),
+        'INVESTIGATOR > CR': InvestigatorCRWorker(),
     }
 
 
