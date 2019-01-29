@@ -1,9 +1,12 @@
+import json
 from datetime import datetime
 
-from django.test import TestCase
+import boto3
+from django.test import TestCase, override_settings
 
 import pytz
 from mock import patch
+from moto import mock_s3, mock_lambda
 from robber import expect
 
 from data.constants import AttachmentSourceType
@@ -247,11 +250,11 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(log_changes_mock).to.be.called_with(1, 1)
 
+    @override_settings(S3_BUCKET_OFFICER_CONTENT='officer-content-test', S3_BUCKET_PDF_DIRECTORY='pdf')
+    @patch('data.models.attachment_file.aws')
     @patch('document_cloud.services.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.services.update_documents.search_all')
-    def test_update_documents(self, search_all_mock, send_cr_attachment_available_email_mock):
-        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
-
+    def test_update_documents(self, search_all_mock, send_cr_attachment_available_email_mock, aws_mock):
         allegation = AllegationFactory(crid='234')
         new_document = create_object({
             'documentcloud_id': '999',
@@ -270,13 +273,13 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'documentcloud_id': '1',
             'allegation': allegation,
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-new.html',
+            'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
             'document_type': 'CR',
-            'title': 'CRID-234-CR-new',
-            'normal_image_url': 'http://web.com/new-image',
+            'title': 'CRID-234-CR-updated',
+            'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'new text content'
+            'full_text': 'updated text content'
         })
         kept_document = create_object({
             'documentcloud_id': '2',
@@ -337,14 +340,14 @@ class UpdateDocumentsServiceTestCase(TestCase):
         AttachmentFile.objects.get(external_id='2')
         updated_attachment = AttachmentFile.objects.get(external_id='1')
 
-        expect(updated_attachment.url).to.eq('https://www.documentcloud.org/documents/1-CRID-234-CR-new.html')
-        expect(updated_attachment.title).to.eq('CRID-234-CR-new')
-        expect(updated_attachment.preview_image_url).to.eq('http://web.com/new-image')
+        expect(updated_attachment.url).to.eq('https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html')
+        expect(updated_attachment.title).to.eq('CRID-234-CR-updated')
+        expect(updated_attachment.preview_image_url).to.eq('http://web.com/updated-image')
         expect(updated_attachment.external_last_updated).to.eq(datetime(2017, 1, 3, tzinfo=pytz.utc))
         expect(updated_attachment.external_created_at).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
         expect(updated_attachment.tag).to.eq('CR')
         expect(updated_attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
-        expect(updated_attachment.text_content).to.eq('new text content')
+        expect(updated_attachment.text_content).to.eq('updated text content')
 
         DocumentCrawler.objects.get(
             source_type=AttachmentSourceType.DOCUMENTCLOUD,
@@ -354,3 +357,21 @@ class UpdateDocumentsServiceTestCase(TestCase):
         )
 
         expect(send_cr_attachment_available_email_mock).to.be.called_once_with([new_attachment])
+
+        expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(2)
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
+            FunctionName='uploadPdf',
+            InvokeArgs=json.dumps({
+                'url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
+                'bucket': 'officer-content-test',
+                'key': 'pdf/999'
+            })
+        )
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
+            FunctionName='uploadPdf',
+            InvokeArgs=json.dumps({
+                'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
+                'bucket': 'officer-content-test',
+                'key': 'pdf/1'
+            })
+        )

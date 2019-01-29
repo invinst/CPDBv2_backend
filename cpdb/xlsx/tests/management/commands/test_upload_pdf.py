@@ -11,7 +11,7 @@ from data.factories import AttachmentFileFactory
 
 class UploadPdfCommandTestCase(TestCase):
     @override_settings(S3_BUCKET_OFFICER_CONTENT='officer_content_bucket', S3_BUCKET_PDF_DIRECTORY='pdf')
-    @patch('xlsx.management.commands.upload_pdf.aws')
+    @patch('data.models.attachment_file.aws')
     def test_upload_pdf(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
@@ -50,7 +50,7 @@ class UploadPdfCommandTestCase(TestCase):
         )
 
     @override_settings(S3_BUCKET_OFFICER_CONTENT='officer_content_bucket', S3_BUCKET_PDF_DIRECTORY='pdf')
-    @patch('xlsx.management.commands.upload_pdf.aws')
+    @patch('data.models.attachment_file.aws')
     def test_upload_pdf_with_external_ids(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
