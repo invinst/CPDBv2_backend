@@ -1,12 +1,9 @@
 import json
 from datetime import datetime
 
-import boto3
-from django.test import TestCase, override_settings
-
 import pytz
+from django.test import TestCase, override_settings
 from mock import patch
-from moto import mock_s3, mock_lambda
 from robber import expect
 
 from data.constants import AttachmentSourceType
