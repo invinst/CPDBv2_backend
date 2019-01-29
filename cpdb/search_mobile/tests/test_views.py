@@ -9,8 +9,9 @@ from rest_framework import status
 from robber import expect
 import pytz
 
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, \
-    InvestigatorAllegationFactory
+from data.factories import (
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
+)
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
 
