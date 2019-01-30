@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 
@@ -37,7 +38,7 @@ class TRRDocSerializerTestCase(TestCase):
         expect(TRRDocSerializer(trr_no_address).data['address']).to.eq('')
 
     def test_get_date_of_incident(self):
-        trr = TRRFactory(trr_datetime=datetime(2012, 1, 23))
+        trr = TRRFactory(trr_datetime=datetime(2012, 1, 23, tzinfo=pytz.utc))
         expect(TRRDocSerializer(trr).data['date_of_incident']).to.eq('2012-01-23')
 
     def test_get_point(self):

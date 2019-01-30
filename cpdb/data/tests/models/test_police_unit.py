@@ -1,5 +1,7 @@
+from datetime import datetime
 from operator import itemgetter
 
+import pytz
 from django.test.testcases import TestCase, override_settings
 
 from robber.expect import expect
@@ -46,8 +48,8 @@ class PoliceUnitTestCase(TestCase):
         unit1 = PoliceUnitFactory()
         unit2 = PoliceUnitFactory()
         officer = OfficerFactory()
-        OfficerHistoryFactory(officer=officer, unit=unit1, end_date='2011-01-01')
-        OfficerHistoryFactory(officer=officer, unit=unit2, end_date='2011-02-01')
+        OfficerHistoryFactory(officer=officer, unit=unit1, end_date=datetime(2011, 1, 1, tzinfo=pytz.utc))
+        OfficerHistoryFactory(officer=officer, unit=unit2, end_date=datetime(2011, 2, 1, tzinfo=pytz.utc))
         OfficerHistoryFactory(officer=officer, unit=unit1, end_date=None)
         expect(unit1.active_member_count).to.eq(1)
         expect(unit2.active_member_count).to.eq(0)

@@ -1,7 +1,8 @@
 import random
+from datetime import datetime
+
 import pytz
 
-from django.utils import timezone
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
 import factory
@@ -92,8 +93,8 @@ class AllegationFactory(factory.django.DjangoModelFactory):
 
     # required for percentile calculation, we ensure all objects factoried in same data range
     incident_date = factory.LazyFunction(lambda: fake.date_time_between_dates(
-        datetime_start=timezone.datetime(2000, 1, 1),
-        datetime_end=timezone.datetime(2016, 12, 31),
+        datetime_start=datetime(2000, 1, 1, tzinfo=pytz.utc),
+        datetime_end=datetime(2016, 12, 31, tzinfo=pytz.utc),
         tzinfo=pytz.utc
     ))
     point = None
@@ -159,8 +160,8 @@ class OfficerHistoryFactory(factory.django.DjangoModelFactory):
 
     officer = factory.SubFactory(OfficerFactory)
     unit = factory.SubFactory(PoliceUnitFactory)
-    effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
-    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    effective_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
 
 
 class InvolvementFactory(factory.django.DjangoModelFactory):
@@ -217,12 +218,12 @@ class AwardFactory(factory.django.DjangoModelFactory):
 
     officer = factory.SubFactory(OfficerFactory)
     award_type = factory.LazyFunction(lambda: random.choice(['Life Saving Award', 'Complimentary Letter']))
-    start_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
-    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
-    request_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    start_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
+    end_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
+    request_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
     rank = factory.LazyFunction(lambda: fake.word())
-    last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
-    ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade())
+    last_promotion_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
+    ceremony_date = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
 
 
 class SalaryFactory(factory.django.DjangoModelFactory):

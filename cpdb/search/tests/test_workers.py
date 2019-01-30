@@ -1,5 +1,7 @@
+from datetime import datetime
+
+import pytz
 from django.test import SimpleTestCase, TestCase
-from django.utils import timezone
 
 from robber import expect
 
@@ -294,13 +296,13 @@ class DateOfficerWorkerTestCase(IndexMixin, TestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
-        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 6))
+        allegation_1 = AllegationFactory(incident_date=datetime(2004, 10, 10, tzinfo=pytz.utc))
+        allegation_2 = AllegationFactory(incident_date=datetime(2009, 10, 6, tzinfo=pytz.utc))
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_2)
 
-        TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
-        TRRFactory(trr_datetime=timezone.datetime(2010, 5, 7), officer=officer_4)
+        TRRFactory(trr_datetime=datetime(2004, 10, 10, tzinfo=pytz.utc), officer=officer_2)
+        TRRFactory(trr_datetime=datetime(2010, 5, 7, tzinfo=pytz.utc), officer=officer_4)
 
         self.rebuild_index()
         self.refresh_index()

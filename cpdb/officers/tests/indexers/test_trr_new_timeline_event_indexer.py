@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+import pytz
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 
@@ -32,7 +33,7 @@ class TRRNewTimelineEventIndexerTestCase(TestCase):
         TRRFactory(
             id=2,
             officer=officer,
-            trr_datetime=datetime(2010, 3, 4),
+            trr_datetime=datetime(2010, 3, 4, tzinfo=pytz.utc),
             firearm_used=False,
             taser=False,
             point=Point(34.5, 67.8))

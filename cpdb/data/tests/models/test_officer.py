@@ -1,10 +1,9 @@
 import json
-from datetime import date
+from datetime import date, datetime
 
 import botocore
 import pytz
 from django.test.testcases import TestCase, override_settings
-from django.utils.timezone import datetime
 from freezegun import freeze_time
 from mock import patch
 from robber.expect import expect

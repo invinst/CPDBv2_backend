@@ -1,5 +1,6 @@
 from datetime import datetime, date
 
+import pytz
 from django.urls import reverse
 
 from rest_framework.test import APITestCase
@@ -36,7 +37,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             officer_assigned_beat='Beat 1',
             officer_in_uniform=True,
             officer_on_duty=False,
-            trr_datetime=datetime(2001, 1, 1),
+            trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc),
             subject_gender='M',
             subject_age=37,
             officer=officer,
@@ -47,7 +48,7 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
         )
         OfficerAllegationFactory(
             officer=officer,
-            allegation__incident_date=datetime(2003, 1, 1),
+            allegation__incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1), final_finding='SU')
         ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category=1)
