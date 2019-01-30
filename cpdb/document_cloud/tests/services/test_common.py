@@ -10,8 +10,17 @@ from document_cloud.services.common import get_full_text
 
 class CommonTestCase(SimpleTestCase):
     def test_get_full_text(self):
-        cloud_document = create_object({'full_text': 'text content'})
-        expect(get_full_text(cloud_document)).to.eq('text content')
+        text_content = """
+        
+        something
+
+
+        something
+        
+        """
+        cloud_document = create_object({'full_text': text_content.encode('utf8')})
+        expect(get_full_text(cloud_document)).to.eq("""something
+something""")
 
     def test_get_full_text_raise_HTTPError_exception(self):
         class Document(object):
