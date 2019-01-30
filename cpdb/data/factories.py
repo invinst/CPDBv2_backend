@@ -181,6 +181,8 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     source_type = factory.LazyFunction(lambda: fake.word())
     external_id = factory.LazyFunction(lambda: fake.word())
     title = factory.LazyFunction(lambda: fake.sentence())
+    external_created_at = factory.LazyFunction(lambda: fake.date_time_this_decade(tzinfo=pytz.utc))
+    text_content = factory.LazyFunction(lambda: fake.text(64))
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):

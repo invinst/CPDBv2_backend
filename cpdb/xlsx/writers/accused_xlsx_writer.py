@@ -1,4 +1,5 @@
 from data.models import OfficerAllegation, PoliceWitness, Area, Victim
+from xlsx.constants import ACCUSED_XSLX
 from xlsx.serializers.area_xlsx_serializer import AreaXlsxSerializer
 from xlsx.serializers.officer_xlsx_serializer import CoaccusedOfficerXlsxSerializer
 from xlsx.serializers.officer_allegation_xlsx_serializer import OfficerAllegationXlsxSerializer
@@ -8,7 +9,7 @@ from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
 
 
 class AccusedXlsxWriter(OfficerXlsxWriter):
-    file_name = 'accused.xlsx'
+    file_name = ACCUSED_XSLX
 
     def write_allegation_sheet(self):
         ws = self.wb.create_sheet('Allegation', 0)

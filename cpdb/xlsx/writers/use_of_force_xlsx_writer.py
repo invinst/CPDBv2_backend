@@ -1,10 +1,11 @@
 from trr.models import TRR
+from xlsx.constants import USE_OF_FORCE_XSLX
 from xlsx.serializers.trr_xlsx_serializer import TRRXlsxSerializer
 from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
 
 
 class UseOfForceXlsxWriter(OfficerXlsxWriter):
-    file_name = 'use_of_force.xlsx'
+    file_name = USE_OF_FORCE_XSLX
 
     def export_xlsx(self):
         ws = self.wb.create_sheet('Use Of Force', 0)
