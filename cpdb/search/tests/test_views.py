@@ -244,7 +244,12 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'incident_date': '2007-12-27',
             'highlight': {
                 'summary': ['the officer pointed a <em>gun</em> at the victim']
-            }
+            },
+            'category': 'Unknown',
+            'sub_category': 'Unknown',
+            'address': '',
+            'victims': [],
+            'coaccused': []
         })
 
     def test_retrieve_list_cr_with_highlight(self):
@@ -276,7 +281,12 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'incident_date': '2007-12-27',
             'highlight': {
                 'summary': ['the officer pointed a <em>gun</em> at the victim']
-            }
+            },
+            'category': 'Unknown',
+            'sub_category': 'Unknown',
+            'address': '',
+            'victims': [],
+            'coaccused': []
         })
 
     def test_search_terms_results(self):
@@ -342,12 +352,22 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
                 'crid': '123456',
                 'to': '/complaint/123456/',
                 'incident_date': '2002-02-03',
+                'category': 'Unknown',
+                'sub_category': 'Unknown',
+                'address': '',
+                'victims': [],
+                'coaccused': []
             },
             '654321': {
                 'id': '654321',
                 'crid': '654321',
                 'to': '/complaint/654321/',
                 'incident_date': '2005-02-03',
+                'category': 'Unknown',
+                'sub_category': 'Unknown',
+                'address': '',
+                'victims': [],
+                'coaccused': []
             }
         }
 

@@ -15,7 +15,10 @@ from search.doc_types import (
     RankDocType, ZipCodeDocType, SearchTermItemDocType
 )
 from search.indices import autocompletes_alias
-from search.serializers import RacePopulationSerializer, OfficerMostComplaintsSerializer
+from search.serializers import (
+    RacePopulationSerializer, OfficerMostComplaintsSerializer, VictimSerializer,
+    CoaccusedSerializer,
+)
 from search.utils import chicago_zip_codes
 
 
@@ -165,24 +168,14 @@ class CrIndexer(BaseIndexer):
         self.officerallegation_dict = dict()
         queryset = OfficerAllegation.objects.filter(allegation_category__isnull=False)\
             .select_related('allegation_category')\
-            .values('allegation_category__category', 'allegation_category_id', 'allegation_id')
+            .values(
+                'allegation_category__category',
+                'allegation_category__allegation_name',
+                'allegation_category_id',
+                'allegation_id'
+            )
         for obj in queryset:
             self.officerallegation_dict.setdefault(obj['allegation_id'], []).append(obj)
-
-    def get_most_common_category(self, id):
-        category_count = dict()
-        for officerallegation_obj in self.officerallegation_dict.get(id, []):
-            category_obj = category_count.setdefault(officerallegation_obj['allegation_category_id'], {
-                'category': officerallegation_obj['allegation_category__category'],
-                'count': 0
-            })
-            category_obj['count'] += 1
-
-        try:
-            result = max(category_count.values(), key=lambda obj: obj['count'])
-            return result['category']
-        except ValueError:
-            return None
 
     def get_queryset(self):
         return Allegation.objects.all().annotate(
@@ -201,13 +194,21 @@ class CrIndexer(BaseIndexer):
         )
 
     def extract_datum(self, datum):
+        officer_allegations = datum.officer_allegations.filter(
+            officer__isnull=False
+        ).prefetch_related('officer').order_by('-officer__allegation_count')
+
         return {
             'crid': datum.crid,
-            'category': self.get_most_common_category(datum.crid),
+            'category': getattr(datum.most_common_category, 'category', '') or 'Unknown',
+            'sub_category': getattr(datum.most_common_category, 'allegation_name', '') or 'Unknown',
             'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
             'summary': datum.summary,
             'to': f'/complaint/{datum.crid}/',
-            'investigator_names': datum.investigator_names
+            'investigator_names': datum.investigator_names,
+            'address': datum.address,
+            'victims': VictimSerializer(datum.victims, many=True).data,
+            'coaccused': CoaccusedSerializer(officer_allegations, many=True).data,
         }
 
 
