@@ -842,39 +842,39 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             Bucket='officer_content_bucket',
             Key='zip_with_docs/Officer_1_with_docs.zip'
         )
-        aws_mock.lambda_client.invoke_async.assert_any_call(
-            FunctionName='createOfficerZipFile',
-            InvokeArgs=json.dumps(
-                {
-                    'officer_id': 1,
-                    'key': 'zip_with_docs/Officer_1_with_docs.zip',
-                    'bucket': 'officer_content_bucket',
-                    'xlsx_dir': 'xlsx',
-                    'pdf_dir': 'pdf',
-                    'allegation_attachments_dict': {'ABC': f'allegation 1 attachment.pdf'},
-                    'investigator_attachments_dict': {'XYZ': f'allegation 2 attachment.pdf'}
-                }
-            )
-        )
+
+        _, kwargs = aws_mock.lambda_client.invoke_async.call_args_list[0]
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(json.loads(kwargs['InvokeArgs'])).to.eq({
+            'key': 'zip_with_docs/Officer_1_with_docs.zip',
+            'bucket': 'officer_content_bucket',
+            'file_map': {
+                'xlsx/1/accused.xlsx': 'accused.xlsx',
+                'xlsx/1/use_of_force.xlsx': 'use_of_force.xlsx',
+                'xlsx/1/investigator.xlsx': 'investigator.xlsx',
+                'xlsx/1/documents.xlsx': 'documents.xlsx',
+                'pdf/ABC': f'documents/allegation 1 attachment.pdf',
+                'pdf/XYZ': f'investigators/allegation 2 attachment.pdf'
+            }
+        })
 
         aws_mock.s3.get_object.assert_any_call(
             Bucket='officer_content_bucket',
             Key='zip/Officer_1.zip'
         )
-        aws_mock.lambda_client.invoke_async.assert_any_call(
-            FunctionName='createOfficerZipFile',
-            InvokeArgs=json.dumps(
-                {
-                    'officer_id': 1,
-                    'key': 'zip/Officer_1.zip',
-                    'bucket': 'officer_content_bucket',
-                    'xlsx_dir': 'xlsx',
-                    'pdf_dir': 'pdf',
-                    'allegation_attachments_dict': {},
-                    'investigator_attachments_dict': {}
-                }
-            )
-        )
+
+        _, kwargs = aws_mock.lambda_client.invoke_async.call_args_list[1]
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(json.loads(kwargs['InvokeArgs'])).to.eq({
+            'key': 'zip/Officer_1.zip',
+            'bucket': 'officer_content_bucket',
+            'file_map': {
+                'xlsx/1/accused.xlsx': 'accused.xlsx',
+                'xlsx/1/use_of_force.xlsx': 'use_of_force.xlsx',
+                'xlsx/1/investigator.xlsx': 'investigator.xlsx',
+                'xlsx/1/documents.xlsx': 'documents.xlsx',
+            }
+        })
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',

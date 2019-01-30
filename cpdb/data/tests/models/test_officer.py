@@ -1,14 +1,13 @@
 import json
 from datetime import date
 
+import botocore
+import pytz
 from django.test.testcases import TestCase, override_settings
 from django.utils.timezone import datetime
-
-import pytz
-import botocore
 from freezegun import freeze_time
-from robber.expect import expect
 from mock import patch
+from robber.expect import expect
 
 from data.constants import ACTIVE_YES_CHOICE, ACTIVE_NO_CHOICE
 from data.factories import (
@@ -553,28 +552,24 @@ class OfficerTestCase(TestCase):
 
         officer.invoke_create_zip(with_docs=True)
 
-        allegation_attachments_dict = {'ABC': f'allegation 1 attachment.pdf'}
-        investigator_attachments_dict = {'XYZ': f'allegation 2 attachment.pdf'}
-        expected_InvokeArgs = json.dumps(
-            {
-                'officer_id': 1,
-                'key': 'zip_with_docs/Officer_1_with_docs.zip',
-                'bucket': 'officer_content_bucket',
-                'xlsx_dir': 'xlsx',
-                'pdf_dir': 'pdf',
-                'allegation_attachments_dict': allegation_attachments_dict,
-                'investigator_attachments_dict': investigator_attachments_dict
-            }
-        )
-
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip_with_docs/Officer_1_with_docs.zip'
         )
-        expect(aws_mock.lambda_client.invoke_async).to.be.called_with(
-            FunctionName='createOfficerZipFile',
-            InvokeArgs=expected_InvokeArgs
-        )
+        _, kwargs = aws_mock.lambda_client.invoke_async.call_args
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(json.loads(kwargs['InvokeArgs'])).to.eq({
+            'key': 'zip_with_docs/Officer_1_with_docs.zip',
+            'bucket': 'officer_content_bucket',
+            'file_map': {
+                'xlsx/1/accused.xlsx': 'accused.xlsx',
+                'xlsx/1/use_of_force.xlsx': 'use_of_force.xlsx',
+                'xlsx/1/investigator.xlsx': 'investigator.xlsx',
+                'xlsx/1/documents.xlsx': 'documents.xlsx',
+                'pdf/ABC': f'documents/allegation 1 attachment.pdf',
+                'pdf/XYZ': f'investigators/allegation 2 attachment.pdf'
+            }
+        })
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
@@ -622,26 +617,23 @@ class OfficerTestCase(TestCase):
 
         officer.invoke_create_zip(with_docs=False)
 
-        expected_InvokeArgs = json.dumps(
-            {
-                'officer_id': 1,
-                'key': 'zip/Officer_1.zip',
-                'bucket': 'officer_content_bucket',
-                'xlsx_dir': 'xlsx',
-                'pdf_dir': 'pdf',
-                'allegation_attachments_dict': {},
-                'investigator_attachments_dict': {}
-            }
-        )
-
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
             Key='zip/Officer_1.zip'
         )
-        expect(aws_mock.lambda_client.invoke_async).to.be.called_with(
-            FunctionName='createOfficerZipFile',
-            InvokeArgs=expected_InvokeArgs
-        )
+
+        _, kwargs = aws_mock.lambda_client.invoke_async.call_args
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(json.loads(kwargs['InvokeArgs'])).to.eq({
+            'key': 'zip/Officer_1.zip',
+            'bucket': 'officer_content_bucket',
+            'file_map': {
+                'xlsx/1/accused.xlsx': 'accused.xlsx',
+                'xlsx/1/use_of_force.xlsx': 'use_of_force.xlsx',
+                'xlsx/1/investigator.xlsx': 'investigator.xlsx',
+                'xlsx/1/documents.xlsx': 'documents.xlsx'
+            }
+        })
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
     @patch('data.models.officer.aws')

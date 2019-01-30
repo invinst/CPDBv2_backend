@@ -41,13 +41,13 @@ class LambdaFunctionTestCase(TestCase):
         key = 'zip/officer_1_without_docs.zip'
         lambda_handler(
             event={
-                'officer_id': self.officer_id,
                 'key': key,
                 'bucket': self.bucket,
-                'xlsx_dir': 'xlsx',
-                'pdf_dir': 'pdf',
-                'allegation_attachments_dict': {},
-                'investigator_attachments_dict': {},
+                'file_map': {
+                    f'xlsx/{self.officer_id}/accused.xlsx': 'accused.xlsx',
+                    f'xlsx/{self.officer_id}/investigator.xlsx': 'investigator.xlsx',
+                    f'xlsx/{self.officer_id}/use_of_force.xlsx': 'use_of_force.xlsx'
+                }
             },
             context=None
         )
@@ -83,16 +83,16 @@ class LambdaFunctionTestCase(TestCase):
         key = 'zip/officer_1.zip'
         lambda_handler(
             event={
-                'officer_id': self.officer_id,
                 'key': key,
                 'bucket': self.bucket,
-                'xlsx_dir': 'xlsx',
-                'pdf_dir': 'pdf',
-                'allegation_attachments_dict': {
-                    '2646152': 'attachment_1.pdf',
-                    'not_exist_external_id': 'should_not_added.pdf'
+                'file_map': {
+                    f'xlsx/{self.officer_id}/accused.xlsx': 'accused.xlsx',
+                    f'xlsx/{self.officer_id}/investigator.xlsx': 'investigator.xlsx',
+                    f'xlsx/{self.officer_id}/use_of_force.xlsx': 'use_of_force.xlsx',
+                    'pdf/2646152': 'documents/attachment_1.pdf',
+                    'not_exist_external_id': 'documents/should_not_added.pdf',
+                    'pdf/2646153': 'investigators/attachment_2.pdf'
                 },
-                'investigator_attachments_dict': {'2646153': 'attachment_2.pdf'},
             },
             context=None
         )

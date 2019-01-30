@@ -19,6 +19,7 @@ from data.constants import (
     ACTIVE_YES_CHOICE,
 )
 from shared.aws import aws
+from xlsx.constants import XSLX_FILE_NAMES
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -339,29 +340,32 @@ class Officer(TimeStampsModel, TaggableModel):
         if not self.check_zip_file_exist(with_docs):
             zip_key = self.get_zip_filename(with_docs=with_docs)
             if with_docs:
-                allegation_attachments_dict = {
-                    attachment.external_id: f'{attachment.title}.pdf'
+                allegation_attachments_map = {
+                    f'{settings.S3_BUCKET_PDF_DIRECTORY}/{attachment.external_id}':
+                        f'documents/{attachment.title}.pdf'
                     for attachment in self.allegation_attachments
                 }
                 investigator_attachments_dict = {
-                    attachment.external_id: f'{attachment.title}.pdf'
+                    f'{settings.S3_BUCKET_PDF_DIRECTORY}/{attachment.external_id}':
+                        f'investigators/{attachment.title}.pdf'
                     for attachment in self.investigator_attachments
                 }
             else:
-                allegation_attachments_dict = {}
+                allegation_attachments_map = {}
                 investigator_attachments_dict = {}
+
+            xlsx_map = {
+                f'{settings.S3_BUCKET_XLSX_DIRECTORY}/{self.id}/{file_name}': file_name
+                for file_name in XSLX_FILE_NAMES
+            }
 
             aws.lambda_client.invoke_async(
                 FunctionName='createOfficerZipFile',
                 InvokeArgs=json.dumps(
                     {
-                        'officer_id': self.id,
                         'key': zip_key,
                         'bucket': settings.S3_BUCKET_OFFICER_CONTENT,
-                        'xlsx_dir': settings.S3_BUCKET_XLSX_DIRECTORY,
-                        'pdf_dir': settings.S3_BUCKET_PDF_DIRECTORY,
-                        'allegation_attachments_dict': allegation_attachments_dict,
-                        'investigator_attachments_dict': investigator_attachments_dict
+                        'file_map': {**xlsx_map, **allegation_attachments_map, **investigator_attachments_dict}
                     }
                 )
             )

@@ -25,7 +25,7 @@ class ExportOfficerXlsxUtilTestCase(WriterBaseTestCase):
     def test_return_file_names(self):
         officer = OfficerFactory(id=1)
         file_names = export_officer_xlsx(officer, self.test_output_dir)
-        expect(file_names).to.eq(['accused.xlsx', 'use_of_force.xlsx', 'investigator.xlsx'])
+        expect(file_names).to.eq(['accused.xlsx', 'use_of_force.xlsx', 'investigator.xlsx', 'documents.xlsx'])
 
     def test_export_officer_xlsx_accused(self):
         allegation = AllegationFactory(

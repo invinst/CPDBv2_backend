@@ -104,7 +104,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
 
         changed = update_attachment(attachment, document)
@@ -138,7 +138,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
 
         changed = update_attachment(attachment, document)
@@ -173,7 +173,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content',
+            'full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -264,7 +264,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
         update_document = create_object({
             'documentcloud_id': '1',
@@ -276,7 +276,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'updated text content'
+            'full_text': 'updated text content'.encode('utf8')
         })
         kept_document = create_object({
             'documentcloud_id': '2',
@@ -288,7 +288,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
         search_all_mock.return_value = [new_document, update_document, kept_document]
 
