@@ -50,6 +50,19 @@ class BaseComplaintCrawler(object):
         return records
 
 
+class VimeoSimpleAPI(object):
+    def __init__(self, video_id):
+        self.url = 'http://vimeo.com/api/v2/video/{video_id}.json'.format(video_id=video_id)
+
+    def crawl(self):
+        response = requests.get(self.url, headers=HEADERS)
+        try:
+            content = response.json()[0]
+        except ValueError:
+            content = None
+        return content
+
+
 class ComplaintCrawler(BaseComplaintCrawler):
     AUDIO_FILE_SELECTOR = 'fa-file-sound-o'
     VIDEO_FILE_SELECTOR = 'fa-file-video-o'

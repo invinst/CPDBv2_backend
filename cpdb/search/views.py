@@ -8,11 +8,12 @@ from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter, RankFormatter,
-    ReportFormatter, CRFormatter, TRRFormatter
+    ReportFormatter, CRFormatter, TRRFormatter, SearchTermFormatter
 )
 from .workers import (
     DateCRWorker, DateTRRWorker, OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
-    TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker, RankWorker
+    TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker,
+    RankWorker, SearchTermItemWorker, InvestigatorCRWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -67,6 +68,7 @@ class SearchViewSet(viewsets.ViewSet):
 
 class SearchV1ViewSet(SearchViewSet):
     formatters = {
+        'SEARCH-TERMS': SearchTermFormatter,
         'DATE > CR': CRFormatter,
         'DATE > TRR': TRRFormatter,
         'DATE > OFFICERS': OfficerFormatter,
@@ -83,8 +85,10 @@ class SearchV1ViewSet(SearchViewSet):
         'RANK': RankFormatter,
         'TRR': TRRFormatter,
         'ZIP-CODE': ZipCodeFormatter,
+        'INVESTIGATOR > CR': CRFormatter,
     }
     workers = {
+        'SEARCH-TERMS': SearchTermItemWorker(),
         'DATE > CR': DateCRWorker(),
         'DATE > TRR': DateTRRWorker(),
         'DATE > OFFICERS': DateOfficerWorker(),
@@ -101,6 +105,7 @@ class SearchV1ViewSet(SearchViewSet):
         'RANK': RankWorker(),
         'TRR': TRRWorker(),
         'ZIP-CODE': ZipCodeWorker(),
+        'INVESTIGATOR > CR': InvestigatorCRWorker(),
     }
 
 

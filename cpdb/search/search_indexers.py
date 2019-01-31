@@ -1,14 +1,22 @@
+from django.db import models
+from django.db.models.functions import Concat
+from django.contrib.postgres.aggregates import ArrayAgg
+
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
 from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer
+from search_terms.models import SearchTermItem
+from trr.models import TRR, ActionResponse
 from data.utils.percentile import percentile
-from search.doc_types import UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
+from search.doc_types import (
+    UnitDocType, AreaDocType, CrDocType, TRRDocType,
+    RankDocType, ZipCodeDocType, SearchTermItemDocType
+)
 from search.indices import autocompletes_alias
 from search.serializers import RacePopulationSerializer, OfficerMostComplaintsSerializer
 from search.utils import chicago_zip_codes
-from trr.models import TRR, ActionResponse
 
 
 class BaseIndexer(object):
@@ -177,15 +185,29 @@ class CrIndexer(BaseIndexer):
             return None
 
     def get_queryset(self):
-        return Allegation.objects.all()
+        return Allegation.objects.all().annotate(
+            investigator_names=ArrayAgg(
+                models.Case(
+                    models.When(investigatorallegation__investigator__officer_id__isnull=False, then=Concat(
+                        'investigatorallegation__investigator__officer__first_name', models.Value(' '),
+                        'investigatorallegation__investigator__officer__last_name'
+                    )),
+                    default=Concat(
+                        'investigatorallegation__investigator__first_name', models.Value(' '),
+                        'investigatorallegation__investigator__last_name'
+                    )
+                )
+            )
+        )
 
     def extract_datum(self, datum):
         return {
             'crid': datum.crid,
-            'category': self.get_most_common_category(datum.id),
+            'category': self.get_most_common_category(datum.crid),
             'incident_date': datum.incident_date.strftime('%Y-%m-%d') if datum.incident_date else None,
             'summary': datum.summary,
-            'to': f'/complaint/{datum.crid}/'
+            'to': f'/complaint/{datum.crid}/',
+            'investigator_names': datum.investigator_names
         }
 
 
@@ -248,4 +270,21 @@ class ZipCodeIndexer(BaseIndexer):
             'zip_code': datum.zip_code,
             'url': datum.url,
             'tags': ['zip code'],
+        }
+
+
+class SearchTermItemIndexer(BaseIndexer):
+    doc_type_klass = SearchTermItemDocType
+
+    def get_queryset(self):
+        return SearchTermItem.objects.prefetch_related('category')
+
+    def extract_datum(self, datum):
+        return {
+            'slug': datum.slug,
+            'name': datum.name,
+            'category_name': datum.category.name if datum.category else None,
+            'description': datum.description,
+            'call_to_action_type': datum.call_to_action_type,
+            'link': datum.link,
         }

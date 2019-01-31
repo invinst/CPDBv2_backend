@@ -9,13 +9,15 @@ import pytz
 
 from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
-    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer, SearchTermItemIndexer
 )
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory,
-    SalaryFactory, AllegationCategoryFactory)
+    SalaryFactory, AllegationCategoryFactory,
+    InvestigatorAllegationFactory, InvestigatorFactory)
+from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from shared.tests.utils import create_object
 
@@ -361,10 +363,35 @@ class IndexerManagerTestCase(SimpleTestCase):
 class CrIndexerTestCase(TestCase):
     def test_get_queryset(self):
         expect(CrIndexer().get_queryset().count()).to.eq(0)
-        allegation = AllegationFactory(incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
+        allegation = AllegationFactory(crid='123456', incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc))
         officer = OfficerFactory()
         OfficerAllegationFactory(allegation=allegation, officer=officer)
-        expect(CrIndexer().get_queryset().count()).to.eq(1)
+        investigator = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
+        InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
+
+        querysets = CrIndexer().get_queryset()
+
+        expect(querysets.count()).to.eq(1)
+        allegation = querysets[0]
+        expect(allegation.crid).to.eq('123456')
+        expect(allegation.investigator_names).to.eq(['Jerome Finnigan'])
+
+    def test_get_queryset_with_investigator_is_officer(self):
+        allegation = AllegationFactory(
+            crid='654321',
+            incident_date=datetime(2009, 7, 27, tzinfo=pytz.utc),
+            summary='abc')
+        officer = OfficerFactory(id=10, first_name='Edward', last_name='May')
+        OfficerAllegationFactory(allegation=allegation, officer=officer)
+        investigator = InvestigatorFactory(officer=officer)
+        InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
+
+        querysets = CrIndexer().get_queryset()
+
+        expect(querysets.count()).to.eq(1)
+        allegation = querysets[0]
+        expect(allegation.crid).to.eq('654321')
+        expect(allegation.investigator_names).to.eq(['Edward May'])
 
     def test_extract_datum(self):
         allegation = AllegationFactory(
@@ -380,6 +407,8 @@ class CrIndexerTestCase(TestCase):
         OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
         OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
 
+        setattr(allegation, 'investigator_names', ['Jerome Finnigan'])
+
         expect(
             CrIndexer().extract_datum(allegation)
         ).to.eq({
@@ -387,7 +416,8 @@ class CrIndexerTestCase(TestCase):
             'category': 'Abc',
             'incident_date': '2017-07-27',
             'summary': 'abc',
-            'to': '/complaint/123456/'
+            'to': '/complaint/123456/',
+            'investigator_names': ['Jerome Finnigan']
         })
 
     def test_extract_datum_with_missing_incident_date_and_category(self):
@@ -398,6 +428,8 @@ class CrIndexerTestCase(TestCase):
         officer = OfficerFactory(id=10)
         OfficerAllegationFactory(allegation=allegation, officer=officer, allegation_category=None)
 
+        setattr(allegation, 'investigator_names', [])
+
         expect(
             CrIndexer().extract_datum(allegation)
         ).to.eq({
@@ -405,7 +437,8 @@ class CrIndexerTestCase(TestCase):
             'category': None,
             'incident_date': None,
             'summary': '',
-            'to': '/complaint/123456/'
+            'to': '/complaint/123456/',
+            'investigator_names': []
         })
 
 
@@ -461,4 +494,29 @@ class RankIndexerTestCase(TestCase):
             'tags': ['rank'],
             'active_officers_count': 1,
             'officers_most_complaints': []
+        })
+
+
+class SearchTermItemIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        expect(SearchTermItemIndexer().get_queryset()).to.have.length(0)
+        SearchTermItemFactory()
+        expect(SearchTermItemIndexer().get_queryset()).to.have.length(1)
+
+    def test_extract_datum(self):
+        search_term_item = SearchTermItemFactory(
+            slug='communities',
+            name='Communities',
+            category=SearchTermCategoryFactory(name='Geography'),
+            description='Community description',
+            call_to_action_type='view_all',
+            link='/url-mediator/session-builder/?community=123456'
+        )
+        expect(SearchTermItemIndexer().extract_datum(search_term_item)).to.eq({
+            'slug': 'communities',
+            'name': 'Communities',
+            'category_name': 'Geography',
+            'description': 'Community description',
+            'call_to_action_type': 'view_all',
+            'link': '/url-mediator/session-builder/?community=123456',
         })

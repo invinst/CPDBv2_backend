@@ -1,6 +1,9 @@
 from elasticsearch_dsl.query import Q
 
-from .doc_types import UnitDocType, ReportDocType, AreaDocType, CrDocType, TRRDocType, RankDocType, ZipCodeDocType
+from .doc_types import (
+    UnitDocType, ReportDocType, AreaDocType, CrDocType,
+    TRRDocType, RankDocType, ZipCodeDocType, SearchTermItemDocType
+)
 from officers.doc_types import OfficerInfoDocType
 
 
@@ -193,3 +196,14 @@ class TRRWorker(Worker):
 class ZipCodeWorker(Worker):
     doc_type_klass = ZipCodeDocType
     fields = ['zip_code', 'tags']
+
+
+class SearchTermItemWorker(Worker):
+    doc_type_klass = SearchTermItemDocType
+    fields = ['name', 'category_name']
+    sort_order = ['category_name']
+
+
+class InvestigatorCRWorker(Worker):
+    doc_type_klass = CrDocType
+    fields = ['investigator_names']
