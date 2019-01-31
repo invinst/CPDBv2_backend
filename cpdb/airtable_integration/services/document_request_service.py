@@ -1,7 +1,7 @@
 import time
-from datetime import datetime
 
 from django.conf import settings
+from django.utils import timezone
 
 from airtable import Airtable
 from requests.exceptions import HTTPError
@@ -124,7 +124,7 @@ class CRRequestAirTableUploader(AirTableUploader):
     @classmethod
     def _post_handle(cls, uploaded_results):
         uploaded_attachment_requests = []
-        now = datetime.now()
+        now = timezone.now()
         for attachment_request, record_id in uploaded_results:
             if record_id:
                 attachment_request.airtable_id = record_id
@@ -159,7 +159,7 @@ class TRRRequestAirTableUploader(AirTableUploader):
     @classmethod
     def _post_handle(cls, uploaded_results):
         uploaded_attachment_requests = []
-        now = datetime.now()
+        now = timezone.now()
         for attachment_request, record_id in uploaded_results:
             if record_id:
                 attachment_request.airtable_id = record_id

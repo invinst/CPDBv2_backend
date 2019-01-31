@@ -1,11 +1,11 @@
-import datetime
+from django.utils import timezone
 
 from search.formatters import SimpleFormatter
 
 
 class OfficerV2Formatter(SimpleFormatter):
     def get_latest_percentile(self, percentiles):
-        current_year = datetime.datetime.now().year
+        current_year = timezone.now().year
         percentiles_until_now = list(filter(lambda x: x['year'] <= current_year, percentiles))
 
         if len(percentiles_until_now) > 0:

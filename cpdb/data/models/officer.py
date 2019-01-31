@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import Q, Count
 from django.db.models.functions import ExtractYear
+from django.utils import timezone
 from django.utils.text import slugify
 from django_bulk_update.manager import BulkUpdateManager
 
@@ -91,7 +92,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def current_age(self):
-        return datetime.now().year - self.birth_year
+        return timezone.localtime(timezone.now()).year - self.birth_year
 
     @property
     def v2_to(self):
