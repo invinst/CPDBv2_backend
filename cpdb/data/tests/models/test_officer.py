@@ -509,7 +509,8 @@ class OfficerTestCase(TestCase):
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
         S3_BUCKET_ZIP_DIRECTORY='zip',
         S3_BUCKET_XLSX_DIRECTORY='xlsx',
-        S3_BUCKET_PDF_DIRECTORY='pdf'
+        S3_BUCKET_PDF_DIRECTORY='pdf',
+        LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE='createOfficerZipFileTest'
     )
     @patch('data.models.officer.aws')
     def test_invoke_create_zip(self, aws_mock):
@@ -556,7 +557,7 @@ class OfficerTestCase(TestCase):
             Key='zip_with_docs/Officer_1_with_docs.zip'
         )
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args
-        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
             'key': 'zip_with_docs/Officer_1_with_docs.zip',
             'bucket': 'officer_content_bucket',
@@ -574,7 +575,8 @@ class OfficerTestCase(TestCase):
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
         S3_BUCKET_ZIP_DIRECTORY='zip',
         S3_BUCKET_XLSX_DIRECTORY='xlsx',
-        S3_BUCKET_PDF_DIRECTORY='pdf'
+        S3_BUCKET_PDF_DIRECTORY='pdf',
+        LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE='createOfficerZipFileTest'
     )
     @patch('data.models.officer.aws')
     def test_invoke_create_zip_without_docs(self, aws_mock):
@@ -622,7 +624,7 @@ class OfficerTestCase(TestCase):
         )
 
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args
-        expect(kwargs['FunctionName']).to.eq('createOfficerZipFile')
+        expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
             'key': 'zip/Officer_1.zip',
             'bucket': 'officer_content_bucket',

@@ -38,7 +38,7 @@ class AttachmentFile(TimeStampsModel):
 
     def upload_to_s3(self):
         aws.lambda_client.invoke_async(
-            FunctionName='uploadPdf',
+            FunctionName=settings.LAMBDA_FUNCTION_UPLOAD_PDF,
             InvokeArgs=json.dumps({
                 'url': self.url,
                 'bucket': settings.S3_BUCKET_OFFICER_CONTENT,

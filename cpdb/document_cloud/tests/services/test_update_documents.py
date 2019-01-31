@@ -247,7 +247,11 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(log_changes_mock).to.be.called_with(1, 1)
 
-    @override_settings(S3_BUCKET_OFFICER_CONTENT='officer-content-test', S3_BUCKET_PDF_DIRECTORY='pdf')
+    @override_settings(
+        S3_BUCKET_OFFICER_CONTENT='officer-content-test',
+        S3_BUCKET_PDF_DIRECTORY='pdf',
+        LAMBDA_FUNCTION_UPLOAD_PDF='uploadPdfTest'
+    )
     @patch('data.models.attachment_file.aws')
     @patch('document_cloud.services.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.services.update_documents.search_all')
@@ -357,7 +361,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(2)
         expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
-            FunctionName='uploadPdf',
+            FunctionName='uploadPdfTest',
             InvokeArgs=json.dumps({
                 'url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
                 'bucket': 'officer-content-test',
@@ -365,7 +369,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             })
         )
         expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
-            FunctionName='uploadPdf',
+            FunctionName='uploadPdfTest',
             InvokeArgs=json.dumps({
                 'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
                 'bucket': 'officer-content-test',

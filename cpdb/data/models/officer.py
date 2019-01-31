@@ -361,7 +361,7 @@ class Officer(TimeStampsModel, TaggableModel):
             }
 
             aws.lambda_client.invoke_async(
-                FunctionName='createOfficerZipFile',
+                FunctionName=settings.LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE,
                 InvokeArgs=json.dumps(
                     {
                         'key': zip_key,
