@@ -17,6 +17,6 @@ if __name__ == '__main__':
             })
             execute_from_command_line(sys.argv)
 
-    else:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')  # pragma: no cover
+    else:  # pragma: no cover
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
         execute_from_command_line(sys.argv)

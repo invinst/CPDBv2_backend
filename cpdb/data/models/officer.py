@@ -20,7 +20,7 @@ from data.constants import (
     ACTIVE_YES_CHOICE,
 )
 from shared.aws import aws
-from xlsx.constants import XSLX_FILE_NAMES
+from xlsx.constants import XLSX_FILE_NAMES
 from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
@@ -357,7 +357,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
             xlsx_map = {
                 f'{settings.S3_BUCKET_XLSX_DIRECTORY}/{self.id}/{file_name}': file_name
-                for file_name in XSLX_FILE_NAMES
+                for file_name in XLSX_FILE_NAMES
             }
 
             aws.lambda_client.invoke_async(

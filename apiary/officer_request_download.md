@@ -1,10 +1,10 @@
-## Officer create zip file [/officers/{officer_id}/request-download/{?with-docs}]
+## Officer request download [/officers/{officer_id}/request-download/{?with-docs}]
 
-### Create zip file from excel and pdf files then save it on S3[GET]
+### Get the url to the officer zip file[GET]
 
 + Parameters
     + officer_id (number) - number ID of the officer
-    + offset (string, optional) - should the zip file contain docs or not
+    + with-docs (string, optional) - should the zip file contain docs or not
         + Default: `false`
 
 + Response 200 (application/text)

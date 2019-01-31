@@ -1,10 +1,10 @@
-from xlsx.constants import DOCUMENTS_XSLX
+from xlsx.constants import DOCUMENTS_XLSX
 from xlsx.serializers.attachment_xlsx_serializer import AttachmentXlsxSerializer
 from xlsx.writers.officer_xlsx_writer import OfficerXlsxWriter
 
 
 class DocumentsXlsxWriter(OfficerXlsxWriter):
-    file_name = DOCUMENTS_XSLX
+    file_name = DOCUMENTS_XLSX
 
     def write_complaint_documents_sheet(self):
         ws = self.wb.create_sheet('Complaint Documents', 0)
