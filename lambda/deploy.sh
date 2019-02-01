@@ -8,7 +8,7 @@ deploy_lambda () {
   . .env
   echo "Installing python packages"
   mkdir -p package
-  pip install -r requirements.txt --target ./package > /dev/null
+  pip3 install -r requirements.txt --target ./package > /dev/null
   cd package
 
   echo "Zipping"
