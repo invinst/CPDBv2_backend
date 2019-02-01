@@ -164,34 +164,6 @@ jobs:
             fi
             bin/run_job.sh $ENVFLAG $(cat /tmp/workspace/buildnum) clear_cache
 
-  deploy_lambda_production:
-    docker:
-      - image: cpdbdev/google-cloud-sdk:latest
-    environment: *gcloud-env
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run: *reveal-git-secret
-      - run: *setup-gcloud
-      - run:
-          name: Start job
-          command: lambda/deploy.sh --production
-
-  deploy_lambda_staging:
-    docker:
-      - image: cpdbdev/google-cloud-sdk:latest
-    environment: *gcloud-env
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run: *reveal-git-secret
-      - run: *setup-gcloud
-      - run:
-          name: Start job
-          command: lambda/deploy.sh --staging
-
   rebuild_index:
     docker:
       - image: cpdbdev/google-cloud-sdk:latest
@@ -375,9 +347,6 @@ workflows:
       - clear_cache:
           requires:
             - deploy_backend
-      - deploy_lambda_staging:
-          requires:
-            - deploy_backend
 
   deploy_backend_production:
     jobs:
@@ -415,9 +384,6 @@ workflows:
           requires:
             - deploy_backend
       - reset_staging_branch:
-          requires:
-            - deploy_backend
-      - deploy_lambda_production:
           requires:
             - deploy_backend
 
