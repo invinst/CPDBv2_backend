@@ -31,7 +31,7 @@ from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
 from officers.views import OfficersDesktopViewSet, OfficersMobileViewSet
 from old_officers.views import OldOfficersViewSet, OldOfficersMobileViewSet
-from analytics.views import EventViewSet, SearchTrackingViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet, AttachmentTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from old_cr.views import OldCRViewSet, OldCRMobileViewSet
 from units.views import UnitsViewSet
@@ -74,6 +74,7 @@ router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
+router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
