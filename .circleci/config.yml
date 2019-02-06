@@ -48,6 +48,18 @@ jobs:
       - store_artifacts:
           path: /usr/src/app/project/cpdb/test_visual_token_media
 
+  test_lambda:
+    docker:
+      - image: cpdbdev/backend:py3
+        user: gunicorn
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.circleci
+    steps:
+      - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
+      - checkout
+      - run: pip install --user -r requirements/test.txt
+      - run: python -m lambda.test
+
   push_backend_image:
     machine: true
     steps:
@@ -335,6 +347,7 @@ workflows:
       - clear_cache:
           requires:
             - deploy_backend
+
   deploy_backend_production:
     jobs:
       - test:

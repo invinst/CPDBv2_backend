@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-hercule apiary/apiary.md -o apiary.apib
+hercule apiary/apiary.md -o apiary.apib && echo "Done"

@@ -1,8 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 import pytz
 
 from django.test.testcases import TestCase
-from django.utils.timezone import datetime
 
 from robber.expect import expect
 from mock import patch

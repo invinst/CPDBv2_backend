@@ -289,8 +289,12 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             allegation_category=AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
         )
 
-        trr2011 = TRRFactory(officer=officer, trr_datetime=datetime(2011, 9, 23), taser=True, firearm_used=False)
-        trr2015 = TRRFactory(officer=officer, trr_datetime=datetime(2015, 9, 23), taser=False, firearm_used=False)
+        trr2011 = TRRFactory(
+            officer=officer, trr_datetime=datetime(2011, 9, 23, tzinfo=pytz.utc), taser=True, firearm_used=False
+        )
+        trr2015 = TRRFactory(
+            officer=officer, trr_datetime=datetime(2015, 9, 23, tzinfo=pytz.utc), taser=False, firearm_used=False
+        )
         SalaryFactory(officer=officer, rank='Police Officer', spp_date=date(1998, 9, 23))
 
         self.refresh_index()

@@ -1,0 +1,5 @@
+ACCUSED_XLSX = 'accused.xlsx'
+USE_OF_FORCE_XLSX = 'use_of_force.xlsx'
+INVESTIGATOR_XLSX = 'investigator.xlsx'
+DOCUMENTS_XLSX = 'documents.xlsx'
+XLSX_FILE_NAMES = [ACCUSED_XLSX, USE_OF_FORCE_XLSX, INVESTIGATOR_XLSX, DOCUMENTS_XLSX]
