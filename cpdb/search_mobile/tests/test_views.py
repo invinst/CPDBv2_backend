@@ -85,6 +85,8 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
         InvestigatorAllegationFactory(investigator=investigator_1, allegation=allegation_1)
         InvestigatorAllegationFactory(investigator=investigator_2, allegation=allegation_1)
         InvestigatorAllegationFactory(investigator=investigator_1, allegation=allegation_2)
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category__category='Illegal Search')
+        OfficerAllegationFactory(allegation=allegation_2, allegation_category__category='')
 
         self.rebuild_index()
         self.refresh_index()
@@ -101,10 +103,14 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
             '123456': {
                 'id': '123456',
                 'crid': '123456',
+                'category': 'Illegal Search',
+                'incident_date': '2002-02-03'
             },
             '654321': {
                 'id': '654321',
                 'crid': '654321',
+                'category': 'Unknown',
+                'incident_date': '2005-02-03'
             }
         }
 
