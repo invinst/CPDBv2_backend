@@ -1,9 +1,9 @@
 from django.db import models
 
-from data.constants import MEDIA_IPRA_COPA_HIDING_TAGS
 from data.models import (
     OfficerAllegation, AttachmentFile, Victim, Allegation
 )
+from data.utils.attachment_file import filter_attachments
 from es_index import register_indexer
 from es_index.indexers import BaseIndexer, PartialIndexer
 from es_index.utils import timing_validate
@@ -50,7 +50,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     @timing_validate('CRNewTimelineEventIndexer: Populating attachments dict...')
     def _populate_attachments_dict(self):
         self._attachments_dict = dict()
-        attachments = AttachmentFile.objects.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
+        attachments = filter_attachments(AttachmentFile.objects).values(
             'title', 'url', 'preview_image_url', 'file_type', 'allegation_id'
         )
         for obj in attachments:

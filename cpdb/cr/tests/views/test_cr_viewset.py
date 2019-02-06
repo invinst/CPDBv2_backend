@@ -115,6 +115,11 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
+            tag='TRR',
+            allegation=allegation, title='CR arrest report document',
+            url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+        )
+        AttachmentFileFactory(
             tag='AR',
             allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
