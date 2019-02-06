@@ -1,6 +1,5 @@
-from datetime import datetime
-
 from django.test import SimpleTestCase
+from django.utils import timezone
 from mock import Mock
 from robber import expect
 
@@ -18,7 +17,7 @@ class DesktopTimelineSerializerTestCase(SimpleTestCase):
         obj.to_dict = Mock(return_value={
             'a': 'b',
             'c': 'd',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 123
 
@@ -32,14 +31,14 @@ class DesktopTimelineSerializerTestCase(SimpleTestCase):
         obj1 = Mock()
         obj1.to_dict = Mock(return_value={
             'a': 'b',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 123
         })
         obj2 = Mock()
         obj2.to_dict = Mock(return_value={
             'c': 'd',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 456
         })
@@ -55,7 +54,7 @@ class MobileTimeLineSerializerTestCase(SimpleTestCase):
         obj.to_dict = Mock(return_value={
             'a': 'b',
             'c': 'd',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 123,
             'attachments': [{
@@ -76,7 +75,7 @@ class MobileTimeLineSerializerTestCase(SimpleTestCase):
         obj1 = Mock()
         obj1.to_dict = Mock(return_value={
             'a': 'b',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 123,
             'attachments': [{
@@ -87,7 +86,7 @@ class MobileTimeLineSerializerTestCase(SimpleTestCase):
         obj2.to_dict = Mock(return_value={
             'a': 'b',
             'c': 'd',
-            'date_sort': datetime.now(),
+            'date_sort': timezone.now(),
             'priority_sort': 40,
             'officer_id': 123,
             'attachments': [{

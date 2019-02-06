@@ -6,6 +6,9 @@ services:
     environment:
       GUNICORN_RELOAD: "True"
       GOOGLE_APPLICATION_CREDENTIALS: "/usr/src/app/twitterbot-nl-api.json"
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
     ports:
       - "8000:80"
     depends_on:

@@ -29,6 +29,10 @@ CPDP is a simple API serving the CPDP website version 2 (not the same as api ver
 
 :[Top officers by allegation](top_officer_by_allegation.md)
 
+:[Officer create zip file](officer_create_zip_file.md)
+
+:[Officer request download](officer_request_download.md)
+
 :[Officer mobile](officer_mobile.md)
 
 :[TRR](trr.md)

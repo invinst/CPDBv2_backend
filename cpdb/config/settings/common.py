@@ -64,7 +64,8 @@ LOCAL_APPS = (
     'data_importer',
     'status',
     'email_service',
-    'social_graph'
+    'social_graph',
+    'xlsx',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -322,3 +323,7 @@ AIRTABLE_CPD_AGENCY_ID = ''
 
 TEMPLATE_TIME_TO_LIVE = timedelta(minutes=5)
 AZURE_TEMPLATE_CONTAINER = 'templates'
+
+S3_BUCKET_XLSX_DIRECTORY = 'xlsx'
+S3_BUCKET_PDF_DIRECTORY = 'pdf'
+S3_BUCKET_ZIP_DIRECTORY = 'zip'

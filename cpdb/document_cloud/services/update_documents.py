@@ -134,4 +134,7 @@ def update_documents():
                 )
                 new_attachments.append(new_attachment)
     save_attachments(kept_attachments, new_attachments, updated_attachments)
+    for attachment in new_attachments + updated_attachments:
+        attachment.upload_to_s3()
+
     send_cr_attachment_available_email(new_attachments)

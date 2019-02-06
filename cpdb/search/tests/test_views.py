@@ -1,16 +1,22 @@
 from datetime import datetime
-from mock import patch
 
 from django.urls import reverse
-from django.utils import timezone
-
 from rest_framework.test import APITestCase
 from rest_framework import status
+
+from mock import patch
 from robber import expect
 import pytz
 
-from data.factories import OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory, \
-    OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
+from data.factories import (
+    OfficerFactory,
+    OfficerHistoryFactory,
+    PoliceUnitFactory,
+    AllegationFactory,
+    InvestigatorFactory,
+    InvestigatorAllegationFactory,
+    OfficerAllegationFactory,
+)
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
@@ -67,8 +73,8 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results[0]['crid']).to.eq('123')
 
     def test_search_date_cr_result(self):
-        AllegationFactory(crid='123', incident_date='2007-12-27').save()
-        AllegationFactory(crid='456', incident_date='2008-12-27').save()
+        AllegationFactory(crid='123', incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
+        AllegationFactory(crid='456', incident_date=datetime(2008, 12, 27, tzinfo=pytz.utc)).save()
 
         self.rebuild_index()
         self.refresh_index()
@@ -101,8 +107,8 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results[0]['id']).to.eq('123456')
 
     def test_search_date_trr_result(self):
-        TRRFactory(id='123', trr_datetime='2007-12-27').save()
-        TRRFactory(id='456', trr_datetime='2008-12-27').save()
+        TRRFactory(id='123', trr_datetime=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
+        TRRFactory(id='456', trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc)).save()
 
         self.rebuild_index()
         self.refresh_index()
@@ -166,13 +172,13 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
-        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 6))
+        allegation_1 = AllegationFactory(incident_date=datetime(2004, 10, 10, tzinfo=pytz.utc))
+        allegation_2 = AllegationFactory(incident_date=datetime(2009, 10, 6, tzinfo=pytz.utc))
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_2)
 
-        TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
-        TRRFactory(trr_datetime=timezone.datetime(2010, 5, 7), officer=officer_4)
+        TRRFactory(trr_datetime=datetime(2004, 10, 10, tzinfo=pytz.utc), officer=officer_2)
+        TRRFactory(trr_datetime=datetime(2010, 5, 7, tzinfo=pytz.utc), officer=officer_4)
 
         self.rebuild_index()
         self.refresh_index()
@@ -190,13 +196,13 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        allegation_1 = AllegationFactory(incident_date=timezone.datetime(2004, 10, 10))
-        allegation_2 = AllegationFactory(incident_date=timezone.datetime(2009, 10, 6))
+        allegation_1 = AllegationFactory(incident_date=datetime(2004, 10, 10, tzinfo=pytz.utc))
+        allegation_2 = AllegationFactory(incident_date=datetime(2009, 10, 6, tzinfo=pytz.utc))
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_2)
 
-        TRRFactory(trr_datetime=timezone.datetime(2004, 10, 10), officer=officer_2)
-        TRRFactory(trr_datetime=timezone.datetime(2010, 5, 7), officer=officer_4)
+        TRRFactory(trr_datetime=datetime(2004, 10, 10, tzinfo=pytz.utc), officer=officer_2)
+        TRRFactory(trr_datetime=datetime(2010, 5, 7, tzinfo=pytz.utc), officer=officer_4)
 
         self.rebuild_index()
         self.refresh_index()
@@ -212,12 +218,12 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
     def test_retrieve_single_cr_with_highlight(self):
         AllegationFactory(
             crid=123,
-            incident_date='2007-12-27',
+            incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc),
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
             crid=456,
-            incident_date='2000-12-27',
+            incident_date=datetime(2000, 12, 27, tzinfo=pytz.utc),
             summary='the officer pointed a knife at the victim'
         )
 
@@ -244,12 +250,12 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
     def test_retrieve_list_cr_with_highlight(self):
         AllegationFactory(
             crid=123,
-            incident_date='2007-12-27',
+            incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc),
             summary='the officer pointed a gun at the victim'
         )
         AllegationFactory(
             crid=456,
-            incident_date='2000-12-27',
+            incident_date=datetime(2000, 12, 27, tzinfo=pytz.utc),
             summary='the officer pointed a knife at the victim'
         )
 
