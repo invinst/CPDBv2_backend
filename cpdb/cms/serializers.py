@@ -264,6 +264,11 @@ class CRPageSerializer(SlugPageSerializer):
         source='fields'
     )
 
+    new_document_notification = RichTextField(
+        fake_value=['We’ll notify you when we have new documents.'],
+        source='fields'
+    )
+
     class Meta:
         slug = 'cr-page'
         model = SlugPage

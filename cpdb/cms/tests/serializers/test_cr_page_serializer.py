@@ -11,7 +11,8 @@ class CRPageSerializerTestCase(SimpleTestCase):
         cr_page = Mock()
         cr_page.fields = {
             'document_request_instruction_value': 'a',
-            'no_attachment_text_value': 'b'
+            'no_attachment_text_value': 'b',
+            'new_document_notification_value': 'c'
         }
 
         serializer = CRPageSerializer(cr_page)
@@ -28,6 +29,11 @@ class CRPageSerializerTestCase(SimpleTestCase):
             'name': 'no_attachment_text',
             'type': 'rich_text',
             'value': 'b'
+        })
+        expect(fields['new_document_notification']).to.eq({
+            'name': 'new_document_notification',
+            'type': 'rich_text',
+            'value': 'c'
         })
 
     def test_update(self):
