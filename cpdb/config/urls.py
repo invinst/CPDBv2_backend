@@ -42,6 +42,7 @@ from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
 from status.views import StatusViewSet
 from social_graph.views import SocialGraphViewSet
+from tracker.views import AttachmentViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -74,6 +75,7 @@ router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
+router_v2.register(r'attachment', AttachmentViewSet, base_name='attachment')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
