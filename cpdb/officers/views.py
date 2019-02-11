@@ -1,16 +1,19 @@
+from django.db.models import Case, When
+from django.shortcuts import get_object_or_404
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.db.models import Case, When
 
 from data.models import Officer, OfficerAlias
-from officers.serializers.response_serializers import (
-    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer
-)
-from officers.serializers.response_mobile_serializers import OfficerInfoMobileSerializer, \
-    CoaccusalCardMobileSerializer, OfficerCardMobileSerializer
 from officers.queries import OfficerTimelineQuery, OfficerTimelineMobileQuery
+from officers.serializers.response_mobile_serializers import (
+    OfficerInfoMobileSerializer,
+    CoaccusalCardMobileSerializer, OfficerCardMobileSerializer,
+)
+from officers.serializers.response_serializers import (
+    OfficerInfoSerializer, OfficerCardSerializer, OfficerCoaccusalSerializer,
+)
 
 _ALLOWED_FILTERS = [
     'category',
@@ -91,6 +94,29 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
             )
 
         return Response(OfficerCardSerializer(officers, many=True).data)
+
+    @detail_route(methods=['get'], url_path='request-download')
+    def request_download(self, request, pk):
+        officer_id = self.get_officer_id(pk)
+        queryset = Officer.objects.all()
+        officer = get_object_or_404(queryset, id=officer_id)
+
+        with_docs = request.GET.get('with-docs', '') == 'true'
+
+        if officer.check_zip_file_exist(with_docs=with_docs):
+            url = officer.generate_presigned_zip_url(with_docs=with_docs)
+        else:
+            url = ''
+        return Response(data=url)
+
+    @detail_route(methods=['get'], url_path='create-zip-file')
+    def create_zip_file(self, _, pk):
+        officer_id = self.get_officer_id(pk)
+        queryset = Officer.objects.all()
+        officer = get_object_or_404(queryset, id=officer_id)
+        officer.invoke_create_zip(with_docs=True)
+        officer.invoke_create_zip(with_docs=False)
+        return Response()
 
 
 class OfficersMobileViewSet(OfficerBaseViewSet):

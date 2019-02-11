@@ -2,6 +2,7 @@
 *
 !cpdb
 !requirements
+!lambda
 !gunicorn.conf
 
 # further stuffs to ignore

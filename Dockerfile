@@ -18,7 +18,8 @@ RUN apt-get update && \
     libjpeg-dev \
     curl \
     zlib1g-dev \
-    git
+    git \
+    zip
 
 ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
 RUN tar xjf geos-3.6.1.tar.bz2 && \
@@ -34,6 +35,7 @@ WORKDIR /usr/src/app
 RUN curl -o $PAPERTRAIL_CA_FILE https://papertrailapp.com/tools/papertrail-bundle.pem
 
 ADD requirements requirements
+ADD lambda lambda
 RUN pip install --no-cache-dir -r requirements/local.txt
 
 COPY . .

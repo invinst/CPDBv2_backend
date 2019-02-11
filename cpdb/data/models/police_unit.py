@@ -107,7 +107,7 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
                 default='allegation_category__category',
                 output_field=models.CharField()
             )).values('name').annotate(
-            count=models.Count('allegation__id', distinct=True),
+            count=models.Count('allegation__crid', distinct=True),
             sustained_count=models.Sum(
                 models.Case(
                     models.When(final_finding='SU', then=1),

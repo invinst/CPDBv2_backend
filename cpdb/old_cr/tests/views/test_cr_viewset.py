@@ -247,7 +247,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_request_complaint_summary(self):
         allegation = AllegationFactory(crid='11',
-                                       incident_date=datetime(2002, 2, 28),
+                                       incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc),
                                        summary='Summary')
         category = AllegationCategoryFactory(category='Use of Force')
         OfficerAllegationFactory(

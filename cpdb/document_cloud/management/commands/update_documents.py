@@ -1,4 +1,5 @@
 import logging
+import re
 from urllib.error import HTTPError
 
 from django.core.management.base import BaseCommand
@@ -48,19 +49,16 @@ mapping_fields = {
 
 def get_full_text(cloud_document):
     try:
-        return cloud_document.full_text
+        return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
     except (HTTPError, NotImplementedError):
         return ''
 
 
 def update_attachment(attachment, cloud_document):
     changed = (
-        (
-            attachment.external_last_updated is not None and
-            attachment.external_last_updated < cloud_document.updated_at
-        )
-        or not attachment.source_type
-        or not attachment.external_last_updated
+        not attachment.source_type or
+        not attachment.external_last_updated or
+        attachment.external_last_updated < cloud_document.updated_at
     )
     if changed:
         attachment.text_content = get_full_text(cloud_document)
@@ -150,4 +148,7 @@ class Command(BaseCommand):
                     )
                     new_attachments.append(new_attachment)
         save_attachments(kept_attachments, new_attachments, updated_attachments)
+        for attachment in new_attachments + updated_attachments:
+            attachment.upload_to_s3()
+
         send_cr_attachment_available_email(new_attachments)

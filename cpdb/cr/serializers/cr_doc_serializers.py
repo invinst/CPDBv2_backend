@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from es_index.serializers import (
     BaseSerializer, get, get_gender, get_date, literal, get_finding, get_point
@@ -14,7 +14,7 @@ class CoaccusedSerializer(BaseSerializer):
 
     def get_age(self, obj):
         if obj['officer__birth_year'] is not None:
-            return datetime.now().year - obj['officer__birth_year']
+            return timezone.localtime(timezone.now()).year - obj['officer__birth_year']
 
         return None
 

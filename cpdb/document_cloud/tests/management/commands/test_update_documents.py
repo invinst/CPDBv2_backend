@@ -1,7 +1,8 @@
+import json
 from datetime import datetime
 from urllib.error import HTTPError
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core import management
 
 import pytz
@@ -22,14 +23,22 @@ from shared.tests.utils import create_object
 
 class UpdateDocumentsServiceTestCase(TestCase):
     def test_get_full_text(self):
-        cloud_document = create_object({'full_text': 'text content'})
-        expect(get_full_text(cloud_document)).to.eq('text content')
+        text_content = """
+
+        something
+
+
+        something
+
+        """
+        cloud_document = create_object({'full_text': text_content.encode('utf8')})
+        expect(get_full_text(cloud_document)).to.eq("something\nsomething")
 
     def test_get_full_text_raise_HTTPError_exception(self):
         class Document(object):
             @property
             def full_text(self):
-                raise HTTPError('Testing url', '404', 'Testing error', '', '')
+                raise HTTPError('Testing url', '404', 'Testing error', None, None)
 
         cloud_document = Document()
         expect(get_full_text(cloud_document)).to.eq('')
@@ -128,7 +137,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
 
         changed = update_attachment(attachment, document)
@@ -162,7 +171,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
 
         changed = update_attachment(attachment, document)
@@ -197,7 +206,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content',
+            'full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -242,7 +251,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('title')
-        expect(AttachmentFile.objects.first().allegation).to.eq(allegation)
+        expect(AttachmentFile.objects.first().allegation.crid).to.eq(allegation.crid)
 
     def test_save_attachments_save_updated_attachments(self):
         attachment = AttachmentFileFactory(title='old title', source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD)
@@ -271,11 +280,15 @@ class UpdateDocumentsServiceTestCase(TestCase):
 
         expect(log_changes_mock).to.be.called_with(1, 1)
 
+    @override_settings(
+        S3_BUCKET_OFFICER_CONTENT='officer-content-test',
+        S3_BUCKET_PDF_DIRECTORY='pdf',
+        LAMBDA_FUNCTION_UPLOAD_PDF='uploadPdfTest'
+    )
+    @patch('data.models.attachment_file.aws')
     @patch('document_cloud.management.commands.update_documents.send_cr_attachment_available_email')
     @patch('document_cloud.management.commands.update_documents.search_all')
-    def test_update_documents(self, search_all_mock, send_cr_attachment_available_email_mock):
-        EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
-
+    def test_update_documents(self, search_all_mock, send_cr_attachment_available_email_mock, aws_mock):
         allegation = AllegationFactory(crid='234')
         new_document = create_object({
             'documentcloud_id': '999',
@@ -288,19 +301,19 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
         update_document = create_object({
             'documentcloud_id': '1',
             'allegation': allegation,
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-new.html',
+            'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
             'document_type': 'CR',
-            'title': 'CRID-234-CR-new',
-            'normal_image_url': 'http://web.com/new-image',
+            'title': 'CRID-234-CR-updated',
+            'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'new text content'
+            'full_text': 'updated text content'.encode('utf8')
         })
         kept_document = create_object({
             'documentcloud_id': '2',
@@ -312,7 +325,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'
+            'full_text': 'text content'.encode('utf8')
         })
         search_all_mock.return_value = [new_document, update_document, kept_document]
 
@@ -361,14 +374,14 @@ class UpdateDocumentsServiceTestCase(TestCase):
         AttachmentFile.objects.get(external_id='2')
         updated_attachment = AttachmentFile.objects.get(external_id='1')
 
-        expect(updated_attachment.url).to.eq('https://www.documentcloud.org/documents/1-CRID-234-CR-new.html')
-        expect(updated_attachment.title).to.eq('CRID-234-CR-new')
-        expect(updated_attachment.preview_image_url).to.eq('http://web.com/new-image')
+        expect(updated_attachment.url).to.eq('https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html')
+        expect(updated_attachment.title).to.eq('CRID-234-CR-updated')
+        expect(updated_attachment.preview_image_url).to.eq('http://web.com/updated-image')
         expect(updated_attachment.external_last_updated).to.eq(datetime(2017, 1, 3, tzinfo=pytz.utc))
         expect(updated_attachment.external_created_at).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
         expect(updated_attachment.tag).to.eq('CR')
         expect(updated_attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
-        expect(updated_attachment.text_content).to.eq('new text content')
+        expect(updated_attachment.text_content).to.eq('updated text content')
 
         DocumentCrawler.objects.get(
             source_type=AttachmentSourceType.DOCUMENTCLOUD,
@@ -378,3 +391,21 @@ class UpdateDocumentsServiceTestCase(TestCase):
         )
 
         expect(send_cr_attachment_available_email_mock).to.be.called_once_with([new_attachment])
+
+        expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(2)
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
+            FunctionName='uploadPdfTest',
+            InvokeArgs=json.dumps({
+                'url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
+                'bucket': 'officer-content-test',
+                'key': 'pdf/999'
+            })
+        )
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
+            FunctionName='uploadPdfTest',
+            InvokeArgs=json.dumps({
+                'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
+                'bucket': 'officer-content-test',
+                'key': 'pdf/1'
+            })
+        )

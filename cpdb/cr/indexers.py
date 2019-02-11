@@ -121,17 +121,17 @@ class CRIndexer(BaseIndexer):
     def get_queryset(self):
         # Values are extracted so that we can save some 2.5Gb of memory during run
         return Allegation.objects.all().select_related('beat').values(
-            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'crid', 'beat__name', 'summary', 'point', 'incident_date',
             'old_complaint_address', 'add1', 'add2', 'city', 'location'
         )
 
     def extract_datum(self, datum):
-        datum['coaccused'] = self.coaccused_dict.get(datum['id'], [])
-        datum['investigators'] = self.investigator_dict.get(datum['id'], [])
-        datum['police_witnesses'] = self.policewitness_dict.get(datum['id'], [])
-        datum['attachments'] = self.attachments_dict.get(datum['id'], [])
-        datum['complainants'] = self.complainants_dict.get(datum['id'], [])
-        datum['victims'] = self.victims_dict.get(datum['id'], [])
+        datum['coaccused'] = self.coaccused_dict.get(datum['crid'], [])
+        datum['investigators'] = self.investigator_dict.get(datum['crid'], [])
+        datum['police_witnesses'] = self.policewitness_dict.get(datum['crid'], [])
+        datum['attachments'] = self.attachments_dict.get(datum['crid'], [])
+        datum['complainants'] = self.complainants_dict.get(datum['crid'], [])
+        datum['victims'] = self.victims_dict.get(datum['crid'], [])
 
         return self.serializer.serialize(datum)
 
@@ -139,7 +139,7 @@ class CRIndexer(BaseIndexer):
 class CRPartialIndexer(PartialIndexer, CRIndexer):
     def get_batch_queryset(self, keys):
         return Allegation.objects.filter(crid__in=keys).select_related('beat').values(
-            'crid', 'id', 'beat__name', 'summary', 'point', 'incident_date',
+            'crid', 'beat__name', 'summary', 'point', 'incident_date',
             'old_complaint_address', 'add1', 'add2', 'city', 'location'
         )
 

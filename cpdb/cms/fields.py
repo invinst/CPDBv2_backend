@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.utils import timezone
 from rest_framework import serializers
 from faker import Faker
 
@@ -69,7 +70,7 @@ class DateField(StringField):
         if value is not None:
             return value
         if self._fake_value is None:
-            return datetime.now().strftime('%Y-%m-%d')
+            return timezone.now().strftime('%Y-%m-%d')
         return self._fake_value
 
     def validate_value(self, value):

@@ -9,6 +9,7 @@ CORS_ORIGIN_WHITELIST = (
     'ms.cpdp.co',
     'staging.cpdp.co',
     'staging.cpdb.co',
+    'test-social-graph.herokuapp.com'
 )
 
 V1_URL = 'https://staging.cpdb.co'
@@ -24,3 +25,7 @@ ENVIRONMENT = 'staging'
 
 EMAIL_BACKEND = 'email_service.backend.MailGunHijackBackend'
 BANDIT_EMAIL = ['cpdb.dev+hijack@eastagile.com', 'cpdp+notifications@invisibleinstitute.com']
+
+S3_BUCKET_OFFICER_CONTENT = 'officer-content-staging'
+LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE = 'createOfficerZipFileStaging'
+LAMBDA_FUNCTION_UPLOAD_PDF = 'uploadPdfStaging'

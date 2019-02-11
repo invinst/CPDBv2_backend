@@ -417,7 +417,7 @@ class OfficersIndexerTestCase(TestCase):
         OfficerAllegationFactory(
             officer=officer1,
             allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
-            start_date=datetime(2015, 1, 1),
+            start_date=date(2015, 1, 1),
             allegation__is_officer_complaint=False)
         OfficerAllegationFactory(
             officer=officer1,

@@ -48,6 +48,18 @@ jobs:
       - store_artifacts:
           path: /usr/src/app/project/cpdb/test_visual_token_media
 
+  test_lambda:
+    docker:
+      - image: cpdbdev/backend:py3
+        user: gunicorn
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.circleci
+    steps:
+      - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
+      - checkout
+      - run: pip install --user -r requirements/test.txt
+      - run: python -m lambda.test
+
   push_backend_image:
     machine: true
     steps:
@@ -292,7 +304,7 @@ jobs:
           command: |
             export BACKUP_ID=$(gcloud sql backups list --instance $PROD_DB_INSTANCE --limit 1 --uri | sed -En 's/.+\/([0-9]+)$/\1/p')
             echo "Start restoring backup $BACKUP_ID onto staging"
-            gcloud sql backups restore $BACKUP_ID --restore-instance=$STAGING_DB_INSTANCE --backup-instance=$PROD_DB_INSTANCE --quiet
+            gcloud sql backups restore $BACKUP_ID --restore-instance=$STAGING_DB_INSTANCE --backup-instance=$PROD_DB_INSTANCE --quiet --async
 
   reset_staging_branch:
     docker:
@@ -335,6 +347,7 @@ workflows:
       - clear_cache:
           requires:
             - deploy_backend
+
   deploy_backend_production:
     jobs:
       - test:

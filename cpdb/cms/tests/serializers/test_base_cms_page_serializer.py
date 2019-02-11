@@ -9,6 +9,13 @@ from cms.fields import StringField
 from cms.serializers import BaseCMSPageSerializer
 
 
+class DummyModel(Model):
+    name = CharField(max_length=256)
+
+    class Meta:
+        app_label = 'cms'
+
+
 class BaseCMSPageSerializerTestCase(TransactionTestCase):
     def setUp(self):
         self.mock_fields = Mock()
@@ -43,12 +50,6 @@ class BaseCMSPageSerializerTestCase(TransactionTestCase):
             class Meta:
                 model = self.page_model
                 meta_fields = ('a', 'b', 'c', 'd')
-
-        class DummyModel(Model):
-            name = CharField(max_length=256)
-
-            class Meta:
-                app_label = 'cms'
 
         class ChildSerializer(ModelSerializer):
             class Meta:

@@ -12,6 +12,7 @@ CORS_ORIGIN_WHITELIST = (
     'm.cpdp.co',
     'cpdp.co',
     'beta.cpdb.co',
+    'test-social-graph.herokuapp.com'
 )
 
 ANYMAIL = {
@@ -101,3 +102,7 @@ LOGGING = {
         }
     },
 }
+
+S3_BUCKET_OFFICER_CONTENT = 'officer-content'
+LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE = 'createOfficerZipFile'
+LAMBDA_FUNCTION_UPLOAD_PDF = 'uploadPdf'

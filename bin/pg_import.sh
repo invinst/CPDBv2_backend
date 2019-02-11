@@ -39,6 +39,12 @@ source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
 
 docker-compose up -d $SERVICE
+if [ "$SERVICE" == "postgres" ]; then
+    docker-compose run -v $FILE_DIR:/app psql dropdb -U postgres -h $SERVICE $POSTGRES_APP_DB
+    docker-compose run -v $FILE_DIR:/app psql createdb -U postgres -h $SERVICE $POSTGRES_APP_DB
+else
+    echo "Not recreating database because not running on local. I hope you are running this on an empty database."
+fi
 docker-compose run -v $FILE_DIR:/app psql bash -c "psql -U postgres -h $SERVICE $POSTGRES_APP_DB < /app/$(basename $OUTFILE)"
 
 if [ "$SERVICE" == "pg-proxy" ]; then

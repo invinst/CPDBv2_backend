@@ -5,6 +5,7 @@ from django.test import SimpleTestCase
 from robber import expect
 from freezegun import freeze_time
 
+from shared.tests.utils import create_object
 from search_mobile.formatters import OfficerV2Formatter, TRRFormatter, CRFormatter
 
 
@@ -65,15 +66,22 @@ class OfficerV2FormatterTestCase(SimpleTestCase):
 
 class CRFormatterTestCase(SimpleTestCase):
     def test_doc_format(self):
-        cr_dict = {
-            'crid': '123'
-        }
-        doc = Mock(to_dict=Mock(return_value=cr_dict))
-
+        cr = Mock(crid='123', incident_date='2013-04-13', category='Domestic')
         expect(
-            CRFormatter().doc_format(doc)
+            CRFormatter().doc_format(cr)
         ).to.be.eq({
-            'crid': '123'
+            'crid': '123',
+            'incident_date': '2013-04-13',
+            'category': 'Domestic'
+        })
+
+        no_category_cr = create_object({'crid': '123', 'incident_date': '2013-04-13'})
+        expect(
+            CRFormatter().doc_format(no_category_cr)
+        ).to.be.eq({
+            'crid': '123',
+            'incident_date': '2013-04-13',
+            'category': 'Unknown'
         })
 
 

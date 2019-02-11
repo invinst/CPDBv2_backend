@@ -202,3 +202,8 @@ class SearchTermItemWorker(Worker):
     doc_type_klass = SearchTermItemDocType
     fields = ['name', 'category_name']
     sort_order = ['category_name']
+
+
+class InvestigatorCRWorker(Worker):
+    doc_type_klass = CrDocType
+    fields = ['investigator_names']
