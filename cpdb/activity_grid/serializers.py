@@ -33,7 +33,7 @@ class OfficerCardSerializer(serializers.Serializer):
     important = serializers.BooleanField()
     null_position = serializers.IntegerField()
     last_activity = serializers.DateTimeField()
-    type = serializers.CharField(default=RESPONSE_TYPE_SINGLE_OFFICER)
+    kind = serializers.CharField(default=RESPONSE_TYPE_SINGLE_OFFICER)
 
 
 class SimpleCardSerializer(serializers.Serializer):
@@ -56,4 +56,4 @@ class PairCardSerializer(serializers.Serializer):
     important = serializers.BooleanField()
     null_position = serializers.IntegerField()
     last_activity = serializers.DateTimeField()
-    type = serializers.CharField(default=RESPONSE_TYPE_COACCUSED_PAIR)
+    kind = serializers.CharField(default=RESPONSE_TYPE_COACCUSED_PAIR)
