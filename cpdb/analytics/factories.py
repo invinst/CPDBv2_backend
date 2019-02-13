@@ -3,10 +3,18 @@ import factory
 
 from faker import Faker
 
-from .models import SearchTracking
+from .models import Event, SearchTracking
 from .constants import QUERY_TYPES
 
 fake = Faker()
+
+
+class EventFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Event
+
+    name = factory.LazyFunction(lambda: fake.name())
+    data = {}
 
 
 class SearchTrackingFactory(factory.django.DjangoModelFactory):

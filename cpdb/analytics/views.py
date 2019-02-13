@@ -13,7 +13,7 @@ class EventViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = (AllowAny,)
 
 
-class SearchTrackingViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class SearchTrackingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SearchTrackingSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = SearchTracking.objects.all()

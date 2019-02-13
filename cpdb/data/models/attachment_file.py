@@ -20,6 +20,8 @@ class AttachmentFile(TimeStampsModel):
     original_url = models.CharField(max_length=255, db_index=True)
     allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE, related_name='attachment_files')
     source_type = models.CharField(max_length=255, db_index=True)
+    views_count = models.IntegerField(default=0)
+    downloads_count = models.IntegerField(default=0)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
