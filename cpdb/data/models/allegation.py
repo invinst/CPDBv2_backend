@@ -1,7 +1,8 @@
 from django.apps import apps
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import F, Max, Prefetch
+from django.db.models import F, Max, Prefetch, Count, Subquery, OuterRef
+from django.db.models.functions import Coalesce
 from django.utils.timezone import timedelta
 from django_bulk_update.manager import BulkUpdateManager
 
@@ -113,24 +114,58 @@ class Allegation(TimeStampsModel):
     @classmethod
     def get_cr_with_new_documents(cls, limit):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
+        last_created_at = AttachmentFile.objects.all().aggregate(Max('external_created_at'))['external_created_at__max']
+        filter_external_created_at = last_created_at - timedelta(days=30)
+
+        document_attachments_queryset = AttachmentFile.objects.filter(
+            allegation_id=OuterRef('crid'),
+            file_type=MEDIA_TYPE_DOCUMENT,
+            external_created_at__gte=filter_external_created_at
+        ).exclude(
+            tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
+        ).values('allegation_id')
+
+        latest_viewed_documents_subquery = Subquery(
+            AttachmentFile.objects.annotate(
+                last_viewed_at=Max('attachmenttracking__created_at')
+            ).exclude(
+                tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
+            ).filter(
+                allegation_id=OuterRef('allegation_id'),
+                file_type=MEDIA_TYPE_DOCUMENT
+            ).order_by(
+                F('last_viewed_at').desc(nulls_last=True),
+                F('external_created_at').desc(nulls_last=True)
+            ).values_list('id', flat=True)[:1]
+        )
+
         return cls.objects.prefetch_related(
             Prefetch(
                 'attachment_files',
-                queryset=AttachmentFile.objects.annotate(
-                    last_created_at=Max('external_created_at')
-                ).exclude(
-                    tag__in=MEDIA_IPRA_COPA_HIDING_TAGS
-                ).filter(
-                    file_type=MEDIA_TYPE_DOCUMENT,
-                    external_created_at__gte=(F('last_created_at') - timedelta(days=30))
-                ).order_by('external_created_at'),
-                to_attr='latest_documents'
+                queryset=AttachmentFile.objects.filter(id__in=latest_viewed_documents_subquery),
+                to_attr='latest_viewed_documents'
             )
         ).annotate(
-            latest_document_created_at=Max('attachment_files__external_created_at')
-        ).filter(
-            latest_document_created_at__isnull=False
-        ).order_by('-latest_document_created_at')[:limit]
+            latest_document_created_at=Subquery(
+                document_attachments_queryset.annotate(
+                    latest_created_at=Max('external_created_at')
+                ).values('latest_created_at')[:1],
+                output_field=models.DateField()
+            ),
+            latest_document_viewed_at=Max('attachment_files__attachmenttracking__created_at'),
+            num_recent_documents=Coalesce(
+                Subquery(
+                    document_attachments_queryset.annotate(count=Count('id')).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0
+            )
+        ).exclude(
+            latest_document_viewed_at__isnull=True,
+            latest_document_created_at__isnull=True
+        ).order_by(
+            F('latest_document_viewed_at').desc(nulls_last=True),
+            F('latest_document_created_at').desc(nulls_last=True)
+        )[:limit]
 
     @property
     def v2_to(self):
