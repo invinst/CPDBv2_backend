@@ -9,7 +9,7 @@ from robber import expect
 from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
-from data_importer.ipra_portal_crawler import crawl_and_update_attachments, parse_incidents, crawl_open_ipra
+from data_importer.ipra_crawler import crawl_and_update_attachments, parse_incidents, crawl_open_ipra
 from data.constants import AttachmentSourceType
 
 

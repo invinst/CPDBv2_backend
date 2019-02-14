@@ -5,7 +5,7 @@ from django.test.testcases import SimpleTestCase
 from mock import MagicMock, patch
 from robber import expect
 
-from data_importer.ipra_portal_crawler.crawler import (
+from data_importer.ipra_crawler.portal_crawler import (
     OpenIpraInvestigationCrawler,
     BaseComplaintCrawler,
     ComplaintCrawler,

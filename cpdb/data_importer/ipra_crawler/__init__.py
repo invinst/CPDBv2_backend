@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO
 from data.models import AttachmentFile, Allegation, AllegationCategory
-from data_importer.ipra_portal_crawler.crawler import (
+from data_importer.ipra_crawler.portal_crawler import (
     OpenIpraInvestigationCrawler,
     ComplaintCrawler,
     VimeoSimpleAPI

@@ -6,7 +6,7 @@ from django.conf import settings
 from documentcloud import DocumentCloud
 from tqdm import tqdm
 
-from data_importer.ipra_portal_crawler import crawl_and_update_attachments
+from data_importer.ipra_crawler import crawl_and_update_attachments
 from email_service.service import send_cr_attachment_available_email
 from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
