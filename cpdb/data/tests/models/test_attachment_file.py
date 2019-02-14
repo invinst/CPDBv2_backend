@@ -6,6 +6,7 @@ from mock import patch
 from robber import expect
 
 from data.factories import AttachmentFileFactory
+from data.models import AttachmentFile
 
 
 class AttachmentFileTestCase(TestCase):
@@ -36,3 +37,13 @@ class AttachmentFileTestCase(TestCase):
                 'key': 'pdf/123'
             })
         )
+
+    def test_attachment_shown_manager(self):
+        AttachmentFileFactory(id=1, show=True)
+        AttachmentFileFactory(id=2, show=False)
+        AttachmentFileFactory(id=3, show=False)
+
+        shown_attachments = AttachmentFile.showing.all()
+
+        expect(shown_attachments).to.have.length(1)
+        expect(shown_attachments[0].id).to.eq(1)

@@ -1,4 +1,4 @@
-## Attachment [/attachment/]
+## Attachments [/attachments/]
 
 ### Get attachments [GET]
 
@@ -17,6 +17,7 @@
                     "preview_image_url": "https://assets.documentcloud.org/documents/4769596/pages/CRID-1051117-CR-p1-normal.gif",
                     "views_count": 1,
                     "downloads_count": 1,
+                    "show": true
                 },
                 {
                     "id": 4829,
@@ -26,6 +27,26 @@
                     "preview_image_url": "https://assets.documentcloud.org/documents/4769386/pages/CRID-1064593-CR-p1-normal.gif",
                     "views_count": 2,
                     "downloads_count": 1,
+                    "show": false
                 }
             ]
+        }
+
+## Individual Attachment [/attachments/{pk}/]
+
+### Set attachment's show attribute [PATCH]
+
++ Parameters
+    + pk (number) - number ID of Attachment
+
++ Request
+
+        {
+            "show": true
+        }
+
++ Response 200 (application/json)
+
+        {
+            "show": true
         }

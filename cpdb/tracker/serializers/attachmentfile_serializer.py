@@ -14,4 +14,5 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
             'preview_image_url',
             'views_count',
             'downloads_count',
+            'show'
         )

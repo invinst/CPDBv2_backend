@@ -10,6 +10,11 @@ from shared.aws import aws
 from .common import TimeStampsModel
 
 
+class ShownAttachmentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(show=True)
+
+
 class AttachmentFile(TimeStampsModel):
     external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
@@ -22,6 +27,7 @@ class AttachmentFile(TimeStampsModel):
     source_type = models.CharField(max_length=255, db_index=True)
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)
+    show = models.BooleanField(default=True)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
@@ -30,6 +36,7 @@ class AttachmentFile(TimeStampsModel):
     text_content = models.TextField(blank=True)
 
     objects = BulkUpdateManager()
+    showing = ShownAttachmentManager()
 
     class Meta:
         unique_together = (('allegation', 'external_id', 'source_type'),)

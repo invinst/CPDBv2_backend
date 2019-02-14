@@ -75,7 +75,7 @@ router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
-router_v2.register(r'attachment', AttachmentViewSet, base_name='attachment')
+router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
