@@ -16,6 +16,8 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = AttachmentFile.objects.all().order_by('-created_at', '-updated_at', 'id')
+        if 'crid' in request.query_params:
+            queryset = queryset.filter(allegation=str(request.query_params['crid']))
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, request, view=self)

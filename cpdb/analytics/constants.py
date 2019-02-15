@@ -7,4 +7,3 @@ QUERY_TYPES = [
 ]
 
 EVT_ATTACHMENT_DOWNLOAD = 'attachment-download'
-EVT_ATTACHMENT_VIEW = 'attachment-view'

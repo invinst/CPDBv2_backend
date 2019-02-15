@@ -5,9 +5,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from robber import expect
 from freezegun import freeze_time
+from urllib.parse import urlencode
 
 from authentication.factories import AdminUserFactory
-from data.factories import AttachmentFileFactory
+from data.factories import AttachmentFileFactory, AllegationFactory
 
 
 class DocumentTestCase(APITestCase):
@@ -112,3 +113,55 @@ class DocumentTestCase(APITestCase):
         response = self.client.patch(url, {}, format='json')
 
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+
+    @freeze_time('2017-01-14 12:00:01')
+    def test_attachments_filtered_by_cr(self):
+        allegation1 = AllegationFactory(crid='1')
+        allegation2 = AllegationFactory(crid='2')
+
+        AttachmentFileFactory(
+            id=1,
+            file_type='document',
+            title='CRID 1051117 CR',
+            source_type='DOCUMENTCLOUD',
+            preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+            views_count=1,
+            downloads_count=1,
+            show=True,
+            allegation=allegation1
+        )
+        AttachmentFileFactory(
+            id=2,
+            file_type='audio',
+            title='Log 1087021 911',
+            source_type='COPA',
+            preview_image_url=None,
+            views_count=2,
+            downloads_count=2,
+            show=False,
+            allegation=allegation2
+        )
+
+        base_url = reverse('api-v2:attachments-list')
+        query_string = urlencode({'crid': allegation1.crid})
+        url = f'{base_url}?{query_string}'
+        response = self.client.get(url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': 1,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'CRID 1051117 CR',
+                    'source_type': 'DOCUMENTCLOUD',
+                    'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+                    'views_count': 1,
+                    'downloads_count': 1,
+                    'show': True,
+                }
+            ]
+        })

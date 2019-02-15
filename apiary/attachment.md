@@ -1,4 +1,11 @@
-## Attachments [/attachments/]
+## Attachments [/attachments/{?crid,offset,limit}/]
+
++ Parameters
+    + crid (string) - CRID to filter attachments
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
 
 ### Get attachments [GET]
 

@@ -18,18 +18,6 @@ class EventManager(models.Manager):
             queryset = queryset.filter(data__id__in=attachment_ids)
         return queryset
 
-    def create_attachment_view_events(self, attachment_ids):
-        return self.bulk_create([
-            Event(name=constants.EVT_ATTACHMENT_VIEW, data={'id': attachment_id})
-            for attachment_id in attachment_ids
-        ])
-
-    def get_attachment_view_events(self, attachment_ids=list()):
-        queryset = self.filter(name=constants.EVT_ATTACHMENT_VIEW)
-        if len(attachment_ids) > 0:
-            queryset = queryset.filter(data__id__in=attachment_ids)
-        return queryset
-
 
 class Event(TimeStampsModel):
     name = models.CharField(max_length=255)
@@ -39,7 +27,7 @@ class Event(TimeStampsModel):
 
     @property
     def attachment_id(self):
-        if self.name not in [constants.EVT_ATTACHMENT_VIEW, constants.EVT_ATTACHMENT_DOWNLOAD]:
+        if self.name not in [constants.EVT_ATTACHMENT_DOWNLOAD]:
             return None
         try:
             return self.data['id']
