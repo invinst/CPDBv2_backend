@@ -274,6 +274,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         allegation_2 = AllegationFactory(crid='456')
         allegation_3 = AllegationFactory(crid='789')
         allegation_4 = AllegationFactory(crid='321')
+        allegation_5 = AllegationFactory(crid='987')
 
         AttachmentFileFactory(
             allegation=allegation_1,
@@ -372,19 +373,41 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
-        AttachmentTrackingFactory(
-            attachment_file=attachment_file_1,
-            created_at=datetime(2018, 8, 14, 12, 0, 1, tzinfo=pytz.utc)
-        )
-        AttachmentTrackingFactory(
-            attachment_file=attachment_file_2,
-            created_at=datetime(2018, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
+        AttachmentFileFactory(
+            title='Not appear attachment',
+            id=10,
+            tag='CR',
+            url='http://cr-document.com/10',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url10',
+            allegation=allegation_4,
+            external_created_at=datetime(2015, 6, 13, 12, 0, 1, tzinfo=pytz.utc)
         )
 
-        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 3})
+        attachment_file_3 = AttachmentFileFactory(
+            title='Tracking document 3',
+            id='11',
+            tag='CR',
+            url='http://cr-document.com/11',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url11',
+            allegation=allegation_5,
+            external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
+        with freeze_time(datetime(2018, 8, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_1)
+
+        with freeze_time(datetime(2018, 9, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_2)
+
+        with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_3)
+
+        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 5})
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(len(response.data)).to.eq(3)
+        expect(len(response.data)).to.eq(4)
         expect(response.data).to.eq([
             {
                 'crid': '321',
@@ -395,7 +418,18 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url9',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 0
+                'num_recent_documents': 1
+            },
+            {
+                'crid': '987',
+                'latest_document': {
+                    'id': '11',
+                    'title': 'Tracking document 3',
+                    'url': 'http://cr-document.com/11',
+                    'preview_image_url': 'http://preview.com/url11',
+                    'file_type': 'document'
+                },
+                'num_recent_documents': 1
             },
             {
                 'crid': '123',

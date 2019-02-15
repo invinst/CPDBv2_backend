@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 
 from cr.doc_types import CRDocType
 from data.models import Allegation
+from cr.queries import LatestDocumentsQuery
 from old_cr.serializers.cr_response_serializers import (
     AttachmentRequestSerializer, CRSummarySerializer,
     AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer,
@@ -56,8 +57,8 @@ class OldCRViewSet(viewsets.ViewSet):
     @list_route(methods=['GET'], url_path='list-by-new-document')
     def allegations_with_new_documents(self, request):
         limit = int(request.GET.get('limit', 40))
-        results = Allegation.get_cr_with_new_documents(limit)
-        serializer = AllegationWithNewDocumentsSerializer(results, many=True)
+        latest_documents = LatestDocumentsQuery.execute(limit)
+        serializer = AllegationWithNewDocumentsSerializer(latest_documents, many=True)
         return Response(serializer.data)
 
     @list_route(methods=['GET'], url_path='complaint-summaries')
