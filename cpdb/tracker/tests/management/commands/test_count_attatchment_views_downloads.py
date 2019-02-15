@@ -4,7 +4,7 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import AttachmentFileFactory
-from analytics.factories import EventFactory
+from analytics.models import Event
 
 
 class CountAttachmentViewsDownloadsTestCase(TestCase):
@@ -20,8 +20,8 @@ class CountAttachmentViewsDownloadsTestCase(TestCase):
             downloads_count=0
         )
 
-        EventFactory(name='attachment-view', data={'id': 1})
-        EventFactory(name='attachment-download', data={'id': 2})
+        Event.objects.create_attachment_download_events([2])
+        Event.objects.create_attachment_view_events([1])
 
         management.call_command('count_attachment_views_downloads')
 

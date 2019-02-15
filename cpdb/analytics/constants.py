@@ -5,3 +5,6 @@ QUERY_TYPES = [
     [FREE_TEXT, 'Free Text'],
     [NO_INTERACTION, 'No Interaction']
 ]
+
+EVT_ATTACHMENT_DOWNLOAD = 'attachment-download'
+EVT_ATTACHMENT_VIEW = 'attachment-view'

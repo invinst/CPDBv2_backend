@@ -15,8 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         for attachment in tqdm(AttachmentFile.objects.all(), desc='Updating attachments'):
-            attachment.views_count = Event.objects.filter(name='attachment-view', data__id=attachment.id).count()
-            attachment.downloads_count = Event.objects.filter(
-                name='attachment-download', data__id=attachment.id
-            ).count()
+            attachment.views_count = Event.objects.get_attachment_view_events([attachment.id]).count()
+            attachment.downloads_count = Event.objects.get_attachment_download_events([attachment.id]).count()
             attachment.save()
