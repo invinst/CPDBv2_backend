@@ -14,7 +14,7 @@ from data_importer.ipra_crawler.portal_crawler import (
 
 
 class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
-    @patch('data_importer.ipra_portal_crawler.crawler.requests')
+    @patch('data_importer.ipra_crawler.portal_crawler.requests')
     def test_parse(self, requests):
         requests.get.return_value.json.return_value = {
             'caseSearch': {
@@ -40,12 +40,12 @@ class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
 class BaseComplaintCrawlerTest(SimpleTestCase):
     URL = 'http://www.iprachicago.org/case/1042532-2/'
 
-    @patch('data_importer.ipra_portal_crawler.crawler.requests')
+    @patch('data_importer.ipra_crawler.portal_crawler.requests')
     def test_get_html_content(self, requests):
         requests.get = MagicMock(return_value=MagicMock(text='something'))
         expect(BaseComplaintCrawler().get_html_content(self.URL)).to.be.eq('something')
 
-    @patch('data_importer.ipra_portal_crawler.crawler.requests')
+    @patch('data_importer.ipra_crawler.portal_crawler.requests')
     def test_parse(self, requests):
         requests.get = MagicMock(return_value=MagicMock(text='something'))
 
@@ -198,7 +198,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
     </div>
     '''
 
-    @patch('data_importer.ipra_portal_crawler.crawler.ComplaintCrawler.get_html_content')
+    @patch('data_importer.ipra_crawler.portal_crawler.ComplaintCrawler.get_html_content')
     def test_parse(self, get_html_content):
         single_subject_content = '''
         <p>Subjects: Barry Hayes</p>
@@ -221,7 +221,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
         }
         expect(ComplaintCrawler(url=self.URL).crawl()).to.be.eq(records)
 
-    @patch('data_importer.ipra_portal_crawler.crawler.ComplaintCrawler.get_html_content')
+    @patch('data_importer.ipra_crawler.portal_crawler.ComplaintCrawler.get_html_content')
     def test_parse_with_multiple_subjects(self, get_html_content):
         multiple_subject_content = '''
         <p>Subjects:</p>
@@ -238,7 +238,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
 
 class VimeoSimpleAPITestCase(SimpleTestCase):
     @responses.activate
-    def test_parse(self,):
+    def test_parse(self):
         content = [{
             'id': 307768537,
             'title': 'Log# 1082195 3rd Party Clip',

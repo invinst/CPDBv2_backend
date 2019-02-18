@@ -96,7 +96,11 @@ def save_attachments(kept_attachments, new_attachments, updated_attachments):
 
 def log_changes(num_new_attachments, num_updated_attachments):
     num_documents = AttachmentFile.objects.filter(
-        source_type__in=[AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]
+        source_type__in=[
+            AttachmentSourceType.DOCUMENTCLOUD,
+            AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD
+        ]
     ).count()
     DocumentCrawler.objects.create(
         source_type=AttachmentSourceType.DOCUMENTCLOUD,

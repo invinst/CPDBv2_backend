@@ -8,5 +8,3 @@ DOCUMENT_TYPES = [
     ('CHI-R', 'CHI-R'),
     ('incident/offense', 'Incident/Offense Report')
 ]
-
-AUTO_UPLOAD_DESCRIPTION = 'AUTO_UPLOAD_DESCRIPTION'
