@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from django.conf import settings
 
 
-def initialize_analyticsreporting():
+def initialize_analyticsreporting():  # pragma: no cover
     """
     Initializes an Analytics Reporting API V4 service object.
 
