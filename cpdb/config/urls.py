@@ -22,6 +22,7 @@ from django.views.generic.base import RedirectView
 
 from rest_framework import routers
 
+from document_crawlers.views import DocumentCrawlersViewSet
 from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
@@ -74,6 +75,7 @@ router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
+router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

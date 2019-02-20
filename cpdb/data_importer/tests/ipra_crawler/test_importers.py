@@ -4,9 +4,11 @@ from datetime import datetime
 from django.test.testcases import TestCase
 
 import pytz
-from mock import patch
+from mock import patch, Mock
 from robber import expect
 
+from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
+from document_cloud.factories import DocumentCrawlerFactory
 from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
@@ -346,6 +348,19 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             'log_num': '456',
         }]
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
+        DocumentCrawlerFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+            status=DOCUMENT_CRAWLER_SUCCESS,
+            num_documents=5,
+            num_new_documents=1,
+            num_updated_documents=4,
+            num_successful_run=1,
+        )
+        DocumentCrawlerFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+            status=DOCUMENT_CRAWLER_FAILED,
+            num_successful_run=1,
+        )
         allegation = AllegationFactory(crid='123')
         attachment_file = AttachmentFileFactory(
             allegation=allegation,
@@ -353,7 +368,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
 
-        expect(expect(DocumentCrawler.objects.count())).to.eq(0)
+        expect(expect(DocumentCrawler.objects.count())).to.eq(2)
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
@@ -365,12 +380,49 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             AttachmentSourceType.SUMMARY_REPORTS_COPA
         )
 
-        expect(DocumentCrawler.objects.count()).to.eq(1)
-        crawler_log = DocumentCrawler.objects.first()
+        expect(DocumentCrawler.objects.count()).to.eq(3)
+        crawler_log = DocumentCrawler.objects.order_by('-created_at').first()
         expect(crawler_log.source_type).to.eq(AttachmentSourceType.SUMMARY_REPORTS_COPA)
+        expect(crawler_log.status).to.eq(DOCUMENT_CRAWLER_SUCCESS)
         expect(crawler_log.num_documents).to.eq(2)
         expect(crawler_log.num_new_documents).to.eq(1)
         expect(crawler_log.num_updated_documents).to.eq(1)
+        expect(crawler_log.num_successful_run).to.eq(2)
 
         expect(new_attachments).to.have.length(1)
         expect(new_attachments[0].url).to.eq('http://chicagocopa.org/document_link.pdf')
+
+    @patch(
+        'data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.crawl_ipra',
+        side_effect=Mock(side_effect=[Exception()])
+    )
+    def test_failed_crawl_and_update_attachments(self, _):
+        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+
+        DocumentCrawlerFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+            status=DOCUMENT_CRAWLER_SUCCESS,
+            num_documents=5,
+            num_new_documents=1,
+            num_updated_documents=4,
+            num_successful_run=1,
+        )
+        DocumentCrawlerFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+            status=DOCUMENT_CRAWLER_FAILED,
+            num_successful_run=1,
+        )
+
+        expect(expect(DocumentCrawler.objects.count())).to.eq(2)
+
+        new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
+
+        expect(new_attachments).to.eq([])
+        expect(DocumentCrawler.objects.count()).to.eq(3)
+        crawler_log = DocumentCrawler.objects.order_by('-created_at').first()
+        expect(crawler_log.source_type).to.eq(AttachmentSourceType.SUMMARY_REPORTS_COPA)
+        expect(crawler_log.status).to.eq(DOCUMENT_CRAWLER_FAILED)
+        expect(crawler_log.num_documents).to.eq(0)
+        expect(crawler_log.num_new_documents).to.eq(0)
+        expect(crawler_log.num_updated_documents).to.eq(0)
+        expect(crawler_log.num_successful_run).to.eq(1)

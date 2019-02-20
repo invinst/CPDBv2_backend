@@ -21,6 +21,7 @@ from data_importer.ipra_crawler.summary_reports_crawler import (
     OpenIpraSummaryReportsCrawler,
     OpenIpraYearSummaryReportsCrawler
 )
+from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
 from document_cloud.models import DocumentCrawler
 from document_cloud.utils import format_copa_documentcloud_title
 
@@ -60,6 +61,9 @@ class IpraBaseAttachmentImporter(object):
                 allegation.subjects = subjects
                 allegation.save()
         return allegation
+
+    def get_current_num_successful_run(self):
+        return DocumentCrawler.objects.filter(source_type=self.source_type, status='Success').count()
 
     def update_attachments(self, allegation, attachment_dicts):
         created_attachments = []
@@ -132,7 +136,7 @@ class IpraBaseAttachmentImporter(object):
 
         return new_attachments, num_updated_attachments
 
-    def record_crawler_result(self, new_attachments, num_updated_attachments):
+    def record_success_crawler_result(self, new_attachments, num_updated_attachments):
         num_documents = AttachmentFile.objects.filter(
             source_type__in=[self.source_type, self.documentcloud_source_type]
         ).count()
@@ -140,22 +144,38 @@ class IpraBaseAttachmentImporter(object):
 
         DocumentCrawler.objects.create(
             source_type=self.source_type,
+            status=DOCUMENT_CRAWLER_SUCCESS,
             num_documents=num_documents,
             num_new_documents=num_new_attachments,
-            num_updated_documents=num_updated_attachments
+            num_updated_documents=num_updated_attachments,
+            num_successful_run=self.get_current_num_successful_run() + 1
         )
         self.log_info(
             f'Done importing! {num_new_attachments} created, '
-            f'{num_updated_attachments} updated in {num_documents} copa attachments'
+            f'{num_updated_attachments} updated in {num_documents} copa attachments.'
+        )
+
+    def record_failed_crawler_result(self):
+        DocumentCrawler.objects.create(
+            source_type=self.source_type,
+            status=DOCUMENT_CRAWLER_FAILED,
+            num_successful_run=self.get_current_num_successful_run()
+        )
+        self.log_info(
+            f'Error occurred! Cannot update documents.'
         )
 
     def crawl_and_update_attachments(self):
-        raw_incidents = self.crawl_ipra()
-        self.log_info('Done crawling!')
-        incidents = self.parse_incidents(raw_incidents)
-        new_attachments, num_updated_attachments = self.update_attachments_for_all_incidents(incidents)
-        self.record_crawler_result(new_attachments, num_updated_attachments)
-        return new_attachments
+        try:
+            raw_incidents = self.crawl_ipra()
+            self.log_info('Done crawling!')
+            incidents = self.parse_incidents(raw_incidents)
+            new_attachments, num_updated_attachments = self.update_attachments_for_all_incidents(incidents)
+            self.record_success_crawler_result(new_attachments, num_updated_attachments)
+            return new_attachments
+        except Exception:
+            self.record_failed_crawler_result()
+            return []
 
 
 class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
