@@ -11,10 +11,12 @@ from authentication.factories import AdminUserFactory
 from data.factories import AttachmentFileFactory, AllegationFactory
 
 
-class DocumentTestCase(APITestCase):
+class AttachmentAPITestCase(APITestCase):
     @freeze_time('2017-01-14 12:00:01')
     def test_list_attachments(self):
+        allegation = AllegationFactory(crid=123)
         AttachmentFileFactory(
+            allegation=allegation,
             id=1,
             file_type='document',
             title='CRID 1051117 CR',
@@ -25,6 +27,7 @@ class DocumentTestCase(APITestCase):
             show=True,
         )
         AttachmentFileFactory(
+            allegation=allegation,
             id=2,
             file_type='audio',
             title='Log 1087021 911',
@@ -32,9 +35,10 @@ class DocumentTestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=False,
+            show=True,
         )
         AttachmentFileFactory(
+            allegation=allegation,
             id=3,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -44,6 +48,7 @@ class DocumentTestCase(APITestCase):
             downloads_count=3,
             show=True
         )
+        AttachmentFileFactory(id=4, allegation=allegation, show=False)
 
         expected_data = {
             'count': 3,
@@ -58,6 +63,7 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
+                    'crid': '123',
                     'show': True,
                 },
                 {
@@ -68,7 +74,8 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': None,
                     'views_count': 2,
                     'downloads_count': 2,
-                    'show': False,
+                    'crid': '123',
+                    'show': True,
                 },
                 {
                     'id': 3,
@@ -78,6 +85,7 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': None,
                     'views_count': 3,
                     'downloads_count': 3,
+                    'crid': '123',
                     'show': True,
                 }
             ]
@@ -138,7 +146,7 @@ class DocumentTestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=False,
+            show=True,
             allegation=allegation2
         )
 
@@ -161,7 +169,46 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
+                    'crid': '1',
                     'show': True,
                 }
             ]
         })
+
+    def test_attachments_full_text_search(self):
+        allegation = AllegationFactory(crid=111333)
+
+        AttachmentFileFactory(
+            id=11,
+            show=True,
+            allegation=allegation)
+        AttachmentFileFactory(
+            id=22,
+            show=True,
+            title='hahaha')
+
+        base_url = reverse('api-v2:attachments-list')
+
+        response = self.client.get(f'{base_url}?match=11133')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(11)
+
+        response = self.client.get(f'{base_url}?match=haha')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(22)
+
+    def test_get_attachments_as_admin(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        AttachmentFileFactory(id=133, show=False)
+
+        base_url = reverse('api-v2:attachments-list')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.get(base_url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(133)

@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
@@ -16,8 +18,15 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = AttachmentFile.objects.all().order_by('-created_at', '-updated_at', 'id')
+
         if 'crid' in request.query_params:
-            queryset = queryset.filter(allegation=str(request.query_params['crid']))
+            queryset = queryset.filter(allegation_id=request.query_params['crid'])
+        elif 'match' in request.query_params:
+            match = request.query_params['match']
+            queryset = queryset.filter(Q(title__icontains=match) | Q(allegation__crid__icontains=match))
+
+        if request.auth is None:
+            queryset = queryset.filter(show=True)
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, request, view=self)
