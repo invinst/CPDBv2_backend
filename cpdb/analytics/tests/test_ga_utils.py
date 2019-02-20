@@ -35,10 +35,10 @@ class GAUtilsTestCase(TestCase):
         })
 
     def test_ga_report_response_with_page_token(self):
-        batchGet = Mock()
+        batch_get = Mock()
 
         reports = Mock()
-        reports.batchGet = batchGet
+        reports.batchGet = batch_get
 
         analytics = Mock()
         analytics.reports.return_value = reports
@@ -68,7 +68,7 @@ class GAUtilsTestCase(TestCase):
             2000
         )
 
-        batchGet.assert_called_with(body={
+        batch_get.assert_called_with(body={
             'reportRequests': [{
                 'viewId': 123,
                 'dateRanges': [
@@ -93,10 +93,10 @@ class GAUtilsTestCase(TestCase):
         })
 
     def test_ga_report_response_no_page_token(self):
-        batchGet = Mock()
+        batch_get = Mock()
 
         reports = Mock()
-        reports.batchGet = batchGet
+        reports.batchGet = batch_get
 
         analytics = Mock()
         analytics.reports.return_value = reports
@@ -124,3 +124,26 @@ class GAUtilsTestCase(TestCase):
                 'filtersExpression': 'ga:eventCategory==attachment_click'
             }
         )
+
+        batch_get.assert_called_with(body={
+            'reportRequests': [{
+                'viewId': 123,
+                'dateRanges': [
+                    {
+                        'startDate': '2018-01-01',
+                        'endDate': '2018-01-01'
+                    }
+                ],
+                'dimensions': [
+                    {
+                        'name': 'ga:eventLabel'
+                    }
+                ],
+                'metrics': [
+                    {
+                        'expression': 'ga:totalEvents'
+                    }
+                ],
+                'filtersExpression': 'ga:eventCategory==attachment_click',
+            }]
+        })

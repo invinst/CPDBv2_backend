@@ -27,22 +27,22 @@ def extract_report_rows(report):
     Returns:
         generator that yield rows
     """
-    columnHeader = report.get('columnHeader', {})
-    dimensionHeaders = columnHeader.get('dimensions', [])
-    metricHeaders = columnHeader.get('metricHeader', {}).get('metricHeaderEntries', [])
+    column_header = report.get('columnHeader', {})
+    dimension_headers = column_header.get('dimensions', [])
+    metric_headers = column_header.get('metricHeader', {}).get('metricHeaderEntries', [])
 
     for row in report.get('data', {}).get('rows', []):
         dimensions = row.get('dimensions', [])
-        dateRangeValues = row.get('metrics', [])
+        date_range_values = row.get('metrics', [])
 
         resulting_row = dict()
 
-        for header, dimension in zip(dimensionHeaders, dimensions):
+        for header, dimension in zip(dimension_headers, dimensions):
             resulting_row[header] = dimension
 
-        for i, values in enumerate(dateRangeValues):
-            for metricHeader, value in zip(metricHeaders, values.get('values')):
-                resulting_row[metricHeader.get('name')] = value
+        for i, values in enumerate(date_range_values):
+            for metric_header, value in zip(metric_headers, values.get('values')):
+                resulting_row[metric_header.get('name')] = value
 
         yield resulting_row
 
