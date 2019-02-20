@@ -45,7 +45,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(IpraPortalAttachmentImporter(logger).parse_incidents(incidents)).to.be.eq([{
             'allegation': {
                 'crid': '1',
-                'incident_date': datetime(2013, 4, 30, 21, 30),
+                'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
                 'attachment_files': [{
                     'file_type': 'audio',
                     'title': 'Audio Clip',

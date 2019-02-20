@@ -4,6 +4,7 @@ from collections import OrderedDict
 from datetime import datetime
 
 import iso8601
+import pytz
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 
@@ -149,7 +150,7 @@ class DateTimeField(SimpleField):
 
         for pattern in self.DATE_SUPPORTED_PATTERNS:
             try:
-                return datetime.strptime(value, pattern)
+                return datetime.strptime(value, pattern).replace(tzinfo=pytz.utc)
             except ValueError:
                 pass
 

@@ -84,7 +84,7 @@ class ArraySourceFieldTest(SimpleTestCase):
 class DateTimeFieldTest(SimpleTestCase):
     def test_parse(self):
         expect(DateTimeField(field_name='key').parse({'key': '1-4-2011 9:35 PM'})).to.be.eq(
-            datetime(month=1, day=4, year=2011, hour=21, minute=35))
+            datetime(2011, 1, 4, 21, 35, 0, tzinfo=pytz.utc))
 
         expect(
             DateTimeField(field_name='key').parse({'key': '2018-10-30T15:00:03+00:00'})
