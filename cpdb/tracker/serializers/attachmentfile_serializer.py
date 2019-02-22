@@ -5,6 +5,7 @@ from data.models import AttachmentFile
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
     crid = serializers.CharField(source='allegation_id')
+    documents_count = serializers.IntegerField()
 
     class Meta:
         model = AttachmentFile
@@ -17,5 +18,6 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
             'preview_image_url',
             'views_count',
             'downloads_count',
-            'show'
+            'show',
+            'documents_count'
         )

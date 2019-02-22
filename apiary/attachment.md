@@ -26,7 +26,9 @@
                     "views_count": 1,
                     "downloads_count": 1,
                     "crid": "123456",
-                    "show": true
+                    "show": true,
+                    "documents_count": 4,
+                    "crid": "1051117"
                 },
                 {
                     "id": 4829,
@@ -38,6 +40,8 @@
                     "downloads_count": 1,
                     "crid": "123456",
                     "show": false
+                    "documents_count": 3,
+                    "crid": "1064593"
                 }
             ]
         }

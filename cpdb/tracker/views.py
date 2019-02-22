@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, OuterRef
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.authentication import TokenAuthentication
 
 from data.models import AttachmentFile
+from data.utils.subqueries import SQCount
 from .serializers import AttachmentFileListSerializer
 
 
@@ -17,7 +18,9 @@ class AttachmentViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def list(self, request):
-        queryset = AttachmentFile.objects.all().order_by('-created_at', '-updated_at', 'id')
+        queryset = AttachmentFile.objects.annotate(documents_count=SQCount(
+            AttachmentFile.showing.filter(allegation=OuterRef('allegation')).values('allegation')
+        )).order_by('-created_at', '-updated_at', 'id')
 
         if 'crid' in request.query_params:
             queryset = queryset.filter(allegation_id=request.query_params['crid'])

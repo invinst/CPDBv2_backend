@@ -14,9 +14,10 @@ from data.factories import AttachmentFileFactory, AllegationFactory
 class AttachmentAPITestCase(APITestCase):
     @freeze_time('2017-01-14 12:00:01')
     def test_list_attachments(self):
-        allegation = AllegationFactory(crid=123)
+        allegation1 = AllegationFactory(crid=123)
+        allegation2 = AllegationFactory(crid=456)
         AttachmentFileFactory(
-            allegation=allegation,
+            allegation=allegation1,
             id=1,
             file_type='document',
             title='CRID 1051117 CR',
@@ -24,10 +25,9 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            show=True,
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            allegation=allegation1,
             id=2,
             file_type='audio',
             title='Log 1087021 911',
@@ -35,10 +35,9 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=True,
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            allegation=allegation2,
             id=3,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -46,9 +45,8 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=3,
             downloads_count=3,
-            show=True
         )
-        AttachmentFileFactory(id=4, allegation=allegation, show=False)
+        AttachmentFileFactory(id=4, allegation=allegation2, show=False)
 
         expected_data = {
             'count': 3,
@@ -65,6 +63,7 @@ class AttachmentAPITestCase(APITestCase):
                     'downloads_count': 1,
                     'crid': '123',
                     'show': True,
+                    'documents_count': 2,
                 },
                 {
                     'id': 2,
@@ -76,6 +75,7 @@ class AttachmentAPITestCase(APITestCase):
                     'downloads_count': 2,
                     'crid': '123',
                     'show': True,
+                    'documents_count': 2,
                 },
                 {
                     'id': 3,
@@ -85,8 +85,9 @@ class AttachmentAPITestCase(APITestCase):
                     'preview_image_url': None,
                     'views_count': 3,
                     'downloads_count': 3,
-                    'crid': '123',
+                    'crid': '456',
                     'show': True,
+                    'documents_count': 1,
                 }
             ]
         }
@@ -101,7 +102,7 @@ class AttachmentAPITestCase(APITestCase):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
 
-        AttachmentFileFactory(id=1, show=True)
+        AttachmentFileFactory(id=1)
 
         url = reverse('api-v2:attachments-detail', kwargs={'pk': '1'})
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -135,7 +136,6 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            show=True,
             allegation=allegation1
         )
         AttachmentFileFactory(
@@ -146,7 +146,6 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=True,
             allegation=allegation2
         )
 
@@ -171,6 +170,7 @@ class AttachmentAPITestCase(APITestCase):
                     'downloads_count': 1,
                     'crid': '1',
                     'show': True,
+                    'documents_count': 1
                 }
             ]
         })
@@ -180,11 +180,9 @@ class AttachmentAPITestCase(APITestCase):
 
         AttachmentFileFactory(
             id=11,
-            show=True,
             allegation=allegation)
         AttachmentFileFactory(
             id=22,
-            show=True,
             title='hahaha')
 
         base_url = reverse('api-v2:attachments-list')
