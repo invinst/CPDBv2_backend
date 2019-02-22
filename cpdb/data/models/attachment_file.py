@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
 from django.conf import settings
 
-from data.constants import MEDIA_TYPE_CHOICES
+from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT
 from shared.aws import aws
 from .common import TimeStampsModel
 
@@ -27,6 +27,8 @@ class AttachmentFile(TimeStampsModel):
     source_type = models.CharField(max_length=255, db_index=True)
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)
+    notifications_count = models.IntegerField(default=0)
+    pages_count = models.IntegerField(default=0)
     show = models.BooleanField(default=True)
 
     # Document cloud information
@@ -54,3 +56,10 @@ class AttachmentFile(TimeStampsModel):
                 'key': self.s3_key
             })
         )
+
+    @property
+    def linked_documents(self):
+        return AttachmentFile.showing.filter(
+            allegation_id=self.allegation_id,
+            file_type=MEDIA_TYPE_DOCUMENT,
+        ).exclude(id=self.id)

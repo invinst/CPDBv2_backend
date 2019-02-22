@@ -5,14 +5,23 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.authentication import TokenAuthentication
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
-from .serializers import AttachmentFileListSerializer
+from .serializers import AttachmentFileListSerializer, AttachmentFileSerializer, AuthenticatedAttachmentFileSerializer
 
 
 class AttachmentViewSet(viewsets.ViewSet):
     authentication_classes = (TokenAuthentication,)
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def retrieve(self, request, pk):
+        queryset = AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)
+        document = get_object_or_404(queryset, pk=pk)
+        if request.user.is_authenticated:
+            return Response(AuthenticatedAttachmentFileSerializer(document).data)
+        else:
+            return Response(AttachmentFileSerializer(document).data)
 
     def list(self, request):
         queryset = AttachmentFile.objects.all().order_by('-created_at', '-updated_at', 'id')
