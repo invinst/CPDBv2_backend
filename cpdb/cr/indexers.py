@@ -94,7 +94,7 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating attachments dict...')
     def populate_attachments_dict(self):
         self.attachments_dict = dict()
-        queryset = AttachmentFile.objects.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
+        queryset = AttachmentFile.showing.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
             'allegation_id', 'title', 'url', 'preview_image_url', 'file_type',
         )
         for obj in queryset:

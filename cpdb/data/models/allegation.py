@@ -102,13 +102,13 @@ class Allegation(TimeStampsModel):
 
     @property
     def documents(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
+        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT, show=True)
 
     @property
     def filtered_attachment_files(self):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
-        return self.attachment_files.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
+        return self.attachment_files.filter(show=True).exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
 
     @classmethod
     def get_cr_with_new_documents(cls, limit):
@@ -116,7 +116,7 @@ class Allegation(TimeStampsModel):
         return cls.objects.prefetch_related(
             Prefetch(
                 'attachment_files',
-                queryset=AttachmentFile.objects.annotate(
+                queryset=AttachmentFile.showing.annotate(
                     last_created_at=Max('external_created_at')
                 ).exclude(
                     tag__in=MEDIA_IPRA_COPA_HIDING_TAGS

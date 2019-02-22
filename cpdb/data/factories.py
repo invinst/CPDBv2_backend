@@ -186,7 +186,7 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     text_content = factory.LazyFunction(lambda: fake.text(64))
     views_count = factory.LazyFunction(lambda: random.randint(0, 99999))
     downloads_count = factory.LazyFunction(lambda: random.randint(0, 99999))
-    show = factory.LazyFunction(lambda: fake.boolean())
+    show = True
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):

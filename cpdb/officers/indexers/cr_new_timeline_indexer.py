@@ -50,7 +50,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     @timing_validate('CRNewTimelineEventIndexer: Populating attachments dict...')
     def _populate_attachments_dict(self):
         self._attachments_dict = dict()
-        attachments = AttachmentFile.objects.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
+        attachments = AttachmentFile.showing.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS).values(
             'title', 'url', 'preview_image_url', 'file_type', 'allegation_id'
         )
         for obj in attachments:

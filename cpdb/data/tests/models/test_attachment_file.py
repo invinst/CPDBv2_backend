@@ -39,7 +39,7 @@ class AttachmentFileTestCase(TestCase):
         )
 
     def test_attachment_shown_manager(self):
-        AttachmentFileFactory(id=1, show=True)
+        AttachmentFileFactory(id=1)
         AttachmentFileFactory(id=2, show=False)
         AttachmentFileFactory(id=3, show=False)
 

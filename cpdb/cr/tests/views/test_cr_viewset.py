@@ -555,7 +555,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url',
-            external_created_at=six_month_ago + timedelta(days=10)
+            external_created_at=six_month_ago + timedelta(days=10),
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -563,7 +563,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            external_created_at=six_month_ago + timedelta(days=5)
+            external_created_at=six_month_ago + timedelta(days=5),
         )
 
         allegation2 = AllegationFactory(crid='112')
@@ -574,23 +574,23 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            external_created_at=six_month_ago + timedelta(days=6)
+            external_created_at=six_month_ago + timedelta(days=6),
+        )
+        AttachmentFileFactory(
+            allegation=allegation2,
+            title='CR document 4',
+            tag='CR',
+            url='http://cr-document.com/3',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url3',
+            external_created_at=six_month_ago + timedelta(days=11),
+            show=False
         )
 
         AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
         response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
-            {
-                'crid': '111',
-                'latest_document': {
-                    'title': 'CR document 1',
-                    'url': 'http://cr-document.com/1',
-                    'preview_image_url': 'http://preview.com/url',
-                    'file_type': 'document'
-                },
-                'num_recent_documents': 2
-            },
             {
                 'crid': '112',
                 'latest_document': {
@@ -600,5 +600,15 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'file_type': 'document'
                 },
                 'num_recent_documents': 1
+            },
+            {
+                'crid': '111',
+                'latest_document': {
+                    'title': 'CR document 1',
+                    'url': 'http://cr-document.com/1',
+                    'preview_image_url': 'http://preview.com/url',
+                    'file_type': 'document'
+                },
+                'num_recent_documents': 2
             },
         ])
