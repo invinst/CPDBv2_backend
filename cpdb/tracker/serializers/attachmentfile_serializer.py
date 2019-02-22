@@ -15,7 +15,7 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
             'preview_image_url',
             'views_count',
             'downloads_count',
-            'show'
+            'show',
         )
 
 
@@ -53,7 +53,7 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
             'updated_at',
             'crawler_name',
             'linked_documents',
-            'pages_count'
+            'pages'
         )
 
 

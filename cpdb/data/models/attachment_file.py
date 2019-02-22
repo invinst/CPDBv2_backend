@@ -28,7 +28,6 @@ class AttachmentFile(TimeStampsModel):
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)
     notifications_count = models.IntegerField(default=0)
-    pages_count = models.IntegerField(default=0)
     show = models.BooleanField(default=True)
 
     # Document cloud information
@@ -36,6 +35,7 @@ class AttachmentFile(TimeStampsModel):
     external_created_at = models.DateTimeField(null=True)
     external_last_updated = models.DateTimeField(null=True)
     text_content = models.TextField(blank=True)
+    pages = models.IntegerField(default=0)
 
     objects = BulkUpdateManager()
     showing = ShownAttachmentManager()

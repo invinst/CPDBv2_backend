@@ -44,6 +44,7 @@ mapping_fields = {
     'external_created_at': 'created_at',
     'tag': 'document_type',
     'source_type': 'source_type',
+    'pages': 'pages',
 }
 
 
@@ -82,7 +83,7 @@ def save_attachments(kept_attachments, new_attachments, updated_attachments):
         updated_attachments,
         update_fields=[
             'title', 'tag', 'url', 'preview_image_url',
-            'external_last_updated', 'external_created_at', 'text_content', 'source_type'
+            'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages'
         ],
         batch_size=BATCH_SIZE
     )
