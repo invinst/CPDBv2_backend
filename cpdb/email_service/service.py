@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from email_service.models import EmailTemplate
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
-from data.models import Allegation
+from data.models import Allegation, AttachmentFile
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,16 @@ def send_cr_attachment_available_email(new_attachments):
             else:
                 attachment_request.noti_email_sent = True
                 attachment_request.save()
+
+                for attachment in new_attachments:
+                    if attachment.allegation == attachment_request.allegation:
+                        attachment.notifications_count = len(message)
+
+    AttachmentFile.objects.bulk_update(
+        new_attachments,
+        update_fields=['notifications_count'],
+        batch_size=1000
+    )
 
 
 def send_attachment_request_email(email, attachment_type, **kwargs):
