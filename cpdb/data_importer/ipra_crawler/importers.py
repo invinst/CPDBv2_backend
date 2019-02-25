@@ -92,7 +92,7 @@ class IpraBaseAttachmentImporter(object):
                 if attachment.source_type == self.documentcloud_source_type:
                     updating_fields = ['title', 'original_url', 'external_last_updated']
                     attachment_dict['title'] = format_copa_documentcloud_title(
-                        allegation.crid, attachment_dict['title']
+                        allegation.crid, attachment_dict['title'], attachment.source_type
                     )
                 else:
                     updating_fields = [

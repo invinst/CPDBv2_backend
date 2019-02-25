@@ -30,7 +30,7 @@ def upload_copa_documents():
 
         cloud_document = client.documents.upload(
             attachment.original_url,
-            title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
+            title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title, attachment.source_type),
             description=source_type,
             access='public',
             force_ocr=True

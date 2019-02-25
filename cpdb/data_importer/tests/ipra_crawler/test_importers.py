@@ -306,6 +306,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
                 'crid': '1',
                 'attachment_files': [{
                     'file_type': 'document',
+                    'title': 'COPA Summary Report',
                     'url': 'http://document_link',
                     'original_url': 'http://document_link',
                     'source_type': 'SUMMARY_REPORTS_COPA',

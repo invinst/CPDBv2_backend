@@ -117,6 +117,7 @@ class SummaryReportsAttachmentFileField(object):
     def parse(self, record):
         schema = CompositeField(layout={
             'file_type': Just(MEDIA_TYPE_DOCUMENT),
+            'title': Just('COPA Summary Report'),
             'url': CharField(field_name='link'),
             'original_url': CharField(field_name='link'),
             'source_type': Just(AttachmentSourceType.SUMMARY_REPORTS_COPA),

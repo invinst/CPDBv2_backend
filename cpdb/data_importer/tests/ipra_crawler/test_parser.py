@@ -63,6 +63,7 @@ class SummaryReportsAttachmentFileFieldTest(SimpleTestCase):
             'last_updated': '2018-10-30T15:00:03+00:00',
         })).to.be.eq({
             'file_type': 'document',
+            'title': 'COPA Summary Report',
             'url': '//this_is_a_link',
             'original_url': '//this_is_a_link',
             'source_type': 'SUMMARY_REPORTS_COPA',
