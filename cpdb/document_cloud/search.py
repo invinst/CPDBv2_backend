@@ -9,12 +9,12 @@ from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.models import DocumentCloudSearchQuery
 from document_cloud.utils import parse_id, get_url, parse_crid_from_title
 
-logger = logging.getLogger('django.command')
+_logger = logging.getLogger(__name__)
 
 
 # We need to this filter because we have two attachments which have a same title
 # One is updated by STAGING and one by PRODUCTION
-def remove_invalid_documents(cloud_documents):
+def _remove_invalid_documents(cloud_documents):
     existing_copa_documentcloud_ids = AttachmentFile.objects.filter(
         source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD
     ).values_list('external_id', flat=True).distinct()
@@ -26,7 +26,7 @@ def remove_invalid_documents(cloud_documents):
     return filter(valid_document, cloud_documents)
 
 
-def remove_duplicated(cloud_documents):
+def _remove_duplicated(cloud_documents):
     existing_documentcloud_ids = AttachmentFile.objects.filter(
         source_type=AttachmentSourceType.DOCUMENTCLOUD
     ).values_list('external_id', flat=True).distinct()
@@ -50,7 +50,7 @@ def remove_duplicated(cloud_documents):
     return copa_documents + list(cleaned_results.values())
 
 
-def add_attributes(cloud_documents, document_type):
+def _add_attributes(cloud_documents, document_type):
     for cloud_document in cloud_documents:
         from_copa = hasattr(cloud_document, 'description') and cloud_document.description == AUTO_UPLOAD_DESCRIPTION
         source_type = AttachmentSourceType.COPA_DOCUMENTCLOUD if from_copa else AttachmentSourceType.DOCUMENTCLOUD
@@ -67,16 +67,16 @@ def add_attributes(cloud_documents, document_type):
     return cloud_documents
 
 
-def search_all():
+def search_all(logger=_logger):
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
     search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
     all_documents = []
     for document_type, syntax in search_syntaxes:
         if syntax:
             logger.info(f'Searching Documentcloud for {syntax}')
-            all_documents += remove_duplicated(
-                remove_invalid_documents(
-                    add_attributes(client.documents.search(syntax), document_type)
+            all_documents += _remove_duplicated(
+                _remove_invalid_documents(
+                    _add_attributes(client.documents.search(syntax), document_type)
                 )
             )
     return all_documents

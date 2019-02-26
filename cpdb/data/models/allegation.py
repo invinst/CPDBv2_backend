@@ -2,8 +2,9 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django_bulk_update.manager import BulkUpdateManager
 
-from data.constants import GENDER_DICT, MEDIA_TYPE_DOCUMENT, MEDIA_IPRA_COPA_HIDING_TAGS
+from data.constants import GENDER_DICT
 from data.utils.aggregation import get_num_range_case
+from data.utils.attachment_file import filter_attachments
 from .common import TimeStampsModel
 
 
@@ -98,14 +99,10 @@ class Allegation(TimeStampsModel):
         return results if results else ['Unknown']
 
     @property
-    def documents(self):
-        return self.attachment_files.filter(file_type=MEDIA_TYPE_DOCUMENT)
-
-    @property
     def filtered_attachment_files(self):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
-        return self.attachment_files.exclude(tag__in=MEDIA_IPRA_COPA_HIDING_TAGS)
+        return filter_attachments(self.attachment_files)
 
     @property
     def v2_to(self):

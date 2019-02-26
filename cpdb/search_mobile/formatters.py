@@ -26,10 +26,10 @@ class OfficerV2Formatter(SimpleFormatter):
 
 class CRFormatter(SimpleFormatter):
     def doc_format(self, doc):
-        serialized_doc = doc.to_dict()
-
         return {
-            'crid': serialized_doc['crid']
+            'crid': doc.crid,
+            'incident_date': doc.incident_date,
+            'category': getattr(doc, 'category', '') or 'Unknown'
         }
 
 
