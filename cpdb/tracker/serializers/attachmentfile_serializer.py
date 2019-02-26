@@ -33,6 +33,7 @@ class LinkedAttachmentFileSerializer(serializers.ModelSerializer):
 
 class AttachmentFileSerializer(serializers.ModelSerializer):
     crid = serializers.CharField(source='allegation_id')
+    last_updated_by = serializers.CharField(source='last_updated_by.username')
     crawler_name = serializers.SerializerMethodField()
     linked_documents = LinkedAttachmentFileSerializer(many=True)
 
@@ -53,7 +54,8 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
             'updated_at',
             'crawler_name',
             'linked_documents',
-            'pages'
+            'pages',
+            'last_updated_by',
         )
 
 
@@ -72,7 +74,7 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttachmentFile
-        fields = ('id', 'show', 'title', 'text_content')
+        fields = ('id', 'show', 'title', 'text_content', 'last_updated_by')
         read_only_fields = ('id',)
 
     def save(self):

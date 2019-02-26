@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -38,7 +37,12 @@ class AttachmentViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk):
         attachment = get_object_or_404(AttachmentFile, id=pk)
 
-        serializer = UpdateAttachmentFileSerializer(attachment, data=request.data)
+        data = request.data
+        if request.user.is_authenticated:
+            data['last_updated_by'] = request.user.id
+
+        serializer = UpdateAttachmentFileSerializer(attachment, data=data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_200_OK, data=serializer.data)
