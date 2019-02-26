@@ -62,7 +62,8 @@ def update_attachment(attachment, cloud_document):
         attachment.external_last_updated < cloud_document.updated_at
     )
     if changed:
-        attachment.text_content = get_full_text(cloud_document)
+        if not attachment.manually_updated:
+            attachment.text_content = get_full_text(cloud_document)
         for model_field, doc_field in mapping_fields.items():
             setattr(attachment, model_field, getattr(cloud_document, doc_field))
 

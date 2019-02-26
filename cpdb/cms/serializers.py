@@ -7,6 +7,7 @@ from rest_framework.fields import SkipField
 
 from cms.fields import RichTextField, BaseCMSField
 from cms.models import SlugPage
+from data.models import AttachmentFile
 
 
 class BaseCMSPageSerializer(serializers.Serializer):

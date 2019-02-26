@@ -29,6 +29,7 @@ class AttachmentFile(TimeStampsModel):
     downloads_count = models.IntegerField(default=0)
     notifications_count = models.IntegerField(default=0)
     show = models.BooleanField(default=True)
+    manually_updated = models.BooleanField(default=False)
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)

@@ -64,3 +64,18 @@ class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
             'downloads_count',
             'notifications_count'
         )
+
+
+class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
+    def __init__(self, instance, data, **kwargs):
+        super(UpdateAttachmentFileSerializer, self).__init__(instance, data, partial=True, **kwargs)
+
+    class Meta:
+        model = AttachmentFile
+        fields = ('id', 'show', 'title', 'text_content')
+        read_only_fields = ('id',)
+
+    def save(self):
+        if self.instance.text_content != self.validated_data['text_content'] and not self.instance.manually_updated:
+            self.validated_data['manually_updated'] = True
+        super(UpdateAttachmentFileSerializer, self).save()
