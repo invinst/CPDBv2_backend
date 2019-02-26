@@ -60,7 +60,6 @@ class LatestDocumentsQuery(object):
             """
         )
 
-        attachment_files = [attachment_file for attachment_file in attachment_files]
         num_recent_documents_hash = cls._num_recent_documents_hash(attachment_files)
 
         for attachment_file in attachment_files:
