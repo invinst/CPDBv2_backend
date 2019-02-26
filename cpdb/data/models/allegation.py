@@ -1,11 +1,8 @@
-from django.apps import apps
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import F, Max, Prefetch
-from django.utils.timezone import timedelta
 from django_bulk_update.manager import BulkUpdateManager
 
-from data.constants import GENDER_DICT, MEDIA_TYPE_DOCUMENT
+from data.constants import GENDER_DICT
 from data.utils.aggregation import get_num_range_case
 from data.utils.attachment_file import filter_attachments
 from .common import TimeStampsModel
@@ -106,26 +103,6 @@ class Allegation(TimeStampsModel):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
         return filter_attachments(self.attachment_files)
-
-    @classmethod
-    def get_cr_with_new_documents(cls, limit):
-        AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
-        return cls.objects.prefetch_related(
-            Prefetch(
-                'attachment_files',
-                queryset=filter_attachments(AttachmentFile.objects).annotate(
-                    last_created_at=Max('external_created_at')
-                ).filter(
-                    file_type=MEDIA_TYPE_DOCUMENT,
-                    external_created_at__gte=(F('last_created_at') - timedelta(days=30))
-                ).order_by('external_created_at'),
-                to_attr='latest_documents'
-            )
-        ).annotate(
-            latest_document_created_at=Max('attachment_files__external_created_at')
-        ).filter(
-            latest_document_created_at__isnull=False
-        ).order_by('-latest_document_created_at')[:limit]
 
     @property
     def v2_to(self):

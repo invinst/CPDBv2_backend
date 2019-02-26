@@ -18,6 +18,7 @@ from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from email_service.constants import CR_ATTACHMENT_REQUEST
 from es_index.pagination import ESQueryPagination
 from data.models import Allegation
+from cr.queries import LatestDocumentsQuery
 from email_service.service import send_attachment_request_email
 
 
@@ -68,8 +69,8 @@ class CRViewSet(viewsets.ViewSet):
     @list_route(methods=['GET'], url_path='list-by-new-document')
     def allegations_with_new_documents(self, request):
         limit = int(request.GET.get('limit', 40))
-        results = Allegation.get_cr_with_new_documents(limit)
-        serializer = AllegationWithNewDocumentsSerializer(results, many=True)
+        latest_documents = LatestDocumentsQuery.execute(limit)
+        serializer = AllegationWithNewDocumentsSerializer(latest_documents, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='related-complaints')
