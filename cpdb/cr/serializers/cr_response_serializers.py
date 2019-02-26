@@ -65,6 +65,7 @@ class AttachmentFileSerializer(NoNullSerializer):
     url = serializers.CharField()
     preview_image_url = serializers.CharField()
     file_type = serializers.CharField()
+    id = serializers.CharField()
 
 
 class InvestigatorAllegationSerializer(NoNullSerializer):

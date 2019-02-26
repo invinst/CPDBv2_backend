@@ -112,7 +112,11 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document',
+            id='123456',
+            url='http://cr-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='TRR',
@@ -121,7 +125,11 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document 2',
+            id='654321',
+            url='http://AR-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
 
         officer_cache_manager.build_cached_columns()
@@ -210,6 +218,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
+                    'id': '123456',
                 }
             ]
         })
@@ -337,11 +346,19 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document',
+            id='123456',
+            url='http://cr-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document 2',
+            id='654321',
+            url='http://AR-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
 
         officer_cache_manager.build_cached_columns()
@@ -451,6 +468,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
+                    'id': '123456',
                 }
             ]
         })
@@ -556,6 +574,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             allegation=allegation,
             title='CR document 1',
+            id='123456',
             tag='CR',
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -565,6 +584,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             allegation=allegation,
             title='CR document 2',
+            id='456789',
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -575,6 +595,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             allegation=allegation2,
             title='CR document 3',
+            id='654321',
             tag='CR',
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -589,6 +610,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             {
                 'crid': '111',
                 'latest_document': {
+                    'id': '123456',
                     'title': 'CR document 1',
                     'url': 'http://cr-document.com/1',
                     'preview_image_url': 'http://preview.com/url',
@@ -599,6 +621,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             {
                 'crid': '112',
                 'latest_document': {
+                    'id': '654321',
                     'title': 'CR document 3',
                     'url': 'http://cr-document.com/3',
                     'preview_image_url': 'http://preview.com/url3',
