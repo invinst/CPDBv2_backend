@@ -404,7 +404,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_3)
 
-        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 5})
+        response = self.client.get(reverse('api-v2:cr-old-list-by-new-document'), {'limit': 5})
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(len(response.data)).to.eq(4)
@@ -412,44 +412,36 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             {
                 'crid': '321',
                 'latest_document': {
-                    'id': '9',
                     'title': 'Tracking document 2',
                     'url': 'http://cr-document.com/9',
                     'preview_image_url': 'http://preview.com/url9',
-                    'file_type': 'document'
                 },
                 'num_recent_documents': 1
             },
             {
                 'crid': '987',
                 'latest_document': {
-                    'id': '11',
                     'title': 'Tracking document 3',
                     'url': 'http://cr-document.com/11',
                     'preview_image_url': 'http://preview.com/url11',
-                    'file_type': 'document'
                 },
                 'num_recent_documents': 1
             },
             {
                 'crid': '123',
                 'latest_document': {
-                    'id': '1',
                     'title': 'CR document 1',
                     'url': 'http://cr-document.com/1',
                     'preview_image_url': 'http://preview.com/url1',
-                    'file_type': 'document'
                 },
                 'num_recent_documents': 2
             },
             {
                 'crid': '456',
                 'latest_document': {
-                    'id': '3',
                     'title': 'CR document 3',
                     'url': 'http://cr-document.com/3',
                     'preview_image_url': 'http://preview.com/url3',
-                    'file_type': 'document'
                 },
                 'num_recent_documents': 1
             },
