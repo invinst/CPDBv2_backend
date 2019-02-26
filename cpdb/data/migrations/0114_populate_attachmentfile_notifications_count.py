@@ -12,7 +12,7 @@ class SQCount(Subquery):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0113_add_pages_and_notifications_count'),
+        ('data', '0113_attachmentfile_add_fields'),
     ]
 
     def populate_notifications_count(apps, schema_editor):
