@@ -11,12 +11,13 @@ from robber import expect
 from freezegun import freeze_time
 import pytz
 
+from analytics.factories import AttachmentTrackingFactory
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory,
     PoliceWitnessFactory, InvestigatorFactory, InvestigatorAllegationFactory,
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
-from data.constants import MEDIA_TYPE_DOCUMENT
+from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
 from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.factories import EmailTemplateFactory
@@ -112,11 +113,24 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document',
+            id='123456',
+            url='http://cr-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
+        )
+        AttachmentFileFactory(
+            tag='TRR',
+            allegation=allegation, title='CR arrest report document',
+            url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document 2',
+            id='654321',
+            url='http://AR-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
 
         officer_cache_manager.build_cached_columns()
@@ -205,6 +219,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
+                    'id': '123456',
                 }
             ]
         })
@@ -332,11 +347,19 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR document', url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document',
+            id='123456',
+            url='http://cr-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation, title='CR document 2', url='http://AR-document.com/', file_type=MEDIA_TYPE_DOCUMENT
+            allegation=allegation,
+            title='CR document 2',
+            id='654321',
+            url='http://AR-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
         )
 
         officer_cache_manager.build_cached_columns()
@@ -446,6 +469,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'title': 'CR document',
                     'file_type': 'document',
                     'url': 'http://cr-document.com/',
+                    'id': '123456',
                 }
             ]
         })
@@ -546,54 +570,183 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         }])
 
     def test_cr_new_documents(self):
-        six_month_ago = now() - timedelta(weeks=12)
-        allegation = AllegationFactory(crid='111')
+        three_month_ago = now() - timedelta(weeks=12)
+        allegation_1 = AllegationFactory(crid='123')
+        allegation_2 = AllegationFactory(crid='456')
+        allegation_3 = AllegationFactory(crid='789')
+        allegation_4 = AllegationFactory(crid='321')
+        allegation_5 = AllegationFactory(crid='987')
+
         AttachmentFileFactory(
-            allegation=allegation,
+            allegation=allegation_1,
             title='CR document 1',
+            id='1',
             tag='CR',
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
-            preview_image_url='http://preview.com/url',
-            external_created_at=six_month_ago + timedelta(days=10)
+            preview_image_url='http://preview.com/url1',
+            external_created_at=three_month_ago + timedelta(days=10)
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            allegation=allegation_1,
             title='CR document 2',
+            id='2',
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            external_created_at=six_month_ago + timedelta(days=5)
+            external_created_at=three_month_ago + timedelta(days=5)
         )
 
-        allegation2 = AllegationFactory(crid='112')
         AttachmentFileFactory(
-            allegation=allegation2,
+            allegation=allegation_2,
             title='CR document 3',
+            id='3',
             tag='CR',
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            external_created_at=six_month_ago + timedelta(days=6)
+            external_created_at=three_month_ago + timedelta(days=6)
         )
 
-        AttachmentFileFactory.build_batch(5, file_type=MEDIA_TYPE_DOCUMENT, tag='CR')
-        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 2})
+        AttachmentFileFactory(
+            allegation=allegation_2,
+            title='CR document 4',
+            id='4',
+            tag='OCIR',
+            url='http://cr-document.com/4',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url4',
+            external_created_at=three_month_ago + timedelta(days=10)
+        )
+
+        AttachmentFileFactory(
+            allegation=allegation_2,
+            title='CR document 5',
+            id='5',
+            tag='AR',
+            url='http://cr-document.com/5',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url5',
+            external_created_at=three_month_ago + timedelta(days=11)
+        )
+
+        AttachmentFileFactory(
+            allegation=allegation_3,
+            title='CR document 6',
+            id='6',
+            tag='CR',
+            url='http://cr-document.com/6',
+            file_type=MEDIA_TYPE_AUDIO,
+            preview_image_url='http://preview.com/url6',
+            external_created_at=three_month_ago + timedelta(days=12)
+        )
+
+        AttachmentFileFactory(
+            allegation=allegation_3,
+            title='CR document 7',
+            id='7',
+            tag='CR',
+            url='http://cr-document.com/7',
+            file_type=MEDIA_TYPE_VIDEO,
+            preview_image_url='http://preview.com/url7',
+            external_created_at=three_month_ago + timedelta(days=13)
+        )
+
+        attachment_file_1 = AttachmentFileFactory(
+            title='Tracking document 1',
+            id='8',
+            tag='CR',
+            url='http://cr-document.com/8',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url8',
+            allegation=allegation_4,
+            external_created_at=datetime(2014, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
+        attachment_file_2 = AttachmentFileFactory(
+            title='Tracking document 2',
+            id='9',
+            tag='CR',
+            url='http://cr-document.com/9',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url9',
+            allegation=allegation_4,
+            external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
+        AttachmentFileFactory(
+            title='Not appear attachment',
+            id=10,
+            tag='CR',
+            url='http://cr-document.com/10',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url10',
+            allegation=allegation_4,
+            external_created_at=datetime(2015, 6, 13, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
+        attachment_file_3 = AttachmentFileFactory(
+            title='Tracking document 3',
+            id='11',
+            tag='CR',
+            url='http://cr-document.com/11',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url11',
+            allegation=allegation_5,
+            external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
+        with freeze_time(datetime(2018, 8, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_1)
+
+        with freeze_time(datetime(2018, 9, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_2)
+
+        with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(attachment_file=attachment_file_3)
+
+        response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 5})
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(len(response.data)).to.eq(4)
         expect(response.data).to.eq([
             {
-                'crid': '111',
+                'crid': '321',
                 'latest_document': {
+                    'id': '9',
+                    'title': 'Tracking document 2',
+                    'url': 'http://cr-document.com/9',
+                    'preview_image_url': 'http://preview.com/url9',
+                    'file_type': 'document'
+                },
+                'num_recent_documents': 1
+            },
+            {
+                'crid': '987',
+                'latest_document': {
+                    'id': '11',
+                    'title': 'Tracking document 3',
+                    'url': 'http://cr-document.com/11',
+                    'preview_image_url': 'http://preview.com/url11',
+                    'file_type': 'document'
+                },
+                'num_recent_documents': 1
+            },
+            {
+                'crid': '123',
+                'latest_document': {
+                    'id': '1',
                     'title': 'CR document 1',
                     'url': 'http://cr-document.com/1',
-                    'preview_image_url': 'http://preview.com/url',
+                    'preview_image_url': 'http://preview.com/url1',
                     'file_type': 'document'
                 },
                 'num_recent_documents': 2
             },
             {
-                'crid': '112',
+                'crid': '456',
                 'latest_document': {
+                    'id': '3',
                     'title': 'CR document 3',
                     'url': 'http://cr-document.com/3',
                     'preview_image_url': 'http://preview.com/url3',

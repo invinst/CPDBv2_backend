@@ -1,8 +1,7 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
-from activity_grid.serializers import OfficerCardSerializer
 from data.models import Officer
 from old_officers.serializers.respone_serialiers import (
     DesktopTimelineSerializer,
@@ -46,13 +45,6 @@ class OldOfficersViewSet(viewsets.ViewSet):
             result = query[:10000].execute()
             return Response(DesktopTimelineSerializer(result, many=True).data)
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @list_route(methods=['get'], url_path='top-by-allegation')
-    def top_officers_by_allegation(self, request):
-        limit = int(request.GET.get('limit', 40))
-        top_officers = OfficerInfoDocType.get_top_officers(percentile=99.0, size=limit)
-
-        return Response(OfficerCardSerializer(top_officers, many=True).data)
 
     @detail_route(methods=['get'])
     def coaccusals(self, _, pk):

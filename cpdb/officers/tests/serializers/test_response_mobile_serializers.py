@@ -256,6 +256,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
             tag='Other',
             allegation=allegation,
             title='title',
+            id='123456',
             url='url',
             preview_image_url='preview_image_url',
             file_type='document'
@@ -264,6 +265,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
             tag='AR',
             allegation=allegation,
             title='title 2',
+            id='654321',
             url='url_2',
             preview_image_url='preview_image_url_2',
             file_type='document'
@@ -294,6 +296,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
                     'url': 'url',
                     'preview_image_url': 'preview_image_url',
                     'file_type': 'document',
+                    'id': '123456',
                 }
             ],
             'point': {

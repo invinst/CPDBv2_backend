@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from django.urls import reverse
 
@@ -8,8 +8,10 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from analytics.models import Event
+from analytics.models import Event, AttachmentTracking
 from analytics.factories import SearchTrackingFactory
+from data.constants import MEDIA_TYPE_DOCUMENT
+from data.factories import AllegationFactory, AttachmentFileFactory
 
 
 class EventsViewTestCase(APITestCase):
@@ -31,7 +33,7 @@ class EventsViewTestCase(APITestCase):
         event = Event.objects.first()
         expect(event.name).to.eq('some-click')
         expect(event.data).to.eq(data)
-        expect(event.created_at).to.eq(datetime.datetime(2017, 1, 14, 12, 0, 1, tzinfo=pytz.utc))
+        expect(event.created_at).to.eq(datetime(2017, 1, 14, 12, 0, 1, tzinfo=pytz.utc))
 
 
 class SearchTrackingViewTestCase(APITestCase):
@@ -165,3 +167,41 @@ class SearchTrackingViewTestCase(APITestCase):
                 'last_entered': '2017-01-14T12:00:01-06:00'
             }]
         )
+
+
+class AttachmentTrackingViewSetTestCase(APITestCase):
+    def test_create_failure(self):
+        response = self.client.post(reverse(
+            'api-v2:attachment-tracking-list'),
+            {'accessed_from_page': 'CR', 'app': 'frontend', 'attachment_id': 345}
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    @freeze_time('2018-04-04 12:00:01', tz_offset=0)
+    def test_create_success(self):
+        allegation = AllegationFactory(crid=123456)
+        attachment_file = AttachmentFileFactory(
+            id=123,
+            allegation=allegation,
+            title='CR document 10',
+            tag='CR',
+            url='https://cr-document.com/10',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url3',
+        )
+
+        expect(AttachmentTracking.objects.count()).to.eq(0)
+
+        response = self.client.post(reverse(
+            'api-v2:attachment-tracking-list'),
+            {'accessed_from_page': 'CR', 'app': 'frontend', 'attachment_id': 123}
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(AttachmentTracking.objects.count()).to.eq(1)
+        attachment_tracking = AttachmentTracking.objects.first()
+        expect(attachment_tracking.created_at).to.eq(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc))
+        expect(attachment_tracking.attachment_file).to.eq(attachment_file)
+        expect(attachment_tracking.accessed_from_page).to.eq('CR')
+        expect(attachment_tracking.app).to.eq('frontend')

@@ -92,13 +92,12 @@ LOGGING = {
         }
     },
     'loggers': {
-        'django.command': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
         'django':  {
             'handlers': ['syslog'],
+            'level': 'INFO'
+        },
+        'crawler': {
+            'handlers': ['syslog', 'console'],
             'level': 'INFO'
         }
     },
