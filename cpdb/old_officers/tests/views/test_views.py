@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from robber import expect
-from mock import patch, Mock
 import pytz
 
 from data.constants import ACTIVE_YES_CHOICE
@@ -258,103 +257,6 @@ class OldOfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'rank': 'Police Officer',
             },
         ])
-
-    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2017)
-    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2017)
-    def test_top_officers_by_allegation(self):
-        officer1 = OfficerFactory(
-            id=1, first_name='Daryl', last_name='Mack',
-            trr_percentile=12.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
-            complaint_percentile=99.3450,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-        officer2 = OfficerFactory(
-            id=2,
-            first_name='Ronald', last_name='Watts',
-            trr_percentile=0.0000, civilian_allegation_percentile=98.4344, internal_allegation_percentile=99.7840,
-            complaint_percentile=99.5000,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-        officer3 = OfficerFactory(
-            id=3,
-            first_name='Officer', last_name='low percentile',
-            trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=96.3450,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-        officer4 = OfficerFactory(
-            id=4,
-            first_name='Officer', last_name='no visual token',
-            trr_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=99.8800,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-        officer5 = OfficerFactory(
-            id=5,
-            first_name='Officer', last_name='filter out',
-            trr_percentile=0.0000, civilian_allegation_percentile=0.0000, internal_allegation_percentile=0.0000,
-            complaint_percentile=99.2000,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-        OfficerFactory(
-            id=6,
-            first_name='Officer', last_name='no percentiles',
-            complaint_percentile=99.8000,
-            race='White', gender='M', birth_year=1975, rank='Police Officer',
-        )
-
-        for officer, percentile in zip(
-            [officer1, officer2, officer3, officer4, officer5],
-            [99.3450, 99.5000, 96.3450, 99.8800, 99.2000]
-        ):
-            setattr(officer, 'officer_id', officer.id)
-            setattr(officer, 'percentile_allegation', percentile)
-            setattr(officer, 'year', 2017)
-
-        with patch(
-            'officers.indexers.officers_indexer.officer_percentile.top_percentile',
-            Mock(return_value=[officer1, officer2, officer3, officer4, officer5])
-        ):
-            self.refresh_index()
-            self.refresh_read_index()
-
-            response = self.client.get(reverse('api-v2:officers-old-top-by-allegation'), {'limit': 2})
-            expect(response.status_code).to.eq(status.HTTP_200_OK)
-            expect(response.data).to.have.length(2)
-            expect(response.data).to.eq([
-                {
-                    'complaint_percentile': 99.5000,
-                    'full_name': u'Ronald Watts',
-                    'id': 2,
-                    'percentile': {
-                        u'percentile_allegation': '99.5000',
-                        u'year': 2017,
-                        u'id': 2,
-                    },
-                    'race': u'White',
-                    'gender': u'Male',
-                    'complaint_count': 0,
-                    'sustained_count': 0,
-                    'birth_year': 1975,
-                    'rank': 'Police Officer',
-                },
-                {
-                    'complaint_percentile': 99.3450,
-                    'full_name': u'Daryl Mack',
-                    'id': 1,
-                    'percentile': {
-                        u'percentile_allegation': '99.3450',
-                        u'year': 2017,
-                        u'id': 1,
-                    },
-                    'race': u'White',
-                    'gender': u'Male',
-                    'complaint_count': 0,
-                    'sustained_count': 0,
-                    'birth_year': 1975,
-                    'rank': 'Police Officer',
-                }
-            ])
 
     def test_coaccusals_not_found(self):
         response_not_found = self.client.get(reverse('api-v2:officers-old-coaccusals', kwargs={'pk': 999}))

@@ -8,16 +8,15 @@ from robber import expect
 
 from activity_grid.factories import ActivityCardFactory, ActivityPairCardFactory
 from activity_grid.models import ActivityPairCard
+from data.cache_managers import cache_all
 from data.factories import OfficerFactory, OfficerAllegationFactory, AllegationFactory
 from data.models import Officer
-from officers.tests.mixins import OfficerSummaryTestCaseMixin
 
 
-class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
+class ActivityGridViewSetTestCase(APITestCase):
     def test_list_return_exactly_80_items(self):
         ActivityCardFactory.create_batch(50)
         ActivityPairCardFactory.create_batch(50)
-        self.refresh_index()
 
         response = self.client.get(reverse('api-v2:activity-grid-list'))
 
@@ -81,7 +80,8 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             officer1=officer1, officer2=officer2, last_activity=datetime(2018, 5, 20, tzinfo=pytz.utc)
         )
 
-        self.refresh_index()
+        cache_all()
+
         url = reverse('api-v2:activity-grid-list')
         response = self.client.get(url)
 
@@ -98,13 +98,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'rank': 'Police Officer',
             'percentile': {
                 'id': officer1.id,
-                'year': 2016,
                 'percentile_trr': '0.0000',
-                'percentile_allegation': '50.0000',
                 'percentile_allegation_internal': '0.0000',
                 'percentile_allegation_civilian': '50.0000'
             },
-            'type': 'single_officer',
+            'kind': 'single_officer',
         }, {
             'id': officer2.id,
             'full_name': 'Raymond Piwinicki',
@@ -117,13 +115,11 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'rank': 'Police Officer',
             'percentile': {
                 'id': officer2.id,
-                'year': 2016,
                 'percentile_trr': '0.0000',
-                'percentile_allegation': '0.0000',
                 'percentile_allegation_internal': '0.0000',
                 'percentile_allegation_civilian': '0.0000'
             },
-            'type': 'single_officer',
+            'kind': 'single_officer',
         }, {
             'officer1': {
                 'id': officer1.id,
@@ -134,9 +130,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'rank': 'Police Officer',
                 'percentile': {
                     'id': officer1.id,
-                    'year': 2016,
                     'percentile_trr': '0.0000',
-                    'percentile_allegation': '50.0000',
                     'percentile_allegation_internal': '0.0000',
                     'percentile_allegation_civilian': '50.0000'
                 },
@@ -150,15 +144,13 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'rank': 'Police Officer',
                 'percentile': {
                     'id': officer2.id,
-                    'year': 2016,
                     'percentile_trr': '0.0000',
-                    'percentile_allegation': '0.0000',
                     'percentile_allegation_internal': '0.0000',
                     'percentile_allegation_civilian': '0.0000'
                 },
             },
             'coaccusal_count': 1,
-            'type': 'coaccused_pair',
+            'kind': 'coaccused_pair',
         }])
 
     def test_list_order(self):
@@ -172,7 +164,7 @@ class ActivityGridViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         ActivityPairCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
         url = reverse('api-v2:activity-grid-list')
 
-        self.refresh_index()
+        cache_all()
         response = self.client.get(url)
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
