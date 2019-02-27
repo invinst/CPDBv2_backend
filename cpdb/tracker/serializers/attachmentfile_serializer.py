@@ -6,7 +6,6 @@ from data.models import AttachmentFile
 from data.constants import AttachmentSourceType
 
 
-
 class AttachmentFileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttachmentFile
@@ -85,8 +84,8 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         updated_to_documentcloud_fields = ['title']
 
         for field in manually_updated_fields:
-            value = getattr(self.instance, field, '')
-            new_value = self.validated_data[field]
+            value = getattr(self.instance, field, None)
+            new_value = self.validated_data.get(field, None)
             if value != new_value:
                 self.validated_data['manually_updated'] = True
                 if field in updated_to_documentcloud_fields:
@@ -94,3 +93,9 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
                     Thread(target=lambda: self.instance.update_to_documentcloud(field, new_value)).start()
 
         super(UpdateAttachmentFileSerializer, self).save()
+
+    def is_valid(self, raise_exception=True):
+        needed_fields = ('show', 'title', 'text_content')
+        if all(key not in self.initial_data for key in needed_fields):
+            return False
+        return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)

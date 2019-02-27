@@ -137,7 +137,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8')
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 11
         })
 
         changed = update_attachment(attachment, document)
@@ -151,6 +152,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
         expect(attachment.tag).to.eq('CR')
         expect(attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
         expect(attachment.text_content).to.eq('text content')
+        expect(attachment.pages).to.eq(11)
 
     def test_update_attachment_external_created_at_is_none(self):
         attachment = AttachmentFileFactory(
@@ -161,7 +163,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
             tag='old tag',
             source_type=AttachmentSourceType.COPA,
-            text_content=''
+            text_content='',
+            pages=2
         )
         document = create_object({
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -171,7 +174,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8')
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 10,
         })
 
         changed = update_attachment(attachment, document)
@@ -185,6 +189,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
         expect(attachment.tag).to.eq('CR')
         expect(attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
         expect(attachment.text_content).to.eq('text content')
+        expect(attachment.pages).to.eq(10)
 
     def test_update_attachment_no_update(self):
         attachment = AttachmentFileFactory(
@@ -212,6 +217,7 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
+            'pages': 7
         })
 
         changed = update_attachment(attachment, document)
@@ -301,7 +307,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8')
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 4,
         })
         update_document = create_object({
             'documentcloud_id': '1',
@@ -313,7 +320,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8')
+            'full_text': 'updated text content'.encode('utf8'),
+            'pages': 1,
         })
         kept_document = create_object({
             'documentcloud_id': '2',
@@ -325,7 +333,8 @@ class UpdateDocumentsServiceTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8')
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 2,
         })
         search_all_mock.return_value = [new_document, update_document, kept_document]
 

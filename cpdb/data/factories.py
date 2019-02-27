@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 import pytz
+from django.contrib.auth import get_user_model
 
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
@@ -18,6 +19,12 @@ from data.models import (
 from data.constants import ACTIVE_CHOICES
 
 fake = Faker()
+User = get_user_model()
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
 
 
 class AreaFactory(factory.django.DjangoModelFactory):
@@ -187,6 +194,8 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     views_count = factory.LazyFunction(lambda: random.randint(0, 99999))
     downloads_count = factory.LazyFunction(lambda: random.randint(0, 99999))
     show = factory.LazyFunction(lambda: fake.boolean())
+    manually_updated = False
+    last_updated_by = None
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):

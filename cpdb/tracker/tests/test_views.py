@@ -100,7 +100,7 @@ class DocumentTestCase(APITestCase):
         response = self.client.patch(url, {'show': False}, format='json')
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({'show': False})
+        expect(response.data['show']).to.be.false()
 
     def test_update_attachment_bad_request(self):
         admin_user = AdminUserFactory()
