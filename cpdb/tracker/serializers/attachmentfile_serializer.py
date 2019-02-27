@@ -1,7 +1,10 @@
+from threading import Thread
+
 from rest_framework import serializers
 
 from data.models import AttachmentFile
-from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
+from data.constants import AttachmentSourceType
+
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -33,7 +36,7 @@ class LinkedAttachmentFileSerializer(serializers.ModelSerializer):
 
 class AttachmentFileSerializer(serializers.ModelSerializer):
     crid = serializers.CharField(source='allegation_id')
-    last_updated_by = serializers.CharField(source='last_updated_by.username')
+    last_updated_by = serializers.CharField(source='last_updated_by.username', allow_null=True)
     crawler_name = serializers.SerializerMethodField()
     linked_documents = LinkedAttachmentFileSerializer(many=True)
 
@@ -78,6 +81,16 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
     def save(self):
-        if self.instance.text_content != self.validated_data['text_content'] and not self.instance.manually_updated:
-            self.validated_data['manually_updated'] = True
+        manually_updated_fields = ['text_content', 'title']
+        updated_to_documentcloud_fields = ['title']
+
+        for field in manually_updated_fields:
+            value = getattr(self.instance, field, '')
+            new_value = self.validated_data[field]
+            if value != new_value:
+                self.validated_data['manually_updated'] = True
+                if field in updated_to_documentcloud_fields:
+                    # TODO: we need to setup background task or kubernetes job for this
+                    Thread(target=lambda: self.instance.update_to_documentcloud(field, new_value)).start()
+
         super(UpdateAttachmentFileSerializer, self).save()

@@ -1,13 +1,18 @@
 import json
+import logging
+from urllib.error import HTTPError
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
 from django.conf import settings
+from documentcloud import DocumentCloud, DoesNotExistError
 
-from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT
+from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws
 from .common import TimeStampsModel
+
+logger = logging.getLogger(__name__)
 
 
 class ShownAttachmentManager(models.Manager):
@@ -65,3 +70,22 @@ class AttachmentFile(TimeStampsModel):
             allegation_id=self.allegation_id,
             file_type=MEDIA_TYPE_DOCUMENT,
         ).exclude(id=self.id)
+
+    def update_to_documentcloud(self, field, value):
+        if self.source_type not in [AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]:
+            return
+
+        client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+
+        try:
+            doc = client.documents.get(self.external_id)
+        except DoesNotExistError:
+            logger.error(f'Cannot find document with external id {self.external_id} on DocumentCloud')
+            return
+
+        setattr(doc, field, value)
+
+        try:
+            doc.save()
+        except HTTPError:
+            logger.error(f'Cannot save document with external id {self.external_id} on DocumentCloud')
