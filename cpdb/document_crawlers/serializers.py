@@ -10,3 +10,4 @@ class DocumentCrawlerSerializer(NoNullSerializer):
     num_new_documents = serializers.IntegerField()
     recent_run_at = serializers.DateTimeField(source='created_at', format='%Y-%m-%d')
     num_successful_run = serializers.IntegerField()
+    log_url = serializers.CharField()

@@ -104,5 +104,6 @@ LOGGING = {
 }
 
 S3_BUCKET_OFFICER_CONTENT = 'officer-content'
+S3_BUCKET_CRAWLER_LOG = 'cpdp-crawler-logs'
 LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE = 'createOfficerZipFile'
 LAMBDA_FUNCTION_UPLOAD_PDF = 'uploadPdf'

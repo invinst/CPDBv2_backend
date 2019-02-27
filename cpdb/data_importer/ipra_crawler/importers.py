@@ -1,6 +1,10 @@
 from tqdm import tqdm
 
-from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO
+from django.conf import settings
+
+from documentcloud import DocumentCloud
+
+from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile, Allegation
 from data_importer.ipra_crawler.portal_crawler import (
     OpenIpraInvestigationCrawler,
@@ -21,30 +25,22 @@ from data_importer.ipra_crawler.summary_reports_crawler import (
     OpenIpraSummaryReportsCrawler,
     OpenIpraYearSummaryReportsCrawler
 )
-from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
-from document_cloud.models import DocumentCrawler
-from document_cloud.utils import format_copa_documentcloud_title
+from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
+from shared.attachment_importer import BaseAttachmentImporter
 
 
 def _get_chicagocopa_external_id(copa_url):
     return copa_url[copa_url.rindex('/') + 1:] if '/' in copa_url else copa_url
 
 
-class IpraBaseAttachmentImporter(object):
-    source_type = None
+class IpraBaseAttachmentImporter(BaseAttachmentImporter):
     documentcloud_source_type = None
-
-    def __init__(self, logger):
-        self.logger = logger
 
     def crawl_ipra(self):
         raise NotImplementedError
 
     def parse_incidents(self, raw_incidents):
         raise NotImplementedError
-
-    def log_info(self, message):
-        self.logger.info(f'{self.source_type} - {message}')
 
     @staticmethod
     def get_or_update_allegation(allegation_dict):
@@ -62,12 +58,10 @@ class IpraBaseAttachmentImporter(object):
                 allegation.save()
         return allegation
 
-    def get_current_num_successful_run(self):
-        return DocumentCrawler.objects.filter(source_type=self.source_type, status='Success').count()
-
     def update_attachments(self, allegation, attachment_dicts):
         created_attachments = []
         num_updated = 0
+
         for attachment_dict in attachment_dicts:
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
             try:
@@ -91,6 +85,7 @@ class IpraBaseAttachmentImporter(object):
                 if vimeo_data is not None:
                     attachment_dict['preview_image_url'] = vimeo_data['thumbnail_small']
             if created:
+                self.log_info(f'crid {allegation.crid} {attachment.original_url}')
                 created_attachments.append(attachment)
             else:
                 if attachment.source_type == self.documentcloud_source_type:
@@ -126,6 +121,8 @@ class IpraBaseAttachmentImporter(object):
         new_attachments = []
         num_updated_attachments = 0
 
+        self.log_info('Import attachments process is about to start...')
+        self.log_info(f'New {self.source_type.lower()} attachments found:')
         for incident, allegation in tqdm(allegation_incidents):
             created_attachments, num_updated = self.update_attachments(
                 allegation,
@@ -136,42 +133,48 @@ class IpraBaseAttachmentImporter(object):
 
         return new_attachments, num_updated_attachments
 
-    def record_success_crawler_result(self, new_attachments, num_updated_attachments):
-        num_documents = AttachmentFile.objects.filter(
-            source_type__in=[self.source_type, self.documentcloud_source_type]
-        ).count()
-        num_new_attachments = len(new_attachments)
+    def upload_to_documentcloud(self):
+        client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
-        DocumentCrawler.objects.create(
+        attachments = AttachmentFile.objects.filter(
             source_type=self.source_type,
-            status=DOCUMENT_CRAWLER_SUCCESS,
-            num_documents=num_documents,
-            num_new_documents=num_new_attachments,
-            num_updated_documents=num_updated_attachments,
-            num_successful_run=self.get_current_num_successful_run() + 1
-        )
-        self.log_info(
-            f'Done importing! {num_new_attachments} created, '
-            f'{num_updated_attachments} updated in {num_documents} copa attachments.'
-        )
+            file_type=MEDIA_TYPE_DOCUMENT
+        )[:10]
 
-    def record_failed_crawler_result(self):
-        DocumentCrawler.objects.create(
-            source_type=self.source_type,
-            status=DOCUMENT_CRAWLER_FAILED,
-            num_successful_run=self.get_current_num_successful_run()
-        )
-        self.log_info(
-            f'Error occurred! Cannot update documents.'
-        )
+        self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
+
+        for attachment in tqdm(attachments):
+            source_type = AttachmentSourceType.SOURCE_TYPE_MAPPINGS[attachment.source_type]
+
+            cloud_document = client.documents.upload(
+                attachment.original_url,
+                title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title,
+                                                      attachment.source_type),
+                description=source_type,
+                access='public',
+                force_ocr=True
+            )
+
+            attachment.external_id = parse_id(cloud_document.id)
+            attachment.source_type = source_type
+            attachment.title = cloud_document.title
+            attachment.url = get_url(cloud_document)
+            attachment.tag = 'CR'
+            attachment.additional_info = parse_link(cloud_document.canonical_url)
+            attachment.preview_image_url = cloud_document.normal_image_url
+            attachment.external_last_updated = cloud_document.updated_at
+            attachment.external_created_at = cloud_document.created_at
+            attachment.save()
+
+        self.log_info(f'Done uploading!')
 
     def crawl_and_update_attachments(self):
         try:
             raw_incidents = self.crawl_ipra()
-            self.log_info('Done crawling!')
             incidents = self.parse_incidents(raw_incidents)
             new_attachments, num_updated_attachments = self.update_attachments_for_all_incidents(incidents)
-            self.record_success_crawler_result(new_attachments, num_updated_attachments)
+            self.record_success_crawler_result(len(new_attachments), num_updated_attachments)
+            self.upload_to_documentcloud()
             return new_attachments
         except Exception:
             self.record_failed_crawler_result()
@@ -181,6 +184,10 @@ class IpraBaseAttachmentImporter(object):
 class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
     source_type = AttachmentSourceType.PORTAL_COPA
     documentcloud_source_type = AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
+    all_source_types = [
+        AttachmentSourceType.PORTAL_COPA,
+        AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
+    ]
 
     def crawl_ipra(self):
         self.log_info('Crawling process is about to start...')
@@ -192,6 +199,7 @@ class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
             raw_incidents.append(ComplaintCrawler(link).crawl())
 
         self.log_info(f'Parsed {len(raw_incidents)} crawled incidents')
+        self.log_info('Done crawling!')
 
         return raw_incidents
 
@@ -216,17 +224,24 @@ class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
 class IpraSummaryReportsAttachmentImporter(IpraBaseAttachmentImporter):
     source_type = AttachmentSourceType.SUMMARY_REPORTS_COPA
     documentcloud_source_type = AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD
+    all_source_types = [
+        AttachmentSourceType.SUMMARY_REPORTS_COPA,
+        AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD
+    ]
 
     def crawl_ipra(self):
         self.log_info('Crawling process is about to start...')
         links = OpenIpraSummaryReportsCrawler().crawl()
-        self.log_info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         raw_incidents = []
 
         for link in tqdm(links):
-            raw_incidents += OpenIpraYearSummaryReportsCrawler(link).crawl()
+            self.log_info(f'Crawling {link}')
+            incidents_per_year = OpenIpraYearSummaryReportsCrawler(link).crawl()
+            raw_incidents += incidents_per_year
+            self.log_info(f'Parsed {len(incidents_per_year)} crawled incidents')
 
-        self.log_info(f'Parsed {len(raw_incidents)} crawled incidents')
+        self.log_info(f'Total crawled incidents: {len(raw_incidents)}')
+        self.log_info('Done crawling!')
         return raw_incidents
 
     def parse_incidents(self, raw_incidents):

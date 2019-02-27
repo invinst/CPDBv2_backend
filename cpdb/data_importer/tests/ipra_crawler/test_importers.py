@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
 
+from django.test import override_settings
 from django.test.testcases import TestCase
 
 import pytz
 from mock import patch, Mock
 from robber import expect
+from freezegun import freeze_time
 
 from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
 from document_cloud.factories import DocumentCrawlerFactory
@@ -17,6 +19,7 @@ from data_importer.ipra_crawler.importers import IpraPortalAttachmentImporter, I
 from data.constants import AttachmentSourceType
 
 
+@override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
 class IpraPortalAttachmentImporterTestCase(TestCase):
     @patch('data_importer.ipra_crawler.importers.OpenIpraInvestigationCrawler')
     @patch('data_importer.ipra_crawler.importers.ComplaintCrawler')
@@ -67,7 +70,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         }])
 
     @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
-    def test_crawl_and_update_attachments(self, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_crawl_and_update_attachments(self, aws_mock, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -116,7 +120,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
@@ -134,8 +139,15 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(new_attachments[0].title).to.eq('Audio Clip')
         expect(new_attachments[0].url).to.eq('http://chicagocopa.org/audio_link.mp3')
 
+        expect(aws_mock.s3.put_object).to.be.called_with(
+            Body=b'Done crawling!\nDone importing! 1 created, 1 updated in 2 copa attachments.',
+            Bucket='crawler_logs_bucket',
+            Key='portal_copa/2018-04-04-120001.txt'
+        )
+
     @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
-    def test_update(self, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_update(self, _, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -167,7 +179,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
 
     @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
     @patch('data_importer.ipra_crawler.portal_crawler.VimeoSimpleAPI.crawl')
-    def test_update_video_thumbnail(self, vimeo_api, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_update_video_thumbnail(self, _, vimeo_api, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -210,7 +223,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             to.eq('https://i.vimeocdn.com/video/747800241_100x75.webp')
 
     @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
-    def test_not_update_video_thumbnail_when_source_is_not_vimeo(self, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_not_update_video_thumbnail_when_source_is_not_vimeo(self, _, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -241,7 +255,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).preview_image_url).be.none()
 
     @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
-    def test_update_PORTAL_COPA_DOCUMENTCLOUD_file(self, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_update_PORTAL_COPA_DOCUMENTCLOUD_file(self, _, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -275,7 +290,54 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(updated_attachment_file.title).to.eq('CRID 123 CR pdf file')
         expect(updated_attachment_file.external_last_updated).to.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
 
+    @patch(
+        'data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra',
+        side_effect=Mock(side_effect=[Exception()])
+    )
+    @patch('shared.attachment_importer.aws')
+    def test_failed_crawl_and_update_attachments(self, aws_mock, _):
+        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
 
+        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.PORTAL_COPA,
+                status=DOCUMENT_CRAWLER_SUCCESS,
+                num_documents=5,
+                num_new_documents=1,
+                num_updated_documents=4,
+                num_successful_run=1,
+            )
+        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.PORTAL_COPA,
+                status=DOCUMENT_CRAWLER_FAILED,
+                num_successful_run=1,
+            )
+
+        expect(expect(DocumentCrawler.objects.count())).to.eq(2)
+
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+
+        expect(new_attachments).to.eq([])
+        expect(DocumentCrawler.objects.count()).to.eq(3)
+        crawler_log = DocumentCrawler.objects.order_by('-created_at').first()
+        expect(crawler_log.source_type).to.eq(AttachmentSourceType.PORTAL_COPA)
+        expect(crawler_log.status).to.eq(DOCUMENT_CRAWLER_FAILED)
+        expect(crawler_log.num_documents).to.eq(0)
+        expect(crawler_log.num_new_documents).to.eq(0)
+        expect(crawler_log.num_updated_documents).to.eq(0)
+        expect(crawler_log.num_successful_run).to.eq(1)
+        expect(crawler_log.log_key).to.eq('portal_copa/2018-04-04-120001.txt')
+
+        expect(aws_mock.s3.put_object).to.be.called_with(
+            Body=b'Error occurred! Cannot update documents.',
+            Bucket='crawler_logs_bucket',
+            Key='portal_copa/2018-04-04-120001.txt'
+        )
+
+
+@override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
 class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
     @patch('data_importer.ipra_crawler.importers.OpenIpraInvestigationCrawler')
     @patch('data_importer.ipra_crawler.importers.ComplaintCrawler')
@@ -318,7 +380,8 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         }])
 
     @patch('data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.crawl_ipra')
-    def test_crawl_and_update_attachments(self, crawl_ipra):
+    @patch('shared.attachment_importer.aws')
+    def test_crawl_and_update_attachments(self, aws_mock, crawl_ipra):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
         crawl_ipra.return_value = [{
             'attachments': [
@@ -348,19 +411,21 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             'log_num': '456',
         }]
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
-        DocumentCrawlerFactory(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            status=DOCUMENT_CRAWLER_SUCCESS,
-            num_documents=5,
-            num_new_documents=1,
-            num_updated_documents=4,
-            num_successful_run=1,
-        )
-        DocumentCrawlerFactory(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            status=DOCUMENT_CRAWLER_FAILED,
-            num_successful_run=1,
-        )
+        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+                status=DOCUMENT_CRAWLER_SUCCESS,
+                num_documents=5,
+                num_new_documents=1,
+                num_updated_documents=4,
+                num_successful_run=1,
+            )
+        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+                status=DOCUMENT_CRAWLER_FAILED,
+                num_successful_run=1,
+            )
         allegation = AllegationFactory(crid='123')
         attachment_file = AttachmentFileFactory(
             allegation=allegation,
@@ -372,7 +437,8 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
@@ -392,30 +458,40 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(new_attachments).to.have.length(1)
         expect(new_attachments[0].url).to.eq('http://chicagocopa.org/document_link.pdf')
 
+        expect(aws_mock.s3.put_object).to.be.called_with(
+            Body=b'Done crawling!\nDone importing! 1 created, 1 updated in 2 copa attachments.',
+            Bucket='crawler_logs_bucket',
+            Key='summary_reports_copa/2018-04-04-120001.txt'
+        )
+
     @patch(
         'data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.crawl_ipra',
         side_effect=Mock(side_effect=[Exception()])
     )
-    def test_failed_crawl_and_update_attachments(self, _):
+    @patch('shared.attachment_importer.aws')
+    def test_failed_crawl_and_update_attachments(self, aws_mock, _):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
 
-        DocumentCrawlerFactory(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            status=DOCUMENT_CRAWLER_SUCCESS,
-            num_documents=5,
-            num_new_documents=1,
-            num_updated_documents=4,
-            num_successful_run=1,
-        )
-        DocumentCrawlerFactory(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            status=DOCUMENT_CRAWLER_FAILED,
-            num_successful_run=1,
-        )
+        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+                status=DOCUMENT_CRAWLER_SUCCESS,
+                num_documents=5,
+                num_new_documents=1,
+                num_updated_documents=4,
+                num_successful_run=1,
+            )
+        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCrawlerFactory(
+                source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+                status=DOCUMENT_CRAWLER_FAILED,
+                num_successful_run=1,
+            )
 
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
-        new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
+        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.eq([])
         expect(DocumentCrawler.objects.count()).to.eq(3)
@@ -426,3 +502,10 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(crawler_log.num_new_documents).to.eq(0)
         expect(crawler_log.num_updated_documents).to.eq(0)
         expect(crawler_log.num_successful_run).to.eq(1)
+        expect(crawler_log.log_key).to.eq('summary_reports_copa/2018-04-04-120001.txt')
+
+        expect(aws_mock.s3.put_object).to.be.called_with(
+            Body=b'Error occurred! Cannot update documents.',
+            Bucket='crawler_logs_bucket',
+            Key='summary_reports_copa/2018-04-04-120001.txt'
+        )
