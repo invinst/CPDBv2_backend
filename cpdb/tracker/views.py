@@ -37,13 +37,18 @@ class AttachmentViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk):
         attachment = get_object_or_404(AttachmentFile, id=pk)
 
-        data = request.data
-        if request.user.is_authenticated:
-            data['last_updated_by'] = request.user.id
-
-        serializer = UpdateAttachmentFileSerializer(attachment, data=data)
+        serializer = UpdateAttachmentFileSerializer(
+            instance=attachment,
+            data=request.data,
+            user=request.user
+        )
 
         if serializer.is_valid():
             serializer.save()
-            return Response(status=status.HTTP_200_OK, data=serializer.data)
+            attachment.refresh_from_db()
+            return Response(
+                status=status.HTTP_200_OK,
+                data=AuthenticatedAttachmentFileSerializer(attachment).data
+            )
+
         return Response(status=status.HTTP_400_BAD_REQUEST)

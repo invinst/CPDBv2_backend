@@ -71,27 +71,32 @@ class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
 
 
 class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
-    def __init__(self, instance, data, **kwargs):
-        super(UpdateAttachmentFileSerializer, self).__init__(instance, data, partial=True, **kwargs)
+    def __init__(self, user, **kwargs):
+        self.user = user
+        super(UpdateAttachmentFileSerializer, self).__init__(**kwargs)
 
     class Meta:
         model = AttachmentFile
-        fields = ('id', 'show', 'title', 'text_content', 'last_updated_by')
-        read_only_fields = ('id',)
+        fields = ('show', 'title', 'text_content', 'last_updated_by')
 
     def save(self):
         manually_updated_fields = ['text_content', 'title']
         updated_to_documentcloud_fields = ['title']
 
+        changed = False
         for field in manually_updated_fields:
-            value = getattr(self.instance, field, None)
-            new_value = self.validated_data.get(field, None)
-            if value != new_value:
-                self.validated_data['manually_updated'] = True
-                if field in updated_to_documentcloud_fields:
-                    # TODO: we need to setup background task or kubernetes job for this
-                    Thread(target=lambda: self.instance.update_to_documentcloud(field, new_value)).start()
+            if field in self.validated_data:
+                value = getattr(self.instance, field, None)
+                new_value = self.validated_data[field]
+                if value != new_value:
+                    changed = True
+                    if field in updated_to_documentcloud_fields:
+                        # TODO: we need to setup background task or kubernetes job for this
+                        Thread(target=lambda: self.instance.update_to_documentcloud(field, new_value)).start()
 
+        if changed:
+            self.validated_data['manually_updated'] = True
+            self.validated_data['last_updated_by_id'] = self.user.id
         super(UpdateAttachmentFileSerializer, self).save()
 
     def is_valid(self, raise_exception=True):
