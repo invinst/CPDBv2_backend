@@ -224,6 +224,29 @@ class UpdateDocumentsServiceTestCase(TestCase):
         expect(changed).to.be.true()
         expect(attachment.source_type).to.eq(AttachmentSourceType.COPA_DOCUMENTCLOUD)
 
+    def test_update_attachment_not_update_full_text_if_manually_updated(self):
+        attachment = AttachmentFileFactory(
+            source_type='',
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            manually_updated=True
+        )
+        document = create_object({
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7
+        })
+
+        changed = update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.text_content).to.eq('ABC')
+
     def test_save_attachments_delete_attachments(self):
         AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
 

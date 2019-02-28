@@ -6,6 +6,7 @@ from django.core.management import call_command
 
 import pytz
 
+from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
 from shared.utils import timing
 
@@ -18,5 +19,7 @@ class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
         logger.info('Forcing update all complaint documents...')
-        AttachmentFile.objects.update(external_last_updated=datetime(1969, 1, 1, tzinfo=pytz.utc))
+        AttachmentFile.objects.filter(
+            source_type__in=[AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]
+        ).update(external_last_updated=datetime(1969, 1, 1, tzinfo=pytz.utc))
         call_command('update_documents')
