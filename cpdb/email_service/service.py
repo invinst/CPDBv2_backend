@@ -23,9 +23,14 @@ def send_cr_attachment_available_email(new_attachments):
 
     crids = {attachment.allegation.crid for attachment in new_attachments}
 
+    sent_count = {}
     for crid in tqdm(crids, desc='Sending notification emails'):
         allegation = Allegation.objects.get(crid=crid)
-        for attachment_request in allegation.attachmentrequest_set.filter(noti_email_sent=False):
+        requests = allegation.attachmentrequest_set.filter(noti_email_sent=False)
+
+        sent_count[crid] = 0
+
+        for attachment_request in requests:
             message = email_template.create_message(
                 [attachment_request.email],
                 name=_get_name_from_email(attachment_request.email),
@@ -37,12 +42,12 @@ def send_cr_attachment_available_email(new_attachments):
             except SMTPException:
                 logger.info(f'Cannot send notification email for crid {crid} to {attachment_request.email}')
             else:
+                sent_count[crid] += 1
                 attachment_request.noti_email_sent = True
                 attachment_request.save()
 
-                for attachment in new_attachments:
-                    if attachment.allegation == attachment_request.allegation:
-                        attachment.notifications_count = len(message)
+    for attachment in new_attachments:
+        attachment.notifications_count = sent_count[attachment.allegation.crid]
 
     AttachmentFile.objects.bulk_update(
         new_attachments,
