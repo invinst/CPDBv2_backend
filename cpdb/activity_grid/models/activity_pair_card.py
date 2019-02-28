@@ -8,3 +8,4 @@ class ActivityPairCard(TimeStampsModel):
     officer2 = models.ForeignKey('data.Officer', on_delete=models.CASCADE, related_name='activity_pair_card2')
     important = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True)
+    coaccusal_count = models.IntegerField(default=0)

@@ -101,9 +101,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def areas(self, create, extracted, **kwargs):
-        if not create:  # Simple build, do nothing.
-            return
-        if extracted:   # A list of groups were passed in, use them
+        if create and extracted:   # A list of groups were passed in, use them
             for area in extracted:
                 self.areas.add(area)
 

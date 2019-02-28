@@ -65,6 +65,7 @@ class AttachmentFileSerializer(NoNullSerializer):
     url = serializers.CharField()
     preview_image_url = serializers.CharField()
     file_type = serializers.CharField()
+    id = serializers.CharField()
 
 
 class InvestigatorAllegationSerializer(NoNullSerializer):
@@ -188,15 +189,12 @@ class AttachmentRequestSerializer(serializers.ModelSerializer):
 
 
 class AllegationWithNewDocumentsSerializer(NoNullSerializer):
-    crid = serializers.CharField()
+    crid = serializers.CharField(source='allegation_id')
     latest_document = serializers.SerializerMethodField()
-    num_recent_documents = serializers.SerializerMethodField()
+    num_recent_documents = serializers.IntegerField()
 
     def get_latest_document(self, obj):
-        return AttachmentFileSerializer(obj.latest_documents[-1]).data if obj.latest_documents else None
-
-    def get_num_recent_documents(self, obj):
-        return len(obj.latest_documents)
+        return AttachmentFileSerializer(obj).data
 
 
 class CRRelatedComplaintSerializer(NoNullSerializer):

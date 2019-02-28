@@ -1,29 +1,23 @@
-from django.test import SimpleTestCase
+from datetime import datetime
 
+from django.test import TestCase
+
+import pytz
 from robber import expect
-from mock import Mock
 
-from activity_grid.serializers import OfficerCardSerializer, SimpleCardSerializer
-from officers.doc_types import OfficerInfoDocType
+from activity_grid.factories import ActivityCardFactory, ActivityPairCardFactory
+from activity_grid.serializers import OfficerCardSerializer, SimpleCardSerializer, PairCardSerializer
+from data.factories import OfficerFactory
 
 
-class ActivityCardSerializerTestCase(SimpleTestCase):
+class ActivityCardSerializerTestCase(TestCase):
     def test_serialize_officer_card(self):
-        percentile_mock = Mock()
-        percentile_mock.to_dict.return_value = {
-            'id': 123,
-            'year': 2016,
-            'percentile_trr': '0.000',
-            'percentile_allegation': '0.088',
-            'percentile_allegation_civilian': '77.000',
-            'percentile_allegation_internal': '0.020'
-        }
-
-        obj = Mock(
+        officer = OfficerFactory(
             id=123,
-            full_name='Alex Mack',
+            first_name='Alex',
+            last_name='Mack',
             race='White',
-            gender='Male',
+            gender='M',
             birth_year=1910,
             allegation_count=2,
             honorable_mention_count=1,
@@ -32,10 +26,19 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             civilian_compliment_count=0,
             complaint_percentile='0.088',
             rank='Police Officer',
-            percentiles=[percentile_mock],
+            civilian_allegation_percentile='77.000',
+            internal_allegation_percentile='0.020',
+            trr_percentile='0.000'
         )
 
-        expect(OfficerCardSerializer(obj).data).to.eq({
+        activity_card = ActivityCardFactory(
+            officer=officer,
+            important=True,
+            last_activity=datetime(2002, 2, 28, tzinfo=pytz.utc)
+        )
+        setattr(activity_card, 'null_position', 2)
+
+        expect(OfficerCardSerializer(activity_card).data).to.eq({
             'id': 123,
             'full_name': 'Alex Mack',
             'race': 'White',
@@ -47,60 +50,25 @@ class ActivityCardSerializerTestCase(SimpleTestCase):
             'rank': 'Police Officer',
             'percentile': {
                 'id': 123,
-                'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '0.088',
-                'percentile_allegation_civilian': '77.000',
-                'percentile_allegation_internal': '0.020'
-            }
-        })
-
-    def test_serialize_officer_card_no_percentiles(self):
-        obj = OfficerInfoDocType(
-            id=123,
-            full_name='Alex Mack',
-            race='White',
-            gender='Male',
-            birth_year=1910,
-            allegation_count=2,
-            honorable_mention_count=1,
-            sustained_count=1,
-            discipline_count=1,
-            civilian_compliment_count=0,
-            rank='Police Officer',
-        )
-
-        expect(OfficerCardSerializer(obj).data).to.eq({
-            'id': 123,
-            'full_name': 'Alex Mack',
-            'race': 'White',
-            'gender': 'Male',
-            'birth_year': 1910,
-            'complaint_count': 2,
-            'sustained_count': 1,
-            'percentile': None,
-            'complaint_percentile': None,
-            'rank': 'Police Officer',
+                'percentile_trr': '0.0000',
+                'percentile_allegation_civilian': '77.0000',
+                'percentile_allegation_internal': '0.0200'
+            },
+            'important': True,
+            'null_position': 2,
+            'last_activity': '2002-02-27T18:00:00-06:00',
+            'kind': 'single_officer'
         })
 
 
-class SimpleCardSerializerTestCase(SimpleTestCase):
+class SimpleCardSerializerTestCase(TestCase):
     def test_serialize_simple_card(self):
-        percentile_mock = Mock()
-        percentile_mock.to_dict.return_value = {
-            'id': 123,
-            'year': 2016,
-            'percentile_trr': '0.000',
-            'percentile_allegation': '0.088',
-            'percentile_allegation_civilian': '77.000',
-            'percentile_allegation_internal': '0.020',
-        }
-
-        obj = Mock(
+        officer = OfficerFactory(
             id=123,
-            full_name='Alex Mack',
+            first_name='Alex',
+            last_name='Mack',
             race='White',
-            gender='Male',
+            gender='M',
             birth_year=1910,
             allegation_count=2,
             honorable_mention_count=1,
@@ -108,10 +76,12 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             rank='Police Officer',
-            percentiles=[percentile_mock]
+            civilian_allegation_percentile='77.000',
+            internal_allegation_percentile='0.020',
+            trr_percentile='0.000'
         )
 
-        expect(SimpleCardSerializer(obj).data).to.eq({
+        expect(SimpleCardSerializer(officer).data).to.eq({
             'id': 123,
             'full_name': 'Alex Mack',
             'race': 'White',
@@ -120,20 +90,21 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             'rank': 'Police Officer',
             'percentile': {
                 'id': 123,
-                'year': 2016,
-                'percentile_trr': '0.000',
-                'percentile_allegation': '0.088',
-                'percentile_allegation_civilian': '77.000',
-                'percentile_allegation_internal': '0.020'
+                'percentile_trr': '0.0000',
+                'percentile_allegation_civilian': '77.0000',
+                'percentile_allegation_internal': '0.0200'
             }
         })
 
-    def test_serialize_simple_card_no_percentiles(self):
-        obj = OfficerInfoDocType(
-            id=123,
-            full_name='Alex Mack',
+
+class PairCardSerializerTestCase(TestCase):
+    def test_serialize_pair_card(self):
+        officer1 = OfficerFactory(
+            id=1,
+            first_name='Alex',
+            last_name='Mack',
             race='White',
-            gender='Male',
+            gender='M',
             birth_year=1910,
             allegation_count=2,
             honorable_mention_count=1,
@@ -141,14 +112,68 @@ class SimpleCardSerializerTestCase(SimpleTestCase):
             discipline_count=1,
             civilian_compliment_count=0,
             rank='Police Officer',
+            civilian_allegation_percentile='77.0000',
+            internal_allegation_percentile='0.0200',
+            trr_percentile='0.0000'
         )
+        officer2 = OfficerFactory(
+            id=2,
+            first_name='German',
+            last_name='Mack',
+            race='Black',
+            gender='F',
+            birth_year=1940,
+            allegation_count=3,
+            honorable_mention_count=1,
+            sustained_count=2,
+            discipline_count=1,
+            civilian_compliment_count=1,
+            rank='Officer',
+            civilian_allegation_percentile='77.222',
+            internal_allegation_percentile='4.020',
+            trr_percentile='5.000'
+        )
+        pair_card = ActivityPairCardFactory(
+            officer1=officer1,
+            officer2=officer2,
+            important=False,
+            last_activity=None,
+            coaccusal_count=3
+        )
+        setattr(pair_card, 'null_position', 0)
 
-        expect(SimpleCardSerializer(obj).data).to.eq({
-            'id': 123,
-            'full_name': 'Alex Mack',
-            'race': 'White',
-            'gender': 'Male',
-            'birth_year': 1910,
-            'percentile': None,
-            'rank': 'Police Officer',
+        expect(PairCardSerializer(pair_card).data).to.eq({
+            'officer1': {
+                'id': 1,
+                'full_name': 'Alex Mack',
+                'race': 'White',
+                'gender': 'Male',
+                'birth_year': 1910,
+                'rank': 'Police Officer',
+                'percentile': {
+                    'id': 1,
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation_civilian': '77.0000',
+                    'percentile_allegation_internal': '0.0200'
+                }
+            },
+            'officer2': {
+                'id': 2,
+                'full_name': 'German Mack',
+                'race': 'Black',
+                'gender': 'Female',
+                'birth_year': 1940,
+                'rank': 'Officer',
+                'percentile': {
+                    'id': 2,
+                    'percentile_trr': '5.0000',
+                    'percentile_allegation_civilian': '77.2220',
+                    'percentile_allegation_internal': '4.0200'
+                }
+            },
+            'important': False,
+            'null_position': 0,
+            'last_activity': None,
+            'coaccusal_count': 3,
+            'kind': 'coaccused_pair'
         })
