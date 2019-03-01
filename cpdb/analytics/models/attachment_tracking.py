@@ -8,7 +8,9 @@ class AttachmentTrackingManager(models.Manager):
         self.bulk_create([
             AttachmentTracking(
                 attachment_file=attachment,
-                kind=constants.DOWNLOAD_EVENT_TYPE
+                kind=constants.DOWNLOAD_EVENT_TYPE,
+                app='frontend',
+                accessed_from_page='Officer'
             )
             for attachment in attachments
         ])

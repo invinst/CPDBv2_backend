@@ -19,7 +19,13 @@ class AttachmentTrackingTestCase(TestCase):
         events = AttachmentTracking.objects.all()
 
         expect(events).to.have.length(2)
+
         expect(events[0].attachment_file_id).to.eq(1)
         expect(events[0].kind).to.eq(constants.DOWNLOAD_EVENT_TYPE)
+        expect(events[0].app).to.eq('frontend')
+        expect(events[0].accessed_from_page).to.eq('Officer')
+
         expect(events[1].attachment_file_id).to.eq(2)
         expect(events[1].kind).to.eq(constants.DOWNLOAD_EVENT_TYPE)
+        expect(events[1].app).to.eq('frontend')
+        expect(events[1].accessed_from_page).to.eq('Officer')
