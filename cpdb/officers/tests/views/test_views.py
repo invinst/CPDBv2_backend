@@ -24,7 +24,8 @@ from data.factories import (
 )
 from trr.factories import TRRFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
-from analytics.models import Event
+from analytics.models import AttachmentTracking
+from analytics import constants
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from data import cache_managers
 
@@ -740,9 +741,9 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             }
         )
 
-        events = Event.objects.get_attachment_download_events()
+        events = AttachmentTracking.objects.filter(kind=constants.DOWNLOAD_EVENT_TYPE)
         expect(events.count()).to.eq(2)
-        expect(set([event.attachment_id for event in events])).to.eq(set([321, 322]))
+        expect(set([event.attachment_file.id for event in events])).to.eq(set([321, 322]))
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
     @patch('data.models.officer.aws')

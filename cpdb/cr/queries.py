@@ -2,6 +2,7 @@ from django.db import connection
 
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_IPRA_COPA_HIDING_TAGS
 from data.models import AttachmentFile
+from analytics import constants
 from utils.raw_query_utils import dict_fetch_all
 
 
@@ -38,21 +39,23 @@ class LatestDocumentsQuery(object):
     def execute(cls, limit):
         data_query = f"""
             SELECT data_attachmentfile.*,
-                   MAX(analytics_attachmenttracking.created_at) AS latest_viewed_at,
+                   MAX(B.created_at) AS latest_viewed_at,
                    ROW_NUMBER() OVER (
                       PARTITION BY data_attachmentfile.allegation_id
                       ORDER BY
-                      MAX(analytics_attachmenttracking.created_at) DESC NULLS LAST,
+                      MAX(B.created_at) DESC NULLS LAST,
                       data_attachmentfile.external_created_at DESC NULLS LAST
                    ) AS row_number
-            FROM data_attachmentfile LEFT OUTER JOIN analytics_attachmenttracking
-            ON data_attachmentfile.id = analytics_attachmenttracking.attachment_file_id
+            FROM data_attachmentfile LEFT OUTER JOIN (
+                SELECT * FROM analytics_attachmenttracking
+                WHERE analytics_attachmenttracking.kind = '{constants.VIEW_EVENT_TYPE}'
+            ) AS B
+            ON data_attachmentfile.id = B.attachment_file_id
             WHERE data_attachmentfile.file_type = '{MEDIA_TYPE_DOCUMENT}'
             AND data_attachmentfile.show = True
             AND NOT data_attachmentfile.tag IN ({','.join([f"'{tag}'" for tag in MEDIA_IPRA_COPA_HIDING_TAGS])})
             GROUP BY data_attachmentfile.id
         """
-
         attachment_files = AttachmentFile.objects.raw(
             f"""
                 SELECT * FROM ({data_query}) AS A
