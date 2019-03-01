@@ -226,31 +226,31 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
 
     @patch('shared.attachment_importer.aws')
-    def test_save_attachments_delete_attachments(self, _):
+    def test_update_attachments_delete_attachments(self, _):
         AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
 
         expect(AttachmentFile.objects.count()).to.eq(1)
 
-        DocumentCloudAttachmentImporter(self.logger).save_attachments([], [], [])
+        DocumentCloudAttachmentImporter(self.logger).update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(0)
 
     @patch('shared.attachment_importer.aws')
-    def test_save_attachments_kept_attachments(self, _):
+    def test_update_attachments_kept_attachments(self, _):
         kept_attachment = AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
         AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
 
         expect(AttachmentFile.objects.count()).to.eq(2)
 
-        DocumentCloudAttachmentImporter(self.logger).save_attachments(
-            kept_attachments=[kept_attachment], new_attachments=[], updated_attachments=[]
-        )
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.kept_attachments = [kept_attachment]
+        importer.update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().id).to.eq(kept_attachment.id)
 
     @patch('shared.attachment_importer.aws')
-    def test_save_attachments_create_new_attachments(self, _):
+    def test_update_attachments_create_new_attachments(self, _):
         allegation = AllegationFactory()
         new_attachment = AttachmentFileFactory.build(
             allegation=allegation,
@@ -259,16 +259,16 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         expect(AttachmentFile.objects.count()).to.eq(0)
 
-        DocumentCloudAttachmentImporter(self.logger).save_attachments(
-            kept_attachments=[], new_attachments=[new_attachment], updated_attachments=[]
-        )
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.new_attachments = [new_attachment]
+        importer.update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('title')
         expect(AttachmentFile.objects.first().allegation.crid).to.eq(allegation.crid)
 
     @patch('shared.attachment_importer.aws')
-    def test_save_attachments_save_updated_attachments(self, _):
+    def test_update_attachments_save_updated_attachments(self, _):
         attachment = AttachmentFileFactory(
             title='old title',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
@@ -278,30 +278,12 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('old title')
 
-        DocumentCloudAttachmentImporter(self.logger).save_attachments(
-            kept_attachments=[], new_attachments=[], updated_attachments=[attachment]
-        )
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.updated_attachments = [attachment]
+        importer.update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('new title')
-
-    @patch('document_cloud.importers.DocumentCloudAttachmentImporter.record_success_crawler_result')
-    @patch('shared.attachment_importer.aws')
-    def test_save_attachments_record_success_crawler_result(self, _, record_success_crawler_result_mock):
-        allegation = AllegationFactory()
-        new_attachment = AttachmentFileFactory.build(
-            title='title',
-            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            allegation=allegation
-        )
-        updated_attachment = AttachmentFileFactory(title='old title', source_type=AttachmentSourceType.DOCUMENTCLOUD)
-        updated_attachment.title = 'new title'
-
-        DocumentCloudAttachmentImporter(self.logger).save_attachments(
-            [], new_attachments=[new_attachment], updated_attachments=[updated_attachment]
-        )
-
-        expect(record_success_crawler_result_mock).to.be.called_with(1, 1)
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
@@ -467,16 +449,22 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         crawler_log = DocumentCrawler.objects.order_by('-created_at').first()
         expect(crawler_log.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(crawler_log.status).to.eq(DOCUMENT_CRAWLER_SUCCESS)
-        expect(crawler_log.num_documents).to.eq(0)
+        expect(crawler_log.num_documents).to.eq(4)
         expect(crawler_log.num_new_documents).to.eq(1)
-        expect(crawler_log.num_updated_documents).to.eq(2)
+        expect(crawler_log.num_updated_documents).to.eq(1)
         expect(crawler_log.num_successful_run).to.eq(1)
-        expect(crawler_log.log_key).to.eq('documentcloud/2018-04-04-120001.txt')
+        expect(crawler_log.log_key).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
 
         log_args = shared_aws_mock.s3.put_object.call_args[1]
-        expect(log_args['Body']).to.contain(b'Done importing! 1 created, 2 updated in 0 copa attachments.')
+
+        expect(log_args['Body']).to.contain(
+            b'\nCreating 1 attachments'
+            b'\nUpdating 1 attachments'
+            b'\nCurrent Total documentcloud attachments: 4'
+            b'\nDone importing!'
+        )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
-        expect(log_args['Key']).to.eq('documentcloud/2018-04-04-120001.txt')
+        expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
@@ -517,10 +505,14 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(crawler_log.num_new_documents).to.eq(0)
         expect(crawler_log.num_updated_documents).to.eq(0)
         expect(crawler_log.num_successful_run).to.eq(1)
-        expect(crawler_log.log_key).to.eq('documentcloud/2018-04-04-120001.txt')
+        expect(crawler_log.log_key).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
 
-        expect(aws_mock.s3.put_object).to.be.called_with(
-            Body=b'Error occurred! Cannot update documents.',
-            Bucket='crawler_logs_bucket',
-            Key='documentcloud/2018-04-04-120001.txt'
-        )
+        log_content = b'\nCreating 0 attachments' \
+                      b'\nUpdating 0 attachments' \
+                      b'\nCurrent Total documentcloud attachments: 0' \
+                      b'\nERROR: Error occurred while SEARCH ATTACHMENTS!'
+
+        log_args = aws_mock.s3.put_object.call_args[1]
+        expect(log_args['Body']).to.contain(log_content)
+        expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
+        expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')

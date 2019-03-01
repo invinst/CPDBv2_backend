@@ -23,7 +23,8 @@ class DocumentCrawler(TimeStampsModel):
                 Params={
                     'Bucket': settings.S3_BUCKET_CRAWLER_LOG,
                     'Key': self.log_key,
-                }
+                },
+                ExpiresIn=604800
             )
         else:
             return None

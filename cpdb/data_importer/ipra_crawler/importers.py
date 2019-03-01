@@ -39,9 +39,6 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
     def crawl_ipra(self):
         raise NotImplementedError
 
-    def parse_incidents(self, raw_incidents):
-        raise NotImplementedError
-
     @staticmethod
     def get_or_update_allegation(allegation_dict):
         crid = allegation_dict['crid']
@@ -118,8 +115,8 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
 
     def update_attachments_for_all_incidents(self, incidents):
         allegation_incidents = self.update_allegation(incidents)
-        new_attachments = []
-        num_updated_attachments = 0
+        self.new_attachments = []
+        self.num_updated_attachments = 0
 
         self.log_info('Import attachments process is about to start...')
         self.log_info(f'New {self.source_type.lower()} attachments found:')
@@ -128,10 +125,8 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
                 allegation,
                 incident['allegation']['attachment_files']
             )
-            new_attachments += created_attachments
-            num_updated_attachments += num_updated
-
-        return new_attachments, num_updated_attachments
+            self.new_attachments += created_attachments
+            self.num_updated_attachments += num_updated
 
     def upload_to_documentcloud(self):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
@@ -139,7 +134,7 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
         attachments = AttachmentFile.objects.filter(
             source_type=self.source_type,
             file_type=MEDIA_TYPE_DOCUMENT
-        )[:10]
+        )
 
         self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
 
@@ -170,15 +165,18 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
 
     def crawl_and_update_attachments(self):
         try:
-            raw_incidents = self.crawl_ipra()
-            incidents = self.parse_incidents(raw_incidents)
-            new_attachments, num_updated_attachments = self.update_attachments_for_all_incidents(incidents)
-            self.record_success_crawler_result(len(new_attachments), num_updated_attachments)
+            self.set_current_step('CRAWLING')
+            incidents = self.crawl_ipra()
+            self.set_current_step('UPDATING ATTACHMENTS')
+            self.update_attachments_for_all_incidents(incidents)
+            self.set_current_step('UPLOADING TO DOCUMENTCLOUD')
             self.upload_to_documentcloud()
-            return new_attachments
+            self.set_current_step('RECORDING CRAWLER RESULT')
+            self.record_success_crawler_result()
         except Exception:
             self.record_failed_crawler_result()
             return []
+        return self.new_attachments
 
 
 class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
@@ -201,7 +199,7 @@ class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
         self.log_info(f'Parsed {len(raw_incidents)} crawled incidents')
         self.log_info('Done crawling!')
 
-        return raw_incidents
+        return self.parse_incidents(raw_incidents)
 
     def parse_incidents(self, raw_incidents):
         schema = CompositeField(layout={
@@ -242,7 +240,7 @@ class IpraSummaryReportsAttachmentImporter(IpraBaseAttachmentImporter):
 
         self.log_info(f'Total crawled incidents: {len(raw_incidents)}')
         self.log_info('Done crawling!')
-        return raw_incidents
+        return self.parse_incidents(raw_incidents)
 
     def parse_incidents(self, raw_incidents):
         schema = CompositeField(layout={

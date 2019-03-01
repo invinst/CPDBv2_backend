@@ -24,7 +24,8 @@ class DocumentCrawlerTestCase(TestCase):
             Params={
                 'Bucket': 'crawler_logs_bucket',
                 'Key': 'summary_reports_copa/2019-02-27-100142.txt',
-            }
+            },
+            ExpiresIn=604800
         )
 
     def test_log_url_with_empty_log_key(self):
