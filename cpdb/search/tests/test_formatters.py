@@ -271,7 +271,26 @@ class CrFormatterTestCase(SimpleTestCase):
                         'struck Victim B on the head with a <em>gun</em>'
                     ])
                 })
-            )
+            ),
+            category='Operation/Personnel Violations',
+            sub_category='Secondary/Special Employment',
+            address='3000 Michigan Ave, Chicago IL',
+            victims=[
+                Mock(to_dict=Mock(return_value={'gender': '', 'race': 'Black', 'age': 25})),
+                Mock(to_dict=Mock(return_value={'gender': 'Female', 'race': 'Black'})),
+                Mock(to_dict=Mock(return_value={'gender': 'Female', 'race': 'Black', 'age': 25}))
+            ],
+            coaccused=[
+                Mock(to_dict=Mock(return_value={
+                    'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
+                    'percentile': {
+                        'id': 10,
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500'
+                    }
+                }))
+            ]
         )
 
         expect(
@@ -286,7 +305,26 @@ class CrFormatterTestCase(SimpleTestCase):
                     'fired a <em>gun</em> at the victims',
                     'struck Victim B on the head with a <em>gun</em>'
                 ]
-            }
+            },
+            'category': 'Operation/Personnel Violations',
+            'sub_category': 'Secondary/Special Employment',
+            'address': '3000 Michigan Ave, Chicago IL',
+            'victims': [
+                {'gender': '', 'race': 'Black', 'age': 25},
+                {'gender': 'Female', 'race': 'Black'},
+                {'gender': 'Female', 'race': 'Black', 'age': 25},
+            ],
+            'coaccused': [
+                {
+                    'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
+                    'percentile': {
+                        'id': 10,
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500'
+                    }
+                }
+            ]
         })
 
 
