@@ -1,7 +1,8 @@
-## Attachments [/attachments/{?crid,offset,limit}/]
+## Attachments [/attachments/{?match,crid,offset,limit}/]
 
 + Parameters
-    + crid (string) - CRID to filter attachments
+    + match (string, optional) - String to match against title and CRID
+    + crid (string, optional) - CRID to filter attachments
     + offset (number, optional) - offset from which to get additional results
         + Default: `0`
     + limit (number, optional) - limit of how many results to return
@@ -24,7 +25,10 @@
                     "preview_image_url": "https://assets.documentcloud.org/documents/4769596/pages/CRID-1051117-CR-p1-normal.gif",
                     "views_count": 1,
                     "downloads_count": 1,
-                    "show": true
+                    "crid": "123456",
+                    "show": true,
+                    "documents_count": 4,
+                    "crid": "1051117"
                 },
                 {
                     "id": 4829,
@@ -34,7 +38,10 @@
                     "preview_image_url": "https://assets.documentcloud.org/documents/4769386/pages/CRID-1064593-CR-p1-normal.gif",
                     "views_count": 2,
                     "downloads_count": 1,
+                    "crid": "123456",
                     "show": false
+                    "documents_count": 3,
+                    "crid": "1064593"
                 }
             ]
         }

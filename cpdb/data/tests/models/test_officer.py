@@ -423,12 +423,20 @@ class OfficerTestCase(TestCase):
 
     def test_allegation_attachments(self):
         allegation = AllegationFactory(crid='123')
-        attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
-        attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
+        attachment_1 = AttachmentFileFactory(
+            allegation=allegation, source_type='DOCUMENTCLOUD')
+        attachment_2 = AttachmentFileFactory(
+            allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(
+            allegation=allegation, source_type='COPA_DOCUMENTCLOUD', show=False)
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
         allegation_456 = AllegationFactory(crid='456')
-        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(
+            allegation=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(
+            allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(
+            allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD', show=False)
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -442,9 +450,12 @@ class OfficerTestCase(TestCase):
         allegation_456 = AllegationFactory(crid='456')
         attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
         attachment_2 = AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation, source_type='COPA_DOCUMENTCLOUD', show=False)
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(allegation=allegation, source_type='COPA', show=False)
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD', show=False)
 
         investigator = InvestigatorFactory(officer=OfficerFactory(id=1))
         InvestigatorAllegationFactory(allegation=allegation, investigator=investigator)

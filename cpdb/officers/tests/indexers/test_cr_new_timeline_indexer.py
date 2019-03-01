@@ -99,14 +99,22 @@ class CRNewTimelineIndexerTestCase(TestCase):
             file_type='document',
             title='CR document 1',
             url='http://foo.com/1',
-            preview_image_url='http://web.com/image1'
+            preview_image_url='http://web.com/image1',
         )
         AttachmentFileFactory(
             allegation=allegation,
             file_type='document',
             title='CR document 2',
             url='http://foo.com/2',
-            preview_image_url='http://web.com/image2'
+            preview_image_url='http://web.com/image2',
+        )
+        AttachmentFileFactory(
+            allegation=allegation,
+            file_type='document',
+            title='CR document 3',
+            url='http://foo.com/3',
+            preview_image_url='http://web.com/image3',
+            show=False
         )
         AttachmentFileFactory()
 

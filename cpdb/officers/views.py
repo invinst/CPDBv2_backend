@@ -6,7 +6,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 
 from data.models import Officer, OfficerAlias
-from analytics.models import Event
+from analytics.models import AttachmentTracking
 from officers.queries import OfficerTimelineQuery, OfficerTimelineMobileQuery
 from officers.serializers.response_mobile_serializers import (
     OfficerInfoMobileSerializer,
@@ -105,9 +105,8 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
         with_docs = request.GET.get('with-docs', '') == 'true'
 
         if with_docs:
-            Event.objects.create_attachment_download_events(
-                [attachment.id for attachment in officer.allegation_attachments] +
-                [attachment.id for attachment in officer.investigator_attachments]
+            AttachmentTracking.objects.create_attachment_download_events(
+                list(officer.allegation_attachments) + list(officer.investigator_attachments)
             )
 
         if officer.check_zip_file_exist(with_docs=with_docs):

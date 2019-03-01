@@ -10,9 +10,17 @@ class CacheManagersTestCase(TestCase):
     @patch('data.cache_managers.allegation_cache_manager.cache_data')
     @patch('data.cache_managers.officer_cache_manager.cache_data')
     @patch('data.cache_managers.salary_cache_manager.cache_data')
-    def test_cache_all(self, salary_cache_mock, officer_cache_mock, allegation_cache_mock):
+    @patch('activity_grid.cache_managers.activity_pair_card_cache_manager.cache_data')
+    def test_cache_all(
+        self,
+        salary_cache_mock,
+        officer_cache_mock,
+        allegation_cache_mock,
+        activity_pair_card_cache_mock
+    ):
         cache_managers.cache_all()
         expect(salary_cache_mock).to.be.called_once()
         expect(officer_cache_mock).to.be.called_once()
         expect(allegation_cache_mock).to.be.called_once()
-        expect(len(cache_managers.managers)).to.eq(3)
+        expect(activity_pair_card_cache_mock).to.be.called_once()
+        expect(len(cache_managers.managers)).to.eq(4)

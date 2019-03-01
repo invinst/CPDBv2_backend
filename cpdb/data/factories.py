@@ -108,9 +108,7 @@ class AllegationFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def areas(self, create, extracted, **kwargs):
-        if not create:  # Simple build, do nothing.
-            return
-        if extracted:   # A list of groups were passed in, use them
+        if create and extracted:   # A list of groups were passed in, use them
             for area in extracted:
                 self.areas.add(area)
 
@@ -194,7 +192,7 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     text_content = factory.LazyFunction(lambda: fake.text(64))
     views_count = factory.LazyFunction(lambda: random.randint(0, 99999))
     downloads_count = factory.LazyFunction(lambda: random.randint(0, 99999))
-    show = factory.LazyFunction(lambda: fake.boolean())
+    show = True
     manually_updated = False
     last_updated_by = None
 

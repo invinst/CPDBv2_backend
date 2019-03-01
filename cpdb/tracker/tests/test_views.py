@@ -17,7 +17,7 @@ from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory
 from data.models import AttachmentFile
 
 
-class DocumentTestCase(APITestCase):
+class AttachmentAPITestCase(APITestCase):
     def test_retrieve_unauthenticated_user(self):
         user = UserFactory(username='test user')
         allegation = AllegationFactory(crid='456')
@@ -197,7 +197,10 @@ class DocumentTestCase(APITestCase):
 
     @freeze_time('2017-01-14 12:00:01')
     def test_list_attachments(self):
+        allegation1 = AllegationFactory(crid=123)
+        allegation2 = AllegationFactory(crid=456)
         AttachmentFileFactory(
+            allegation=allegation1,
             id=1,
             file_type='document',
             title='CRID 1051117 CR',
@@ -205,9 +208,9 @@ class DocumentTestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            show=True,
         )
         AttachmentFileFactory(
+            allegation=allegation1,
             id=2,
             file_type='audio',
             title='Log 1087021 911',
@@ -215,9 +218,9 @@ class DocumentTestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=False,
         )
         AttachmentFileFactory(
+            allegation=allegation2,
             id=3,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -225,8 +228,8 @@ class DocumentTestCase(APITestCase):
             preview_image_url=None,
             views_count=3,
             downloads_count=3,
-            show=True
         )
+        AttachmentFileFactory(id=4, allegation=allegation2, show=False)
 
         expected_data = {
             'count': 3,
@@ -241,7 +244,9 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
+                    'crid': '123',
                     'show': True,
+                    'documents_count': 2,
                 },
                 {
                     'id': 2,
@@ -251,7 +256,9 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': None,
                     'views_count': 2,
                     'downloads_count': 2,
-                    'show': False,
+                    'crid': '123',
+                    'show': True,
+                    'documents_count': 2,
                 },
                 {
                     'id': 3,
@@ -261,7 +268,9 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': None,
                     'views_count': 3,
                     'downloads_count': 3,
+                    'crid': '456',
                     'show': True,
+                    'documents_count': 1,
                 }
             ]
         }
@@ -276,7 +285,7 @@ class DocumentTestCase(APITestCase):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)
 
-        AttachmentFileFactory(id=1, show=True)
+        AttachmentFileFactory(id=1)
 
         url = reverse('api-v2:attachments-detail', kwargs={'pk': '1'})
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -496,7 +505,6 @@ class DocumentTestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            show=True,
             allegation=allegation1
         )
         AttachmentFileFactory(
@@ -507,7 +515,6 @@ class DocumentTestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            show=False,
             allegation=allegation2
         )
 
@@ -530,7 +537,45 @@ class DocumentTestCase(APITestCase):
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
+                    'crid': '1',
                     'show': True,
+                    'documents_count': 1
                 }
             ]
         })
+
+    def test_attachments_full_text_search(self):
+        allegation = AllegationFactory(crid=111333)
+
+        AttachmentFileFactory(
+            id=11,
+            allegation=allegation)
+        AttachmentFileFactory(
+            id=22,
+            title='hahaha')
+
+        base_url = reverse('api-v2:attachments-list')
+
+        response = self.client.get(f'{base_url}?match=11133')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(11)
+
+        response = self.client.get(f'{base_url}?match=haha')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(22)
+
+    def test_get_attachments_as_admin(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        AttachmentFileFactory(id=133, show=False)
+
+        base_url = reverse('api-v2:attachments-list')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.get(base_url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(133)
