@@ -13,7 +13,7 @@ def set_source_type(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data', '0110_merge_20190108_0253'),
+        ('data', '0112_attachmentfile_show'),
     ]
 
     operations = [
