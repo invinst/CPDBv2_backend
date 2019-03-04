@@ -11,8 +11,19 @@ from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
 
-from data_importer.ipra_crawler.importers import IpraPortalAttachmentImporter, IpraSummaryReportsAttachmentImporter
+from data_importer.ipra_crawler.importers import (
+    IpraPortalAttachmentImporter,
+    IpraSummaryReportsAttachmentImporter,
+    IpraBaseAttachmentImporter
+)
 from data.constants import AttachmentSourceType
+
+
+class IpraBaseAttachmentImporterTestCase(TestCase):
+    def test_raise_NotImplementedError(self):
+        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        expect(IpraBaseAttachmentImporter(logger).crawl_ipra).to.throw(NotImplementedError)
+        expect(lambda: IpraBaseAttachmentImporter(logger).parse_incidents(None)).to.throw(NotImplementedError)
 
 
 class IpraPortalAttachmentImporterTestCase(TestCase):
@@ -275,13 +286,30 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
 
 
 class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
-    @patch('data_importer.ipra_crawler.importers.OpenIpraInvestigationCrawler')
-    @patch('data_importer.ipra_crawler.importers.ComplaintCrawler')
-    def test_crawl_ipra(self, complaint_crawler, link_crawler):
-        complaint_crawler.return_value.crawl.return_value = 'something'
-        link_crawler.return_value.crawl.return_value = ['link 1']
+    @patch('data_importer.ipra_crawler.importers.OpenIpraYearSummaryReportsCrawler')
+    @patch('data_importer.ipra_crawler.importers.OpenIpraSummaryReportsCrawler')
+    def test_crawl_ipra(self, reports_crawler, year_crawler):
+        reports_crawler.return_value.crawl.return_value = ['link 1']
+        year_crawler.return_value.crawl.return_value = [{
+            'attachments': [
+                {
+                    'link': 'https://www.chicagocopa.org/wp-content/uploads/2018/12/Log-1086683-9.27.pdf',
+                    'last_updated': 'October 25, 2018'
+                }
+            ],
+            'log_num': '1086683',
+        }]
+
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        expect(IpraPortalAttachmentImporter(logger).crawl_ipra()).to.be.eq(['something'])
+        expect(IpraSummaryReportsAttachmentImporter(logger).crawl_ipra()).to.be.eq([{
+            'attachments': [
+                {
+                    'link': 'https://www.chicagocopa.org/wp-content/uploads/2018/12/Log-1086683-9.27.pdf',
+                    'last_updated': 'October 25, 2018'
+                }
+            ],
+            'log_num': '1086683',
+        }])
 
     def test_parse_incidents(self):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
