@@ -398,7 +398,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(5)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(5)
@@ -477,7 +477,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     )
     @patch('shared.attachment_importer.aws')
     def test_search_and_update_attachments_failure(self, aws_mock, _):
-        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.DOCUMENTCLOUD,
                 status=DOCUMENT_CRAWLER_SUCCESS,
@@ -486,7 +486,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
                 num_updated_documents=4,
                 num_successful_run=1,
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.DOCUMENTCLOUD,
                 status=DOCUMENT_CRAWLER_FAILED,
@@ -495,7 +495,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
 
         crawler_log = DocumentCrawler.objects.order_by('-created_at').first()

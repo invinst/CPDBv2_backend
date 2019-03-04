@@ -179,7 +179,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
@@ -381,7 +381,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
     def test_failed_crawl_and_update_attachments(self, aws_mock, _):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
 
-        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.PORTAL_COPA,
                 status=DOCUMENT_CRAWLER_SUCCESS,
@@ -390,7 +390,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
                 num_updated_documents=4,
                 num_successful_run=1,
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.PORTAL_COPA,
                 status=DOCUMENT_CRAWLER_FAILED,
@@ -399,7 +399,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
 
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.eq([])
@@ -579,7 +579,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         }]
 
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
-        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
                 status=DOCUMENT_CRAWLER_SUCCESS,
@@ -588,7 +588,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
                 num_updated_documents=4,
                 num_successful_run=1,
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
                 status=DOCUMENT_CRAWLER_FAILED,
@@ -605,7 +605,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
@@ -643,7 +643,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
     def test_failed_crawl_and_update_attachments(self, aws_mock, _):
         logger = logging.getLogger('crawler.crawl_ipra_portal_data')
 
-        with freeze_time(lambda: datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
                 status=DOCUMENT_CRAWLER_SUCCESS,
@@ -652,7 +652,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
                 num_updated_documents=4,
                 num_successful_run=1,
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
                 status=DOCUMENT_CRAWLER_FAILED,
@@ -661,7 +661,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
 
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.eq([])

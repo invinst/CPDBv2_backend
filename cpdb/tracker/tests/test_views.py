@@ -220,7 +220,7 @@ class AttachmentAPITestCase(APITestCase):
 class DocumentCrawlersViewSetTestCase(APITestCase):
     @override_settings(TIME_ZONE='UTC')
     def setUp(self):
-        with freeze_time(lambda: datetime(2018, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=1,
                 source_type='DOCUMENTCLOUD',
@@ -230,7 +230,7 @@ class DocumentCrawlersViewSetTestCase(APITestCase):
                 num_updated_documents=4,
                 num_successful_run=0
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=2,
                 source_type='DOCUMENTCLOUD',
@@ -240,7 +240,7 @@ class DocumentCrawlersViewSetTestCase(APITestCase):
                 num_updated_documents=4,
                 num_successful_run=1
             )
-        with freeze_time(lambda: datetime(2018, 3, 3, 12, 0, 10, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 3, 3, 12, 0, 10, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=3,
                 source_type='PORTAL_COPA',
@@ -250,7 +250,7 @@ class DocumentCrawlersViewSetTestCase(APITestCase):
                 num_updated_documents=5,
                 num_successful_run=0
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=4,
                 source_type='PORTAL_COPA',
@@ -260,7 +260,7 @@ class DocumentCrawlersViewSetTestCase(APITestCase):
                 num_updated_documents=4,
                 num_successful_run=1
             )
-        with freeze_time(lambda: datetime(2018, 3, 3, 12, 0, 20, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 3, 3, 12, 0, 20, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=5,
                 source_type='SUMMARY_REPORTS_COPA',
@@ -270,7 +270,7 @@ class DocumentCrawlersViewSetTestCase(APITestCase):
                 num_updated_documents=1,
                 num_successful_run=0
             )
-        with freeze_time(lambda: datetime(2018, 4, 3, 12, 0, 20, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 20, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
                 id=6,
                 source_type='SUMMARY_REPORTS_COPA',

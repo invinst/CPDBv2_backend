@@ -18,7 +18,7 @@ class DocumentCrawlerSerializerTestCase(TestCase):
     def test_serialization(self, aws_mock):
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_log_url'
 
-        with freeze_time(lambda: datetime(2018, 10, 20, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 10, 20, 12, 0, 1, tzinfo=pytz.utc)):
             document_crawler = DocumentCrawlerFactory(
                 id=123,
                 source_type='SUMMARY_REPORTS_COPA',
