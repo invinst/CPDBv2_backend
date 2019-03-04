@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, OuterRef
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -9,7 +9,8 @@ from rest_framework.authentication import TokenAuthentication
 
 from data.models import AttachmentFile
 from data.utils.subqueries import SQCount
-from .serializers import AttachmentFileListSerializer
+from document_cloud.models import DocumentCrawler
+from .serializers import AttachmentFileListSerializer, DocumentCrawlerSerializer
 
 
 class AttachmentViewSet(viewsets.ViewSet):
@@ -43,3 +44,8 @@ class AttachmentViewSet(viewsets.ViewSet):
             attachment.save()
             return Response({'show': attachment.show})
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = DocumentCrawler.objects.order_by('-created_at')
+    serializer_class = DocumentCrawlerSerializer
