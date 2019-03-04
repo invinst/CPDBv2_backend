@@ -20,11 +20,13 @@ class AttachmentViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def retrieve(self, request, pk):
-        queryset = AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)
-        document = get_object_or_404(queryset, pk=pk)
         if request.user.is_authenticated:
+            queryset = AttachmentFile.objects.filter(file_type=MEDIA_TYPE_DOCUMENT)
+            document = get_object_or_404(queryset, pk=pk)
             return Response(AuthenticatedAttachmentFileSerializer(document).data)
         else:
+            queryset = AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)
+            document = get_object_or_404(queryset, pk=pk)
             return Response(AttachmentFileSerializer(document).data)
 
     def list(self, request):

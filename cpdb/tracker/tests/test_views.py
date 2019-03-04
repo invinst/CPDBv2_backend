@@ -102,6 +102,10 @@ class AttachmentAPITestCase(APITestCase):
             'last_updated_by': 'test user'
         })
 
+        expect(
+            self.client.get(reverse('api-v2:attachments-detail', kwargs={'pk': '126'})).status_code
+        ).to.be.eq(status.HTTP_404_NOT_FOUND)
+
     def test_retrieve_authenticated_user(self):
         user = UserFactory(username='test user')
 
@@ -194,6 +198,10 @@ class AttachmentAPITestCase(APITestCase):
             'downloads_count': 99,
             'notifications_count': 200,
         })
+
+        expect(
+            self.client.get(reverse('api-v2:attachments-detail', kwargs={'pk': '126'})).status_code
+        ).to.be.eq(status.HTTP_200_OK)
 
     @freeze_time('2017-01-14 12:00:01')
     def test_list_attachments(self):
