@@ -3,6 +3,7 @@ from threading import Thread
 from django.core.management import call_command
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, OuterRef
+from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ class AttachmentViewSet(viewsets.ViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    @never_cache
     def retrieve(self, request, pk):
         if request.user.is_authenticated:
             queryset = AttachmentFile.objects.filter(file_type=MEDIA_TYPE_DOCUMENT)
