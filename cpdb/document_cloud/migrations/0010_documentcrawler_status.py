@@ -5,12 +5,11 @@ from django.db.models import Subquery, OuterRef, Count
 
 
 class Migration(migrations.Migration):
-    def set_status(apps, schema_editor):
+    def set_status_and_num_successful_run(apps, schema_editor):
         DocumentCrawler = apps.get_model('document_cloud', 'DocumentCrawler')
+
         DocumentCrawler.objects.update(status='Success')
 
-    def set_num_successful_run(apps, schema_editor):
-        DocumentCrawler = apps.get_model('document_cloud', 'DocumentCrawler')
         DocumentCrawler.objects.update(
             num_successful_run=Subquery(
                 DocumentCrawler.objects.filter(
@@ -39,11 +38,7 @@ class Migration(migrations.Migration):
             field=models.IntegerField(default=0),
         ),
         migrations.RunPython(
-            set_status,
-            reverse_code=migrations.RunPython.noop,
-        ),
-        migrations.RunPython(
-            set_num_successful_run,
+            set_status_and_num_successful_run,
             reverse_code=migrations.RunPython.noop,
         )
     ]
