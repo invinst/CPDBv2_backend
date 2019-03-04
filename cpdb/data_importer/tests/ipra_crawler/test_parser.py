@@ -6,10 +6,10 @@ from django.test.testcases import SimpleTestCase
 from mock import MagicMock
 from robber import expect
 
-from data_importer.ipra_portal_crawler.parser import (
-    TagField, MediaTypeField, AttachmentFileField, ArraySourceField,
+from data_importer.ipra_crawler.parser import (
+    TagField, MediaTypeField, PortalAttachmentFileField, ArraySourceField,
     DateTimeField, Just, CompositeField, CharField, SimpleField,
-    NotSupportedDateFormatException,
+    NotSupportedDateFormatException, SummaryReportsAttachmentFileField
 )
 
 
@@ -36,9 +36,9 @@ class MediaTypeFieldTest(SimpleTestCase):
         expect(MediaTypeField(field_name='key').parse({'key': 'something else'})).to.be.eq('document')
 
 
-class AttachmentFileFieldTest(SimpleTestCase):
+class PortalAttachmentFileFieldTest(SimpleTestCase):
     def test_parse(self):
-        expect(AttachmentFileField().parse({
+        expect(PortalAttachmentFileField().parse({
             'type': 'Audio something',
             'title': 'title',
             'link': '//this_is_a_link',
@@ -49,7 +49,24 @@ class AttachmentFileFieldTest(SimpleTestCase):
             'url': '//this_is_a_link',
             'original_url': '//this_is_a_link',
             'tag': 'Other',
-            'source_type': 'COPA',
+            'source_type': 'PORTAL_COPA',
+            'external_last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
+        })
+
+
+class SummaryReportsAttachmentFileFieldTest(SimpleTestCase):
+    def test_parse(self):
+        expect(SummaryReportsAttachmentFileField().parse({
+            'type': 'document something',
+            'title': 'title',
+            'link': '//this_is_a_link',
+            'last_updated': '2018-10-30T15:00:03+00:00',
+        })).to.be.eq({
+            'file_type': 'document',
+            'title': 'COPA Summary Report',
+            'url': '//this_is_a_link',
+            'original_url': '//this_is_a_link',
+            'source_type': 'SUMMARY_REPORTS_COPA',
             'external_last_updated': datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc),
         })
 
@@ -68,7 +85,7 @@ class ArraySourceFieldTest(SimpleTestCase):
 class DateTimeFieldTest(SimpleTestCase):
     def test_parse(self):
         expect(DateTimeField(field_name='key').parse({'key': '1-4-2011 9:35 PM'})).to.be.eq(
-            datetime(month=1, day=4, year=2011, hour=21, minute=35))
+            datetime(2011, 1, 4, 21, 35, 0, tzinfo=pytz.utc))
 
         expect(
             DateTimeField(field_name='key').parse({'key': '2018-10-30T15:00:03+00:00'})

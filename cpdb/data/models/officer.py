@@ -18,6 +18,7 @@ from data.constants import (
     GENDER_DICT,
     BACKGROUND_COLOR_SCHEME,
     ACTIVE_YES_CHOICE,
+    AttachmentSourceType,
 )
 from shared.aws import aws
 from xlsx.constants import XLSX_FILE_NAMES
@@ -308,7 +309,7 @@ class Officer(TimeStampsModel, TaggableModel):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
         return AttachmentFile.showing.filter(
             allegation__officerallegation__officer=self,
-            source_type__in=['DOCUMENTCLOUD', 'COPA_DOCUMENTCLOUD']
+            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 
     @property
@@ -316,7 +317,7 @@ class Officer(TimeStampsModel, TaggableModel):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
         return AttachmentFile.showing.filter(
             allegation__investigatorallegation__investigator__officer=self,
-            source_type__in=['DOCUMENTCLOUD', 'COPA_DOCUMENTCLOUD']
+            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 
     def get_zip_filename(self, with_docs):

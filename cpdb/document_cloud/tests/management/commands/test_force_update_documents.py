@@ -17,13 +17,13 @@ class ForceUpdateDocumentsTestCase(TestCase):
         really_old_datetime = datetime(1969, 1, 1, tzinfo=pytz.utc)
         default_datetime = datetime(2000, 1, 1, tzinfo=pytz.utc)
         AttachmentFileFactory.create_batch(5, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory.create_batch(5, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory.create_batch(5, source_type='PORTAL_COPA_DOCUMENTCLOUD')
         AttachmentFileFactory.create_batch(5, external_last_updated=default_datetime, source_type='something wrong')
 
         call_command('force_update_documents')
 
         updated_documents = AttachmentFile.objects.filter(
-            source_type__in=[AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]
+            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES
         )
         not_updated_documents = AttachmentFile.objects.filter(source_type='something wrong')
 

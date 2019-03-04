@@ -28,8 +28,11 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
 
 
 crawler_name_map = {
+    AttachmentSourceType.PORTAL_COPA: 'Chicago COPA',
+    AttachmentSourceType.SUMMARY_REPORTS_COPA: 'Chicago COPA',
     AttachmentSourceType.DOCUMENTCLOUD: 'Document Cloud',
-    AttachmentSourceType.COPA_DOCUMENTCLOUD: 'Chicago COPA',
+    AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD: 'Chicago COPA',
+    AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD: 'Chicago COPA',
 }
 
 

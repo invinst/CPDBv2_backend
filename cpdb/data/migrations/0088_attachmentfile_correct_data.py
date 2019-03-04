@@ -11,7 +11,7 @@ from data.constants import AttachmentSourceType
 def set_source_type(apps, schema_editor):
     AttachmentFile = apps.get_model('data', 'AttachmentFile')
     AttachmentFile.objects.filter(url__icontains='documentcloud').update(source_type=AttachmentSourceType.DOCUMENTCLOUD)
-    AttachmentFile.objects.filter(url__icontains='chicagocopa').update(source_type=AttachmentSourceType.COPA)
+    AttachmentFile.objects.filter(url__icontains='chicagocopa').update(source_type='COPA')
     AttachmentFile.objects.exclude(
         source_type=AttachmentSourceType.DOCUMENTCLOUD
     ).update(external_id=F('original_url'))

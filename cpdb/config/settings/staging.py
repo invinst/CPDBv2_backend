@@ -27,5 +27,6 @@ EMAIL_BACKEND = 'email_service.backend.MailGunHijackBackend'
 BANDIT_EMAIL = ['cpdb.dev+hijack@eastagile.com', 'cpdp+notifications@invisibleinstitute.com']
 
 S3_BUCKET_OFFICER_CONTENT = 'officer-content-staging'
+S3_BUCKET_CRAWLER_LOG = 'cpdp-crawler-logs-staging'
 LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE = 'createOfficerZipFileStaging'
 LAMBDA_FUNCTION_UPLOAD_PDF = 'uploadPdfStaging'

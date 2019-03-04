@@ -20,6 +20,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info('Forcing update all complaint documents...')
         AttachmentFile.objects.filter(
-            source_type__in=[AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]
+            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES
         ).update(external_last_updated=datetime(1969, 1, 1, tzinfo=pytz.utc))
         call_command('update_documents')

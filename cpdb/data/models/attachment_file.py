@@ -72,7 +72,7 @@ class AttachmentFile(TimeStampsModel):
         ).exclude(id=self.id)
 
     def update_to_documentcloud(self, field, value):
-        if self.source_type not in [AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD]:
+        if self.source_type not in AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES:
             return
 
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)

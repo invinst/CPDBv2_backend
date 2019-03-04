@@ -72,7 +72,7 @@ class DocumentRequestServiceTestCase(TestCase):
         airtable_mock.insert.return_value = {'id': 'some_airtable_record_id'}
 
         allegation = AllegationFactory(crid='123456', incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
-        with freeze_time(lambda: datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
             attachment_request = AttachmentRequestFactory(allegation=allegation, email='requester@example.com')
         officer_1 = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         officer_2 = OfficerFactory(id=2, first_name='John', last_name='Henry')
@@ -99,7 +99,7 @@ class DocumentRequestServiceTestCase(TestCase):
         expect(attachment_request.airtable_id).to.be.eq('')
         expect(attachment_request.updated_at).to.eq(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc))
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             CRRequestAirTableUploader.upload()
             attachment_request.refresh_from_db()
 
@@ -462,7 +462,7 @@ class DocumentRequestServiceTestCase(TestCase):
 
         officer = OfficerFactory(id=1, first_name='Marry', last_name='Jane')
         trr = TRRFactory(id='123456', officer=officer)
-        with freeze_time(lambda: datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc)):
             attachment_request = TRRAttachmentRequestFactory(trr=trr, email='requester@example.com')
 
         expected_airtable_data = {
@@ -485,7 +485,7 @@ class DocumentRequestServiceTestCase(TestCase):
         expect(attachment_request.airtable_id).to.be.eq('')
         expect(attachment_request.updated_at).to.eq(datetime(2017, 3, 3, 12, 0, 1, tzinfo=pytz.utc))
 
-        with freeze_time(lambda: datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             TRRRequestAirTableUploader.upload()
             attachment_request.refresh_from_db()
 
