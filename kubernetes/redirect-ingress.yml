@@ -20,6 +20,35 @@ spec:
               serviceName: redirect-nginx
               servicePort: 80
 ---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cpdb-redirect-ingress
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+    - hosts:
+        - "*.cpdb.co"
+        - "cpdb.co"
+      secretName: cpdb-co-tls-secret
+  rules:
+    - host: "*.cpdb.co"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: redirect-nginx
+              servicePort: 80
+    - host: "cpdb.co"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: redirect-nginx
+              servicePort: 80
+---
 apiVersion: v1
 data:
   nginx.conf: |
@@ -48,6 +77,13 @@ data:
         #tcp_nopush     on;
 
         keepalive_timeout  65;
+
+        server {
+            listen 80;
+            server_name *.cpdb.co;
+
+            return 301 https://cpdp.co;
+        }
 
         server {
             listen 80 default_server;
