@@ -66,7 +66,7 @@ LOCAL_APPS = (
     'email_service',
     'social_graph',
     'xlsx',
-    'document_crawlers'
+    'tracker',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -295,3 +295,6 @@ AZURE_TEMPLATE_CONTAINER = 'templates'
 S3_BUCKET_XLSX_DIRECTORY = 'xlsx'
 S3_BUCKET_PDF_DIRECTORY = 'pdf'
 S3_BUCKET_ZIP_DIRECTORY = 'zip'
+
+GOOGLE_APPLICATION_CREDENTIALS = env.str('GOOGLE_APPLICATION_CREDENTIALS', default='')
+GOOGLE_ANALYTICS_VIEW_ID = '129538462'

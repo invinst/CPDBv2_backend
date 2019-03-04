@@ -7,6 +7,7 @@ from django.test import SimpleTestCase, TestCase
 from robber import expect
 import pytz
 
+from data.cache_managers import allegation_cache_manager
 from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
     CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer, SearchTermItemIndexer
@@ -16,7 +17,8 @@ from data.factories import (
     OfficerHistoryFactory, AllegationFactory,
     OfficerAllegationFactory, RacePopulationFactory,
     SalaryFactory, AllegationCategoryFactory,
-    InvestigatorAllegationFactory, InvestigatorFactory)
+    InvestigatorAllegationFactory, InvestigatorFactory, VictimFactory,
+)
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from shared.tests.utils import create_object
@@ -397,36 +399,95 @@ class CrIndexerTestCase(TestCase):
         allegation = AllegationFactory(
             crid='123456',
             incident_date=datetime(2017, 7, 27, tzinfo=pytz.utc),
-            summary='abc')
-        officer = OfficerFactory(id=10)
+            summary='abc',
+            add1='3000',
+            add2='Michigan Ave',
+            city='Chicago IL'
+        )
+        officer = OfficerFactory(
+            id=10,
+            first_name='Luke',
+            last_name='Skywalker',
+            allegation_count=4,
+            trr_percentile='99.88',
+            civilian_allegation_percentile='77.66',
+            internal_allegation_percentile='66.55'
+        )
+        officer2 = OfficerFactory(
+            id=11,
+            first_name='John', last_name='Doe',
+            allegation_count=2,
+            trr_percentile='66.88',
+            civilian_allegation_percentile='33.66',
+            internal_allegation_percentile='22.55'
+        )
         OfficerAllegationFactory(allegation=allegation, officer=officer)
 
-        category1 = AllegationCategoryFactory(category='Abc')
-        category2 = AllegationCategoryFactory(category='Def')
-        OfficerAllegationFactory(allegation=allegation, allegation_category=category2)
-        OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1)
-        OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None)
+        category1 = AllegationCategoryFactory(
+            category='Operation/Personnel Violations',
+            allegation_name='Secondary/Special Employment'
+        )
+        category2 = AllegationCategoryFactory(category='Use of Force', allegation_name='sub category')
+        OfficerAllegationFactory(allegation=allegation, allegation_category=category2, officer=officer2)
+        OfficerAllegationFactory.create_batch(2, allegation=allegation, allegation_category=category1, officer=None)
+        OfficerAllegationFactory.create_batch(3, allegation=allegation, allegation_category=None, officer=None)
+
+        VictimFactory(allegation=allegation, gender='F', race='Black', age=25)
+        VictimFactory(allegation=allegation, gender='', race='Black', age=25)
+        VictimFactory(allegation=allegation, gender='F', race='Black', age=None)
 
         setattr(allegation, 'investigator_names', ['Jerome Finnigan'])
+        allegation_cache_manager.cache_data()
+        allegation.refresh_from_db()
 
-        expect(
-            CrIndexer().extract_datum(allegation)
-        ).to.eq({
+        datum = CrIndexer().extract_datum(allegation)
+        datum['victims'] = sorted(
+            datum['victims'],
+            key=lambda victim: (victim['gender'], victim['race'], victim.get('age', 0))
+        )
+
+        expect(datum).to.eq({
             'crid': '123456',
-            'category': 'Abc',
+            'category': 'Operation/Personnel Violations',
+            'sub_category': 'Secondary/Special Employment',
             'incident_date': '2017-07-27',
+            'address': '3000 Michigan Ave, Chicago IL',
             'summary': 'abc',
             'to': '/complaint/123456/',
-            'investigator_names': ['Jerome Finnigan']
+            'investigator_names': ['Jerome Finnigan'],
+            'victims': [
+                {'gender': '', 'race': 'Black', 'age': 25},
+                {'gender': 'Female', 'race': 'Black'},
+                {'gender': 'Female', 'race': 'Black', 'age': 25},
+            ],
+            'coaccused': [
+                {
+                    'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
+                    'percentile': {
+                        'id': 10,
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500'
+                    }
+                },
+                {
+                    'id': 11, 'full_name': 'John Doe', 'allegation_count': 2,
+                    'percentile': {
+                        'id': 11,
+                        'percentile_trr': '66.8800',
+                        'percentile_allegation_civilian': '33.6600',
+                        'percentile_allegation_internal': '22.5500'
+                    }
+                }
+            ]
         })
 
-    def test_extract_datum_with_missing_incident_date_and_category(self):
+    def test_extract_datum_with_missing_data(self):
         allegation = AllegationFactory(
             crid='123456',
             incident_date=None,
             summary='')
-        officer = OfficerFactory(id=10)
-        OfficerAllegationFactory(allegation=allegation, officer=officer, allegation_category=None)
+        OfficerAllegationFactory(allegation=allegation, officer=None, allegation_category=None)
 
         setattr(allegation, 'investigator_names', [])
 
@@ -434,11 +495,15 @@ class CrIndexerTestCase(TestCase):
             CrIndexer().extract_datum(allegation)
         ).to.eq({
             'crid': '123456',
-            'category': None,
+            'category': 'Unknown',
+            'sub_category': 'Unknown',
             'incident_date': None,
             'summary': '',
+            'address': '',
             'to': '/complaint/123456/',
-            'investigator_names': []
+            'investigator_names': [],
+            'victims': [],
+            'coaccused': []
         })
 
 

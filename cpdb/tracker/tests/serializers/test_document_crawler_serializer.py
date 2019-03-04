@@ -9,7 +9,7 @@ from mock import patch
 from django.test import override_settings
 
 from document_cloud.factories import DocumentCrawlerFactory
-from document_crawlers.serializers import DocumentCrawlerSerializer
+from tracker.serializers import DocumentCrawlerSerializer
 
 
 class DocumentCrawlerSerializerTestCase(TestCase):

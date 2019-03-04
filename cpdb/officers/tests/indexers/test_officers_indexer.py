@@ -387,7 +387,7 @@ class OfficersIndexerTestCase(TestCase):
         OfficerAllegationFactory(officer=officer, allegation=allegation2)
         OfficerAllegationFactory(officer=other_officer, allegation=allegation2)
 
-        rows = self.extract_data()
+        rows = sorted(self.extract_data(), key=itemgetter('id'))
 
         expect(rows).to.have.length(2)
         expect(rows[0]['coaccusals']).to.eq([

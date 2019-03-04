@@ -17,7 +17,7 @@ class BaseAttachmentImporter(object):
         self.logger = logger
         self.new_attachments = []
         self.num_updated_attachments = 0
-        self.crawler_name = self.source_type.lower()
+        self.crawler_name = self.source_type.lower() if self.source_type else None
         self.current_step = None
 
     def log_info(self, message):
@@ -53,7 +53,7 @@ class BaseAttachmentImporter(object):
 
         self.log_info(f'Creating {num_new_attachments} attachments')
         self.log_info(f'Updating {self.num_updated_attachments} attachments')
-        self.log_info(f'Current Total {self.source_type.lower()} attachments: {num_documents}')
+        self.log_info(f'Current Total {self.crawler_name} attachments: {num_documents}')
         self.log_info(message)
 
         log_key = self.generate_s3_log_file()

@@ -22,7 +22,6 @@ from django.views.generic.base import RedirectView
 
 from rest_framework import routers
 
-from document_crawlers.views import DocumentCrawlersViewSet
 from popup.views import PopupViewSet
 from trr.views import TRRDesktopViewSet, TRRMobileViewSet
 from vftg.views import VFTGViewSet
@@ -32,7 +31,7 @@ from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
 from officers.views import OfficersDesktopViewSet, OfficersMobileViewSet
 from old_officers.views import OldOfficersViewSet, OldOfficersMobileViewSet
-from analytics.views import EventViewSet, SearchTrackingViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet, AttachmentTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from old_cr.views import OldCRViewSet, OldCRMobileViewSet
 from units.views import UnitsViewSet
@@ -43,6 +42,8 @@ from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
 from status.views import StatusViewSet
 from social_graph.views import SocialGraphViewSet
+from tracker.views import AttachmentViewSet
+from tracker.views import DocumentCrawlersViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -75,6 +76,8 @@ router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
+router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
+router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
 
 urlpatterns = [

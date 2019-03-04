@@ -111,15 +111,15 @@ class AllegationTestCase(TestCase):
 
         expect(allegation.v2_to).to.eq('/complaint/456/')
 
-    def test_documents(self):
-        allegation = AllegationFactory()
-        attachment1 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        attachment2 = AttachmentFileFactory(allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        expect(allegation.documents).to.contain(attachment1, attachment2)
-
     def test_filtered_attachment_files(self):
         allegation = AllegationFactory()
         attachment1 = AttachmentFileFactory(tag='Other', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
-        AttachmentFileFactory(tag='OCIR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        AttachmentFileFactory(
+            tag='Other', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, show=False)
+        AttachmentFileFactory(
+            tag='Other', title='CR Arrest Report Herron', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT
+        )
+        AttachmentFileFactory(
+            tag='OCIR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         AttachmentFileFactory(tag='AR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         expect(list(allegation.filtered_attachment_files)).to.eq([attachment1])

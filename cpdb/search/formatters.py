@@ -112,6 +112,11 @@ class CRFormatter(SimpleFormatter):
             'crid': doc.crid,
             'to': doc.to,
             'incident_date': doc.incident_date,
+            'category': doc.category,
+            'sub_category': doc.sub_category,
+            'address': doc.address,
+            'victims': [victim.to_dict() for victim in getattr(doc, 'victims', [])],
+            'coaccused': [officer.to_dict() for officer in getattr(doc, 'coaccused', [])],
         }
 
 

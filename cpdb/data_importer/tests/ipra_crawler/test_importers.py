@@ -15,8 +15,18 @@ from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
 
-from data_importer.ipra_crawler.importers import IpraPortalAttachmentImporter, IpraSummaryReportsAttachmentImporter
+from data_importer.ipra_crawler.importers import (
+    IpraPortalAttachmentImporter,
+    IpraSummaryReportsAttachmentImporter,
+    IpraBaseAttachmentImporter
+)
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO
+
+
+class IpraBaseAttachmentImporterTestCase(TestCase):
+    def test_raise_NotImplementedError(self):
+        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        expect(IpraBaseAttachmentImporter(logger).crawl_ipra).to.throw(NotImplementedError)
 
 
 @override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')

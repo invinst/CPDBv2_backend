@@ -119,7 +119,7 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
         self.num_updated_attachments = 0
 
         self.log_info('Import attachments process is about to start...')
-        self.log_info(f'New {self.source_type.lower()} attachments found:')
+        self.log_info(f'New {self.crawler_name} attachments found:')
         for incident, allegation in tqdm(allegation_incidents):
             created_attachments, num_updated = self.update_attachments(
                 allegation,
