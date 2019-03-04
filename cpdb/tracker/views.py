@@ -1,3 +1,6 @@
+from threading import Thread
+
+from django.core.management import call_command
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, OuterRef
 
@@ -59,6 +62,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
         if serializer.is_valid():
             serializer.save()
+            Thread(target=lambda: call_command('clear_cache')).start()
             attachment.refresh_from_db()
             return Response(
                 status=status.HTTP_200_OK,

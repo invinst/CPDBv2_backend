@@ -325,8 +325,9 @@ class AttachmentAPITestCase(APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
+    @patch('tracker.views.call_command')
     @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_title(self, mock_update_to_documentcloud):
+    def test_update_attachment_title(self, mock_update_to_documentcloud, mock_call_command):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -381,9 +382,11 @@ class AttachmentAPITestCase(APITestCase):
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
         expect(updated_attachment.manually_updated).to.be.true()
+        expect(mock_call_command).to.be.called_with('clear_cache')
 
+    @patch('tracker.views.call_command')
     @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_title_no_change(self, mock_update_to_documentcloud):
+    def test_update_attachment_title_no_change(self, mock_update_to_documentcloud, mock_call_command):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -438,9 +441,11 @@ class AttachmentAPITestCase(APITestCase):
         expect(mock_update_to_documentcloud).not_to.be.called()
         expect(updated_attachment.last_updated_by_id).to.be.none()
         expect(updated_attachment.manually_updated).to.be.false()
+        expect(mock_call_command).to.be.called_with('clear_cache')
 
+    @patch('tracker.views.call_command')
     @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_text_content(self, mock_update_to_documentcloud):
+    def test_update_attachment_text_content(self, mock_update_to_documentcloud, mock_call_command):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -499,6 +504,7 @@ class AttachmentAPITestCase(APITestCase):
         expect(mock_update_to_documentcloud).not_to.be.called()
         expect(updated_attachment.last_updated_by).to.eq(admin_user)
         expect(updated_attachment.manually_updated).to.be.true()
+        expect(mock_call_command).to.be.called_with('clear_cache')
 
     @freeze_time('2017-01-14 12:00:01')
     def test_attachments_filtered_by_cr(self):
