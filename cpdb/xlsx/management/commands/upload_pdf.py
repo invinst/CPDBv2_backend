@@ -11,9 +11,7 @@ class Command(BaseCommand):
         parser.add_argument('external_ids', nargs='*')
 
     def handle(self, external_ids, *args, **kwargs):
-        queryset = AttachmentFile.objects.filter(source_type__in=[
-            AttachmentSourceType.DOCUMENTCLOUD, AttachmentSourceType.COPA_DOCUMENTCLOUD
-        ])
+        queryset = AttachmentFile.objects.filter(source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES)
 
         if external_ids:
             attachments = queryset.filter(external_id__in=external_ids)

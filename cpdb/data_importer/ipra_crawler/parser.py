@@ -4,8 +4,9 @@ from collections import OrderedDict
 from datetime import datetime
 
 import iso8601
+import pytz
 
-from data.constants import AttachmentSourceType
+from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 
 
 class Field(object):
@@ -98,7 +99,7 @@ class TagField(CharField):
         return document_type
 
 
-class AttachmentFileField(object):
+class PortalAttachmentFileField(object):
     def parse(self, record):
         schema = CompositeField(layout={
             'file_type': MediaTypeField(field_name='type'),
@@ -106,7 +107,20 @@ class AttachmentFileField(object):
             'url': CharField(field_name='link'),
             'original_url': CharField(field_name='link'),
             'tag': TagField(field_name='title'),
-            'source_type': Just(AttachmentSourceType.COPA),
+            'source_type': Just(AttachmentSourceType.PORTAL_COPA),
+            'external_last_updated': DateTimeField(field_name='last_updated'),
+        })
+        return schema.parse(record)
+
+
+class SummaryReportsAttachmentFileField(object):
+    def parse(self, record):
+        schema = CompositeField(layout={
+            'file_type': Just(MEDIA_TYPE_DOCUMENT),
+            'title': Just('COPA Summary Report'),
+            'url': CharField(field_name='link'),
+            'original_url': CharField(field_name='link'),
+            'source_type': Just(AttachmentSourceType.SUMMARY_REPORTS_COPA),
             'external_last_updated': DateTimeField(field_name='last_updated'),
         })
         return schema.parse(record)
@@ -127,7 +141,7 @@ class NotSupportedDateFormatException(Exception):
 
 
 class DateTimeField(SimpleField):
-    DATE_SUPPORTED_PATTERNS = ['%m-%d-%Y %I:%M %p']
+    DATE_SUPPORTED_PATTERNS = ['%m-%d-%Y %I:%M %p', '%B %d, %Y']
 
     def parse(self, row):
         value = row.get(self.field_name, '')
@@ -137,7 +151,7 @@ class DateTimeField(SimpleField):
 
         for pattern in self.DATE_SUPPORTED_PATTERNS:
             try:
-                return datetime.strptime(value, pattern)
+                return datetime.strptime(value, pattern).replace(tzinfo=pytz.utc)
             except ValueError:
                 pass
 
