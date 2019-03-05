@@ -730,7 +730,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         )
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
-            title='CRID 123 COPA Summary Report',
+            title='CRID 123 CR COPA Summary Report',
             description=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             access='public',
             force_ocr=True

@@ -1,6 +1,5 @@
 import re
 
-from data.constants import AttachmentSourceType
 
 DOCUMENTCLOUD_LINK_PATTERN = (
     r'https://www.documentcloud\.org/documents/(?P<documentcloud_id>\d+)-(?P<normalized_title>[^/]+)\.html'
@@ -56,8 +55,5 @@ def get_url(document):
     return document_url
 
 
-def format_copa_documentcloud_title(crid, attachment_title, copa_source):
-    if copa_source == AttachmentSourceType.SUMMARY_REPORTS_COPA:
-        return f'CRID {crid} {attachment_title}'
-    else:
-        return f'CRID {crid} CR {attachment_title}'
+def format_copa_documentcloud_title(crid, attachment_title):
+    return f'CRID {crid} CR {attachment_title}'
