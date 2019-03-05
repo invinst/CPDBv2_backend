@@ -24,6 +24,8 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
             'show',
             'documents_count',
             'show',
+            'file_type',
+            'url',
         )
 
 

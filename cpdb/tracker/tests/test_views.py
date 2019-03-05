@@ -218,6 +218,7 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
+            url='http://document/link/1',
         )
         AttachmentFileFactory(
             allegation=allegation1,
@@ -228,6 +229,7 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
+            url='http://audio/link/2',
         )
         AttachmentFileFactory(
             allegation=allegation2,
@@ -238,6 +240,7 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=3,
             downloads_count=3,
+            url='http://video/link/3',
         )
         AttachmentFileFactory(id=4, allegation=allegation2, show=False)
 
@@ -257,6 +260,8 @@ class AttachmentAPITestCase(APITestCase):
                     'crid': '123',
                     'show': True,
                     'documents_count': 2,
+                    'file_type': 'document',
+                    'url': 'http://document/link/1',
                 },
                 {
                     'id': 2,
@@ -269,6 +274,8 @@ class AttachmentAPITestCase(APITestCase):
                     'crid': '123',
                     'show': True,
                     'documents_count': 2,
+                    'file_type': 'audio',
+                    'url': 'http://audio/link/2',
                 },
                 {
                     'id': 3,
@@ -281,6 +288,8 @@ class AttachmentAPITestCase(APITestCase):
                     'crid': '456',
                     'show': True,
                     'documents_count': 1,
+                    'file_type': 'video',
+                    'url': 'http://video/link/3',
                 }
             ]
         }
@@ -515,7 +524,8 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            allegation=allegation1
+            allegation=allegation1,
+            url='http://document/link/1',
         )
         AttachmentFileFactory(
             id=2,
@@ -525,7 +535,8 @@ class AttachmentAPITestCase(APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            allegation=allegation2
+            allegation=allegation2,
+            url='http://audio/link/2',
         )
 
         base_url = reverse('api-v2:attachments-list')
@@ -549,7 +560,9 @@ class AttachmentAPITestCase(APITestCase):
                     'downloads_count': 1,
                     'crid': '1',
                     'show': True,
-                    'documents_count': 1
+                    'documents_count': 1,
+                    'file_type': 'document',
+                    'url': 'http://document/link/1',
                 }
             ]
         })
