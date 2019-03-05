@@ -1,5 +1,3 @@
-from threading import Thread
-
 from rest_framework import serializers
 
 from data.models import AttachmentFile
@@ -92,7 +90,6 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
 
     def save(self):
         manually_updated_fields = ['text_content', 'title']
-        updated_to_documentcloud_fields = ['title']
 
         changed = False
         for field in manually_updated_fields:
@@ -101,9 +98,6 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
                 new_value = self.validated_data[field]
                 if value != new_value:
                     changed = True
-                    if field in updated_to_documentcloud_fields:
-                        # TODO: we need to setup background task or kubernetes job for this
-                        Thread(target=lambda: self.instance.update_to_documentcloud(field, new_value)).start()
 
         if changed:
             self.validated_data['manually_updated'] = True

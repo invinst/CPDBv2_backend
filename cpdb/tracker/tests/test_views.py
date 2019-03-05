@@ -5,7 +5,6 @@ from operator import itemgetter
 import pytz
 from django.test import override_settings
 from django.urls import reverse
-from mock import patch
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -336,8 +335,7 @@ class AttachmentAPITestCase(APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
-    @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_title(self, mock_update_to_documentcloud):
+    def test_update_attachment_title(self):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -388,13 +386,11 @@ class AttachmentAPITestCase(APITestCase):
             'notifications_count': 200,
         })
         time.sleep(0.1)
-        expect(mock_update_to_documentcloud).to.be.called_with('title', 'New title')
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
         expect(updated_attachment.manually_updated).to.be.true()
 
-    @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_title_no_change(self, mock_update_to_documentcloud):
+    def test_update_attachment_title_no_change(self):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -446,12 +442,10 @@ class AttachmentAPITestCase(APITestCase):
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
-        expect(mock_update_to_documentcloud).not_to.be.called()
         expect(updated_attachment.last_updated_by_id).to.be.none()
         expect(updated_attachment.manually_updated).to.be.false()
 
-    @patch.object(AttachmentFile, 'update_to_documentcloud')
-    def test_update_attachment_text_content(self, mock_update_to_documentcloud):
+    def test_update_attachment_text_content(self):
         admin_user = AdminUserFactory(username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
@@ -507,7 +501,6 @@ class AttachmentAPITestCase(APITestCase):
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
-        expect(mock_update_to_documentcloud).not_to.be.called()
         expect(updated_attachment.last_updated_by).to.eq(admin_user)
         expect(updated_attachment.manually_updated).to.be.true()
 

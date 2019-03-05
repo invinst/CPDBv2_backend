@@ -83,6 +83,9 @@ class AttachmentFile(TimeStampsModel):
             logger.error(f'Cannot find document with external id {self.external_id} on DocumentCloud')
             return
 
+        if getattr(doc, field, None) == value:
+            return
+
         setattr(doc, field, value)
 
         try:

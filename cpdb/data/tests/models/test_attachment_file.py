@@ -107,6 +107,15 @@ class UpdateToDocumentcloudTestCase(TestCase):
         expect(self.mock_doc.title).to.be.eq('some title')
         expect(self.mock_logger.error).to.be.called_with('Cannot save document with external id 1 on DocumentCloud')
 
+    def test_not_update_when_no_change(self):
+        attachment = AttachmentFileFactory(external_id=1, source_type='DOCUMENTCLOUD', title='no changed title')
+        setattr(self.mock_doc, 'title', 'no changed title')
+
+        attachment.update_to_documentcloud('title', 'no changed title')
+
+        expect(self.mock_client.documents.get).to.be.called_with(1)
+        expect(self.mock_doc.save).not_to.be.called()
+
     def test_update_successfully(self):
         attachment = AttachmentFileFactory(external_id=1, source_type='DOCUMENTCLOUD')
         attachment.update_to_documentcloud('title', 'some title')
