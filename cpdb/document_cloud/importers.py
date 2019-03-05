@@ -17,10 +17,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     source_type = AttachmentSourceType.DOCUMENTCLOUD
     all_source_types = AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES
 
-    def __init__(self, logger):
+    def __init__(self, logger, force_update=False):
         super(DocumentCloudAttachmentImporter, self).__init__(logger)
         self.kept_attachments = []
         self.updated_attachments = []
+        self.force_update = force_update
 
     mapping_fields = {
         'url': 'url',
@@ -93,7 +94,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('Done crawling!')
 
     def update_attachment(self, attachment, cloud_document):
-        changed = (
+        changed = self.force_update or (
             not attachment.source_type or
             not attachment.external_last_updated or
             attachment.external_last_updated < cloud_document.updated_at

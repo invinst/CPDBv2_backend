@@ -10,5 +10,16 @@ logger = logging.getLogger('crawler.update_documents')
 class Command(BaseCommand):
     help = 'Update complaint documents info'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            dest='force',
+            help='Force update all DocumentCloud documents',
+        )
+
     def handle(self, *args, **options):
-        DocumentCloudAttachmentImporter(logger).search_and_update_attachments()
+        DocumentCloudAttachmentImporter(
+            logger,
+            force_update=options['force']
+        ).search_and_update_attachments()

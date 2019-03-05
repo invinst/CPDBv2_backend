@@ -205,10 +205,40 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
         expect(changed).to.be.false()
+
+    def test_force_update_attachment(self):
+        attachment = AttachmentFileFactory(
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc)
+        )
+        document = create_object({
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7
+        })
+
+        changed = DocumentCloudAttachmentImporter(
+            self.logger, force_update=True
+        ).update_attachment(attachment, document)
+        expect(changed).to.be.true()
 
     def test_update_attachment_update_source_type(self):
         attachment = AttachmentFileFactory(
