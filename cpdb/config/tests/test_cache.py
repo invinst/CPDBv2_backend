@@ -27,7 +27,7 @@ def mock_auth_class(return_value, side_effect=None):
 class FetchFromCacheForAnonymousUserMiddlewareTestCase(SimpleTestCase):
     def test_anonymous_process_request(self):
         middleware = FetchFromCacheForAnonymousUserMiddleware()
-        request = Mock(auth=None)
+        request = Mock(user=Mock(is_authenticated=False))
         response = Mock()
         with patch('config.cache.FetchFromCacheMiddleware.process_request', return_value=response) as mock_process:
             result = middleware.process_request(request)
@@ -36,7 +36,7 @@ class FetchFromCacheForAnonymousUserMiddlewareTestCase(SimpleTestCase):
 
     def test_authenticated_process_request(self):
         middleware = FetchFromCacheForAnonymousUserMiddleware()
-        request = Mock(auth='auth')
+        request = Mock(user=Mock(is_authenticated=True))
         result = middleware.process_request(request)
         expect(result).to.be.none()
 
