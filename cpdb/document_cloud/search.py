@@ -18,9 +18,12 @@ def _remove_invalid_documents(cloud_documents):
         source_type__in=AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES
     ).values_list('external_id', flat=True).distinct()
 
+    pending_documentcloud_ids = AttachmentFile.objects.values_list('pending_documentcloud_id', flat=True).distinct()
+
     def valid_document(cloud_document):
         return cloud_document.source_type not in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES or \
-               cloud_document.documentcloud_id in existing_copa_documentcloud_ids
+               cloud_document.documentcloud_id in existing_copa_documentcloud_ids or \
+               cloud_document.documentcloud_id in pending_documentcloud_ids
 
     return filter(valid_document, cloud_documents)
 

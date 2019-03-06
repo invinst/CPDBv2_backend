@@ -443,29 +443,13 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='Tactical Response Report',
-            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf'
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
+            upload_fail_attempts=1
         )
 
         CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
 
-        copa_documents = AttachmentFile.objects.filter(
-            source_type=AttachmentSourceType.PORTAL_COPA,
-            file_type=MEDIA_TYPE_DOCUMENT
-        )
-        expect(copa_documents.count()).to.eq(0)
-
-        AttachmentFile.objects.get(
-            external_id='5396984',
-            allegation=allegation,
-            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            title='CRID 123 CR Tactical Response Report',
-            url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
-            tag='CR',
-            external_created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
-            external_last_updated=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
-            preview_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
-        )
+        AttachmentFile.objects.get(pending_documentcloud_id='5396984')
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
             title='CRID 123 CR Tactical Response Report',
@@ -477,6 +461,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
     @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_portal_copa_documents_no_upload(self, DocumentCloudMock):
         logger = logging.getLogger('crawler.crawl_copa_data')
+        allegation = AllegationFactory()
         AttachmentFileFactory(
             external_id='456-OCIR-2-Redacted.pdf',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -486,6 +471,15 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
             external_id='log-1086285-oemc-transmission-1',
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_AUDIO
+        )
+        AttachmentFileFactory(
+            external_id='456-OCIR-Redacted.pdf',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Tactical Response Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2018/10/Log-1086456-TRR-Redacted.pdf',
+            upload_fail_attempts=6
         )
 
         CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
@@ -705,29 +699,13 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='COPA Summary Report',
-            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf'
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
+            upload_fail_attempts=1,
         )
 
         CopaSummaryReportsAttachmentImporter(logger).upload_to_documentcloud()
 
-        copa_documents = AttachmentFile.objects.filter(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            file_type=MEDIA_TYPE_DOCUMENT
-        )
-        expect(copa_documents.count()).to.eq(0)
-
-        AttachmentFile.objects.get(
-            external_id='5396984',
-            allegation=allegation,
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            title='CRID 123 CR Tactical Response Report',
-            url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
-            tag='CR',
-            external_created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
-            external_last_updated=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
-            preview_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
-        )
+        AttachmentFile.objects.get(pending_documentcloud_id='5396984')
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
             title='CRID 123 CR COPA Summary Report',
@@ -739,6 +717,7 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
     @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_summary_reports_copa_documents_no_upload(self, DocumentCloudMock):
         logger = logging.getLogger('crawler.crawl_copa_data')
+        allegation = AllegationFactory()
         AttachmentFileFactory(
             external_id='456-OCIR-2-Redacted.pdf',
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
@@ -749,6 +728,15 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             file_type=MEDIA_TYPE_AUDIO
         )
+        AttachmentFileFactory(
+            external_id='456-OCIR-Redacted.pdf',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Tactical Response Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2018/10/Log-1086456-TRR-Redacted.pdf',
+            upload_fail_attempts=6
+        )
 
-        CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
+        CopaSummaryReportsAttachmentImporter(logger).upload_to_documentcloud()
         expect(DocumentCloudMock().documents.upload).not_to.be.called()

@@ -4,7 +4,12 @@ from django.conf import settings
 
 from documentcloud import DocumentCloud
 
-from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT
+from data.constants import (
+    AttachmentSourceType,
+    MEDIA_TYPE_VIDEO,
+    MEDIA_TYPE_DOCUMENT,
+    UPLOAD_FAIL_MAX_ATTEMPTS
+)
 from data.models import AttachmentFile, Allegation
 from data_importer.copa_crawler.portal_crawler import (
     OpenCopaInvestigationCrawler,
@@ -25,7 +30,7 @@ from data_importer.copa_crawler.summary_reports_crawler import (
     OpenCopaSummaryReportsCrawler,
     OpenCopaYearSummaryReportsCrawler
 )
-from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
+from document_cloud.utils import parse_id, format_copa_documentcloud_title
 from shared.attachment_importer import BaseAttachmentImporter
 
 
@@ -133,7 +138,9 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
 
         attachments = AttachmentFile.objects.filter(
             source_type=self.source_type,
-            file_type=MEDIA_TYPE_DOCUMENT
+            file_type=MEDIA_TYPE_DOCUMENT,
+            pending_documentcloud_id__isnull=True,
+            upload_fail_attempts__lte=UPLOAD_FAIL_MAX_ATTEMPTS
         )
 
         self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
@@ -149,15 +156,7 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
                 force_ocr=True
             )
 
-            attachment.external_id = parse_id(cloud_document.id)
-            attachment.source_type = source_type
-            attachment.title = cloud_document.title
-            attachment.url = get_url(cloud_document)
-            attachment.tag = 'CR'
-            attachment.additional_info = parse_link(cloud_document.canonical_url)
-            attachment.preview_image_url = cloud_document.normal_image_url
-            attachment.external_last_updated = cloud_document.updated_at
-            attachment.external_created_at = cloud_document.created_at
+            attachment.pending_documentcloud_id = parse_id(cloud_document.id)
             attachment.save()
 
         self.log_info(f'Done uploading!')

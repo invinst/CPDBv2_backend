@@ -1,6 +1,8 @@
 import re
 from urllib.error import HTTPError
 
+from django.db.models import Q
+
 from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
@@ -46,9 +48,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         try:
             try:
                 return AttachmentFile.objects.get(
-                    allegation=cloud_document.allegation,
-                    source_type=cloud_document.source_type,
-                    external_id=cloud_document.documentcloud_id
+                    Q(allegation=cloud_document.allegation,
+                      source_type=cloud_document.source_type,
+                      external_id=cloud_document.documentcloud_id) |
+                    Q(allegation=cloud_document.allegation,
+                      pending_documentcloud_id=cloud_document.documentcloud_id)
                 )
             except AttachmentFile.DoesNotExist:
                 return AttachmentFile.objects.get(
@@ -65,7 +69,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.documentcloud_id:
+            if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
                 attachment = self.get_attachment(cloud_document)
                 if attachment:
                     updated = self.update_attachment(attachment, cloud_document)
@@ -74,36 +78,54 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                     else:
                         self.kept_attachments.append(attachment)
                 else:
-                    self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
-                    new_attachment = AttachmentFile(
-                        external_id=cloud_document.documentcloud_id,
-                        allegation=cloud_document.allegation,
-                        source_type=cloud_document.source_type,
-                        title=cloud_document.title,
-                        url=cloud_document.url,
-                        file_type=MEDIA_TYPE_DOCUMENT,
-                        tag=cloud_document.document_type,
-                        additional_info=parse_link(cloud_document.canonical_url),
-                        original_url=cloud_document.url,
-                        preview_image_url=cloud_document.normal_image_url,
-                        external_created_at=cloud_document.created_at,
-                        external_last_updated=cloud_document.updated_at
-                    )
-                    self.new_attachments.append(new_attachment)
+                    if cloud_document.access != 'error':
+                        self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
+                        new_attachment = AttachmentFile(
+                            external_id=cloud_document.documentcloud_id,
+                            allegation=cloud_document.allegation,
+                            source_type=cloud_document.source_type,
+                            title=cloud_document.title,
+                            url=cloud_document.url,
+                            file_type=MEDIA_TYPE_DOCUMENT,
+                            tag=cloud_document.document_type,
+                            additional_info=parse_link(cloud_document.canonical_url),
+                            original_url=cloud_document.url,
+                            preview_image_url=cloud_document.normal_image_url,
+                            external_created_at=cloud_document.created_at,
+                            external_last_updated=cloud_document.updated_at
+                        )
+                        self.new_attachments.append(new_attachment)
 
         self.log_info('Done crawling!')
 
     def update_attachment(self, attachment, cloud_document):
-        changed = self.force_update or (
+        changed = self.force_update or bool(attachment.pending_documentcloud_id) or (
             not attachment.source_type or
             not attachment.external_last_updated or
             attachment.external_last_updated < cloud_document.updated_at
         )
+
         if changed:
-            if not attachment.manually_updated:
-                attachment.text_content = self.get_full_text(cloud_document)
-            for model_field, doc_field in self.mapping_fields.items():
-                setattr(attachment, model_field, getattr(cloud_document, doc_field))
+            if attachment.pending_documentcloud_id and \
+                attachment.pending_documentcloud_id == cloud_document.documentcloud_id and \
+                    cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES:
+                if cloud_document.access == 'error':
+                    attachment.upload_fail_attempts += 1
+                    cloud_document.delete()
+                else:
+                    attachment.source_type = AttachmentSourceType.SOURCE_TYPE_MAPPINGS[attachment.source_type]
+                    attachment.external_id = attachment.pending_documentcloud_id
+                    if attachment.manually_updated:
+                        cloud_document.title = attachment.title
+                        cloud_document.save()
+
+                attachment.pending_documentcloud_id = None
+
+            if cloud_document.access != 'error':
+                if not attachment.manually_updated:
+                    attachment.text_content = self.get_full_text(cloud_document)
+                for model_field, doc_field in self.mapping_fields.items():
+                    setattr(attachment, model_field, getattr(cloud_document, doc_field))
 
         return changed
 
@@ -115,18 +137,18 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info(f'Deleting {deleted_attachments.count()} attachments')
         deleted_attachments.delete()
 
-        num_updated_attachments = len(self.updated_attachments)
-        self.log_info(f'Updating {num_updated_attachments} attachments')
+        self.num_updated_attachments = len(self.updated_attachments)
+        self.log_info(f'Updating {self.num_updated_attachments} attachments')
         AttachmentFile.objects.bulk_update(
             self.updated_attachments,
             update_fields=[
-                'title', 'tag', 'url', 'preview_image_url',
-                'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages'
+                'external_id', 'title', 'tag', 'url', 'preview_image_url',
+                'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages',
+                'pending_documentcloud_id', 'upload_fail_attempts'
             ],
             batch_size=BATCH_SIZE
         )
 
-        self.num_updated_attachments = len(self.new_attachments)
         self.log_info(f'Creating {len(self.new_attachments)} attachments')
         AttachmentFile.objects.bulk_create(self.new_attachments)
 
