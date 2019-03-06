@@ -1,5 +1,6 @@
 import re
 from urllib.error import HTTPError
+from urllib.request import urlopen, Request
 
 from tqdm import tqdm
 
@@ -35,9 +36,23 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     }
 
     @staticmethod
-    def get_full_text(cloud_document):
+    def set_full_text(cloud_document):
+        url = cloud_document.full_text_url.replace("https://", "http://")
+        req = Request(url, headers={'User-Agent': ''})
         try:
-            return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
+            full_text = urlopen(req).read()
+        except HTTPError:
+            full_text = ''.encode('utf8')
+        setattr(cloud_document, 'new_full_text', full_text)
+
+    @staticmethod
+    def get_full_text(cloud_document):
+        # TODO: Remove the line below and set_full_text staticmethod
+        # Because there is a bug on the documentcloud library with full_text property
+        # we need to temporally replace it wih our implementation
+        DocumentCloudAttachmentImporter.set_full_text(cloud_document)
+        try:
+            return re.sub(r'(\n *)+', '\n', cloud_document.new_full_text.decode('utf8')).strip()
         except (HTTPError, NotImplementedError):
             return ''
 
