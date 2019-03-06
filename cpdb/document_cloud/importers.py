@@ -17,10 +17,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     source_type = AttachmentSourceType.DOCUMENTCLOUD
     all_source_types = AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES
 
-    def __init__(self, logger):
+    def __init__(self, logger, force_update=False):
         super(DocumentCloudAttachmentImporter, self).__init__(logger)
         self.kept_attachments = []
         self.updated_attachments = []
+        self.force_update = force_update
 
     mapping_fields = {
         'url': 'url',
@@ -30,6 +31,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         'external_created_at': 'created_at',
         'tag': 'document_type',
         'source_type': 'source_type',
+        'pages': 'pages',
     }
 
     @staticmethod
@@ -92,13 +94,14 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('Done crawling!')
 
     def update_attachment(self, attachment, cloud_document):
-        changed = (
+        changed = self.force_update or (
             not attachment.source_type or
             not attachment.external_last_updated or
             attachment.external_last_updated < cloud_document.updated_at
         )
         if changed:
-            attachment.text_content = self.get_full_text(cloud_document)
+            if not attachment.manually_updated:
+                attachment.text_content = self.get_full_text(cloud_document)
             for model_field, doc_field in self.mapping_fields.items():
                 setattr(attachment, model_field, getattr(cloud_document, doc_field))
 
@@ -118,7 +121,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.updated_attachments,
             update_fields=[
                 'title', 'tag', 'url', 'preview_image_url',
-                'external_last_updated', 'external_created_at', 'text_content', 'source_type'
+                'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages'
             ],
             batch_size=BATCH_SIZE
         )

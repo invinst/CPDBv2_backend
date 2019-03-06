@@ -37,7 +37,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
         )
         AttachmentFileFactory(
             allegation=allegation,
-            source_type='COPA_DOCUMENTCLOUD',
+            source_type='PORTAL_COPA_DOCUMENTCLOUD',
             title='CRID 1045950 CR Original Case Incident Report 2 of 5',
             url='https://assets.documentcloud.org/documents/5678901/CRID.pdf',
             external_created_at=datetime(2019, 1, 9, 9, 11, 38, 41929, tzinfo=pytz.utc),
@@ -60,7 +60,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
         )
         AttachmentFileFactory(
             allegation=allegation456,
-            source_type='COPA_DOCUMENTCLOUD',
+            source_type='PORTAL_COPA_DOCUMENTCLOUD',
             title='CRID 1041253 CR Original Case Incident Report 2 of 5',
             url='https://assets.documentcloud.org/documents/1041253/CRID.pdf',
             external_created_at=datetime(2019, 1, 8, 9, 11, 38, 41927, tzinfo=pytz.utc),
@@ -68,7 +68,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
         )
         AttachmentFileFactory(allegation=allegation456, source_type='COPA')
         AttachmentFileFactory(source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation456, investigator=investigator)

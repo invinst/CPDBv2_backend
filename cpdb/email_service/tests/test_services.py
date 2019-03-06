@@ -56,17 +56,19 @@ class EmailServicesTestCase(TestCase):
         AttachmentRequestFactory(
             allegation=allegation_123, email='notified@citizen.com', noti_email_sent=True)
         AttachmentRequestFactory(
+            allegation=allegation_123, email='another.to.be.notified@citizen.com', noti_email_sent=False)
+        AttachmentRequestFactory(
             allegation=allegation_456, email='still.waiting@citizen.com', noti_email_sent=False)
         AttachmentRequestFactory(
             allegation=allegation_456, email='to.be.notified@citizen.com', noti_email_sent=False)
         AttachmentRequestFactory(
             allegation=allegation_789, email='to.be.notified@citizen.com', noti_email_sent=False)
 
-        AttachmentFileFactory.create_batch(2, allegation=allegation_123)
-        AttachmentFileFactory(allegation=allegation_789)
-        new_attachments = AttachmentFile.objects.all()
+        attachment_file_123_a = AttachmentFileFactory(allegation=allegation_123)
+        attachment_file_123_b = AttachmentFileFactory(allegation=allegation_123)
+        attachment_file_789 = AttachmentFileFactory(allegation=allegation_789)
 
-        send_cr_attachment_available_email(new_attachments)
+        send_cr_attachment_available_email([attachment_file_123_a, attachment_file_123_b, attachment_file_789])
 
         mock_send_email.assert_any_call(
             subject='To to.be.notified',
@@ -90,6 +92,12 @@ class EmailServicesTestCase(TestCase):
         ).to.be.true()
         expect(
             AttachmentRequest.objects.get(
+                allegation=allegation_123,
+                email='another.to.be.notified@citizen.com'
+            ).noti_email_sent
+        ).to.be.true()
+        expect(
+            AttachmentRequest.objects.get(
                 allegation=allegation_789,
                 email='to.be.notified@citizen.com'
             ).noti_email_sent
@@ -100,6 +108,14 @@ class EmailServicesTestCase(TestCase):
                 email='still.waiting@citizen.com'
             ).noti_email_sent
         ).to.be.false()
+
+        attachment_file_123_a.refresh_from_db()
+        attachment_file_123_b.refresh_from_db()
+        attachment_file_789.refresh_from_db()
+
+        expect(attachment_file_123_a.notifications_count).to.eq(2)
+        expect(attachment_file_123_b.notifications_count).to.eq(2)
+        expect(attachment_file_789.notifications_count).to.eq(1)
 
     @patch('email_service.service.send_mail')
     def test_send_cr_attachment_available_email_raise_error(self, mock_send_email):

@@ -1,20 +1,39 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, OuterRef
+from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 from data.utils.subqueries import SQCount
 from document_cloud.models import DocumentCrawler
-from .serializers import AttachmentFileListSerializer, DocumentCrawlerSerializer
+from .serializers import (
+    AttachmentFileListSerializer,
+    AttachmentFileSerializer,
+    AuthenticatedAttachmentFileSerializer,
+    UpdateAttachmentFileSerializer,
+    DocumentCrawlerSerializer,
+)
 
 
 class AttachmentViewSet(viewsets.ViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    @never_cache
+    def retrieve(self, request, pk):
+        if request.user.is_authenticated:
+            queryset = AttachmentFile.objects.filter(file_type=MEDIA_TYPE_DOCUMENT)
+            document = get_object_or_404(queryset, pk=pk)
+            return Response(AuthenticatedAttachmentFileSerializer(document).data)
+        else:
+            queryset = AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)
+            document = get_object_or_404(queryset, pk=pk)
+            return Response(AttachmentFileSerializer(document).data)
 
     def list(self, request):
         queryset = AttachmentFile.objects.annotate(documents_count=SQCount(
@@ -37,10 +56,21 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk):
         attachment = get_object_or_404(AttachmentFile, id=pk)
-        if 'show' in request.data:
-            attachment.show = request.data['show']
-            attachment.save()
-            return Response({'show': attachment.show})
+
+        serializer = UpdateAttachmentFileSerializer(
+            instance=attachment,
+            data=request.data,
+            user=request.user
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            attachment.refresh_from_db()
+            return Response(
+                status=status.HTTP_200_OK,
+                data=AuthenticatedAttachmentFileSerializer(attachment).data
+            )
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
