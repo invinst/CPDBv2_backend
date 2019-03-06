@@ -5,16 +5,16 @@ from django.test.testcases import SimpleTestCase
 from mock import MagicMock, patch
 from robber import expect
 
-from data_importer.ipra_crawler.portal_crawler import (
-    OpenIpraInvestigationCrawler,
+from data_importer.copa_crawler.portal_crawler import (
+    OpenCopaInvestigationCrawler,
     BaseComplaintCrawler,
     ComplaintCrawler,
     VimeoSimpleAPI
 )
 
 
-class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
-    @patch('data_importer.ipra_crawler.portal_crawler.requests')
+class OpenCopaInvestigationCrawlerTest(SimpleTestCase):
+    @patch('data_importer.copa_crawler.portal_crawler.requests')
     def test_parse(self, requests):
         requests.get.return_value.json.return_value = {
             'caseSearch': {
@@ -34,18 +34,18 @@ class OpenIpraInvestigationCrawlerTest(SimpleTestCase):
             }
         }
         links = ['http://www.iprachicago.org/case/1063127-2/', 'http://www.iprachicago.org/case/1063442-2/']
-        expect(OpenIpraInvestigationCrawler().crawl()).to.be.eq(links)
+        expect(OpenCopaInvestigationCrawler().crawl()).to.be.eq(links)
 
 
 class BaseComplaintCrawlerTest(SimpleTestCase):
     URL = 'http://www.iprachicago.org/case/1042532-2/'
 
-    @patch('data_importer.ipra_crawler.portal_crawler.requests')
+    @patch('data_importer.copa_crawler.portal_crawler.requests')
     def test_get_html_content(self, requests):
         requests.get = MagicMock(return_value=MagicMock(text='something'))
         expect(BaseComplaintCrawler().get_html_content(self.URL)).to.be.eq('something')
 
-    @patch('data_importer.ipra_crawler.portal_crawler.requests')
+    @patch('data_importer.copa_crawler.portal_crawler.requests')
     def test_parse(self, requests):
         requests.get = MagicMock(return_value=MagicMock(text='something'))
 
@@ -198,7 +198,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
     </div>
     '''
 
-    @patch('data_importer.ipra_crawler.portal_crawler.ComplaintCrawler.get_html_content')
+    @patch('data_importer.copa_crawler.portal_crawler.ComplaintCrawler.get_html_content')
     def test_parse(self, get_html_content):
         single_subject_content = '''
         <p>Subjects: Barry Hayes</p>
@@ -221,7 +221,7 @@ class ComplaintCrawlerTest(SimpleTestCase):
         }
         expect(ComplaintCrawler(url=self.URL).crawl()).to.be.eq(records)
 
-    @patch('data_importer.ipra_crawler.portal_crawler.ComplaintCrawler.get_html_content')
+    @patch('data_importer.copa_crawler.portal_crawler.ComplaintCrawler.get_html_content')
     def test_parse_with_multiple_subjects(self, get_html_content):
         multiple_subject_content = '''
         <p>Subjects:</p>
