@@ -204,9 +204,11 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
                       b'\nDone importing!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('portal_copa/portal-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.upload_to_documentcloud')
     @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
@@ -419,9 +421,11 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while CRAWLING!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.contain('crawler_logs_bucket')
         expect(log_args['Key']).to.contain('portal_copa/portal-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_portal_copa_documents(self, DocumentCloudMock):
@@ -631,9 +635,11 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
                       b'\nCurrent Total summary_reports_copa attachments: 2' \
                       b'\nDone importing!'
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.contain('crawler_logs_bucket')
         expect(log_args['Key']).to.contain('summary_reports_copa/summary-reports-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @patch(
         'data_importer.copa_crawler.importers.CopaSummaryReportsAttachmentImporter.crawl_copa',
@@ -681,9 +687,11 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while CRAWLING!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('summary_reports_copa/summary-reports-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_summary_reports_copa_documents(self, DocumentCloudMock):
