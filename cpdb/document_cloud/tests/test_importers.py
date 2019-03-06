@@ -55,7 +55,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(mock_request).to.be.called_with(url, headers={'User-Agent': ''})
         expect(mock_urlopen).to.be.called_with(mock_request.return_value)
         expect(mock_urlopen_obj.read).to.be.called()
-        expect(cloud_document.full_text).to.eq(text_content)
+        expect(cloud_document.new_full_text).to.eq(text_content)
 
     @patch('document_cloud.importers.urlopen')
     @patch('document_cloud.importers.Request')
@@ -77,7 +77,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(mock_request).to.be.called_with(url, headers={'User-Agent': ''})
         expect(mock_urlopen).to.be.called_with(mock_request.return_value)
         expect(mock_urlopen_obj.read).to.be.called()
-        expect(cloud_document.full_text).to.eq(''.encode('utf8'))
+        expect(cloud_document.new_full_text).to.eq(''.encode('utf8'))
 
     @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_get_full_text(self):
@@ -89,14 +89,14 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         something
 
         """
-        cloud_document = create_object({'full_text': text_content.encode('utf8')})
+        cloud_document = create_object({'new_full_text': text_content.encode('utf8')})
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq("something\nsomething")
 
     @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_get_full_text_raise_HTTPError_exception(self):
         class Document(object):
             @property
-            def full_text(self):
+            def new_full_text(self):
                 raise HTTPError('Testing url', '404', 'Testing error', None, None)
 
         cloud_document = Document()
@@ -106,7 +106,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_get_full_text_raise_NotImplementedError_exception(self):
         class Document(object):
             @property
-            def full_text(self):
+            def new_full_text(self):
                 raise NotImplementedError('Testing error')
 
         cloud_document = Document()
@@ -199,7 +199,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'pages': 11
         })
 
@@ -237,7 +237,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'pages': 10,
         })
 
@@ -263,7 +263,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -284,7 +284,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -307,7 +307,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -331,7 +331,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -429,7 +429,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'pages': 4,
         })
         update_document_1 = create_object({
@@ -442,7 +442,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8'),
+            'new_full_text': 'updated text content'.encode('utf8'),
             'pages': 1,
         })
         update_document_2 = create_object({
@@ -455,7 +455,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://summary-reports.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'summary reports updated text content'.encode('utf8'),
+            'new_full_text': 'summary reports updated text content'.encode('utf8'),
             'pages': 3
         })
         kept_document = create_object({
@@ -468,7 +468,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'new_full_text': 'text content'.encode('utf8'),
             'pages': 2,
         })
         search_all_mock.return_value = [new_document, update_document_1, update_document_2, kept_document]
