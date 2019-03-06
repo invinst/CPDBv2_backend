@@ -5,7 +5,6 @@ from documentcloud import DocumentCloud
 
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile, Allegation
-from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.models import DocumentCloudSearchQuery
 from document_cloud.utils import parse_id, get_url, parse_crid_from_title
 
@@ -16,11 +15,11 @@ _logger = logging.getLogger(__name__)
 # One is updated by STAGING and one by PRODUCTION
 def _remove_invalid_documents(cloud_documents):
     existing_copa_documentcloud_ids = AttachmentFile.objects.filter(
-        source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD
+        source_type__in=AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES
     ).values_list('external_id', flat=True).distinct()
 
     def valid_document(cloud_document):
-        return cloud_document.source_type != AttachmentSourceType.COPA_DOCUMENTCLOUD or \
+        return cloud_document.source_type not in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES or \
                cloud_document.documentcloud_id in existing_copa_documentcloud_ids
 
     return filter(valid_document, cloud_documents)
@@ -34,7 +33,7 @@ def _remove_duplicated(cloud_documents):
     copa_documents = []
     documentcloud_documents = []
     for document in cloud_documents:
-        if document.source_type == AttachmentSourceType.COPA_DOCUMENTCLOUD:
+        if document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES:
             copa_documents.append(document)
         else:
             documentcloud_documents.append(document)
@@ -52,8 +51,9 @@ def _remove_duplicated(cloud_documents):
 
 def _add_attributes(cloud_documents, document_type):
     for cloud_document in cloud_documents:
-        from_copa = hasattr(cloud_document, 'description') and cloud_document.description == AUTO_UPLOAD_DESCRIPTION
-        source_type = AttachmentSourceType.COPA_DOCUMENTCLOUD if from_copa else AttachmentSourceType.DOCUMENTCLOUD
+        from_copa = hasattr(cloud_document, 'description') \
+                    and cloud_document.description in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES
+        source_type = cloud_document.description if from_copa else AttachmentSourceType.DOCUMENTCLOUD
         setattr(cloud_document, 'source_type', source_type)
 
         setattr(cloud_document, 'url', get_url(cloud_document))

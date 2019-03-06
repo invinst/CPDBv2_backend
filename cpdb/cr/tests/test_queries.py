@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from robber.expect import expect
 from freezegun import freeze_time
 
+from analytics import constants
 from analytics.factories import AttachmentTrackingFactory
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
 from data.factories import AllegationFactory, AttachmentFileFactory
@@ -141,6 +142,31 @@ class LatestDocumentsQueryTestCase(TestCase):
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
+        # Should not have this in result because show = False
+        AttachmentFileFactory(
+            allegation=allegation_1,
+            title='CR document 12',
+            id=12,
+            tag='CR',
+            url='http://cr-document.com/12',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url12',
+            external_created_at=three_month_ago + timedelta(days=15),
+            show=False
+        )
+
+        # Should still count but not 1st row because is attached to a download event
+        attachment_file_6 = AttachmentFileFactory(
+            title='Attachment not appear because is download event',
+            id=13,
+            tag='CR',
+            url='http://cr-document.com/13',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url13',
+            allegation=allegation_4,
+            external_created_at=datetime(2015, 7, 13, 12, 0, 1, tzinfo=pytz.utc)
+        )
+
         with freeze_time(datetime(2018, 8, 14, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_3)
 
@@ -149,6 +175,11 @@ class LatestDocumentsQueryTestCase(TestCase):
 
         with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_5)
+
+        with freeze_time(datetime(2018, 10, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(
+                attachment_file=attachment_file_6,
+                kind=constants.DOWNLOAD_EVENT_TYPE)
 
         results = LatestDocumentsQuery.execute(5)
 

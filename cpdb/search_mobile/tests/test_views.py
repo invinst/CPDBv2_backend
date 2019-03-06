@@ -8,6 +8,7 @@ import pytz
 from mock import patch
 from robber import expect
 
+from data.cache_managers import allegation_cache_manager
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
 )
@@ -88,6 +89,7 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
         OfficerAllegationFactory(allegation=allegation_1, allegation_category__category='Illegal Search')
         OfficerAllegationFactory(allegation=allegation_2, allegation_category__category='')
 
+        allegation_cache_manager.cache_data()
         self.rebuild_index()
         self.refresh_index()
 

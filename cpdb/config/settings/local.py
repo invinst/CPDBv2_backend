@@ -46,5 +46,6 @@ INTERNAL_IPS = ['10.0.2.2']
 TWITTERBOT_ENV = 'dev'
 
 S3_BUCKET_OFFICER_CONTENT = 'officer-content-staging'
+S3_BUCKET_CRAWLER_LOG = 'cpdp-crawler-logs-develop'
 LAMBDA_FUNCTION_CREATE_OFFICER_ZIP_FILE = 'createOfficerZipFileStaging'
 LAMBDA_FUNCTION_UPLOAD_PDF = 'uploadPdfStaging'

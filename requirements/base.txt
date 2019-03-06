@@ -43,3 +43,5 @@ django-email-bandit==1.5
 openpyxl==2.5.12
 boto3==1.9.79
 awscli==1.16.88
+google-api-python-client==1.7.8
+oauth2client==4.1.3

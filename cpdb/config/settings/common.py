@@ -66,6 +66,7 @@ LOCAL_APPS = (
     'email_service',
     'social_graph',
     'xlsx',
+    'tracker',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -83,12 +84,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    'config.cache.set_user_with_rest_framework_authenticator_middleware',
+    'config.cache.FetchFromCacheForAnonymousUserMiddleware',
 ]
 
 # CACHES CONFIGURATION
 # ------------------------------------------------------------------------------
-CACHE_MIDDLEWARE_SECONDS = 3600
+CACHE_MIDDLEWARE_SECONDS = 300
 CACHE_MIDDLEWARE_KEY_PREFIX = 'django'
 
 CACHES = {
@@ -238,6 +240,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20,
     'ORDERING_PARAM': 'sort'
@@ -294,3 +299,6 @@ AZURE_TEMPLATE_CONTAINER = 'templates'
 S3_BUCKET_XLSX_DIRECTORY = 'xlsx'
 S3_BUCKET_PDF_DIRECTORY = 'pdf'
 S3_BUCKET_ZIP_DIRECTORY = 'zip'
+
+GOOGLE_APPLICATION_CREDENTIALS = env.str('GOOGLE_APPLICATION_CREDENTIALS', default='')
+GOOGLE_ANALYTICS_VIEW_ID = '129538462'

@@ -37,9 +37,8 @@ class DocumentcloudUtilsTestCase(TestCase):
         document_title = 'CRID-123456 FOO'
         expect(parse_crid_from_title(document_title, document_type='BAR')).to.be.false()
 
-    def test_format_copa_documentcloud_title(self):
+    def test_format_portal_copa_documentcloud_title(self):
         crid = '123'
         attachment_title = 'Officer Battery Report (Lopez)'
-        expect(format_copa_documentcloud_title(crid, attachment_title)).to.eq(
-            'CRID 123 CR Officer Battery Report (Lopez)'
-        )
+        documentcloud_title = format_copa_documentcloud_title(crid, attachment_title)
+        expect(documentcloud_title).to.eq('CRID 123 CR Officer Battery Report (Lopez)')

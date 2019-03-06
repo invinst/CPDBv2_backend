@@ -12,7 +12,7 @@ class RawQueryUtilsTestCase(TestCase):
         OfficerFactory(first_name='Jerome', last_name='Finnigan')
         OfficerFactory(first_name='Edward', last_name='May')
 
-        build_query = 'SELECT first_name, last_name FROM data_officer'
+        build_query = 'SELECT first_name, last_name FROM data_officer ORDER BY last_name'
         cursor = connection.cursor()
         cursor.execute(build_query)
 

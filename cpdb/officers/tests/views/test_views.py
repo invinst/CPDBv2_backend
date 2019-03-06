@@ -24,6 +24,8 @@ from data.factories import (
 )
 from trr.factories import TRRFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
+from analytics.models import AttachmentTracking
+from analytics import constants
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from data import cache_managers
 
@@ -710,7 +712,16 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.return_value = {}
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        OfficerFactory(id=123)
+        officer = OfficerFactory(id=123)
+
+        allegation1 = AllegationFactory()
+        OfficerAllegationFactory(officer=officer, allegation=allegation1)
+        AttachmentFileFactory(allegation=allegation1, id=321, source_type='DOCUMENTCLOUD')
+
+        investigator = InvestigatorFactory(officer=officer)
+        allegation2 = AllegationFactory()
+        InvestigatorAllegationFactory(investigator=investigator, allegation=allegation2)
+        AttachmentFileFactory(allegation=allegation2, id=322, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         base_url = reverse('api-v2:officers-request-download', kwargs={'pk': 123})
         query = urlencode({'with-docs': 'true'})
@@ -729,6 +740,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'Key': 'zip_with_docs/Officer_123_with_docs.zip',
             }
         )
+
+        events = AttachmentTracking.objects.filter(kind=constants.DOWNLOAD_EVENT_TYPE)
+        expect(events.count()).to.eq(2)
+        expect(set([event.attachment_file.id for event in events])).to.eq(set([321, 322]))
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
     @patch('data.models.officer.aws')
@@ -817,7 +832,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -832,7 +847,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
         AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
@@ -899,7 +914,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(allegation=allegation, source_type='COPA')
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_456, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -914,7 +929,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
         AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_789, source_type='COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(allegation=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)

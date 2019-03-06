@@ -589,6 +589,17 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             allegation=allegation_1,
+            title='CR document 1',
+            id='111',
+            tag='CR',
+            url='http://cr-document.com/111',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url111',
+            external_created_at=three_month_ago + timedelta(days=9),
+            show=False
+        )
+        AttachmentFileFactory(
+            allegation=allegation_1,
             title='CR document 2',
             id='2',
             tag='CR',

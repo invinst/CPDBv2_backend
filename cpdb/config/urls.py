@@ -30,10 +30,8 @@ from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
 from officers.views import OfficersDesktopViewSet, OfficersMobileViewSet
-from old_officers.views import OldOfficersViewSet, OldOfficersMobileViewSet
 from analytics.views import EventViewSet, SearchTrackingViewSet, AttachmentTrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
-from old_cr.views import OldCRViewSet, OldCRMobileViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
 from activity_grid.views import ActivityGridViewSet
@@ -42,6 +40,8 @@ from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
 from status.views import StatusViewSet
 from social_graph.views import SocialGraphViewSet
+from tracker.views import AttachmentViewSet
+from tracker.views import DocumentCrawlersViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -55,13 +55,9 @@ router_v2.register(r'events', EventViewSet, base_name='event')
 router_v2.register(r'search', SearchV2ViewSet, base_name='search')
 router_v2.register(r'aliases/(?P<alias_type>.+)', AliasViewSet, base_name='alias')
 router_v2.register(r'search-mobile', SearchMobileV2ViewSet, base_name='search-mobile')
-router_v2.register(r'old/officers', OldOfficersViewSet, base_name='officers-old')
 router_v2.register(r'officers', OfficersDesktopViewSet, base_name='officers')
-router_v2.register(r'mobile/old/officers', OldOfficersMobileViewSet, base_name='officers-mobile-old')
 router_v2.register(r'mobile/officers', OfficersMobileViewSet, base_name='officers-mobile')
-router_v2.register(r'old/cr', OldCRViewSet, base_name='cr-old')
 router_v2.register(r'cr', CRViewSet, base_name='cr')
-router_v2.register(r'mobile/old/cr', OldCRMobileViewSet, base_name='cr-mobile-old')
 router_v2.register(r'mobile/cr', CRMobileViewSet, base_name='cr-mobile')
 router_v2.register(r'trr', TRRDesktopViewSet, base_name='trr')
 router_v2.register(r'mobile/trr', TRRMobileViewSet, base_name='trr-mobile')
@@ -75,6 +71,8 @@ router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhoo
 router_v2.register(r'status', StatusViewSet, base_name='status')
 router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
 router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
+router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
+router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

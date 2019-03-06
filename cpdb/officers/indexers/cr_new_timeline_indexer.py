@@ -50,7 +50,7 @@ class CRNewTimelineEventIndexer(BaseIndexer):
     @timing_validate('CRNewTimelineEventIndexer: Populating attachments dict...')
     def _populate_attachments_dict(self):
         self._attachments_dict = dict()
-        attachments = filter_attachments(AttachmentFile.objects).values(
+        attachments = filter_attachments(AttachmentFile.showing).values(
             'title', 'url', 'preview_image_url', 'file_type', 'allegation_id'
         )
         for obj in attachments:

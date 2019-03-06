@@ -19,7 +19,7 @@ class UploadPdfCommandTestCase(TestCase):
     def test_upload_pdf(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
-            source_type='COPA',
+            source_type='PORTAL_COPA',
             url='http://www.chicagocopa.org/wp-content/uploads/2016/05/CHI-R-00000105.pdf'
         )
         AttachmentFileFactory(
@@ -29,13 +29,18 @@ class UploadPdfCommandTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='456',
-            source_type='COPA_DOCUMENTCLOUD',
+            source_type='PORTAL_COPA_DOCUMENTCLOUD',
             url='https://www.documentcloud.org/documents/2-CRID-456-CR.html'
+        )
+        AttachmentFileFactory(
+            external_id='789',
+            source_type='SUMMARY_REPORTS_COPA_DOCUMENTCLOUD',
+            url='https://www.documentcloud.org/documents/3-CRID-789-CR.html'
         )
 
         call_command('upload_pdf')
 
-        expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(2)
+        expect(aws_mock.lambda_client.invoke_async.call_count).to.eq(3)
         expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
             FunctionName='uploadPdfTest',
             InvokeArgs=json.dumps({
@@ -52,6 +57,14 @@ class UploadPdfCommandTestCase(TestCase):
                 'key': 'pdf/456'
             })
         )
+        expect(aws_mock.lambda_client.invoke_async).to.be.any_call(
+            FunctionName='uploadPdfTest',
+            InvokeArgs=json.dumps({
+                'url': 'https://www.documentcloud.org/documents/3-CRID-789-CR.html',
+                'bucket': 'officer_content_bucket',
+                'key': 'pdf/789'
+            })
+        )
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer_content_bucket',
@@ -62,7 +75,7 @@ class UploadPdfCommandTestCase(TestCase):
     def test_upload_pdf_with_external_ids(self, aws_mock):
         AttachmentFileFactory(
             external_id='00000105',
-            source_type='COPA',
+            source_type='PORTAL_COPA',
             url='http://www.chicagocopa.org/wp-content/uploads/2016/05/CHI-R-00000105.pdf'
         )
         AttachmentFileFactory(
@@ -72,8 +85,13 @@ class UploadPdfCommandTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='456',
-            source_type='COPA_DOCUMENTCLOUD',
+            source_type='PORTAL_COPA_DOCUMENTCLOUD',
             url='https://www.documentcloud.org/documents/2-CRID-456-CR.html'
+        )
+        AttachmentFileFactory(
+            external_id='789',
+            source_type='SUMMARY_REPORTS_COPA_DOCUMENTCLOUD',
+            url='https://www.documentcloud.org/documents/3-CRID-789-CR.html'
         )
 
         call_command('upload_pdf', '00000105', '123')

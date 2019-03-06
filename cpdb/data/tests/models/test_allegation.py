@@ -115,8 +115,11 @@ class AllegationTestCase(TestCase):
         allegation = AllegationFactory()
         attachment1 = AttachmentFileFactory(tag='Other', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         AttachmentFileFactory(
+            tag='Other', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT, show=False)
+        AttachmentFileFactory(
             tag='Other', title='CR Arrest Report Herron', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT
         )
-        AttachmentFileFactory(tag='OCIR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
+        AttachmentFileFactory(
+            tag='OCIR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         AttachmentFileFactory(tag='AR', allegation=allegation, file_type=MEDIA_TYPE_DOCUMENT)
         expect(list(allegation.filtered_attachment_files)).to.eq([attachment1])

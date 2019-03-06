@@ -129,7 +129,16 @@ class CRIndexerTestCase(TestCase):
             file_type='document',
             title='CR document',
             url='http://foo.com/',
-            preview_image_url='http://web.com/image'
+            preview_image_url='http://web.com/image',
+        )
+        AttachmentFileFactory(
+            tag='Other',
+            allegation=allegation,
+            file_type='document',
+            title='CR document',
+            url='http://foo.com/',
+            preview_image_url='http://web.com/image',
+            show=False
         )
         AttachmentFileFactory(
             allegation=allegation,
@@ -137,7 +146,7 @@ class CRIndexerTestCase(TestCase):
             tag='OCIR',
             title='CR document',
             url='http://foo.com/',
-            preview_image_url='http://web.com/image'
+            preview_image_url='http://web.com/image',
         )
 
         indexer = CRIndexer()

@@ -4,7 +4,6 @@ from robber import expect
 
 from data.constants import AttachmentSourceType
 from data.factories import AttachmentFileFactory, AllegationFactory
-from document_cloud.constants import AUTO_UPLOAD_DESCRIPTION
 from document_cloud.factories import DocumentCloudSearchQueryFactory
 from document_cloud.search import search_all
 from shared.tests.utils import create_object
@@ -19,13 +18,18 @@ class SearchTestCase(TestCase):
         allegation = AllegationFactory(crid='123')
 
         AttachmentFileFactory(
-            source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='1',
             allegation=allegation
         )
         AttachmentFileFactory(
-            source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='2',
+            allegation=allegation
+        )
+        AttachmentFileFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            external_id='7',
             allegation=allegation
         )
         AttachmentFileFactory(
@@ -34,19 +38,19 @@ class SearchTestCase(TestCase):
             allegation=allegation
         )
         AttachmentFileFactory(
-            source_type=AttachmentSourceType.COPA,
+            source_type=AttachmentSourceType.PORTAL_COPA,
             external_id='5',
             allegation=allegation
         )
         AttachmentFileFactory(
-            source_type=AttachmentSourceType.COPA_DOCUMENTCLOUD,
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='6',
             allegation=allegation
         )
 
         copa_document_no_crid = create_object({
             'id': '1-CRID-CR',
-            'description': AUTO_UPLOAD_DESCRIPTION,
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/1-CRID-CR.html',
             'title': 'no crid'
         })
@@ -54,13 +58,13 @@ class SearchTestCase(TestCase):
         copa_document = create_object({
             'id': '2-CRID-123-CR',
             'title': 'CRID-123 CR',
-            'description': AUTO_UPLOAD_DESCRIPTION,
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/2-CRID-123-CR.html',
         })
         should_be_filtered_copa_document = create_object({
             'id': '3-CRID-123-CR',
             'title': 'CRID-123 CR',
-            'description': AUTO_UPLOAD_DESCRIPTION,
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/3-CRID-123-CR.html',
         })
         cloud_document = create_object({
@@ -79,26 +83,39 @@ class SearchTestCase(TestCase):
             'title': 'CRID-123 CR',
             'canonical_url': 'https://www.documentcloud.org/documents/999-CRID-123-CR.html',
         })
+        summary_reports_copa_document = create_object({
+            'id': '7-CRID-123-CR',
+            'title': 'CRID-123 CR 7',
+            'description': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/7-CRID-123-CR.html',
+        })
 
         DocumentCloudMock().documents.search.return_value = [
             copa_document_no_crid, copa_document, should_be_filtered_copa_document,
-            duplicated_cloud_document, cloud_document, new_cloud_document
+            duplicated_cloud_document, cloud_document, new_cloud_document, summary_reports_copa_document
         ]
 
         documents = search_all()
 
         expectation_dict = {
             '1-CRID-CR': {
-                'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
                 'documentcloud_id': '1',
                 'url': 'https://www.documentcloud.org/documents/1-CRID-CR.html',
                 'document_type': 'CR',
                 'allegation': None
             },
             '2-CRID-123-CR': {
-                'source_type': AttachmentSourceType.COPA_DOCUMENTCLOUD,
+                'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
                 'documentcloud_id': '2',
                 'url': 'https://www.documentcloud.org/documents/2-CRID-123-CR.html',
+                'document_type': 'CR',
+                'allegation': allegation
+            },
+            '7-CRID-123-CR': {
+                'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+                'documentcloud_id': '7',
+                'url': 'https://www.documentcloud.org/documents/7-CRID-123-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
@@ -115,10 +132,10 @@ class SearchTestCase(TestCase):
                 'url': 'https://www.documentcloud.org/documents/5-CRID-123-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
-            }
+            },
         }
 
-        expect(documents).to.have.length(4)
+        expect(documents).to.have.length(5)
         for document in documents:
             expect(document.id in expectation_dict).to.be.true()
             expectation = expectation_dict[document.id]
