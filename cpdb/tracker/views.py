@@ -5,7 +5,6 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.authentication import TokenAuthentication
 
 from data.models import AttachmentFile
 from data.utils.subqueries import SQCount
@@ -14,7 +13,6 @@ from .serializers import AttachmentFileListSerializer, DocumentCrawlerSerializer
 
 
 class AttachmentViewSet(viewsets.ViewSet):
-    authentication_classes = (TokenAuthentication,)
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
 

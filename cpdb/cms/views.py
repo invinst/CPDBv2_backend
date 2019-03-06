@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from cms.models import SlugPage
@@ -10,7 +9,6 @@ from cms.serializers import get_slug_page_serializer
 
 
 class CMSPageViewSet(viewsets.ViewSet):
-    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def retrieve(self, request, pk=None):

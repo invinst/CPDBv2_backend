@@ -84,12 +84,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'twitterbot.middleware.LogTwitterbotLinkVisitMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    'config.cache.set_user_with_rest_framework_authenticator_middleware',
+    'config.cache.FetchFromCacheForAnonymousUserMiddleware',
 ]
 
 # CACHES CONFIGURATION
 # ------------------------------------------------------------------------------
-CACHE_MIDDLEWARE_SECONDS = 3600
+CACHE_MIDDLEWARE_SECONDS = 300
 CACHE_MIDDLEWARE_KEY_PREFIX = 'django'
 
 CACHES = {
@@ -238,6 +239,9 @@ USE_TZ = True
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20,
