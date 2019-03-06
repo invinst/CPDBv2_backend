@@ -1,7 +1,6 @@
 from django.test import TestCase
 from robber import expect
 
-from data.constants import AttachmentSourceType
 from document_cloud.utils import parse_link, parse_crid_from_title, parse_id, format_copa_documentcloud_title
 
 
@@ -41,13 +40,5 @@ class DocumentcloudUtilsTestCase(TestCase):
     def test_format_portal_copa_documentcloud_title(self):
         crid = '123'
         attachment_title = 'Officer Battery Report (Lopez)'
-        documentcloud_title = format_copa_documentcloud_title(crid, attachment_title, AttachmentSourceType.PORTAL_COPA)
+        documentcloud_title = format_copa_documentcloud_title(crid, attachment_title)
         expect(documentcloud_title).to.eq('CRID 123 CR Officer Battery Report (Lopez)')
-
-    def test_format_summary_reports_copa_documentcloud_title(self):
-        crid = '123'
-        attachment_title = 'COPA Summary Report'
-        documentcloud_title = format_copa_documentcloud_title(
-            crid, attachment_title, AttachmentSourceType.SUMMARY_REPORTS_COPA
-        )
-        expect(documentcloud_title).to.eq('CRID 123 COPA Summary Report')
