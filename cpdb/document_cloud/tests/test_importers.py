@@ -28,6 +28,58 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def setUp(self):
         self.logger = logging.getLogger('crawler.update_documents')
 
+    @patch('document_cloud.importers.urlopen')
+    @patch('document_cloud.importers.Request')
+    def test_set_full_text(self, mock_request, mock_urlopen):
+        text_content = """
+
+        something
+
+
+        something
+
+        """
+
+        mock_request.return_value = Mock()
+
+        mock_urlopen_obj = Mock(read=Mock(return_value=text_content))
+        mock_urlopen.return_value = mock_urlopen_obj
+
+        cloud_document = create_object({
+            'full_text_url': 'https://assets.documentcloud.org/documents/5680384/-CR-CRID-1083633-CR-Tactical.txt',
+        })
+        url = 'http://assets.documentcloud.org/documents/5680384/-CR-CRID-1083633-CR-Tactical.txt'
+
+        DocumentCloudAttachmentImporter.set_full_text(cloud_document)
+
+        expect(mock_request).to.be.called_with(url, headers={'User-Agent': ''})
+        expect(mock_urlopen).to.be.called_with(mock_request.return_value)
+        expect(mock_urlopen_obj.read).to.be.called()
+        expect(cloud_document.full_text).to.eq(text_content)
+
+    @patch('document_cloud.importers.urlopen')
+    @patch('document_cloud.importers.Request')
+    def test_set_full_text_HTTPError(self, mock_request, mock_urlopen):
+        mock_request.return_value = Mock()
+
+        mock_urlopen_obj = Mock(
+            read=Mock(side_effect=HTTPError('Testing url', '404', 'Testing error', None, None)))
+
+        mock_urlopen.return_value = mock_urlopen_obj
+
+        cloud_document = create_object({
+            'full_text_url': 'https://assets.documentcloud.org/documents/5680384/-CR-CRID-1083633-CR-Tactical.txt',
+        })
+        url = 'http://assets.documentcloud.org/documents/5680384/-CR-CRID-1083633-CR-Tactical.txt'
+
+        DocumentCloudAttachmentImporter.set_full_text(cloud_document)
+
+        expect(mock_request).to.be.called_with(url, headers={'User-Agent': ''})
+        expect(mock_urlopen).to.be.called_with(mock_request.return_value)
+        expect(mock_urlopen_obj.read).to.be.called()
+        expect(cloud_document.full_text).to.eq(''.encode('utf8'))
+
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_get_full_text(self):
         text_content = """
 
@@ -40,6 +92,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         cloud_document = create_object({'full_text': text_content.encode('utf8')})
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq("something\nsomething")
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_get_full_text_raise_HTTPError_exception(self):
         class Document(object):
             @property
@@ -49,6 +102,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         cloud_document = Document()
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_get_full_text_raise_NotImplementedError_exception(self):
         class Document(object):
             @property
@@ -125,6 +179,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(None)
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_update_attachment_external_created_at_not_none(self):
         attachment = AttachmentFileFactory(
             url='old_url',
@@ -161,6 +216,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(attachment.text_content).to.eq('text content')
         expect(attachment.pages).to.eq(11)
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_update_attachment_external_created_at_is_none(self):
         attachment = AttachmentFileFactory(
             url='old_url',
@@ -198,6 +254,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(attachment.text_content).to.eq('text content')
         expect(attachment.pages).to.eq(10)
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_update_attachment_no_update(self):
         attachment = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -218,6 +275,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
         expect(changed).to.be.false()
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_force_update_attachment(self):
         attachment = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -240,6 +298,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         ).update_attachment(attachment, document)
         expect(changed).to.be.true()
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_update_attachment_update_source_type(self):
         attachment = AttachmentFileFactory(
             source_type='',
@@ -261,6 +320,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(changed).to.be.true()
         expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     def test_update_attachment_not_update_full_text_if_manually_updated(self):
         attachment = AttachmentFileFactory(
             source_type='',
@@ -344,6 +404,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('new title')
 
+    @patch.object(DocumentCloudAttachmentImporter, 'set_full_text', lambda x: x)
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
         S3_BUCKET_PDF_DIRECTORY='pdf',
