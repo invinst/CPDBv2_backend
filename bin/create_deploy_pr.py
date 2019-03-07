@@ -74,7 +74,7 @@ def get_deploy_prs_and_stories():
     )
     stories = call_cmd(
         "git --no-pager log %s..HEAD --abbrev-commit | grep -E 'pivotaltracker' | "
-        "sed -E 's/.+pivotaltracker.com\\/(story|epic)\\/show\\/([0-9]+).*/\\2/p' | sort -u -" % cur_id
+        r"sed -E '/.+pivotaltracker.com\/story\/show\/([0-9]+).*/!d;s//\1/' | sort -u " % cur_id
     )
     call_cmd('git checkout %s' % current_branch)
     call_cmd('git branch -D master-%s' % cur_id)
