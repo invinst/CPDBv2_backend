@@ -192,6 +192,8 @@ class AllegationWithNewDocumentsSerializer(NoNullSerializer):
     crid = serializers.CharField(source='allegation_id')
     latest_document = serializers.SerializerMethodField()
     num_recent_documents = serializers.IntegerField()
+    category = serializers.CharField(source='allegation.most_common_category.category', allow_null=True)
+    incident_date = serializers.DateTimeField(source='allegation.incident_date', format='%Y-%m-%d')
 
     def get_latest_document(self, obj):
         return AttachmentFileSerializer(obj).data
