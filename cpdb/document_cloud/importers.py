@@ -43,7 +43,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             full_text = urlopen(req).read()
         except HTTPError:
             full_text = ''.encode('utf8')
-        setattr(cloud_document, 'new_full_text', full_text)
+        setattr(cloud_document, 'full_text', full_text)
 
     @staticmethod
     def get_full_text(cloud_document):
@@ -52,7 +52,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         # we need to temporally replace it wih our implementation
         DocumentCloudAttachmentImporter.set_full_text(cloud_document)
         try:
-            return re.sub(r'(\n *)+', '\n', cloud_document.new_full_text.decode('utf8')).strip()
+            return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
         except (HTTPError, NotImplementedError):
             return ''
 
