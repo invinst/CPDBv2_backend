@@ -571,11 +571,18 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
     def test_cr_new_documents(self):
         three_month_ago = now() - timedelta(weeks=12)
-        allegation_1 = AllegationFactory(crid='123')
-        allegation_2 = AllegationFactory(crid='456')
-        allegation_3 = AllegationFactory(crid='789')
-        allegation_4 = AllegationFactory(crid='321')
-        allegation_5 = AllegationFactory(crid='987')
+        allegation_1 = AllegationFactory(crid='123', incident_date=datetime(2001, 2, 28, tzinfo=pytz.utc))
+        allegation_2 = AllegationFactory(crid='456', incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc))
+        allegation_3 = AllegationFactory(crid='789', incident_date=datetime(2003, 2, 28, tzinfo=pytz.utc))
+        allegation_4 = AllegationFactory(crid='321', incident_date=datetime(2004, 2, 28, tzinfo=pytz.utc))
+        allegation_5 = AllegationFactory(crid='987', incident_date=datetime(2005, 2, 28, tzinfo=pytz.utc))
+
+        allegation_category_1 = AllegationCategoryFactory(id=1, category='Category 1')
+        allegation_category_12 = AllegationCategoryFactory(id=2, category='Category 2')
+
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_1)
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_1)
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_12)
 
         AttachmentFileFactory(
             allegation=allegation_1,
@@ -716,6 +723,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_3)
 
+        allegation_cache_manager.cache_data()
+
         response = self.client.get(reverse('api-v2:cr-list-by-new-document'), {'limit': 5})
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -730,7 +739,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url9',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 1
+                'num_recent_documents': 1,
+                'incident_date': '2004-02-28',
             },
             {
                 'crid': '987',
@@ -741,7 +751,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url11',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 1
+                'num_recent_documents': 1,
+                'incident_date': '2005-02-28',
             },
             {
                 'crid': '123',
@@ -752,7 +763,9 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url1',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 2
+                'num_recent_documents': 2,
+                'incident_date': '2001-02-28',
+                'category': 'Category 1'
             },
             {
                 'crid': '456',
@@ -763,6 +776,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url3',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 1
+                'num_recent_documents': 1,
+                'incident_date': '2002-02-28',
             },
         ])
