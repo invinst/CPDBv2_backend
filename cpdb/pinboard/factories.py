@@ -16,7 +16,7 @@ class PinboardFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def officers(self, create, extracted, **kwargs):
         if not create:
-            return
+            return  # pragma: no cover
 
         if extracted:
             for officer in extracted:
@@ -25,7 +25,7 @@ class PinboardFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def allegations(self, create, extracted, **kwargs):
         if not create:
-            return
+            return  # pragma: no cover
 
         if extracted:
             for allegation in extracted:
