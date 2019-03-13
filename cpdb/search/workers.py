@@ -173,9 +173,14 @@ class CRWorker(Worker):
     doc_type_klass = CrDocType
 
     def query(self, term, **kwargs):
-        return self._searcher\
-            .query('multi_match', query=term, operator='and', fields=['crid', 'summary'])\
-            .highlight('summary')
+        by_attachment = Q(
+            'nested',
+            path='attachment_files',
+            query=Q('match', attachment_files__text_content=term)
+        )
+        by_term = Q('multi_match', query=term, operator='and', fields=['crid', 'summary'])
+
+        return self._searcher.query(Q('bool', should=[by_term, by_attachment])).highlight('summary')
 
 
 class DateTRRWorker(DateWorker):
