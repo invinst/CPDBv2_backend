@@ -17,7 +17,7 @@ from cr.serializers.cr_response_serializers import (
 from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from email_service.constants import CR_ATTACHMENT_REQUEST
 from es_index.pagination import ESQueryPagination
-from data.models import Allegation, AttachmentFile
+from data.models import Allegation
 from cr.queries import LatestDocumentsQuery
 from email_service.service import send_attachment_request_email
 
