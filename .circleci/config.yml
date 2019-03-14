@@ -232,14 +232,14 @@ jobs:
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              bin/remove_all_crobjobs.sh --production
+              bin/remove_all_cronjobs.sh --production
               bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
             else
-              bin/remove_all_crobjobs.sh --staging
+              bin/remove_all_cronjobs.sh --staging
               bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
