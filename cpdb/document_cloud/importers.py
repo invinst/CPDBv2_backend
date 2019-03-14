@@ -181,6 +181,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             ],
             batch_size=BATCH_SIZE
         )
+        for updated_attachment in self.updated_attachments:
+            updated_attachment.update_allegation_summary()
 
         self.log_info(f'Creating {len(self.new_attachments)} attachments')
         AttachmentFile.objects.bulk_create(self.new_attachments)

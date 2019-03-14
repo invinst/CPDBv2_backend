@@ -10,6 +10,7 @@ from documentcloud import DocumentCloud, DoesNotExistError
 
 from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws
+from utils.copa_utils import extract_copa_executive_summary
 from .common import TimeStampsModel, TaggableModel
 
 logger = logging.getLogger(__name__)
@@ -99,3 +100,12 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
 
     def get_absolute_url(self):
         return f'/document/{self.pk}/'
+
+    def update_allegation_summary(self):
+        if self.source_type == AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD \
+                and self.text_content and not self.allegation.summary:
+            summary = extract_copa_executive_summary(self.text_content)
+            if summary:
+                self.allegation.summary = summary
+                self.allegation.is_extracted_summary = True
+                self.allegation.save()

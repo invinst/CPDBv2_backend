@@ -470,6 +470,73 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_reprocess_text_catch_login_exception(self, _):
         DocumentCloudAttachmentImporter(self.logger).reprocess_text()
 
+    @patch('shared.attachment_importer.aws')
+    def test_update_attachments_update_allegation_summary(self, _):
+        allegation = AllegationFactory(summary='')
+        text_content = \
+            'CIVILIAN OFFICE OF POLICE ACCOUNTABILITY ' \
+            '\nSUMMARY REPORT OF INVESTIGATION1' \
+            '\nI. EXECUTIVE SUMMARY' \
+            '\nDate of Incident: September 25, 2015' \
+            '\nTime of Incident: 8:53 pm.' \
+            '\nLocation of Incident: N. Central Park Avenue, Chicago, IL' \
+            '\nDate of COPA Notification: September 25, 2015' \
+            '\nTime of COPA Notification: 9:15 pm.' \
+            '\nOn September 25, 2015, at approximately 8:50 pm, Officers A and responded to a' \
+            '\ncall of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at ' \
+            '\nN. Central Park Avenue, Chicago, IL. Upon arrival, the officers met with Involved Civilian' \
+            '\nmother, Involved Civilian 2 (Involved Civilian 2), who stated that Involved Civilian 1 was acting' \
+            '\ncrazy, had a knife, and would not come out of his bedroom. Officers A and B, along with assisting' \
+            '\nOfficers and D, entered the residence and knocked on Involved Civilian bedroom door.' \
+            '\nInvolved Civilian 1 opened the bedroom door while holding a knife in his hand. The officers' \
+            '\nordered Involved Civilian 1 to drop the knife, but he did not comply. Involved Civilian 1 exited' \
+            '\nhis bedroom and approached Officer A as he stood in the kitchen, which was adjacent to the' \
+            '\nbedroom. Officer attempted to tase Involved Civilian 1, but the Taser did not appear to have any' \
+            '\neffect on Involved Civilian 1. Involved Civilian 1 continued to approach Officer A, while still' \
+            '\nholding the knife in his hand, at which time Officer A discharged his firearm five times, striking' \
+            '\nInvolved Civilian 1 several times about the body. Involved Civilian 1 was declared dead at 2133' \
+            '\nhours at Mt. Sinai hospital. investigation demonstrates that Officer use of deadly' \
+            '\nforce complied with Chicago Police Department rules and directives.' \
+            '\nII. INVOLVED PARTIES' \
+            '\nInvolved Officer Officer A, star Employee Date of' \
+            '\nAppointment: Chicago Police Officer, Unit of' \
+            '\nAssignment: XX, DOB: 1983, Male White.' \
+            '\nInvolved Individual#1: Involved Civilian 1, DOB: 1982, Male, Black.' \
+            '\n1 On September 15, 2017, the Civilian Office of Police Accountability (COPA) replaced the ' \
+            '\nIndependent Police' \
+
+        attachment = AttachmentFileFactory(
+            title='old title',
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            text_content=text_content,
+            allegation=allegation
+        )
+        attachment.title = 'new title'
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.updated_attachments = [attachment]
+        importer.update_attachments()
+
+        expect(allegation.summary).to.eq(
+            'On September 25, 2015, at approximately 8:50 pm, Officers A and responded to a '
+            'call of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            'N. Central Park Avenue, Chicago, IL. Upon arrival, the officers met with Involved Civilian '
+            'mother, Involved Civilian 2 (Involved Civilian 2), who stated that Involved Civilian 1 was acting '
+            'crazy, had a knife, and would not come out of his bedroom. Officers A and B, along with assisting '
+            'Officers and D, entered the residence and knocked on Involved Civilian bedroom door. '
+            'Involved Civilian 1 opened the bedroom door while holding a knife in his hand. The officers '
+            'ordered Involved Civilian 1 to drop the knife, but he did not comply. Involved Civilian 1 exited '
+            'his bedroom and approached Officer A as he stood in the kitchen, which was adjacent to the '
+            'bedroom. Officer attempted to tase Involved Civilian 1, but the Taser did not appear to have any '
+            'effect on Involved Civilian 1. Involved Civilian 1 continued to approach Officer A, while still '
+            'holding the knife in his hand, at which time Officer A discharged his firearm five times, striking '
+            'Involved Civilian 1 several times about the body. Involved Civilian 1 was declared dead at 2133 '
+            'hours at Mt. Sinai hospital. investigation demonstrates that Officer use of deadly '
+            'force complied with Chicago Police Department rules and directives.'
+        )
+        allegation.refresh_from_db()
+        expect(allegation.is_extracted_summary).to.be.true()
+
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
         S3_BUCKET_PDF_DIRECTORY='pdf',
@@ -958,6 +1025,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
         expect(log_args['ContentType']).to.eq('text/plain')
 
+        allegation.refresh_from_db()
+        expect(allegation.is_extracted_summary).to.be.false()
+
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
         S3_BUCKET_PDF_DIRECTORY='pdf',
@@ -1178,3 +1248,83 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         result = DocumentCloudAttachmentImporter(self.logger).make_cloud_document_public(error_cloud_document)
         expect(result).to.be.true()
+
+    @override_settings(
+        S3_BUCKET_OFFICER_CONTENT='officer-content-test',
+        S3_BUCKET_PDF_DIRECTORY='pdf',
+        LAMBDA_FUNCTION_UPLOAD_PDF='uploadPdfTest'
+    )
+    @patch('data.models.attachment_file.aws')
+    @patch('shared.attachment_importer.aws')
+    @patch('document_cloud.importers.send_cr_attachment_available_email')
+    @patch('document_cloud.importers.search_all')
+    def test_search_and_update_attachments_update_allegation_summary(self, search_all_mock, _, __, ___):
+        text_content = \
+            'Date of COPA Notification: September 25, 2015' \
+            '\nTime of COPA Notification: 9:15 pm.' \
+            '\nOn September 25, 2015, at approximately 8:50 pm, Officers A and responded to a' \
+            '\ncall of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at ' \
+            '\nN. Central Park Avenue, Chicago, IL.' \
+            '\nII. INVOLVED PARTIES' \
+            '\nInvolved Officer Officer A, star Employee Date of' \
+
+        allegation = AllegationFactory(crid='567', summary='')
+
+        update_document = create_object({
+            'documentcloud_id': '4',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/4-CRID-789-CR-updated.html',
+            'document_type': 'CR',
+            'title': 'CRID-789-CR-updated',
+            'normal_image_url': 'http://summary-reports.com/updated-image',
+            'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'full_text': text_content.encode('utf8'),
+            'access': 'public',
+            'pages': 3
+        })
+        search_all_mock.return_value = [update_document]
+
+        AttachmentFileFactory(
+            external_id='4',
+            allegation=allegation,
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/4-CRID-789-CR.html',
+            title='CRID-789-CR-4',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content='text content'
+        )
+
+        with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
+            DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
+
+        updated_attachment = AttachmentFile.objects.get(external_id='4')
+
+        expect(updated_attachment.url).to.eq('https://www.documentcloud.org/documents/4-CRID-789-CR-updated.html')
+        expect(updated_attachment.title).to.eq('CRID-789-CR-updated')
+        expect(updated_attachment.preview_image_url).to.eq('http://summary-reports.com/updated-image')
+        expect(updated_attachment.external_last_updated).to.eq(datetime(2017, 1, 3, tzinfo=pytz.utc))
+        expect(updated_attachment.external_created_at).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
+        expect(updated_attachment.tag).to.eq('CR')
+        expect(updated_attachment.source_type).to.eq(AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD)
+        expect(updated_attachment.text_content).to.eq(
+            'Date of COPA Notification: September 25, 2015'
+            '\nTime of COPA Notification: 9:15 pm.'
+            '\nOn September 25, 2015, at approximately 8:50 pm, Officers A and responded to a'
+            '\ncall of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            '\nN. Central Park Avenue, Chicago, IL.'
+            '\nII. INVOLVED PARTIES'
+            '\nInvolved Officer Officer A, star Employee Date of'
+        )
+        expect(updated_attachment.pages).to.eq(3)
+
+        allegation.refresh_from_db()
+        expect(allegation.summary).to.eq(
+            'On September 25, 2015, at approximately 8:50 pm, Officers A and responded to a '
+            'call of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            'N. Central Park Avenue, Chicago, IL.'
+        )
