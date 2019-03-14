@@ -38,7 +38,7 @@ class LambdaFunctionTestCase(TestCase):
     @mock_s3
     def test_lambda_handler_without_attachments(self):
         self.init_s3()
-        key = 'zip/officer_1_without_docs.zip'
+        key = 'zip/Jerome_Finnigan_without_docs.zip'
         lambda_handler(
             event={
                 'key': key,
@@ -80,7 +80,7 @@ class LambdaFunctionTestCase(TestCase):
         self.s3.Object(self.bucket, 'pdf/2646152').upload_file(f'{self.test_dir}/pdf/2646152')
         self.s3.Object(self.bucket, 'pdf/2646153').upload_file(f'{self.test_dir}/pdf/2646153')
 
-        key = 'zip/officer_1.zip'
+        key = 'zip/Jerome_Finnigan.zip'
         lambda_handler(
             event={
                 'key': key,
