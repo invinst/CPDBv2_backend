@@ -22,7 +22,20 @@ else
     exit 1
 fi
 
+if [ -z "$2" ]; then
+    echo "Must specify kept cronjobs as second argument."
+    exit 1
+else
+    KEPT_CRONJOBS="$2"
+fi
+
+echo "Kept cronjobs: $KEPT_CRONJOBS"
+
 for cronjob_name in $(kubectl get cronjobs -o custom-columns=:.metadata.name -n $NAMESPACE)
 do
-    kubectl delete cronjob $cronjob_name -n $NAMESPACE &
+    system_cronjob_name="${cronjob_name//-/_}"
+    if ! [[ " ${KEPT_CRONJOBS[*]} " == *"$system_cronjob_name"* ]];
+    then
+      kubectl delete cronjob $cronjob_name -n $NAMESPACE &
+    fi
 done
