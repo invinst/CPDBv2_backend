@@ -4,7 +4,7 @@ from data.models.common import TimeStampsModel
 
 
 class Pinboard(TimeStampsModel):
-    title = models.CharField(max_length=255, default='')
+    title = models.CharField(max_length=255, default='', blank=True)
     officers = models.ManyToManyField('data.Officer')
     allegations = models.ManyToManyField('data.Allegation')
-    description = models.TextField(blank=True)
+    description = models.TextField(default='', blank=True)
