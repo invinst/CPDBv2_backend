@@ -29,6 +29,7 @@ DJANGO_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.sitemaps',
 )
 
 THIRD_PARTY_APPS = (
@@ -67,6 +68,7 @@ LOCAL_APPS = (
     'social_graph',
     'xlsx',
     'tracker',
+    'sitemap',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
