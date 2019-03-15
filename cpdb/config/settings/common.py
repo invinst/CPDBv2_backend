@@ -19,6 +19,8 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='django')
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1
+
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
@@ -30,6 +32,7 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'django.contrib.sitemaps',
+    'django.contrib.sites',
 )
 
 THIRD_PARTY_APPS = (
