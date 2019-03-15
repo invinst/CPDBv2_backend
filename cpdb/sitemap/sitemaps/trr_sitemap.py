@@ -8,7 +8,7 @@ class TRRSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return TRR.objects.all()[:2]
+        return TRR.objects.all().order_by('id')
 
     def lastmod(self, obj):
         return obj.updated_at

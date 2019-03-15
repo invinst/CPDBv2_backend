@@ -9,7 +9,7 @@ class AttachmentSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)[:2]
+        return AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT).order_by('id')
 
     def lastmod(self, obj):
         return obj.updated_at

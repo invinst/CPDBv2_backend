@@ -8,7 +8,7 @@ class AllegationSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Allegation.objects.all()[:2]
+        return Allegation.objects.all().order_by('-coaccused_count')
 
     def lastmod(self, obj):
         return obj.updated_at

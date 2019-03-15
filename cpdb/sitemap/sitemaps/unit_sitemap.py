@@ -8,7 +8,7 @@ class UnitSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return PoliceUnit.objects.all()[:2]
+        return PoliceUnit.objects.all().order_by('unit_name')
 
     def lastmod(self, obj):
         return obj.updated_at

@@ -43,6 +43,14 @@ from social_graph.views import SocialGraphViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
 
+from django.contrib.sitemaps.views import sitemap, index
+from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
+from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
+from sitemap.sitemaps.officer_sitemap import OfficerSitemap
+from sitemap.sitemaps.static_page_sitemap import StaticPageSiteMap
+from sitemap.sitemaps.trr_sitemap import TRRSitemap
+from sitemap.sitemaps.unit_sitemap import UnitSitemap
+
 
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
@@ -74,6 +82,15 @@ router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name=
 router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
 
+sitemaps = {
+    'static': StaticPageSiteMap,
+    'officer': OfficerSitemap,
+    'allegation': AllegationSitemap,
+    'trr': TRRSitemap,
+    'unit': UnitSitemap,
+    'attachment': AttachmentSitemap,
+}
+
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
     # The index_redirect url is redirecting 'admin' without slash too, we need to manually do this.
@@ -86,7 +103,7 @@ urlpatterns = [
     re_path(
         r'^reset-password-complete/$',
         auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    re_path(r'^sitemap.xml', include('sitemap.urls')),
+    re_path(r'^sitemap', include('sitemap.urls')),
     re_path(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
