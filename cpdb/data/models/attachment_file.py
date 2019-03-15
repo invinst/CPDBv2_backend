@@ -44,6 +44,9 @@ class AttachmentFile(TimeStampsModel):
     text_content = models.TextField(blank=True)
     pages = models.IntegerField(default=0)
 
+    pending_documentcloud_id = models.CharField(max_length=255, null=True)
+    upload_fail_attempts = models.IntegerField(default=0)
+
     objects = BulkUpdateManager()
     showing = ShownAttachmentManager()
 
