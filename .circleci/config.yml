@@ -230,13 +230,7 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=(
-              'update_documents',
-              'crawl_copa_data',
-              'upload_document_requests',
-              'update_attachment_downloads_and_views_count',
-              'update_titles_to_documentcloud'
-            )
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud')
             if [ $CIRCLE_BRANCH == "master" ]
             then
               bin/cleanup_cronjobs.sh --production "$kept_crobjobs"
