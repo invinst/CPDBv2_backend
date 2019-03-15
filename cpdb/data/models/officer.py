@@ -100,7 +100,7 @@ class Officer(TimeStampsModel, TaggableModel):
         return f'/officer/{self.pk}/{slugify(self.full_name)}/'
 
     def get_absolute_url(self):
-        return f'/officer/{self.pk}/{slugify(self.full_name)}/'
+        return self.v2_to
 
     @property
     def abbr_name(self):
