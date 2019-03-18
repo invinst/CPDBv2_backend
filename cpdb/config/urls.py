@@ -43,14 +43,6 @@ from social_graph.views import SocialGraphViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
 
-from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
-from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
-from sitemap.sitemaps.officer_sitemap import OfficerSitemap
-from sitemap.sitemaps.static_page_sitemap import StaticPageSiteMap
-from sitemap.sitemaps.trr_sitemap import TRRSitemap
-from sitemap.sitemaps.unit_sitemap import UnitSitemap
-
-
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'vftg', VFTGViewSet, base_name='vftg')
 router_v1.register(r'suggestion', SearchV1ViewSet, base_name='suggestion')
@@ -80,15 +72,6 @@ router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph'
 router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
 router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
-
-sitemaps = {
-    'static': StaticPageSiteMap,
-    'officer': OfficerSitemap,
-    'allegation': AllegationSitemap,
-    'trr': TRRSitemap,
-    'unit': UnitSitemap,
-    'attachment': AttachmentSitemap,
-}
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

@@ -44,3 +44,7 @@ class TRRTestCase(TestCase):
     def test_v2_to(self):
         trr = TRRFactory()
         expect(trr.v2_to).to.eq(f'/trr/{trr.id}/')
+
+    def test_get_absolute_url(self):
+        trr = TRRFactory()
+        expect(trr.get_absolute_url()).to.eq(f'/trr/{trr.id}/')
