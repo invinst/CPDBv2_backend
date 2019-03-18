@@ -43,7 +43,6 @@ from social_graph.views import SocialGraphViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
 
-from django.contrib.sitemaps.views import sitemap, index
 from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
 from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
 from sitemap.sitemaps.officer_sitemap import OfficerSitemap

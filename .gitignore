@@ -72,3 +72,6 @@ pg-credentials.json
 # XLSX and CSV temporary files
 /*.csv
 /*.xlsx
+
+# Sitemap file
+/sitemap.xml
