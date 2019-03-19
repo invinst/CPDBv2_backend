@@ -30,7 +30,8 @@ class BaseAttachmentImporter(object):
         aws.s3.put_object(
             Body='\n'.join(self.log_data).encode(),
             Bucket=settings.S3_BUCKET_CRAWLER_LOG,
-            Key=log_key
+            Key=log_key,
+            ContentType='text/plain'
         )
         return log_key
 
