@@ -5,7 +5,6 @@ metadata:
   name: cpdp-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   tls:
     - hosts:
@@ -21,10 +20,10 @@ spec:
             backend:
               serviceName: gunicorn
               servicePort: 80
-          - path: /sitemap.*.xml
-              backend:
-                serviceName: gunicorn
-                servicePort: 80
+          - path: /sitemap
+            backend:
+              serviceName: gunicorn
+              servicePort: 80
           - path: /
             backend:
               serviceName: desktop-frontend
