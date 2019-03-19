@@ -1,12 +1,17 @@
-from django.test import TestCase, Client
+from datetime import datetime
 
+from django.test import TestCase, Client
+from django.utils import timezone
 from rest_framework import status
+
+from freezegun import freeze_time
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, PoliceUnitFactory, AttachmentFileFactory
 from trr.factories import TRRFactory
 
 
+@freeze_time(datetime(2019, 3, 18, tzinfo=timezone.get_default_timezone()))
 class SitemapViewSetTestCase(TestCase):
     def setUp(self):
         self.client = Client()
