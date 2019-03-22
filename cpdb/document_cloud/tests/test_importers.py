@@ -735,6 +735,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         log_args = shared_aws_mock.s3.put_object.call_args[1]
 
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(
             b'\nCreating 1 attachments'
             b'\nUpdating 4 attachments'
@@ -743,6 +744,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
@@ -791,6 +793,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while SEARCH ATTACHMENTS!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')

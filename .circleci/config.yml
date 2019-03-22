@@ -230,14 +230,17 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud')
             if [ $CIRCLE_BRANCH == "master" ]
             then
+              bin/cleanup_cronjobs.sh --production "$kept_crobjobs"
               bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
             else
+              bin/cleanup_cronjobs.sh --staging "$kept_crobjobs"
               bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
