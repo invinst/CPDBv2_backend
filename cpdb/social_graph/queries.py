@@ -14,6 +14,7 @@ class SocialGraphDataQuery(object):
         self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
         self.coaccused_data = self.calculate_coaccused_data()
         self.list_event = self.get_list_event()
+        self.graph_data = self.get_graph_data()
 
     def _build_query(self):
         officer_ids_string = ", ".join([str(officer.id) for officer in self.officers])
@@ -45,3 +46,10 @@ class SocialGraphDataQuery(object):
         events = list({str(row['incident_date']) for row in self.coaccused_data})
         events.sort()
         return events
+
+    def get_graph_data(self):
+        return {
+            'officers': [{'full_name': officer.full_name, 'id': officer.id} for officer in self.officers],
+            'coaccused_data': self.coaccused_data,
+            'list_event': self.list_event
+        }
