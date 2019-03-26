@@ -9,6 +9,14 @@ from airtable_integration.services.document_request_service import (
 class Command(BaseCommand):
     help = 'Upload new document requests into FOIA airtable'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--all',
+            action='store_true',
+            dest='all',
+            help='Update all AirTable rows',
+        )
+
     def handle(self, *args, **options):
-        CRRequestAirTableUploader.upload()
-        TRRRequestAirTableUploader.upload()
+        CRRequestAirTableUploader.upload(options['all'])
+        TRRRequestAirTableUploader.upload(options['all'])
