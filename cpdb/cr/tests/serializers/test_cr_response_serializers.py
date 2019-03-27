@@ -19,7 +19,9 @@ from data.factories import (
     OfficerFactory,
     OfficerAllegationFactory,
     PoliceWitnessFactory,
-    OfficerBadgeNumberFactory, InvestigatorFactory)
+    OfficerBadgeNumberFactory,
+    InvestigatorFactory
+)
 
 
 class CRSerializerTestCase(TestCase):
