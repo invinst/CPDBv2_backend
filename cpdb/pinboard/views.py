@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 
 from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
+from pinboard.queries import GeographyDataQuery
 from social_graph.queries import SocialGraphDataQuery
 from .models import Pinboard
 from .serializers import PinboardSerializer
@@ -47,3 +48,10 @@ class PinboardViewSet(
         )
 
         return Response(social_graph_data_query.graph_data)
+
+    @detail_route(methods=['get'], url_path='geographic-data')
+    def geographic_data(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        return Response(GeographyDataQuery(pinboard.all_officers).execute())
