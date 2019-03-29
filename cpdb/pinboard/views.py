@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404
 
 from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
 from social_graph.queries import SocialGraphDataQuery
+from pinboard.serializers.pinboard_serializer import PinboardSerializer
 from .models import Pinboard
-from .serializers import PinboardSerializer
 
 
 class PinboardViewSet(
