@@ -25,13 +25,19 @@ class OfficerCardSerializer(serializers.ModelSerializer):
 
 
 class AllegationSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='most_common_category.category')
+    category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     officers = serializers.SerializerMethodField()
 
     def get_officers(self, obj):
         officers = [officer_allegation.officer for officer_allegation in obj.prefetch_officer_allegations]
         return OfficerCardSerializer(officers, many=True).data
+
+    def get_category(self, obj):
+        try:
+            return obj.most_common_category.category
+        except AttributeError:
+            return 'Unknown'
 
     class Meta:
         model = Allegation
@@ -45,10 +51,7 @@ class AllegationSerializer(serializers.ModelSerializer):
 
 
 class DocumentCardSerializer(serializers.ModelSerializer):
-    allegation = serializers.SerializerMethodField()
-
-    def get_allegation(self, obj):
-        return AllegationSerializer(obj.allegation).data
+    allegation = AllegationSerializer()
 
     class Meta:
         model = AttachmentFile
@@ -58,6 +61,19 @@ class DocumentCardSerializer(serializers.ModelSerializer):
             'url',
             'allegation',
         )
+
+
+class AllegationCardSerializer(AllegationSerializer):
+    point = serializers.SerializerMethodField()
+
+    def get_point(self, obj):
+        if obj.point is not None:
+            return {'lon': obj.point.x, 'lat': obj.point.y}
+        else:
+            return None
+
+    class Meta(AllegationSerializer.Meta):
+        fields = AllegationSerializer.Meta.fields + ('point',)
 
 
 class PinboardSerializer(serializers.ModelSerializer):
@@ -81,14 +97,9 @@ class PinboardSerializer(serializers.ModelSerializer):
         many=True,
         queryset=TRR.objects.all()
     )
-    relevant_coaccusals = serializers.SerializerMethodField()
-    relevant_documents = serializers.SerializerMethodField()
-
-    def get_relevant_coaccusals(self, obj):
-        return OfficerCardSerializer(obj.relevant_coaccusals, many=True).data
-
-    def get_relevant_documents(self, obj):
-        return DocumentCardSerializer(obj.relevant_documents, many=True).data
+    relevant_documents = DocumentCardSerializer(many=True)
+    relevant_coaccusals = OfficerCardSerializer(many=True)
+    relevant_complaints = AllegationCardSerializer(many=True)
 
     class Meta:
         model = Pinboard
@@ -99,8 +110,9 @@ class PinboardSerializer(serializers.ModelSerializer):
             'crids',
             'trr_ids',
             'description',
-            'relevant_coaccusals',
             'relevant_documents',
+            'relevant_coaccusals',
+            'relevant_complaints',
         )
 
 

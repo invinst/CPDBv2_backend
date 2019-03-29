@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch
 
-from data.models import Officer, AttachmentFile, OfficerAllegation
+from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
 
@@ -28,7 +28,7 @@ class Pinboard(TimeStampsModel):
     def relevant_documents(self):
         officer_ids = self.officers.all().values_list('id', flat=True)
         crids = self.allegations.all().values_list('crid', flat=True)
-        documents = AttachmentFile.showing.filter(
+        return AttachmentFile.showing.filter(
             Q(allegation__in=crids) |
             Q(allegation__officerallegation__officer__in=officer_ids) |
             Q(allegation__investigatorallegation__investigator__officer__in=officer_ids) |
@@ -43,7 +43,6 @@ class Pinboard(TimeStampsModel):
                 to_attr='prefetch_officer_allegations'
             )
         ).order_by('allegation__incident_date')
-        return documents
 
     @property
     def relevant_coaccusals(self):
@@ -54,5 +53,22 @@ class Pinboard(TimeStampsModel):
             Q(officerallegation__allegation__in=crids)
         ).distinct().exclude(id__in=officer_ids).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
+    @property
     def relevant_complaints(self):
-        pass
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        crids = self.allegations.all().values_list('crid', flat=True)
+        return Allegation.objects.filter(
+            Q(officerallegation__officer__in=officer_ids) |
+            Q(investigatorallegation__investigator__officer__in=officer_ids) |
+            Q(police_witnesses__in=officer_ids)
+        ).exclude(
+            crid__in=crids
+        ).distinct().select_related(
+            'most_common_category',
+        ).prefetch_related(
+            Prefetch(
+                'officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('officer').all(),
+                to_attr='prefetch_officer_allegations'
+            )
+        ).order_by('incident_date')
