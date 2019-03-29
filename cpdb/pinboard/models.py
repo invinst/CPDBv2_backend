@@ -23,3 +23,13 @@ class Pinboard(TimeStampsModel):
             Q(trr__id__in=trr_ids) |
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
+
+    def relevant_documents(self):
+        pass
+
+    @property
+    def relevant_coaccusals(self):
+        return [officer.id for officer in self.officers.all()]
+
+    def relevant_complaints(self):
+        pass
