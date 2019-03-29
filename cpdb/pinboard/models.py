@@ -29,7 +29,12 @@ class Pinboard(TimeStampsModel):
 
     @property
     def relevant_coaccusals(self):
-        return [officer.id for officer in self.officers.all()]
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        crids = self.allegations.all().values_list('crid', flat=True)
+        return Officer.objects.filter(
+            Q(officerallegation__allegation__officerallegation__officer_id__in=officer_ids) |
+            Q(officerallegation__allegation__in=crids)
+        ).distinct().exclude(id__in=officer_ids).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
 
     def relevant_complaints(self):
         pass
