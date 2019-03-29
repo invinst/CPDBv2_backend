@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
-from django.db.models import Q
+from django.db.models import Q, Count, Prefetch
 
-from data.models import Officer
+from data.models import Officer, AttachmentFile, OfficerAllegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
 
@@ -24,8 +24,26 @@ class Pinboard(TimeStampsModel):
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
 
+    @property
     def relevant_documents(self):
-        pass
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        crids = self.allegations.all().values_list('crid', flat=True)
+        documents = AttachmentFile.showing.filter(
+            Q(allegation__in=crids) |
+            Q(allegation__officerallegation__officer__in=officer_ids) |
+            Q(allegation__investigatorallegation__investigator__officer__in=officer_ids) |
+            Q(allegation__police_witnesses__in=officer_ids)
+        ).distinct().select_related(
+            'allegation',
+            'allegation__most_common_category',
+        ).prefetch_related(
+            Prefetch(
+                'allegation__officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('officer').all(),
+                to_attr='prefetch_officer_allegations'
+            )
+        ).order_by('allegation__incident_date')
+        return documents
 
     @property
     def relevant_coaccusals(self):

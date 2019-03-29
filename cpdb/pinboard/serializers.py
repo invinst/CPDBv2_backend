@@ -1,18 +1,14 @@
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
-from data.models import Officer, Allegation
+from data.models import Officer, Allegation, AttachmentFile
 from trr.models import TRR
 from .models import Pinboard
 
 
 class OfficerCardSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-    coaccusal_count = serializers.IntegerField()
+    coaccusal_count = serializers.IntegerField(allow_null=True)
     percentile = serializers.SerializerMethodField()
-
-    def get_full_name(self, obj):
-        return ' '.join([obj.first_name, obj.last_name])
 
     def get_percentile(self, obj):
         return OfficerPercentileSerializer(obj).data
@@ -25,6 +21,42 @@ class OfficerCardSerializer(serializers.ModelSerializer):
             'full_name',
             'coaccusal_count',
             'percentile',
+        )
+
+
+class AllegationSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='most_common_category.category')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    officers = serializers.SerializerMethodField()
+
+    def get_officers(self, obj):
+        officers = [officer_allegation.officer for officer_allegation in obj.prefetch_officer_allegations]
+        return OfficerCardSerializer(officers, many=True).data
+
+    class Meta:
+        model = Allegation
+        fields = (
+            'crid',
+            'incident_date',
+            'v2_to',
+            'category',
+            'officers',
+        )
+
+
+class DocumentCardSerializer(serializers.ModelSerializer):
+    allegation = serializers.SerializerMethodField()
+
+    def get_allegation(self, obj):
+        return AllegationSerializer(obj.allegation).data
+
+    class Meta:
+        model = AttachmentFile
+        fields = (
+            'id',
+            'preview_image_url',
+            'url',
+            'allegation',
         )
 
 
@@ -50,9 +82,13 @@ class PinboardSerializer(serializers.ModelSerializer):
         queryset=TRR.objects.all()
     )
     relevant_coaccusals = serializers.SerializerMethodField()
+    relevant_documents = serializers.SerializerMethodField()
 
     def get_relevant_coaccusals(self, obj):
         return OfficerCardSerializer(obj.relevant_coaccusals, many=True).data
+
+    def get_relevant_documents(self, obj):
+        return DocumentCardSerializer(obj.relevant_documents, many=True).data
 
     class Meta:
         model = Pinboard
@@ -64,6 +100,7 @@ class PinboardSerializer(serializers.ModelSerializer):
             'trr_ids',
             'description',
             'relevant_coaccusals',
+            'relevant_documents',
         )
 
 
