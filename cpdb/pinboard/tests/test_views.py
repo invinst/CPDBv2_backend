@@ -98,6 +98,9 @@ class PinboardAPITestCase(APITestCase):
             'crids': ['456def'],
             'trr_ids': [1, 2],
             'description': 'def',
+            'relevant_documents': [],
+            'relevant_coaccusals': [],
+            'relevant_complaints': [],
         })
 
         pinboard = Pinboard.objects.get(id=pinboard_id)
