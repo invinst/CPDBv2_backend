@@ -10,17 +10,15 @@ class PinboardSerializer(serializers.ModelSerializer):
         max_length=8,
         read_only=True
     )
-    crids = serializers.SlugRelatedField(
+    crids = serializers.PrimaryKeyRelatedField(
         source='allegations',
         many=True,
-        queryset=Allegation.objects.all(),
-        slug_field='crid'
+        queryset=Allegation.objects.all()
     )
-    officer_ids = serializers.SlugRelatedField(
+    officer_ids = serializers.PrimaryKeyRelatedField(
         source='officers',
         many=True,
-        queryset=Officer.objects.all(),
-        slug_field='id'
+        queryset=Officer.objects.all()
     )
 
     class Meta:

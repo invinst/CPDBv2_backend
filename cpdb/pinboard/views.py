@@ -25,3 +25,8 @@ class PinboardViewSet(
                str(request.session['pinboard-id']) == str(pk):
             return super().update(request, pk)
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def retrieve(self, request, pk):
+        pinboard = self.get_object()
+        serializer_class = self.get_serializer_class()
+        return Response(serializer_class(pinboard).data)
