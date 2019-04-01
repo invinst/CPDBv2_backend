@@ -10,29 +10,42 @@ from pinboard.factories import PinboardFactory
 
 class PinboardAPITestCase(APITestCase):
     def test_retrieve_pinboard(self):
-        officer1 = OfficerFactory(id=1)
-        officer2 = OfficerFactory(id=2)
-
-        allegation1 = AllegationFactory(crid='123abc')
-
-        PinboardFactory.create(
-            id=1,
+        PinboardFactory(
+            id='f871a13f',
             title='My Pinboard',
-            officers=(officer1, officer2),
-            allegations=(allegation1,),
             description='abc',
         )
 
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': '1'}))
-
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'id': 1,
+            'id': 'f871a13f',
             'title': 'My Pinboard',
-            'officer_ids': [1, 2],
-            'crids': ['123abc'],
+            'officer_ids': [],
+            'crids': [],
             'description': 'abc',
         })
+
+        # `id` is case-insensitive
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'F871A13F'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': 'f871a13f',
+            'title': 'My Pinboard',
+            'officer_ids': [],
+            'crids': [],
+            'description': 'abc',
+        })
+
+    def test_retrieve_pinboard_not_found(self):
+        PinboardFactory(
+            id='d91ba25d',
+            title='My Pinboard',
+            description='abc',
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'a4f34019'}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
     def test_update_pinboard_in_the_same_session(self):
         OfficerFactory(id=1)
@@ -110,7 +123,7 @@ class PinboardAPITestCase(APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_403_FORBIDDEN)
 
-    def test_create_pinboard(self):
+    def test_create_pinboard_without_id(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
 
@@ -127,8 +140,10 @@ class PinboardAPITestCase(APITestCase):
         )
 
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
         expect(response.data).to.eq({
-            'id': 1,
+            'id': response.data['id'],
             'title': 'My Pinboard',
             'officer_ids': [1, 2],
             'crids': ['123abc'],
@@ -142,3 +157,37 @@ class PinboardAPITestCase(APITestCase):
         expect(pinboard[0].description).to.eq('abc')
         expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2})
         expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
+
+    def test_create_pinboard_with_valid_id(self):
+        AllegationFactory(crid='123abc')
+        ignored_id = '1234ab'
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'id': ignored_id,
+                'title': 'My Pinboard',
+                'officer_ids': [],
+                'crids': ['123abc'],
+                'description': 'abc',
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_201_CREATED)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': 'My Pinboard',
+            'officer_ids': [],
+            'crids': ['123abc'],
+            'description': 'abc'
+        })
+        expect(response.data['id']).to.ne(ignored_id)
+        expect(response.data['id']).to.have.length(8)
+
+        expect(Pinboard.objects.count()).to.eq(1)
+        pinboard = Pinboard.objects.all()
+
+        expect(pinboard[0].title).to.eq('My Pinboard')
+        expect(pinboard[0].description).to.eq('abc')

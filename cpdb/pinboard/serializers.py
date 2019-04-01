@@ -5,6 +5,11 @@ from .models import Pinboard
 
 
 class PinboardSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(
+        min_length=8,
+        max_length=8,
+        read_only=True
+    )
     crids = serializers.SlugRelatedField(
         source='allegations',
         many=True,
