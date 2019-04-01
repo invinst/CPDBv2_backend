@@ -123,7 +123,7 @@ class PinboardAPITestCase(APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_403_FORBIDDEN)
 
-    def test_create_pinboard_without_id(self):
+    def test_create_pinboard(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
 
@@ -158,8 +158,7 @@ class PinboardAPITestCase(APITestCase):
         expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2})
         expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
 
-    def test_create_pinboard_with_valid_id(self):
-        AllegationFactory(crid='123abc')
+    def test_create_pinboard_ignore_id(self):
         ignored_id = '1234ab'
 
         response = self.client.post(
@@ -168,7 +167,7 @@ class PinboardAPITestCase(APITestCase):
                 'id': ignored_id,
                 'title': 'My Pinboard',
                 'officer_ids': [],
-                'crids': ['123abc'],
+                'crids': [],
                 'description': 'abc',
             }
         )
@@ -176,18 +175,13 @@ class PinboardAPITestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
         expect(response.data['id']).to.be.a.string()
         expect(response.data['id']).to.have.length(8)
+        expect(response.data['id']).to.ne(ignored_id)
         expect(response.data).to.eq({
             'id': response.data['id'],
             'title': 'My Pinboard',
             'officer_ids': [],
-            'crids': ['123abc'],
+            'crids': [],
             'description': 'abc'
         })
-        expect(response.data['id']).to.ne(ignored_id)
-        expect(response.data['id']).to.have.length(8)
 
-        expect(Pinboard.objects.count()).to.eq(1)
-        pinboard = Pinboard.objects.all()
-
-        expect(pinboard[0].title).to.eq('My Pinboard')
-        expect(pinboard[0].description).to.eq('abc')
+        expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
