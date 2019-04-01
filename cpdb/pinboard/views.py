@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import detail_route
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
@@ -19,6 +20,7 @@ class PinboardViewSet(
     queryset = Pinboard.objects.all()
     serializer_class = PinboardSerializer
     permission_classes = (AllowAny,)
+    pagination_class = LimitOffsetPagination
 
     def create(self, request):
         response = super().create(request)
@@ -54,4 +56,7 @@ class PinboardViewSet(
         queryset = Pinboard.objects.all()
         pinboard = get_object_or_404(queryset, id=pk)
 
-        return Response(OfficerCardSerializer(pinboard.relevant_coaccusals, many=True).data)
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(pinboard.relevant_coaccusals, request, view=self)
+        serializer = OfficerCardSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
