@@ -2,8 +2,6 @@ from rest_framework import serializers
 
 from data.models import Allegation, Officer
 from pinboard.models import Pinboard
-from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
-from pinboard.serializers.document_card_serializer import DocumentCardSerializer
 from shared.serializer import NoNullSerializer
 from trr.models import TRR
 
@@ -29,8 +27,6 @@ class PinboardSerializer(NoNullSerializer):
         many=True,
         queryset=TRR.objects.all()
     )
-    relevant_documents = DocumentCardSerializer(many=True, read_only=True)
-    relevant_complaints = AllegationCardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pinboard
@@ -41,7 +37,4 @@ class PinboardSerializer(NoNullSerializer):
             'crids',
             'trr_ids',
             'description',
-            'relevant_documents',
-            'relevant_coaccusals',
-            'relevant_complaints',
         )

@@ -6,9 +6,11 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 
 from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
-from pinboard.serializers.officer_card_serializer import OfficerCardSerializer
 from social_graph.queries import SocialGraphDataQuery
 from pinboard.serializers.pinboard_serializer import PinboardSerializer
+from pinboard.serializers.officer_card_serializer import OfficerCardSerializer
+from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
+from pinboard.serializers.document_card_serializer import DocumentCardSerializer
 from .models import Pinboard
 
 
@@ -57,6 +59,26 @@ class PinboardViewSet(
         pinboard = get_object_or_404(queryset, id=pk)
 
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(pinboard.relevant_coaccusals, request, view=self)
-        serializer = OfficerCardSerializer(page, many=True)
+        relevant_coaccusals = paginator.paginate_queryset(pinboard.relevant_coaccusals, request, view=self)
+        serializer = OfficerCardSerializer(relevant_coaccusals, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], url_path='relevant-documents')
+    def relevant_documents(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        paginator = self.pagination_class()
+        relevant_documents = paginator.paginate_queryset(pinboard.relevant_documents, request, view=self)
+        serializer = DocumentCardSerializer(relevant_documents, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], url_path='relevant-complaints')
+    def relevant_complaints(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        paginator = self.pagination_class()
+        relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
+        serializer = AllegationCardSerializer(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)

@@ -42,7 +42,7 @@ class Pinboard(TimeStampsModel):
                 queryset=OfficerAllegation.objects.select_related('officer').all(),
                 to_attr='prefetch_officer_allegations'
             )
-        ).order_by('allegation__incident_date')
+        ).order_by('-allegation__incident_date')
 
     @property
     def relevant_coaccusals(self):
@@ -71,4 +71,4 @@ class Pinboard(TimeStampsModel):
                 queryset=OfficerAllegation.objects.select_related('officer').all(),
                 to_attr='prefetch_officer_allegations'
             )
-        ).order_by('incident_date')
+        ).order_by('-incident_date')
