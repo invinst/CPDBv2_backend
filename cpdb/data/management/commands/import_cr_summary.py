@@ -1,6 +1,7 @@
 import logging
 from csv import DictReader
 
+import sys
 from django.core.management import BaseCommand
 
 from tqdm import tqdm
@@ -28,5 +29,6 @@ class Command(BaseCommand):
                         cr.summary = summary
                         cr.save()
                 except Allegation.DoesNotExist:
-                    # TODO: since it is not enough data, we not yet import to real db
-                    logger.warning(f"cr {row['crid']} does not exist")
+                    if 'test' not in sys.argv:  # pragma: no cover
+                        # TODO: since it is not enough data, we not yet import to real db
+                        logger.warning(f"cr {row['crid']} does not exist")
