@@ -239,6 +239,7 @@ jobs:
               bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --production update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --production rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
             else
               bin/cleanup_cronjobs.sh --staging "$kept_crobjobs"
               bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
@@ -246,6 +247,7 @@ jobs:
               bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
               bin/run_cronjob.sh --staging update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
+              bin/run_cronjob.sh --staging rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
             fi
 
   build_cpdpbot:

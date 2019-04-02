@@ -16,6 +16,7 @@ from data.factories import (
     InvestigatorFactory,
     InvestigatorAllegationFactory,
     OfficerAllegationFactory,
+    AttachmentFileFactory,
 )
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory
@@ -71,6 +72,29 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results).to.have.length(1)
 
         expect(results[0]['crid']).to.eq('123')
+
+    def test_search_cr_by_attachment_text_content(self):
+        allegation_123 = AllegationFactory(crid='123')
+        AllegationFactory(crid='456')
+        AttachmentFileFactory(
+            allegation=allegation_123,
+            show=True,
+            text_content='the officer pointed a gun at the victim'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': 'gun',
+        })
+
+        results = response.data['CR']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['crid']).to.eq('123')
+        expect(results[0]['highlight']['text_content'][0]).to.contain('a <em>gun</em> at')
 
     def test_search_date_cr_result(self):
         AllegationFactory(crid='123', incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
