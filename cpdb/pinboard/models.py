@@ -51,7 +51,9 @@ class Pinboard(TimeStampsModel):
         return Officer.objects.filter(
             Q(officerallegation__allegation__officerallegation__officer_id__in=officer_ids) |
             Q(officerallegation__allegation__in=crids)
-        ).distinct().exclude(id__in=officer_ids).annotate(coaccusal_count=Count('id')).order_by('-coaccusal_count')
+        ).distinct().exclude(id__in=officer_ids).annotate(
+            coaccusal_count=Count('officerallegation', distinct=True)
+        ).order_by('-coaccusal_count')
 
     @property
     def relevant_complaints(self):
