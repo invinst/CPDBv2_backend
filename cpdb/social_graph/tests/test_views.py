@@ -91,7 +91,10 @@ class SocialGraphViewSetTestCase(APITestCase):
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
+        expect(response.data['officers']).to.contain(*expected_data['officers'])
+        expect(len(response.data['officers'])).to.eq(len(expected_data['officers']))
+        expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
+        expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
     def test_list_with_specific_threshold_and_show_civil_only(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
@@ -171,7 +174,10 @@ class SocialGraphViewSetTestCase(APITestCase):
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
+        expect(response.data['officers']).to.contain(*expected_data['officers'])
+        expect(len(response.data['officers'])).to.eq(len(expected_data['officers']))
+        expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
+        expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
     def test_list_with_unit_id_param(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
@@ -291,4 +297,7 @@ class SocialGraphViewSetTestCase(APITestCase):
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
+        expect(response.data['officers']).to.contain(*expected_data['officers'])
+        expect(len(response.data['officers'])).to.eq(len(expected_data['officers']))
+        expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
+        expect(response.data['list_event']).to.eq(expected_data['list_event'])

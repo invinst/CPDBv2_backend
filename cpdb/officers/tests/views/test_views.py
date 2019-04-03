@@ -712,7 +712,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.return_value = {}
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        officer = OfficerFactory(id=123)
+        officer = OfficerFactory(id=123, first_name='Jerome', last_name='Finnigan')
 
         allegation1 = AllegationFactory()
         OfficerAllegationFactory(officer=officer, allegation=allegation1)
@@ -731,13 +731,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq('presigned_url')
         aws_mock.s3.get_object.assert_called_with(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_123_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
         aws_mock.s3.generate_presigned_url.assert_called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',
-                'Key': 'zip_with_docs/Officer_123_with_docs.zip',
+                'Key': 'zip_with_docs/Jerome_Finnigan_with_docs.zip',
             }
         )
 
@@ -755,7 +755,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.side_effect = exception
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        OfficerFactory(id=123)
+        OfficerFactory(id=123, first_name='Jerome', last_name='Finnigan')
 
         base_url = reverse('api-v2:officers-request-download', kwargs={'pk': 123})
         query = urlencode({'with-docs': 'true'})
@@ -765,7 +765,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq('')
         aws_mock.s3.get_object.assert_called_with(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_123_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
         expect(aws_mock.s3.generate_presigned_url.called).to.be.false()
 
@@ -775,7 +775,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         aws_mock.s3.get_object.return_value = {}
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        OfficerFactory(id=123)
+        OfficerFactory(id=123, first_name='Jerome', last_name='Finnigan')
 
         base_url = reverse('api-v2:officers-request-download', kwargs={'pk': 123})
         query = urlencode({'with-docs': 'false'})
@@ -785,13 +785,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         expect(response.data).to.eq('presigned_url')
         aws_mock.s3.get_object.assert_called_with(
             Bucket='officer_content_bucket',
-            Key='zip/Officer_123.zip'
+            Key='zip/Jerome_Finnigan.zip'
         )
         aws_mock.s3.generate_presigned_url.assert_called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',
-                'Key': 'zip/Officer_123.zip',
+                'Key': 'zip/Jerome_Finnigan.zip',
             }
         )
 
@@ -834,7 +834,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
@@ -856,13 +856,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         aws_mock.s3.get_object.assert_any_call(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_1_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
 
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args_list[0]
         expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
-            'key': 'zip_with_docs/Officer_1_with_docs.zip',
+            'key': 'zip_with_docs/Jerome_Finnigan_with_docs.zip',
             'bucket': 'officer_content_bucket',
             'file_map': {
                 'xlsx/1/accused.xlsx': 'accused.xlsx',
@@ -876,13 +876,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         aws_mock.s3.get_object.assert_any_call(
             Bucket='officer_content_bucket',
-            Key='zip/Officer_1.zip'
+            Key='zip/Jerome_Finnigan.zip'
         )
 
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args_list[1]
         expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
-            'key': 'zip/Officer_1.zip',
+            'key': 'zip/Jerome_Finnigan.zip',
             'bucket': 'officer_content_bucket',
             'file_map': {
                 'xlsx/1/accused.xlsx': 'accused.xlsx',
@@ -916,7 +916,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
@@ -938,10 +938,10 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         aws_mock.s3.get_object.assert_any_call(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_1_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
         aws_mock.s3.get_object.assert_any_call(
             Bucket='officer_content_bucket',
-            Key='zip/Officer_1.zip'
+            Key='zip/Jerome_Finnigan.zip'
         )
         expect(aws_mock.lambda_client.invoke_async.called).to.be.false()

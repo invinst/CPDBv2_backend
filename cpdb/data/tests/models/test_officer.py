@@ -466,26 +466,26 @@ class OfficerTestCase(TestCase):
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip')
     def test_get_zip_filename(self):
-        officer = OfficerFactory(id=1)
-        expect(officer.get_zip_filename(with_docs=False)).to.eq('zip/Officer_1.zip')
-        expect(officer.get_zip_filename(with_docs=True)).to.eq('zip_with_docs/Officer_1_with_docs.zip')
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+        expect(officer.get_zip_filename(with_docs=False)).to.eq('zip/Jerome_Finnigan.zip')
+        expect(officer.get_zip_filename(with_docs=True)).to.eq('zip_with_docs/Jerome_Finnigan_with_docs.zip')
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
     @patch('data.models.officer.aws')
     def test_check_zip_file_exist(self, aws_mock):
         aws_mock.s3.get_object.return_value = {}
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
 
         expect(officer.check_zip_file_exist(with_docs=False)).to.be.true()
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
-            Key='zip/Officer_1.zip'
+            Key='zip/Jerome_Finnigan.zip'
         )
 
         expect(officer.check_zip_file_exist(with_docs=True)).to.be.true()
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_1_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip', S3_BUCKET_OFFICER_CONTENT='officer_content_bucket')
@@ -496,7 +496,7 @@ class OfficerTestCase(TestCase):
             operation_name='get_object'
         )
         aws_mock.s3.get_object.side_effect = exception
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(first_name='Jerome', last_name='Finnigan')
 
         expect(officer.check_zip_file_exist(with_docs=False)).to.be.false()
         expect(officer.check_zip_file_exist(with_docs=True)).to.be.false()
@@ -511,7 +511,7 @@ class OfficerTestCase(TestCase):
         other_exception = Exception('some other exception')
 
         aws_mock.s3.get_object.side_effect = [client_exception, other_exception]
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(first_name='Jerome', last_name='Finnigan')
 
         expect(lambda: officer.check_zip_file_exist(with_docs=False)).to.throw(botocore.exceptions.ClientError)
         expect(lambda: officer.check_zip_file_exist(with_docs=True)).to.throw(Exception)
@@ -543,7 +543,7 @@ class OfficerTestCase(TestCase):
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
@@ -565,12 +565,12 @@ class OfficerTestCase(TestCase):
 
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
-            Key='zip_with_docs/Officer_1_with_docs.zip'
+            Key='zip_with_docs/Jerome_Finnigan_with_docs.zip'
         )
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args
         expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
-            'key': 'zip_with_docs/Officer_1_with_docs.zip',
+            'key': 'zip_with_docs/Jerome_Finnigan_with_docs.zip',
             'bucket': 'officer_content_bucket',
             'file_map': {
                 'xlsx/1/accused.xlsx': 'accused.xlsx',
@@ -609,7 +609,7 @@ class OfficerTestCase(TestCase):
         AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
 
         allegation_2 = AllegationFactory(crid='2')
@@ -631,13 +631,13 @@ class OfficerTestCase(TestCase):
 
         expect(aws_mock.s3.get_object).to.be.called_with(
             Bucket='officer_content_bucket',
-            Key='zip/Officer_1.zip'
+            Key='zip/Jerome_Finnigan.zip'
         )
 
         _, kwargs = aws_mock.lambda_client.invoke_async.call_args
         expect(kwargs['FunctionName']).to.eq('createOfficerZipFileTest')
         expect(json.loads(kwargs['InvokeArgs'])).to.eq({
-            'key': 'zip/Officer_1.zip',
+            'key': 'zip/Jerome_Finnigan.zip',
             'bucket': 'officer_content_bucket',
             'file_map': {
                 'xlsx/1/accused.xlsx': 'accused.xlsx',
@@ -652,14 +652,14 @@ class OfficerTestCase(TestCase):
     def test_generate_presigned_zip_url(self, aws_mock):
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
 
         expect(officer.generate_presigned_zip_url(with_docs=True)).to.eq('presigned_url')
         expect(aws_mock.s3.generate_presigned_url).to.be.called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',
-                'Key': 'zip_with_docs/Officer_1_with_docs.zip',
+                'Key': 'zip_with_docs/Jerome_Finnigan_with_docs.zip',
             }
         )
 
@@ -668,13 +668,13 @@ class OfficerTestCase(TestCase):
     def test_generate_presigned_zip_url_without_docs(self, aws_mock):
         aws_mock.s3.generate_presigned_url.return_value = 'presigned_url'
 
-        officer = OfficerFactory(id=1)
+        officer = OfficerFactory(first_name='Jerome', last_name='Finnigan')
 
         expect(officer.generate_presigned_zip_url(with_docs=False)).to.eq('presigned_url')
         expect(aws_mock.s3.generate_presigned_url).to.be.called_with(
             ClientMethod='get_object',
             Params={
                 'Bucket': 'officer_content_bucket',
-                'Key': 'zip/Officer_1.zip',
+                'Key': 'zip/Jerome_Finnigan.zip',
             }
         )

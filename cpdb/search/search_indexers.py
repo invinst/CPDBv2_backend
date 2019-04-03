@@ -6,7 +6,7 @@ from tqdm import tqdm
 from elasticsearch.helpers import bulk
 
 from es_index import es_client
-from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer
+from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer, AttachmentFile
 from search_terms.models import SearchTermItem
 from trr.models import TRR, ActionResponse
 from data.utils.percentile import percentile
@@ -17,7 +17,7 @@ from search.doc_types import (
 from search.indices import autocompletes_alias
 from search.serializers import (
     RacePopulationSerializer, OfficerMostComplaintsSerializer, VictimSerializer,
-    CoaccusedSerializer,
+    CoaccusedSerializer, AttachmentFileSerializer
 )
 from search.utils import chicago_zip_codes
 
@@ -197,6 +197,7 @@ class CrIndexer(BaseIndexer):
         officer_allegations = datum.officer_allegations.filter(
             officer__isnull=False
         ).prefetch_related('officer').order_by('-officer__allegation_count')
+        attachment_files = AttachmentFile.showing.filter(allegation_id=datum.crid).exclude(text_content='')
 
         return {
             'crid': datum.crid,
@@ -209,6 +210,7 @@ class CrIndexer(BaseIndexer):
             'address': datum.address,
             'victims': VictimSerializer(datum.victims, many=True).data,
             'coaccused': CoaccusedSerializer(officer_allegations, many=True).data,
+            'attachment_files': AttachmentFileSerializer(attachment_files, many=True).data,
         }
 
 

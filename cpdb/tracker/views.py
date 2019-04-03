@@ -13,6 +13,7 @@ from data.utils.subqueries import SQCount
 from document_cloud.models import DocumentCrawler
 from .serializers import (
     AttachmentFileListSerializer,
+    AuthenticatedAttachmentFileListSerializer,
     AttachmentFileSerializer,
     AuthenticatedAttachmentFileSerializer,
     UpdateAttachmentFileSerializer,
@@ -46,12 +47,14 @@ class AttachmentViewSet(viewsets.ViewSet):
             match = request.query_params['match']
             queryset = queryset.filter(Q(title__icontains=match) | Q(allegation__crid__icontains=match))
 
+        serializer_class = AuthenticatedAttachmentFileListSerializer
         if request.auth is None:
+            serializer_class = AttachmentFileListSerializer
             queryset = queryset.filter(show=True)
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, request, view=self)
-        serializer = AttachmentFileListSerializer(page, many=True)
+        serializer = serializer_class(page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     def partial_update(self, request, pk):

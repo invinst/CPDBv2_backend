@@ -254,6 +254,106 @@ class AttachmentAPITestCase(APITestCase):
                     'title': 'CRID 1051117 CR',
                     'source_type': 'DOCUMENTCLOUD',
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+                    'crid': '123',
+                    'show': True,
+                    'documents_count': 2,
+                    'file_type': 'document',
+                    'url': 'http://document/link/1',
+                },
+                {
+                    'id': 2,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'Log 1087021 911',
+                    'source_type': 'COPA',
+                    'preview_image_url': None,
+                    'crid': '123',
+                    'show': True,
+                    'documents_count': 2,
+                    'file_type': 'audio',
+                    'url': 'http://audio/link/2',
+                },
+                {
+                    'id': 3,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'Log 1086127 Body Worn Camera #1',
+                    'source_type': 'COPA',
+                    'preview_image_url': None,
+                    'crid': '456',
+                    'show': True,
+                    'documents_count': 1,
+                    'file_type': 'video',
+                    'url': 'http://video/link/3',
+                }
+            ]
+        }
+
+        url = reverse('api-v2:attachments-list', kwargs={})
+        response = self.client.get(url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq(expected_data)
+
+    @freeze_time('2017-01-14 12:00:01')
+    def test_list_attachments_authenticated_user(self):
+        allegation1 = AllegationFactory(crid=123)
+        allegation2 = AllegationFactory(crid=456)
+        AttachmentFileFactory(
+            allegation=allegation1,
+            id=1,
+            file_type='document',
+            title='CRID 1051117 CR',
+            source_type='DOCUMENTCLOUD',
+            preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+            views_count=1,
+            downloads_count=1,
+            url='http://document/link/1',
+        )
+        AttachmentFileFactory(
+            allegation=allegation1,
+            id=2,
+            file_type='audio',
+            title='Log 1087021 911',
+            source_type='COPA',
+            preview_image_url=None,
+            views_count=2,
+            downloads_count=2,
+            url='http://audio/link/2',
+        )
+        AttachmentFileFactory(
+            allegation=allegation2,
+            id=3,
+            file_type='video',
+            title='Log 1086127 Body Worn Camera #1',
+            source_type='COPA',
+            preview_image_url=None,
+            views_count=3,
+            downloads_count=3,
+            url='http://video/link/3',
+        )
+        AttachmentFileFactory(
+            allegation=allegation2,
+            id=4,
+            file_type='video',
+            title='Log 1086127 Body Worn Camera #1',
+            source_type='COPA',
+            preview_image_url=None,
+            views_count=3,
+            downloads_count=3,
+            url='http://video/link/4',
+            show=False
+        )
+
+        expected_data = {
+            'count': 4,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': 1,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'CRID 1051117 CR',
+                    'source_type': 'DOCUMENTCLOUD',
+                    'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
                     'crid': '123',
@@ -289,12 +389,29 @@ class AttachmentAPITestCase(APITestCase):
                     'documents_count': 1,
                     'file_type': 'video',
                     'url': 'http://video/link/3',
+                },
+                {
+                    'id': 4,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'Log 1086127 Body Worn Camera #1',
+                    'source_type': 'COPA',
+                    'preview_image_url': None,
+                    'views_count': 3,
+                    'downloads_count': 3,
+                    'crid': '456',
+                    'show': False,
+                    'documents_count': 1,
+                    'file_type': 'video',
+                    'url': 'http://video/link/4',
                 }
             ]
         }
 
-        url = reverse('api-v2:attachments-list', kwargs={})
-        response = self.client.get(url)
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        base_url = reverse('api-v2:attachments-list')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.get(base_url)
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
@@ -505,7 +622,7 @@ class AttachmentAPITestCase(APITestCase):
         expect(updated_attachment.manually_updated).to.be.true()
 
     @freeze_time('2017-01-14 12:00:01')
-    def test_attachments_filtered_by_cr(self):
+    def test_attachments_filtered_by_cr_unauthenticated_user(self):
         allegation1 = AllegationFactory(crid='1')
         allegation2 = AllegationFactory(crid='2')
 
@@ -549,6 +666,76 @@ class AttachmentAPITestCase(APITestCase):
                     'title': 'CRID 1051117 CR',
                     'source_type': 'DOCUMENTCLOUD',
                     'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+                    'crid': '1',
+                    'show': True,
+                    'documents_count': 1,
+                    'file_type': 'document',
+                    'url': 'http://document/link/1',
+                }
+            ]
+        })
+
+    @freeze_time('2017-01-14 12:00:01')
+    def test_attachments_filtered_by_cr_authenticated_user(self):
+        allegation1 = AllegationFactory(crid='1')
+        allegation2 = AllegationFactory(crid='2')
+
+        AttachmentFileFactory(
+            id=1,
+            file_type='document',
+            title='CRID 1051117 CR',
+            source_type='DOCUMENTCLOUD',
+            preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+            views_count=1,
+            downloads_count=1,
+            allegation=allegation1,
+            url='http://document/link/1',
+        )
+        AttachmentFileFactory(
+            id=2,
+            file_type='audio',
+            title='Log 1087021 911',
+            source_type='COPA',
+            preview_image_url=None,
+            views_count=2,
+            downloads_count=2,
+            allegation=allegation2,
+            url='http://audio/link/2',
+        )
+        AttachmentFileFactory(
+            id=3,
+            file_type='document',
+            title='CRID 1051117 CR',
+            source_type='DOCUMENTCLOUD',
+            preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+            views_count=1,
+            downloads_count=1,
+            allegation=allegation1,
+            url='http://document/link/3',
+            show=False,
+        )
+
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        base_url = reverse('api-v2:attachments-list')
+        query_string = urlencode({'crid': allegation1.crid})
+        url = f'{base_url}?{query_string}'
+        response = self.client.get(url)
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'count': 2,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': 1,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'CRID 1051117 CR',
+                    'source_type': 'DOCUMENTCLOUD',
+                    'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
                     'views_count': 1,
                     'downloads_count': 1,
                     'crid': '1',
@@ -556,6 +743,20 @@ class AttachmentAPITestCase(APITestCase):
                     'documents_count': 1,
                     'file_type': 'document',
                     'url': 'http://document/link/1',
+                },
+                {
+                    'id': 3,
+                    'created_at': '2017-01-14T06:00:01-06:00',
+                    'title': 'CRID 1051117 CR',
+                    'source_type': 'DOCUMENTCLOUD',
+                    'preview_image_url': 'http://web.com/image/CRID-1051117-CR-p1-normal.gif',
+                    'views_count': 1,
+                    'downloads_count': 1,
+                    'crid': '1',
+                    'show': False,
+                    'documents_count': 1,
+                    'file_type': 'document',
+                    'url': 'http://document/link/3',
                 }
             ]
         })

@@ -1048,7 +1048,7 @@ This api require an api access token set in `Authorization` header. To get an ap
 
 + Response 200 (application/text)
 
-        "https://officer-content-staging.s3.amazonaws.com/zip_with_docs/Officer_1_with_docs.zip"
+        "https://officer-content-staging.s3.amazonaws.com/zip_with_docs/Jerome_Finnigan_with_docs.zip"
 
 ## Officer Mobile [/mobile/officers/{officer_id}/]
 
@@ -2348,6 +2348,39 @@ This api require an api access token set in `Authorization` header. To get an ap
               "percentile_allegation_internal": "0.0001"
               "percentile_trr": "99.0001"
             }]
+          }],
+          CR: [{
+            "id": "1054693",
+            "crid": "1054693",
+            "to": "/complaint/1054693/",
+            "incident_date": "2011-10-15",
+            "category": "Use Of Force",
+            "sub_category": "Civil Suits - Third Party",
+            "address": "22XX East 103RD ST, CHICAGO ILLINOIS 60617",
+            "victims": [{
+              "gender": "Male",
+              "race": "Black"
+            }],
+            "coaccused": [{
+              "id": 20661,
+              "full_name": "Mark Nottoli",
+              "percentile": {
+                "id": 20661,
+                "percentile_trr": "88.0064",
+                "percentile_allegation_civilian": "94.6432",
+                "percentile_allegation_internal": "79.9133"
+              },
+              "allegation_count": 52
+            }],
+            "highlight": {
+              "summary": [
+                "immediate notification by telephone to the operations <em>command</em> and the Independent Police Review Authority (IPRA)"
+              ],
+              text_content: [
+                "the investigation file, the recommendations of <em>Command</em> Channel Review and the Chief of the Bureau of Internal",
+                "toward a supervisory member on or off duty”). <em>Command</em> Channel Review -- the District Commander and Deputy",
+              ]
+            }
           }]
         }
 
@@ -2469,7 +2502,41 @@ This api require an api access token set in `Authorization` header. To get an ap
     + limit (number, optional) - limit of how many results to return
         + Default: `20`
 
-### Get attachments [GET]
+### Get attachments by an unauthenticated user [GET]
+
++ Response 200 (application/json)
+
+        {
+            "count": 2,
+            "next": "http://testserver/api/v2/attachment/?limit=2&offset=2",
+            "previous": None,
+            "results": [
+                {
+                    "id": 4677,
+                    "created_at": "2017-01-14T06:00:01-06:00",
+                    "title": "CRID 1051117 CR",
+                    "source_type": "DOCUMENTCLOUD",
+                    "preview_image_url": "https://assets.documentcloud.org/documents/4769596/pages/CRID-1051117-CR-p1-normal.gif",
+                    "crid": "123456",
+                    "show": true,
+                    "documents_count": 4,
+                    "crid": "1051117"
+                },
+                {
+                    "id": 4829,
+                    "created_at": "2017-01-14T06:00:01-06:00",
+                    "title": "CRID 1064593 CR",
+                    "source_type": "DOCUMENTCLOUD",
+                    "preview_image_url": "https://assets.documentcloud.org/documents/4769386/pages/CRID-1064593-CR-p1-normal.gif",
+                    "crid": "123456",
+                    "show": false
+                    "documents_count": 3,
+                    "crid": "1064593"
+                }
+            ]
+        }
+
+### Get attachments by an authenticated user [GET]
 
 + Response 200 (application/json)
 
@@ -2506,6 +2573,7 @@ This api require an api access token set in `Authorization` header. To get an ap
                 }
             ]
         }
+
 
 ## Individual Attachment [/attachments/{pk}/]
 
@@ -2544,13 +2612,13 @@ This api require an api access token set in `Authorization` header. To get an ap
             "notifications_count": 200,
             "show": true,
         }
-        
+
 ### Retrieve an attachment by an authenticated user [GET]
 
 + Parameters
     + pk (number) - number ID of Attachment
-    
-    
+
+
 + Response 200 (application/json)
 
         {
@@ -2580,13 +2648,13 @@ This api require an api access token set in `Authorization` header. To get an ap
             "downloads_count": "99",
             "notifications_count": "200"
         }
-        
+
 ### Retrieve an attachment by an unauthenticated user [GET]
 
 + Parameters
     + pk (number) - number ID of Attachment
-    
-    
+
+
 + Response 200 (application/json)
 
         {

@@ -6,15 +6,15 @@ from mock import MagicMock, patch
 from robber import expect
 from bs4 import BeautifulSoup
 
-from data_importer.ipra_crawler.summary_reports_crawler import (
-    OpenIpraSummaryReportsCrawler,
-    OpenIpraYearSummaryReportsCrawler,
+from data_importer.copa_crawler.summary_reports_crawler import (
+    OpenCopaSummaryReportsCrawler,
+    OpenCopaYearSummaryReportsCrawler,
     ReportCrawler,
 )
 
 
-class OpenIpraSummaryReportsCrawlerTestCase(SimpleTestCase):
-    @patch('data_importer.ipra_crawler.summary_reports_crawler.requests')
+class OpenCopaSummaryReportsCrawlerTestCase(SimpleTestCase):
+    @patch('data_importer.copa_crawler.summary_reports_crawler.requests')
     def test_parse(self, requests):
         response_text = codecs.open(
             'data_importer/tests/data/summary_reports/summary_reports_copa.html', 'r', 'utf-8'
@@ -24,11 +24,11 @@ class OpenIpraSummaryReportsCrawlerTestCase(SimpleTestCase):
             'https://www.chicagocopa.org/news-publications/publications/summary-reports/2018-summary-reports/',
             'https://www.chicagocopa.org/news-publications/publications/summary-reports/2017-summary-reports/'
         ]
-        expect(OpenIpraSummaryReportsCrawler().crawl()).to.be.eq(links)
+        expect(OpenCopaSummaryReportsCrawler().crawl()).to.be.eq(links)
 
 
-class OpenIpraYearSummaryReportsCrawlerTestCase(SimpleTestCase):
-    @patch('data_importer.ipra_crawler.summary_reports_crawler.requests')
+class OpenCopaYearSummaryReportsCrawlerTestCase(SimpleTestCase):
+    @patch('data_importer.copa_crawler.summary_reports_crawler.requests')
     def test_parse(self, requests):
         url = 'https://www.chicagocopa.org/news-publications/publications/summary-reports/2018-summary-reports/'
         response_text = codecs.open(
@@ -59,7 +59,7 @@ class OpenIpraYearSummaryReportsCrawlerTestCase(SimpleTestCase):
             'attachments': [],
             'log_num': '1087965',
         }]
-        expect(OpenIpraYearSummaryReportsCrawler(url=url).crawl()).to.be.eq(records)
+        expect(OpenCopaYearSummaryReportsCrawler(url=url).crawl()).to.be.eq(records)
 
 
 class ReportCrawlerTestCase(SimpleTestCase):

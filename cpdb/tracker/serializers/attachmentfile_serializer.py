@@ -17,13 +17,22 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
             'title',
             'source_type',
             'preview_image_url',
-            'views_count',
-            'downloads_count',
             'show',
             'documents_count',
             'show',
             'file_type',
             'url',
+        )
+
+
+class AuthenticatedAttachmentFileListSerializer(serializers.ModelSerializer):
+    crid = serializers.CharField(source='allegation_id')
+    documents_count = serializers.IntegerField()
+
+    class Meta(AttachmentFileListSerializer.Meta):
+        fields = AttachmentFileListSerializer.Meta.fields + (
+            'views_count',
+            'downloads_count'
         )
 
 

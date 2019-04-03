@@ -219,6 +219,23 @@ class CRWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.be.equal(2)
         expect(set([hit.crid for hit in response.hits])).to.be.eq({'123456', '123789'})
 
+    def test_search_text_content(self):
+        CrDocType(crid='123456').save()
+        CrDocType(
+            crid='123789',
+            attachment_files=[{'id': 1, 'text_content': 'CHICAGO POLICE DEPARTMENT RD I HT334604'}]
+        ).save()
+        self.refresh_index()
+
+        response = CRWorker().search('CHICAGO')
+        expect(response.hits.total).to.be.equal(1)
+
+        doc = response.hits[0]
+        expect(doc.crid).to.be.eq('123789')
+        expect(
+            doc.meta.inner_hits.attachment_files.hits[0].meta.highlight['attachment_files.text_content'][0]
+        ).to.contain('<em>CHICAGO</em>')
+
 
 class DateCRWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):

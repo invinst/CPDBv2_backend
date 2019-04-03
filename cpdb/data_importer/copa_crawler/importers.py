@@ -4,14 +4,19 @@ from django.conf import settings
 
 from documentcloud import DocumentCloud
 
-from data.constants import AttachmentSourceType, MEDIA_TYPE_VIDEO, MEDIA_TYPE_DOCUMENT
+from data.constants import (
+    AttachmentSourceType,
+    MEDIA_TYPE_VIDEO,
+    MEDIA_TYPE_DOCUMENT,
+    UPLOAD_FAIL_MAX_ATTEMPTS
+)
 from data.models import AttachmentFile, Allegation
-from data_importer.ipra_crawler.portal_crawler import (
-    OpenIpraInvestigationCrawler,
+from data_importer.copa_crawler.portal_crawler import (
+    OpenCopaInvestigationCrawler,
     ComplaintCrawler,
     VimeoSimpleAPI
 )
-from data_importer.ipra_crawler.parser import (
+from data_importer.copa_crawler.parser import (
     Just,
     DateTimeField,
     CharField,
@@ -21,11 +26,11 @@ from data_importer.ipra_crawler.parser import (
     SummaryReportsAttachmentFileField,
     SimpleField,
 )
-from data_importer.ipra_crawler.summary_reports_crawler import (
-    OpenIpraSummaryReportsCrawler,
-    OpenIpraYearSummaryReportsCrawler
+from data_importer.copa_crawler.summary_reports_crawler import (
+    OpenCopaSummaryReportsCrawler,
+    OpenCopaYearSummaryReportsCrawler
 )
-from document_cloud.utils import parse_id, parse_link, get_url, format_copa_documentcloud_title
+from document_cloud.utils import parse_id, format_copa_documentcloud_title
 from shared.attachment_importer import BaseAttachmentImporter
 
 
@@ -33,10 +38,10 @@ def _get_chicagocopa_external_id(copa_url):
     return copa_url[copa_url.rindex('/') + 1:] if '/' in copa_url else copa_url
 
 
-class IpraBaseAttachmentImporter(BaseAttachmentImporter):
+class CopaBaseAttachmentImporter(BaseAttachmentImporter):
     documentcloud_source_type = None
 
-    def crawl_ipra(self):
+    def crawl_copa(self):
         raise NotImplementedError
 
     @staticmethod
@@ -133,7 +138,9 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
 
         attachments = AttachmentFile.objects.filter(
             source_type=self.source_type,
-            file_type=MEDIA_TYPE_DOCUMENT
+            file_type=MEDIA_TYPE_DOCUMENT,
+            pending_documentcloud_id__isnull=True,
+            upload_fail_attempts__lte=UPLOAD_FAIL_MAX_ATTEMPTS
         )
 
         self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
@@ -149,15 +156,7 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
                 force_ocr=True
             )
 
-            attachment.external_id = parse_id(cloud_document.id)
-            attachment.source_type = source_type
-            attachment.title = cloud_document.title
-            attachment.url = get_url(cloud_document)
-            attachment.tag = 'CR'
-            attachment.additional_info = parse_link(cloud_document.canonical_url)
-            attachment.preview_image_url = cloud_document.normal_image_url
-            attachment.external_last_updated = cloud_document.updated_at
-            attachment.external_created_at = cloud_document.created_at
+            attachment.pending_documentcloud_id = parse_id(cloud_document.id)
             attachment.save()
 
         self.log_info(f'Done uploading!')
@@ -165,7 +164,7 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
     def crawl_and_update_attachments(self):
         try:
             self.set_current_step('CRAWLING')
-            incidents = self.crawl_ipra()
+            incidents = self.crawl_copa()
             self.set_current_step('UPDATING ATTACHMENTS')
             self.update_attachments_for_all_incidents(incidents)
             self.set_current_step('UPLOADING TO DOCUMENTCLOUD')
@@ -178,7 +177,7 @@ class IpraBaseAttachmentImporter(BaseAttachmentImporter):
         return self.new_attachments
 
 
-class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
+class CopaPortalAttachmentImporter(CopaBaseAttachmentImporter):
     source_type = AttachmentSourceType.PORTAL_COPA
     documentcloud_source_type = AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
     all_source_types = [
@@ -186,9 +185,9 @@ class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
         AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
     ]
 
-    def crawl_ipra(self):
+    def crawl_copa(self):
         self.log_info('Crawling process is about to start...')
-        links = OpenIpraInvestigationCrawler().crawl()
+        links = OpenCopaInvestigationCrawler().crawl()
         self.log_info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         raw_incidents = []
 
@@ -218,7 +217,7 @@ class IpraPortalAttachmentImporter(IpraBaseAttachmentImporter):
         return [schema.parse(incident) for incident in raw_incidents]
 
 
-class IpraSummaryReportsAttachmentImporter(IpraBaseAttachmentImporter):
+class CopaSummaryReportsAttachmentImporter(CopaBaseAttachmentImporter):
     source_type = AttachmentSourceType.SUMMARY_REPORTS_COPA
     documentcloud_source_type = AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD
     all_source_types = [
@@ -226,14 +225,14 @@ class IpraSummaryReportsAttachmentImporter(IpraBaseAttachmentImporter):
         AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD
     ]
 
-    def crawl_ipra(self):
+    def crawl_copa(self):
         self.log_info('Crawling process is about to start...')
-        links = OpenIpraSummaryReportsCrawler().crawl()
+        links = OpenCopaSummaryReportsCrawler().crawl()
         raw_incidents = []
 
         for link in tqdm(links):
             self.log_info(f'Crawling {link}')
-            incidents_per_year = OpenIpraYearSummaryReportsCrawler(link).crawl()
+            incidents_per_year = OpenCopaYearSummaryReportsCrawler(link).crawl()
             raw_incidents += incidents_per_year
             self.log_info(f'Parsed {len(incidents_per_year)} crawled incidents')
 

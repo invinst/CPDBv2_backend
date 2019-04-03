@@ -10,7 +10,7 @@ HEADERS = {
 }
 
 
-class OpenIpraInvestigationCrawler(object):
+class OpenCopaInvestigationCrawler(object):
     URL = 'https://www.chicagocopa.org/wp-content/themes/copa/DynamicSearch.php'
 
     def __init__(self, url=URL):

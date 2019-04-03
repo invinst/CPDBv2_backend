@@ -6,7 +6,7 @@ from django.test.testcases import SimpleTestCase
 from mock import MagicMock
 from robber import expect
 
-from data_importer.ipra_crawler.parser import (
+from data_importer.copa_crawler.parser import (
     TagField, MediaTypeField, PortalAttachmentFileField, ArraySourceField,
     DateTimeField, Just, CompositeField, CharField, SimpleField,
     NotSupportedDateFormatException, SummaryReportsAttachmentFileField
