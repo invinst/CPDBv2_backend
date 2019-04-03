@@ -5,7 +5,8 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from data.models import Allegation
+from data.models import Allegation, Officer
+from officers.serializers.response_serializers import OfficerCardSerializer
 from .models import Pinboard
 from .serializers import PinboardSerializer, PinboardComplaintSerializer
 
@@ -41,4 +42,12 @@ class PinboardViewSet(
         crids = set(pinboard.allegations.values_list('crid', flat=True))
         complaints = Allegation.objects.filter(crid__in=crids)
         serializer = PinboardComplaintSerializer(complaints, many=True)
+        return Response(serializer.data)
+
+    @detail_route(methods=['GET'], url_path='officers')
+    def officers(self, request, pk):
+        pinboard = get_object_or_404(Pinboard, id=pk)
+        officer_ids = set(pinboard.officers.values_list('id', flat=True))
+        officers = Officer.objects.filter(id__in=officer_ids)
+        serializer = OfficerCardSerializer(officers, many=True)
         return Response(serializer.data)

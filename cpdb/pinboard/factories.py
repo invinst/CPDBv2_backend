@@ -18,3 +18,9 @@ class PinboardFactory(factory.django.DjangoModelFactory):
         if create and extracted:
             for allegation in extracted:
                 self.allegations.add(allegation)
+
+    @factory.post_generation
+    def officers(self, create, extracted, **kwargs):
+        if create and extracted:
+            for officer in extracted:
+                self.officers.add(officer)

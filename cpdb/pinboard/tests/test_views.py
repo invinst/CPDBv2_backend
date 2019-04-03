@@ -275,3 +275,71 @@ class PinboardAPITestCase(APITestCase):
                 'most_common_category': 'Verbal Abuse',
             }
         ])
+
+    def test_selected_officers(self):
+        officer1 = OfficerFactory(
+            id=1, first_name='Daryl', last_name='Mack',
+            trr_percentile=12.0000,
+            civilian_allegation_percentile=98.4344,
+            internal_allegation_percentile=99.7840,
+            complaint_percentile=99.3450,
+            race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
+        )
+        officer2 = OfficerFactory(
+            id=2,
+            first_name='Ronald', last_name='Watts',
+            trr_percentile=0.0000,
+            civilian_allegation_percentile=98.4344,
+            internal_allegation_percentile=99.7840,
+            complaint_percentile=99.5000,
+            race='White', gender='M', birth_year=1975,
+            rank='Detective'
+        )
+        OfficerFactory(id=3)
+
+        pinboard = PinboardFactory(officers=(officer1, officer2))
+
+        response = self.client.get(reverse('api-v2:pinboards-officers', kwargs={'pk': pinboard.id}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'id': 1,
+                'full_name': 'Daryl Mack',
+                'complaint_count': 0,
+                'sustained_count': 0,
+                'birth_year': 1975,
+                'complaint_percentile': 99.3450,
+                'race': 'White',
+                'gender': 'Male',
+                'rank': 'Police Officer',
+                'percentile': {
+                    'percentile_trr': '12.0000',
+                    'percentile_allegation': '99.3450',
+                    'percentile_allegation_civilian': '98.4344',
+                    'percentile_allegation_internal': '99.7840',
+                    'year': 2016,
+                    'id': 1,
+                }
+            },
+            {
+                'id': 2,
+                'full_name': 'Ronald Watts',
+                'complaint_count': 0,
+                'sustained_count': 0,
+                'birth_year': 1975,
+                'complaint_percentile': 99.5000,
+                'race': 'White',
+                'gender': 'Male',
+                'rank': 'Detective',
+                'percentile': {
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '99.5000',
+                    'percentile_allegation_civilian': '98.4344',
+                    'percentile_allegation_internal': '99.7840',
+                    'year': 2016,
+                    'id': 2,
+                }
+            }
+        ])
