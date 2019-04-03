@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 
 from data.models import Allegation, Officer
 from pinboard.models import Pinboard
@@ -6,7 +7,7 @@ from shared.serializer import NoNullSerializer
 from trr.models import TRR
 
 
-class PinboardSerializer(NoNullSerializer):
+class PinboardSerializer(ModelSerializer, NoNullSerializer):
     id = serializers.CharField(
         min_length=8,
         max_length=8,
