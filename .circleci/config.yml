@@ -96,6 +96,7 @@ jobs:
           command: |
             mkdir -p /home/circleci/caches
             docker save -o /home/circleci/caches/app.tar $(docker images -a -q | tr '\r\n' ' ')
+          no_output_timeout: 30m
       - save_cache:
           key: v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}-{{ .Branch }}
           paths:
