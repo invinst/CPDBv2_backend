@@ -1,9 +1,13 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from data.models import Allegation
 from .models import Pinboard
-from .serializers import PinboardSerializer
+from .serializers import PinboardSerializer, PinboardComplaintSerializer
 
 
 class PinboardViewSet(
@@ -30,3 +34,11 @@ class PinboardViewSet(
         pinboard = self.get_object()
         serializer_class = self.get_serializer_class()
         return Response(serializer_class(pinboard).data)
+
+    @detail_route(methods=['GET'], url_path='complaints')
+    def complaints(self, request, pk):
+        pinboard = get_object_or_404(Pinboard, id=pk)
+        crids = set(pinboard.allegations.values_list('crid', flat=True))
+        complaints = Allegation.objects.filter(crid__in=crids)
+        serializer = PinboardComplaintSerializer(complaints, many=True)
+        return Response(serializer.data)

@@ -1,10 +1,21 @@
+from datetime import datetime
+
 from django.urls import reverse
+from django.contrib.gis.geos import Point
+
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+import pytz
 
 from pinboard.models import Pinboard
-from data.factories import OfficerFactory, AllegationFactory
+from data.factories import (
+    OfficerFactory,
+    AllegationFactory,
+    AllegationCategoryFactory,
+    OfficerAllegationFactory,
+)
+from data.cache_managers import allegation_cache_manager
 from pinboard.factories import PinboardFactory
 from trr.factories import TRRFactory
 
@@ -208,3 +219,59 @@ class PinboardAPITestCase(APITestCase):
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
+
+    def test_selected_complaints(self):
+        category1 = AllegationCategoryFactory(
+            category='Use Of Force',
+            allegation_name='Miscellaneous',
+        )
+        category2 = AllegationCategoryFactory(
+            category='Verbal Abuse',
+            allegation_name='Miscellaneous',
+        )
+
+        allegation1 = AllegationFactory(
+            crid='1000001',
+            incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc),
+            point=Point(1.0, 1.0),
+        )
+        allegation2 = AllegationFactory(
+            crid='1000002',
+            incident_date=datetime(2011, 1, 1, tzinfo=pytz.utc),
+            point=Point(2.0, 2.0),
+        )
+        allegation3 = AllegationFactory(
+            crid='1000003',
+            incident_date=datetime(2012, 1, 1, tzinfo=pytz.utc),
+            point=Point(3.0, 3.0),
+        )
+
+        OfficerAllegationFactory(allegation=allegation1, allegation_category=category1)
+        OfficerAllegationFactory(allegation=allegation2, allegation_category=category2)
+        OfficerAllegationFactory(allegation=allegation3, allegation_category=category2)
+
+        allegation_cache_manager.cache_data()
+
+        allegation1.refresh_from_db()
+        allegation2.refresh_from_db()
+        allegation3.refresh_from_db()
+
+        pinboard = PinboardFactory(allegations=(allegation1, allegation2))
+
+        response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': pinboard.id}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'crid': '1000001',
+                'incident_date': '2010-01-01',
+                'point': {'lon': 1.0, 'lat': 1.0},
+                'most_common_category': 'Use Of Force',
+            },
+            {
+                'crid': '1000002',
+                'incident_date': '2011-01-01',
+                'point': {'lon': 2.0, 'lat': 2.0},
+                'most_common_category': 'Verbal Abuse',
+            }
+        ])
