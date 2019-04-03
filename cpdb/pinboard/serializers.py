@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from data.models import Officer, Allegation
+from trr.models import TRR
 from .models import Pinboard
 
 
@@ -20,6 +21,11 @@ class PinboardSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Officer.objects.all()
     )
+    trr_ids = serializers.PrimaryKeyRelatedField(
+        source='trrs',
+        many=True,
+        queryset=TRR.objects.all()
+    )
 
     class Meta:
         model = Pinboard
@@ -28,5 +34,6 @@ class PinboardSerializer(serializers.ModelSerializer):
             'title',
             'officer_ids',
             'crids',
+            'trr_ids',
             'description'
         )

@@ -9,4 +9,5 @@ class Pinboard(TimeStampsModel):
     title = models.CharField(max_length=255, default='', blank=True)
     officers = models.ManyToManyField('data.Officer')
     allegations = models.ManyToManyField('data.Allegation')
+    trrs = models.ManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)

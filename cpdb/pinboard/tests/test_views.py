@@ -6,6 +6,7 @@ from robber import expect
 from pinboard.models import Pinboard
 from data.factories import OfficerFactory, AllegationFactory
 from pinboard.factories import PinboardFactory
+from trr.factories import TRRFactory
 
 
 class PinboardAPITestCase(APITestCase):
@@ -23,6 +24,7 @@ class PinboardAPITestCase(APITestCase):
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
+            'trr_ids': [],
             'description': 'abc',
         })
 
@@ -34,6 +36,7 @@ class PinboardAPITestCase(APITestCase):
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
+            'trr_ids': [],
             'description': 'abc',
         })
 
@@ -54,12 +57,16 @@ class PinboardAPITestCase(APITestCase):
         AllegationFactory(crid='123abc')
         AllegationFactory(crid='456def')
 
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
             {
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
+                'trr_ids': [1],
                 'description': 'abc',
             }
         )
@@ -71,6 +78,7 @@ class PinboardAPITestCase(APITestCase):
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
+                'trr_ids': [1, 2],
                 'description': 'def',
             }
         )
@@ -81,17 +89,20 @@ class PinboardAPITestCase(APITestCase):
             'title': 'New Pinboard',
             'officer_ids': [1],
             'crids': ['456def'],
+            'trr_ids': [1, 2],
             'description': 'def',
         })
 
         pinboard = Pinboard.objects.get(id=pinboard_id)
         officer_ids = set([officer.id for officer in pinboard.officers.all()])
         crids = set([allegation.crid for allegation in pinboard.allegations.all()])
+        trr_ids = set([trr.id for trr in pinboard.trrs.all()])
 
         expect(pinboard.title).to.eq('New Pinboard')
         expect(pinboard.description).to.eq('def')
         expect(officer_ids).to.eq({1})
         expect(crids).to.eq({'456def'})
+        expect(trr_ids).to.eq({1, 2})
 
     def test_update_pinboard_out_of_session(self):
         OfficerFactory(id=1)
@@ -100,12 +111,16 @@ class PinboardAPITestCase(APITestCase):
         AllegationFactory(crid='123abc')
         AllegationFactory(crid='456def')
 
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
             {
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
+                'trr_ids': [1],
                 'description': 'abc',
             }
         )
@@ -117,6 +132,7 @@ class PinboardAPITestCase(APITestCase):
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
+                'trr_ids': [1, 2],
                 'description': 'def',
             },
         )
@@ -129,12 +145,15 @@ class PinboardAPITestCase(APITestCase):
 
         AllegationFactory(crid='123abc')
 
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
             {
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
+                'trr_ids': [1],
                 'description': 'abc',
             }
         )
@@ -147,6 +166,7 @@ class PinboardAPITestCase(APITestCase):
             'title': 'My Pinboard',
             'officer_ids': [1, 2],
             'crids': ['123abc'],
+            'trr_ids': [1],
             'description': 'abc'
         })
 
@@ -157,6 +177,7 @@ class PinboardAPITestCase(APITestCase):
         expect(pinboard[0].description).to.eq('abc')
         expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2})
         expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
+        expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
     def test_create_pinboard_ignore_id(self):
         ignored_id = '1234ab'
@@ -168,6 +189,7 @@ class PinboardAPITestCase(APITestCase):
                 'title': 'My Pinboard',
                 'officer_ids': [],
                 'crids': [],
+                'trr_ids': [],
                 'description': 'abc',
             }
         )
@@ -181,6 +203,7 @@ class PinboardAPITestCase(APITestCase):
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
+            'trr_ids': [],
             'description': 'abc'
         })
 

@@ -8,6 +8,7 @@
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
+            "trr_ids": [1],
             "description": "abc"
         }
 
@@ -18,6 +19,7 @@
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ["123abc"],
+            "trr_ids": [1],
             "description": "abc"
         }
 
@@ -37,6 +39,7 @@
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
+            "trr_ids": [1],
             "description": "abc"
         }
 
@@ -51,6 +54,7 @@
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
+            "trr_ids": [1],
             "description": "abc"
         }
 
@@ -61,6 +65,7 @@
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
+            "trr_ids": [1],
             "description": "abc"
         }
 
