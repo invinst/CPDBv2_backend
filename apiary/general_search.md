@@ -325,5 +325,38 @@
               "percentile_allegation_internal": "0.0001"
               "percentile_trr": "99.0001"
             }]
+          }],
+          CR: [{
+            "id": "1054693",
+            "crid": "1054693",
+            "to": "/complaint/1054693/",
+            "incident_date": "2011-10-15",
+            "category": "Use Of Force",
+            "sub_category": "Civil Suits - Third Party",
+            "address": "22XX East 103RD ST, CHICAGO ILLINOIS 60617",
+            "victims": [{
+              "gender": "Male",
+              "race": "Black"
+            }],
+            "coaccused": [{
+              "id": 20661,
+              "full_name": "Mark Nottoli",
+              "percentile": {
+                "id": 20661,
+                "percentile_trr": "88.0064",
+                "percentile_allegation_civilian": "94.6432",
+                "percentile_allegation_internal": "79.9133"
+              },
+              "allegation_count": 52
+            }],
+            "highlight": {
+              "summary": [
+                "immediate notification by telephone to the operations <em>command</em> and the Independent Police Review Authority (IPRA)"
+              ],
+              text_content: [
+                "the investigation file, the recommendations of <em>Command</em> Channel Review and the Chief of the Bureau of Internal",
+                "toward a supervisory member on or off duty”). <em>Command</em> Channel Review -- the District Commander and Deputy",
+              ]
+            }
           }]
         }
