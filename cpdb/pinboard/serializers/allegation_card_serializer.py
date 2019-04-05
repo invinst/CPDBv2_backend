@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
-from data.models import Allegation
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer
 
 
-class AllegationSerializer(serializers.ModelSerializer):
+class AllegationSerializer(serializers.Serializer):
+    crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    v2_to = serializers.CharField()
     officers = serializers.SerializerMethodField()
 
     def get_officers(self, obj):
@@ -19,16 +20,6 @@ class AllegationSerializer(serializers.ModelSerializer):
         except AttributeError:
             return 'Unknown'
 
-    class Meta:
-        model = Allegation
-        fields = (
-            'crid',
-            'incident_date',
-            'v2_to',
-            'category',
-            'officers',
-        )
-
 
 class AllegationCardSerializer(AllegationSerializer):
     point = serializers.SerializerMethodField()
@@ -38,6 +29,3 @@ class AllegationCardSerializer(AllegationSerializer):
             return {'lon': obj.point.x, 'lat': obj.point.y}
         else:
             return None
-
-    class Meta(AllegationSerializer.Meta):
-        fields = AllegationSerializer.Meta.fields + ('point',)

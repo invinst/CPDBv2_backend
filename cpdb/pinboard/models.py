@@ -24,53 +24,134 @@ class Pinboard(TimeStampsModel):
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
 
-    @property
-    def relevant_documents(self):
-        officer_ids = self.officers.all().values_list('id', flat=True)
-        crids = self.allegations.all().values_list('crid', flat=True)
+    def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(
-            Q(allegation__in=crids) |
-            Q(allegation__officerallegation__officer__in=officer_ids) |
-            Q(allegation__investigatorallegation__investigator__officer__in=officer_ids) |
-            Q(allegation__police_witnesses__in=officer_ids)
-        ).distinct().select_related(
+            **kwargs
+        ).only(
+            'id',
+            'preview_image_url',
+            'url',
+            'allegation',
+        ).select_related(
             'allegation',
             'allegation__most_common_category',
         ).prefetch_related(
             Prefetch(
                 'allegation__officerallegation_set',
-                queryset=OfficerAllegation.objects.select_related('officer').all(),
+                queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
                 to_attr='prefetch_officer_allegations'
             )
-        ).order_by('-allegation__incident_date')
+        )
+
+    @property
+    def relevant_documents(self):
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        crids = self.allegations.all().values_list('crid', flat=True)
+        via_allegation = self.relevant_documents_query(allegation__in=crids)
+        via_officer = self.relevant_documents_query(allegation__officerallegation__officer__in=officer_ids)
+        via_investigator = self.relevant_documents_query(
+            allegation__investigatorallegation__investigator__officer__in=officer_ids
+        )
+        via_police_witnesses = self.relevant_documents_query(allegation__police_witnesses__in=officer_ids)
+
+        return via_allegation.union(
+            via_officer,
+            via_investigator,
+            via_police_witnesses
+        ).distinct().order_by('-allegation__incident_date')
 
     @property
     def relevant_coaccusals(self):
         officer_ids = self.officers.all().values_list('id', flat=True)
         crids = self.allegations.all().values_list('crid', flat=True)
-        return Officer.objects.filter(
-            Q(officerallegation__allegation__officerallegation__officer_id__in=officer_ids) |
-            Q(officerallegation__allegation__in=crids)
-        ).distinct().exclude(id__in=officer_ids).annotate(
-            coaccusal_count=Count('officerallegation', distinct=True)
-        ).order_by('-coaccusal_count')
 
-    @property
-    def relevant_complaints(self):
-        officer_ids = self.officers.all().values_list('id', flat=True)
+        columns = [
+            'id',
+            'rank',
+            'first_name',
+            'last_name',
+            'trr_percentile',
+            'complaint_percentile',
+            'civilian_allegation_percentile',
+            'internal_allegation_percentile',
+            'resignation_date'
+        ]
+        via_officer = Officer.objects.filter(
+            officerallegation__allegation__officerallegation__officer_id__in=officer_ids
+        ).exclude(id__in=officer_ids).only(*columns).annotate(
+            sub_coaccusal_count=Count('officerallegation', distinct=True)
+        )
+        via_allegation = Officer.objects.filter(
+            officerallegation__allegation__in=crids
+        ).exclude(id__in=officer_ids).only(*columns).annotate(
+            sub_coaccusal_count=Count('officerallegation', distinct=True)
+        )
+        sub_query = via_officer.union(via_allegation, all=True)
+
+        select_columns = ', '.join([f'"{col}"' for col in columns])
+        raw_query = f'''
+            WITH cte AS ({sub_query.query})
+            SELECT {select_columns},
+                SUM("sub_coaccusal_count") "coaccusal_count"
+            FROM cte
+            GROUP BY {select_columns}
+            ORDER BY "coaccusal_count" DESC
+        '''
+        query = Officer.objects.raw(raw_query)
+        return query
+
+    def relevant_complaints_query(self, **kwargs):
         crids = self.allegations.all().values_list('crid', flat=True)
-        return Allegation.objects.filter(
-            Q(officerallegation__officer__in=officer_ids) |
-            Q(investigatorallegation__investigator__officer__in=officer_ids) |
-            Q(police_witnesses__in=officer_ids)
-        ).exclude(
-            crid__in=crids
-        ).distinct().select_related(
+        return Allegation.objects.filter(**kwargs).exclude(crid__in=crids).only(
+            'crid',
+            'incident_date',
+            'most_common_category',
+            'point'
+        ).select_related(
             'most_common_category',
         ).prefetch_related(
             Prefetch(
                 'officerallegation_set',
-                queryset=OfficerAllegation.objects.select_related('officer').all(),
+                queryset=OfficerAllegation.objects.select_related(
+                    'officer'
+                ).order_by(
+                    '-officer__allegation_count'
+                ),
                 to_attr='prefetch_officer_allegations'
             )
-        ).order_by('-incident_date')
+        )
+
+    def relevant_complaints_count_query(self, **kwargs):
+        crids = self.allegations.all().values_list('crid', flat=True)
+        return Allegation.objects.filter(**kwargs).exclude(crid__in=crids).only('crid')
+
+    @property
+    def relevant_complaints_count(self):
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        via_officer = self.relevant_complaints_count_query(
+            officerallegation__officer__in=officer_ids
+        )
+        via_investigator = self.relevant_complaints_count_query(
+            investigatorallegation__investigator__officer__in=officer_ids
+        )
+        via_police_witness = self.relevant_complaints_count_query(
+            police_witnesses__in=officer_ids
+        )
+        return via_officer.union(via_investigator, via_police_witness).distinct().count
+
+    @property
+    def relevant_complaints(self):
+        officer_ids = self.officers.all().values_list('id', flat=True)
+        via_officer = self.relevant_complaints_query(
+            officerallegation__officer__in=officer_ids
+        )
+        via_investigator = self.relevant_complaints_query(
+            investigatorallegation__investigator__officer__in=officer_ids
+        )
+        via_police_witness = self.relevant_complaints_query(
+            police_witnesses__in=officer_ids
+        )
+        query = via_officer.union(via_investigator, via_police_witness).distinct().order_by('-incident_date')
+        # LimitOffsetPagination need count and we optimize it with a more simple query
+        setattr(query, 'count', self.relevant_complaints_count)
+        return query

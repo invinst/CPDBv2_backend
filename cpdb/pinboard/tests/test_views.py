@@ -42,9 +42,6 @@ class PinboardAPITestCase(APITestCase):
             'crids': [],
             'trr_ids': [],
             'description': 'abc',
-            'relevant_documents': [],
-            'relevant_coaccusals': [],
-            'relevant_complaints': [],
         })
 
     def test_retrieve_pinboard_not_found(self):
@@ -98,9 +95,6 @@ class PinboardAPITestCase(APITestCase):
             'crids': ['456def'],
             'trr_ids': [1, 2],
             'description': 'def',
-            'relevant_documents': [],
-            'relevant_coaccusals': [],
-            'relevant_complaints': [],
         })
 
         pinboard = Pinboard.objects.get(id=pinboard_id)
@@ -178,9 +172,6 @@ class PinboardAPITestCase(APITestCase):
             'crids': ['123abc'],
             'trr_ids': [1],
             'description': 'abc',
-            'relevant_documents': [],
-            'relevant_coaccusals': [],
-            'relevant_complaints': [],
         })
 
         expect(Pinboard.objects.count()).to.eq(1)
