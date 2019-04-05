@@ -1,3 +1,6 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+
 from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -6,6 +9,7 @@ from .models import Pinboard
 from .serializers import PinboardSerializer
 
 
+@method_decorator(never_cache, name='dispatch')
 class PinboardViewSet(
         mixins.CreateModelMixin,
         mixins.UpdateModelMixin,
