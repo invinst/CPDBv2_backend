@@ -33,6 +33,22 @@ class CRPinboardSerializerTestCase(TestCase):
             }
         })
 
+    def test_serialization_no_point(self):
+        category = AllegationCategoryFactory(category='Use of Force')
+        allegation = AllegationFactory(
+            crid=123,
+            most_common_category=category,
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
+            point=None,
+        )
+
+        expect(CRPinboardSerializer(allegation).data).to.eq({
+            'date': '2002-01-01',
+            'crid': '123',
+            'category': 'Use of Force',
+            'kind': 'CR',
+        })
+
 
 class TRRPinboardSerializerTestCase(TestCase):
     def test_serialization(self):
@@ -50,4 +66,17 @@ class TRRPinboardSerializerTestCase(TestCase):
                 'lon': -32.5,
                 'lat': 61.3
             }
+        })
+
+    def test_serialization_no_point(self):
+        trr = TRRFactory(
+            id=1,
+            trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
+            point=None,
+        )
+
+        expect(TRRPinboardSerializer(trr).data).to.eq({
+            'trr_id': 1,
+            'date': '2004-01-01',
+            'kind': 'FORCE',
         })

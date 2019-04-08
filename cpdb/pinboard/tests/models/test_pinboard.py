@@ -279,3 +279,137 @@ class PinboardTestCase(TestCase):
         expect(relevant_documents[0].allegation.crid).to.eq('2')
         expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
         expect(relevant_documents[1].allegation.crid).to.eq('1')
+
+    def test_relevant_documents_with_pinned_allegations(self):
+        pinned_officer_1 = OfficerFactory(id=1)
+        pinned_officer_2 = OfficerFactory(id=2)
+        pinned_allegation_1 = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
+        pinned_allegation_2 = AllegationFactory(crid='2', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1, pinned_officer_2])
+        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        OfficerAllegationFactory(officer=pinned_officer_1, allegation=pinned_allegation_1)
+        OfficerAllegationFactory(officer=pinned_officer_2, allegation=pinned_allegation_2)
+        not_relevant_allegation = AllegationFactory(crid='not relevant')
+        relevant_document_1 = AttachmentFileFactory(id=1, allegation=pinned_allegation_1, show=True)
+        relevant_document_2 = AttachmentFileFactory(id=2, allegation=pinned_allegation_2, show=True)
+        AttachmentFileFactory(id=998, title='relevant but not show', allegation=pinned_allegation_1, show=False)
+        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+
+        relevant_documents = list(pinboard.relevant_documents)
+        expect(relevant_documents).to.have.length(2)
+        expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
+        expect(relevant_documents[0].allegation.crid).to.eq('2')
+        expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
+        expect(relevant_documents[1].allegation.crid).to.eq('1')
+
+    def test_relevant_documents_via_investigator(self):
+        pinned_investigator_1 = OfficerFactory(id=1)
+        pinned_investigator_2 = OfficerFactory(id=2)
+        pinned_investigator_3 = OfficerFactory(id=3)
+        not_relevant_officer = OfficerFactory(id=999)
+        relevant_allegation_1 = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
+        relevant_allegation_2 = AllegationFactory(crid='2', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
+        relevant_allegation_3 = AllegationFactory(crid='3', incident_date=datetime(2002, 2, 23, tzinfo=pytz.utc))
+        not_relevant_allegation = AllegationFactory(crid='999')
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_investigator_1, pinned_investigator_2, pinned_investigator_3])
+        InvestigatorAllegationFactory(investigator__officer=pinned_investigator_1, allegation=relevant_allegation_1)
+        InvestigatorAllegationFactory(investigator__officer=pinned_investigator_2, allegation=relevant_allegation_2)
+        InvestigatorAllegationFactory(investigator__officer=pinned_investigator_3, allegation=relevant_allegation_3)
+        InvestigatorAllegationFactory(investigator__officer=not_relevant_officer, allegation=not_relevant_allegation)
+
+        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_1, show=True)
+        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_2, show=True)
+        relevant_document_3 = AttachmentFileFactory(id=3, allegation=relevant_allegation_3, show=True)
+        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
+        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+
+        relevant_documents = list(pinboard.relevant_documents)
+
+        expect(relevant_documents).to.have.length(3)
+        expect(relevant_documents[0].id).to.eq(relevant_document_3.id)
+        expect(relevant_documents[0].allegation.crid).to.eq('3')
+        expect(relevant_documents[1].id).to.eq(relevant_document_2.id)
+        expect(relevant_documents[1].allegation.crid).to.eq('2')
+        expect(relevant_documents[2].id).to.eq(relevant_document_1.id)
+        expect(relevant_documents[2].allegation.crid).to.eq('1')
+
+    def test_relevant_documents_via_police_witnesses(self):
+        pinned_officer_1 = OfficerFactory(id=1)
+        pinned_officer_2 = OfficerFactory(id=2)
+        not_relevant_officer = OfficerFactory(id=999)
+        relevant_allegation_11 = AllegationFactory(crid='11', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
+        relevant_allegation_12 = AllegationFactory(crid='12', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
+        relevant_allegation_21 = AllegationFactory(crid='21', incident_date=datetime(2002, 2, 23, tzinfo=pytz.utc))
+        not_relevant_allegation = AllegationFactory(crid='999')
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1, pinned_officer_2])
+        PoliceWitnessFactory(allegation=relevant_allegation_11, officer=pinned_officer_1)
+        PoliceWitnessFactory(allegation=relevant_allegation_12, officer=pinned_officer_1)
+        PoliceWitnessFactory(allegation=relevant_allegation_21, officer=pinned_officer_2)
+        PoliceWitnessFactory(allegation=not_relevant_allegation, officer=not_relevant_officer)
+
+        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_11, show=True)
+        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_12, show=True)
+        relevant_document_3 = AttachmentFileFactory(id=3, allegation=relevant_allegation_21, show=True)
+        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_11, show=False)
+        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+
+        relevant_documents = list(pinboard.relevant_documents)
+
+        expect(relevant_documents).to.have.length(3)
+        expect(relevant_documents[0].id).to.eq(relevant_document_3.id)
+        expect(relevant_documents[0].allegation.crid).to.eq('21')
+        expect(relevant_documents[1].id).to.eq(relevant_document_2.id)
+        expect(relevant_documents[1].allegation.crid).to.eq('12')
+        expect(relevant_documents[2].id).to.eq(relevant_document_1.id)
+        expect(relevant_documents[2].allegation.crid).to.eq('11')
+
+    def test_relevant_documents_order_officers(self):
+        pinned_officer_1 = OfficerFactory(id=1, allegation_count=3)
+        pinned_officer_2 = OfficerFactory(id=2)
+        pinned_officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4, allegation_count=2)
+        officer_5 = OfficerFactory(id=5, allegation_count=4)
+        relevant_allegation_1 = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
+        relevant_allegation_2 = AllegationFactory(crid='2', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
+        not_relevant_allegation = AllegationFactory(crid='999')
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1, pinned_officer_2, pinned_officer_3])
+        OfficerAllegationFactory(officer=pinned_officer_1, allegation=relevant_allegation_1)
+        OfficerAllegationFactory(officer=officer_4, allegation=relevant_allegation_1)
+        OfficerAllegationFactory(officer=officer_5, allegation=relevant_allegation_1)
+        OfficerAllegationFactory(officer=pinned_officer_2, allegation=relevant_allegation_2)
+
+        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_1, show=True)
+        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_2, show=True)
+        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
+        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+
+        relevant_documents = list(pinboard.relevant_documents)
+
+        expect(relevant_documents).to.have.length(2)
+        expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
+        expect(relevant_documents[0].allegation.crid).to.eq('2')
+        expect(relevant_documents[0].allegation.prefetch_officer_allegations).to.have.length(1)
+        expect(relevant_documents[0].allegation.prefetch_officer_allegations[0].officer.id).to.eq(2)
+
+        expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
+        expect(relevant_documents[1].allegation.crid).to.eq('1')
+        expect(relevant_documents[1].allegation.prefetch_officer_allegations).to.have.length(3)
+        expect(relevant_documents[1].allegation.prefetch_officer_allegations[0].officer.id).to.eq(5)
+        expect(relevant_documents[1].allegation.prefetch_officer_allegations[1].officer.id).to.eq(1)
+        expect(relevant_documents[1].allegation.prefetch_officer_allegations[2].officer.id).to.eq(4)
