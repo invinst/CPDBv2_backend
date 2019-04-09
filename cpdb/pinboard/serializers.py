@@ -66,7 +66,13 @@ class PinboardComplaintSerializer(serializers.ModelSerializer):
 
 class PinboardTRRSerializer(serializers.ModelSerializer):
     trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
+    point = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+
+    def get_point(self, obj):
+        if obj.point is not None:
+            return {'lon': obj.point.x, 'lat': obj.point.y}
+        return None
 
     def get_category(self, obj):
         return obj.force_types[0] if len(obj.force_types) > 0 else 'Unknown'
@@ -77,4 +83,5 @@ class PinboardTRRSerializer(serializers.ModelSerializer):
             'id',
             'trr_datetime',
             'category',
+            'point',
         )

@@ -345,8 +345,16 @@ class PinboardAPITestCase(APITestCase):
         ])
 
     def test_selected_trrs(self):
-        trr1 = TRRFactory(id=1, trr_datetime=datetime(2012, 1, 1, tzinfo=pytz.utc))
-        trr2 = TRRFactory(id=2, trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc))
+        trr1 = TRRFactory(
+            id=1,
+            trr_datetime=datetime(2012, 1, 1, tzinfo=pytz.utc),
+            point=Point(1.0, 1.0),
+        )
+        trr2 = TRRFactory(
+            id=2,
+            trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc),
+            point=Point(2.0, 2.0),
+        )
         TRRFactory(id=3)
 
         ActionResponseFactory(trr=trr1, force_type='Physical Force - Stunning', action_sub_category='1')
@@ -362,10 +370,12 @@ class PinboardAPITestCase(APITestCase):
                 'id': 1,
                 'trr_datetime': '2012-01-01',
                 'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
             },
             {
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
             }
         ])
