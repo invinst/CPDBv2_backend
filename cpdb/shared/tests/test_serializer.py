@@ -42,7 +42,6 @@ class OfficerPercentileSerializerTestCase(TestCase):
         )
 
         expect(OfficerPercentileSerializer(officer).data).to.eq({
-            'id': 123,
             'year': 2013,
             'percentile_trr': '11.1100',
             'percentile_allegation': '22.2200',
@@ -61,7 +60,6 @@ class OfficerPercentileSerializerTestCase(TestCase):
         )
 
         expect(OfficerPercentileSerializer(officer).data).to.eq({
-            'id': 123,
             'year': 2016,
             'percentile_trr': '11.1100',
             'percentile_allegation': '22.2200',
@@ -79,7 +77,6 @@ class OfficerPercentileSerializerTestCase(TestCase):
         )
 
         expect(OfficerPercentileSerializer(officer).data).to.eq({
-            'id': 123,
             'year': 2016,
             'percentile_trr': '11.1100',
             'percentile_allegation': '22.2200',
@@ -97,6 +94,5 @@ class OfficerPercentileSerializerTestCase(TestCase):
         )
 
         expect(OfficerPercentileSerializer(officer).data).to.eq({
-            'id': 123,
             'year': 2016
         })

@@ -7,7 +7,6 @@ class AllegationSerializer(serializers.Serializer):
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
-    v2_to = serializers.CharField()
     officers = serializers.SerializerMethodField()
 
     def get_officers(self, obj):

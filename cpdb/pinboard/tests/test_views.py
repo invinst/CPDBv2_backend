@@ -397,7 +397,6 @@ class PinboardAPITestCase(APITestCase):
                 'crid': '2',
                 'category': 'Unknown',
                 'incident_date': '2002-02-22',
-                'v2_to': '/complaint/2/',
                 'officers': [
                     {
                         'id': 4,
@@ -405,7 +404,6 @@ class PinboardAPITestCase(APITestCase):
                         'full_name': 'Raymond Piwinicki',
                         'coaccusal_count': None,
                         'percentile': {
-                            'id': 4,
                             'year': 2016,
                         }
                     },
@@ -415,7 +413,6 @@ class PinboardAPITestCase(APITestCase):
                         'full_name': 'Edward May',
                         'coaccusal_count': None,
                         'percentile': {
-                            'id': 2,
                             'year': 2016,
                             'percentile_trr': '11.1100',
                             'percentile_allegation': '22.2200',
@@ -434,14 +431,12 @@ class PinboardAPITestCase(APITestCase):
                 'crid': '1',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
-                'v2_to': '/complaint/1/',
                 'officers': [{
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
                     'percentile': {
-                        'id': 1,
                         'year': 2016,
                         'percentile_trr': '99.9900',
                         'percentile_allegation': '88.8800',
@@ -654,7 +649,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
             'percentile': {
-                'id': 11,
                 'year': 2016,
                 'percentile_trr': '11.1100',
                 'percentile_allegation': '22.2200',
@@ -667,7 +661,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
             'percentile': {
-                'id': 21,
                 'year': 2016,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
@@ -679,7 +672,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
             'percentile': {
-                'id': 12,
                 'year': 2016,
                 'percentile_allegation': '99.9900',
                 'percentile_allegation_civilian': '77.7700',
@@ -690,7 +682,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Edward May',
             'coaccusal_count': 1,
             'percentile': {
-                'id': 22,
                 'year': 2016,
             },
         }])
@@ -791,7 +782,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
             'percentile': {
-                'id': 11,
                 'year': 2016,
                 'percentile_trr': '11.1100',
                 'percentile_allegation': '22.2200',
@@ -804,7 +794,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
             'percentile': {
-                'id': 21,
                 'year': 2016,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
@@ -825,7 +814,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
             'percentile': {
-                'id': 21,
                 'year': 2016,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
@@ -837,7 +825,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
             'percentile': {
-                'id': 12,
                 'year': 2016,
                 'percentile_allegation': '99.9900',
                 'percentile_allegation_civilian': '77.7700',
@@ -859,7 +846,6 @@ class PinboardAPITestCase(APITestCase):
             'full_name': 'Edward May',
             'coaccusal_count': 1,
             'percentile': {
-                'id': 22,
                 'year': 2016,
             },
         }])
@@ -937,14 +923,12 @@ class PinboardAPITestCase(APITestCase):
                 'crid': '2',
                 'category': 'Unknown',
                 'incident_date': '2002-02-22',
-                'v2_to': '/complaint/2/',
                 'officers': [{
                     'id': 2,
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
                     'coaccusal_count': None,
                     'percentile': {
-                        'id': 2,
                         'year': 2016,
                         'percentile_trr': '33.3300',
                         'percentile_allegation': '44.4400',
@@ -956,14 +940,12 @@ class PinboardAPITestCase(APITestCase):
                 'crid': '1',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
-                'v2_to': '/complaint/1/',
                 'officers': [{
                     'id': 99,
                     'rank': 'Detective',
                     'full_name': 'Edward May',
                     'coaccusal_count': None,
                     'percentile': {
-                        'id': 99,
                         'year': 2016,
                     },
                 }, {
@@ -972,7 +954,6 @@ class PinboardAPITestCase(APITestCase):
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
                     'percentile': {
-                        'id': 1,
                         'year': 2016,
                         'percentile_trr': '11.1100',
                         'percentile_allegation': '22.2200',
@@ -1094,14 +1075,12 @@ class PinboardAPITestCase(APITestCase):
             'crid': '3',
             'category': 'Unknown',
             'incident_date': '2002-02-23',
-            'v2_to': '/complaint/3/',
             'officers': [],
             'point': None,
         }, {
             'crid': '2',
             'category': 'Unknown',
             'incident_date': '2002-02-22',
-            'v2_to': '/complaint/2/',
             'officers': [],
             'point': None,
         }])
@@ -1117,7 +1096,6 @@ class PinboardAPITestCase(APITestCase):
             'crid': '2',
             'category': 'Unknown',
             'incident_date': '2002-02-22',
-            'v2_to': '/complaint/2/',
             'officers': [],
             'point': None,
         }])
@@ -1135,7 +1113,6 @@ class PinboardAPITestCase(APITestCase):
             'crid': '1',
             'category': 'Unknown',
             'incident_date': '2002-02-21',
-            'v2_to': '/complaint/1/',
             'officers': [],
             'point': None,
         }])

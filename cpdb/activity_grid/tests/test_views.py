@@ -97,10 +97,11 @@ class ActivityGridViewSetTestCase(APITestCase):
             'gender': 'Male',
             'rank': 'Police Officer',
             'percentile': {
-                'id': officer1.id,
                 'percentile_trr': '0.0000',
                 'percentile_allegation_internal': '0.0000',
-                'percentile_allegation_civilian': '50.0000'
+                'percentile_allegation_civilian': '50.0000',
+                'percentile_allegation': '50.0000',
+                'year': 2016,
             },
             'kind': 'single_officer',
         }, {
@@ -114,10 +115,11 @@ class ActivityGridViewSetTestCase(APITestCase):
             'gender': 'Male',
             'rank': 'Police Officer',
             'percentile': {
-                'id': officer2.id,
                 'percentile_trr': '0.0000',
                 'percentile_allegation_internal': '0.0000',
-                'percentile_allegation_civilian': '0.0000'
+                'percentile_allegation_civilian': '0.0000',
+                'percentile_allegation': '0.0000',
+                'year': 2016,
             },
             'kind': 'single_officer',
         }, {
@@ -129,10 +131,11 @@ class ActivityGridViewSetTestCase(APITestCase):
                 'gender': 'Male',
                 'rank': 'Police Officer',
                 'percentile': {
-                    'id': officer1.id,
                     'percentile_trr': '0.0000',
                     'percentile_allegation_internal': '0.0000',
-                    'percentile_allegation_civilian': '50.0000'
+                    'percentile_allegation_civilian': '50.0000',
+                    'percentile_allegation': '50.0000',
+                    'year': 2016,
                 },
             },
             'officer2': {
@@ -143,10 +146,11 @@ class ActivityGridViewSetTestCase(APITestCase):
                 'gender': 'Male',
                 'rank': 'Police Officer',
                 'percentile': {
-                    'id': officer2.id,
                     'percentile_trr': '0.0000',
                     'percentile_allegation_internal': '0.0000',
-                    'percentile_allegation_civilian': '0.0000'
+                    'percentile_allegation_civilian': '0.0000',
+                    'percentile_allegation': '0.0000',
+                    'year': 2016,
                 },
             },
             'coaccusal_count': 1,
