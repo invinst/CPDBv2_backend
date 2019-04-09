@@ -15,9 +15,9 @@ from data.factories import (
     AllegationCategoryFactory,
     OfficerAllegationFactory,
 )
+from trr.factories import TRRFactory, ActionResponseFactory
 from data.cache_managers import allegation_cache_manager
 from pinboard.factories import PinboardFactory
-from trr.factories import TRRFactory
 
 
 class PinboardAPITestCase(APITestCase):
@@ -341,5 +341,31 @@ class PinboardAPITestCase(APITestCase):
                     'year': 2016,
                     'id': 2,
                 }
+            }
+        ])
+
+    def test_selected_trrs(self):
+        trr1 = TRRFactory(id=1, trr_datetime=datetime(2012, 1, 1, tzinfo=pytz.utc))
+        trr2 = TRRFactory(id=2, trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc))
+        TRRFactory(id=3)
+
+        ActionResponseFactory(trr=trr1, force_type='Physical Force - Stunning', action_sub_category='1')
+        ActionResponseFactory(trr=trr1, force_type='Impact Weapon', action_sub_category='2')
+
+        pinboard = PinboardFactory(trrs=(trr1, trr2))
+
+        response = self.client.get(reverse('api-v2:pinboards-trrs', kwargs={'pk': pinboard.id}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+            },
+            {
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
             }
         ])

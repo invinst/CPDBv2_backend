@@ -24,3 +24,9 @@ class PinboardFactory(factory.django.DjangoModelFactory):
         if create and extracted:
             for officer in extracted:
                 self.officers.add(officer)
+
+    @factory.post_generation
+    def trrs(self, create, extracted, **kwargs):
+        if create and extracted:
+            for trr in extracted:
+                self.trrs.add(trr)

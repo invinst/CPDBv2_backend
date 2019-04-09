@@ -62,3 +62,19 @@ class PinboardComplaintSerializer(serializers.ModelSerializer):
             'point',
             'most_common_category'
         )
+
+
+class PinboardTRRSerializer(serializers.ModelSerializer):
+    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
+    category = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        return obj.force_types[0] if len(obj.force_types) > 0 else 'Unknown'
+
+    class Meta:
+        model = TRR
+        fields = (
+            'id',
+            'trr_datetime',
+            'category',
+        )

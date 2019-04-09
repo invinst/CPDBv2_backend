@@ -6,9 +6,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from data.models import Allegation, Officer
+from trr.models import TRR
 from officers.serializers.response_serializers import OfficerCardSerializer
 from .models import Pinboard
-from .serializers import PinboardSerializer, PinboardComplaintSerializer
+from .serializers import PinboardSerializer, PinboardComplaintSerializer, PinboardTRRSerializer
 
 
 class PinboardViewSet(
@@ -50,4 +51,12 @@ class PinboardViewSet(
         officer_ids = set(pinboard.officers.values_list('id', flat=True))
         officers = Officer.objects.filter(id__in=officer_ids)
         serializer = OfficerCardSerializer(officers, many=True)
+        return Response(serializer.data)
+
+    @detail_route(methods=['GET'], url_path='trrs')
+    def trrs(self, request, pk):
+        pinboard = get_object_or_404(Pinboard, id=pk)
+        trr_ids = set(pinboard.trrs.values_list('id', flat=True))
+        trrs = TRR.objects.filter(id__in=trr_ids).prefetch_related('actionresponse_set')
+        serializer = PinboardTRRSerializer(trrs, many=True)
         return Response(serializer.data)
