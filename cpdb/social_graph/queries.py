@@ -1,5 +1,6 @@
 from django.db import connection
 
+from data.models import Officer
 from utils.raw_query_utils import dict_fetch_all
 
 
@@ -8,12 +9,18 @@ DEFAULT_SHOW_CIVIL_ONLY = True
 
 
 class SocialGraphDataQuery(object):
-    def __init__(self, officers, threshold=DEFAULT_THRESHOLD, show_civil_only=DEFAULT_SHOW_CIVIL_ONLY):
+    def __init__(
+        self,
+        officers,
+        threshold=DEFAULT_THRESHOLD,
+        show_civil_only=DEFAULT_SHOW_CIVIL_ONLY,
+        show_connected_officers=False
+    ):
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
         self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
+        self.show_connected_officers = show_connected_officers
         self.coaccused_data = self.calculate_coaccused_data()
-        self.list_event = self.get_list_event()
         self.graph_data = self.get_graph_data()
 
     def _build_query(self):
@@ -27,8 +34,10 @@ class SocialGraphDataQuery(object):
             INNER JOIN data_officerallegation AS B ON A.allegation_id = B.allegation_id
             LEFT JOIN data_allegation ON data_allegation.crid = A.allegation_id
             WHERE A.officer_id < B.officer_id
-            AND B.officer_id IN ({officer_ids_string})
-            AND A.officer_id IN ({officer_ids_string})
+            AND (
+                B.officer_id IN ({officer_ids_string})
+                {'OR' if self.show_connected_officers else 'AND'} A.officer_id IN ({officer_ids_string})
+            )
             AND data_allegation.incident_date IS NOT NULL
             {'AND data_allegation.is_officer_complaint IS FALSE' if self.show_civil_only else ''}
         """
@@ -47,9 +56,19 @@ class SocialGraphDataQuery(object):
         events.sort()
         return events
 
+    def get_all_officers(self):
+        if self.show_connected_officers:
+            officer_ids = [row['officer_id_1'] for row in self.coaccused_data]
+            officer_ids += [row['officer_id_2'] for row in self.coaccused_data]
+            officer_ids += [officer.id for officer in self.officers]
+            officer_ids = list(set(officer_ids))
+            return Officer.objects.filter(id__in=officer_ids).order_by('first_name', 'last_name')
+        else:
+            return self.officers
+
     def get_graph_data(self):
         return {
-            'officers': [{'full_name': officer.full_name, 'id': officer.id} for officer in self.officers],
+            'officers': [{'full_name': officer.full_name, 'id': officer.id} for officer in self.get_all_officers()],
             'coaccused_data': self.coaccused_data,
-            'list_event': self.list_event
+            'list_event': self.get_list_event()
         }

@@ -43,7 +43,8 @@ class PinboardViewSet(
         social_graph_data_query = SocialGraphDataQuery(
             pinboard.all_officers,
             PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
-            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
+            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
+            True
         )
 
         return Response(social_graph_data_query.graph_data)
