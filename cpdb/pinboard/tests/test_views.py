@@ -1,10 +1,14 @@
+from datetime import datetime
+
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
+
 from robber import expect
+import pytz
 
 from pinboard.models import Pinboard
-from data.factories import OfficerFactory, AllegationFactory
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 from pinboard.factories import PinboardFactory
 from trr.factories import TRRFactory
 
@@ -208,3 +212,94 @@ class PinboardAPITestCase(APITestCase):
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
+
+    def test_social_graph(self):
+        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
+        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_4 = OfficerFactory(id=8565, first_name='William', last_name='People')
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=False,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=True,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=False,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+        trr_1 = TRRFactory(
+            id=1,
+            officer=officer_4,
+            trr_datetime=datetime(2008, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=4, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
+
+        pinboard = PinboardFactory(
+            title='My Pinboard',
+            description='abc',
+        )
+
+        pinboard.officers.set([officer_1, officer_2])
+        pinboard.allegations.set([allegation_3])
+        pinboard.trrs.set([trr_1])
+
+        expected_data = {
+            'officers': [
+                {'full_name': 'Edward May', 'id': 8563},
+                {'full_name': 'Jerome Finnigan', 'id': 8562},
+                {'full_name': 'Joe Parker', 'id': 8564},
+                {'full_name': 'William People', 'id': 8565},
+            ],
+            'coaccused_data': [
+                {
+                    'officer_id_1': 8562,
+                    'officer_id_2': 8563,
+                    'incident_date': datetime(2005, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 1
+                },
+                {
+                    'officer_id_1': 8562,
+                    'officer_id_2': 8563,
+                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 2
+                },
+                {
+                    'officer_id_1': 8562,
+                    'officer_id_2': 8563,
+                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 3
+                },
+                {
+                    'officer_id_1': 8562,
+                    'officer_id_2': 8564,
+                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 1
+                },
+                {
+                    'officer_id_1': 8563,
+                    'officer_id_2': 8564,
+                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 1
+                },
+            ],
+            'list_event': ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        }
+
+        response = self.client.get(reverse('api-v2:pinboards-social-graph', kwargs={'pk': pinboard.id}))
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq(expected_data)

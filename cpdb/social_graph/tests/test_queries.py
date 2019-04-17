@@ -40,7 +40,14 @@ class DataGeneratorTestCase(TestCase):
         OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
 
-        expected_data = [
+        expected_officers = [
+            {'full_name': 'Jerome Finnigan', 'id': 8562},
+            {'full_name': 'Edward May', 'id': 8563},
+            {'full_name': 'Joe Parker', 'id': 8564},
+        ]
+
+        expected_list_event = ['2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        expected_coaccused_data = [
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
@@ -66,10 +73,16 @@ class DataGeneratorTestCase(TestCase):
                 'accussed_count': 3
             }
         ]
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3])
-        expect(results.coaccused_data).to.eq(expected_data)
-        expect(results.list_event).to.eq(['2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00'])
+        expect(results.coaccused_data).to.eq(expected_coaccused_data)
+        expect(results.list_event).to.eq(expected_list_event)
+        expect(results.graph_data).to.eq(expected_graph_data)
 
     def test_execute_threshold_1_show_civil_only_true(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
@@ -100,7 +113,7 @@ class DataGeneratorTestCase(TestCase):
         OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
         OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
 
-        expected_data = [
+        expected_coaccused_data = [
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
@@ -128,7 +141,7 @@ class DataGeneratorTestCase(TestCase):
         ]
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1)
-        expect(results.coaccused_data).to.eq(expected_data)
+        expect(results.coaccused_data).to.eq(expected_coaccused_data)
         expect(results.list_event).to.eq(['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00'])
 
     def test_execute_threshold_3_show_civil_only_true(self):
@@ -178,7 +191,7 @@ class DataGeneratorTestCase(TestCase):
         OfficerAllegationFactory(id=14, officer=officer_4, allegation=allegation_4)
         OfficerAllegationFactory(id=15, officer=officer_5, allegation=allegation_4)
 
-        expected_data = [
+        expected_coaccused_data = [
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
@@ -224,7 +237,7 @@ class DataGeneratorTestCase(TestCase):
         ]
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3)
-        expect(results.coaccused_data).to.eq(expected_data)
+        expect(results.coaccused_data).to.eq(expected_coaccused_data)
         expect(results.list_event).to.eq(['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00'])
 
     def test_execute_threshold_1_show_civil_only_false(self):
@@ -256,7 +269,7 @@ class DataGeneratorTestCase(TestCase):
         OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
         OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
 
-        expected_data = [
+        expected_coaccused_data = [
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
@@ -290,7 +303,7 @@ class DataGeneratorTestCase(TestCase):
         ]
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1, show_civil_only=False)
-        expect(results.coaccused_data).to.eq(expected_data)
+        expect(results.coaccused_data).to.eq(expected_coaccused_data)
         expect(results.list_event).to.eq(
             ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
         )
@@ -342,7 +355,7 @@ class DataGeneratorTestCase(TestCase):
         OfficerAllegationFactory(id=14, officer=officer_4, allegation=allegation_4)
         OfficerAllegationFactory(id=15, officer=officer_5, allegation=allegation_4)
 
-        expected_data = [
+        expected_coaccused_data = [
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
@@ -390,5 +403,5 @@ class DataGeneratorTestCase(TestCase):
         results = SocialGraphDataQuery(
             [officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3, show_civil_only=False
         )
-        expect(results.coaccused_data).to.eq(expected_data)
+        expect(results.coaccused_data).to.eq(expected_coaccused_data)
         expect(results.list_event).to.eq(['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00'])

@@ -17,11 +17,7 @@ class SocialGraphViewSet(viewsets.ViewSet):
 
         social_graph_data_query = SocialGraphDataQuery(officers, self._threshold, self._show_civil_only)
 
-        return Response({
-            'officers': [{'full_name': officer.full_name, 'id': officer.id} for officer in officers],
-            'coaccused_data': social_graph_data_query.coaccused_data,
-            'list_event': social_graph_data_query.list_event
-        })
+        return Response(social_graph_data_query.graph_data)
 
     @property
     def _unit_id(self):
