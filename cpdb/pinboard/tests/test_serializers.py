@@ -51,6 +51,10 @@ class CRPinboardSerializerTestCase(TestCase):
             ]
         })
 
+    def test_get_point_none(self):
+        allegation = AllegationFactory(crid=456, point=None)
+        expect(CRPinboardSerializer(allegation).data).to.exclude('point')
+
 
 class TRRPinboardSerializerTestCase(TestCase):
     def test_serialization(self):
@@ -73,6 +77,10 @@ class TRRPinboardSerializerTestCase(TestCase):
                 'lat': 61.3
             }
         })
+
+    def test_get_point_none(self):
+        trr = TRRFactory(id=2, point=None)
+        expect(TRRPinboardSerializer(trr).data).to.exclude('point')
 
 
 class PinboardComplaintSerializerTestCase(APITestCase):
