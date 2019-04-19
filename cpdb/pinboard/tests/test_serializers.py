@@ -3,11 +3,15 @@ from datetime import datetime
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 
+from rest_framework.test import APITestCase
 from robber import expect
 import pytz
 
+from data.models import Allegation
 from data.factories import AllegationCategoryFactory, AllegationFactory, VictimFactory
-from pinboard.serializers import CRPinboardSerializer, TRRPinboardSerializer
+from pinboard.serializers import (
+    CRPinboardSerializer, TRRPinboardSerializer, PinboardComplaintSerializer
+)
 from trr.factories import TRRFactory
 
 
@@ -69,3 +73,15 @@ class TRRPinboardSerializerTestCase(TestCase):
                 'lat': 61.3
             }
         })
+
+
+class PinboardComplaintSerializerTestCase(APITestCase):
+    def test_get_point_none(self):
+        allegation = Allegation(point=None)
+        serializer = PinboardComplaintSerializer(allegation)
+        expect(serializer.data['point']).to.eq(None)
+
+    def test_get_most_common_category_none(self):
+        allegation = Allegation(most_common_category=None)
+        serializer = PinboardComplaintSerializer(allegation)
+        expect(serializer.data['most_common_category']).to.eq('')
