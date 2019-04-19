@@ -355,7 +355,7 @@ class PinboardAPITestCase(APITestCase):
         trr2 = TRRFactory(
             id=2,
             trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc),
-            point=Point(2.0, 2.0),
+            point=None,
         )
         TRRFactory(id=3)
 
@@ -378,7 +378,7 @@ class PinboardAPITestCase(APITestCase):
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
-                'point': {'lon': 2.0, 'lat': 2.0},
+                'point': None,
             }
         ])
 
