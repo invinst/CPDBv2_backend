@@ -45,14 +45,10 @@ class PinboardComplaintSerializer(serializers.ModelSerializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
 
     def get_point(self, obj):
-        if obj.point is not None:
-            return {'lon': obj.point.x, 'lat': obj.point.y}
-        return None
+        return {'lon': obj.point.x, 'lat': obj.point.y} if obj.point is not None else None
 
     def get_most_common_category(self, obj):
-        if obj.most_common_category is not None:
-            return obj.most_common_category.category
-        return ''
+        return obj.most_common_category.category if obj.most_common_category is not None else ''
 
     class Meta:
         model = Allegation
@@ -70,9 +66,7 @@ class PinboardTRRSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
 
     def get_point(self, obj):
-        if obj.point is not None:
-            return {'lon': obj.point.x, 'lat': obj.point.y}
-        return None
+        return {'lon': obj.point.x, 'lat': obj.point.y} if obj.point is not None else None
 
     def get_category(self, obj):
         return obj.force_types[0] if len(obj.force_types) > 0 else 'Unknown'
