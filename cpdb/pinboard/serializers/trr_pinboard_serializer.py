@@ -7,6 +7,8 @@ class TRRPinboardSerializer(NoNullSerializer):
     trr_id = serializers.IntegerField(source='id')
     date = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
+    taser = serializers.NullBooleanField()
+    firearm_used = serializers.NullBooleanField()
     point = serializers.SerializerMethodField()
 
     def get_kind(self, obj):

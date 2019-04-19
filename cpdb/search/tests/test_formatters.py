@@ -1,14 +1,12 @@
-from mock import Mock
-
 from django.test import SimpleTestCase
-
-from robber import expect
 from elasticsearch_dsl.utils import AttrDict, AttrList
+from mock import Mock
+from robber import expect
 
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter,
 )
 
 
@@ -270,7 +268,20 @@ class CrFormatterTestCase(SimpleTestCase):
                         'fired a <em>gun</em> at the victims',
                         'struck Victim B on the head with a <em>gun</em>'
                     ])
-                })
+                }),
+                inner_hits=Mock(
+                    attachment_files=Mock(hits=[
+                        Mock(
+                            meta=Mock(highlight={
+                                'attachment_files.text_content': [
+                                    'a <em>gun</em> is fired',
+                                    'struck Victim A on the head with a <em>gun</em>'
+                                ]
+                            })
+                        ),
+                        Mock()
+                    ])
+                )
             ),
             category='Operation/Personnel Violations',
             sub_category='Secondary/Special Employment',
@@ -303,6 +314,10 @@ class CrFormatterTestCase(SimpleTestCase):
                 'summary': [
                     'fired a <em>gun</em> at the victims',
                     'struck Victim B on the head with a <em>gun</em>'
+                ],
+                'text_content': [
+                    'a <em>gun</em> is fired',
+                    'struck Victim A on the head with a <em>gun</em>'
                 ]
             },
             'category': 'Operation/Personnel Violations',
@@ -317,6 +332,63 @@ class CrFormatterTestCase(SimpleTestCase):
                 {
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
                     'percentile': {
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500'
+                    }
+                }
+            ]
+        })
+
+    def test_process_doc_no_highlight(self):
+        doc = Mock(
+            crid='123456',
+            to='/complaint/123456/',
+            summary='abc',
+            _id='123',
+            incident_date='1990-01-02',
+            meta=Mock(highlight=None, inner_hits=None),
+            category='Operation/Personnel Violations',
+            sub_category='Secondary/Special Employment',
+            address='3000 Michigan Ave, Chicago IL',
+            victims=[
+                Mock(to_dict=Mock(return_value={'gender': '', 'race': 'Black', 'age': 25})),
+                Mock(to_dict=Mock(return_value={'gender': 'Female', 'race': 'Black'})),
+                Mock(to_dict=Mock(return_value={'gender': 'Female', 'race': 'Black', 'age': 25}))
+            ],
+            coaccused=[
+                Mock(to_dict=Mock(return_value={
+                    'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
+                    'percentile': {
+                        'id': 10,
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500'
+                    }
+                }))
+            ]
+        )
+
+        expect(
+            CRFormatter().process_doc(doc)
+        ).to.eq({
+            'crid': '123456',
+            'to': '/complaint/123456/',
+            'id': '123',
+            'incident_date': '1990-01-02',
+            'category': 'Operation/Personnel Violations',
+            'sub_category': 'Secondary/Special Employment',
+            'address': '3000 Michigan Ave, Chicago IL',
+            'victims': [
+                {'gender': '', 'race': 'Black', 'age': 25},
+                {'gender': 'Female', 'race': 'Black'},
+                {'gender': 'Female', 'race': 'Black', 'age': 25},
+            ],
+            'coaccused': [
+                {
+                    'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
+                    'percentile': {
+                        'id': 10,
                         'percentile_trr': '99.8800',
                         'percentile_allegation_civilian': '77.6600',
                         'percentile_allegation_internal': '66.5500'
