@@ -145,7 +145,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'full_text': 'text content'.encode('utf8'),
-            'pages': 11
+            'pages': 11,
+            'access': 'public',
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
@@ -183,6 +184,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'full_text': 'text content'.encode('utf8'),
             'pages': 10,
+            'access': 'public',
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
@@ -212,7 +214,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
-            'pages': 7
+            'pages': 7,
+            'access': 'public'
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
@@ -232,7 +235,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
-            'pages': 7
+            'pages': 7,
+            'access': 'public'
         })
 
         changed = DocumentCloudAttachmentImporter(
@@ -254,7 +258,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
-            'pages': 7
+            'pages': 7,
+            'access': 'public',
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
@@ -266,7 +271,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             source_type='',
             external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
             text_content='ABC',
-            manually_updated=True
+            manually_updated=True,
         )
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
@@ -277,12 +282,104 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
-            'pages': 7
+            'pages': 7,
+            'access': 'public'
         })
 
         changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
         expect(changed).to.be.true()
         expect(attachment.text_content).to.eq('ABC')
+
+    def test_update_attachment_with_access_error(self):
+        attachment = AttachmentFileFactory(
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            manually_updated=True,
+            pending_documentcloud_id='123456',
+            upload_fail_attempts=0,
+        )
+        document = create_object({
+            'documentcloud_id': '123456',
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7,
+            'access': 'error',
+            'delete': Mock(
+                return_value=True
+            )
+        })
+
+        changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.upload_fail_attempts).to.eq(1)
+        expect(attachment.pending_documentcloud_id).to.be.none()
+        expect(document.delete).to.be.called()
+
+    def test_update_attachment_with_access_public(self):
+        attachment = AttachmentFileFactory(
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            pending_documentcloud_id='123456',
+            upload_fail_attempts=0,
+        )
+        document = create_object({
+            'documentcloud_id': '123456',
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7,
+            'access': 'public',
+        })
+
+        changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
+        expect(attachment.external_id).to.eq('123456')
+
+    def test_update_attachment_with_access_public_and_manually_update(self):
+        attachment = AttachmentFileFactory(
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            manually_updated=True,
+            pending_documentcloud_id='123456',
+            upload_fail_attempts=0,
+        )
+        document = create_object({
+            'documentcloud_id': '123456',
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7,
+            'access': 'public',
+            'save': Mock(
+                return_value=True
+            )
+        })
+
+        changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
+        expect(attachment.external_id).to.eq('123456')
+        expect(document.save).to.be.called()
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_delete_attachments(self, _):
@@ -357,7 +454,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         self, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock
     ):
         allegation = AllegationFactory(crid='234')
-        new_document = create_object({
+        new_cloud_document = create_object({
             'documentcloud_id': '999',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
@@ -370,8 +467,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'full_text': 'text content'.encode('utf8'),
             'pages': 4,
+            'access': 'public',
         })
-        update_document_1 = create_object({
+        update_cloud_document_1 = create_object({
             'documentcloud_id': '1',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -383,8 +481,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'full_text': 'updated text content'.encode('utf8'),
             'pages': 1,
+            'access': 'public',
         })
-        update_document_2 = create_object({
+        update_cloud_document_2 = create_object({
             'documentcloud_id': '3',
             'allegation': allegation,
             'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
@@ -395,9 +494,10 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'full_text': 'summary reports updated text content'.encode('utf8'),
-            'pages': 3
+            'pages': 3,
+            'access': 'public',
         })
-        kept_document = create_object({
+        kept_cloud_document = create_object({
             'documentcloud_id': '2',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -409,8 +509,63 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'full_text': 'text content'.encode('utf8'),
             'pages': 2,
+            'access': 'public',
         })
-        search_all_mock.return_value = [new_document, update_document_1, update_document_2, kept_document]
+        update_pending_cloud_document = create_object({
+            'documentcloud_id': '1111123',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/2-CRID-234-CR.html',
+            'document_type': 'CR',
+            'title': 'CRID-234-CR-2',
+            'normal_image_url': 'http://web.com/new-image',
+            'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 2,
+            'access': 'public',
+        })
+        kept_pending_cloud_document = create_object({
+            'documentcloud_id': '1111124',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/2-CRID-234-CR.html',
+            'document_type': 'CR',
+            'title': 'CRID-234-CR-2',
+            'normal_image_url': 'http://web.com/new-image',
+            'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 2,
+            'access': 'pending',
+        })
+        error_pending_cloud_document = create_object({
+            'documentcloud_id': '1111125',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/2-CRID-234-CR.html',
+            'document_type': 'CR',
+            'title': 'CRID-234-CR-2',
+            'normal_image_url': 'http://web.com/new-image',
+            'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'full_text': 'text content'.encode('utf8'),
+            'pages': 2,
+            'access': 'error',
+            'delete': Mock(
+                return_value=True
+            )
+        })
+
+        search_all_mock.return_value = [
+            new_cloud_document,
+            update_cloud_document_1,
+            update_cloud_document_2,
+            kept_cloud_document,
+            update_pending_cloud_document,
+            kept_pending_cloud_document,
+            error_pending_cloud_document
+        ]
 
         AttachmentFileFactory(
             external_id='111',
@@ -422,7 +577,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             allegation=allegation,
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         )
-        AttachmentFileFactory(
+        updated_attachment_1 = AttachmentFileFactory(
             external_id='1',
             allegation=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -446,7 +601,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             tag='CR',
             text_content='text content'
         )
-        AttachmentFileFactory(
+        updated_attachment_2 = AttachmentFileFactory(
             external_id='3',
             allegation=allegation,
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
@@ -456,20 +611,65 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
             external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
             tag='CR',
-            text_content='text content'
+            text_content='text content',
+        )
+        updated_public_pending_document = AttachmentFileFactory(
+            external_id='4-CRID-456-CR.html',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            url='https://www.documentcloud.org/documents/4-CRID-456-CR.html',
+            title='CRID-456-CR-3',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content='text content',
+            pending_documentcloud_id='1111123'
+        )
+        kept_pending_document = AttachmentFileFactory(
+            external_id='5-CRID-456-CR',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            url='https://www.documentcloud.org/documents/5-CRID-456-CR.html',
+            title='CRID-456-CR-3',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content='text content',
+            pending_documentcloud_id='1111124'
+        )
+        updated_error_pending_document = AttachmentFileFactory(
+            external_id='6-CRID-456-CR',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            url='https://www.documentcloud.org/documents/6-CRID-456-CR.html',
+            title='CRID-456-CR-3',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content='text content',
+            pending_documentcloud_id='1111125'
         )
 
-        expect(AttachmentFile.objects.count()).to.eq(5)
+        expect(AttachmentFile.objects.count()).to.eq(8)
 
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
 
-        expect(AttachmentFile.objects.count()).to.eq(5)
+        expect(AttachmentFile.objects.count()).to.eq(8)
         expect(AttachmentFile.objects.filter(external_id='666').count()).to.eq(0)
         new_attachment = AttachmentFile.objects.get(external_id='999')
         AttachmentFile.objects.get(external_id='2')
-        updated_attachment_1 = AttachmentFile.objects.get(external_id='1')
-        updated_attachment_2 = AttachmentFile.objects.get(external_id='3')
+
+        for document in [
+            updated_attachment_1,
+            updated_attachment_2,
+            updated_public_pending_document,
+            updated_error_pending_document
+        ]:
+            document.refresh_from_db()
 
         expect(updated_attachment_1.url).to.eq('https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html')
         expect(updated_attachment_1.title).to.eq('CRID-234-CR-updated')
@@ -491,9 +691,22 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(updated_attachment_2.text_content).to.eq('summary reports updated text content')
         expect(updated_attachment_2.pages).to.eq(3)
 
+        expect(updated_public_pending_document.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
+        expect(updated_public_pending_document.external_id).to.eq('1111123')
+        expect(updated_public_pending_document.pending_documentcloud_id).to.be.none()
+
+        expect(kept_pending_document.external_id).to.eq('5-CRID-456-CR')
+        expect(kept_pending_document.source_type).to.eq(AttachmentSourceType.PORTAL_COPA)
+        expect(kept_pending_document.pending_documentcloud_id).to.eq('1111124')
+
+        expect(updated_error_pending_document.upload_fail_attempts).to.eq(1)
+        expect(updated_error_pending_document.pending_documentcloud_id).to.be.none()
+        expect(updated_error_pending_document.external_id).to.eq('6-CRID-456-CR')
+        expect(error_pending_cloud_document.delete).to.be.called()
+
         expect(send_cr_attachment_email_mock).to.be.called_once_with([new_attachment])
 
-        expect(data_aws_mock.lambda_client.invoke_async.call_count).to.eq(3)
+        expect(data_aws_mock.lambda_client.invoke_async.call_count).to.eq(5)
         expect(data_aws_mock.lambda_client.invoke_async).to.be.any_call(
             FunctionName='uploadPdfTest',
             InvokeArgs=json.dumps({
@@ -514,22 +727,24 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         crawler_log = DocumentCrawler.objects.order_by('-created_at').first()
         expect(crawler_log.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
         expect(crawler_log.status).to.eq(DOCUMENT_CRAWLER_SUCCESS)
-        expect(crawler_log.num_documents).to.eq(4)
+        expect(crawler_log.num_documents).to.eq(5)
         expect(crawler_log.num_new_documents).to.eq(1)
-        expect(crawler_log.num_updated_documents).to.eq(1)
+        expect(crawler_log.num_updated_documents).to.eq(4)
         expect(crawler_log.num_successful_run).to.eq(1)
         expect(crawler_log.log_key).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
 
         log_args = shared_aws_mock.s3.put_object.call_args[1]
 
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(
             b'\nCreating 1 attachments'
-            b'\nUpdating 1 attachments'
-            b'\nCurrent Total documentcloud attachments: 4'
+            b'\nUpdating 4 attachments'
+            b'\nCurrent Total documentcloud attachments: 5'
             b'\nDone importing!'
         )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
@@ -578,6 +793,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while SEARCH ATTACHMENTS!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')

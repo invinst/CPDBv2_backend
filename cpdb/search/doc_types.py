@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer, String
+from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer, String, Nested
 
 from .indices import autocompletes_alias
 
@@ -53,8 +53,13 @@ class RankDocType(DocType):
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     incident_date = Keyword()
-    summary = Text(analyzer='standard', store=True, term_vector="with_positions_offsets")
+    summary = Text(analyzer='standard', store=True, term_vector='with_positions_offsets')
     investigator_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    attachment_files = Nested(properties={
+        'id': Integer(),
+        'text_content': Text(analyzer='standard', store=True, term_vector='with_positions_offsets'),
+    })
 
     class Meta:
         doc_type = 'cr'

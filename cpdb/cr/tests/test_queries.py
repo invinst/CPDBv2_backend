@@ -9,8 +9,9 @@ from freezegun import freeze_time
 
 from analytics import constants
 from analytics.factories import AttachmentTrackingFactory
+from data.cache_managers import allegation_cache_manager
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
-from data.factories import AllegationFactory, AttachmentFileFactory
+from data.factories import AllegationFactory, AttachmentFileFactory, OfficerAllegationFactory, AllegationCategoryFactory
 from cr.queries import LatestDocumentsQuery
 
 
@@ -22,6 +23,13 @@ class LatestDocumentsQueryTestCase(TestCase):
         allegation_3 = AllegationFactory(crid='789')
         allegation_4 = AllegationFactory(crid='321')
         allegation_5 = AllegationFactory(crid='987')
+
+        allegation_category_1 = AllegationCategoryFactory(id=1)
+        allegation_category_12 = AllegationCategoryFactory(id=2)
+
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_1)
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_1)
+        OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_12)
 
         attachment_file_1 = AttachmentFileFactory(
             allegation=allegation_1,
@@ -181,6 +189,8 @@ class LatestDocumentsQueryTestCase(TestCase):
                 attachment_file=attachment_file_6,
                 kind=constants.DOWNLOAD_EVENT_TYPE)
 
+        allegation_cache_manager.cache_data()
+
         results = LatestDocumentsQuery.execute(5)
 
         expect(len(results)).to.eq(4)
@@ -202,6 +212,7 @@ class LatestDocumentsQueryTestCase(TestCase):
         expect(third_result.allegation_id).to.eq('123')
         expect(third_result.latest_viewed_at).to.be.none()
         expect(third_result.num_recent_documents).to.eq(2)
+        expect(third_result.allegation.most_common_category_id).to.eq(1)
 
         fourth_result = results[3]
         expect(fourth_result.id).to.eq(attachment_file_2.id)

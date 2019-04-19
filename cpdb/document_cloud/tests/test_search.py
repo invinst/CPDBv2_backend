@@ -47,6 +47,18 @@ class SearchTestCase(TestCase):
             external_id='6',
             allegation=allegation
         )
+        AttachmentFileFactory(
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            external_id='8',
+            allegation=allegation,
+            pending_documentcloud_id='123456',
+        )
+        AttachmentFileFactory(
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
+            external_id='9',
+            allegation=allegation,
+            pending_documentcloud_id='456789',
+        )
 
         copa_document_no_crid = create_object({
             'id': '1-CRID-CR',
@@ -89,10 +101,17 @@ class SearchTestCase(TestCase):
             'description': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/7-CRID-123-CR.html',
         })
+        summary_reports_copa_document_pending = create_object({
+            'id': '456789-CRID-123-CR',
+            'title': 'CRID-123 CR 456789',
+            'description': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/456789-CRID-123-CR.html',
+        })
 
         DocumentCloudMock().documents.search.return_value = [
             copa_document_no_crid, copa_document, should_be_filtered_copa_document,
-            duplicated_cloud_document, cloud_document, new_cloud_document, summary_reports_copa_document
+            duplicated_cloud_document, cloud_document, new_cloud_document, summary_reports_copa_document,
+            summary_reports_copa_document_pending
         ]
 
         documents = search_all()
@@ -133,9 +152,16 @@ class SearchTestCase(TestCase):
                 'document_type': 'CR',
                 'allegation': allegation
             },
+            '456789-CRID-123-CR': {
+                'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+                'documentcloud_id': '456789',
+                'url': 'https://www.documentcloud.org/documents/456789-CRID-123-CR.html',
+                'document_type': 'CR',
+                'allegation': allegation
+            },
         }
 
-        expect(documents).to.have.length(5)
+        expect(documents).to.have.length(6)
         for document in documents:
             expect(document.id in expectation_dict).to.be.true()
             expectation = expectation_dict[document.id]

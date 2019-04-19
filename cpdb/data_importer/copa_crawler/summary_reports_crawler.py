@@ -9,7 +9,7 @@ HEADERS = {
 }
 
 
-class OpenIpraSummaryReportsCrawler(object):
+class OpenCopaSummaryReportsCrawler(object):
     URL = 'https://www.chicagocopa.org/news-publications/publications/summary-reports/'
 
     def __init__(self, url=URL):
@@ -21,7 +21,7 @@ class OpenIpraSummaryReportsCrawler(object):
         return [item.get('href') for item in list_items]
 
 
-class OpenIpraYearSummaryReportsCrawler(object):
+class OpenCopaYearSummaryReportsCrawler(object):
     def __init__(self, url):
         self.url = url
         self.soup = BeautifulSoup(self.get_html_content(), 'html.parser')

@@ -8,8 +8,8 @@ import time
 import sys
 
 
-PENDING_CHECK_INTERVAL = 5  # seconds
-PENDING_CHECK_ATTEMPS = 6
+PENDING_CHECK_INTERVAL = 12  # seconds
+PENDING_CHECK_ATTEMPS = 10
 DEPLOYMENT_NAME = 'gunicorn'
 
 

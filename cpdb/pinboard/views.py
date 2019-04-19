@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import detail_route
@@ -8,10 +10,14 @@ from rest_framework.permissions import AllowAny
 from data.models import Allegation, Officer
 from trr.models import TRR
 from officers.serializers.response_serializers import OfficerCardSerializer
+from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
+from pinboard.queries import GeographyDataQuery
+from social_graph.queries import SocialGraphDataQuery
 from .models import Pinboard
 from .serializers import PinboardSerializer, PinboardComplaintSerializer, PinboardTRRSerializer
 
 
+@method_decorator(never_cache, name='dispatch')
 class PinboardViewSet(
         mixins.CreateModelMixin,
         mixins.UpdateModelMixin,
@@ -60,3 +66,23 @@ class PinboardViewSet(
         trrs = TRR.objects.filter(id__in=trr_ids).prefetch_related('actionresponse_set')
         serializer = PinboardTRRSerializer(trrs, many=True)
         return Response(serializer.data)
+
+    @detail_route(methods=['get'], url_path='social-graph')
+    def social_graph(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        social_graph_data_query = SocialGraphDataQuery(
+            pinboard.all_officers,
+            PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
+            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
+        )
+
+        return Response(social_graph_data_query.graph_data)
+
+    @detail_route(methods=['get'], url_path='geographic-data')
+    def geographic_data(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        return Response(GeographyDataQuery(pinboard.all_officers).execute())

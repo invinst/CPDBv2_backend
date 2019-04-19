@@ -1,7 +1,7 @@
 from django.db import connection
 
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_IPRA_COPA_HIDING_TAGS
-from data.models import AttachmentFile
+from data.models import AttachmentFile, Allegation
 from analytics import constants
 from utils.raw_query_utils import dict_fetch_all
 
@@ -66,8 +66,12 @@ class LatestDocumentsQuery(object):
         )
 
         num_recent_documents_hash = cls._num_recent_documents_hash(attachment_files)
+        allegations_dict = Allegation.objects.filter(
+            crid__in=[attachment.allegation_id for attachment in attachment_files]
+        ).select_related('most_common_category').in_bulk()
 
         for attachment_file in attachment_files:
             setattr(attachment_file, 'num_recent_documents', num_recent_documents_hash[attachment_file.allegation_id])
+            setattr(attachment_file, 'allegation', allegations_dict[attachment_file.allegation_id])
 
         return attachment_files

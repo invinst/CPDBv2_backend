@@ -15,25 +15,25 @@ from document_cloud.models import DocumentCrawler
 from data.factories import AllegationCategoryFactory, AllegationFactory, AttachmentFileFactory
 from data.models import Allegation, AttachmentFile
 
-from data_importer.ipra_crawler.importers import (
-    IpraPortalAttachmentImporter,
-    IpraSummaryReportsAttachmentImporter,
-    IpraBaseAttachmentImporter
+from data_importer.copa_crawler.importers import (
+    CopaPortalAttachmentImporter,
+    CopaSummaryReportsAttachmentImporter,
+    CopaBaseAttachmentImporter
 )
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO
 
 
-class IpraBaseAttachmentImporterTestCase(TestCase):
+class CopaBaseAttachmentImporterTestCase(TestCase):
     def test_raise_NotImplementedError(self):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        expect(IpraBaseAttachmentImporter(logger).crawl_ipra).to.throw(NotImplementedError)
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        expect(CopaBaseAttachmentImporter(logger).crawl_copa).to.throw(NotImplementedError)
 
 
 @override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
-class IpraPortalAttachmentImporterTestCase(TestCase):
-    @patch('data_importer.ipra_crawler.importers.OpenIpraInvestigationCrawler')
-    @patch('data_importer.ipra_crawler.importers.ComplaintCrawler')
-    def test_crawl_ipra(self, complaint_crawler, link_crawler):
+class CopaPortalAttachmentImporterTestCase(TestCase):
+    @patch('data_importer.copa_crawler.importers.OpenCopaInvestigationCrawler')
+    @patch('data_importer.copa_crawler.importers.ComplaintCrawler')
+    def test_crawl_copa(self, complaint_crawler, link_crawler):
         link_crawler.return_value.crawl.return_value = ['link 1']
         complaint_crawler.return_value.crawl.return_value = {
             'attachments': [
@@ -51,8 +51,8 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             'type': 'Allegation Name',
             'subjects': ['Subject1', 'Unknown'],
         }
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        expect(IpraPortalAttachmentImporter(logger).crawl_ipra()).to.be.eq([{
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        expect(CopaPortalAttachmentImporter(logger).crawl_copa()).to.be.eq([{
             'allegation': {
                 'crid': '1',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -75,7 +75,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         }])
 
     def test_parse_incidents(self):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
         incidents = [{
             'attachments': [
                 {
@@ -92,7 +92,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             'type': 'Allegation Name',
             'subjects': ['Subject1', 'Unknown'],
         }]
-        expect(IpraPortalAttachmentImporter(logger).parse_incidents(incidents)).to.be.eq([{
+        expect(CopaPortalAttachmentImporter(logger).parse_incidents(incidents)).to.be.eq([{
             'allegation': {
                 'crid': '1',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -114,12 +114,12 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             'police_shooting': True
         }])
 
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.upload_to_documentcloud')
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.upload_to_documentcloud')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
     @patch('shared.attachment_importer.aws')
-    def test_crawl_and_update_attachments(self, aws_mock, crawl_ipra, _):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_crawl_and_update_attachments(self, aws_mock, crawl_copa, _):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'allegation': {
                 'crid': '123',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -180,7 +180,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
-            new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+            new_attachments = CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
@@ -204,16 +204,18 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
                       b'\nDone importing!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('portal_copa/portal-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.upload_to_documentcloud')
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.upload_to_documentcloud')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
     @patch('shared.attachment_importer.aws')
-    def test_update(self, _, crawl_ipra, __):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_update(self, _, crawl_copa, __):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'allegation': {
                 'crid': '123',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -242,18 +244,18 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
 
-        new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+        new_attachments = CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.be.empty()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('CRID 123 CR pdf file')
 
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.upload_to_documentcloud')
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
-    @patch('data_importer.ipra_crawler.portal_crawler.VimeoSimpleAPI.crawl')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.upload_to_documentcloud')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
+    @patch('data_importer.copa_crawler.portal_crawler.VimeoSimpleAPI.crawl')
     @patch('shared.attachment_importer.aws')
-    def test_update_video_thumbnail(self, _, vimeo_api, crawl_ipra, __):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_update_video_thumbnail(self, _, vimeo_api, crawl_copa, __):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'allegation': {
                 'crid': '123',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -294,16 +296,16 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             preview_image_url=None
         )
 
-        IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+        CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).title).to.eq('video file')
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).preview_image_url). \
             to.eq('https://i.vimeocdn.com/video/747800241_100x75.webp')
 
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
     @patch('shared.attachment_importer.aws')
-    def test_not_update_video_thumbnail_when_source_is_not_vimeo(self, _, crawl_ipra):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_not_update_video_thumbnail_when_source_is_not_vimeo(self, _, crawl_copa):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'attachments': [
                 {
                     'type': 'video',
@@ -328,14 +330,14 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             preview_image_url=None
         )
 
-        IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+        CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).preview_image_url).be.none()
 
-    @patch('data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra')
+    @patch('data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa')
     @patch('shared.attachment_importer.aws')
-    def test_update_PORTAL_COPA_DOCUMENTCLOUD_file(self, _, crawl_ipra):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_update_PORTAL_COPA_DOCUMENTCLOUD_file(self, _, crawl_copa):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'allegation': {
                 'crid': '123',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -366,7 +368,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             external_last_updated=datetime(2017, 10, 30, tzinfo=pytz.utc)
         )
 
-        new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+        new_attachments = CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
         expect(new_attachments).to.be.empty()
 
         updated_attachment_file = AttachmentFile.objects.get(pk=attachment_file.pk)
@@ -374,12 +376,12 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(updated_attachment_file.external_last_updated).to.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
 
     @patch(
-        'data_importer.ipra_crawler.importers.IpraPortalAttachmentImporter.crawl_ipra',
+        'data_importer.copa_crawler.importers.CopaPortalAttachmentImporter.crawl_copa',
         side_effect=Mock(side_effect=[Exception()])
     )
     @patch('shared.attachment_importer.aws')
     def test_failed_crawl_and_update_attachments(self, aws_mock, _):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
 
         with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
@@ -400,7 +402,7 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
-            new_attachments = IpraPortalAttachmentImporter(logger).crawl_and_update_attachments()
+            new_attachments = CopaPortalAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.eq([])
         expect(DocumentCrawler.objects.count()).to.eq(3)
@@ -419,13 +421,15 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while CRAWLING!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.contain('crawler_logs_bucket')
         expect(log_args['Key']).to.contain('portal_copa/portal-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
-    @patch('data_importer.ipra_crawler.importers.DocumentCloud')
+    @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_portal_copa_documents(self, DocumentCloudMock):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
         DocumentCloudMock().documents.upload.return_value = PropertyMock(
             id='5396984-crid-123-cr-tactical-response-report',
             title='CRID 123 CR Tactical Response Report',
@@ -443,29 +447,13 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='Tactical Response Report',
-            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf'
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
+            upload_fail_attempts=1
         )
 
-        IpraPortalAttachmentImporter(logger).upload_to_documentcloud()
+        CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
 
-        copa_documents = AttachmentFile.objects.filter(
-            source_type=AttachmentSourceType.PORTAL_COPA,
-            file_type=MEDIA_TYPE_DOCUMENT
-        )
-        expect(copa_documents.count()).to.eq(0)
-
-        AttachmentFile.objects.get(
-            external_id='5396984',
-            allegation=allegation,
-            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            title='CRID 123 CR Tactical Response Report',
-            url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
-            tag='CR',
-            external_created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
-            external_last_updated=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
-            preview_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
-        )
+        AttachmentFile.objects.get(pending_documentcloud_id='5396984')
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
             title='CRID 123 CR Tactical Response Report',
@@ -474,9 +462,10 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             force_ocr=True
         )
 
-    @patch('data_importer.ipra_crawler.importers.DocumentCloud')
+    @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_portal_copa_documents_no_upload(self, DocumentCloudMock):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        allegation = AllegationFactory()
         AttachmentFileFactory(
             external_id='456-OCIR-2-Redacted.pdf',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -487,16 +476,25 @@ class IpraPortalAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_AUDIO
         )
+        AttachmentFileFactory(
+            external_id='456-OCIR-Redacted.pdf',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Tactical Response Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2018/10/Log-1086456-TRR-Redacted.pdf',
+            upload_fail_attempts=6
+        )
 
-        IpraPortalAttachmentImporter(logger).upload_to_documentcloud()
+        CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
         expect(DocumentCloudMock().documents.upload).not_to.be.called()
 
 
 @override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
-class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
-    @patch('data_importer.ipra_crawler.importers.OpenIpraYearSummaryReportsCrawler')
-    @patch('data_importer.ipra_crawler.importers.OpenIpraSummaryReportsCrawler')
-    def test_crawl_ipra(self, reports_crawler, year_crawler):
+class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
+    @patch('data_importer.copa_crawler.importers.OpenCopaYearSummaryReportsCrawler')
+    @patch('data_importer.copa_crawler.importers.OpenCopaSummaryReportsCrawler')
+    def test_crawl_copa(self, reports_crawler, year_crawler):
         reports_crawler.return_value.crawl.return_value = ['link 1']
         year_crawler.return_value.crawl.return_value = [{
             'attachments': [
@@ -508,8 +506,8 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             'log_num': '1086683',
         }]
 
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        expect(IpraSummaryReportsAttachmentImporter(logger).crawl_ipra()).to.be.eq([{
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        expect(CopaSummaryReportsAttachmentImporter(logger).crawl_copa()).to.be.eq([{
             'allegation': {
                 'crid': '1086683',
                 'attachment_files': [{
@@ -523,12 +521,12 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             },
         }])
 
-    @patch('data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.upload_to_documentcloud')
-    @patch('data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.crawl_ipra')
+    @patch('data_importer.copa_crawler.importers.CopaSummaryReportsAttachmentImporter.upload_to_documentcloud')
+    @patch('data_importer.copa_crawler.importers.CopaSummaryReportsAttachmentImporter.crawl_copa')
     @patch('shared.attachment_importer.aws')
-    def test_crawl_and_update_attachments(self, aws_mock, crawl_ipra, _):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
-        crawl_ipra.return_value = [{
+    def test_crawl_and_update_attachments(self, aws_mock, crawl_copa, _):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        crawl_copa.return_value = [{
             'allegation': {
                 'crid': '123',
                 'incident_date': datetime(2013, 4, 30, 21, 30, tzinfo=pytz.utc),
@@ -606,7 +604,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(Allegation.objects.get(crid='123').attachment_files.count()).to.eq(1)
 
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
-            new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
+            new_attachments = CopaSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
@@ -631,17 +629,19 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
                       b'\nCurrent Total summary_reports_copa attachments: 2' \
                       b'\nDone importing!'
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.contain('crawler_logs_bucket')
         expect(log_args['Key']).to.contain('summary_reports_copa/summary-reports-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
     @patch(
-        'data_importer.ipra_crawler.importers.IpraSummaryReportsAttachmentImporter.crawl_ipra',
+        'data_importer.copa_crawler.importers.CopaSummaryReportsAttachmentImporter.crawl_copa',
         side_effect=Mock(side_effect=[Exception()])
     )
     @patch('shared.attachment_importer.aws')
     def test_failed_crawl_and_update_attachments(self, aws_mock, _):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
 
         with freeze_time(datetime(2018, 4, 2, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCrawlerFactory(
@@ -662,7 +662,7 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
         expect(expect(DocumentCrawler.objects.count())).to.eq(2)
 
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
-            new_attachments = IpraSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
+            new_attachments = CopaSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(new_attachments).to.eq([])
         expect(DocumentCrawler.objects.count()).to.eq(3)
@@ -681,13 +681,15 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
                       b'\nERROR: Error occurred while CRAWLING!'
 
         log_args = aws_mock.s3.put_object.call_args[1]
+        expect(len(log_args)).to.eq(4)
         expect(log_args['Body']).to.contain(log_content)
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('summary_reports_copa/summary-reports-copa-2018-04-04-120001.txt')
+        expect(log_args['ContentType']).to.eq('text/plain')
 
-    @patch('data_importer.ipra_crawler.importers.DocumentCloud')
+    @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_summary_reports_copa_documents(self, DocumentCloudMock):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
         DocumentCloudMock().documents.upload.return_value = PropertyMock(
             id='5396984-crid-123-cr-tactical-response-report',
             title='CRID 123 CR Tactical Response Report',
@@ -705,29 +707,13 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='COPA Summary Report',
-            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf'
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
+            upload_fail_attempts=1,
         )
 
-        IpraSummaryReportsAttachmentImporter(logger).upload_to_documentcloud()
+        CopaSummaryReportsAttachmentImporter(logger).upload_to_documentcloud()
 
-        copa_documents = AttachmentFile.objects.filter(
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
-            file_type=MEDIA_TYPE_DOCUMENT
-        )
-        expect(copa_documents.count()).to.eq(0)
-
-        AttachmentFile.objects.get(
-            external_id='5396984',
-            allegation=allegation,
-            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
-            file_type=MEDIA_TYPE_DOCUMENT,
-            title='CRID 123 CR Tactical Response Report',
-            url='https://www.documentcloud.org/documents/5396984-tactical-response-report.html',
-            tag='CR',
-            external_created_at=datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc),
-            external_last_updated=datetime(2017, 8, 5, 14, 30, 00, tzinfo=pytz.utc),
-            preview_image_url='https://www.documentcloud.org/documents/tactical-response-report-p1-normal.gif',
-        )
+        AttachmentFile.objects.get(pending_documentcloud_id='5396984')
         expect(DocumentCloudMock().documents.upload).to.be.called_with(
             'https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
             title='CRID 123 CR COPA Summary Report',
@@ -736,9 +722,10 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             force_ocr=True
         )
 
-    @patch('data_importer.ipra_crawler.importers.DocumentCloud')
+    @patch('data_importer.copa_crawler.importers.DocumentCloud')
     def test_upload_summary_reports_copa_documents_no_upload(self, DocumentCloudMock):
-        logger = logging.getLogger('crawler.crawl_ipra_portal_data')
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        allegation = AllegationFactory()
         AttachmentFileFactory(
             external_id='456-OCIR-2-Redacted.pdf',
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
@@ -749,6 +736,15 @@ class IpraSummaryReportsAttachmentImporterTestCase(TestCase):
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             file_type=MEDIA_TYPE_AUDIO
         )
+        AttachmentFileFactory(
+            external_id='456-OCIR-Redacted.pdf',
+            allegation=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Tactical Response Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2018/10/Log-1086456-TRR-Redacted.pdf',
+            upload_fail_attempts=6
+        )
 
-        IpraPortalAttachmentImporter(logger).upload_to_documentcloud()
+        CopaSummaryReportsAttachmentImporter(logger).upload_to_documentcloud()
         expect(DocumentCloudMock().documents.upload).not_to.be.called()

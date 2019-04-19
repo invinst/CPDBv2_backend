@@ -48,3 +48,8 @@ class CoaccusedSerializer(NoNullSerializer):
 
     def get_percentile(self, obj):
         return OfficerAllegationPercentileSerializer(obj.officer).data
+
+
+class AttachmentFileSerializer(NoNullSerializer):
+    id = serializers.IntegerField()
+    text_content = serializers.CharField()
