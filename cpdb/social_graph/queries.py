@@ -12,9 +12,10 @@ class SocialGraphDataQuery(object):
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
         self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
-        self.coaccused_data = self.calculate_coaccused_data()
-        self.list_event = self.get_list_event()
-        self.graph_data = self.get_graph_data()
+        self.coaccused_data = []
+        self.list_event = []
+        self.graph_data = {}
+        self.calculate_data()
 
     def _build_query(self):
         officer_ids_string = ", ".join([str(officer.id) for officer in self.officers])
@@ -53,3 +54,9 @@ class SocialGraphDataQuery(object):
             'coaccused_data': self.coaccused_data,
             'list_event': self.list_event
         }
+
+    def calculate_data(self):
+        if self.officers:
+            self.coaccused_data = self.calculate_coaccused_data()
+            self.list_event = self.get_list_event()
+            self.graph_data = self.get_graph_data()

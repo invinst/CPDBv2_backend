@@ -405,3 +405,9 @@ class DataGeneratorTestCase(TestCase):
         )
         expect(results.coaccused_data).to.eq(expected_coaccused_data)
         expect(results.list_event).to.eq(['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00'])
+
+    def test_handle_empty_officers(self):
+        results = SocialGraphDataQuery([], threshold=2, show_civil_only=False)
+        expect(results.coaccused_data).to.be.empty()
+        expect(results.list_event).to.be.empty()
+        expect(results.graph_data).to.be.empty()
