@@ -29,19 +29,30 @@ class PinboardViewSet(
 
     def create(self, request):
         response = super().create(request)
-        request.session['pinboard-id'] = response.data['id']
+        self.update_owned_pinboards(request, response.data['id'])
         return response
 
     def update(self, request, pk):
-        if 'pinboard-id' in request.session and \
-               str(request.session['pinboard-id']) == str(pk):
+        if str(pk) in request.session.get('owned_pinboards', []):
             return super().update(request, pk)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
         pinboard = self.get_object()
+        owned_pinboards = request.session.get('owned_pinboards', [])
         serializer_class = self.get_serializer_class()
+
+        if pk not in owned_pinboards:
+            pinboard = pinboard.clone()
+            self.update_owned_pinboards(request, pinboard.id)
+
         return Response(serializer_class(pinboard).data)
+
+    def update_owned_pinboards(self, request, pinboard_id):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        owned_pinboards.append(pinboard_id)
+        request.session['owned_pinboards'] = owned_pinboards
+        request.session['modified'] = True
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):

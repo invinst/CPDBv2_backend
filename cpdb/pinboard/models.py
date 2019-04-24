@@ -23,3 +23,15 @@ class Pinboard(TimeStampsModel):
             Q(trr__id__in=trr_ids) |
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
+
+    def clone(self):
+        new_pinboard = Pinboard()
+        new_pinboard.title = self.title
+        new_pinboard.description = self.description
+        new_pinboard.save()
+
+        new_pinboard.officers.set(self.officers.all())
+        new_pinboard.allegations.set(self.allegations.all())
+        new_pinboard.trrs.set(self.trrs.all())
+
+        return new_pinboard

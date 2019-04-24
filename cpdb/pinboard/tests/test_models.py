@@ -64,3 +64,36 @@ class PinboardTestCase(TestCase):
         ]
 
         expect(list(pinboard.all_officers)).to.eq(expected_all_officers)
+
+    def test_clone(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+
+        allegation_1 = AllegationFactory(crid='123abc')
+        allegation_2 = AllegationFactory(crid='456def')
+
+        trr_1 = TRRFactory(id=1, officer=OfficerFactory(id=3))
+        trr_2 = TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        pinboard = PinboardFactory(
+            title='Pinboard title',
+            description='Pinboard title',
+            officers=(officer_1, officer_2),
+            allegations=(allegation_1, allegation_2),
+            trrs=(trr_1, trr_2),
+        )
+        cloned_pinboard = pinboard.clone()
+
+        officers = set(pinboard.officers.all().values_list('id', flat=True))
+        allegations = set(pinboard.allegations.all().values_list('crid', flat=True))
+        trrs = set(pinboard.trrs.all().values_list('id', flat=True))
+
+        cloned_officers = set(cloned_pinboard.officers.all().values_list('id', flat=True))
+        cloned_allegations = set(cloned_pinboard.allegations.all().values_list('crid', flat=True))
+        cloned_trrs = set(cloned_pinboard.trrs.all().values_list('id', flat=True))
+
+        expect(pinboard.title).to.eq(cloned_pinboard.title)
+        expect(pinboard.description).to.eq(cloned_pinboard.description)
+        expect(officers).to.eq(cloned_officers)
+        expect(allegations).to.eq(cloned_allegations)
+        expect(trrs).to.eq(cloned_trrs)

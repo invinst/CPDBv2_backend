@@ -30,22 +30,23 @@ class PinboardAPITestCase(APITestCase):
             description='abc',
         )
 
+        # Current client does not own the pinboard, should clone it
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': 'f871a13f',
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
-        })
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
 
+        # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'F871A13F'}))
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'id': 'f871a13f',
+            'id': cloned_pinboard_id,
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
