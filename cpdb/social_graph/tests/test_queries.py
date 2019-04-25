@@ -539,3 +539,9 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         expect(results.graph_data).to.eq(expected_graph_data)
+
+    def test_handle_empty_officers(self):
+        results = SocialGraphDataQuery([], threshold=2, show_civil_only=False)
+        expect(results.coaccused_data).to.be.empty()
+        expect(results.list_event).to.be.empty()
+        expect(results.graph_data).to.be.empty()

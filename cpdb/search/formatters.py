@@ -7,19 +7,26 @@ class Formatter(object):
 
 
 class SimpleFormatter(Formatter):
+    def get_highlight(self, doc):
+        try:
+            return {
+                key: list(val)
+                for key, val in doc.meta.highlight.to_dict().items()
+            }
+        except AttributeError:
+            return
+
     def doc_format(self, doc):
         return doc.to_dict()
 
     def process_doc(self, doc):
         result = self.doc_format(doc)
         result['id'] = doc._id
-        try:
-            result['highlight'] = {
-                key: [el for el in val]
-                for key, val in doc.meta.highlight.to_dict().items()
-            }
-        except AttributeError:
-            pass
+
+        highlight = self.get_highlight(doc)
+        if highlight:
+            result['highlight'] = highlight
+
         return result
 
     def format(self, response):
@@ -107,6 +114,20 @@ class ReportFormatter(SimpleFormatter):
 
 
 class CRFormatter(SimpleFormatter):
+    def get_text_content_highlight(self, doc):
+        try:
+            first_attachment_inner_hit = doc.meta.inner_hits.attachment_files.hits[0]
+            return first_attachment_inner_hit.meta.highlight['attachment_files.text_content']
+        except (KeyError, IndexError, AttributeError):
+            return
+
+    def get_highlight(self, doc):
+        highlight = super(CRFormatter, self).get_highlight(doc) or {}
+        text_content_highlight = self.get_text_content_highlight(doc)
+        if text_content_highlight:
+            highlight['text_content'] = list(text_content_highlight)
+        return highlight
+
     def doc_format(self, doc):
         return {
             'crid': doc.crid,

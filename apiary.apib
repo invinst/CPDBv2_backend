@@ -2348,6 +2348,39 @@ This api require an api access token set in `Authorization` header. To get an ap
               "percentile_allegation_internal": "0.0001"
               "percentile_trr": "99.0001"
             }]
+          }],
+          CR: [{
+            "id": "1054693",
+            "crid": "1054693",
+            "to": "/complaint/1054693/",
+            "incident_date": "2011-10-15",
+            "category": "Use Of Force",
+            "sub_category": "Civil Suits - Third Party",
+            "address": "22XX East 103RD ST, CHICAGO ILLINOIS 60617",
+            "victims": [{
+              "gender": "Male",
+              "race": "Black"
+            }],
+            "coaccused": [{
+              "id": 20661,
+              "full_name": "Mark Nottoli",
+              "percentile": {
+                "id": 20661,
+                "percentile_trr": "88.0064",
+                "percentile_allegation_civilian": "94.6432",
+                "percentile_allegation_internal": "79.9133"
+              },
+              "allegation_count": 52
+            }],
+            "highlight": {
+              "summary": [
+                "immediate notification by telephone to the operations <em>command</em> and the Independent Police Review Authority (IPRA)"
+              ],
+              text_content: [
+                "the investigation file, the recommendations of <em>Command</em> Channel Review and the Chief of the Bureau of Internal",
+                "toward a supervisory member on or off duty”). <em>Command</em> Channel Review -- the District Commander and Deputy",
+              ]
+            }
           }]
         }
 
@@ -2720,3 +2753,100 @@ This api require an api access token set in `Authorization` header. To get an ap
             "description": "abc"
         }
 
+## Pinboard complaints [/pinboards/{pk}/complaints]
+
+### Get selected complaints
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "crid": "1000001",
+                "incident_date": "2010-01-01",
+                "point": {"lon": 1.0, "lat": 1.0},
+                "most_common_category": "Use Of Force",
+            },
+            {
+                "crid": "1000002",
+                "incident_date": "2011-01-01",
+                "point": {"lon": 2.0, "lat": 2.0},
+                "most_common_category": "Verbal Abuse",
+            }
+        ]
+
+## Pinboard complaints [/pinboards/{pk}/officers]
+
+### Get selected officers
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Daryl Mack",
+                "complaint_count": 0,
+                "sustained_count": 0,
+                "birth_year": 1975,
+                "complaint_percentile": 99.3450,
+                "race": "White",
+                "gender": "Male",
+                "rank": "Police Officer",
+                "percentile": {
+                    "percentile_trr": "12.0000",
+                    "percentile_allegation": "99.3450",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                    "id": 1,
+                }
+            },
+            {
+                "id": 2,
+                "full_name": "Ronald Watts",
+                "complaint_count": 0,
+                "sustained_count": 0,
+                "birth_year": 1975,
+                "complaint_percentile": 99.5000,
+                "race": "White",
+                "gender": "Male",
+                "rank": "Detective",
+                "percentile": {
+                    "percentile_trr": "0.0000",
+                    "percentile_allegation": "99.5000",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                    "id": 2,
+                }
+            }
+        ]
+
+## Pinboard trrs [/pinboards/{pk}/trrs]
+
+### Get selected trrs
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
+            },
+            {
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
+            }
+        ]

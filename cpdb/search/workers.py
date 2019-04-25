@@ -176,7 +176,14 @@ class CRWorker(Worker):
         by_attachment = Q(
             'nested',
             path='attachment_files',
-            query=Q('match', attachment_files__text_content=term)
+            query=Q('match', attachment_files__text_content=term),
+            inner_hits={
+                'highlight': {
+                    'fields': {
+                        'attachment_files.text_content': {},
+                    }
+                }
+            }
         )
         by_term = Q('multi_match', query=term, operator='and', fields=['crid', 'summary'])
 
