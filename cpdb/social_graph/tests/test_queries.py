@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from robber import expect
 
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory
 from social_graph.queries import SocialGraphDataQuery
 
 
@@ -51,25 +51,25 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2006-12-31',
                 'accussed_count': 2
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2006-12-31',
                 'accussed_count': 2
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2006-12-31',
                 'accussed_count': 2
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             }
         ]
@@ -80,11 +80,9 @@ class SocialGraphDataQueryTestCase(TestCase):
         }
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3])
-        expect(results.coaccused_data).to.eq(expected_coaccused_data)
-        expect(results.get_list_event()).to.eq(expected_list_event)
-        expect(results.graph_data).to.eq(expected_graph_data)
+        expect(results.graph_data()).to.eq(expected_graph_data)
 
-    def test_execute_threshold_1_show_civil_only_true(self):
+    def test_graph_data_threshold_1_show_civil_only_true(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
@@ -117,34 +115,47 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2005, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2005-12-31',
                 'accussed_count': 1
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 2
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 1
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 1
             },
         ]
+
+        expected_officers = [
+            {'full_name': 'Jerome Finnigan', 'id': 8562},
+            {'full_name': 'Edward May', 'id': 8563},
+            {'full_name': 'Joe Parker', 'id': 8564},
+        ]
+
+        expected_list_event = ['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
 
         results = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1)
-        expect(results.coaccused_data).to.eq(expected_coaccused_data)
-        expect(results.get_list_event()).to.eq(['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00'])
+        expect(results.graph_data()).to.eq(expected_graph_data)
 
-    def test_execute_threshold_3_show_civil_only_true(self):
+    def test_graph_data_threshold_3_show_civil_only_true(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
@@ -195,52 +206,67 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8565,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8564,
                 'officer_id_2': 8565,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8564,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8565,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8565,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2008, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2008-12-31',
                 'accussed_count': 4
             },
         ]
 
-        results = SocialGraphDataQuery([officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3)
-        expect(results.coaccused_data).to.eq(expected_coaccused_data)
-        expect(results.get_list_event()).to.eq(['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00'])
+        expected_officers = [
+            {'full_name': 'Jerome Finnigan', 'id': 8562},
+            {'full_name': 'Edward May', 'id': 8563},
+            {'full_name': 'Joe Parker', 'id': 8564},
+            {'full_name': 'John Snow', 'id': 8565},
+            {'full_name': 'John Sena', 'id': 8566},
+        ]
 
-    def test_execute_threshold_1_show_civil_only_false(self):
+        expected_list_event = ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
+
+        results = SocialGraphDataQuery([officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3)
+        expect(results.graph_data()).to.eq(expected_graph_data)
+
+    def test_graph_data_threshold_1_show_civil_only_false(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
@@ -273,42 +299,53 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2005, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2005-12-31',
                 'accussed_count': 1
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2006-12-31',
                 'accussed_count': 2
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8563,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8562,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 1
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 1
             },
         ]
 
-        results = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1, show_civil_only=False)
-        expect(results.coaccused_data).to.eq(expected_coaccused_data)
-        expect(results.get_list_event()).to.eq(
-            ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
-        )
+        expected_officers = [
+            {'full_name': 'Jerome Finnigan', 'id': 8562},
+            {'full_name': 'Edward May', 'id': 8563},
+            {'full_name': 'Joe Parker', 'id': 8564},
+        ]
 
-    def test_execute_threshold_3_show_civil_only_false(self):
+        expected_list_event = ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
+
+        results = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1, show_civil_only=False)
+        expect(results.graph_data()).to.eq(expected_graph_data)
+
+    def test_graph_data_threshold_3_show_civil_only_false(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
@@ -359,52 +396,67 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8564,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8565,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8563,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8564,
                 'officer_id_2': 8565,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8564,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8565,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2007-12-31',
                 'accussed_count': 3
             },
             {
                 'officer_id_1': 8565,
                 'officer_id_2': 8566,
-                'incident_date': datetime(2008, 12, 31, 0, 0, tzinfo=pytz.utc),
+                'incident_date': '2008-12-31',
                 'accussed_count': 4
             },
         ]
+
+        expected_officers = [
+            {'full_name': 'Jerome Finnigan', 'id': 8562},
+            {'full_name': 'Edward May', 'id': 8563},
+            {'full_name': 'Joe Parker', 'id': 8564},
+            {'full_name': 'John Snow', 'id': 8565},
+            {'full_name': 'John Sena', 'id': 8566},
+        ]
+
+        expected_list_event = ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
 
         results = SocialGraphDataQuery(
             [officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3, show_civil_only=False
         )
-        expect(results.coaccused_data).to.eq(expected_coaccused_data)
-        expect(results.get_list_event()).to.eq(['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00'])
+        expect(results.graph_data()).to.eq(expected_graph_data)
 
     def test_show_connected_officers(self):
         officer_1 = OfficerFactory(id=8000, first_name='Jerome', last_name='Finnigan')
@@ -504,25 +556,25 @@ class SocialGraphDataQueryTestCase(TestCase):
                 {
                     'officer_id_1': 8001,
                     'officer_id_2': 8002,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8001,
                     'officer_id_2': 8003,
-                    'incident_date': datetime(2009, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2009-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8002,
                     'officer_id_2': 8004,
-                    'incident_date': datetime(2011, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2011-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8002,
                     'officer_id_2': 8005,
-                    'incident_date': datetime(2013, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2013-12-31',
                     'accussed_count': 2
                 }
             ],
@@ -538,10 +590,191 @@ class SocialGraphDataQueryTestCase(TestCase):
             [officer_1, officer_2, officer_3], threshold=2, show_civil_only=False, show_connected_officers=True
         )
 
-        expect(results.graph_data).to.eq(expected_graph_data)
+        expect(results.graph_data()).to.eq(expected_graph_data)
 
-    def test_handle_empty_officers(self):
+    def test_graph_data_empty_officers(self):
         results = SocialGraphDataQuery([], threshold=2, show_civil_only=False)
-        expect(results.coaccused_data).to.be.empty()
-        expect(results.list_event).to.be.empty()
-        expect(results.graph_data).to.be.empty()
+        expect(results.graph_data()).to.be.empty()
+
+    def test_detail_data(self):
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile='55.6600',
+            internal_allegation_percentile='66.7700',
+            trr_percentile='77.8800',
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile='44.4400',
+            internal_allegation_percentile='33.3300',
+            trr_percentile='22.2200',
+        )
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=False,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=False,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=False,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
+        OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
+        OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+
+        expected_officers = [
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '88.8800',
+                    'percentile_allegation_internal': '77.7700',
+                    'percentile_trr': '66.6600',
+                }
+            },
+            {
+                'full_name': 'Edward May',
+                'id': 8563,
+                'percentile': {
+                    'percentile_allegation_civilian': '55.6600',
+                    'percentile_allegation_internal': '66.7700',
+                    'percentile_trr': '77.8800',
+                }
+            },
+            {
+                'full_name': 'Joe Parker',
+                'id': 8564,
+                'percentile': {
+                    'percentile_allegation_civilian': '44.4400',
+                    'percentile_allegation_internal': '33.3300',
+                    'percentile_trr': '22.2200',
+                }
+            },
+        ]
+
+        expected_list_event = ['2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        expected_coaccused_data = [
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8563,
+                'incident_date': '2006-12-31',
+                'accussed_count': 2
+            },
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8564,
+                'incident_date': '2006-12-31',
+                'accussed_count': 2
+            },
+            {
+                'officer_id_1': 8563,
+                'officer_id_2': 8564,
+                'incident_date': '2006-12-31',
+                'accussed_count': 2
+            },
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8563,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            }
+        ]
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
+
+        results = SocialGraphDataQuery([officer_1, officer_2, officer_3], detail_data=True)
+        expect(results.graph_data()).to.eq(expected_graph_data)
+
+    # def test_allegations_default(self):
+    #     officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+    #     officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
+    #     officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+    #
+    #     category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
+    #     category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+    #
+    #     allegation_1 = AllegationFactory(
+    #         crid='123',
+    #         is_officer_complaint=False,
+    #         incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
+    #         most_common_category=category_1,
+    #     )
+    #     allegation_2 = AllegationFactory(
+    #         crid='456',
+    #         is_officer_complaint=False,
+    #         incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc),
+    #         most_common_category=category_2,
+    #     )
+    #     allegation_3 = AllegationFactory(
+    #         crid='789',
+    #         is_officer_complaint=False,
+    #         incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
+    #         most_common_category=category_1,
+    #     )
+    #
+    #     OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+    #     OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+    #     OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
+    #     OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
+    #     OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
+    #     OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
+    #     OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
+    #     OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+    #
+    #     expected_allegations = [
+    #         {
+    #             'crid': '123',
+    #             'incident_date': '2005-12-31',
+    #             'most_common_category': {
+    #                 'category': 'Use of Force',
+    #                 'allegation_name': 'Subcategory 1'
+    #             }
+    #         },
+    #         {
+    #             'crid': '456',
+    #             'incident_date': '2006-12-31',
+    #             'most_common_category': {
+    #                 'category': 'Illegal Search',
+    #                 'allegation_name': 'Subcategory 2'
+    #             }
+    #         },
+    #         {
+    #             'crid': '789',
+    #             'incident_date': '2007-12-31',
+    #             'most_common_category': {
+    #                 'category': 'Use of Force',
+    #                 'allegation_name': 'Subcategory 1'
+    #             }
+    #         },
+    #     ]
+    #
+    #     results = SocialGraphDataQuery([officer_1, officer_2, officer_3])
+    #     expect(results.allegations()).to.eq(expected_allegations)

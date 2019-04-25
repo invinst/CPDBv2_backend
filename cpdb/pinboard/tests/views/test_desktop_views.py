@@ -496,31 +496,31 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2006-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8568,
-                    'incident_date': datetime(2009, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2009-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8564,
                     'officer_id_2': 8566,
-                    'incident_date': datetime(2011, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2011-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8564,
                     'officer_id_2': 8567,
-                    'incident_date': datetime(2013, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2013-12-31',
                     'accussed_count': 2
                 },
             ],

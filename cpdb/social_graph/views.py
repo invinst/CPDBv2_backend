@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
 from data.models import Officer
@@ -7,6 +8,28 @@ from social_graph.queries import SocialGraphDataQuery
 
 class SocialGraphViewSet(viewsets.ViewSet):
     def list(self, _):
+        social_graph_data_query = SocialGraphDataQuery(
+            officers=self._officers,
+            threshold=self._threshold,
+            show_civil_only=self._show_civil_only,
+            detail_data=True
+        )
+
+        return Response(social_graph_data_query.graph_data())
+
+    @list_route(methods=['get'], url_path='allegations')
+    def allegations(self, _):
+        social_graph_data_query = SocialGraphDataQuery(
+            officers=self._officers,
+            threshold=self._threshold,
+            show_civil_only=self._show_civil_only,
+            detail_data=True
+        )
+
+        return Response(social_graph_data_query.allegations())
+
+    @property
+    def _officers(self):
         officer_ids = self._officer_ids
         unit_id = self._unit_id
         officers = []
@@ -15,9 +38,7 @@ class SocialGraphViewSet(viewsets.ViewSet):
         elif unit_id:
             officers = Officer.objects.filter(officerhistory__unit_id=unit_id).distinct()
 
-        social_graph_data_query = SocialGraphDataQuery(officers, self._threshold, self._show_civil_only)
-
-        return Response(social_graph_data_query.graph_data)
+        return officers
 
     @property
     def _unit_id(self):

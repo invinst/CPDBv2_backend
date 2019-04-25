@@ -87,7 +87,7 @@ class PinboardDesktopViewSet(PinboardBaseViewSet):
             PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
             True
         )
-        return Response(social_graph_data_query.graph_data)
+        return Response(social_graph_data_query.graph_data())
 
 
 class PinboardMobileViewSet(PinboardBaseViewSet):
@@ -101,4 +101,4 @@ class PinboardMobileViewSet(PinboardBaseViewSet):
             PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
             PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
         )
-        return Response(social_graph_data_query.graph_data)
+        return Response(social_graph_data_query.graph_data())

@@ -13,9 +13,30 @@ from data.factories import PoliceUnitFactory, OfficerFactory, AllegationFactory,
 
 class SocialGraphViewSetTestCase(APITestCase):
     def test_list_default(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile='55.6600',
+            internal_allegation_percentile='66.7700',
+            trr_percentile='77.8800',
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile='44.4400',
+            internal_allegation_percentile='33.3300',
+            trr_percentile='22.2200',
+        )
 
         unit = PoliceUnitFactory(id=123)
 
@@ -50,33 +71,57 @@ class SocialGraphViewSetTestCase(APITestCase):
 
         expected_data = {
             'officers': [
-                {'full_name': 'Jerome Finnigan', 'id': 8562},
-                {'full_name': 'Edward May', 'id': 8563},
-                {'full_name': 'Joe Parker', 'id': 8564},
+                {
+                    'full_name': 'Jerome Finnigan',
+                    'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '88.8800',
+                        'percentile_allegation_internal': '77.7700',
+                        'percentile_trr': '66.6600',
+                    }
+                },
+                {
+                    'full_name': 'Edward May',
+                    'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '55.6600',
+                        'percentile_allegation_internal': '66.7700',
+                        'percentile_trr': '77.8800',
+                    }
+                },
+                {
+                    'full_name': 'Joe Parker',
+                    'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '44.4400',
+                        'percentile_allegation_internal': '33.3300',
+                        'percentile_trr': '22.2200',
+                    }
+                },
             ],
             'coaccused_data': [
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2006-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8564,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2006-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8564,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2006-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 }
             ],
@@ -97,9 +142,30 @@ class SocialGraphViewSetTestCase(APITestCase):
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
     def test_list_with_specific_threshold_and_show_civil_only(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile='55.6600',
+            internal_allegation_percentile='66.7700',
+            trr_percentile='77.8800',
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile='44.4400',
+            internal_allegation_percentile='33.3300',
+            trr_percentile='22.2200',
+        )
 
         unit = PoliceUnitFactory(id=123)
 
@@ -133,33 +199,57 @@ class SocialGraphViewSetTestCase(APITestCase):
 
         expected_data = {
             'officers': [
-                {'full_name': 'Jerome Finnigan', 'id': 8562},
-                {'full_name': 'Edward May', 'id': 8563},
-                {'full_name': 'Joe Parker', 'id': 8564},
+                {
+                    'full_name': 'Jerome Finnigan',
+                    'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '88.8800',
+                        'percentile_allegation_internal': '77.7700',
+                        'percentile_trr': '66.6600',
+                    }
+                },
+                {
+                    'full_name': 'Edward May',
+                    'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '55.6600',
+                        'percentile_allegation_internal': '66.7700',
+                        'percentile_trr': '77.8800',
+                    }
+                },
+                {
+                    'full_name': 'Joe Parker',
+                    'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '44.4400',
+                        'percentile_allegation_internal': '33.3300',
+                        'percentile_trr': '22.2200',
+                    }
+                },
             ],
             'coaccused_data': [
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2005, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2005-12-31',
                     'accussed_count': 1
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8564,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 1
                 },
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8564,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 1
                 },
             ],
@@ -180,11 +270,46 @@ class SocialGraphViewSetTestCase(APITestCase):
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
     def test_list_with_unit_id_param(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
-        officer_4 = OfficerFactory(id=8565, first_name='John', last_name='Snow')
-        officer_5 = OfficerFactory(id=8566, first_name='John', last_name='Sena')
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile='55.6600',
+            internal_allegation_percentile='66.7700',
+            trr_percentile='77.8800',
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile='44.4400',
+            internal_allegation_percentile='33.3300',
+            trr_percentile='22.2200',
+        )
+        officer_4 = OfficerFactory(
+            id=8565,
+            first_name='John',
+            last_name='Snow',
+            civilian_allegation_percentile='44.5500',
+            internal_allegation_percentile='44.6600',
+            trr_percentile='44.7700',
+        )
+        officer_5 = OfficerFactory(
+            id=8566,
+            first_name='John',
+            last_name='Sena',
+            civilian_allegation_percentile='44.1100',
+            internal_allegation_percentile='44.2200',
+            trr_percentile='44.3300',
+        )
 
         unit = PoliceUnitFactory(id=123)
 
@@ -236,53 +361,93 @@ class SocialGraphViewSetTestCase(APITestCase):
 
         expected_data = {
             'officers': [
-                {'full_name': 'Jerome Finnigan', 'id': 8562},
-                {'full_name': 'Edward May', 'id': 8563},
-                {'full_name': 'Joe Parker', 'id': 8564},
-                {'full_name': 'John Snow', 'id': 8565},
-                {'full_name': 'John Sena', 'id': 8566},
+                {
+                    'full_name': 'Jerome Finnigan',
+                    'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '88.8800',
+                        'percentile_allegation_internal': '77.7700',
+                        'percentile_trr': '66.6600',
+                    }
+                },
+                {
+                    'full_name': 'Edward May',
+                    'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '55.6600',
+                        'percentile_allegation_internal': '66.7700',
+                        'percentile_trr': '77.8800',
+                    }
+                },
+                {
+                    'full_name': 'Joe Parker',
+                    'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '44.4400',
+                        'percentile_allegation_internal': '33.3300',
+                        'percentile_trr': '22.2200',
+                    }
+                },
+                {
+                    'full_name': 'John Snow',
+                    'id': 8565,
+                    'percentile': {
+                        'percentile_allegation_civilian': '44.5500',
+                        'percentile_allegation_internal': '44.6600',
+                        'percentile_trr': '44.7700',
+                    }
+                },
+                {
+                    'full_name': 'John Sena',
+                    'id': 8566,
+                    'percentile': {
+                        'percentile_allegation_civilian': '44.1100',
+                        'percentile_allegation_internal': '44.2200',
+                        'percentile_trr': '44.3300',
+                    }
+                },
             ],
             'coaccused_data': [
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8564,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8565,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8563,
                     'officer_id_2': 8566,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8564,
                     'officer_id_2': 8565,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8564,
                     'officer_id_2': 8566,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8565,
                     'officer_id_2': 8566,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
                 {
                     'officer_id_1': 8565,
                     'officer_id_2': 8566,
-                    'incident_date': datetime(2008, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2008-12-31',
                     'accussed_count': 4
                 },
             ],

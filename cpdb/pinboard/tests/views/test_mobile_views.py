@@ -324,13 +324,13 @@ class PinboardMobileViewSetTestCase(APITestCase):
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2006-12-31',
                     'accussed_count': 2
                 },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'incident_date': '2007-12-31',
                     'accussed_count': 3
                 },
             ],
