@@ -13,7 +13,7 @@ from pinboard.factories import PinboardFactory
 from trr.factories import TRRFactory
 
 
-class PinboardAPITestCase(APITestCase):
+class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         PinboardFactory(
             id='f871a13f',

@@ -10,7 +10,7 @@ from .models import Pinboard
 from .serializers import PinboardSerializer
 
 
-class PinboardViewSet(
+class PinboardBaseViewSet(
         mixins.CreateModelMixin,
         mixins.UpdateModelMixin,
         mixins.RetrieveModelMixin,
@@ -35,6 +35,8 @@ class PinboardViewSet(
         serializer_class = self.get_serializer_class()
         return Response(serializer_class(pinboard).data)
 
+
+class PinboardDesktopViewSet(PinboardBaseViewSet):
     @detail_route(methods=['get'], url_path='social-graph')
     def social_graph(self, request, pk):
         queryset = Pinboard.objects.all()
@@ -46,5 +48,18 @@ class PinboardViewSet(
             PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
             True
         )
+        return Response(social_graph_data_query.graph_data)
 
+
+class PinboardMobileViewSet(PinboardBaseViewSet):
+    @detail_route(methods=['get'], url_path='social-graph')
+    def social_graph(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        social_graph_data_query = SocialGraphDataQuery(
+            pinboard.all_officers,
+            PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
+            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
+        )
         return Response(social_graph_data_query.graph_data)
