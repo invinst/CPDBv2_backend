@@ -69,6 +69,36 @@ class PinboardTestCase(TestCase):
 
         expect(list(pinboard.all_officers)).to.eq(expected_all_officers)
 
+    def test_officer_ids(self):
+        pinned_officer_1 = OfficerFactory(id=1)
+        pinned_officer_2 = OfficerFactory(id=2)
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1, pinned_officer_2])
+        expect(list(pinboard.officer_ids)).to.eq([1, 2])
+
+    def test_crids(self):
+        pinned_allegation_1 = AllegationFactory(crid='1')
+        pinned_allegation_2 = AllegationFactory(crid='2')
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        expect(list(pinboard.crids)).to.eq(['1', '2'])
+
+    def test_trr_ids(self):
+        pinned_trr_1 = TRRFactory(id=1)
+        pinned_trr_2 = TRRFactory(id=2)
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.trrs.set([pinned_trr_1, pinned_trr_2])
+        expect(list(pinboard.trr_ids)).to.eq([1, 2])
+
     def test_relevant_coaccusals(self):
         pinned_officer_1 = OfficerFactory(id=1)
         pinned_officer_2 = OfficerFactory(id=2)

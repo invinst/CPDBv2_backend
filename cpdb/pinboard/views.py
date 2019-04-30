@@ -8,15 +8,13 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from data.models import Allegation, Officer
 from officers.serializers.response_serializers import OfficerCardSerializer
 from pinboard.serializers.pinboard_complaint_serializer import PinboardComplaintSerializer
 from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
-from trr.models import TRR
 from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
 from pinboard.queries import GeographyDataQuery
 from social_graph.queries import SocialGraphDataQuery
-from pinboard.serializers.pinboard_serializer import PinboardSerializer
+from pinboard.serializers.pinboard_serializer import PinboardSerializer, OrderedPinboardSerializer
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
 from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
 from pinboard.serializers.document_card_serializer import DocumentCardSerializer
@@ -47,31 +45,24 @@ class PinboardViewSet(
 
     def retrieve(self, request, pk):
         pinboard = self.get_object()
-        serializer_class = self.get_serializer_class()
-        return Response(serializer_class(pinboard).data)
+        return Response(OrderedPinboardSerializer(pinboard).data)
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        crids = set(pinboard.allegations.values_list('crid', flat=True))
-        complaints = Allegation.objects.filter(crid__in=crids)
-        serializer = PinboardComplaintSerializer(complaints, many=True)
+        serializer = PinboardComplaintSerializer(pinboard.allegations, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='officers')
     def officers(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        officer_ids = set(pinboard.officers.values_list('id', flat=True))
-        officers = Officer.objects.filter(id__in=officer_ids)
-        serializer = OfficerCardSerializer(officers, many=True)
+        serializer = OfficerCardSerializer(pinboard.officers, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='trrs')
     def trrs(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        trr_ids = set(pinboard.trrs.values_list('id', flat=True))
-        trrs = TRR.objects.filter(id__in=trr_ids).prefetch_related('actionresponse_set')
-        serializer = PinboardTRRSerializer(trrs, many=True)
+        serializer = PinboardTRRSerializer(pinboard.trrs, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='social-graph')
