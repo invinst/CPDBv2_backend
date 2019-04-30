@@ -3,7 +3,8 @@ from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
 from data.models import Officer
-from social_graph.queries import SocialGraphDataQuery
+from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
+from social_graph.queries.geographic_data_query import GeographyDataQuery
 
 
 class SocialGraphViewSet(viewsets.ViewSet):
@@ -27,6 +28,11 @@ class SocialGraphViewSet(viewsets.ViewSet):
         )
 
         return Response(social_graph_data_query.allegations())
+
+    @list_route(methods=['get'], url_path='geographic')
+    def geographic(self, _):
+        geographic_data_query = GeographyDataQuery(officers=self._officers)
+        return Response(geographic_data_query.execute())
 
     @property
     def _officers(self):

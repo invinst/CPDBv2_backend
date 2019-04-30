@@ -11,8 +11,8 @@ from data.models import Allegation, Officer
 from trr.models import TRR
 from officers.serializers.response_serializers import OfficerCardSerializer
 from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
-from pinboard.queries import GeographyDataQuery
-from social_graph.queries import SocialGraphDataQuery
+from social_graph.queries.geographic_data_query import GeographyDataQuery
+from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from .models import Pinboard
 from .serializers import PinboardSerializer, PinboardComplaintSerializer, PinboardTRRSerializer
 

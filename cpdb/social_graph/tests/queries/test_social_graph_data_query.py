@@ -5,8 +5,8 @@ from django.test import TestCase
 
 from robber import expect
 
-from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory, AllegationCategoryFactory
-from social_graph.queries import SocialGraphDataQuery
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from social_graph.queries.queries import SocialGraphDataQuery
 
 
 class SocialGraphDataQueryTestCase(TestCase):

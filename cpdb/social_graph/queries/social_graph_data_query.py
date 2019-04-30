@@ -1,9 +1,8 @@
 from django.db import connection
 
-from data.models import Officer, Allegation
 from social_graph.serializers import OfficerSerializer, OfficerDetailSerializer, AllegationSerializer, \
     AccussedSerializer
-from data.models import Officer
+from data.models import Officer, Allegation
 from utils.raw_query_utils import dict_fetch_all
 
 
