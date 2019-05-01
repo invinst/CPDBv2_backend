@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from data.models import Officer
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
+from social_graph.serializers import OfficerDetailSerializer, AllegationSerializer
 
 
 class SocialGraphViewSet(viewsets.ViewSet):
@@ -13,7 +14,6 @@ class SocialGraphViewSet(viewsets.ViewSet):
             officers=self._officers,
             threshold=self._threshold,
             show_civil_only=self._show_civil_only,
-            detail_data=True
         )
 
         return Response(social_graph_data_query.graph_data())
@@ -24,10 +24,19 @@ class SocialGraphViewSet(viewsets.ViewSet):
             officers=self._officers,
             threshold=self._threshold,
             show_civil_only=self._show_civil_only,
-            detail_data=True
         )
 
-        return Response(social_graph_data_query.allegations())
+        return Response(AllegationSerializer(social_graph_data_query.allegations(), many=True).data)
+
+    @list_route(methods=['get'], url_path='officers')
+    def officers(self, _):
+        social_graph_data_query = SocialGraphDataQuery(
+            officers=self._officers,
+            threshold=self._threshold,
+            show_civil_only=self._show_civil_only,
+        )
+
+        return Response(OfficerDetailSerializer(social_graph_data_query.all_officers(), many=True).data)
 
     @list_route(methods=['get'], url_path='geographic')
     def geographic(self, _):

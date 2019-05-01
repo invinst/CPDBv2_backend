@@ -17,25 +17,16 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
-            civilian_allegation_percentile='88.8800',
-            internal_allegation_percentile='77.7700',
-            trr_percentile='66.6600',
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
-            civilian_allegation_percentile='55.6600',
-            internal_allegation_percentile='66.7700',
-            trr_percentile='77.8800',
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
-            civilian_allegation_percentile='44.4400',
-            internal_allegation_percentile='33.3300',
-            trr_percentile='22.2200',
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -74,29 +65,14 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
-                    'percentile': {
-                        'percentile_allegation_civilian': '88.8800',
-                        'percentile_allegation_internal': '77.7700',
-                        'percentile_trr': '66.6600',
-                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
-                    'percentile': {
-                        'percentile_allegation_civilian': '55.6600',
-                        'percentile_allegation_internal': '66.7700',
-                        'percentile_trr': '77.8800',
-                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
-                    'percentile': {
-                        'percentile_allegation_civilian': '44.4400',
-                        'percentile_allegation_internal': '33.3300',
-                        'percentile_trr': '22.2200',
-                    }
                 },
             ],
             'coaccused_data': [
@@ -146,25 +122,16 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
-            civilian_allegation_percentile='88.8800',
-            internal_allegation_percentile='77.7700',
-            trr_percentile='66.6600',
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
-            civilian_allegation_percentile='55.6600',
-            internal_allegation_percentile='66.7700',
-            trr_percentile='77.8800',
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
-            civilian_allegation_percentile='44.4400',
-            internal_allegation_percentile='33.3300',
-            trr_percentile='22.2200',
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -202,29 +169,14 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
-                    'percentile': {
-                        'percentile_allegation_civilian': '88.8800',
-                        'percentile_allegation_internal': '77.7700',
-                        'percentile_trr': '66.6600',
-                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
-                    'percentile': {
-                        'percentile_allegation_civilian': '55.6600',
-                        'percentile_allegation_internal': '66.7700',
-                        'percentile_trr': '77.8800',
-                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
-                    'percentile': {
-                        'percentile_allegation_civilian': '44.4400',
-                        'percentile_allegation_internal': '33.3300',
-                        'percentile_trr': '22.2200',
-                    }
                 },
             ],
             'coaccused_data': [
@@ -274,41 +226,26 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
-            civilian_allegation_percentile='88.8800',
-            internal_allegation_percentile='77.7700',
-            trr_percentile='66.6600',
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
-            civilian_allegation_percentile='55.6600',
-            internal_allegation_percentile='66.7700',
-            trr_percentile='77.8800',
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
-            civilian_allegation_percentile='44.4400',
-            internal_allegation_percentile='33.3300',
-            trr_percentile='22.2200',
         )
         officer_4 = OfficerFactory(
             id=8565,
             first_name='John',
             last_name='Snow',
-            civilian_allegation_percentile='44.5500',
-            internal_allegation_percentile='44.6600',
-            trr_percentile='44.7700',
         )
         officer_5 = OfficerFactory(
             id=8566,
             first_name='John',
             last_name='Sena',
-            civilian_allegation_percentile='44.1100',
-            internal_allegation_percentile='44.2200',
-            trr_percentile='44.3300',
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -364,47 +301,22 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
-                    'percentile': {
-                        'percentile_allegation_civilian': '88.8800',
-                        'percentile_allegation_internal': '77.7700',
-                        'percentile_trr': '66.6600',
-                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
-                    'percentile': {
-                        'percentile_allegation_civilian': '55.6600',
-                        'percentile_allegation_internal': '66.7700',
-                        'percentile_trr': '77.8800',
-                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
-                    'percentile': {
-                        'percentile_allegation_civilian': '44.4400',
-                        'percentile_allegation_internal': '33.3300',
-                        'percentile_trr': '22.2200',
-                    }
                 },
                 {
                     'full_name': 'John Snow',
                     'id': 8565,
-                    'percentile': {
-                        'percentile_allegation_civilian': '44.5500',
-                        'percentile_allegation_internal': '44.6600',
-                        'percentile_trr': '44.7700',
-                    }
                 },
                 {
                     'full_name': 'John Sena',
                     'id': 8566,
-                    'percentile': {
-                        'percentile_allegation_civilian': '44.1100',
-                        'percentile_allegation_internal': '44.2200',
-                        'percentile_trr': '44.3300',
-                    }
                 },
             ],
             'coaccused_data': [
@@ -466,3 +378,98 @@ class SocialGraphViewSetTestCase(APITestCase):
         expect(len(response.data['officers'])).to.eq(len(expected_data['officers']))
         expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
+
+    def test_officers_default(self):
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile='88.8800',
+            internal_allegation_percentile='77.7700',
+            trr_percentile='66.6600',
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile='55.6600',
+            internal_allegation_percentile='66.7700',
+            trr_percentile='77.8800',
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile='44.4400',
+            internal_allegation_percentile='33.3300',
+            trr_percentile='22.2200',
+        )
+
+        unit = PoliceUnitFactory(id=123)
+
+        OfficerHistoryFactory(officer=officer_1, unit=unit)
+        OfficerHistoryFactory(officer=officer_2, unit=unit)
+        OfficerHistoryFactory(officer=officer_3, unit=unit)
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=False,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=False,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=False,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
+        OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
+        OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+
+        expected_data = [
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '88.8800',
+                    'percentile_allegation_internal': '77.7700',
+                    'percentile_trr': '66.6600',
+                }
+            },
+            {
+                'full_name': 'Edward May',
+                'id': 8563,
+                'percentile': {
+                    'percentile_allegation_civilian': '55.6600',
+                    'percentile_allegation_internal': '66.7700',
+                    'percentile_trr': '77.8800',
+                }
+            },
+            {
+                'full_name': 'Joe Parker',
+                'id': 8564,
+                'percentile': {
+                    'percentile_allegation_civilian': '44.4400',
+                    'percentile_allegation_internal': '33.3300',
+                    'percentile_trr': '22.2200',
+                }
+            },
+        ]
+
+        url = reverse('api-v2:social-graph-officers', kwargs={})
+        response = self.client.get(url, {
+            'officer_ids': '8562, 8563, 8564',
+        })
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq(expected_data)
