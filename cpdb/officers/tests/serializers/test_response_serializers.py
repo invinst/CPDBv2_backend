@@ -61,7 +61,6 @@ class OfficerCardSerializerTestCase(TestCase):
             'complaint_percentile': 99.99,
             'rank': 'Police Officer',
             'percentile': {
-                'id': 123,
                 'year': 2000,
                 'percentile_allegation': '99.9900',
                 'percentile_allegation_civilian': '88.8800',
@@ -593,6 +592,5 @@ class OfficerCoaccusalSerializerTestCase(TestCase):
                 'percentile_allegation_internal': '77.7700',
                 'percentile_trr': '66.6600',
                 'year': 2016,
-                'id': 123,
             },
         })

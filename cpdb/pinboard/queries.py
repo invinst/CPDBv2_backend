@@ -1,8 +1,9 @@
 from django.db.models.functions import TruncDate
 
 from data.models import Allegation
+from pinboard.serializers.cr_pinboard_serializer import CRPinboardSerializer
+from pinboard.serializers.trr_pinboard_serializer import TRRPinboardSerializer
 from trr.models import TRR
-from pinboard.serializers import CRPinboardSerializer, TRRPinboardSerializer
 
 
 class GeographyDataQuery(object):
