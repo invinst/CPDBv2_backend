@@ -26,7 +26,7 @@ from trr.factories import TRRFactory, ActionResponseFactory
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
-class PinboardAPITestCase(APITestCase):
+class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         PinboardFactory(
             id='f871a13f',
@@ -389,6 +389,10 @@ class PinboardAPITestCase(APITestCase):
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
         officer_4 = OfficerFactory(id=8565, first_name='William', last_name='People')
+        officer_5 = OfficerFactory(id=8566, first_name='John', last_name='Sena')
+        officer_6 = OfficerFactory(id=8567, first_name='Tom', last_name='Cruise')
+        officer_7 = OfficerFactory(id=8568, first_name='Robert', last_name='Long')
+        officer_8 = OfficerFactory(id=8569, first_name='Jaeho', last_name='Jung')
 
         allegation_1 = AllegationFactory(
             crid='123',
@@ -405,6 +409,41 @@ class PinboardAPITestCase(APITestCase):
             is_officer_complaint=False,
             incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
         )
+        allegation_4 = AllegationFactory(
+            crid='987',
+            is_officer_complaint=False,
+            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_5 = AllegationFactory(
+            crid='555',
+            is_officer_complaint=False,
+            incident_date=datetime(2009, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_6 = AllegationFactory(
+            crid='666',
+            is_officer_complaint=False,
+            incident_date=datetime(2010, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_7 = AllegationFactory(
+            crid='777',
+            is_officer_complaint=False,
+            incident_date=datetime(2011, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_8 = AllegationFactory(
+            crid='888',
+            is_officer_complaint=False,
+            incident_date=datetime(2012, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_9 = AllegationFactory(
+            crid='999',
+            is_officer_complaint=False,
+            incident_date=datetime(2013, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_10 = AllegationFactory(
+            crid='1000',
+            is_officer_complaint=False,
+            incident_date=datetime(2014, 12, 31, tzinfo=pytz.utc)
+        )
         trr_1 = TRRFactory(
             id=1,
             officer=officer_4,
@@ -418,6 +457,23 @@ class PinboardAPITestCase(APITestCase):
         OfficerAllegationFactory(id=5, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
         OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
+
+        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_4)
+        OfficerAllegationFactory(id=9, officer=officer_7, allegation=allegation_4)
+        OfficerAllegationFactory(id=10, officer=officer_2, allegation=allegation_5)
+        OfficerAllegationFactory(id=11, officer=officer_7, allegation=allegation_5)
+
+        OfficerAllegationFactory(id=12, officer=officer_3, allegation=allegation_6)
+        OfficerAllegationFactory(id=13, officer=officer_5, allegation=allegation_6)
+        OfficerAllegationFactory(id=14, officer=officer_3, allegation=allegation_7)
+        OfficerAllegationFactory(id=15, officer=officer_5, allegation=allegation_7)
+        OfficerAllegationFactory(id=16, officer=officer_3, allegation=allegation_8)
+        OfficerAllegationFactory(id=17, officer=officer_6, allegation=allegation_8)
+        OfficerAllegationFactory(id=18, officer=officer_3, allegation=allegation_9)
+        OfficerAllegationFactory(id=19, officer=officer_6, allegation=allegation_9)
+
+        OfficerAllegationFactory(id=20, officer=officer_3, allegation=allegation_10)
+        OfficerAllegationFactory(id=21, officer=officer_8, allegation=allegation_10)
 
         pinboard = PinboardFactory(
             title='My Pinboard',
@@ -433,15 +489,12 @@ class PinboardAPITestCase(APITestCase):
                 {'full_name': 'Edward May', 'id': 8563},
                 {'full_name': 'Jerome Finnigan', 'id': 8562},
                 {'full_name': 'Joe Parker', 'id': 8564},
+                {'full_name': 'John Sena', 'id': 8566},
+                {'full_name': 'Robert Long', 'id': 8568},
+                {'full_name': 'Tom Cruise', 'id': 8567},
                 {'full_name': 'William People', 'id': 8565},
             ],
             'coaccused_data': [
-                {
-                    'officer_id_1': 8562,
-                    'officer_id_2': 8563,
-                    'incident_date': datetime(2005, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 1
-                },
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
@@ -455,19 +508,31 @@ class PinboardAPITestCase(APITestCase):
                     'accussed_count': 3
                 },
                 {
-                    'officer_id_1': 8562,
-                    'officer_id_2': 8564,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 1
+                    'officer_id_1': 8563,
+                    'officer_id_2': 8568,
+                    'incident_date': datetime(2009, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 2
                 },
                 {
-                    'officer_id_1': 8563,
-                    'officer_id_2': 8564,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 1
+                    'officer_id_1': 8564,
+                    'officer_id_2': 8566,
+                    'incident_date': datetime(2011, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 2
+                },
+                {
+                    'officer_id_1': 8564,
+                    'officer_id_2': 8567,
+                    'incident_date': datetime(2013, 12, 31, 0, 0, tzinfo=pytz.utc),
+                    'accussed_count': 2
                 },
             ],
-            'list_event': ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+            'list_event': [
+                '2006-12-31 00:00:00+00:00',
+                '2007-12-31 00:00:00+00:00',
+                '2009-12-31 00:00:00+00:00',
+                '2011-12-31 00:00:00+00:00',
+                '2013-12-31 00:00:00+00:00',
+            ]
         }
 
         response = self.client.get(reverse('api-v2:pinboards-social-graph', kwargs={'pk': pinboard.id}))
