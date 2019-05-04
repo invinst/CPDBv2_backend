@@ -601,3 +601,41 @@ class PinboardAPITestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         for data in expected_data:
             expect(response.data).to.contain(data)
+
+    def test_latest_retrieved_pinboard(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+        # Create a pinboard in current session
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+        pinboard_id = response.data['id']
+
+        # Latest retrieved pinboard is now the above one
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+        })
