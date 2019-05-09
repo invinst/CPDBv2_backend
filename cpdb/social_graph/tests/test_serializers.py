@@ -5,7 +5,8 @@ from django.test import TestCase
 
 from robber import expect
 
-from data.factories import OfficerFactory, AllegationFactory, AllegationCategoryFactory
+from data.constants import MEDIA_TYPE_DOCUMENT
+from data.factories import OfficerFactory, AllegationFactory, AllegationCategoryFactory, AttachmentFileFactory
 from social_graph.serializers import OfficerSerializer, OfficerDetailSerializer, AllegationSerializer, \
     AccussedSerializer
 
@@ -38,6 +39,19 @@ class OfficerDetailSerializerTestCase(TestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            rank='Police Officer',
+            current_badge='123',
+            race='White',
+            birth_year='1972',
+            gender='M',
+            allegation_count=1,
+            sustained_count=1,
+            honorable_mention_count=1,
+            major_award_count=1,
+            trr_count=1,
+            discipline_count=1,
+            civilian_compliment_count=1,
+            appointed_date='1976-06-10',
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -46,6 +60,19 @@ class OfficerDetailSerializerTestCase(TestCase):
         expect(OfficerDetailSerializer(officer).data).to.eq({
             'id': 8562,
             'full_name': 'Jerome Finnigan',
+            'rank': 'Police Officer',
+            'badge': '123',
+            'race': 'White',
+            'birth_year': '1972',
+            'gender': 'M',
+            'allegation_count': 1,
+            'sustained_count': 1,
+            'honorable_mention_count': 1,
+            'major_award_count': 1,
+            'trr_count': 1,
+            'discipline_count': 1,
+            'civilian_compliment_count': 1,
+            'appointed_date': '1976-06-10',
             'percentile': {
                 'percentile_allegation_civilian': '1.1000',
                 'percentile_allegation_internal': '2.2000',
@@ -63,6 +90,14 @@ class AllegationSerializerTestCase(TestCase):
             incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
             most_common_category=category,
         )
+        AttachmentFileFactory(
+            tag='TRR',
+            allegation=allegation,
+            title='CR document',
+            id='123456',
+            url='http://cr-document.com/',
+            file_type=MEDIA_TYPE_DOCUMENT
+        )
 
         expect(AllegationSerializer(allegation).data).to.eq({
             'crid': '123',
@@ -70,7 +105,15 @@ class AllegationSerializerTestCase(TestCase):
             'most_common_category': {
                 'category': 'Use of Force',
                 'allegation_name': 'Subcategory',
-            }
+            },
+            'attachments': [
+                {
+                    'id': '123456',
+                    'title': 'CR document',
+                    'url': 'http://cr-document.com/',
+                    'file_type': MEDIA_TYPE_DOCUMENT,
+                }
+            ],
         })
 
 
