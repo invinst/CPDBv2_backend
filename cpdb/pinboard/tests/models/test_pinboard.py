@@ -74,12 +74,14 @@ class PinboardTestCase(TestCase):
         pinned_officer_2 = OfficerFactory(id=2)
         pinned_allegation_1 = AllegationFactory(crid='1')
         pinned_allegation_2 = AllegationFactory(crid='2')
+        pinned_trr = TRRFactory(officer__id=77)
         pinboard = PinboardFactory(
             title='Test pinboard',
             description='Test description',
         )
         pinboard.officers.set([pinned_officer_1, pinned_officer_2])
         pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        pinboard.trrs.set([pinned_trr])
         not_relevant_allegation = AllegationFactory(crid='999')
 
         officer_coaccusal_11 = OfficerFactory(id=11)
@@ -121,15 +123,82 @@ class PinboardTestCase(TestCase):
 
         relevant_coaccusals = list(pinboard.relevant_coaccusals)
 
-        expect(relevant_coaccusals).to.have.length(4)
+        expect(relevant_coaccusals).to.have.length(5)
         expect(relevant_coaccusals[0].id).to.eq(11)
         expect(relevant_coaccusals[0].coaccusal_count).to.eq(4)
         expect(relevant_coaccusals[1].id).to.eq(21)
         expect(relevant_coaccusals[1].coaccusal_count).to.eq(3)
         expect(relevant_coaccusals[2].id).to.eq(12)
         expect(relevant_coaccusals[2].coaccusal_count).to.eq(2)
-        expect(relevant_coaccusals[3].id).to.eq(22)
+        expect({relevant_coaccusal.id for relevant_coaccusal in relevant_coaccusals[3:5]}).to.eq({22, 77})
         expect(relevant_coaccusals[3].coaccusal_count).to.eq(1)
+        expect(relevant_coaccusals[4].coaccusal_count).to.eq(1)
+
+    def test_relevant_complaints_coaccusal_count_via_trr(self):
+        officer_coaccusal_11 = OfficerFactory(id=11)
+        officer_coaccusal_21 = OfficerFactory(id=21)
+        OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
+
+        pinned_officer_1 = OfficerFactory(id=1)
+        pinned_officer_2 = OfficerFactory(id=2)
+        pinned_allegation_1 = AllegationFactory(crid='1')
+        pinned_allegation_2 = AllegationFactory(crid='2')
+        pinned_trr_1 = TRRFactory(officer__id=77)
+        pinned_trr_2 = TRRFactory(officer=officer_coaccusal_11)
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1, pinned_officer_2])
+        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        pinboard.trrs.set([pinned_trr_1, pinned_trr_2])
+        not_relevant_allegation = AllegationFactory(crid='999')
+
+        allegation_11 = AllegationFactory(crid='11')
+        allegation_12 = AllegationFactory(crid='12')
+        allegation_13 = AllegationFactory(crid='13')
+        allegation_14 = AllegationFactory(crid='14')
+        OfficerAllegationFactory(allegation=allegation_11, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_12, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_13, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_14, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_11, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=allegation_12, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=allegation_13, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=allegation_14, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_11)
+
+        allegation_21 = AllegationFactory(crid='21')
+        allegation_22 = AllegationFactory(crid='22')
+        allegation_23 = AllegationFactory(crid='23')
+        OfficerAllegationFactory(allegation=allegation_21, officer=pinned_officer_2)
+        OfficerAllegationFactory(allegation=allegation_22, officer=pinned_officer_2)
+        OfficerAllegationFactory(allegation=allegation_23, officer=pinned_officer_2)
+        OfficerAllegationFactory(allegation=allegation_21, officer=officer_coaccusal_21)
+        OfficerAllegationFactory(allegation=allegation_22, officer=officer_coaccusal_21)
+        OfficerAllegationFactory(allegation=allegation_23, officer=officer_coaccusal_21)
+        OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_21)
+
+        allegation_coaccusal_12 = OfficerFactory(id=12)
+        allegation_coaccusal_22 = OfficerFactory(id=22)
+        OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_22)
+        OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_22)
+
+        relevant_coaccusals = list(pinboard.relevant_coaccusals)
+
+        expect(relevant_coaccusals).to.have.length(5)
+        expect(relevant_coaccusals[0].id).to.eq(11)
+        expect(relevant_coaccusals[0].coaccusal_count).to.eq(5)
+        expect(relevant_coaccusals[1].id).to.eq(21)
+        expect(relevant_coaccusals[1].coaccusal_count).to.eq(3)
+        expect(relevant_coaccusals[2].id).to.eq(12)
+        expect(relevant_coaccusals[2].coaccusal_count).to.eq(2)
+        expect({relevant_coaccusal.id for relevant_coaccusal in relevant_coaccusals[3:5]}).to.eq({22, 77})
+        expect(relevant_coaccusals[3].coaccusal_count).to.eq(1)
+        expect(relevant_coaccusals[4].coaccusal_count).to.eq(1)
 
     def test_relevant_complaints_via_accused_officers(self):
         pinned_officer_1 = OfficerFactory(id=1)

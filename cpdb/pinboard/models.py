@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from django.db.models import Q, Count, Prefetch
+from django.db.models import Q, Count, Prefetch, Value, IntegerField
 
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
@@ -64,6 +64,7 @@ class Pinboard(TimeStampsModel):
     def relevant_coaccusals(self):
         officer_ids = self.officers.all().values_list('id', flat=True)
         crids = self.allegations.all().values_list('crid', flat=True)
+        trr_officer_ids = self.trrs.all().values_list('officer_id', flat=True).distinct()
 
         columns = [
             'id',
@@ -86,7 +87,12 @@ class Pinboard(TimeStampsModel):
         ).exclude(id__in=officer_ids).only(*columns).annotate(
             sub_coaccusal_count=Count('officerallegation', distinct=True)
         )
-        sub_query = via_officer.union(via_allegation, all=True)
+        via_trr = Officer.objects.filter(
+            id__in=trr_officer_ids
+        ).exclude(id__in=officer_ids).only(*columns).annotate(
+            sub_coaccusal_count=Value(1, output_field=IntegerField())
+        )
+        sub_query = via_officer.union(via_allegation, all=True).union(via_trr, all=True)
 
         select_columns = ', '.join([f'"{col}"' for col in columns])
         raw_query = f'''

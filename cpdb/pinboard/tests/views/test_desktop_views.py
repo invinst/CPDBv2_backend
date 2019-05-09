@@ -908,13 +908,27 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         pinned_officer_2 = OfficerFactory(id=2)
         pinned_allegation_1 = AllegationFactory(crid='1')
         pinned_allegation_2 = AllegationFactory(crid='2')
+        pinned_allegation_3 = AllegationFactory(crid='3')
+        pinned_trr = TRRFactory(
+            officer=OfficerFactory(
+                id=77,
+                rank='Officer',
+                first_name='German',
+                last_name='Lauren',
+                trr_percentile=None,
+                complaint_percentile=None,
+                civilian_allegation_percentile=None,
+                internal_allegation_percentile=None,
+            )
+        )
         pinboard = PinboardFactory(
             id='66ef1560',
             title='Test pinboard',
             description='Test description',
         )
         pinboard.officers.set([pinned_officer_1, pinned_officer_2])
-        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2, pinned_allegation_3])
+        pinboard.trrs.set([pinned_trr])
         not_relevant_allegation = AllegationFactory(crid='999')
 
         officer_coaccusal_11 = OfficerFactory(
@@ -943,25 +957,31 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         allegation_12 = AllegationFactory(crid='12')
         allegation_13 = AllegationFactory(crid='13')
         allegation_14 = AllegationFactory(crid='14')
+        allegation_15 = AllegationFactory(crid='15')
         OfficerAllegationFactory(allegation=allegation_11, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_12, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_13, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_14, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_15, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_11, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_12, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_13, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_14, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=allegation_15, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_11)
 
         allegation_21 = AllegationFactory(crid='21')
         allegation_22 = AllegationFactory(crid='22')
         allegation_23 = AllegationFactory(crid='23')
+        allegation_24 = AllegationFactory(crid='24')
         OfficerAllegationFactory(allegation=allegation_21, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_22, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_23, officer=pinned_officer_2)
+        OfficerAllegationFactory(allegation=allegation_24, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_21, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=allegation_22, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=allegation_23, officer=officer_coaccusal_21)
+        OfficerAllegationFactory(allegation=allegation_24, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_21)
 
         allegation_coaccusal_12 = OfficerFactory(
@@ -986,20 +1006,22 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_3, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_22)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_22)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_22)
 
         request_url = reverse('api-v2:pinboards-relevant-coaccusals', kwargs={'pk': '66ef1560'})
         response = self.client.get(request_url)
-        expect(response.data['count']).to.eq(4)
+        expect(response.data['count']).to.eq(5)
         expect(response.data['previous']).to.be.none()
         expect(response.data['next']).to.be.none()
         expect(response.data['results']).to.eq([{
             'id': 11,
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
-            'coaccusal_count': 4,
+            'coaccusal_count': 5,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -1011,7 +1033,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'id': 21,
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
-            'coaccusal_count': 3,
+            'coaccusal_count': 4,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1022,7 +1044,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'id': 12,
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
-            'coaccusal_count': 2,
+            'coaccusal_count': 3,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -1032,6 +1054,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'id': 22,
             'rank': 'Detective',
             'full_name': 'Edward May',
+            'coaccusal_count': 2,
+            'percentile': {
+                'year': 2016,
+            },
+        }, {
+            'id': 77,
+            'rank': 'Officer',
+            'full_name': 'German Lauren',
             'coaccusal_count': 1,
             'percentile': {
                 'year': 2016,
