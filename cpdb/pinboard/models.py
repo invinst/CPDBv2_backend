@@ -1,6 +1,8 @@
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch, Value, IntegerField
 
+from sortedm2m.fields import SortedManyToManyField
+
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
@@ -9,9 +11,9 @@ from pinboard.fields import HexField
 class Pinboard(TimeStampsModel):
     id = HexField(hex_length=8, primary_key=True)
     title = models.CharField(max_length=255, default='', blank=True)
-    officers = models.ManyToManyField('data.Officer')
-    allegations = models.ManyToManyField('data.Allegation')
-    trrs = models.ManyToManyField('trr.TRR')
+    officers = SortedManyToManyField('data.Officer')
+    allegations = SortedManyToManyField('data.Allegation')
+    trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
 
     @property
@@ -23,6 +25,18 @@ class Pinboard(TimeStampsModel):
             Q(trr__id__in=trr_ids) |
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
+
+    @property
+    def officer_ids(self):
+        return self.officers.values_list('id', flat=True)
+
+    @property
+    def crids(self):
+        return self.allegations.values_list('crid', flat=True)
+
+    @property
+    def trr_ids(self):
+        return self.trrs.values_list('id', flat=True)
 
     def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(

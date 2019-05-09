@@ -39,3 +39,21 @@ class PinboardSerializer(ModelSerializer, NoNullSerializer):
             'trr_ids',
             'description',
         )
+
+
+class OrderedPinboardSerializer(ModelSerializer, NoNullSerializer):
+    id = serializers.CharField(min_length=8, max_length=8, read_only=True)
+    officer_ids = serializers.ListField(child=serializers.IntegerField())
+    crids = serializers.ListField(child=serializers.CharField())
+    trr_ids = serializers.ListField(child=serializers.IntegerField())
+
+    class Meta:
+        model = Pinboard
+        fields = (
+            'id',
+            'title',
+            'officer_ids',
+            'crids',
+            'trr_ids',
+            'description',
+        )
