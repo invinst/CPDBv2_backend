@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
 from data.models import AttachmentFile
-from pinboard.serializers.allegation_card_serializer import AllegationSerializer
+from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
 
 
 class DocumentCardSerializer(serializers.ModelSerializer):
-    allegation = AllegationSerializer()
+    allegation = AllegationCardSerializer()
 
     class Meta:
         model = AttachmentFile
