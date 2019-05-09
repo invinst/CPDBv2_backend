@@ -1,18 +1,7 @@
 from rest_framework import serializers
 
+from shared.serializer import OfficerPercentileSerializer
 from twitterbot.constants import RESPONSE_TYPE_COACCUSED_PAIR, RESPONSE_TYPE_SINGLE_OFFICER
-
-
-class OfficerPercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(
-        source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        source='civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
-    )
-    percentile_allegation_internal = serializers.DecimalField(
-        source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
-    )
 
 
 class OfficerCardSerializer(serializers.Serializer):

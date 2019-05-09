@@ -263,7 +263,10 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3)
+        social_graph_data_query = SocialGraphDataQuery(
+            [officer_1, officer_2, officer_3, officer_4, officer_5],
+            threshold=3
+        )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_show_civil_only_false(self):
@@ -342,7 +345,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1, show_civil_only=False)
+        social_graph_data_query = SocialGraphDataQuery(
+            [officer_1, officer_2, officer_3],
+            threshold=1,
+            show_civil_only=False
+        )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_3_show_civil_only_false(self):

@@ -106,12 +106,4 @@ class Allegation(TimeStampsModel):
 
     @property
     def v2_to(self):
-        if self.officerallegation_set.count() == 0:
-            return f'/complaint/{self.crid}/'
-
-        officer_allegations = self.officerallegation_set.filter(officer__isnull=False)
-
-        if officer_allegations.count() == 0:
-            return f'/complaint/{self.crid}/'
-
-        return f'/complaint/{self.crid}/{officer_allegations.first().officer.pk}/'
+        return f'/complaint/{self.crid}/'
