@@ -17,16 +17,25 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -65,14 +74,29 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000',
+                        'percentile_trr': '3.3000'
+                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '4.4000',
+                        'percentile_allegation_internal': '5.5000',
+                        'percentile_trr': '6.6000'
+                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '7.7000',
+                        'percentile_allegation_internal': '8.8000',
+                        'percentile_trr': '9.9000'
+                    }
                 },
             ],
             'coaccused_data': [
@@ -122,16 +146,25 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -169,14 +202,29 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000',
+                        'percentile_trr': '3.3000'
+                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '4.4000',
+                        'percentile_allegation_internal': '5.5000',
+                        'percentile_trr': '6.6000'
+                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '7.7000',
+                        'percentile_allegation_internal': '8.8000',
+                        'percentile_trr': '9.9000'
+                    }
                 },
             ],
             'coaccused_data': [
@@ -226,26 +274,41 @@ class SocialGraphViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
         )
         officer_2 = OfficerFactory(
             id=8563,
             first_name='Edward',
             last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
         )
         officer_3 = OfficerFactory(
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
         )
         officer_4 = OfficerFactory(
             id=8565,
             first_name='John',
             last_name='Snow',
+            civilian_allegation_percentile=10.10,
+            internal_allegation_percentile=11.11,
+            trr_percentile=12.12,
         )
         officer_5 = OfficerFactory(
             id=8566,
             first_name='John',
             last_name='Sena',
+            civilian_allegation_percentile=13.13,
+            internal_allegation_percentile=14.14,
+            trr_percentile=15.15,
         )
 
         unit = PoliceUnitFactory(id=123)
@@ -301,22 +364,47 @@ class SocialGraphViewSetTestCase(APITestCase):
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000',
+                        'percentile_trr': '3.3000'
+                    }
                 },
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '4.4000',
+                        'percentile_allegation_internal': '5.5000',
+                        'percentile_trr': '6.6000'
+                    }
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '7.7000',
+                        'percentile_allegation_internal': '8.8000',
+                        'percentile_trr': '9.9000'
+                    }
                 },
                 {
                     'full_name': 'John Snow',
                     'id': 8565,
+                    'percentile': {
+                        'percentile_allegation_civilian': '10.1000',
+                        'percentile_allegation_internal': '11.1100',
+                        'percentile_trr': '12.1200'
+                    }
                 },
                 {
                     'full_name': 'John Sena',
                     'id': 8566,
+                    'percentile': {
+                        'percentile_allegation_civilian': '13.1300',
+                        'percentile_allegation_internal': '14.1400',
+                        'percentile_trr': '15.1500'
+                    }
                 },
             ],
             'coaccused_data': [

@@ -16,6 +16,11 @@ class OfficerSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
 
+    percentile = serializers.SerializerMethodField()
+
+    def get_percentile(self, obj):
+        return OfficerPercentileSerializer(obj).data
+
 
 class OfficerDetailSerializer(NoNullSerializer):
     id = serializers.IntegerField()

@@ -12,11 +12,23 @@ from social_graph.serializers import OfficerSerializer, OfficerDetailSerializer,
 
 class OfficerSerializerTestCase(TestCase):
     def test_serialization(self):
-        officer = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+        officer = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+        )
 
         expect(OfficerSerializer(officer).data).to.eq({
             'id': 8562,
             'full_name': 'Jerome Finnigan',
+            'percentile': {
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
+            }
         })
 
 

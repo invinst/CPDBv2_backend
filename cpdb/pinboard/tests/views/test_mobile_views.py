@@ -214,14 +214,70 @@ class PinboardMobileViewSetTestCase(APITestCase):
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
 
     def test_social_graph(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
-        officer_4 = OfficerFactory(id=8565, first_name='William', last_name='People')
-        officer_5 = OfficerFactory(id=8566, first_name='John', last_name='Sena')
-        officer_6 = OfficerFactory(id=8567, first_name='Tom', last_name='Cruise')
-        officer_7 = OfficerFactory(id=8568, first_name='Robert', last_name='Long')
-        officer_8 = OfficerFactory(id=8569, first_name='Jaeho', last_name='Jung')
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
+        )
+        officer_4 = OfficerFactory(
+            id=8565,
+            first_name='William',
+            last_name='People',
+            civilian_allegation_percentile=10.10,
+            internal_allegation_percentile=11.11,
+            trr_percentile=12.12,
+        )
+        officer_5 = OfficerFactory(
+            id=8566,
+            first_name='John',
+            last_name='Sena',
+            civilian_allegation_percentile=13.13,
+            internal_allegation_percentile=14.14,
+            trr_percentile=15.15,
+        )
+        officer_6 = OfficerFactory(
+            id=8567,
+            first_name='Tom',
+            last_name='Cruise',
+            civilian_allegation_percentile=16.16,
+            internal_allegation_percentile=17.17,
+            trr_percentile=18.18,
+        )
+        officer_7 = OfficerFactory(
+            id=8568,
+            first_name='Robert',
+            last_name='Long',
+            civilian_allegation_percentile=19.19,
+            internal_allegation_percentile=20.20,
+            trr_percentile=21.21,
+        )
+        officer_8 = OfficerFactory(
+            id=8569,
+            first_name='Jaeho',
+            last_name='Jung',
+            civilian_allegation_percentile=22.22,
+            internal_allegation_percentile=23.23,
+            trr_percentile=24.24,
+        )
 
         allegation_1 = AllegationFactory(
             crid='123',
@@ -315,10 +371,42 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         expected_data = {
             'officers': [
-                {'full_name': 'Edward May', 'id': 8563},
-                {'full_name': 'Jerome Finnigan', 'id': 8562},
-                {'full_name': 'Joe Parker', 'id': 8564},
-                {'full_name': 'William People', 'id': 8565},
+                {
+                    'full_name': 'Edward May',
+                    'id': 8563,
+                    'percentile': {
+                        'percentile_allegation_civilian': '4.4000',
+                        'percentile_allegation_internal': '5.5000',
+                        'percentile_trr': '6.6000'
+                    }
+                },
+                {
+                    'full_name': 'Jerome Finnigan',
+                    'id': 8562,
+                    'percentile': {
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000',
+                        'percentile_trr': '3.3000'
+                    }
+                },
+                {
+                    'full_name': 'Joe Parker',
+                    'id': 8564,
+                    'percentile': {
+                        'percentile_allegation_civilian': '7.7000',
+                        'percentile_allegation_internal': '8.8000',
+                        'percentile_trr': '9.9000'
+                    }
+                },
+                {
+                    'full_name': 'William People',
+                    'id': 8565,
+                    'percentile': {
+                        'percentile_allegation_civilian': '10.1000',
+                        'percentile_allegation_internal': '11.1100',
+                        'percentile_trr': '12.1200'
+                    }
+                },
             ],
             'coaccused_data': [
                 {
