@@ -12,7 +12,7 @@ from data.factories import PoliceUnitFactory, OfficerFactory, AllegationFactory,
 
 
 class SocialGraphViewSetTestCase(APITestCase):
-    def test_list_default(self):
+    def test_network_default(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -130,7 +130,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             ]
         }
 
-        url = reverse('api-v2:social-graph-list', kwargs={})
+        url = reverse('api-v2:social-graph-network', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
         })
@@ -141,7 +141,7 @@ class SocialGraphViewSetTestCase(APITestCase):
         expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
-    def test_list_with_specific_threshold_and_show_civil_only(self):
+    def test_network_with_specific_threshold_and_show_civil_only(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -256,7 +256,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             'list_event': ['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
         }
 
-        url = reverse('api-v2:social-graph-list', kwargs={})
+        url = reverse('api-v2:social-graph-network', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
             'threshold': 1,
@@ -269,7 +269,7 @@ class SocialGraphViewSetTestCase(APITestCase):
         expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
-    def test_list_with_unit_id_param(self):
+    def test_network_with_unit_id_param(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -454,7 +454,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             'list_event': ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
         }
 
-        url = reverse('api-v2:social-graph-list', kwargs={})
+        url = reverse('api-v2:social-graph-network', kwargs={})
         response = self.client.get(url, {
             'unit_id': 123,
             'threshold': 3,

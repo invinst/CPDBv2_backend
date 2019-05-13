@@ -9,7 +9,8 @@ from social_graph.serializers import OfficerDetailSerializer, AllegationSerializ
 
 
 class SocialGraphViewSet(viewsets.ViewSet):
-    def list(self, _):
+    @list_route(methods=['get'], url_path='network')
+    def network(self, _):
         social_graph_data_query = SocialGraphDataQuery(
             officers=self._officers,
             threshold=self._threshold,
