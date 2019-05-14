@@ -712,6 +712,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -720,14 +721,19 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_2,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
         )
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         pinboard = PinboardFactory(
             id='66ef1560',
@@ -826,6 +832,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -834,6 +841,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_1,
             show=True,
@@ -842,6 +850,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=3,
+            file_type='document',
             title='relevant document 3',
             allegation=relevant_allegation_1,
             show=True,
@@ -850,6 +859,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=4,
+            file_type='document',
             title='relevant document 4',
             allegation=relevant_allegation_1,
             show=True,
@@ -858,6 +868,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=5,
+            file_type='document',
             title='relevant document 5',
             allegation=relevant_allegation_1,
             show=True,
