@@ -71,7 +71,7 @@ class AllegationSerializer(NoNullSerializer):
     crid = serializers.CharField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     most_common_category = AllegationCategorySerializer()
-    attachments = AttachmentFileSerializer(source='filtered_attachment_files', many=True)
+    attachments = AttachmentFileSerializer(source='prefetch_filtered_attachment_files', many=True)
 
 
 class AccussedSerializer(NoNullSerializer):

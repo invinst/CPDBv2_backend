@@ -6,6 +6,7 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
+from data.models import Officer
 from social_graph.queries import SocialGraphDataQuery
 
 
@@ -63,21 +64,21 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         expected_officers = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'percentile': {
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'percentile': {
                     'percentile_allegation_civilian': '4.4000',
                     'percentile_allegation_internal': '5.5000',
                     'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 }
             },
             {
@@ -124,7 +125,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3])
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_show_civil_only_true(self):
@@ -206,21 +211,21 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         expected_officers = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'percentile': {
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'percentile': {
                     'percentile_allegation_civilian': '4.4000',
                     'percentile_allegation_internal': '5.5000',
                     'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 }
             },
             {
@@ -242,7 +247,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3], threshold=1)
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers, threshold=1)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_3_show_civil_only_true(self):
@@ -374,21 +383,21 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         expected_officers = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'percentile': {
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'percentile': {
                     'percentile_allegation_civilian': '4.4000',
                     'percentile_allegation_internal': '5.5000',
                     'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 }
             },
             {
@@ -401,21 +410,21 @@ class SocialGraphDataQueryTestCase(TestCase):
                 }
             },
             {
-                'full_name': 'John Snow',
-                'id': 8565,
-                'percentile': {
-                    'percentile_allegation_civilian': '10.1000',
-                    'percentile_allegation_internal': '11.1100',
-                    'percentile_trr': '12.1200'
-                }
-            },
-            {
                 'full_name': 'John Sena',
                 'id': 8566,
                 'percentile': {
                     'percentile_allegation_civilian': '13.1300',
                     'percentile_allegation_internal': '14.1400',
                     'percentile_trr': '15.1500'
+                }
+            },
+            {
+                'full_name': 'John Snow',
+                'id': 8565,
+                'percentile': {
+                    'percentile_allegation_civilian': '10.1000',
+                    'percentile_allegation_internal': '11.1100',
+                    'percentile_trr': '12.1200'
                 }
             },
         ]
@@ -428,10 +437,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
-        social_graph_data_query = SocialGraphDataQuery(
-            [officer_1, officer_2, officer_3, officer_4, officer_5],
-            threshold=3
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
         )
+
+        social_graph_data_query = SocialGraphDataQuery(officers, threshold=3)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_show_civil_only_false(self):
@@ -519,21 +529,21 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         expected_officers = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'percentile': {
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'percentile': {
                     'percentile_allegation_civilian': '4.4000',
                     'percentile_allegation_internal': '5.5000',
                     'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 }
             },
             {
@@ -555,8 +565,12 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
         social_graph_data_query = SocialGraphDataQuery(
-            [officer_1, officer_2, officer_3],
+            officers,
             threshold=1,
             show_civil_only=False
         )
@@ -691,21 +705,21 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         expected_officers = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'percentile': {
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'percentile': {
                     'percentile_allegation_civilian': '4.4000',
                     'percentile_allegation_internal': '5.5000',
                     'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 }
             },
             {
@@ -718,21 +732,21 @@ class SocialGraphDataQueryTestCase(TestCase):
                 }
             },
             {
-                'full_name': 'John Snow',
-                'id': 8565,
-                'percentile': {
-                    'percentile_allegation_civilian': '10.1000',
-                    'percentile_allegation_internal': '11.1100',
-                    'percentile_trr': '12.1200'
-                }
-            },
-            {
                 'full_name': 'John Sena',
                 'id': 8566,
                 'percentile': {
                     'percentile_allegation_civilian': '13.1300',
                     'percentile_allegation_internal': '14.1400',
                     'percentile_trr': '15.1500'
+                }
+            },
+            {
+                'full_name': 'John Snow',
+                'id': 8565,
+                'percentile': {
+                    'percentile_allegation_civilian': '10.1000',
+                    'percentile_allegation_internal': '11.1100',
+                    'percentile_trr': '12.1200'
                 }
             },
         ]
@@ -745,8 +759,12 @@ class SocialGraphDataQueryTestCase(TestCase):
             'list_event': expected_list_event
         }
 
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
+        )
+
         social_graph_data_query = SocialGraphDataQuery(
-            [officer_1, officer_2, officer_3, officer_4, officer_5], threshold=3, show_civil_only=False
+            officers, threshold=3, show_civil_only=False
         )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
@@ -975,14 +993,18 @@ class SocialGraphDataQueryTestCase(TestCase):
             ]
         }
 
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
         social_graph_data_query = SocialGraphDataQuery(
-            [officer_1, officer_2, officer_3], threshold=2, show_civil_only=False, show_connected_officers=True
+            officers, threshold=2, show_civil_only=False, show_connected_officers=True
         )
 
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_empty_officers(self):
-        social_graph_data_query = SocialGraphDataQuery([], threshold=2, show_civil_only=False)
+        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none(), threshold=2, show_civil_only=False)
         expect(social_graph_data_query.graph_data()).to.be.empty()
 
     def test_all_officers_default(self):
@@ -1011,8 +1033,12 @@ class SocialGraphDataQueryTestCase(TestCase):
             trr_percentile='22.2200',
         )
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3])
-        expect(social_graph_data_query.all_officers()).to.eq([officer_1, officer_2, officer_3])
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers)
+        expect(list(social_graph_data_query.all_officers())).to.eq([officer_2, officer_1, officer_3])
 
     def test_all_officers_with_show_connected_officers(self):
         officer_1 = OfficerFactory(id=8000, first_name='Jerome', last_name='Finnigan')
@@ -1099,15 +1125,20 @@ class SocialGraphDataQueryTestCase(TestCase):
         OfficerAllegationFactory(id=19, officer=officer_3, allegation=allegation_10)
         OfficerAllegationFactory(id=20, officer=officer_7, allegation=allegation_10)
 
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5, officer_6]]
+        )
+
         social_graph_data_query = SocialGraphDataQuery(
-            [officer_1, officer_2, officer_3],
+            officers,
             threshold=2,
             show_civil_only=False,
             show_connected_officers=True
         )
 
-        expected_all_officers = [officer_2, officer_1, officer_3, officer_5, officer_4, officer_6]
-        expect(list(social_graph_data_query.all_officers())).to.eq(expected_all_officers)
+        expected_officers = [officer_2, officer_1, officer_3, officer_5, officer_4, officer_6]
+
+        expect(list(social_graph_data_query.all_officers())).to.eq(expected_officers)
 
     def test_allegations_default(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
@@ -1139,5 +1170,9 @@ class SocialGraphDataQueryTestCase(TestCase):
         OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
 
-        social_graph_data_query = SocialGraphDataQuery([officer_1, officer_2, officer_3])
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers)
         expect(list(social_graph_data_query.allegations())).to.eq([allegation_2, allegation_3])

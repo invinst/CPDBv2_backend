@@ -70,7 +70,7 @@ class SocialGraphDataQuery(object):
             officer_ids = list(set(officer_ids))
             return Officer.objects.filter(id__in=officer_ids).order_by('first_name', 'last_name')
         else:
-            return self.officers
+            return self.officers.order_by('first_name', 'last_name')
 
     def graph_data(self):
         if self.officers:

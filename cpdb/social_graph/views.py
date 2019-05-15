@@ -1,8 +1,10 @@
+from django.db.models import Prefetch
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
-from data.models import Officer
+from data.models import Officer, AttachmentFile
+from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
 from social_graph.serializers import OfficerDetailSerializer, AllegationSerializer
@@ -27,12 +29,17 @@ class SocialGraphViewSet(viewsets.ViewSet):
             show_civil_only=self._show_civil_only,
         )
 
-        return Response(
-            AllegationSerializer(
-                social_graph_data_query.allegations().select_related('most_common_category'),
-                many=True
-            ).data
+        allegations = social_graph_data_query.allegations().select_related(
+            'most_common_category'
+        ).prefetch_related(
+            Prefetch(
+                'attachment_files',
+                queryset=filter_attachments(AttachmentFile.objects),
+                to_attr='prefetch_filtered_attachment_files'
+            )
         )
+
+        return Response(AllegationSerializer(allegations, many=True).data)
 
     @list_route(methods=['get'], url_path='officers')
     def officers(self, _):
@@ -42,7 +49,12 @@ class SocialGraphViewSet(viewsets.ViewSet):
             show_civil_only=self._show_civil_only,
         )
 
-        return Response(OfficerDetailSerializer(social_graph_data_query.all_officers(), many=True).data)
+        return Response(
+            OfficerDetailSerializer(
+                social_graph_data_query.all_officers().select_related('last_unit'),
+                many=True
+            ).data
+        )
 
     @list_route(methods=['get'], url_path='geographic')
     def geographic(self, _):

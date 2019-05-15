@@ -8,7 +8,7 @@ from rest_framework import status
 from robber import expect
 
 from data.factories import PoliceUnitFactory, OfficerFactory, AllegationFactory, \
-    OfficerAllegationFactory, OfficerHistoryFactory
+    OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory, AllegationCategoryFactory
 
 
 class SocialGraphViewSetTestCase(APITestCase):
@@ -565,28 +565,6 @@ class SocialGraphViewSetTestCase(APITestCase):
 
         expected_data = [
             {
-                'full_name': 'Jerome Finnigan',
-                'id': 8562,
-                'rank': 'Police Officer',
-                'badge': '123',
-                'race': 'White',
-                'birth_year': '1972',
-                'gender': 'M',
-                'allegation_count': 1,
-                'sustained_count': 1,
-                'honorable_mention_count': 1,
-                'major_award_count': 1,
-                'trr_count': 1,
-                'discipline_count': 1,
-                'civilian_compliment_count': 1,
-                'appointed_date': '1976-06-10',
-                'percentile': {
-                    'percentile_allegation_civilian': '88.8800',
-                    'percentile_allegation_internal': '77.7700',
-                    'percentile_trr': '66.6600',
-                }
-            },
-            {
                 'full_name': 'Edward May',
                 'id': 8563,
                 'rank': 'Police Officer',
@@ -606,6 +584,28 @@ class SocialGraphViewSetTestCase(APITestCase):
                     'percentile_allegation_civilian': '55.6600',
                     'percentile_allegation_internal': '66.7700',
                     'percentile_trr': '77.8800',
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'rank': 'Police Officer',
+                'badge': '123',
+                'race': 'White',
+                'birth_year': '1972',
+                'gender': 'M',
+                'allegation_count': 1,
+                'sustained_count': 1,
+                'honorable_mention_count': 1,
+                'major_award_count': 1,
+                'trr_count': 1,
+                'discipline_count': 1,
+                'civilian_compliment_count': 1,
+                'appointed_date': '1976-06-10',
+                'percentile': {
+                    'percentile_allegation_civilian': '88.8800',
+                    'percentile_allegation_internal': '77.7700',
+                    'percentile_trr': '66.6600',
                 }
             },
             {
@@ -636,6 +636,103 @@ class SocialGraphViewSetTestCase(APITestCase):
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
         })
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq(expected_data)
+
+    def test_allegations_default(self):
+        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
+        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+
+        category_1 = AllegationCategoryFactory(
+            category='Use of Force',
+            allegation_name='Miscellaneous'
+        )
+        category_2 = AllegationCategoryFactory(
+            category='Illegal Search',
+            allegation_name='Illegal Arrest / False Arrest'
+        )
+        category_3 = AllegationCategoryFactory(
+            category='Operation/Personnel Violations',
+            allegation_name='Improper Search Of Person'
+        )
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=False,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
+            most_common_category=category_1
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=False,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc),
+            most_common_category=category_2
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=False,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
+            most_common_category=category_3
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
+        OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
+        OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+
+        AttachmentFileFactory(
+            id=1,
+            tag='Other',
+            allegation=allegation_2,
+            title='Attachment Title',
+            file_type='document',
+            url='http://lvh.me/document',
+        )
+        AttachmentFileFactory(id=2, tag='OCIR', allegation=allegation_2)
+        AttachmentFileFactory(id=3, tag='AR', allegation=allegation_2)
+        AttachmentFileFactory(id=4, tag='CR', allegation=allegation_2, show=False)
+        AttachmentFileFactory(id=5, tag='CR', allegation=allegation_2, title='arrest report')
+
+        url = reverse('api-v2:social-graph-allegations', kwargs={})
+        response = self.client.get(url, {
+            'officer_ids': '8562, 8563, 8564',
+        })
+
+        expected_data = [
+            {
+                'crid': '456',
+                'incident_date': '2006-12-31',
+                'most_common_category': {
+                    'category': 'Illegal Search',
+                    'allegation_name': 'Illegal Arrest / False Arrest'
+                },
+                'attachments': [
+                    {
+                        'id': '1',
+                        'title': 'Attachment Title',
+                        'file_type': 'document',
+                        'url': 'http://lvh.me/document',
+                    }
+                ]
+
+            },
+            {
+                'crid': '789',
+                'incident_date': '2007-12-31',
+                'most_common_category': {
+                    'category': 'Operation/Personnel Violations',
+                    'allegation_name': 'Improper Search Of Person'
+                },
+                'attachments': []
+
+            }
+        ]
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)

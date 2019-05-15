@@ -90,7 +90,7 @@ class AllegationSerializerTestCase(TestCase):
             incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
             most_common_category=category,
         )
-        AttachmentFileFactory(
+        attachment = AttachmentFileFactory(
             tag='TRR',
             allegation=allegation,
             title='CR document',
@@ -98,6 +98,8 @@ class AllegationSerializerTestCase(TestCase):
             url='http://cr-document.com/',
             file_type=MEDIA_TYPE_DOCUMENT
         )
+
+        setattr(allegation, 'prefetch_filtered_attachment_files', [attachment])
 
         expect(AllegationSerializer(allegation).data).to.eq({
             'crid': '123',
