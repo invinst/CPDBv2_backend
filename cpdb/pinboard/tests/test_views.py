@@ -118,6 +118,66 @@ class PinboardAPITestCase(APITestCase):
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
 
+    def test_update_when_have_multiple_pinboards_in_session(self):
+        owned_pinboards = []
+
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        # Try updating the old pinboardresponse = self.client.put(
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': owned_pinboards[0]}),
+            {
+                'title': 'New Pinboard',
+                'officer_ids': [1],
+                'crids': ['456def'],
+                'trr_ids': [1, 2],
+                'description': 'def',
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': owned_pinboards[0],
+            'title': 'New Pinboard',
+            'officer_ids': [1],
+            'crids': ['456def'],
+            'trr_ids': [1, 2],
+            'description': 'def',
+        })
+
     def test_update_pinboard_out_of_session(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
