@@ -2699,7 +2699,7 @@ This api require an api access token set in `Authorization` header. To get an ap
 + Response 201 (application/json)
 
         {
-            "id": 1
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ["123abc"],
@@ -2719,7 +2719,7 @@ This api require an api access token set in `Authorization` header. To get an ap
 
 
         {
-            "id": 1,
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
@@ -2745,7 +2745,7 @@ This api require an api access token set in `Authorization` header. To get an ap
 + Response 200 (application/json)
 
         {
-            "id": 1,
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
@@ -2777,9 +2777,9 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
-## Pinboard complaints [/pinboards/{pk}/officers]
+## Pinboard trrs [/pinboards/{pk}/trrs]
 
-### Get selected officers
+### Get selected trrs
 
 + Parameters
     + pk (number) - number ID of Pinboard
@@ -2788,42 +2788,16 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         [
             {
-                "id": 1,
-                "full_name": "Daryl Mack",
-                "complaint_count": 0,
-                "sustained_count": 0,
-                "birth_year": 1975,
-                "complaint_percentile": 99.3450,
-                "race": "White",
-                "gender": "Male",
-                "rank": "Police Officer",
-                "percentile": {
-                    "percentile_trr": "12.0000",
-                    "percentile_allegation": "99.3450",
-                    "percentile_allegation_civilian": "98.4344",
-                    "percentile_allegation_internal": "99.7840",
-                    "year": 2016,
-                    "id": 1,
-                }
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
             },
             {
-                "id": 2,
-                "full_name": "Ronald Watts",
-                "complaint_count": 0,
-                "sustained_count": 0,
-                "birth_year": 1975,
-                "complaint_percentile": 99.5000,
-                "race": "White",
-                "gender": "Male",
-                "rank": "Detective",
-                "percentile": {
-                    "percentile_trr": "0.0000",
-                    "percentile_allegation": "99.5000",
-                    "percentile_allegation_civilian": "98.4344",
-                    "percentile_allegation_internal": "99.7840",
-                    "year": 2016,
-                    "id": 2,
-                }
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
             }
         ]
 
@@ -2850,3 +2824,18 @@ This api require an api access token set in `Authorization` header. To get an ap
                 'point': {'lon': 2.0, 'lat': 2.0},
             }
         ]
+
+## Lastest retrieved pinboard [/pinboards/latest-retrieved-pinboard/]
+
+### Get the lastest retrieved pinboard of the current session
+
++ Response 200 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ["123abc"],
+            "trr_ids": [1],
+            "description": "abc"
+        }
