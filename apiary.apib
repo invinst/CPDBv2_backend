@@ -845,7 +845,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_internal": "95.0000",
                         "percentile_allegation_civilian": "91.0000",
                         "percentile_allegation": "94.0000",
-                        "id": 1,
                         "year": 2016
                     }
                 }, {
@@ -864,7 +863,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_internal": "71.0000",
                         "percentile_allegation_civilian": "98.0000",
                         "percentile_allegation": "95.0000",
-                        "id": 2,
                         "year": 2016
                     }
                 }
@@ -998,7 +996,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "gender": "Male",
                 "rank": "Police Officer",
                 "percentile": {
-                    "officer_id": 8658,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.995",
@@ -1018,7 +1015,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "gender": "Male",
                 "rank": "Detective",
                 "percentile": {
-                    "officer_id": 13788,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.990",
@@ -1350,7 +1346,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 123,
                         "year": 2016
                     }
                 },
@@ -1370,7 +1365,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 456,
                         "year": 2016
                     }
                 }
@@ -1542,7 +1536,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 123,
                         "year": 2016
                     }
                 },
@@ -1563,7 +1556,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 456,
                         "year": 2016
                     }
                 }
@@ -1948,7 +1940,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "race": "White",
                 "sustained_count": 4,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
@@ -1968,7 +1959,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "race": "White",
                 "sustained_count": 6,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
@@ -2824,18 +2814,3 @@ This api require an api access token set in `Authorization` header. To get an ap
                 'point': {'lon': 2.0, 'lat': 2.0},
             }
         ]
-
-## Lastest retrieved pinboard [/pinboards/latest-retrieved-pinboard/]
-
-### Get the lastest retrieved pinboard of the current session
-
-+ Response 200 (application/json)
-
-        {
-            "id": "5cd06f2b",
-            "title": "My Pinboard",
-            "officer_ids": [1, 2],
-            "crids": ["123abc"],
-            "trr_ids": [1],
-            "description": "abc"
-        }

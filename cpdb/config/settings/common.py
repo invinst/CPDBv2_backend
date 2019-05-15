@@ -39,7 +39,8 @@ THIRD_PARTY_APPS = (
     'anymail',
     'corsheaders',
     'adminsortable',
-    'bandit'
+    'bandit',
+    'sortedm2m'
 )
 
 LOCAL_APPS = (

@@ -49,10 +49,11 @@ class ActivityCardSerializerTestCase(TestCase):
             'sustained_count': 1,
             'rank': 'Police Officer',
             'percentile': {
-                'id': 123,
                 'percentile_trr': '0.0000',
                 'percentile_allegation_civilian': '77.0000',
-                'percentile_allegation_internal': '0.0200'
+                'percentile_allegation_internal': '0.0200',
+                'percentile_allegation': '0.0880',
+                'year': 2016,
             },
             'important': True,
             'null_position': 2,
@@ -78,7 +79,8 @@ class SimpleCardSerializerTestCase(TestCase):
             rank='Police Officer',
             civilian_allegation_percentile='77.000',
             internal_allegation_percentile='0.020',
-            trr_percentile='0.000'
+            trr_percentile='0.000',
+            complaint_percentile='0.2300',
         )
 
         expect(SimpleCardSerializer(officer).data).to.eq({
@@ -89,10 +91,11 @@ class SimpleCardSerializerTestCase(TestCase):
             'birth_year': 1910,
             'rank': 'Police Officer',
             'percentile': {
-                'id': 123,
                 'percentile_trr': '0.0000',
                 'percentile_allegation_civilian': '77.0000',
-                'percentile_allegation_internal': '0.0200'
+                'percentile_allegation_internal': '0.0200',
+                'percentile_allegation': '0.2300',
+                'year': 2016,
             }
         })
 
@@ -114,7 +117,8 @@ class PairCardSerializerTestCase(TestCase):
             rank='Police Officer',
             civilian_allegation_percentile='77.0000',
             internal_allegation_percentile='0.0200',
-            trr_percentile='0.0000'
+            trr_percentile='0.0000',
+            complaint_percentile='38.7000',
         )
         officer2 = OfficerFactory(
             id=2,
@@ -131,7 +135,8 @@ class PairCardSerializerTestCase(TestCase):
             rank='Officer',
             civilian_allegation_percentile='77.222',
             internal_allegation_percentile='4.020',
-            trr_percentile='5.000'
+            trr_percentile='5.000',
+            complaint_percentile='15.6000',
         )
         pair_card = ActivityPairCardFactory(
             officer1=officer1,
@@ -151,10 +156,11 @@ class PairCardSerializerTestCase(TestCase):
                 'birth_year': 1910,
                 'rank': 'Police Officer',
                 'percentile': {
-                    'id': 1,
                     'percentile_trr': '0.0000',
                     'percentile_allegation_civilian': '77.0000',
-                    'percentile_allegation_internal': '0.0200'
+                    'percentile_allegation_internal': '0.0200',
+                    'percentile_allegation': '38.7000',
+                    'year': 2016,
                 }
             },
             'officer2': {
@@ -165,10 +171,11 @@ class PairCardSerializerTestCase(TestCase):
                 'birth_year': 1940,
                 'rank': 'Officer',
                 'percentile': {
-                    'id': 2,
                     'percentile_trr': '5.0000',
                     'percentile_allegation_civilian': '77.2220',
-                    'percentile_allegation_internal': '4.0200'
+                    'percentile_allegation_internal': '4.0200',
+                    'percentile_allegation': '15.6000',
+                    'year': 2016,
                 }
             },
             'important': False,
