@@ -15,7 +15,7 @@
 + Response 201 (application/json)
 
         {
-            "id": 1
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ["123abc"],
@@ -35,7 +35,7 @@
 
 
         {
-            "id": 1,
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
@@ -61,7 +61,7 @@
 + Response 200 (application/json)
 
         {
-            "id": 1,
+            "id": "5cd06f2b",
             "title": "My Pinboard",
             "officer_ids": [1, 2],
             "crids": ['123abc'],
