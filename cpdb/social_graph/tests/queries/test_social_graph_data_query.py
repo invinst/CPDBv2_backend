@@ -91,7 +91,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             },
         ]
 
-        expected_list_event = ['2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        expected_list_event = ['2006-12-31', '2007-12-31']
         expected_coaccused_data = [
             {
                 'officer_id_1': 8562,
@@ -234,7 +234,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             },
         ]
 
-        expected_list_event = ['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        expected_list_event = ['2005-12-31', '2007-12-31']
 
         expected_graph_data = {
             'officers': expected_officers,
@@ -420,7 +420,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             },
         ]
 
-        expected_list_event = ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
+        expected_list_event = ['2007-12-31', '2008-12-31']
 
         expected_graph_data = {
             'officers': expected_officers,
@@ -547,7 +547,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             },
         ]
 
-        expected_list_event = ['2005-12-31 00:00:00+00:00', '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+        expected_list_event = ['2005-12-31', '2006-12-31', '2007-12-31']
 
         expected_graph_data = {
             'officers': expected_officers,
@@ -737,7 +737,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             },
         ]
 
-        expected_list_event = ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
+        expected_list_event = ['2007-12-31', '2008-12-31']
 
         expected_graph_data = {
             'officers': expected_officers,
@@ -968,10 +968,10 @@ class SocialGraphDataQueryTestCase(TestCase):
                 }
             ],
             'list_event': [
-                '2007-12-31 00:00:00+00:00',
-                '2009-12-31 00:00:00+00:00',
-                '2011-12-31 00:00:00+00:00',
-                '2013-12-31 00:00:00+00:00',
+                '2007-12-31',
+                '2009-12-31',
+                '2011-12-31',
+                '2013-12-31',
             ]
         }
 

@@ -58,7 +58,7 @@ class SocialGraphDataQuery(object):
             return []
 
     def list_event(self):
-        events = list({str(row['incident_date']) for row in self.coaccused_data})
+        events = list({row['incident_date'].date().strftime(format='%Y-%m-%d') for row in self.coaccused_data})
         events.sort()
         return events
 

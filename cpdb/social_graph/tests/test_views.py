@@ -126,7 +126,7 @@ class SocialGraphViewSetTestCase(APITestCase):
                 }
             ],
             'list_event': [
-                '2006-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00'
+                '2006-12-31', '2007-12-31'
             ]
         }
 
@@ -253,7 +253,7 @@ class SocialGraphViewSetTestCase(APITestCase):
                     'accussed_count': 1
                 },
             ],
-            'list_event': ['2005-12-31 00:00:00+00:00', '2007-12-31 00:00:00+00:00']
+            'list_event': ['2005-12-31', '2007-12-31']
         }
 
         url = reverse('api-v2:social-graph-network', kwargs={})
@@ -451,7 +451,7 @@ class SocialGraphViewSetTestCase(APITestCase):
                     'accussed_count': 4
                 },
             ],
-            'list_event': ['2007-12-31 00:00:00+00:00', '2008-12-31 00:00:00+00:00']
+            'list_event': ['2007-12-31', '2008-12-31']
         }
 
         url = reverse('api-v2:social-graph-network', kwargs={})

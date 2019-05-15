@@ -423,8 +423,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
                 },
             ],
             'list_event': [
-                '2006-12-31 00:00:00+00:00',
-                '2007-12-31 00:00:00+00:00',
+                '2006-12-31',
+                '2007-12-31',
             ]
         }
 

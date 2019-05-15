@@ -27,7 +27,12 @@ class SocialGraphViewSet(viewsets.ViewSet):
             show_civil_only=self._show_civil_only,
         )
 
-        return Response(AllegationSerializer(social_graph_data_query.allegations(), many=True).data)
+        return Response(
+            AllegationSerializer(
+                social_graph_data_query.allegations().select_related('most_common_category'),
+                many=True
+            ).data
+        )
 
     @list_route(methods=['get'], url_path='officers')
     def officers(self, _):
