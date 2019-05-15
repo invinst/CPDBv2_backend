@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, mixins, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -34,18 +34,45 @@ class PinboardBaseViewSet(
 
     def create(self, request):
         response = super().create(request)
-        request.session['pinboard-id'] = response.data['id']
+        self.update_owned_pinboards(request, response.data['id'])
+        self.update_latest_retrieved_pinboard(request, response.data['id'])
         return response
 
     def update(self, request, pk):
-        if 'pinboard-id' in request.session and \
-               str(request.session['pinboard-id']) == str(pk):
+        if str(pk) in request.session.get('owned_pinboards', []):
             return super().update(request, pk)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
         pinboard = self.get_object()
+        owned_pinboards = request.session.get('owned_pinboards', [])
+
+        if pk not in owned_pinboards:
+            pinboard = pinboard.clone()
+            self.update_owned_pinboards(request, pinboard.id)
+        self.update_latest_retrieved_pinboard(request, pinboard.id)
+
         return Response(OrderedPinboardSerializer(pinboard).data)
+
+    def update_owned_pinboards(self, request, pinboard_id):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        owned_pinboards.append(pinboard_id)
+        request.session['owned_pinboards'] = owned_pinboards
+        request.session['modified'] = True
+
+    def update_latest_retrieved_pinboard(self, request, pinboard_id):
+        request.session['latest_retrieved_pinboard'] = pinboard_id
+        request.session['modified'] = True
+
+    @list_route(methods=['GET'], url_path='latest-retrieved-pinboard')
+    def latest_retrieved_pinboard(self, request):
+        if ('latest_retrieved_pinboard' in request.session) and \
+                (request.session['latest_retrieved_pinboard']
+                    in request.session.get('owned_pinboards', [])):
+            pinboard = get_object_or_404(Pinboard, id=request.session['latest_retrieved_pinboard'])
+            return Response(self.serializer_class(pinboard).data)
+
+        return Response({})
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
