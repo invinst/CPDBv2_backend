@@ -602,6 +602,12 @@ class PinboardAPITestCase(APITestCase):
         for data in expected_data:
             expect(response.data).to.contain(data)
 
+    def test_latest_retrieved_pinboard_return_null(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
     def test_latest_retrieved_pinboard(self):
         # No previous pinboard, data returned should be null
         response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
