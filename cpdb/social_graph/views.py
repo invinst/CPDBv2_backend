@@ -15,7 +15,7 @@ from social_graph.serializers import OfficerDetailSerializer, AllegationSerializ
 
 
 @method_decorator(never_cache, name='dispatch')
-class SocialGraphViewSet(viewsets.ViewSet):
+class SocialGraphBaseViewSet(viewsets.ViewSet):
     @list_route(methods=['get'], url_path='network')
     def network(self, _):
         return Response(self._social_graph_data_query.graph_data())
@@ -69,7 +69,7 @@ class SocialGraphViewSet(viewsets.ViewSet):
         if pinboard_id:
             queryset = Pinboard.objects.all()
             pinboard = get_object_or_404(queryset, id=pinboard_id)
-            show_connected_officers = True
+            show_connected_officers = self.PINBOARD_SHOW_CONNECTED_OFFICERS
             officers = pinboard.all_officers
         elif officer_ids:
             officers = Officer.objects.filter(id__in=officer_ids.split(','))
@@ -98,3 +98,11 @@ class SocialGraphViewSet(viewsets.ViewSet):
     def _show_civil_only(self):
         show_civil_only = self.request.query_params.get('show_civil_only', None)
         return show_civil_only and show_civil_only.capitalize() == 'True'
+
+
+class SocialGraphDesktopViewSet(SocialGraphBaseViewSet):
+    PINBOARD_SHOW_CONNECTED_OFFICERS = True
+
+
+class SocialGraphMobileViewSet(SocialGraphBaseViewSet):
+    PINBOARD_SHOW_CONNECTED_OFFICERS = False
