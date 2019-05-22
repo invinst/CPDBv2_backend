@@ -34,22 +34,23 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             description='abc',
         )
 
+        # Current client does not own the pinboard, should clone it
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': 'f871a13f',
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
-        })
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
 
+        # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'F871A13F'}))
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'id': 'f871a13f',
+            'id': cloned_pinboard_id,
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
@@ -121,6 +122,66 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
 
+    def test_update_when_have_multiple_pinboards_in_session(self):
+        owned_pinboards = []
+
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        # Try updating the old pinboardresponse = self.client.put(
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': owned_pinboards[0]}),
+            {
+                'title': 'New Pinboard',
+                'officer_ids': [1],
+                'crids': ['456def'],
+                'trr_ids': [1, 2],
+                'description': 'def',
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': owned_pinboards[0],
+            'title': 'New Pinboard',
+            'officer_ids': [1],
+            'crids': ['456def'],
+            'trr_ids': [1, 2],
+            'description': 'def',
+        })
+
     def test_update_pinboard_out_of_session(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
@@ -184,7 +245,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officer_ids': [1, 2],
             'crids': ['123abc'],
             'trr_ids': [1],
-            'description': 'abc',
+            'description': 'abc'
         })
 
         expect(Pinboard.objects.count()).to.eq(1)
@@ -1532,3 +1593,47 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'http://testserver/api/v2/pinboards/66ef1560/relevant-complaints/?limit=2'
         )
         expect(last_response.data['next']).to.be.none()
+
+    def test_latest_retrieved_pinboard_return_null(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+    def test_latest_retrieved_pinboard(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+        # Create a pinboard in current session
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+        pinboard_id = response.data['id']
+
+        # Latest retrieved pinboard is now the above one
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+        })
