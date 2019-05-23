@@ -8,7 +8,7 @@ import pytz
 
 from data.factories import AllegationFactory, OfficerFactory, OfficerAllegationFactory, AllegationCategoryFactory, \
     VictimFactory
-from pinboard.queries import GeographyDataQuery
+from social_graph.queries.geographic_data_query import GeographyDataQuery
 from trr.factories import TRRFactory
 
 

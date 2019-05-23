@@ -14,7 +14,7 @@ from pinboard.factories import PinboardFactory
 from trr.factories import TRRFactory
 
 
-class SocialGraphViewSetTestCase(APITestCase):
+class SocialGraphDesktopViewSetTestCase(APITestCase):
     def test_network_with_officer_ids_default(self):
         officer_1 = OfficerFactory(
             id=8562,

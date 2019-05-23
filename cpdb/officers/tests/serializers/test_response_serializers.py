@@ -419,7 +419,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
             final_outcome='9 Day Suspension'
         )
 
-        AttachmentFileFactory(
+        attachment = AttachmentFileFactory(
             tag='Other',
             allegation=allegation,
             title='title',
@@ -428,20 +428,12 @@ class CRNewTimelineSerializerTestCase(TestCase):
             preview_image_url='preview_image_url',
             file_type='document'
         )
-        AttachmentFileFactory(
-            tag='AR',
-            allegation=allegation,
-            title='title 2',
-            id='654321',
-            url='url_2',
-            preview_image_url='preview_image_url_2',
-            file_type='document'
-        )
         VictimFactory(allegation=allegation, gender='M', race='Black', age=30)
 
         setattr(officer_allegation, 'unit_name', 'Unit 001')
         setattr(officer_allegation, 'unit_description', 'District 001')
         setattr(officer_allegation, 'rank_name', 'Police Officer')
+        setattr(allegation, 'prefetch_filtered_attachments', [attachment])
 
         expect(CRNewTimelineSerializer(officer_allegation).data).to.eq({
             'unit_name': 'Unit 001',
@@ -487,6 +479,7 @@ class CRNewTimelineSerializerTestCase(TestCase):
         setattr(officer_allegation, 'unit_name', 'Unit 001')
         setattr(officer_allegation, 'unit_description', 'District 001')
         setattr(officer_allegation, 'rank_name', 'Police Officer')
+        setattr(allegation, 'prefetch_filtered_attachments', [])
 
         expect(CRNewTimelineSerializer(officer_allegation).data).to.exclude('point')
 
