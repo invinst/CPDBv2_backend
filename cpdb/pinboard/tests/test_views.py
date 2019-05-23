@@ -33,22 +33,23 @@ class PinboardViewSetTestCase(APITestCase):
             description='abc',
         )
 
+        # Current client does not own the pinboard, should clone it
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': 'f871a13f',
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
-        })
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
 
+        # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'F871A13F'}))
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'id': 'f871a13f',
+            'id': cloned_pinboard_id,
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
@@ -120,6 +121,66 @@ class PinboardViewSetTestCase(APITestCase):
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
 
+    def test_update_when_have_multiple_pinboards_in_session(self):
+        owned_pinboards = []
+
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        # Try updating the old pinboardresponse = self.client.put(
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': owned_pinboards[0]}),
+            {
+                'title': 'New Pinboard',
+                'officer_ids': [1],
+                'crids': ['456def'],
+                'trr_ids': [1, 2],
+                'description': 'def',
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': owned_pinboards[0],
+            'title': 'New Pinboard',
+            'officer_ids': [1],
+            'crids': ['456def'],
+            'trr_ids': [1, 2],
+            'description': 'def',
+        })
+
     def test_update_pinboard_out_of_session(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
@@ -183,7 +244,7 @@ class PinboardViewSetTestCase(APITestCase):
             'officer_ids': [1, 2],
             'crids': ['123abc'],
             'trr_ids': [1],
-            'description': 'abc',
+            'description': 'abc'
         })
 
         expect(Pinboard.objects.count()).to.eq(1)
@@ -623,13 +684,27 @@ class PinboardViewSetTestCase(APITestCase):
         pinned_officer_2 = OfficerFactory(id=2)
         pinned_allegation_1 = AllegationFactory(crid='1')
         pinned_allegation_2 = AllegationFactory(crid='2')
+        pinned_allegation_3 = AllegationFactory(crid='3')
+        pinned_trr = TRRFactory(
+            officer=OfficerFactory(
+                id=77,
+                rank='Officer',
+                first_name='German',
+                last_name='Lauren',
+                trr_percentile=None,
+                complaint_percentile=None,
+                civilian_allegation_percentile=None,
+                internal_allegation_percentile=None,
+            )
+        )
         pinboard = PinboardFactory(
             id='66ef1560',
             title='Test pinboard',
             description='Test description',
         )
         pinboard.officers.set([pinned_officer_1, pinned_officer_2])
-        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
+        pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2, pinned_allegation_3])
+        pinboard.trrs.set([pinned_trr])
         not_relevant_allegation = AllegationFactory(crid='999')
 
         officer_coaccusal_11 = OfficerFactory(
@@ -658,25 +733,31 @@ class PinboardViewSetTestCase(APITestCase):
         allegation_12 = AllegationFactory(crid='12')
         allegation_13 = AllegationFactory(crid='13')
         allegation_14 = AllegationFactory(crid='14')
+        allegation_15 = AllegationFactory(crid='15')
         OfficerAllegationFactory(allegation=allegation_11, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_12, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_13, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_14, officer=pinned_officer_1)
+        OfficerAllegationFactory(allegation=allegation_15, officer=pinned_officer_1)
         OfficerAllegationFactory(allegation=allegation_11, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_12, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_13, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=allegation_14, officer=officer_coaccusal_11)
+        OfficerAllegationFactory(allegation=allegation_15, officer=officer_coaccusal_11)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_11)
 
         allegation_21 = AllegationFactory(crid='21')
         allegation_22 = AllegationFactory(crid='22')
         allegation_23 = AllegationFactory(crid='23')
+        allegation_24 = AllegationFactory(crid='24')
         OfficerAllegationFactory(allegation=allegation_21, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_22, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_23, officer=pinned_officer_2)
+        OfficerAllegationFactory(allegation=allegation_24, officer=pinned_officer_2)
         OfficerAllegationFactory(allegation=allegation_21, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=allegation_22, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=allegation_23, officer=officer_coaccusal_21)
+        OfficerAllegationFactory(allegation=allegation_24, officer=officer_coaccusal_21)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=officer_coaccusal_21)
 
         allegation_coaccusal_12 = OfficerFactory(
@@ -701,20 +782,22 @@ class PinboardViewSetTestCase(APITestCase):
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_3, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_12)
+        OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_22)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_22)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_22)
 
         request_url = reverse('api-v2:pinboards-relevant-coaccusals', kwargs={'pk': '66ef1560'})
         response = self.client.get(request_url)
-        expect(response.data['count']).to.eq(4)
+        expect(response.data['count']).to.eq(5)
         expect(response.data['previous']).to.be.none()
         expect(response.data['next']).to.be.none()
         expect(response.data['results']).to.eq([{
             'id': 11,
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
-            'coaccusal_count': 4,
+            'coaccusal_count': 5,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -726,7 +809,7 @@ class PinboardViewSetTestCase(APITestCase):
             'id': 21,
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
-            'coaccusal_count': 3,
+            'coaccusal_count': 4,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -737,7 +820,7 @@ class PinboardViewSetTestCase(APITestCase):
             'id': 12,
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
-            'coaccusal_count': 2,
+            'coaccusal_count': 3,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -747,6 +830,14 @@ class PinboardViewSetTestCase(APITestCase):
             'id': 22,
             'rank': 'Detective',
             'full_name': 'Edward May',
+            'coaccusal_count': 2,
+            'percentile': {
+                'year': 2016,
+            },
+        }, {
+            'id': 77,
+            'rank': 'Officer',
+            'full_name': 'German Lauren',
             'coaccusal_count': 1,
             'percentile': {
                 'year': 2016,
@@ -1188,3 +1279,47 @@ class PinboardViewSetTestCase(APITestCase):
             'http://testserver/api/v2/pinboards/66ef1560/relevant-complaints/?limit=2'
         )
         expect(last_response.data['next']).to.be.none()
+
+    def test_latest_retrieved_pinboard_return_null(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+    def test_latest_retrieved_pinboard(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+        # Create a pinboard in current session
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+        pinboard_id = response.data['id']
+
+        # Latest retrieved pinboard is now the above one
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+        })
