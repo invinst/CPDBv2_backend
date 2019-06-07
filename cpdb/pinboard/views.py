@@ -8,11 +8,12 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from officers.serializers.response_serializers import OfficerCardSerializer
 from pinboard.serializers.pinboard_complaint_serializer import PinboardComplaintSerializer
 from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
+from pinboard.serializers.pinboard_officer_serializer import PinboardOfficerSerializer
 from pinboard.serializers.pinboard_serializer import PinboardSerializer, OrderedPinboardSerializer
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
+
 from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
 from pinboard.serializers.document_card_serializer import DocumentCardSerializer
 from .models import Pinboard
@@ -80,7 +81,7 @@ class PinboardViewSet(
     @detail_route(methods=['GET'], url_path='officers')
     def officers(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        serializer = OfficerCardSerializer(pinboard.officers, many=True)
+        serializer = PinboardOfficerSerializer(pinboard.officers, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='trrs')
