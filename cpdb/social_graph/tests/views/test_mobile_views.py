@@ -944,8 +944,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1005,49 +1005,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,
@@ -1091,8 +1073,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         OfficerHistoryFactory(unit=unit, officer=officer_3)
         OfficerHistoryFactory(unit=unit, officer=officer_4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1152,49 +1134,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,
@@ -1231,8 +1195,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1300,49 +1264,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,

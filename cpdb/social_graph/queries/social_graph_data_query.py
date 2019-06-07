@@ -1,7 +1,8 @@
 import functools
 from django.db import connection
 
-from social_graph.serializers import OfficerSerializer, AccussedSerializer
+from social_graph.serializers.officer_serializer import OfficerSerializer
+from social_graph.serializers.accused_serializer import AccusedSerializer
 from data.models import Officer, Allegation
 from utils.raw_query_utils import dict_fetch_all
 
@@ -75,7 +76,7 @@ class SocialGraphDataQuery(object):
     def graph_data(self):
         if self.officers:
             return {
-                'coaccused_data': AccussedSerializer(self.coaccused_data, many=True).data,
+                'coaccused_data': AccusedSerializer(self.coaccused_data, many=True).data,
                 'officers': OfficerSerializer(self.all_officers(), many=True).data,
                 'list_event': self.list_event()
             }

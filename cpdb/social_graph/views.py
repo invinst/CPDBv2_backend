@@ -11,7 +11,8 @@ from pinboard.models import Pinboard
 from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
-from social_graph.serializers import OfficerDetailSerializer, AllegationSerializer
+from social_graph.serializers.officer_detail_serializer import OfficerDetailSerializer
+from social_graph.serializers.allegation_serializer import AllegationSerializer
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -102,6 +103,11 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
 
 class SocialGraphDesktopViewSet(SocialGraphBaseViewSet):
     PINBOARD_SHOW_CONNECTED_OFFICERS = True
+
+    @list_route(methods=['get'], url_path='detail-geographic')
+    def detail_geographic(self, _):
+        detail_geographic_data_query = GeographyDataQuery(officers=self._data['officers'], detail=True)
+        return Response(detail_geographic_data_query.execute())
 
 
 class SocialGraphMobileViewSet(SocialGraphBaseViewSet):
