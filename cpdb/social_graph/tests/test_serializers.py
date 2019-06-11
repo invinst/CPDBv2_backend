@@ -6,7 +6,8 @@ from django.test import TestCase
 from robber import expect
 
 from data.constants import MEDIA_TYPE_DOCUMENT
-from data.factories import OfficerFactory, AllegationFactory, AllegationCategoryFactory, AttachmentFileFactory
+from data.factories import OfficerFactory, AllegationFactory, AllegationCategoryFactory, AttachmentFileFactory, \
+    OfficerAllegationFactory
 from social_graph.serializers import OfficerSerializer, OfficerDetailSerializer, AllegationSerializer, \
     AccussedSerializer
 
@@ -98,8 +99,12 @@ class AllegationSerializerTestCase(TestCase):
             url='http://cr-document.com/',
             file_type=MEDIA_TYPE_DOCUMENT
         )
+        officer = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+        officer_allegation = OfficerAllegationFactory(officer=officer)
 
         setattr(allegation, 'prefetch_filtered_attachment_files', [attachment])
+        allegation.officerallegation_set.set([officer_allegation])
+        # setattr(allegation, 'officerallegation_set', [officer_allegation])
 
         expect(AllegationSerializer(allegation).data).to.eq({
             'crid': '123',
@@ -116,6 +121,7 @@ class AllegationSerializerTestCase(TestCase):
                     'file_type': MEDIA_TYPE_DOCUMENT,
                 }
             ],
+            'officer_ids': [8562],
         })
 
 

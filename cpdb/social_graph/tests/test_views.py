@@ -970,7 +970,8 @@ class SocialGraphViewSetTestCase(APITestCase):
                         'file_type': 'document',
                         'url': 'http://lvh.me/document',
                     }
-                ]
+                ],
+                'officer_ids': [8562, 8563, 8564],
 
             },
             {
@@ -980,7 +981,8 @@ class SocialGraphViewSetTestCase(APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'allegation_name': 'Improper Search Of Person'
                 },
-                'attachments': []
+                'attachments': [],
+                'officer_ids': [8562, 8563],
 
             }
         ]
