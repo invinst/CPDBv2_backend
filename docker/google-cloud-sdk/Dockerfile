@@ -6,5 +6,3 @@ RUN echo "deb https://dl.bintray.com/sobolevn/deb git-secret main" | tee -a /etc
 RUN apt-get update
 
 RUN apt-get install gawk git-secret gettext-base -y
-
-COPY Sectigo_CA.pem /tmp/Sectigo_CA.pem
