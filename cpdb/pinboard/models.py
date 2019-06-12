@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from django.db.models import Q, Count, Prefetch, Value, IntegerField
+from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
 
 from sortedm2m.fields import SortedManyToManyField
 
@@ -97,30 +97,64 @@ class Pinboard(TimeStampsModel):
             'rank',
             'first_name',
             'last_name',
+            'appointed_date',
+            'resignation_date',
+            'current_badge',
+            'gender',
+            'birth_year',
+            'race',
+            'rank',
             'trr_percentile',
             'complaint_percentile',
             'civilian_allegation_percentile',
             'internal_allegation_percentile',
-            'resignation_date'
+            'allegation_count',
+            'sustained_count',
+            'discipline_count',
+            'trr_count',
+            'major_award_count',
+            'honorable_mention_count',
+            'honorable_mention_percentile',
+            'last_unit_id',
         ]
-        via_officer = Officer.objects.filter(
+
+        related_renamed_columns = (
+            ('unit_id', 'last_unit__id'),
+            ('unit_name', 'last_unit__unit_name'),
+            ('unit_description', 'last_unit__description')
+        )
+
+        content_columns = columns + [col[1] for col in related_renamed_columns]
+        officer_qs = Officer.objects.annotate(
+            unit_id=F('last_unit__id'),
+            unit_name=F('last_unit__unit_name'),
+            unit_description=F('last_unit__description')
+        )
+
+        via_officer = officer_qs.filter(
             officerallegation__allegation__officerallegation__officer_id__in=officer_ids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Count('officerallegation', distinct=True)
         )
-        via_allegation = Officer.objects.filter(
+
+        via_allegation = officer_qs.filter(
             officerallegation__allegation__in=crids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Count('officerallegation', distinct=True)
         )
-        via_trr = Officer.objects.filter(
+
+        via_trr = officer_qs.filter(
             id__in=trr_officer_ids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Value(1, output_field=IntegerField())
         )
         sub_query = via_officer.union(via_allegation, all=True).union(via_trr, all=True)
 
-        select_columns = ', '.join([f'"{col}"' for col in columns])
+        select_columns = ', '.join(
+            [f'"{col}"' for col in columns] +
+            [f'"{col[0]}"' for col in related_renamed_columns]
+        )
+
         raw_query = f'''
             WITH cte AS ({sub_query.query})
             SELECT {select_columns},
@@ -150,7 +184,8 @@ class Pinboard(TimeStampsModel):
                     '-officer__allegation_count'
                 ),
                 to_attr='prefetch_officer_allegations'
-            )
+            ),
+            'victims'
         )
 
     def relevant_complaints_count_query(self, **kwargs):
