@@ -223,8 +223,7 @@ jobs:
           name: Check API is still alive
           command: |
             export SSL_DIR=$(openssl version -d | sed -E 's/.*\"(.*)\"$/\1/')
-
-            cp Sectigo_CA.pem $SSL_DIR/certs/Sectigo_CA.pem
+            cp extra_certs.pem $SSL_DIR/extra_certs.pem
             c_rehash $SSL_DIR/certs
 
             if [ $CIRCLE_BRANCH == "master" ]
