@@ -14,7 +14,7 @@ from data.factories import (
     VictimFactory,
 )
 
-from pinboard.serializers.pinned import PinnedAllegationSerializer
+from pinboard.serializers.desktop.pinned import PinnedAllegationSerializer
 
 
 class PinnedAllegationSerializerTestCase(TestCase):

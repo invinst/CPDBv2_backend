@@ -5,7 +5,7 @@ from robber import expect
 
 from data.factories import OfficerFactory, PoliceUnitFactory
 
-from pinboard.serializers.pinned import PinnedOfficerSerializer
+from pinboard.serializers.desktop.pinned import PinnedOfficerSerializer
 
 
 class PinnedOfficerSerializerTestCase(TestCase):

@@ -3,7 +3,7 @@ from robber import expect
 
 from data.factories import VictimFactory
 
-from pinboard.serializers.common import VictimSerializer
+from pinboard.serializers.desktop.common import VictimSerializer
 
 
 class VictimSerializerTestCase(TestCase):

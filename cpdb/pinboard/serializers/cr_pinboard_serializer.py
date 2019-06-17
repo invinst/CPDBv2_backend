@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer
-from .common import VictimSerializer
+from .desktop.common import VictimSerializer
 
 
 class CRPinboardSerializer(NoNullSerializer):

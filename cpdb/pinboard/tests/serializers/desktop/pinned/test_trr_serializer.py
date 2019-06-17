@@ -8,7 +8,7 @@ import pytz
 from robber import expect
 
 from trr.factories import TRRFactory, ActionResponseFactory
-from pinboard.serializers.pinned import PinnedTRRSerializer
+from pinboard.serializers.desktop.pinned import PinnedTRRSerializer
 
 
 class PinnedTRRSerializerTestCase(TestCase):

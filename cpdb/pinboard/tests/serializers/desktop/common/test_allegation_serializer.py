@@ -12,7 +12,7 @@ from data.factories import (
 )
 from data.models import Allegation
 
-from pinboard.serializers.common import AllegationSerializer
+from pinboard.serializers.desktop.common import AllegationSerializer
 
 
 class AllegationSerializerTestCase(TestCase):

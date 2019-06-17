@@ -12,12 +12,12 @@ from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     OrderedPinboardSerializer
 )
-from pinboard.serializers.pinned import (
+from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
     PinnedAllegationSerializer,
     PinnedTRRSerializer
 )
-from pinboard.serializers.relevant import (
+from pinboard.serializers.desktop.relevant import (
     RelevantOfficerSerializer,
     RelevantAllegationSerializer,
     RelevantDocumentSerializer
