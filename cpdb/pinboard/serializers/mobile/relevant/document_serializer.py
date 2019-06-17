@@ -1,0 +1,34 @@
+from rest_framework import serializers
+
+from data.models import AttachmentFile
+from ..common import OfficerRowMobileSerializer
+
+
+class AllegationSerializer(serializers.Serializer):
+    crid = serializers.CharField()
+    category = serializers.SerializerMethodField()
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    officers = serializers.SerializerMethodField()
+
+    def get_officers(self, obj):
+        officers = [officer_allegation.officer for officer_allegation in obj.prefetch_officer_allegations]
+        return OfficerRowMobileSerializer(officers, many=True).data
+
+    def get_category(self, obj):
+        try:
+            return obj.most_common_category.category
+        except AttributeError:
+            return 'Unknown'
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    allegation = AllegationSerializer()
+
+    class Meta:
+        model = AttachmentFile
+        fields = (
+            'id',
+            'preview_image_url',
+            'url',
+            'allegation',
+        )

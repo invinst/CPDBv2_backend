@@ -25,7 +25,7 @@ from trr.factories import TRRFactory, ActionResponseFactory
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
-class PinboardViewSetTestCase(APITestCase):
+class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         PinboardFactory(
             id='f871a13f',

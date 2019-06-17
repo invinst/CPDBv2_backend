@@ -42,7 +42,7 @@ from status.views import StatusViewSet
 from social_graph.views import SocialGraphDesktopViewSet, SocialGraphMobileViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
-from pinboard.views import PinboardViewSet
+from pinboard.views import PinboardDesktopViewSet, PinboardMobileViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -75,7 +75,8 @@ router_v2.register(r'mobile/social-graph', SocialGraphMobileViewSet, base_name='
 router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
 router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
-router_v2.register(r'pinboards', PinboardViewSet, base_name='pinboards')
+router_v2.register(r'pinboards', PinboardDesktopViewSet, base_name='pinboards')
+router_v2.register(r'mobile/pinboards', PinboardMobileViewSet, base_name='pinboards-mobile')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
