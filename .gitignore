@@ -68,7 +68,7 @@ kubernetes/secrets-production.yml
 
 staging-pg-credentials.json
 pg-credentials.json
-extra_certs.pem
+.circleci/extra_certs.pem
 
 # XLSX and CSV temporary files
 /*.csv
