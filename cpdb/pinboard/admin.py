@@ -5,6 +5,9 @@ from .models import ExamplePinboard, Pinboard
 
 
 class PinboardAdmin(admin.ModelAdmin):
+    fields = ['id', 'title', 'description', 'officers', 'allegations', 'trrs']
+    list_display = ['id', 'title', 'description']
+    readonly_fields = ['id', 'officers', 'allegations', 'trrs']
     search_fields = ['id', 'title']
 
     def get_search_results(self, request, queryset, search_term):

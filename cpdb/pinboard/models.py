@@ -1,3 +1,5 @@
+from random import sample
+
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch, Value, IntegerField
 
@@ -18,6 +20,10 @@ class Pinboard(TimeStampsModel):
 
     def __str__(self):
         return f'{self.id} - {self.title}' if self.title else self.id
+
+    @property
+    def is_empty(self):
+        return not any([self.officers.exists(), self.allegations.exists(), self.trrs.exists()])
 
     @property
     def all_officers(self):
@@ -197,3 +203,7 @@ class ExamplePinboard(TimeStampsModel):
 
     def __str__(self):
         return str(self.pinboard)
+
+    @classmethod
+    def random(cls, n):
+        return sample(list(cls.objects.all()), n)
