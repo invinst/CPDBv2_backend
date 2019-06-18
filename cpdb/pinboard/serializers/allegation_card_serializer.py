@@ -3,11 +3,12 @@ from rest_framework import serializers
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer
 
 
-class AllegationSerializer(serializers.Serializer):
+class AllegationCardSerializer(serializers.Serializer):
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     officers = serializers.SerializerMethodField()
+    point = serializers.SerializerMethodField()
 
     def get_officers(self, obj):
         officers = [officer_allegation.officer for officer_allegation in obj.prefetch_officer_allegations]
@@ -18,10 +19,6 @@ class AllegationSerializer(serializers.Serializer):
             return obj.most_common_category.category
         except AttributeError:
             return 'Unknown'
-
-
-class AllegationCardSerializer(AllegationSerializer):
-    point = serializers.SerializerMethodField()
 
     def get_point(self, obj):
         if obj.point is not None:

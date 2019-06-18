@@ -1,6 +1,8 @@
+import functools
 from django.db import connection
 
-from data.models import Officer
+from social_graph.serializers import OfficerSerializer, AccussedSerializer
+from data.models import Officer, Allegation
 from utils.raw_query_utils import dict_fetch_all
 
 
@@ -14,22 +16,19 @@ class SocialGraphDataQuery(object):
         officers,
         threshold=DEFAULT_THRESHOLD,
         show_civil_only=DEFAULT_SHOW_CIVIL_ONLY,
-        show_connected_officers=False
+        show_connected_officers=False,
     ):
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
         self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
         self.show_connected_officers = show_connected_officers
-        self.coaccused_data = []
-        self.list_event = []
-        self.graph_data = {}
-        self.calculate_data()
 
     def _build_query(self):
         officer_ids_string = ", ".join([str(officer.id) for officer in self.officers])
         coaccused_data_query = f"""
             SELECT A.officer_id AS officer_id_1,
                    B.officer_id AS officer_id_2,
+                   A.allegation_id AS allegation_id,
                    data_allegation.incident_date AS incident_date,
                    ROW_NUMBER() OVER (PARTITION BY A.officer_id, B.officer_id ORDER BY incident_date) AS accussed_count
             FROM data_officerallegation AS A
@@ -48,17 +47,22 @@ class SocialGraphDataQuery(object):
             ORDER BY incident_date
         """
 
-    def calculate_coaccused_data(self):
-        with connection.cursor() as cursor:
-            cursor.execute(self._build_query())
-            return dict_fetch_all(cursor)
+    @property
+    @functools.lru_cache()
+    def coaccused_data(self):
+        if self.officers:
+            with connection.cursor() as cursor:
+                cursor.execute(self._build_query())
+                return dict_fetch_all(cursor)
+        else:
+            return []
 
-    def get_list_event(self):
-        events = list({str(row['incident_date']) for row in self.coaccused_data})
+    def list_event(self):
+        events = list({row['incident_date'].date().strftime(format='%Y-%m-%d') for row in self.coaccused_data})
         events.sort()
         return events
 
-    def get_all_officers(self):
+    def all_officers(self):
         if self.show_connected_officers:
             officer_ids = [row['officer_id_1'] for row in self.coaccused_data]
             officer_ids += [row['officer_id_2'] for row in self.coaccused_data]
@@ -66,17 +70,18 @@ class SocialGraphDataQuery(object):
             officer_ids = list(set(officer_ids))
             return Officer.objects.filter(id__in=officer_ids).order_by('first_name', 'last_name')
         else:
-            return self.officers
+            return self.officers.order_by('first_name', 'last_name')
 
-    def get_graph_data(self):
-        return {
-            'officers': [{'full_name': officer.full_name, 'id': officer.id} for officer in self.get_all_officers()],
-            'coaccused_data': self.coaccused_data,
-            'list_event': self.get_list_event()
-        }
-
-    def calculate_data(self):
+    def graph_data(self):
         if self.officers:
-            self.coaccused_data = self.calculate_coaccused_data()
-            self.list_event = self.get_list_event()
-            self.graph_data = self.get_graph_data()
+            return {
+                'coaccused_data': AccussedSerializer(self.coaccused_data, many=True).data,
+                'officers': OfficerSerializer(self.all_officers(), many=True).data,
+                'list_event': self.list_event()
+            }
+        else:
+            return {}
+
+    def allegations(self):
+        allegation_ids = list({row['allegation_id'] for row in self.coaccused_data})
+        return Allegation.objects.filter(crid__in=allegation_ids).order_by('incident_date')

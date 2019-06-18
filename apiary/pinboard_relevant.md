@@ -28,15 +28,18 @@
                     "id": 123,
                     "rank": "Detective",
                     "full_name": "Richard Sullivan",
-                    "coaccusal_count": 53
+                    "coaccusal_count": 53,
+                    "allegation_count": 47
                   },
                   {
                     "id": 456,
                     "rank": "Officer",
                     "full_name": "Baudilio Lopez",
-                    "coaccusal_count": 47
+                    "coaccusal_count": 47,
+                    "allegation_count": 53
                   }
-                ]
+                ],
+                "point": {"lon": 12.0, "lat": 21.0},
               }
             },
             {
@@ -76,13 +79,15 @@
               "id": 123,
               "rank": "Detective",
               "full_name": "Richard Sullivan",
-              "coaccusal_count": 53
+              "coaccusal_count": 53,
+              "allegation_count": null
             },
             {
               "id": 456,
               "rank": "Officer",
               "full_name": "Baudilio Lopez",
-              "coaccusal_count": 47
+              "coaccusal_count": 47,
+              "allegation_count": 53
             },
             ...
           ]
@@ -117,13 +122,15 @@
                   "id": 123,
                   "rank": "Detective",
                   "full_name": "Richard Sullivan",
-                  "coaccusal_count": 53
+                  "coaccusal_count": 53,
+                  "allegation_count": 53
                 },
                 {
                   "id": 456,
                   "rank": "Officer",
                   "full_name": "Baudilio Lopez",
-                  "coaccusal_count": 47
+                  "coaccusal_count": 47,
+                  "allegation_count": 53
                 }
               ]
             },

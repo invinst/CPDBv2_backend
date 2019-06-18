@@ -14,7 +14,7 @@ from pinboard.factories import PinboardFactory
 from trr.factories import TRRFactory
 
 
-class SocialGraphViewSetTestCase(APITestCase):
+class SocialGraphMobileViewSetTestCase(APITestCase):
     def test_network_with_officer_ids_default(self):
         officer_1 = OfficerFactory(
             id=8562,
@@ -127,7 +127,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             ]
         }
 
-        url = reverse('api-v2:social-graph-network', kwargs={})
+        url = reverse('api-v2:social-graph-mobile-network', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
         })
@@ -256,7 +256,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             ]
         }
 
-        url = reverse('api-v2:social-graph-network', kwargs={})
+        url = reverse('api-v2:social-graph-mobile-network', kwargs={})
         response = self.client.get(url, {
             'unit_id': 123,
         })
@@ -453,33 +453,6 @@ class SocialGraphViewSetTestCase(APITestCase):
                     }
                 },
                 {
-                    'full_name': 'John Sena',
-                    'id': 8566,
-                    'percentile': {
-                        'percentile_allegation_civilian': '13.1300',
-                        'percentile_allegation_internal': '14.1400',
-                        'percentile_trr': '15.1500'
-                    }
-                },
-                {
-                    'full_name': 'Robert Long',
-                    'id': 8568,
-                    'percentile': {
-                        'percentile_allegation_civilian': '19.1900',
-                        'percentile_allegation_internal': '20.2000',
-                        'percentile_trr': '21.2100'
-                    }
-                },
-                {
-                    'full_name': 'Tom Cruise',
-                    'id': 8567,
-                    'percentile': {
-                        'percentile_allegation_civilian': '16.1600',
-                        'percentile_allegation_internal': '17.1700',
-                        'percentile_trr': '18.1800'
-                    }
-                },
-                {
                     'full_name': 'William People',
                     'id': 8565,
                     'percentile': {
@@ -496,34 +469,11 @@ class SocialGraphViewSetTestCase(APITestCase):
                     'incident_date': '2007-12-31',
                     'accussed_count': 2
                 },
-                {
-                    'officer_id_1': 8563,
-                    'officer_id_2': 8568,
-                    'incident_date': '2009-12-31',
-                    'accussed_count': 2
-                },
-                {
-                    'officer_id_1': 8564,
-                    'officer_id_2': 8566,
-                    'incident_date': '2011-12-31',
-                    'accussed_count': 2
-                },
-                {
-                    'officer_id_1': 8564,
-                    'officer_id_2': 8567,
-                    'incident_date': '2013-12-31',
-                    'accussed_count': 2
-                },
             ],
-            'list_event': [
-                '2007-12-31',
-                '2009-12-31',
-                '2011-12-31',
-                '2013-12-31',
-            ]
+            'list_event': ['2007-12-31']
         }
 
-        response = self.client.get(reverse('api-v2:social-graph-network'), {'pinboard_id': pinboard.id})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-network'), {'pinboard_id': pinboard.id})
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
@@ -705,7 +655,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             'list_event': ['2007-12-31', '2008-12-31']
         }
 
-        url = reverse('api-v2:social-graph-network', kwargs={})
+        url = reverse('api-v2:social-graph-mobile-network', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562,8563,8564,8565,8566',
             'threshold': 3,
@@ -883,7 +833,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             },
         ]
 
-        url = reverse('api-v2:social-graph-officers', kwargs={})
+        url = reverse('api-v2:social-graph-mobile-officers', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
         })
@@ -950,7 +900,7 @@ class SocialGraphViewSetTestCase(APITestCase):
         AttachmentFileFactory(id=4, tag='CR', allegation=allegation_2, show=False)
         AttachmentFileFactory(id=5, tag='CR', allegation=allegation_2, title='arrest report')
 
-        url = reverse('api-v2:social-graph-allegations', kwargs={})
+        url = reverse('api-v2:social-graph-mobile-allegations', kwargs={})
         response = self.client.get(url, {
             'officer_ids': '8562, 8563, 8564',
         })
@@ -1123,7 +1073,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             },
         ]
 
-        response = self.client.get(reverse('api-v2:social-graph-geographic'), {'officer_ids': '1,2,3,4'})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'officer_ids': '1,2,3,4'})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         for data in expected_data:
             expect(response.data).to.contain(data)
@@ -1270,7 +1220,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             },
         ]
 
-        response = self.client.get(reverse('api-v2:social-graph-geographic'), {'unit_id': 123})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'unit_id': 123})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         for data in expected_data:
             expect(response.data).to.contain(data)
@@ -1418,7 +1368,7 @@ class SocialGraphViewSetTestCase(APITestCase):
             },
         ]
 
-        response = self.client.get(reverse('api-v2:social-graph-geographic'), {'pinboard_id': pinboard.id})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'pinboard_id': pinboard.id})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         for data in expected_data:
             expect(response.data).to.contain(data)

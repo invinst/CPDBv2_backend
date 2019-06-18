@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, mixins, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -11,9 +11,6 @@ from rest_framework.permissions import AllowAny
 from officers.serializers.response_serializers import OfficerCardSerializer
 from pinboard.serializers.pinboard_complaint_serializer import PinboardComplaintSerializer
 from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
-from pinboard.constants import PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD, PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY
-from pinboard.queries import GeographyDataQuery
-from social_graph.queries import SocialGraphDataQuery
 from pinboard.serializers.pinboard_serializer import PinboardSerializer, OrderedPinboardSerializer
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
 from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
@@ -22,7 +19,7 @@ from .models import Pinboard
 
 
 @method_decorator(never_cache, name='dispatch')
-class PinboardBaseViewSet(
+class PinboardViewSet(
         mixins.CreateModelMixin,
         mixins.UpdateModelMixin,
         mixins.RetrieveModelMixin,
@@ -34,18 +31,45 @@ class PinboardBaseViewSet(
 
     def create(self, request):
         response = super().create(request)
-        request.session['pinboard-id'] = response.data['id']
+        self.update_owned_pinboards(request, response.data['id'])
+        self.update_latest_retrieved_pinboard(request, response.data['id'])
         return response
 
     def update(self, request, pk):
-        if 'pinboard-id' in request.session and \
-               str(request.session['pinboard-id']) == str(pk):
+        if str(pk) in request.session.get('owned_pinboards', []):
             return super().update(request, pk)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
         pinboard = self.get_object()
+        owned_pinboards = request.session.get('owned_pinboards', [])
+
+        if pk not in owned_pinboards:
+            pinboard = pinboard.clone()
+            self.update_owned_pinboards(request, pinboard.id)
+        self.update_latest_retrieved_pinboard(request, pinboard.id)
+
         return Response(OrderedPinboardSerializer(pinboard).data)
+
+    def update_owned_pinboards(self, request, pinboard_id):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        owned_pinboards.append(pinboard_id)
+        request.session['owned_pinboards'] = owned_pinboards
+        request.session['modified'] = True
+
+    def update_latest_retrieved_pinboard(self, request, pinboard_id):
+        request.session['latest_retrieved_pinboard'] = pinboard_id
+        request.session['modified'] = True
+
+    @list_route(methods=['GET'], url_path='latest-retrieved-pinboard')
+    def latest_retrieved_pinboard(self, request):
+        if ('latest_retrieved_pinboard' in request.session) and \
+                (request.session['latest_retrieved_pinboard']
+                    in request.session.get('owned_pinboards', [])):
+            pinboard = get_object_or_404(Pinboard, id=request.session['latest_retrieved_pinboard'])
+            return Response(self.serializer_class(pinboard).data)
+
+        return Response({})
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
@@ -94,39 +118,3 @@ class PinboardBaseViewSet(
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
         serializer = AllegationCardSerializer(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
-
-    @detail_route(methods=['get'], url_path='geographic-data')
-    def geographic_data(self, request, pk):
-        queryset = Pinboard.objects.all()
-        pinboard = get_object_or_404(queryset, id=pk)
-
-        return Response(GeographyDataQuery(pinboard.all_officers).execute())
-
-
-class PinboardDesktopViewSet(PinboardBaseViewSet):
-    @detail_route(methods=['get'], url_path='social-graph')
-    def social_graph(self, request, pk):
-        queryset = Pinboard.objects.all()
-        pinboard = get_object_or_404(queryset, id=pk)
-
-        social_graph_data_query = SocialGraphDataQuery(
-            pinboard.all_officers,
-            PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
-            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
-            True
-        )
-        return Response(social_graph_data_query.graph_data)
-
-
-class PinboardMobileViewSet(PinboardBaseViewSet):
-    @detail_route(methods=['get'], url_path='social-graph')
-    def social_graph(self, request, pk):
-        queryset = Pinboard.objects.all()
-        pinboard = get_object_or_404(queryset, id=pk)
-
-        social_graph_data_query = SocialGraphDataQuery(
-            pinboard.all_officers,
-            PINBOARD_SOCIAL_GRAPH_DEFAULT_THRESHOLD,
-            PINBOARD_SOCIAL_GRAPH_DEFAULT_SHOW_CILVIL_ONLY,
-        )
-        return Response(social_graph_data_query.graph_data)

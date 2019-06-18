@@ -82,6 +82,7 @@ jobs:
           command: |
             set +o pipefail
             docker load -i /home/circleci/caches/app.tar | true
+          no_output_timeout: 20m
       - run:
           name: Build image
           command: |

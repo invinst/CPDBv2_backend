@@ -15,7 +15,6 @@ from data.factories import (
     AllegationFactory,
     AllegationCategoryFactory,
     OfficerAllegationFactory,
-    VictimFactory,
     AttachmentFileFactory,
     InvestigatorAllegationFactory,
     PoliceWitnessFactory,
@@ -26,7 +25,7 @@ from trr.factories import TRRFactory, ActionResponseFactory
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
-class PinboardDesktopViewSetTestCase(APITestCase):
+class PinboardViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         PinboardFactory(
             id='f871a13f',
@@ -34,22 +33,23 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             description='abc',
         )
 
+        # Current client does not own the pinboard, should clone it
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': 'f871a13f',
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
-        })
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
 
+        # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'F871A13F'}))
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({
-            'id': 'f871a13f',
+            'id': cloned_pinboard_id,
             'title': 'My Pinboard',
             'officer_ids': [],
             'crids': [],
@@ -121,6 +121,66 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
 
+    def test_update_when_have_multiple_pinboards_in_session(self):
+        owned_pinboards = []
+
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+
+        owned_pinboards.append(response.data['id'])
+
+        # Try updating the old pinboardresponse = self.client.put(
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': owned_pinboards[0]}),
+            {
+                'title': 'New Pinboard',
+                'officer_ids': [1],
+                'crids': ['456def'],
+                'trr_ids': [1, 2],
+                'description': 'def',
+            }
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': owned_pinboards[0],
+            'title': 'New Pinboard',
+            'officer_ids': [1],
+            'crids': ['456def'],
+            'trr_ids': [1, 2],
+            'description': 'def',
+        })
+
     def test_update_pinboard_out_of_session(self):
         OfficerFactory(id=1)
         OfficerFactory(id=2)
@@ -184,7 +244,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officer_ids': [1, 2],
             'crids': ['123abc'],
             'trr_ids': [1],
-            'description': 'abc',
+            'description': 'abc'
         })
 
         expect(Pinboard.objects.count()).to.eq(1)
@@ -384,290 +444,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             }
         ])
 
-    def test_social_graph(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
-        officer_4 = OfficerFactory(id=8565, first_name='William', last_name='People')
-        officer_5 = OfficerFactory(id=8566, first_name='John', last_name='Sena')
-        officer_6 = OfficerFactory(id=8567, first_name='Tom', last_name='Cruise')
-        officer_7 = OfficerFactory(id=8568, first_name='Robert', last_name='Long')
-        officer_8 = OfficerFactory(id=8569, first_name='Jaeho', last_name='Jung')
-
-        allegation_1 = AllegationFactory(
-            crid='123',
-            is_officer_complaint=False,
-            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_2 = AllegationFactory(
-            crid='456',
-            is_officer_complaint=True,
-            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_3 = AllegationFactory(
-            crid='789',
-            is_officer_complaint=False,
-            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_4 = AllegationFactory(
-            crid='987',
-            is_officer_complaint=False,
-            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_5 = AllegationFactory(
-            crid='555',
-            is_officer_complaint=False,
-            incident_date=datetime(2009, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_6 = AllegationFactory(
-            crid='666',
-            is_officer_complaint=False,
-            incident_date=datetime(2010, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_7 = AllegationFactory(
-            crid='777',
-            is_officer_complaint=False,
-            incident_date=datetime(2011, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_8 = AllegationFactory(
-            crid='888',
-            is_officer_complaint=False,
-            incident_date=datetime(2012, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_9 = AllegationFactory(
-            crid='999',
-            is_officer_complaint=False,
-            incident_date=datetime(2013, 12, 31, tzinfo=pytz.utc)
-        )
-        allegation_10 = AllegationFactory(
-            crid='1000',
-            is_officer_complaint=False,
-            incident_date=datetime(2014, 12, 31, tzinfo=pytz.utc)
-        )
-        trr_1 = TRRFactory(
-            id=1,
-            officer=officer_4,
-            trr_datetime=datetime(2008, 12, 31, tzinfo=pytz.utc)
-        )
-
-        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
-        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
-        OfficerAllegationFactory(id=3, officer=officer_1, allegation=allegation_2)
-        OfficerAllegationFactory(id=4, officer=officer_2, allegation=allegation_2)
-        OfficerAllegationFactory(id=5, officer=officer_1, allegation=allegation_3)
-        OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
-        OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
-
-        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_4)
-        OfficerAllegationFactory(id=9, officer=officer_7, allegation=allegation_4)
-        OfficerAllegationFactory(id=10, officer=officer_2, allegation=allegation_5)
-        OfficerAllegationFactory(id=11, officer=officer_7, allegation=allegation_5)
-
-        OfficerAllegationFactory(id=12, officer=officer_3, allegation=allegation_6)
-        OfficerAllegationFactory(id=13, officer=officer_5, allegation=allegation_6)
-        OfficerAllegationFactory(id=14, officer=officer_3, allegation=allegation_7)
-        OfficerAllegationFactory(id=15, officer=officer_5, allegation=allegation_7)
-        OfficerAllegationFactory(id=16, officer=officer_3, allegation=allegation_8)
-        OfficerAllegationFactory(id=17, officer=officer_6, allegation=allegation_8)
-        OfficerAllegationFactory(id=18, officer=officer_3, allegation=allegation_9)
-        OfficerAllegationFactory(id=19, officer=officer_6, allegation=allegation_9)
-
-        OfficerAllegationFactory(id=20, officer=officer_3, allegation=allegation_10)
-        OfficerAllegationFactory(id=21, officer=officer_8, allegation=allegation_10)
-
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
-        )
-
-        pinboard.officers.set([officer_1, officer_2])
-        pinboard.allegations.set([allegation_3])
-        pinboard.trrs.set([trr_1])
-
-        expected_data = {
-            'officers': [
-                {'full_name': 'Edward May', 'id': 8563},
-                {'full_name': 'Jerome Finnigan', 'id': 8562},
-                {'full_name': 'Joe Parker', 'id': 8564},
-                {'full_name': 'John Sena', 'id': 8566},
-                {'full_name': 'Robert Long', 'id': 8568},
-                {'full_name': 'Tom Cruise', 'id': 8567},
-                {'full_name': 'William People', 'id': 8565},
-            ],
-            'coaccused_data': [
-                {
-                    'officer_id_1': 8562,
-                    'officer_id_2': 8563,
-                    'incident_date': datetime(2006, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 2
-                },
-                {
-                    'officer_id_1': 8562,
-                    'officer_id_2': 8563,
-                    'incident_date': datetime(2007, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 3
-                },
-                {
-                    'officer_id_1': 8563,
-                    'officer_id_2': 8568,
-                    'incident_date': datetime(2009, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 2
-                },
-                {
-                    'officer_id_1': 8564,
-                    'officer_id_2': 8566,
-                    'incident_date': datetime(2011, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 2
-                },
-                {
-                    'officer_id_1': 8564,
-                    'officer_id_2': 8567,
-                    'incident_date': datetime(2013, 12, 31, 0, 0, tzinfo=pytz.utc),
-                    'accussed_count': 2
-                },
-            ],
-            'list_event': [
-                '2006-12-31 00:00:00+00:00',
-                '2007-12-31 00:00:00+00:00',
-                '2009-12-31 00:00:00+00:00',
-                '2011-12-31 00:00:00+00:00',
-                '2013-12-31 00:00:00+00:00',
-            ]
-        }
-
-        response = self.client.get(reverse('api-v2:pinboards-social-graph', kwargs={'pk': pinboard.id}))
-
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
-
-    def test_geographic_data(self):
-        officer_1 = OfficerFactory(id=1)
-        officer_2 = OfficerFactory(id=2)
-        officer_3 = OfficerFactory(id=3)
-        officer_4 = OfficerFactory(id=4)
-
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
-        allegation_1 = AllegationFactory(
-            crid=123,
-            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
-            most_common_category=category_1,
-            coaccused_count=15,
-            point=Point(-35.5, 68.9),
-        )
-        allegation_2 = AllegationFactory(
-            crid=456,
-            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
-            most_common_category=category_2,
-            coaccused_count=20,
-            point=Point(37.3, 86.2),
-        )
-        VictimFactory(
-            gender='M',
-            race='Black',
-            age=35,
-            allegation=allegation_1
-        )
-        VictimFactory(
-            gender='F',
-            race='White',
-            age=40,
-            allegation=allegation_2
-        )
-        OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
-        OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
-
-        TRRFactory(
-            id=1,
-            officer=officer_3,
-            trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
-            point=Point(-32.5, 61.3),
-            taser=True,
-            firearm_used=False,
-        )
-        TRRFactory(
-            id=2,
-            officer=officer_4,
-            trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
-            point=Point(33.3, 78.4),
-            taser=False,
-            firearm_used=True,
-        )
-
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
-        )
-
-        pinboard.officers.set([officer_3, officer_4])
-        pinboard.allegations.set([allegation_1, allegation_2])
-
-        expected_data = [
-            {
-                'date': '2002-01-01',
-                'crid': '123',
-                'category': 'Use of Force',
-                'coaccused_count': 15,
-                'kind': 'CR',
-                'point': {
-                    'lon': -35.5,
-                    'lat': 68.9
-                },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
-            },
-            {
-                'date': '2003-01-01',
-                'crid': '456',
-                'category': 'Illegal Search',
-                'coaccused_count': 20,
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 86.2
-                },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
-            },
-            {
-                'trr_id': 1,
-                'date': '2004-01-01',
-                'kind': 'FORCE',
-                'taser': True,
-                'firearm_used': False,
-                'point': {
-                    'lon': -32.5,
-                    'lat': 61.3
-                }
-            },
-            {
-                'trr_id': 2,
-                'date': '2005-01-01',
-                'kind': 'FORCE',
-                'taser': False,
-                'firearm_used': True,
-                'point': {
-                    'lon': 33.3,
-                    'lat': 78.4
-                }
-            },
-        ]
-
-        response = self.client.get(reverse('api-v2:pinboards-geographic-data', kwargs={'pk': pinboard.id}))
-        expect(response.status_code).to.eq(status.HTTP_200_OK)
-        for data in expected_data:
-            expect(response.data).to.contain(data)
-
     def test_relevant_documents(self):
         pinned_officer_1 = OfficerFactory(
             id=1,
@@ -678,7 +454,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='99.99',
             complaint_percentile='88.88',
             civilian_allegation_percentile='77.77',
-            internal_allegation_percentile='66.66'
+            internal_allegation_percentile='66.66',
         )
         pinned_officer_2 = OfficerFactory(
             id=2,
@@ -703,11 +479,13 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         relevant_allegation_1 = AllegationFactory(
             crid='1',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            point=Point([0.01, 0.02]),
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
-            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc)
+            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
+            point=None,
         )
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
@@ -761,6 +539,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'rank': 'Senior Police Officer',
                         'full_name': 'Raymond Piwinicki',
                         'coaccusal_count': None,
+                        'allegation_count': 20,
                         'percentile': {
                             'year': 2016,
                         }
@@ -770,6 +549,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'rank': 'Detective',
                         'full_name': 'Edward May',
                         'coaccusal_count': None,
+                        'allegation_count': 3,
                         'percentile': {
                             'year': 2016,
                             'percentile_trr': '11.1100',
@@ -779,7 +559,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
                         }
                     },
-                ]
+                ],
+                'point': None,
             }
         }, {
             'id': 1,
@@ -794,6 +575,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
+                    'allegation_count': 10,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '99.9900',
@@ -802,7 +584,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'percentile_allegation_internal': '66.6600',
 
                     }
-                }]
+                }],
+                'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -930,6 +713,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 complaint_percentile=None,
                 civilian_allegation_percentile=None,
                 internal_allegation_percentile=None,
+                allegation_count=77,
             )
         )
         pinboard = PinboardFactory(
@@ -950,7 +734,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -960,7 +745,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -1004,6 +790,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -1014,6 +801,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -1033,6 +821,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 5,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -1045,6 +834,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 4,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1056,6 +846,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 3,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -1066,6 +857,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 2,
+            'allegation_count': 22,
             'percentile': {
                 'year': 2016,
             },
@@ -1074,6 +866,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Officer',
             'full_name': 'German Lauren',
             'coaccusal_count': 1,
+            'allegation_count': 77,
             'percentile': {
                 'year': 2016,
             },
@@ -1101,7 +894,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -1111,7 +905,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -1149,6 +944,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -1159,6 +955,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -1174,6 +971,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -1186,6 +984,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1206,6 +1005,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1217,6 +1017,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -1238,6 +1039,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 1,
+            'allegation_count': 22,
             'percentile': {
                 'year': 2016,
             },
@@ -1268,8 +1070,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
-
+            internal_allegation_percentile=None,
+            allegation_count=3,
         )
         pinned_officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(
@@ -1321,6 +1123,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
                     'coaccusal_count': None,
+                    'allegation_count': 3,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '33.3300',
@@ -1338,6 +1141,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'rank': 'Detective',
                     'full_name': 'Edward May',
                     'coaccusal_count': None,
+                    'allegation_count': 5,
                     'percentile': {
                         'year': 2016,
                     },
@@ -1346,6 +1150,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
+                    'allegation_count': 2,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '11.1100',
@@ -1514,3 +1319,47 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'http://testserver/api/v2/pinboards/66ef1560/relevant-complaints/?limit=2'
         )
         expect(last_response.data['next']).to.be.none()
+
+    def test_latest_retrieved_pinboard_return_null(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+    def test_latest_retrieved_pinboard(self):
+        # No previous pinboard, data returned should be null
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({})
+
+        # Create a pinboard in current session
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2],
+                'crids': ['123abc'],
+                'trr_ids': [1],
+                'description': 'abc',
+            }
+        )
+        pinboard_id = response.data['id']
+
+        # Latest retrieved pinboard is now the above one
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+        })
