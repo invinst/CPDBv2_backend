@@ -16,6 +16,9 @@ class Pinboard(TimeStampsModel):
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
 
+    def __str__(self):
+        return f'{self.id} - {self.title}' if self.title else self.id
+
     @property
     def all_officers(self):
         allegation_ids = self.allegations.all().values_list('crid', flat=True)
@@ -187,3 +190,10 @@ class Pinboard(TimeStampsModel):
         # LimitOffsetPagination need count and we optimize it with a more simple query
         setattr(query, 'count', self.relevant_complaints_count)
         return query
+
+
+class ExamplePinboard(TimeStampsModel):
+    pinboard = models.OneToOneField(Pinboard, primary_key=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.pinboard)
