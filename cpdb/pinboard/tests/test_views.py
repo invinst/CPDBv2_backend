@@ -454,7 +454,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='99.99',
             complaint_percentile='88.88',
             civilian_allegation_percentile='77.77',
-            internal_allegation_percentile='66.66'
+            internal_allegation_percentile='66.66',
         )
         pinned_officer_2 = OfficerFactory(
             id=2,
@@ -479,11 +479,13 @@ class PinboardViewSetTestCase(APITestCase):
         relevant_allegation_1 = AllegationFactory(
             crid='1',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            point=Point([0.01, 0.02]),
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
-            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc)
+            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
+            point=None,
         )
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
@@ -531,6 +533,7 @@ class PinboardViewSetTestCase(APITestCase):
                         'rank': 'Senior Police Officer',
                         'full_name': 'Raymond Piwinicki',
                         'coaccusal_count': None,
+                        'allegation_count': 20,
                         'percentile': {
                             'year': 2016,
                         }
@@ -540,6 +543,7 @@ class PinboardViewSetTestCase(APITestCase):
                         'rank': 'Detective',
                         'full_name': 'Edward May',
                         'coaccusal_count': None,
+                        'allegation_count': 3,
                         'percentile': {
                             'year': 2016,
                             'percentile_trr': '11.1100',
@@ -549,7 +553,8 @@ class PinboardViewSetTestCase(APITestCase):
 
                         }
                     },
-                ]
+                ],
+                'point': None,
             }
         }, {
             'id': 1,
@@ -564,6 +569,7 @@ class PinboardViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
+                    'allegation_count': 10,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '99.9900',
@@ -572,7 +578,8 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation_internal': '66.6600',
 
                     }
-                }]
+                }],
+                'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -695,6 +702,7 @@ class PinboardViewSetTestCase(APITestCase):
                 complaint_percentile=None,
                 civilian_allegation_percentile=None,
                 internal_allegation_percentile=None,
+                allegation_count=77,
             )
         )
         pinboard = PinboardFactory(
@@ -715,7 +723,8 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -725,7 +734,8 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -769,6 +779,7 @@ class PinboardViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -779,6 +790,7 @@ class PinboardViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -798,6 +810,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 5,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -810,6 +823,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 4,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -821,6 +835,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 3,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -831,6 +846,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 2,
+            'allegation_count': 22,
             'percentile': {
                 'year': 2016,
             },
@@ -839,6 +855,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Officer',
             'full_name': 'German Lauren',
             'coaccusal_count': 1,
+            'allegation_count': 77,
             'percentile': {
                 'year': 2016,
             },
@@ -866,7 +883,8 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -876,7 +894,8 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -914,6 +933,7 @@ class PinboardViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -924,6 +944,7 @@ class PinboardViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -939,6 +960,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -951,6 +973,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -971,6 +994,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 21,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -982,6 +1006,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -1003,6 +1028,7 @@ class PinboardViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 1,
+            'allegation_count': 22,
             'percentile': {
                 'year': 2016,
             },
@@ -1033,8 +1059,8 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
-
+            internal_allegation_percentile=None,
+            allegation_count=3,
         )
         pinned_officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(
@@ -1086,6 +1112,7 @@ class PinboardViewSetTestCase(APITestCase):
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
                     'coaccusal_count': None,
+                    'allegation_count': 3,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '33.3300',
@@ -1103,6 +1130,7 @@ class PinboardViewSetTestCase(APITestCase):
                     'rank': 'Detective',
                     'full_name': 'Edward May',
                     'coaccusal_count': None,
+                    'allegation_count': 5,
                     'percentile': {
                         'year': 2016,
                     },
@@ -1111,6 +1139,7 @@ class PinboardViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
                     'coaccusal_count': None,
+                    'allegation_count': 2,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '11.1100',
