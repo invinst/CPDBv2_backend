@@ -206,6 +206,4 @@ class ExamplePinboard(TimeStampsModel):
 
     @classmethod
     def random(cls, n):
-        if cls.objects.count() < n:
-            return cls.objects.all()
-        return sample(list(cls.objects.all()), n)
+        return sample(list(cls.objects.all()), min(cls.objects.count(), n))

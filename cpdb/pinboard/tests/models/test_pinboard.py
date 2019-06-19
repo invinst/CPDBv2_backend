@@ -48,6 +48,56 @@ class PinboardTestCase(TestCase):
         expect(allegations).to.eq(cloned_allegations)
         expect(trrs).to.eq(cloned_trrs)
 
+    def test_str(self):
+        pinboard = PinboardFactory(
+            id='abcd1234',
+            title='Pinboard title',
+        )
+
+        pinboard_no_title = PinboardFactory(
+            id='dcba4321',
+            title='',
+        )
+
+        expect(str(pinboard)).to.eq('abcd1234 - Pinboard title')
+        expect(str(pinboard_no_title)).to.eq('dcba4321')
+
+    def test_is_empty(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+
+        allegation_1 = AllegationFactory(crid='123abc')
+        allegation_2 = AllegationFactory(crid='456def')
+
+        trr_1 = TRRFactory(id=1, officer=OfficerFactory(id=3))
+        trr_2 = TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        pinboard_full = PinboardFactory(
+            officers=(officer_1, officer_2),
+            allegations=(allegation_1, allegation_2),
+            trrs=(trr_1, trr_2),
+        )
+
+        pinboard_with_officers = PinboardFactory(
+            officers=(officer_1, officer_2),
+        )
+
+        pinboard_with_allegations = PinboardFactory(
+            allegations=(allegation_1, allegation_2),
+        )
+
+        pinboard_with_trrs = PinboardFactory(
+            trrs=(trr_1, trr_2),
+        )
+
+        pinboard_empty = PinboardFactory()
+
+        expect(pinboard_full.is_empty).to.be.false()
+        expect(pinboard_with_officers.is_empty).to.be.false()
+        expect(pinboard_with_allegations.is_empty).to.be.false()
+        expect(pinboard_with_trrs.is_empty).to.be.false()
+        expect(pinboard_empty.is_empty).to.be.true()
+
     def test_all_officers(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
