@@ -60,7 +60,7 @@ class SocialGraphDataQuery(object):
            COUNT(*) OVER (PARTITION BY A.officer_id, B.officer_id) AS total_accussed_count
         """)
         return f"""
-            SELECT allegation_id FROM ({officer_allegation_query}) coaccused_data 
+            SELECT allegation_id FROM ({officer_allegation_query}) coaccused_data
             WHERE total_accussed_count >= {self.threshold}
         """
 
