@@ -26,6 +26,13 @@ class Pinboard(TimeStampsModel):
         return not any([self.officers.exists(), self.allegations.exists(), self.trrs.exists()])
 
     @property
+    def example_pinboards(self):
+        if self.is_empty:
+            return ExamplePinboard.random(2)
+        else:
+            return None
+
+    @property
     def all_officers(self):
         allegation_ids = self.allegations.all().values_list('crid', flat=True)
         trr_ids = self.trrs.all().values_list('id', flat=True)

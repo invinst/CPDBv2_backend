@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
 
 from data.models import Allegation, Officer
-from pinboard.models import Pinboard, ExamplePinboard
+from pinboard.models import Pinboard
 from pinboard.serializers.example_pinboard import ExamplePinboardSerializer
 from shared.serializer import NoNullSerializer
 from trr.models import TRR
@@ -30,13 +29,7 @@ class PinboardSerializer(ModelSerializer, NoNullSerializer):
         many=True,
         queryset=TRR.objects.all()
     )
-    example_pinboards = SerializerMethodField()
-
-    def get_example_pinboards(self, obj):
-        if obj.is_empty:
-            return ExamplePinboardSerializer(ExamplePinboard.random(2), many=True).data
-        else:
-            return None
+    example_pinboards = ExamplePinboardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pinboard
@@ -56,13 +49,7 @@ class OrderedPinboardSerializer(ModelSerializer, NoNullSerializer):
     officer_ids = serializers.ListField(child=serializers.IntegerField())
     crids = serializers.ListField(child=serializers.CharField())
     trr_ids = serializers.ListField(child=serializers.IntegerField())
-    example_pinboards = SerializerMethodField()
-
-    def get_example_pinboards(self, obj):
-        if obj.is_empty:
-            return ExamplePinboardSerializer(ExamplePinboard.random(2), many=True).data
-        else:
-            return None
+    example_pinboards = ExamplePinboardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pinboard
