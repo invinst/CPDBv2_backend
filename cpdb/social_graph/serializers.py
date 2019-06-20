@@ -2,7 +2,12 @@ from rest_framework import serializers
 
 from data.models import PoliceUnit
 from shared.serializer import NoNullSerializer
-from pinboard.serializers.victim_serializer import VictimSerializer
+
+
+class VictimSerializer(NoNullSerializer):
+    gender = serializers.CharField(source='gender_display')
+    race = serializers.CharField()
+    age = serializers.IntegerField()
 
 
 class OfficerPercentileSerializer(NoNullSerializer):
