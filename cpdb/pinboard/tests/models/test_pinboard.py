@@ -10,7 +10,7 @@ from data.factories import (
     PoliceWitnessFactory,
     AttachmentFileFactory,
 )
-from pinboard.factories import PinboardFactory
+from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from trr.factories import TRRFactory
 
 
@@ -97,6 +97,57 @@ class PinboardTestCase(TestCase):
         expect(pinboard_with_allegations.is_empty).to.be.false()
         expect(pinboard_with_trrs.is_empty).to.be.false()
         expect(pinboard_empty.is_empty).to.be.true()
+
+    def test_example_pinboards(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+
+        allegation_1 = AllegationFactory(crid='123abc')
+        allegation_2 = AllegationFactory(crid='456def')
+
+        trr_1 = TRRFactory(id=1, officer=OfficerFactory(id=3))
+        trr_2 = TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        pinboard_full = PinboardFactory(
+            officers=(officer_1, officer_2),
+            allegations=(allegation_1, allegation_2),
+            trrs=(trr_1, trr_2),
+        )
+
+        pinboard_with_officers = PinboardFactory(
+            officers=(officer_1, officer_2),
+        )
+
+        pinboard_with_allegations = PinboardFactory(
+            allegations=(allegation_1, allegation_2),
+        )
+
+        pinboard_with_trrs = PinboardFactory(
+            trrs=(trr_1, trr_2),
+        )
+
+        pinboard_empty = PinboardFactory()
+
+        e_pinboard_1 = PinboardFactory(
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_1 = ExamplePinboardFactory(pinboard=e_pinboard_1)
+
+        e_pinboard_2 = PinboardFactory(
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = ExamplePinboardFactory(pinboard=e_pinboard_2)
+
+        expect(pinboard_empty.example_pinboards).to.have.length(2)
+        expect(pinboard_empty.example_pinboards).to.contain(example_pinboard_1)
+        expect(pinboard_empty.example_pinboards).to.contain(example_pinboard_2)
+
+        expect(pinboard_with_officers.example_pinboards).to.be.none()
+        expect(pinboard_with_allegations.example_pinboards).to.be.none()
+        expect(pinboard_with_trrs.example_pinboards).to.be.none()
+        expect(pinboard_full.example_pinboards).to.be.none()
 
     def test_all_officers(self):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
