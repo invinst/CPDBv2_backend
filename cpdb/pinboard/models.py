@@ -65,7 +65,7 @@ class Pinboard(TimeStampsModel):
             Prefetch(
                 'allegation__officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
-                to_attr='prefetch_officer_allegations'
+                to_attr='prefetched_officer_allegations'
             )
         )
 
@@ -125,11 +125,9 @@ class Pinboard(TimeStampsModel):
         )
 
         content_columns = columns + [col[1] for col in related_renamed_columns]
-        officer_qs = Officer.objects.annotate(
-            unit_id=F('last_unit__id'),
-            unit_name=F('last_unit__unit_name'),
-            unit_description=F('last_unit__description')
-        )
+        officer_qs = Officer.objects.annotate(**{
+            annotated_column: F(column) for annotated_column, column in related_renamed_columns
+        })
 
         via_officer = officer_qs.filter(
             officerallegation__allegation__officerallegation__officer_id__in=officer_ids
@@ -183,7 +181,7 @@ class Pinboard(TimeStampsModel):
                 ).order_by(
                     '-officer__allegation_count'
                 ),
-                to_attr='prefetch_officer_allegations'
+                to_attr='prefetched_officer_allegations'
             ),
             'victims'
         )

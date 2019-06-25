@@ -11,7 +11,7 @@ class AllegationSerializer(serializers.Serializer):
     coaccused = serializers.SerializerMethodField()
 
     def get_coaccused(self, obj):
-        coaccused = [officer_allegation.officer for officer_allegation in obj.prefetch_officer_allegations]
+        coaccused = [officer_allegation.officer for officer_allegation in obj.prefetched_officer_allegations]
         return OfficerRowSerializer(coaccused, many=True).data
 
     def get_category(self, obj):

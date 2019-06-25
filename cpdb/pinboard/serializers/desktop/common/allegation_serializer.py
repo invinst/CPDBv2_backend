@@ -8,7 +8,7 @@ class AllegationSerializer(serializers.Serializer):
     address = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
-    victims = serializers.SerializerMethodField()
+    victims = VictimSerializer(many=True)
     point = serializers.SerializerMethodField()
     to = serializers.SerializerMethodField()
     sub_category = serializers.SerializerMethodField()
@@ -24,9 +24,6 @@ class AllegationSerializer(serializers.Serializer):
             return obj.most_common_category.category
         except AttributeError:
             return 'Unknown'
-
-    def get_victims(self, obj):
-        return VictimSerializer(obj.victims, many=True).data
 
     def get_point(self, obj):
         if obj.point is not None:
