@@ -15,11 +15,7 @@ class PinboardComplaintSerializer(serializers.ModelSerializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
 
     def get_coaccused(self, obj):
-        officer_allegations = obj.officer_allegations.select_related(
-            'allegation_category'
-        ).prefetch_related('officer')
-
-        return CoaccusedSerializer(officer_allegations, many=True).data
+        return CoaccusedSerializer(obj.officer_allegations, many=True).data
 
     def get_victims(self, obj):
         return VictimSerializer(obj.victims, many=True).data

@@ -13,7 +13,6 @@ from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
 from pinboard.serializers.pinboard_officer_serializer import PinboardOfficerSerializer
 from pinboard.serializers.pinboard_serializer import PinboardSerializer, OrderedPinboardSerializer
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
-
 from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
 from pinboard.serializers.document_card_serializer import DocumentCardSerializer
 from .models import Pinboard
@@ -74,8 +73,12 @@ class PinboardViewSet(
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
-        pinboard = get_object_or_404(Pinboard, id=pk)
-        serializer = PinboardComplaintSerializer(pinboard.allegations, many=True)
+        pinboards = Pinboard.objects.get_complaints(pk=pk)
+
+        if not pinboards.exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PinboardComplaintSerializer(pinboards.first().allegations, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='officers')
