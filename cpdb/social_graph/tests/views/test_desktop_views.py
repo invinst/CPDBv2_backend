@@ -528,7 +528,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
 
-    def test_network_with_specific_threshold_and_show_civil_only(self):
+    def test_network_with_specific_threshold_and_complaint_origin(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -709,7 +709,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         response = self.client.get(url, {
             'officer_ids': '8562,8563,8564,8565,8566',
             'threshold': 3,
-            'show_civil_only': False
+            'complaint_origin': 'ALL'
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)

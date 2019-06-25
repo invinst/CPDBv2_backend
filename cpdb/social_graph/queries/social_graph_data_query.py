@@ -7,7 +7,11 @@ from utils.raw_query_utils import dict_fetch_all
 
 
 DEFAULT_THRESHOLD = 2
-DEFAULT_SHOW_CIVIL_ONLY = True
+COMPLAINT_ORIGIN_FILTER_MAPPING = {
+    'OFFICER': 'AND data_allegation.is_officer_complaint IS TRUE',
+    'CIVILIAN': 'AND data_allegation.is_officer_complaint IS FALSE',
+}
+DEFAULT_COMPLAINT_ORIGIN = 'CIVILIAN'
 
 
 class SocialGraphDataQuery(object):
@@ -15,12 +19,12 @@ class SocialGraphDataQuery(object):
         self,
         officers,
         threshold=DEFAULT_THRESHOLD,
-        show_civil_only=DEFAULT_SHOW_CIVIL_ONLY,
+        complaint_origin=DEFAULT_COMPLAINT_ORIGIN,
         show_connected_officers=False,
     ):
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
-        self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
+        self.complaint_origin = complaint_origin if complaint_origin is not None else DEFAULT_COMPLAINT_ORIGIN
         self.show_connected_officers = show_connected_officers
 
     def _build_query(self):
@@ -40,7 +44,7 @@ class SocialGraphDataQuery(object):
                 {'OR' if self.show_connected_officers else 'AND'} A.officer_id IN ({officer_ids_string})
             )
             AND data_allegation.incident_date IS NOT NULL
-            {'AND data_allegation.is_officer_complaint IS FALSE' if self.show_civil_only else ''}
+            {COMPLAINT_ORIGIN_FILTER_MAPPING.get(self.complaint_origin, '')}
         """
         return f"""
             SELECT * FROM ({coaccused_data_query}) coaccused_data WHERE accussed_count >= {self.threshold}

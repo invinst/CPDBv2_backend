@@ -132,7 +132,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(officers)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
-    def test_graph_data_threshold_1_show_civil_only_true(self):
+    def test_graph_data_threshold_1_complaint_origin_is_civilian(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -254,7 +254,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(officers, threshold=1)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
-    def test_graph_data_threshold_3_show_civil_only_true(self):
+    def test_graph_data_threshold_3_complaint_origin_is_civilian(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -444,7 +444,317 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(officers, threshold=3)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
-    def test_graph_data_threshold_1_show_civil_only_false(self):
+    def test_graph_data_threshold_1_complaint_origin_is_officer(self):
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
+        )
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=True,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=False,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=True,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=4, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=6, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_3)
+
+        expected_coaccused_data = [
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8563,
+                'incident_date': '2005-12-31',
+                'accussed_count': 1
+            },
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8563,
+                'incident_date': '2007-12-31',
+                'accussed_count': 2
+            },
+            {
+                'officer_id_1': 8562,
+                'officer_id_2': 8564,
+                'incident_date': '2007-12-31',
+                'accussed_count': 1
+            },
+            {
+                'officer_id_1': 8563,
+                'officer_id_2': 8564,
+                'incident_date': '2007-12-31',
+                'accussed_count': 1
+            },
+        ]
+
+        expected_officers = [
+            {
+                'full_name': 'Edward May',
+                'id': 8563,
+                'percentile': {
+                    'percentile_allegation_civilian': '4.4000',
+                    'percentile_allegation_internal': '5.5000',
+                    'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
+                }
+            },
+            {
+                'full_name': 'Joe Parker',
+                'id': 8564,
+                'percentile': {
+                    'percentile_allegation_civilian': '7.7000',
+                    'percentile_allegation_internal': '8.8000',
+                    'percentile_trr': '9.9000'
+                }
+            },
+        ]
+
+        expected_list_event = ['2005-12-31', '2007-12-31']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
+
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(
+            officers,
+            threshold=1,
+            complaint_origin='OFFICER'
+        )
+        expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
+
+    def test_graph_data_threshold_3_complaint_origin_is_officer(self):
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
+        )
+        officer_4 = OfficerFactory(
+            id=8565,
+            first_name='John',
+            last_name='Snow',
+            civilian_allegation_percentile=10.10,
+            internal_allegation_percentile=11.11,
+            trr_percentile=12.12,
+        )
+        officer_5 = OfficerFactory(
+            id=8566,
+            first_name='John',
+            last_name='Sena',
+            civilian_allegation_percentile=13.13,
+            internal_allegation_percentile=14.14,
+            trr_percentile=15.15,
+        )
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=True,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=True,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=True,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_4 = AllegationFactory(
+            crid='987',
+            is_officer_complaint=False,
+            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+
+        OfficerAllegationFactory(id=3, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=4, officer=officer_3, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_3)
+
+        OfficerAllegationFactory(id=7, officer=officer_3, allegation=allegation_1)
+        OfficerAllegationFactory(id=8, officer=officer_4, allegation=allegation_1)
+        OfficerAllegationFactory(id=9, officer=officer_4, allegation=allegation_2)
+        OfficerAllegationFactory(id=10, officer=officer_4, allegation=allegation_3)
+
+        OfficerAllegationFactory(id=11, officer=officer_5, allegation=allegation_1)
+        OfficerAllegationFactory(id=12, officer=officer_5, allegation=allegation_2)
+        OfficerAllegationFactory(id=13, officer=officer_5, allegation=allegation_3)
+        OfficerAllegationFactory(id=14, officer=officer_4, allegation=allegation_4)
+        OfficerAllegationFactory(id=15, officer=officer_5, allegation=allegation_4)
+
+        expected_coaccused_data = [
+            {
+                'officer_id_1': 8563,
+                'officer_id_2': 8564,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+            {
+                'officer_id_1': 8563,
+                'officer_id_2': 8565,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+            {
+                'officer_id_1': 8563,
+                'officer_id_2': 8566,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+            {
+                'officer_id_1': 8564,
+                'officer_id_2': 8565,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+            {
+                'officer_id_1': 8564,
+                'officer_id_2': 8566,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+            {
+                'officer_id_1': 8565,
+                'officer_id_2': 8566,
+                'incident_date': '2007-12-31',
+                'accussed_count': 3
+            },
+        ]
+
+        expected_officers = [
+            {
+                'full_name': 'Edward May',
+                'id': 8563,
+                'percentile': {
+                    'percentile_allegation_civilian': '4.4000',
+                    'percentile_allegation_internal': '5.5000',
+                    'percentile_trr': '6.6000'
+                }
+            },
+            {
+                'full_name': 'Jerome Finnigan',
+                'id': 8562,
+                'percentile': {
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
+                }
+            },
+            {
+                'full_name': 'Joe Parker',
+                'id': 8564,
+                'percentile': {
+                    'percentile_allegation_civilian': '7.7000',
+                    'percentile_allegation_internal': '8.8000',
+                    'percentile_trr': '9.9000'
+                }
+            },
+            {
+                'full_name': 'John Sena',
+                'id': 8566,
+                'percentile': {
+                    'percentile_allegation_civilian': '13.1300',
+                    'percentile_allegation_internal': '14.1400',
+                    'percentile_trr': '15.1500'
+                }
+            },
+            {
+                'full_name': 'John Snow',
+                'id': 8565,
+                'percentile': {
+                    'percentile_allegation_civilian': '10.1000',
+                    'percentile_allegation_internal': '11.1100',
+                    'percentile_trr': '12.1200'
+                }
+            },
+        ]
+
+        expected_list_event = ['2007-12-31']
+
+        expected_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_list_event
+        }
+
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers, threshold=3, complaint_origin='OFFICER')
+        expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
+
+    def test_graph_data_threshold_1_complaint_origin_is_all(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -572,11 +882,11 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(
             officers,
             threshold=1,
-            show_civil_only=False
+            complaint_origin='ALL'
         )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
-    def test_graph_data_threshold_3_show_civil_only_false(self):
+    def test_graph_data_threshold_3_complaint_origin_is_all(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -764,7 +1074,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
-            officers, threshold=3, show_civil_only=False
+            officers, threshold=3, complaint_origin='ALL'
         )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
@@ -998,13 +1308,13 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
-            officers, threshold=2, show_civil_only=False, show_connected_officers=True
+            officers, threshold=2, complaint_origin='ALL', show_connected_officers=True
         )
 
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_empty_officers(self):
-        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none(), threshold=2, show_civil_only=False)
+        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none(), threshold=2, complaint_origin='ALL')
         expect(social_graph_data_query.graph_data()).to.be.empty()
 
     def test_all_officers_default(self):
@@ -1132,7 +1442,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(
             officers,
             threshold=2,
-            show_civil_only=False,
+            complaint_origin='ALL',
             show_connected_officers=True
         )
 
