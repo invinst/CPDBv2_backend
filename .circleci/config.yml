@@ -119,6 +119,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -140,6 +143,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -161,6 +167,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -211,6 +220,10 @@ jobs:
             then
               export NAMESPACE=production
               export ENV_FILE=prod.env
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export NAMESPACE=beta
+              export ENV_FILE=beta.env
             else
               export NAMESPACE=staging
               export ENV_FILE=staging.env
@@ -229,6 +242,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export DOMAIN=api.cpdp.co
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export DOMAIN=betaapi.cpdp.co
             else
               export DOMAIN=stagingapi.cpdp.co
             fi
@@ -239,22 +255,20 @@ jobs:
             kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud')
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              bin/cleanup_cronjobs.sh --production "$kept_crobjobs"
-              bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
+              export ENV_TAG="--production"
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
             else
-              bin/cleanup_cronjobs.sh --staging "$kept_crobjobs"
-              bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
+              export ENV_TAG="--staging"
             fi
+            bin/cleanup_cronjobs.sh $ENV_TAG "$kept_crobjobs"
+            bin/run_cronjob.sh $ENV_TAG update_documents @daily $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true
@@ -339,13 +353,16 @@ workflows:
             branches:
               ignore:
                 - staging
+                - beta
                 - master
-  deploy_backend_staging:
+  deploy_backend_staging_or_beta:
     jobs:
       - test:
           filters:
             branches:
-              only: staging
+              only:
+                - staging
+                - beta
       - push_backend_image:
           requires:
             - test
