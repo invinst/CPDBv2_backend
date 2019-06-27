@@ -115,6 +115,10 @@ A Lambda function package should at least contain these files:
 - Dev must create Lambda functions manually on AWS console
 - To deploy/update Lambda functions, use `docker-compose run web lambda/deploy.sh`
 
+# Setup SSL Certificates
+
+- [Detail](docs/setup-ssl-certificates.md)
+
 # Troubleshooting
 
 - [Adding CA public key to google-cloud-sdk image for API healthcheck](docs/api-healthcheck.md)
