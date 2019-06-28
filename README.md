@@ -23,6 +23,7 @@
 
 1. `git secret reveal`
 2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
+3. `bin/initialize_kubernetes_namespace.sh`.
 
 # Run Django command on staging, beta or production
 

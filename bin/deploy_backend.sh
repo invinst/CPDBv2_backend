@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-    echo "Initialize kubernetes cluster."
+    echo "Deploy backend with input build-num."
     echo ""
     echo "Usage: `basename $0` {--production|--beta|--staging}"
     echo "       `basename $0` {-h|--help}"
@@ -26,10 +26,8 @@ cd $DIR/..
 source $ENV_FILE
 export $(cut -d= -f1 $ENV_FILE)
 
-kubectl apply -f kubernetes/namespaces.yml
-kubectl apply -f kubernetes/secrets-$NAMESPACE.yml
-
-# Create nginx ingress controller
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
+# Deploy backend
+echo "Specify backend image tag:"
+read backendtag
+export BACKEND_IMAGE_TAG=$backendtag
+cat kubernetes/gunicorn.yml | envsubst | kubectl apply -f - -n $NAMESPACE
