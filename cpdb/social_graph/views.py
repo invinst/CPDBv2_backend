@@ -29,7 +29,8 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
                 'attachment_files',
                 queryset=filter_attachments(AttachmentFile.objects),
                 to_attr='prefetch_filtered_attachment_files'
-            )
+            ),
+            'officerallegation_set'
         )
 
         return Response(AllegationSerializer(allegations, many=True).data)

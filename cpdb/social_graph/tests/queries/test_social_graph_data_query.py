@@ -1144,6 +1144,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_4 = OfficerFactory(id=8565, first_name='Jon', last_name='Snow')
 
         allegation_1 = AllegationFactory(
             crid='123',
@@ -1160,6 +1161,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             is_officer_complaint=False,
             incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
         )
+        allegation_4 = AllegationFactory(
+            crid='987',
+            is_officer_complaint=False,
+            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc),
+        )
 
         OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
@@ -1169,13 +1175,26 @@ class SocialGraphDataQueryTestCase(TestCase):
         OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
         OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=9, officer=officer_3, allegation=allegation_4)
+        OfficerAllegationFactory(id=10, officer=officer_4, allegation=allegation_4)
 
         officers = Officer.objects.filter(
-            id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
+            id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4]]
         )
 
         social_graph_data_query = SocialGraphDataQuery(officers)
-        expect(list(social_graph_data_query.allegations())).to.eq([allegation_2, allegation_3])
+        expect(list(social_graph_data_query.allegations())).to.eq([allegation_1, allegation_2, allegation_3])
+
+    def test_empty_allegations(self):
+        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
+
+        officers = Officer.objects.filter(
+            id__in=[officer.id for officer in [officer_1, officer_2]]
+        )
+
+        social_graph_data_query = SocialGraphDataQuery(officers)
+        expect(social_graph_data_query.allegations()).to.be.empty()
 
     def test_graph_data_without_officers(self):
         social_graph_data_query = SocialGraphDataQuery(None)
