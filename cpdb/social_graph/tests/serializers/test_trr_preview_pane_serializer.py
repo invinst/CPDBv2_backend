@@ -27,7 +27,6 @@ class TRRPreviewPaneSerializerTestCase(TestCase):
             complaint_percentile=85,
             civilian_allegation_percentile=90,
             internal_allegation_percentile=95
-
         )
         trr = TRRFactory(
             id=123456,

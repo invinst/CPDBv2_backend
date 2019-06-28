@@ -40,7 +40,6 @@ class CRPreviewPaneSerializerTestCase(TestCase):
             complaint_percentile=85,
             civilian_allegation_percentile=90,
             internal_allegation_percentile=95
-
         )
         OfficerAllegationFactory(
             officer=officer,
