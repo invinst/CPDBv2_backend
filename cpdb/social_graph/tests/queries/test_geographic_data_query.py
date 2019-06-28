@@ -363,7 +363,6 @@ class GeographyDataQueryTestCase(TestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -404,7 +403,6 @@ class GeographyDataQueryTestCase(TestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -427,7 +425,6 @@ class GeographyDataQueryTestCase(TestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '50.0000',
-                            'percentile_allegation': '55.0000',
                             'percentile_allegation_civilian': '60.0000',
                             'percentile_allegation_internal': '65.0000',
 
@@ -455,7 +452,6 @@ class GeographyDataQueryTestCase(TestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -481,7 +477,6 @@ class GeographyDataQueryTestCase(TestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },

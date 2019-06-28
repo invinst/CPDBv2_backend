@@ -896,6 +896,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_4 = OfficerFactory(id=8565, first_name='Jon', last_name='Snow')
 
         category_1 = AllegationCategoryFactory(
             category='Use of Force',
@@ -928,6 +929,12 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
             most_common_category=category_3
         )
+        allegation_4 = AllegationFactory(
+            crid='987',
+            is_officer_complaint=False,
+            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc),
+            most_common_category=category_3
+        )
 
         OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
@@ -937,6 +944,8 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
         OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=9, officer=officer_2, allegation=allegation_4)
+        OfficerAllegationFactory(id=10, officer=officer_4, allegation=allegation_4)
 
         AttachmentFileFactory(
             id=1,
@@ -958,6 +967,16 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
 
         expected_data = [
             {
+                'crid': '123',
+                'incident_date': '2005-12-31',
+                'most_common_category': {
+                    'category': 'Use of Force',
+                    'allegation_name': 'Miscellaneous'
+                },
+                'attachments': [],
+                'officer_ids': [8562, 8563, 8564],
+            },
+            {
                 'crid': '456',
                 'incident_date': '2006-12-31',
                 'most_common_category': {
@@ -971,7 +990,8 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'file_type': 'document',
                         'url': 'http://lvh.me/document',
                     }
-                ]
+                ],
+                'officer_ids': [8562, 8563, 8564],
 
             },
             {
@@ -981,7 +1001,8 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'allegation_name': 'Improper Search Of Person'
                 },
-                'attachments': []
+                'attachments': [],
+                'officer_ids': [8562, 8563],
 
             }
         ]
@@ -1529,7 +1550,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -1570,7 +1590,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -1593,7 +1612,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '50.0000',
-                            'percentile_allegation': '55.0000',
                             'percentile_allegation_civilian': '60.0000',
                             'percentile_allegation_internal': '65.0000',
 
@@ -1621,7 +1639,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -1647,7 +1664,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -1860,7 +1876,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -1901,7 +1916,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -1924,7 +1938,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '50.0000',
-                            'percentile_allegation': '55.0000',
                             'percentile_allegation_civilian': '60.0000',
                             'percentile_allegation_internal': '65.0000',
 
@@ -1952,7 +1965,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -1978,7 +1990,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -2192,7 +2203,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -2233,7 +2243,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '80.0000',
-                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
 
@@ -2256,7 +2265,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'rank': 'Police Officer',
                         'percentile': {
                             'percentile_trr': '50.0000',
-                            'percentile_allegation': '55.0000',
                             'percentile_allegation_civilian': '60.0000',
                             'percentile_allegation_internal': '65.0000',
 
@@ -2284,7 +2292,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },
@@ -2310,7 +2317,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
                     },

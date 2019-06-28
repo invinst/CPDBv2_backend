@@ -21,3 +21,7 @@ class AllegationSerializer(NoNullSerializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     most_common_category = AllegationCategorySerializer()
     attachments = AttachmentFileSerializer(source='prefetch_filtered_attachment_files', many=True)
+    officer_ids = serializers.SerializerMethodField()
+
+    def get_officer_ids(self, obj):
+        return [officer_allegation.officer_id for officer_allegation in obj.officer_allegations]

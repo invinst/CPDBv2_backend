@@ -90,7 +90,6 @@ class CRPreviewPaneSerializerTestCase(TestCase):
                     'rank': 'Police Officer',
                     'percentile': {
                         'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',
 

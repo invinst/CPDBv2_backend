@@ -6,8 +6,6 @@ from shared.serializer import NoNullSerializer
 class OfficerPercentileSerializer(NoNullSerializer):
     percentile_trr = serializers.DecimalField(
         source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        source='complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_civilian = serializers.DecimalField(
         source='civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
     )
