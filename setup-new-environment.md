@@ -35,8 +35,8 @@ Add these two files into `.gitignore`
     
         | ALLOWED ORIGINS | ALLOWED METHODS | ALLOWED HEADERS                                         | EXPOSED HEADERS                                                               |
         |:----------------|:----------------|:--------------------------------------------------------|:------------------------------------------------------------------------------|
-        | https://cpdp.co | GET             | Accept, Accept-Language, Content-Language, Content-Type | Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma |
-
+        | https://beta.cpdp.co | GET             | Accept, Accept-Language, Content-Language, Content-Type | Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma |
+        | https://betaapi.cpdp.co | GET             | Accept, Accept-Language, Content-Language, Content-Type | Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma |
     - Put storage account name as `name` and api key as `key` into `azure-storage-account` and `datapipeline-storage-account`
 
 ##### 2.3. Environment variables
