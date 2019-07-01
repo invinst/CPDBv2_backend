@@ -1202,3 +1202,10 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         social_graph_data_query = SocialGraphDataQuery(Officer.objects.none())
         expect(social_graph_data_query.coaccused_data).to.eq([])
+
+    def test_allegation_without_officers(self):
+        social_graph_data_query = SocialGraphDataQuery(None)
+        expect(social_graph_data_query.allegation_ids).to.eq([])
+
+        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none())
+        expect(social_graph_data_query.allegation_ids).to.eq([])
