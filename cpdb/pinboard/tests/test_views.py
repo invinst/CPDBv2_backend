@@ -467,6 +467,10 @@ class PinboardViewSetTestCase(APITestCase):
             }
         ])
 
+    def test_selected_complaints_pinboard_not_exist(self):
+        response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': '1'}))
+        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
     @patch(
         'data.models.Officer.coaccusals',
         new_callable=PropertyMock,
