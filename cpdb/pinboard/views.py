@@ -73,7 +73,7 @@ class PinboardViewSet(
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
-        pinboards = Pinboard.objects.get_complaints(pk=pk)
+        pinboards = Pinboard.objects.get_pinboards_with_prefetch_complaints(pk=pk)
 
         if not pinboards.exists():
             return Response(status=status.HTTP_404_NOT_FOUND)

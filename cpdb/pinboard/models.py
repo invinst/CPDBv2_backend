@@ -10,7 +10,7 @@ from pinboard.fields import HexField
 
 
 class PinboardManager(models.Manager):
-    def get_complaints(self, pk):
+    def get_pinboards_with_prefetch_complaints(self, pk):
         return self.filter(id=pk).prefetch_related(
             Prefetch(
                 'allegations__officerallegation_set',
