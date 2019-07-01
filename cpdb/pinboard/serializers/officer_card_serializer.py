@@ -18,5 +18,6 @@ class OfficerCardSerializer(serializers.ModelSerializer):
             'rank',
             'full_name',
             'coaccusal_count',
+            'allegation_count',
             'percentile',
         )

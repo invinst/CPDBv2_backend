@@ -391,10 +391,18 @@ class PinboardTestCase(TestCase):
         relevant_allegation_1 = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
         relevant_allegation_2 = AllegationFactory(crid='2', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
         not_relevant_allegation = AllegationFactory(crid='not relevant')
-        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_1, show=True)
-        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_2, show=True)
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        relevant_document_1 = AttachmentFileFactory(
+            id=1, file_type='document', allegation=relevant_allegation_1, show=True
+        )
+        relevant_document_2 = AttachmentFileFactory(
+            id=2, file_type='document', allegation=relevant_allegation_2, show=True
+        )
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         pinboard = PinboardFactory(
             title='Test pinboard',
@@ -426,10 +434,18 @@ class PinboardTestCase(TestCase):
         OfficerAllegationFactory(officer=pinned_officer_1, allegation=pinned_allegation_1)
         OfficerAllegationFactory(officer=pinned_officer_2, allegation=pinned_allegation_2)
         not_relevant_allegation = AllegationFactory(crid='not relevant')
-        relevant_document_1 = AttachmentFileFactory(id=1, allegation=pinned_allegation_1, show=True)
-        relevant_document_2 = AttachmentFileFactory(id=2, allegation=pinned_allegation_2, show=True)
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=pinned_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        relevant_document_1 = AttachmentFileFactory(
+            id=1, file_type='document', allegation=pinned_allegation_1, show=True
+        )
+        relevant_document_2 = AttachmentFileFactory(
+            id=2, file_type='document', allegation=pinned_allegation_2, show=True
+        )
+        AttachmentFileFactory(
+            id=998, file_type='document',  title='relevant but not show', allegation=pinned_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         relevant_documents = list(pinboard.relevant_documents)
         expect(relevant_documents).to.have.length(2)
@@ -457,11 +473,21 @@ class PinboardTestCase(TestCase):
         InvestigatorAllegationFactory(investigator__officer=pinned_investigator_3, allegation=relevant_allegation_3)
         InvestigatorAllegationFactory(investigator__officer=not_relevant_officer, allegation=not_relevant_allegation)
 
-        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_1, show=True)
-        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_2, show=True)
-        relevant_document_3 = AttachmentFileFactory(id=3, allegation=relevant_allegation_3, show=True)
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        relevant_document_1 = AttachmentFileFactory(
+            id=1, file_type='document', allegation=relevant_allegation_1, show=True
+        )
+        relevant_document_2 = AttachmentFileFactory(
+            id=2, file_type='document', allegation=relevant_allegation_2, show=True
+        )
+        relevant_document_3 = AttachmentFileFactory(
+            id=3, file_type='document', allegation=relevant_allegation_3, show=True
+        )
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         relevant_documents = list(pinboard.relevant_documents)
 
@@ -491,11 +517,21 @@ class PinboardTestCase(TestCase):
         PoliceWitnessFactory(allegation=relevant_allegation_21, officer=pinned_officer_2)
         PoliceWitnessFactory(allegation=not_relevant_allegation, officer=not_relevant_officer)
 
-        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_11, show=True)
-        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_12, show=True)
-        relevant_document_3 = AttachmentFileFactory(id=3, allegation=relevant_allegation_21, show=True)
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_11, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        relevant_document_1 = AttachmentFileFactory(
+            id=1, file_type='document', allegation=relevant_allegation_11, show=True)
+
+        relevant_document_2 = AttachmentFileFactory(
+            id=2, file_type='document', allegation=relevant_allegation_12, show=True
+        )
+        relevant_document_3 = AttachmentFileFactory(
+            id=3, file_type='document', allegation=relevant_allegation_21, show=True
+        )
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_11, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         relevant_documents = list(pinboard.relevant_documents)
 
@@ -526,10 +562,18 @@ class PinboardTestCase(TestCase):
         OfficerAllegationFactory(officer=officer_5, allegation=relevant_allegation_1)
         OfficerAllegationFactory(officer=pinned_officer_2, allegation=relevant_allegation_2)
 
-        relevant_document_1 = AttachmentFileFactory(id=1, allegation=relevant_allegation_1, show=True)
-        relevant_document_2 = AttachmentFileFactory(id=2, allegation=relevant_allegation_2, show=True)
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        relevant_document_1 = AttachmentFileFactory(
+            id=1, file_type='document', allegation=relevant_allegation_1, show=True
+        )
+        relevant_document_2 = AttachmentFileFactory(
+            id=2, file_type='document', allegation=relevant_allegation_2, show=True
+        )
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         relevant_documents = list(pinboard.relevant_documents)
 
@@ -545,3 +589,24 @@ class PinboardTestCase(TestCase):
         expect(relevant_documents[1].allegation.prefetch_officer_allegations[0].officer.id).to.eq(5)
         expect(relevant_documents[1].allegation.prefetch_officer_allegations[1].officer.id).to.eq(1)
         expect(relevant_documents[1].allegation.prefetch_officer_allegations[2].officer.id).to.eq(4)
+
+    def test_relevant_documents_not_showing_audios_and_videos(self):
+        pinned_officer_1 = OfficerFactory(id=1)
+        relevant_allegation = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
+        OfficerAllegationFactory(officer=pinned_officer_1, allegation=relevant_allegation)
+        AttachmentFileFactory(file_type='document', allegation=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='document', allegation=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='audio', allegation=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='video', allegation=relevant_allegation, show=True)
+
+        pinboard = PinboardFactory(
+            title='Test pinboard',
+            description='Test description',
+        )
+        pinboard.officers.set([pinned_officer_1])
+
+        relevant_documents = list(pinboard.relevant_documents)
+
+        expect(relevant_documents).to.have.length(2)
+        expect(relevant_documents[0].file_type).to.eq('document')
+        expect(relevant_documents[1].file_type).to.eq('document')

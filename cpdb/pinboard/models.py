@@ -3,6 +3,7 @@ from django.db.models import Q, Count, Prefetch, Value, IntegerField
 
 from sortedm2m.fields import SortedManyToManyField
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
@@ -64,6 +65,7 @@ class Pinboard(TimeStampsModel):
 
     def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(
+            file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
         ).only(
             'id',
