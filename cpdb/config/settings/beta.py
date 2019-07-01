@@ -18,13 +18,7 @@ AZURE_STATICFILES_SSL = True
 
 TWITTERBOT_ENV = 'dev'
 
-AIRTABLE_COPA_AGENCY_ID = 'recQ20GQkIGhuATFO'
-AIRTABLE_CPD_AGENCY_ID = 'reca0JuFtbqredzPg'
-
 ENVIRONMENT = 'beta'
-
-EMAIL_BACKEND = 'email_service.backend.MailGunHijackBackend'
-BANDIT_EMAIL = ['cpdb.dev+hijack@eastagile.com', 'cpdp+notifications@invisibleinstitute.com']
 
 S3_BUCKET_OFFICER_CONTENT = 'officer-content-beta'
 S3_BUCKET_CRAWLER_LOG = 'cpdp-crawler-logs-beta'

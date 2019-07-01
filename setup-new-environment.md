@@ -52,27 +52,35 @@ Add these two files into `.gitignore`
 
 ##### 2.4. Hide secrets
   - Run `git secret hide`
+  
+## 3. Beta config settings
+- Create `cpdb/config/settings/beta.py` based on `cpdb/config/settings/staging.py`
+- Enable email service by removing `EMAIL_BACKEND` and `BANDIT_EMAIL`
+- `beta` uses the same AirTable table with `production` then remove `AIRTABLE_COPA_AGENCY_ID` and `AIRTABLE_CPD_AGENCY_ID`
 
-## 3. Clone AWS environment
+## 4. Clone AWS environment`
 - Update `lambda/deploy.sh` with new environment (beta)
 - Follow `README.md` to create beta's s3 buckets and lambda functions
 - Migrate CORS config to new s3 buckets
 - Deploy new lambda functions using `docker-compose run web lambda/deploy.sh --beta`
 
-## 4. Update scripts
+## 5. Update scripts
 - Add `beta` option to most of files in `bin` folder
 - Edit `.circleci/config.yml` to add `beta` workflows (similar to `staging` workflows) 
 
-## 5. Initialize new namespace/virtual-cluster
+## 6. Initialize new namespace/virtual-cluster
 - Run `./bin/initialize_kubernetes_namespace.sh --beta`
    
-## 6. Activate new domains
+## 7. Activate new domains
 - Go to https://mycloud.rackspace.com
 - Add A record for `betaapi.cpdp.co`, `mb.cpdp.co` and `beta.cpdp.co`, they should point to the same ip as `cpdp.co`
 
-## 7. Deploy
+## 8. Deploy
 - Push the new `beta` branch and let CircleCI do the rest
   
-## 8. Post deploy
+## 9. Post deploy
 - Run `./bin/manage.sh --beta upload_pdf` to upload pdf files to s3
 - Check if `betaapi.cpdp.co/admin/`, `beta.cpdp.co`, `mb.cpdp.co` are working properly
+- Delete all existing attachment requests because of these:
+    - We are using the same AirTable ID for `production` and `beta`. We don't want `beta` to edit/remove any `production`'s records.
+    - We enable email notification feature and we don't want to sent duplicated emails to real users.
