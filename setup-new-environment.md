@@ -41,10 +41,10 @@ Add these two files into `.gitignore`
 
 ##### 2.3. Environment variables
 - Clone `staging.env` and rename the created file to beta.env
-- `PGCLOUD_INSTANCE=twitterbot-180604:us-central1:cpdp-beta`
+- `PGCLOUD_INSTANCE=twitterbot-180604:us-central1:cpdp-beta-database`
     - Ask Jeeves to grand you the access permission
     - Go to https://console.cloud.google.com/sql/instances?project=twitterbot-180604
-    - Clone `cpdp-production` and rename it to `cpdp-beta`
+    - Clone `cpdp-production` and rename it to `cpdp-beta-database`
 - `DESKTOP_DOMAIN=beta.cpdp.co`
 - `MOBILE_DOMAIN=mb.cpdp.co`
 - `API_DOMAIN=betaapi.cpdp.co`
