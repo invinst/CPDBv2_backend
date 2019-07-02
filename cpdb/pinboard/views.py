@@ -15,7 +15,7 @@ from pinboard.serializers.pinboard_serializer import PinboardSerializer, Ordered
 from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
 from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
 from pinboard.serializers.document_card_serializer import DocumentCardSerializer
-from .models import Pinboard
+from .models import Pinboard, ProxyAllegation as Allegation
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -73,12 +73,9 @@ class PinboardViewSet(
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
-        pinboards = Pinboard.objects.get_pinboards_with_prefetch_complaints(pk=pk)
+        allegations = Allegation.objects.get_complaints_in_pinboard(pk)
 
-        if not pinboards.exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = PinboardComplaintSerializer(pinboards.first().allegations, many=True)
+        serializer = PinboardComplaintSerializer(allegations, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='officers')

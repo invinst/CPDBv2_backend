@@ -9,14 +9,21 @@ from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
 
 
-class PinboardManager(models.Manager):
-    def get_pinboards_with_prefetch_complaints(self, pk):
-        return self.filter(id=pk).prefetch_related(
+class AllegationManager(models.Manager):
+    def get_complaints_in_pinboard(self, pinboard_id):
+        return self.filter(pinboard=pinboard_id).prefetch_related(
             Prefetch(
-                'allegations__officerallegation_set',
+                'officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('allegation_category').prefetch_related('officer'),
                 to_attr='officer_allegations')
             )
+
+
+class ProxyAllegation(Allegation):
+    objects = AllegationManager()
+
+    class Meta:
+        proxy = True
 
 
 class Pinboard(TimeStampsModel):
@@ -26,8 +33,6 @@ class Pinboard(TimeStampsModel):
     allegations = SortedManyToManyField('data.Allegation')
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
-
-    objects = PinboardManager()
 
     @property
     def all_officers(self):
