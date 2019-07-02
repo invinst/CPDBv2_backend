@@ -11,7 +11,8 @@ from pinboard.models import Pinboard
 from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
-from social_graph.serializers import OfficerDetailSerializer, AllegationSerializer
+from social_graph.serializers.officer_detail_serializer import OfficerDetailSerializer
+from social_graph.serializers.allegation_serializer import AllegationSerializer
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -56,7 +57,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
         return SocialGraphDataQuery(
             officers=data['officers'],
             threshold=self._threshold,
-            show_civil_only=self._show_civil_only,
+            complaint_origin=self._complaint_origin,
             show_connected_officers=data['show_connected_officers']
         )
 
@@ -96,13 +97,17 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
         return self.request.query_params.get('threshold', None)
 
     @property
-    def _show_civil_only(self):
-        show_civil_only = self.request.query_params.get('show_civil_only', None)
-        return show_civil_only and show_civil_only.capitalize() == 'True'
+    def _complaint_origin(self):
+        return self.request.query_params.get('complaint_origin', None)
 
 
 class SocialGraphDesktopViewSet(SocialGraphBaseViewSet):
     PINBOARD_SHOW_CONNECTED_OFFICERS = True
+
+    @list_route(methods=['get'], url_path='detail-geographic')
+    def detail_geographic(self, _):
+        detail_geographic_data_query = GeographyDataQuery(officers=self._data['officers'], detail=True)
+        return Response(detail_geographic_data_query.execute())
 
 
 class SocialGraphMobileViewSet(SocialGraphBaseViewSet):
