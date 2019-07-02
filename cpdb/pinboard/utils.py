@@ -15,8 +15,3 @@ def int_to_zero_padded_hex(x, length):
 
 def zero_padded_hex_to_int(x):
     return int(x, 16)
-
-
-def is_all_unique(array):
-    seen = []
-    return not any(i in seen or seen.append(i) for i in array)

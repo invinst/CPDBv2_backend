@@ -6,7 +6,6 @@ from robber import expect
 
 from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from pinboard.models import ExamplePinboard
-from pinboard.utils import is_all_unique
 
 
 class ExamplePinboardTestCase(TestCase):
@@ -27,10 +26,12 @@ class ExamplePinboardTestCase(TestCase):
             randoms.append(ExamplePinboard.random(2))
             sleep(0.1)
 
-        for i in range(5):
-            expect(example_pinboards).to.contain(randoms[i][0], randoms[i][1])
+        for random in randoms:
+            expect(example_pinboards).to.contain(random[0], random[1])
 
-        expect(is_all_unique(randoms)).to.be.true()
+        expect(list(
+            {tuple(example_pinboard.pinboard_id for example_pinboard in random) for random in randoms}
+        )).to.have.length(5)
 
     def test_random_when_there_are_not_enough_example_pinboards(self):
         example_pinboards = ExamplePinboardFactory.create_batch(3)
