@@ -186,8 +186,21 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
+          name: Set ENV_TAG
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENV_TAG="--production"
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
+            else
+              export ENV_TAG="--staging"
+            fi
+      - run:
           name: Start job
-          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_index
+          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
+          no_output_timeout: 1h
 
   rebuild_search_index:
     docker:
@@ -200,8 +213,21 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
+          name: Set ENV_TAG
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENV_TAG="--production"
+              elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
+            else
+              export ENV_TAG="--staging"
+            fi
+      - run:
           name: Start job
-          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_search_index
+          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
+          no_output_timeout: 1h
 
   deploy_backend:
     docker:
@@ -372,9 +398,24 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
-      - deploy_backend:
+      - rebuild_index:
+          filters:
+            branches:
+              only:
+                - beta
           requires:
             - django_migrate
+      - rebuild_search_index:
+          filters:
+            branches:
+              only:
+                - beta
+          requires:
+            - django_migrate
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
             - django_collect_static
       - clear_cache:
           requires:

@@ -66,7 +66,8 @@ Add these two files into `.gitignore`
 
 ## 5. Update scripts
 - Add `beta` option to most of files in `bin` folder
-- Edit `.circleci/config.yml` to add `beta` workflows (similar to `staging` workflows) 
+- Edit `.circleci/config.yml` to add `beta` workflows (similar to `staging` workflows). Unlike `staging` we need `beta` 
+branch to trigger rebuilding index and search index. 
 
 ## 6. Initialize new namespace/virtual-cluster
 - Run `./bin/initialize_kubernetes_namespace.sh --beta`
@@ -84,3 +85,6 @@ Add these two files into `.gitignore`
 - Delete all existing attachment requests because of these:
     - We are using the same AirTable ID for `production` and `beta`. We don't want `beta` to edit/remove any `production`'s records.
     - We enable email notification feature and we don't want to sent duplicated emails to real users.
+
+## 10. Github
+- `beta` branch must be protected from now on.
