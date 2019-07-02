@@ -200,7 +200,7 @@ jobs:
       - run:
           name: Start job
           command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
-          no_output_timeout: 1h
+          no_output_timeout: 2h
 
   rebuild_search_index:
     docker:
@@ -227,7 +227,7 @@ jobs:
       - run:
           name: Start job
           command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
-          no_output_timeout: 1h
+          no_output_timeout: 2h
 
   deploy_backend:
     docker:
@@ -381,14 +381,13 @@ workflows:
                 - staging
                 - beta
                 - master
-  deploy_backend_staging_or_beta:
+
+  deploy_backend_staging:
     jobs:
       - test:
           filters:
             branches:
-              only:
-                - staging
-                - beta
+              only: staging
       - push_backend_image:
           requires:
             - test
@@ -398,24 +397,39 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
-      - rebuild_index:
-          filters:
-            branches:
-              only:
-                - beta
-          requires:
-            - django_migrate
-      - rebuild_search_index:
-          filters:
-            branches:
-              only:
-                - beta
-          requires:
-            - django_migrate
       - deploy_backend:
           requires:
-            - rebuild_index
-            - rebuild_search_index
+            - django_migrate
+            - django_collect_static
+      - clear_cache:
+          requires:
+            - deploy_backend
+
+  deploy_backend_beta:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: beta
+      - push_backend_image:
+          requires:
+            - test
+      - django_collect_static:
+          requires:
+            - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      #      - rebuild_index:
+      #          requires:
+      #            - django_migrate
+      #      - rebuild_search_index:
+      #          requires:
+      #            - django_migrate
+      - deploy_backend:
+          requires:
+#            - rebuild_index
+#            - rebuild_search_index
             - django_collect_static
       - clear_cache:
           requires:
