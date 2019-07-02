@@ -57,7 +57,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
         return SocialGraphDataQuery(
             officers=data['officers'],
             threshold=self._threshold,
-            show_civil_only=self._show_civil_only,
+            complaint_origin=self._complaint_origin,
             show_connected_officers=data['show_connected_officers']
         )
 
@@ -97,9 +97,8 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
         return self.request.query_params.get('threshold', None)
 
     @property
-    def _show_civil_only(self):
-        show_civil_only = self.request.query_params.get('show_civil_only', None)
-        return show_civil_only and show_civil_only.capitalize() == 'True'
+    def _complaint_origin(self):
+        return self.request.query_params.get('complaint_origin', None)
 
 
 class SocialGraphDesktopViewSet(SocialGraphBaseViewSet):
