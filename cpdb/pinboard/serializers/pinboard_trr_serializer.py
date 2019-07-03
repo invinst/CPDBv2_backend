@@ -1,9 +1,16 @@
 from rest_framework import serializers
 
-from trr.models import TRR
+from shared.serializer import NoNullSerializer
+from .coaccused_serializer import CoaccusedSerializer
 
 
-class PinboardTRRSerializer(serializers.ModelSerializer):
+class PinboardTRRSerializer(NoNullSerializer):
+    id = serializers.IntegerField()
+    to = serializers.SerializerMethodField()
+    taser = serializers.NullBooleanField()
+    firearm_used = serializers.NullBooleanField()
+    address = serializers.SerializerMethodField()
+    officer = serializers.SerializerMethodField()
     trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
     point = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
@@ -14,11 +21,11 @@ class PinboardTRRSerializer(serializers.ModelSerializer):
     def get_category(self, obj):
         return obj.force_types[0] if len(obj.force_types) > 0 else 'Unknown'
 
-    class Meta:
-        model = TRR
-        fields = (
-            'id',
-            'trr_datetime',
-            'category',
-            'point',
-        )
+    def get_to(self, obj):
+        return f'/trr/{obj.id}/'
+
+    def get_address(self, obj):
+        return ' '.join(filter(None, [obj.block, obj.street]))
+
+    def get_officer(self, obj):
+        return CoaccusedSerializer(obj.officer).data

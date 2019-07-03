@@ -7,7 +7,11 @@ from robber import expect
 from mock import patch
 
 from data.factories import OfficerFactory
-from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
+from shared.serializer import (
+    NoNullSerializer,
+    LightweightOfficerPercentileSerializer,
+    OfficerPercentileSerializer
+)
 from shared.tests.utils import create_object
 
 
@@ -27,6 +31,21 @@ class NoNullSerializerTestCase(TestCase):
             {'id': 1, 'name': 'Alex'},
             {'id': 2}
         ])
+
+
+class LightweightOfficerPercentileSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(
+            id=123,
+            trr_percentile='11.11',
+            civilian_allegation_percentile='33.33',
+            internal_allegation_percentile='44.44',
+        )
+        expect(LightweightOfficerPercentileSerializer(officer).data).to.eq({
+            'percentile_trr': '11.1100',
+            'percentile_allegation_civilian': '33.3300',
+            'percentile_allegation_internal': '44.4400',
+        })
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)

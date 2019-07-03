@@ -409,15 +409,36 @@ class PinboardViewSetTestCase(APITestCase):
         ])
 
     def test_selected_trrs(self):
+        officer = OfficerFactory(
+            id=1, first_name='Daryl',
+            last_name='Mack',
+            trr_percentile=12.0000,
+            civilian_allegation_percentile=98.4344,
+            internal_allegation_percentile=99.7840,
+            complaint_percentile=99.3450,
+            race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
+        )
+
         trr1 = TRRFactory(
             id=1,
             trr_datetime=datetime(2012, 1, 1, tzinfo=pytz.utc),
             point=Point(1.0, 1.0),
+            taser=False,
+            firearm_used=False,
+            block='14XX',
+            street='CHICAGO IL 60636',
+            officer=officer
         )
         trr2 = TRRFactory(
             id=2,
             trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc),
             point=None,
+            taser=True,
+            firearm_used=True,
+            block='15xx',
+            street='CHICAGO IL 60636',
+            officer=officer
         )
         TRRFactory(id=3)
 
@@ -435,12 +456,51 @@ class PinboardViewSetTestCase(APITestCase):
                 'trr_datetime': '2012-01-01',
                 'category': 'Impact Weapon',
                 'point': {'lon': 1.0, 'lat': 1.0},
+                'to': '/trr/1/',
+                'taser': False,
+                'firearm_used': False,
+                'address': '14XX CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             },
             {
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
-                'point': None,
+                'to': '/trr/2/',
+                'taser': True,
+                'firearm_used': True,
+                'address': '15xx CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             }
         ])
 
