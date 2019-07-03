@@ -28,7 +28,7 @@ class LambdaFunctionTestCase(unittest.TestCase):
                 Key='not_existing_file.bin'
             )
         except botocore.exceptions.ClientError as e:
-            expect(e.response['Error']['Code']).to.eq('AuthorizationHeaderMalformed')
+            expect(e.response['Error']['Code']).to.eq('InvalidAccessKeyId')
 
 
 if __name__ == '__main__':
@@ -43,8 +43,8 @@ if __name__ == '__main__':
     exit_code = 0
 
     with patch.dict('os.environ', {
-        'AWS_ACCESS_KEY_ID': '',
-        'AWS_SECRET_ACCESS_KEY': '',
+        'AWS_ACCESS_KEY_ID': 'fake-access-key-id',
+        'AWS_SECRET_ACCESS_KEY': 'fake-secret-access-key',
         'AWS_DEFAULT_REGION': 'us-east-2',
     }):
         loader = unittest.TestLoader()
