@@ -9,6 +9,23 @@ from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
 
 
+class AllegationManager(models.Manager):
+    def get_complaints_in_pinboard(self, pinboard_id):
+        return self.filter(pinboard=pinboard_id).prefetch_related(
+            Prefetch(
+                'officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('allegation_category').prefetch_related('officer'),
+                to_attr='officer_allegations')
+            )
+
+
+class ProxyAllegation(Allegation):
+    objects = AllegationManager()
+
+    class Meta:
+        proxy = True
+
+
 class Pinboard(TimeStampsModel):
     id = HexField(hex_length=8, primary_key=True)
     title = models.CharField(max_length=255, default='', blank=True)

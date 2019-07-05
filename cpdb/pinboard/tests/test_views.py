@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, date
 from urllib.parse import urlencode
 
-import pytz
 from django.contrib.gis.geos import Point
+from django.conf import settings
 from django.urls import reverse
-from mock import patch
+
+import pytz
+from mock import patch, Mock, PropertyMock
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
@@ -18,6 +20,11 @@ from data.factories import (
     AttachmentFileFactory,
     InvestigatorAllegationFactory,
     PoliceWitnessFactory,
+    PoliceUnitFactory,
+    OfficerBadgeNumberFactory,
+    OfficerHistoryFactory,
+    OfficerYearlyPercentileFactory,
+    VictimFactory,
 )
 from pinboard.factories import PinboardFactory
 from pinboard.models import Pinboard
@@ -291,36 +298,92 @@ class PinboardViewSetTestCase(APITestCase):
             category='Use Of Force',
             allegation_name='Miscellaneous',
         )
+        allegation1 = AllegationFactory(
+            crid='123',
+            old_complaint_address='16XX N TALMAN AVE, CHICAGO IL',
+            most_common_category=category1,
+            point=Point(-35.5, 68.9),
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        )
+        coaccused1 = OfficerFactory(
+            id=1,
+            first_name='Jesse',
+            last_name='Pinkman',
+            allegation_count=6,
+            sustained_count=5,
+            birth_year=1940,
+            race='White',
+            gender='M',
+            rank='Sergeant of Police',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            resignation_date=date(2015, 4, 14)
+        )
+        OfficerAllegationFactory(
+            officer=coaccused1,
+            allegation=allegation1,
+            recc_outcome='11 Day Suspension',
+            final_outcome='Separation',
+            final_finding='SU',
+            allegation_category=category1,
+            disciplined=True,
+        )
+        VictimFactory(
+            allegation=allegation1,
+            gender='F',
+            race='White',
+            age=40,
+        )
+
         category2 = AllegationCategoryFactory(
             category='Verbal Abuse',
             allegation_name='Miscellaneous',
         )
-
-        allegation1 = AllegationFactory(
-            crid='1000001',
-            incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc),
-            point=Point(1.0, 1.0),
-        )
         allegation2 = AllegationFactory(
-            crid='1000002',
-            incident_date=datetime(2011, 1, 1, tzinfo=pytz.utc),
-            point=Point(2.0, 2.0),
+            crid='124',
+            old_complaint_address='17XX N TALMAN AVE, CHICAGO IL',
+            most_common_category=category1,
+            point=Point(-35.5, 68.9),
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
         )
-        allegation3 = AllegationFactory(
-            crid='1000003',
-            incident_date=datetime(2012, 1, 1, tzinfo=pytz.utc),
-            point=Point(3.0, 3.0),
+        coaccused2 = OfficerFactory(
+            id=2,
+            first_name='Walter',
+            last_name='White',
+            allegation_count=6,
+            sustained_count=5,
+            birth_year=1940,
+            race='White',
+            gender='M',
+            rank='Sergeant of Police',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            resignation_date=date(2015, 4, 14)
         )
-
-        OfficerAllegationFactory(allegation=allegation1, allegation_category=category1)
-        OfficerAllegationFactory(allegation=allegation2, allegation_category=category2)
-        OfficerAllegationFactory(allegation=allegation3, allegation_category=category2)
+        OfficerAllegationFactory(
+            officer=coaccused2,
+            allegation=allegation2,
+            recc_outcome='10 Day Suspension',
+            final_outcome='Separation',
+            final_finding='SU',
+            allegation_category=category2,
+            disciplined=True,
+        )
+        VictimFactory(
+            allegation=allegation2,
+            gender='M',
+            race='White',
+            age=40,
+        )
 
         allegation_cache_manager.cache_data()
 
         allegation1.refresh_from_db()
         allegation2.refresh_from_db()
-        allegation3.refresh_from_db()
 
         pinboard = PinboardFactory(allegations=(allegation1, allegation2))
 
@@ -329,84 +392,238 @@ class PinboardViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
-                'crid': '1000001',
-                'incident_date': '2010-01-01',
-                'point': {'lon': 1.0, 'lat': 1.0},
+                'address': '16XX N TALMAN AVE, CHICAGO IL',
+                'coaccused': [{
+                    'id': 1,
+                    'full_name': 'Jesse Pinkman',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '11 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Use Of Force',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
+                'sub_category': 'Miscellaneous',
+                'to': '/complaint/123/',
+                'crid': '123',
+                'incident_date': '2002-01-01',
+                'point': {'lon': -35.5, 'lat': 68.9},
                 'most_common_category': 'Use Of Force',
+                'victims': [{
+                    'gender': 'Female',
+                    'race': 'White',
+                    'age': 40,
+                }]
             },
             {
-                'crid': '1000002',
-                'incident_date': '2011-01-01',
-                'point': {'lon': 2.0, 'lat': 2.0},
+                'address': '17XX N TALMAN AVE, CHICAGO IL',
+                'coaccused': [{
+                    'id': 2,
+                    'full_name': 'Walter White',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '10 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Verbal Abuse',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
+                'sub_category': 'Miscellaneous',
+                'to': '/complaint/124/',
+                'crid': '124',
+                'incident_date': '2002-01-01',
+                'point': {'lon': -35.5, 'lat': 68.9},
                 'most_common_category': 'Verbal Abuse',
+                'victims': [{
+                    'gender': 'Male',
+                    'race': 'White',
+                    'age': 40,
+                }]
             }
         ])
 
-    def test_selected_officers(self):
-        officer1 = OfficerFactory(
-            id=1, first_name='Daryl', last_name='Mack',
-            trr_percentile=12.0000,
-            civilian_allegation_percentile=98.4344,
-            internal_allegation_percentile=99.7840,
-            complaint_percentile=99.3450,
-            race='White', gender='M', birth_year=1975,
-            rank='Police Officer'
-        )
-        officer2 = OfficerFactory(
-            id=2,
-            first_name='Ronald', last_name='Watts',
-            trr_percentile=0.0000,
-            civilian_allegation_percentile=98.4344,
-            internal_allegation_percentile=99.7840,
-            complaint_percentile=99.5000,
-            race='White', gender='M', birth_year=1975,
-            rank='Detective'
-        )
-        OfficerFactory(id=3)
+    def test_selected_complaints_pinboard_not_exist(self):
+        response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': '1'}))
+        expect(response.data).to.eq([])
 
-        pinboard = PinboardFactory(officers=(officer1, officer2))
+    @patch(
+        'data.models.Officer.coaccusals',
+        new_callable=PropertyMock,
+        return_value=[Mock(id=789, coaccusal_count=10)]
+    )
+    def test_selected_officers(self, _):
+        unit = PoliceUnitFactory(
+            id=4,
+            unit_name='004',
+            description='District 004',
+        )
+        old_unit = PoliceUnitFactory(
+            id=5,
+            unit_name='005',
+            description='District 005',
+        )
+
+        officer = OfficerFactory(
+            id=123,
+            tags=['tag1', 'tag2'],
+            first_name='Michael',
+            last_name='Flynn',
+            last_unit=unit,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            active='Yes',
+            rank='Sergeant',
+            race='Black',
+            gender='F',
+            current_badge='456',
+            birth_year=1950,
+            current_salary=10000,
+            allegation_count=20,
+            complaint_percentile='99.9900',
+            honorable_mention_count=3,
+            sustained_count=4,
+            unsustained_count=5,
+            discipline_count=6,
+            civilian_compliment_count=2,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_percentile='88.8800',
+            has_unique_name=True
+        )
+
+        OfficerBadgeNumberFactory(
+            officer=officer,
+            current=False,
+            star='789'
+        )
+        OfficerBadgeNumberFactory(
+            officer=officer,
+            current=True,
+            star='456'
+        )
+
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
+
+        OfficerYearlyPercentileFactory(
+            officer=officer,
+            year=2002,
+            percentile_trr='99.88',
+            percentile_allegation=None,
+            percentile_allegation_civilian='77.66',
+            percentile_allegation_internal='66.55'
+        )
+        OfficerYearlyPercentileFactory(
+            officer=officer,
+            year=2003,
+            percentile_trr='99.99',
+            percentile_allegation='88.88',
+            percentile_allegation_civilian='77.77',
+            percentile_allegation_internal='66.66'
+        )
+
+        OfficerFactory(id=2)
+
+        pinboard = PinboardFactory(officers=(officer,))
 
         response = self.client.get(reverse('api-v2:pinboards-officers', kwargs={'pk': pinboard.id}))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
-            {
-                'id': 1,
-                'full_name': 'Daryl Mack',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
-                'complaint_percentile': 99.3450,
-                'race': 'White',
-                'gender': 'Male',
-                'rank': 'Police Officer',
-                'percentile': {
-                    'percentile_trr': '12.0000',
-                    'percentile_allegation': '99.3450',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
-                }
+        expect(response.data).to.eq([{
+            'id': 123,
+            'complaint_count': 20,
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004',
             },
-            {
-                'id': 2,
-                'full_name': 'Ronald Watts',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
-                'complaint_percentile': 99.5000,
-                'race': 'White',
-                'gender': 'Male',
-                'rank': 'Detective',
-                'percentile': {
-                    'percentile_trr': '0.0000',
-                    'percentile_allegation': '99.5000',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'active': 'Active',
+            'rank': 'Sergeant',
+            'full_name': 'Michael Flynn',
+            'has_unique_name': True,
+            'race': 'Black',
+            'badge': '456',
+            'historic_badges': ['789'],
+            'historic_units': [
+                {
+                    'id': 4,
+                    'unit_name': '004',
+                    'description': 'District 004',
+                    'long_unit_name': 'Unit 004',
+                },
+                {
+                    'id': 5,
+                    'unit_name': '005',
+                    'description': 'District 005',
+                    'long_unit_name': 'Unit 005',
                 }
-            }
-        ])
+            ],
+            'gender': 'Female',
+            'birth_year': 1950,
+            'current_salary': 10000,
+            'allegation_count': 20,
+            'complaint_percentile': 99.99,
+            'honorable_mention_count': 3,
+            'sustained_count': 4,
+            'unsustained_count': 5,
+            'discipline_count': 6,
+            'civilian_compliment_count': 2,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_percentile': 88.88,
+            'to': '/officer/123/michael-flynn/',
+            'url': f'{settings.V1_URL}/officer/michael-flynn/123',
+            'tags': ['tag1', 'tag2'],
+            'coaccusals': [{
+                'id': 789,
+                'coaccusal_count': 10
+            }],
+            'percentiles': [
+                {
+                    'id': 123,
+                    'year': 2002,
+                    'percentile_trr': '99.8800',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                },
+                {
+                    'id': 123,
+                    'year': 2003,
+                    'percentile_trr': '99.9900',
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
+                },
+            ]
+        }])
 
     def test_selected_trrs(self):
         trr1 = TRRFactory(
