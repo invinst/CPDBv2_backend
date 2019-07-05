@@ -1,13 +1,18 @@
 import functools
 from django.db import connection
 
-from social_graph.serializers import OfficerSerializer, AccussedSerializer
+from social_graph.serializers.officer_serializer import OfficerSerializer
+from social_graph.serializers.accused_serializer import AccusedSerializer
 from data.models import Officer, Allegation
 from utils.raw_query_utils import dict_fetch_all
 
 
 DEFAULT_THRESHOLD = 2
-DEFAULT_SHOW_CIVIL_ONLY = True
+COMPLAINT_ORIGIN_FILTER_MAPPING = {
+    'OFFICER': 'AND data_allegation.is_officer_complaint IS TRUE',
+    'CIVILIAN': 'AND data_allegation.is_officer_complaint IS FALSE',
+}
+DEFAULT_COMPLAINT_ORIGIN = 'CIVILIAN'
 
 
 class SocialGraphDataQuery(object):
@@ -15,22 +20,18 @@ class SocialGraphDataQuery(object):
         self,
         officers,
         threshold=DEFAULT_THRESHOLD,
-        show_civil_only=DEFAULT_SHOW_CIVIL_ONLY,
+        complaint_origin=DEFAULT_COMPLAINT_ORIGIN,
         show_connected_officers=False,
     ):
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
-        self.show_civil_only = show_civil_only if show_civil_only is not None else DEFAULT_SHOW_CIVIL_ONLY
+        self.complaint_origin = complaint_origin if complaint_origin is not None else DEFAULT_COMPLAINT_ORIGIN
         self.show_connected_officers = show_connected_officers
 
-    def _build_query(self):
+    def _officer_allegation_query(self, select_fields):
         officer_ids_string = ", ".join([str(officer.id) for officer in self.officers])
-        coaccused_data_query = f"""
-            SELECT A.officer_id AS officer_id_1,
-                   B.officer_id AS officer_id_2,
-                   A.allegation_id AS allegation_id,
-                   data_allegation.incident_date AS incident_date,
-                   ROW_NUMBER() OVER (PARTITION BY A.officer_id, B.officer_id ORDER BY incident_date) AS accussed_count
+        return f"""
+            SELECT {select_fields}
             FROM data_officerallegation AS A
             INNER JOIN data_officerallegation AS B ON A.allegation_id = B.allegation_id
             LEFT JOIN data_allegation ON data_allegation.crid = A.allegation_id
@@ -40,11 +41,32 @@ class SocialGraphDataQuery(object):
                 {'OR' if self.show_connected_officers else 'AND'} A.officer_id IN ({officer_ids_string})
             )
             AND data_allegation.incident_date IS NOT NULL
-            {'AND data_allegation.is_officer_complaint IS FALSE' if self.show_civil_only else ''}
+            {COMPLAINT_ORIGIN_FILTER_MAPPING.get(self.complaint_origin, '')}
         """
+
+    def _coaccused_data_query(self):
+        officer_allegation_query = self._officer_allegation_query(f"""
+            A.officer_id AS officer_id_1,
+            B.officer_id AS officer_id_2,
+            A.allegation_id AS allegation_id,
+            data_allegation.incident_date AS incident_date,
+            ROW_NUMBER() OVER (PARTITION BY A.officer_id, B.officer_id ORDER BY incident_date) AS accussed_count
+        """)
         return f"""
-            SELECT * FROM ({coaccused_data_query}) coaccused_data WHERE accussed_count >= {self.threshold}
+            SELECT * FROM ({officer_allegation_query}) coaccused_data WHERE accussed_count >= {self.threshold}
             ORDER BY incident_date
+        """
+
+    def _allegation_id_query(self):
+        officer_allegation_query = self._officer_allegation_query(f"""
+           A.officer_id AS officer_id_1,
+           B.officer_id AS officer_id_2,
+           A.allegation_id AS allegation_id,
+           COUNT(*) OVER (PARTITION BY A.officer_id, B.officer_id) AS total_accussed_count
+        """)
+        return f"""
+            SELECT allegation_id FROM ({officer_allegation_query}) coaccused_data
+            WHERE total_accussed_count >= {self.threshold}
         """
 
     @property
@@ -52,8 +74,18 @@ class SocialGraphDataQuery(object):
     def coaccused_data(self):
         if self.officers:
             with connection.cursor() as cursor:
-                cursor.execute(self._build_query())
+                cursor.execute(self._coaccused_data_query())
                 return dict_fetch_all(cursor)
+        else:
+            return []
+
+    @property
+    @functools.lru_cache()
+    def allegation_ids(self):
+        if self.officers:
+            with connection.cursor() as cursor:
+                cursor.execute(self._allegation_id_query())
+                return [row['allegation_id'] for row in dict_fetch_all(cursor)]
         else:
             return []
 
@@ -75,7 +107,7 @@ class SocialGraphDataQuery(object):
     def graph_data(self):
         if self.officers:
             return {
-                'coaccused_data': AccussedSerializer(self.coaccused_data, many=True).data,
+                'coaccused_data': AccusedSerializer(self.coaccused_data, many=True).data,
                 'officers': OfficerSerializer(self.all_officers(), many=True).data,
                 'list_event': self.list_event()
             }
@@ -83,5 +115,4 @@ class SocialGraphDataQuery(object):
             return {}
 
     def allegations(self):
-        allegation_ids = list({row['allegation_id'] for row in self.coaccused_data})
-        return Allegation.objects.filter(crid__in=allegation_ids).order_by('incident_date')
+        return Allegation.objects.filter(crid__in=self.allegation_ids).order_by('incident_date')

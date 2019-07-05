@@ -478,7 +478,7 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
 
-    def test_network_with_specific_threshold_and_show_civil_only(self):
+    def test_network_with_specific_threshold_and_complaint_origin(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -659,7 +659,7 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         response = self.client.get(url, {
             'officer_ids': '8562,8563,8564,8565,8566',
             'threshold': 3,
-            'show_civil_only': False
+            'complaint_origin': 'ALL'
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -845,6 +845,7 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
         officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
         officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_4 = OfficerFactory(id=8565, first_name='Jon', last_name='Snow')
 
         category_1 = AllegationCategoryFactory(
             category='Use of Force',
@@ -877,6 +878,12 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
             most_common_category=category_3
         )
+        allegation_4 = AllegationFactory(
+            crid='987',
+            is_officer_complaint=False,
+            incident_date=datetime(2008, 12, 31, tzinfo=pytz.utc),
+            most_common_category=category_3
+        )
 
         OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
@@ -886,6 +893,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
         OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
         OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(id=9, officer=officer_2, allegation=allegation_4)
+        OfficerAllegationFactory(id=10, officer=officer_4, allegation=allegation_4)
 
         AttachmentFileFactory(
             id=1,
@@ -907,6 +916,16 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
 
         expected_data = [
             {
+                'crid': '123',
+                'incident_date': '2005-12-31',
+                'most_common_category': {
+                    'category': 'Use of Force',
+                    'allegation_name': 'Miscellaneous'
+                },
+                'attachments': [],
+                'officer_ids': [8562, 8563, 8564],
+            },
+            {
                 'crid': '456',
                 'incident_date': '2006-12-31',
                 'most_common_category': {
@@ -920,7 +939,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                         'file_type': 'document',
                         'url': 'http://lvh.me/document',
                     }
-                ]
+                ],
+                'officer_ids': [8562, 8563, 8564],
 
             },
             {
@@ -930,7 +950,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'allegation_name': 'Improper Search Of Person'
                 },
-                'attachments': []
+                'attachments': [],
+                'officer_ids': [8562, 8563],
 
             }
         ]
@@ -944,8 +965,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1005,49 +1026,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,
@@ -1091,8 +1094,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         OfficerHistoryFactory(unit=unit, officer=officer_3)
         OfficerHistoryFactory(unit=unit, officer=officer_4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1152,49 +1155,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,
@@ -1231,8 +1216,8 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(id=4)
 
-        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory 1')
-        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Subcategory 2')
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
             incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
@@ -1300,49 +1285,31 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                 'date': '2002-01-01',
                 'crid': '123',
                 'category': 'Use of Force',
-                'coaccused_count': 15,
                 'kind': 'CR',
                 'point': {
                     'lon': -35.5,
                     'lat': 68.9
                 },
-                'victims': [
-                    {
-                        'gender': 'Male',
-                        'race': 'Black',
-                        'age': 35
-                    }
-                ]
             },
             {
                 'date': '2003-01-01',
                 'crid': '456',
                 'category': 'Illegal Search',
-                'coaccused_count': 20,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 86.2
                 },
-                'victims': [
-                    {
-                        'gender': 'Female',
-                        'race': 'White',
-                        'age': 40
-                    }
-                ]
             },
             {
                 'date': '2004-01-01',
                 'crid': '789',
                 'category': 'Illegal Search',
-                'coaccused_count': 18,
                 'kind': 'CR',
                 'point': {
                     'lon': 37.3,
                     'lat': 80.2
                 },
-                'victims': []
             },
             {
                 'trr_id': 1,

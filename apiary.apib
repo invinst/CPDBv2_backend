@@ -2767,9 +2767,9 @@ This api require an api access token set in `Authorization` header. To get an ap
             }
         ]
 
-## Pinboard trrs [/pinboards/{pk}/trrs]
+## Pinboard complaints [/pinboards/{pk}/officers]
 
-### Get selected trrs
+### Get selected officers
 
 + Parameters
     + pk (number) - number ID of Pinboard
@@ -2778,16 +2778,42 @@ This api require an api access token set in `Authorization` header. To get an ap
 
         [
             {
-                'id': 1,
-                'trr_datetime': '2012-01-01',
-                'category': 'Impact Weapon',
-                'point': {'lon': 1.0, 'lat': 1.0},
+                "id": 1,
+                "full_name": "Daryl Mack",
+                "complaint_count": 0,
+                "sustained_count": 0,
+                "birth_year": 1975,
+                "complaint_percentile": 99.3450,
+                "race": "White",
+                "gender": "Male",
+                "rank": "Police Officer",
+                "percentile": {
+                    "percentile_trr": "12.0000",
+                    "percentile_allegation": "99.3450",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                    "id": 1,
+                }
             },
             {
-                'id': 2,
-                'trr_datetime': '2013-01-01',
-                'category': 'Unknown',
-                'point': {'lon': 2.0, 'lat': 2.0},
+                "id": 2,
+                "full_name": "Ronald Watts",
+                "complaint_count": 0,
+                "sustained_count": 0,
+                "birth_year": 1975,
+                "complaint_percentile": 99.5000,
+                "race": "White",
+                "gender": "Male",
+                "rank": "Detective",
+                "percentile": {
+                    "percentile_trr": "0.0000",
+                    "percentile_allegation": "99.5000",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                    "id": 2,
+                }
             }
         ]
 
@@ -2814,3 +2840,282 @@ This api require an api access token set in `Authorization` header. To get an ap
                 'point': {'lon': 2.0, 'lat': 2.0},
             }
         ]
+
+## Pinboard relevant documents [/pinboards/{pinboard_id}/relevant-documents/{?offset,limit}]
+
+### Get Pinboard relevant documents list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?limit=20&offset=40",
+          "results": [
+            {
+              "preview_image_url": "http://via.placeholder.com/121x157",
+              "url": "https://assets.documentcloud.org/documents/5680384/CRID-1083633-CR-CRID-1083633-CR-Tactical.pdf",
+              "allegation": {
+                "crid": "1071234",
+                "category": "Lockup Procedures",
+                "incident_date": "2004-04-23",
+                "officers": [
+                  {
+                    "id": 123,
+                    "rank": "Detective",
+                    "full_name": "Richard Sullivan",
+                    "coaccusal_count": 53,
+                    "allegation_count": 47
+                  },
+                  {
+                    "id": 456,
+                    "rank": "Officer",
+                    "full_name": "Baudilio Lopez",
+                    "coaccusal_count": 47,
+                    "allegation_count": 53
+                  }
+                ],
+                "point": {"lon": 12.0, "lat": 21.0},
+              }
+            },
+            {
+              "preview_image_url": "http://via.placeholder.com/121x157",
+              "url": "https://assets.documentcloud.org/documents/5680384/CRID-1083633-CR-CRID-1083633-CR-Tactical.pdf",
+              "allegation": {
+                "crid": "1079876",
+                "category": "Operations/Personnel Violation",
+                "incident_date": "2014-05-02",
+                "officers": []
+              }
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard relevant coaccusals [/pinboards/{pinboard_id}/relevant-coaccusals/{?offset,limit}]
+
+### Get Pinboard relevant coaccusals list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-coaccusals/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-coaccusals/?limit=20&offset=40",
+          "results": [
+            {
+              "id": 123,
+              "rank": "Detective",
+              "full_name": "Richard Sullivan",
+              "coaccusal_count": 53,
+              "allegation_count": null
+            },
+            {
+              "id": 456,
+              "rank": "Officer",
+              "full_name": "Baudilio Lopez",
+              "coaccusal_count": 47,
+              "allegation_count": 53
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard relevant complaints [/pinboards/{pinboard_id}/relevant-complaints/{?offset,limit}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?limit=20&offset=40",
+          "results": [
+            {
+              "crid": "1071234",
+              "category": "Lockup Procedures",
+              "incident_date": "2004-04-23",
+              "point": {"lon": 12.0, "lat": 21.0},
+              "officers": [
+                {
+                  "id": 123,
+                  "rank": "Detective",
+                  "full_name": "Richard Sullivan",
+                  "coaccusal_count": 53,
+                  "allegation_count": 53
+                },
+                {
+                  "id": 456,
+                  "rank": "Officer",
+                  "full_name": "Baudilio Lopez",
+                  "coaccusal_count": 47,
+                  "allegation_count": 53
+                }
+              ]
+            },
+            {
+              "crid": "1079876",
+              "cateory": "Operations/Personnel Violation",
+              "incident_date": "2014-05-02",
+              "point": null,
+              "officers": []
+            },
+            ...
+          ]
+        }
+
+## Lastest retrieved pinboard [/pinboards/latest-retrieved-pinboard/]
+
+### Get the lastest retrieved pinboard of the current session
+
++ Response 200 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ["123abc"],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
+## Social graph network data [/social-graph/network/{?officer_ids,unit_id,pinboard_id,complaint_origin,threshold}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + We only need to pass one of these parameters:
+      + officer_ids (string) - a comma separated list of number ID of the officers
+      + unit_id (number) - number ID of the unit
+      + pinboard_id (number) - number ID of the pinboard
+    + complaint_origin (string, optional) - type of complaint
+      + Accepted values: `CIVILIAN`, `OFFICER`, `ALL`
+      + Default: `CIVILIAN`
+    + threshold (number, optional) - the minimum number of coaccusals officer
+      + Accepted values: `1` -> `4`
+      + Default: `2`
+
+
++ Response 200 (application/json)
+
+        {
+          "coaccused_data": [
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 4881,
+              "incident_date": "1994-05-24",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "1998-11-09",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "1998-12-03",
+              "accussed_count": 3
+            },
+            {
+              "officer_id_1": 30209,
+              "officer_id_2": 31945,
+              "incident_date": "1998-12-03",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 30209,
+              "incident_date": "1998-12-03",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 4881,
+              "officer_id_2": 31945,
+              "incident_date": "2000-04-28",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "2002-09-28",
+              "accussed_count": 4
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "2002-10-13",
+              "accussed_count": 5
+            }
+          ],
+          "officers": [
+            {
+              "id": 30209,
+              "full_name": "Bennie Watson",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "35.4196",
+                "percentile_allegation_internal": "83.0449"
+              }
+            },
+            {
+              "id": 3663,
+              "full_name": "Donnell Calhoun",
+              "percentile": {
+                "percentile_allegation_civilian": "87.4780",
+                "percentile_allegation_internal": "96.5164"
+              }
+            },
+            {
+              "id": 4881,
+              "full_name": "Gilbert Cobb",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "85.1838",
+                "percentile_allegation_internal": "0.0000"
+              }
+            },
+            {
+              "id": 31945,
+              "full_name": "Melvin Ector",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "94.1100",
+                "percentile_allegation_internal": "61.1521"
+              }
+            }
+          ],
+          "list_event": [
+            "1994-05-24",
+            "1998-11-09",
+            "1998-12-03",
+            "2000-04-28",
+            "2002-09-28",
+            "2002-10-13"
+          ]
+        }
