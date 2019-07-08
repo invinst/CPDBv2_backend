@@ -717,7 +717,6 @@ class PinboardViewSetTestCase(APITestCase):
                             'percentile_allegation': '22.2200',
                             'percentile_allegation_civilian': '33.3300',
                             'percentile_allegation_internal': '44.4400',
-
                         }
                     },
                 ],
@@ -743,7 +742,6 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation': '88.8800',
                         'percentile_allegation_civilian': '77.7700',
                         'percentile_allegation_internal': '66.6600',
-
                     }
                 }],
                 'point': {'lon': 0.01, 'lat': 0.02},
