@@ -3,7 +3,7 @@ from rest_framework import serializers
 from trr.models import TRR
 
 
-class PinboardTRRSerializer(serializers.ModelSerializer):
+class TRRSerializer(serializers.ModelSerializer):
     trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
     point = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
