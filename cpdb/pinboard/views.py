@@ -8,13 +8,21 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from pinboard.serializers.pinboard_complaint_serializer import PinboardComplaintSerializer
-from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
-from pinboard.serializers.pinboard_officer_serializer import PinboardOfficerSerializer
-from pinboard.serializers.pinboard_serializer import PinboardSerializer, OrderedPinboardSerializer
-from pinboard.serializers.officer_card_serializer import OfficerCardSerializer as PinboardOfficerCardSerializer
-from pinboard.serializers.allegation_card_serializer import AllegationCardSerializer
-from pinboard.serializers.document_card_serializer import DocumentCardSerializer
+from pinboard.serializers.pinboard_serializer import (
+    PinboardSerializer,
+    OrderedPinboardSerializer
+)
+from pinboard.serializers.desktop.pinned import (
+    PinnedOfficerSerializer,
+    PinnedAllegationSerializer,
+    PinnedTRRSerializer
+)
+from pinboard.serializers.desktop.relevant import (
+    RelevantOfficerSerializer,
+    RelevantAllegationSerializer,
+    RelevantDocumentSerializer
+)
+
 from .models import Pinboard, ProxyAllegation as Allegation
 
 
@@ -75,19 +83,19 @@ class PinboardViewSet(
     def complaints(self, request, pk):
         allegations = Allegation.objects.get_complaints_in_pinboard(pk)
 
-        serializer = PinboardComplaintSerializer(allegations, many=True)
+        serializer = PinnedAllegationSerializer(allegations, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='officers')
     def officers(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        serializer = PinboardOfficerSerializer(pinboard.officers, many=True)
+        serializer = PinnedOfficerSerializer(pinboard.officers, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='trrs')
     def trrs(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
-        serializer = PinboardTRRSerializer(pinboard.trrs, many=True)
+        serializer = PinnedTRRSerializer(pinboard.trrs, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='relevant-coaccusals')
@@ -97,7 +105,7 @@ class PinboardViewSet(
 
         paginator = self.pagination_class()
         relevant_coaccusals = paginator.paginate_queryset(pinboard.relevant_coaccusals, request, view=self)
-        serializer = PinboardOfficerCardSerializer(relevant_coaccusals, many=True)
+        serializer = RelevantOfficerSerializer(relevant_coaccusals, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     @detail_route(methods=['get'], url_path='relevant-documents')
@@ -107,7 +115,7 @@ class PinboardViewSet(
 
         paginator = self.pagination_class()
         relevant_documents = paginator.paginate_queryset(pinboard.relevant_documents, request, view=self)
-        serializer = DocumentCardSerializer(relevant_documents, many=True)
+        serializer = RelevantDocumentSerializer(relevant_documents, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     @detail_route(methods=['get'], url_path='relevant-complaints')
@@ -117,5 +125,5 @@ class PinboardViewSet(
 
         paginator = self.pagination_class()
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
-        serializer = AllegationCardSerializer(relevant_complaints, many=True)
+        serializer = RelevantAllegationSerializer(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)

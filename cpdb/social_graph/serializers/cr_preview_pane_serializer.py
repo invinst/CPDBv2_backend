@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer
-from pinboard.serializers.victim_serializer import VictimSerializer
+from pinboard.serializers.desktop.common.victim_serializer import VictimSerializer
 from social_graph.serializers.officer_percentile_serializer import OfficerPercentileSerializer
 
 
