@@ -1,17 +1,14 @@
 from rest_framework import serializers
 
-from pinboard.serializers.victim_serializer import VictimSerializer
 from shared.serializer import NoNullSerializer
 
 
-class CRPinboardSerializer(NoNullSerializer):
+class CRSerializer(NoNullSerializer):
     date = serializers.SerializerMethodField()
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
-    coaccused_count = serializers.IntegerField()
     kind = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
-    victims = VictimSerializer(many=True)
 
     def get_kind(self, obj):
         return 'CR'

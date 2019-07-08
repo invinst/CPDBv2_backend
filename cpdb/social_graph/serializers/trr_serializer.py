@@ -3,7 +3,7 @@ from rest_framework import serializers
 from shared.serializer import NoNullSerializer
 
 
-class TRRPinboardSerializer(NoNullSerializer):
+class TRRSerializer(NoNullSerializer):
     trr_id = serializers.IntegerField(source='id')
     date = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
