@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
+from shared.serializer import NoNullSerializer
 
-class AllegationMobileSerializer(serializers.Serializer):
+
+class AllegationMobileSerializer(NoNullSerializer):
     crid = serializers.CharField()
     point = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')

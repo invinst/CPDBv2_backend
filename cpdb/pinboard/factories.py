@@ -1,6 +1,7 @@
 import factory
 from faker import Faker
 
+from pinboard.models import ExamplePinboard
 from .models import Pinboard
 
 fake = Faker()
@@ -30,3 +31,10 @@ class PinboardFactory(factory.django.DjangoModelFactory):
         if create and extracted:
             for trr in extracted:
                 self.trrs.add(trr)
+
+
+class ExamplePinboardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExamplePinboard
+
+    pinboard = factory.SubFactory(PinboardFactory)

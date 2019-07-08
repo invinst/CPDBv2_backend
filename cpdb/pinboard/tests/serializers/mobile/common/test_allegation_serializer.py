@@ -1,8 +1,9 @@
 from datetime import datetime
 
-import pytz
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+
+import pytz
 from robber import expect
 
 from data.factories import (
@@ -39,7 +40,3 @@ class AllegationMobileSerializerTestCase(TestCase):
         allegation = AllegationFactory(most_common_category=None)
         serializer = AllegationMobileSerializer(allegation)
         expect(serializer.data['category']).to.eq('Unknown')
-
-    def test_get_point_none(self):
-        allegation = AllegationFactory(point=None)
-        expect(AllegationMobileSerializer(allegation).data['point']).to.eq(None)

@@ -1,11 +1,31 @@
+from random import sample
+
 from django.contrib.gis.db import models
-from django.db.models import Q, Count, Prefetch, Value, IntegerField
+from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
 
 from sortedm2m.fields import SortedManyToManyField
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
+
+
+class AllegationManager(models.Manager):
+    def get_complaints_in_pinboard(self, pinboard_id):
+        return self.filter(pinboard=pinboard_id).prefetch_related(
+            Prefetch(
+                'officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('allegation_category').prefetch_related('officer'),
+                to_attr='officer_allegations')
+            )
+
+
+class ProxyAllegation(Allegation):
+    objects = AllegationManager()
+
+    class Meta:
+        proxy = True
 
 
 class Pinboard(TimeStampsModel):
@@ -15,6 +35,20 @@ class Pinboard(TimeStampsModel):
     allegations = SortedManyToManyField('data.Allegation')
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
+
+    def __str__(self):
+        return f'{self.id} - {self.title}' if self.title else self.id
+
+    @property
+    def is_empty(self):
+        return not any([self.officers.exists(), self.allegations.exists(), self.trrs.exists()])
+
+    @property
+    def example_pinboards(self):
+        if self.is_empty:
+            return ExamplePinboard.random(2)
+        else:
+            return None
 
     @property
     def all_officers(self):
@@ -52,6 +86,7 @@ class Pinboard(TimeStampsModel):
 
     def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(
+            file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
         ).only(
             'id',
@@ -65,7 +100,7 @@ class Pinboard(TimeStampsModel):
             Prefetch(
                 'allegation__officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
-                to_attr='prefetch_officer_allegations'
+                to_attr='prefetched_officer_allegations'
             )
         )
 
@@ -97,30 +132,62 @@ class Pinboard(TimeStampsModel):
             'rank',
             'first_name',
             'last_name',
+            'appointed_date',
+            'resignation_date',
+            'current_badge',
+            'gender',
+            'birth_year',
+            'race',
+            'rank',
             'trr_percentile',
             'complaint_percentile',
             'civilian_allegation_percentile',
             'internal_allegation_percentile',
-            'resignation_date'
+            'allegation_count',
+            'sustained_count',
+            'discipline_count',
+            'trr_count',
+            'major_award_count',
+            'honorable_mention_count',
+            'honorable_mention_percentile',
+            'last_unit_id',
         ]
-        via_officer = Officer.objects.filter(
+
+        related_renamed_columns = (
+            ('unit_id', 'last_unit__id'),
+            ('unit_name', 'last_unit__unit_name'),
+            ('unit_description', 'last_unit__description')
+        )
+
+        content_columns = columns + [col[1] for col in related_renamed_columns]
+        officer_qs = Officer.objects.annotate(**{
+            annotated_column: F(column) for annotated_column, column in related_renamed_columns
+        })
+
+        via_officer = officer_qs.filter(
             officerallegation__allegation__officerallegation__officer_id__in=officer_ids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Count('officerallegation', distinct=True)
         )
-        via_allegation = Officer.objects.filter(
+
+        via_allegation = officer_qs.filter(
             officerallegation__allegation__in=crids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Count('officerallegation', distinct=True)
         )
-        via_trr = Officer.objects.filter(
+
+        via_trr = officer_qs.filter(
             id__in=trr_officer_ids
-        ).exclude(id__in=officer_ids).only(*columns).annotate(
+        ).exclude(id__in=officer_ids).only(*content_columns).annotate(
             sub_coaccusal_count=Value(1, output_field=IntegerField())
         )
         sub_query = via_officer.union(via_allegation, all=True).union(via_trr, all=True)
 
-        select_columns = ', '.join([f'"{col}"' for col in columns])
+        select_columns = ', '.join(
+            [f'"{col}"' for col in columns] +
+            [f'"{col[0]}"' for col in related_renamed_columns]
+        )
+
         raw_query = f'''
             WITH cte AS ({sub_query.query})
             SELECT {select_columns},
@@ -149,8 +216,9 @@ class Pinboard(TimeStampsModel):
                 ).order_by(
                     '-officer__allegation_count'
                 ),
-                to_attr='prefetch_officer_allegations'
-            )
+                to_attr='prefetched_officer_allegations'
+            ),
+            'victims'
         )
 
     def relevant_complaints_count_query(self, **kwargs):
@@ -187,3 +255,14 @@ class Pinboard(TimeStampsModel):
         # LimitOffsetPagination need count and we optimize it with a more simple query
         setattr(query, 'count', self.relevant_complaints_count)
         return query
+
+
+class ExamplePinboard(TimeStampsModel):
+    pinboard = models.OneToOneField(Pinboard, primary_key=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.pinboard)
+
+    @classmethod
+    def random(cls, n):
+        return sample(list(cls.objects.all()), min(cls.objects.count(), n))

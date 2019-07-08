@@ -55,6 +55,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'crids': [],
             'trr_ids': [],
             'description': 'abc',
+            'example_pinboards': []
         })
 
     def test_retrieve_pinboard_not_found(self):
@@ -281,7 +282,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'officer_ids': [],
             'crids': [],
             'trr_ids': [],
-            'description': 'abc'
+            'description': 'abc',
+            'example_pinboards': []
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
@@ -381,7 +383,6 @@ class PinboardMobileViewSetTestCase(APITestCase):
             {
                 'crid': '1000002',
                 'incident_date': '2011-01-01',
-                'point': None,
                 'category': 'Verbal Abuse',
             }
         ])
@@ -511,15 +512,18 @@ class PinboardMobileViewSetTestCase(APITestCase):
         relevant_allegation_1 = AllegationFactory(
             crid='1',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            point=Point([0.01, 0.02]),
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
-            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc)
+            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
+            point=None,
         )
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -528,6 +532,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_2,
             show=True,
@@ -578,10 +583,9 @@ class PinboardMobileViewSetTestCase(APITestCase):
                             'percentile_allegation': '22.2200',
                             'percentile_allegation_civilian': '33.3300',
                             'percentile_allegation_internal': '44.4400',
-
                         }
                     },
-                ]
+                ],
             }
         }, {
             'id': 1,
@@ -602,9 +606,9 @@ class PinboardMobileViewSetTestCase(APITestCase):
                         'percentile_allegation': '88.8800',
                         'percentile_allegation_civilian': '77.7700',
                         'percentile_allegation_internal': '66.6600',
-
                     }
-                }]
+                }],
+                'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -634,6 +638,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -642,6 +647,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_1,
             show=True,
@@ -650,6 +656,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=3,
+            file_type='document',
             title='relevant document 3',
             allegation=relevant_allegation_1,
             show=True,
@@ -658,6 +665,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=4,
+            file_type='document',
             title='relevant document 4',
             allegation=relevant_allegation_1,
             show=True,
@@ -666,6 +674,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=5,
+            file_type='document',
             title='relevant document 5',
             allegation=relevant_allegation_1,
             show=True,
@@ -1125,7 +1134,6 @@ class PinboardMobileViewSetTestCase(APITestCase):
                         'percentile_allegation_civilian': '55.5500',
                     },
                 }],
-                'point': None,
             }, {
                 'crid': '1',
                 'category': 'Operation/Personnel Violations',
@@ -1266,13 +1274,11 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-23',
             'officers': [],
-            'point': None,
         }, {
             'crid': '2',
             'category': 'Unknown',
             'incident_date': '2002-02-22',
             'officers': [],
-            'point': None,
         }])
         expect(first_response.data['count']).to.eq(3)
         expect(first_response.data['previous']).to.be.none()
@@ -1287,7 +1293,6 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-22',
             'officers': [],
-            'point': None,
         }])
         expect(second_response.data['count']).to.eq(3)
         expect(second_response.data['previous']).to.eq(
@@ -1304,7 +1309,6 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-21',
             'officers': [],
-            'point': None,
         }])
         expect(last_response.data['count']).to.eq(3)
         expect(last_response.data['previous']).to.eq(
