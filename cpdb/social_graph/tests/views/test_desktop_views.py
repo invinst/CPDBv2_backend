@@ -893,9 +893,51 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         expect(response.data).to.eq(expected_data)
 
     def test_allegations_default(self):
-        officer_1 = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_2 = OfficerFactory(id=8563, first_name='Edward', last_name='May')
-        officer_3 = OfficerFactory(id=8564, first_name='Joe', last_name='Parker')
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            allegation_count=5,
+            sustained_count=2,
+            birth_year=1980,
+            race='Asian',
+            gender='M',
+            rank='Police Officer',
+            trr_percentile=80,
+            complaint_percentile=85,
+            civilian_allegation_percentile=90,
+            internal_allegation_percentile=95
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            allegation_count=10,
+            sustained_count=5,
+            birth_year=1981,
+            race='Asian',
+            gender='M',
+            rank='Police Officer',
+            trr_percentile=80,
+            complaint_percentile=85,
+            civilian_allegation_percentile=90,
+            internal_allegation_percentile=95
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            allegation_count=20,
+            sustained_count=10,
+            birth_year=1982,
+            race='Asian',
+            gender='M',
+            rank='Police Officer',
+            trr_percentile=80,
+            complaint_percentile=85,
+            civilian_allegation_percentile=90,
+            internal_allegation_percentile=95
+        )
         officer_4 = OfficerFactory(id=8565, first_name='Jon', last_name='Snow')
 
         category_1 = AllegationCategoryFactory(
@@ -915,19 +957,34 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             crid='123',
             is_officer_complaint=False,
             incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
-            most_common_category=category_1
+            most_common_category=category_1,
+            old_complaint_address='3XX W. 58TH ST.',
         )
         allegation_2 = AllegationFactory(
             crid='456',
             is_officer_complaint=False,
             incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc),
-            most_common_category=category_2
+            most_common_category=category_2,
+            old_complaint_address='34XX Douglas Blvd'
         )
         allegation_3 = AllegationFactory(
             crid='789',
             is_officer_complaint=False,
             incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc),
-            most_common_category=category_3
+            most_common_category=category_3,
+            old_complaint_address='3510 Michigan Ave, Chicago'
+        )
+        VictimFactory(
+            gender='M',
+            race='Black',
+            age=35,
+            allegation=allegation_2
+        )
+        VictimFactory(
+            gender='F',
+            race='White',
+            age=40,
+            allegation=allegation_3
         )
         allegation_4 = AllegationFactory(
             crid='987',
@@ -936,14 +993,87 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             most_common_category=category_3
         )
 
-        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
-        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
-        OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
-        OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
-        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
-        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
-        OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
-        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+        OfficerAllegationFactory(
+            id=1,
+            officer=officer_1,
+            allegation=allegation_1,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=2,
+            officer=officer_2,
+            allegation=allegation_1,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=3,
+            officer=officer_3,
+            allegation=allegation_1,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=4,
+            officer=officer_1,
+            allegation=allegation_2,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=5,
+            officer=officer_2,
+            allegation=allegation_2,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=6,
+            officer=officer_3,
+            allegation=allegation_2,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=7,
+            officer=officer_1,
+            allegation=allegation_3,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+        OfficerAllegationFactory(
+            id=8,
+            officer=officer_2,
+            allegation=allegation_3,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category_3
+        )
+
         OfficerAllegationFactory(id=9, officer=officer_2, allegation=allegation_4)
         OfficerAllegationFactory(id=10, officer=officer_4, allegation=allegation_4)
 
@@ -967,22 +1097,162 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
 
         expected_data = [
             {
+                'kind': 'CR',
                 'crid': '123',
+                'to': '/complaint/123/',
                 'incident_date': '2005-12-31',
-                'most_common_category': {
-                    'category': 'Use of Force',
-                    'allegation_name': 'Miscellaneous'
-                },
+                'category': 'Use of Force',
+                'subcategory': 'Miscellaneous',
                 'attachments': [],
                 'officer_ids': [8562, 8563, 8564],
+                'address': '3XX W. 58TH ST.',
+                'victims': [],
+                'coaccused': [
+                    {
+                        'id': 8562,
+                        'full_name': 'Jerome Finnigan',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1980,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 5,
+                        'sustained_count': 2,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                    {
+                        'id': 8563,
+                        'full_name': 'Edward May',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1981,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 10,
+                        'sustained_count': 5,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                    {
+                        'id': 8564,
+                        'full_name': 'Joe Parker',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1982,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 20,
+                        'sustained_count': 10,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    }
+                ],
             },
             {
+                'kind': 'CR',
                 'crid': '456',
+                'to': '/complaint/456/',
+                'category': 'Illegal Search',
+                'subcategory': 'Illegal Arrest / False Arrest',
                 'incident_date': '2006-12-31',
-                'most_common_category': {
-                    'category': 'Illegal Search',
-                    'allegation_name': 'Illegal Arrest / False Arrest'
-                },
+                'address': '34XX Douglas Blvd',
+                'victims': [
+                    {
+                        'gender': 'Male',
+                        'race': 'Black',
+                        'age': 35
+                    }
+                ],
+                'coaccused': [
+                    {
+                        'id': 8562,
+                        'full_name': 'Jerome Finnigan',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1980,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 5,
+                        'sustained_count': 2,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                    {
+                        'id': 8563,
+                        'full_name': 'Edward May',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1981,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 10,
+                        'sustained_count': 5,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                    {
+                        'id': 8564,
+                        'full_name': 'Joe Parker',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1982,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 20,
+                        'sustained_count': 10,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    }
+                ],
                 'attachments': [
                     {
                         'id': '1',
@@ -995,15 +1265,67 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
 
             },
             {
+                'kind': 'CR',
                 'crid': '789',
+                'to': '/complaint/789/',
+
+                'category': 'Operation/Personnel Violations',
+                'subcategory': 'Improper Search Of Person',
                 'incident_date': '2007-12-31',
-                'most_common_category': {
-                    'category': 'Operation/Personnel Violations',
-                    'allegation_name': 'Improper Search Of Person'
-                },
+                'address': '3510 Michigan Ave, Chicago',
+                'victims': [
+                    {
+                        'gender': 'Female',
+                        'race': 'White',
+                        'age': 40
+                    }
+                ],
+                'coaccused': [
+                    {
+                        'id': 8562,
+                        'full_name': 'Jerome Finnigan',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1980,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 5,
+                        'sustained_count': 2,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                    {
+                        'id': 8563,
+                        'full_name': 'Edward May',
+                        'gender': 'Male',
+                        'race': 'Asian',
+                        'rank': 'Police Officer',
+                        'birth_year': 1981,
+                        'recommended_outcome': '10 Day Suspension',
+                        'final_outcome': 'Separation',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'complaint_count': 10,
+                        'sustained_count': 5,
+                        'complaint_percentile': 85.0,
+                        'disciplined': True,
+                        'percentile': {
+                            'percentile_allegation_civilian': '90.0000',
+                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '80.0000',
+                        },
+                    },
+                ],
                 'attachments': [],
                 'officer_ids': [8562, 8563],
-
             }
         ]
 

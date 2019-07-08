@@ -12,18 +12,20 @@ from data.factories import (
     AttachmentFileFactory,
     OfficerFactory,
     OfficerAllegationFactory,
+    VictimFactory,
 )
 from social_graph.serializers.allegation_serializer import AllegationSerializer
 
 
 class AllegationSerializerTestCase(TestCase):
     def test_serialization(self):
-        category = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory')
+        category = AllegationCategoryFactory(category='Use of Force', allegation_name='Improper Search Of Person')
         allegation = AllegationFactory(
             crid='123',
             is_officer_complaint=True,
             incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc),
             most_common_category=category,
+            old_complaint_address='34XX Douglas Blvd',
         )
         attachment = AttachmentFileFactory(
             tag='TRR',
@@ -33,19 +35,79 @@ class AllegationSerializerTestCase(TestCase):
             url='http://cr-document.com/',
             file_type=MEDIA_TYPE_DOCUMENT
         )
-        officer = OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan')
-        officer_allegation = OfficerAllegationFactory(officer=officer)
+        officer = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            allegation_count=5,
+            sustained_count=2,
+            birth_year=1980,
+            race='Asian',
+            gender='M',
+            rank='Police Officer',
+            trr_percentile=80,
+            complaint_percentile=85,
+            civilian_allegation_percentile=90,
+            internal_allegation_percentile=95
+        )
+        officer_allegation = OfficerAllegationFactory(
+            id=1,
+            officer=officer,
+            allegation=allegation,
+            recc_outcome='10 Day Suspension',
+            final_finding='SU',
+            final_outcome='Separation',
+            disciplined=True,
+            allegation_category=category
+        )
+        VictimFactory(
+            gender='M',
+            race='Black',
+            age=35,
+            allegation=allegation
+        )
 
         setattr(allegation, 'prefetch_filtered_attachment_files', [attachment])
         allegation.officerallegation_set.set([officer_allegation])
 
         expect(AllegationSerializer(allegation).data).to.eq({
+            'kind': 'CR',
             'crid': '123',
+            'to': '/complaint/123/',
+            'category': 'Use of Force',
+            'subcategory': 'Improper Search Of Person',
             'incident_date': '2005-12-31',
-            'most_common_category': {
-                'category': 'Use of Force',
-                'allegation_name': 'Subcategory',
-            },
+            'address': '34XX Douglas Blvd',
+            'victims': [
+                {
+                    'gender': 'Male',
+                    'race': 'Black',
+                    'age': 35
+                }
+            ],
+            'coaccused': [
+                {
+                    'id': 8562,
+                    'full_name': 'Jerome Finnigan',
+                    'gender': 'Male',
+                    'race': 'Asian',
+                    'rank': 'Police Officer',
+                    'birth_year': 1980,
+                    'recommended_outcome': '10 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Use of Force',
+                    'complaint_count': 5,
+                    'sustained_count': 2,
+                    'complaint_percentile': 85.0,
+                    'disciplined': True,
+                    'percentile': {
+                        'percentile_allegation_civilian': '90.0000',
+                        'percentile_allegation_internal': '95.0000',
+                        'percentile_trr': '80.0000',
+                    },
+                }
+            ],
             'attachments': [
                 {
                     'id': '123456',
