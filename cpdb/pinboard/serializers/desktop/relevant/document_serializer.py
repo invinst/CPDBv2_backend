@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from data.models import AttachmentFile
+from shared.serializer import NoNullSerializer
 from ..common import OfficerRowSerializer
 
 
-class AllegationSerializer(serializers.Serializer):
+class AllegationSerializer(NoNullSerializer):
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')

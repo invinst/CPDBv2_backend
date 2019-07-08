@@ -68,10 +68,6 @@ class AllegationSerializerTestCase(TestCase):
         serializer = AllegationSerializer(allegation)
         expect(serializer.data['category']).to.eq('Unknown')
 
-    def test_get_point_none(self):
-        allegation = AllegationFactory(point=None)
-        expect(AllegationSerializer(allegation).data['point']).to.eq(None)
-
     def test_sub_category(self):
         allegation = AllegationFactory(most_common_category=None)
         serializer = AllegationSerializer(allegation)
