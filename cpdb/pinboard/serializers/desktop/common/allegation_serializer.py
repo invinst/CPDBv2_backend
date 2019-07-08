@@ -28,8 +28,6 @@ class AllegationSerializer(serializers.Serializer):
     def get_point(self, obj):
         if obj.point is not None:
             return {'lon': obj.point.x, 'lat': obj.point.y}
-        else:
-            return None
 
     def get_to(self, obj):
         return f'/complaint/{obj.crid}/'
