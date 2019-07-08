@@ -30,7 +30,7 @@ from trr.factories import TRRFactory, ActionResponseFactory
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
-class PinboardViewSetTestCase(APITestCase):
+class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         example_pinboard_1 = PinboardFactory(
             id='eeee1111',
@@ -818,7 +818,6 @@ class PinboardViewSetTestCase(APITestCase):
                         }
                     },
                 ],
-                'point': None,
             }
         }, {
             'id': 1,
@@ -1733,7 +1732,6 @@ class PinboardViewSetTestCase(APITestCase):
                 'category': 'Unknown',
                 'incident_date': '2002-02-22',
                 'victims': [],
-                'point': None,
                 'to': '/complaint/2/',
                 'sub_category': 'Unknown',
                 'coaccused': [{
@@ -1900,7 +1898,6 @@ class PinboardViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-23',
             'victims': [],
-            'point': None,
             'to': '/complaint/3/',
             'sub_category': 'Unknown',
             'coaccused': [],
@@ -1910,7 +1907,6 @@ class PinboardViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-22',
             'victims': [],
-            'point': None,
             'to': '/complaint/2/',
             'sub_category': 'Unknown',
             'coaccused': [],
@@ -1929,7 +1925,6 @@ class PinboardViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-22',
             'victims': [],
-            'point': None,
             'to': '/complaint/2/',
             'sub_category': 'Unknown',
             'coaccused': [],
@@ -1950,7 +1945,6 @@ class PinboardViewSetTestCase(APITestCase):
             'category': 'Unknown',
             'incident_date': '2002-02-21',
             'victims': [],
-            'point': None,
             'to': '/complaint/1/',
             'sub_category': 'Unknown',
             'coaccused': [],

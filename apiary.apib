@@ -3175,6 +3175,278 @@ This api require an api access token set in `Authorization` header. To get an ap
           ]
         }
 
+## Pinboard mobile complaints [/mobile/pinboards/{pk}/complaints]
+
+### Get selected complaints
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "crid": "1000001",
+                "incident_date": "2010-01-01",
+                "point": {"lon": 1.0, "lat": 1.0},
+                "category": "Use Of Force",
+            },
+            {
+                "crid": "1000002",
+                "incident_date": "2011-01-01",
+                "point": {"lon": 2.0, "lat": 2.0},
+                "category": "Verbal Abuse",
+            }
+        ]
+
+## Pinboard mobile officers [/mobile/pinboards/{pk}/officers]
+
+### Get selected officers
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Daryl Mack",
+                "complaint_count": 0,
+                "rank": "Police Officer",
+                "percentile": {
+                    "percentile_trr": "12.0000",
+                    "percentile_allegation": "99.3450",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                }
+            },
+            {
+                "id": 2,
+                "full_name": "Ronald Watts",
+                "complaint_count": 0,
+                "rank": "Detective",
+                "percentile": {
+                    "percentile_trr": "0.0000",
+                    "percentile_allegation": "99.5000",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                }
+            }
+        ]
+
+## Pinboard mobile trrs [/mobile/pinboards/{pk}/trrs]
+
+### Get selected trrs
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
+            },
+            {
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
+            }
+        ]
+
+## Pinboard mobile relevant documents [/mobile/pinboards/{pinboard_id}/relevant-documents/{?offset,limit}]
+
+### Get Pinboard relevant documents list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?limit=20&offset=40",
+          "results": [
+            'id': 2,
+            'preview_image_url': "https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
+            'url': 'http://cr-2-document.com/',
+            'allegation': {
+              'crid': '2',
+              'category': 'Unknown',
+              'incident_date': '2002-02-22',
+              'officers': [
+                {
+                  'id': 4,
+                  'rank': 'Senior Police Officer',
+                  'full_name': 'Raymond Piwinicki',
+                  'coaccusal_count': None,
+                  'percentile': {
+                      'year': 2016,
+                  }
+                },
+                {
+                  'id': 2,
+                  'rank': 'Detective',
+                  'full_name': 'Edward May',
+                  'coaccusal_count': None,
+                  'percentile': {
+                      'year': 2016,
+                      'percentile_trr': '11.1100',
+                      'percentile_allegation': '22.2200',
+                      'percentile_allegation_civilian': '33.3300',
+                      'percentile_allegation_internal': '44.4400',
+
+                  }
+                },
+              ]
+            }
+          }, {
+            'id': 1,
+            'preview_image_url': "https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
+            'url': 'http://cr-1-document.com/',
+            'allegation': {
+              'crid': '1',
+              'category': 'Operation/Personnel Violations',
+              'incident_date': '2002-02-21',
+              'officers': [{
+                'id': 1,
+                'rank': 'Police Officer',
+                'full_name': 'Jerome Finnigan',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '99.9900',
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
+                }
+              }]
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard mobile relevant coaccusals [/mobile/pinboards/{pinboard_id}/relevant-coaccusals/{?offset,limit}]
+
+### Get Pinboard relevant coaccusals list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+            {
+              'id': 11,
+              'rank': 'Police Officer',
+              'full_name': 'Jerome Finnigan',
+              'coaccusal_count': 5,
+              'percentile': {
+                'year': 2016,
+                'percentile_trr': '11.1100',
+                'percentile_allegation': '22.2200',
+                'percentile_allegation_civilian': '33.3300',
+                'percentile_allegation_internal': '44.4400',
+              },
+            }, {
+              'id': 21,
+              'rank': 'Senior Officer',
+              'full_name': 'Ellis Skol',
+              'coaccusal_count': 4,
+              'percentile': {
+                'year': 2016,
+                'percentile_trr': '33.3300',
+                'percentile_allegation': '44.4400',
+                'percentile_allegation_civilian': '55.5500',
+              },
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard mobile relevant complaints [/mobile/pinboards/{pinboard_id}/relevant-complaints/{?offset,limit}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?limit=20&offset=40",
+          "results": [
+            {
+              'crid': '2',
+              'category': 'Unknown',
+              'incident_date': '2002-02-22',
+              'officers': [{
+                'id': 2,
+                'rank': 'Senior Officer',
+                'full_name': 'Ellis Skol',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '33.3300',
+                    'percentile_allegation': '44.4400',
+                    'percentile_allegation_civilian': '55.5500',
+                },
+              }],
+              'point': None,
+            }, {
+              'crid': '1',
+              'category': 'Operation/Personnel Violations',
+              'incident_date': '2002-02-21',
+              'officers': [{
+                'id': 99,
+                'rank': 'Detective',
+                'full_name': 'Edward May',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                },
+              }, {
+                'id': 1,
+                'rank': 'Police Officer',
+                'full_name': 'Jerome Finnigan',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '11.1100',
+                    'percentile_allegation': '22.2200',
+                    'percentile_allegation_civilian': '33.3300',
+                    'percentile_allegation_internal': '44.4400',
+                },
+              }],
+              'point': {'lon': 0.01, 'lat': 0.02},
+            },
+            ...
+          ]
+        }
+
 ## Lastest retrieved pinboard [/pinboards/latest-retrieved-pinboard/]
 
 ### Get the lastest retrieved pinboard of the current session

@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.test import TestCase
+
 from robber import expect
 
 from data.factories import OfficerFactory

@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
+from shared.serializer import NoNullSerializer
 from .victim_serializer import VictimSerializer
 
 
-class AllegationSerializer(serializers.Serializer):
+class AllegationSerializer(NoNullSerializer):
     crid = serializers.CharField()
     address = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
