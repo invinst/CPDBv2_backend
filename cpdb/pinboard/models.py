@@ -1,3 +1,5 @@
+from random import sample
+
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch, Value, IntegerField
 
@@ -33,6 +35,20 @@ class Pinboard(TimeStampsModel):
     allegations = SortedManyToManyField('data.Allegation')
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
+
+    def __str__(self):
+        return f'{self.id} - {self.title}' if self.title else self.id
+
+    @property
+    def is_empty(self):
+        return not any([self.officers.exists(), self.allegations.exists(), self.trrs.exists()])
+
+    @property
+    def example_pinboards(self):
+        if self.is_empty:
+            return ExamplePinboard.random(2)
+        else:
+            return None
 
     @property
     def all_officers(self):
@@ -206,3 +222,14 @@ class Pinboard(TimeStampsModel):
         # LimitOffsetPagination need count and we optimize it with a more simple query
         setattr(query, 'count', self.relevant_complaints_count)
         return query
+
+
+class ExamplePinboard(TimeStampsModel):
+    pinboard = models.OneToOneField(Pinboard, primary_key=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.pinboard)
+
+    @classmethod
+    def random(cls, n):
+        return sample(list(cls.objects.all()), min(cls.objects.count(), n))

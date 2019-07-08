@@ -6,11 +6,11 @@ from django.db import migrations
 def create_example_pinboard(apps, schema_editor):
     Pinboard = apps.get_model('pinboard', 'Pinboard')
 
-    skullcal_pinboard, _ = Pinboard.objects.get_or_create(id='22e66085')
-    skullcal_pinboard.title = 'Skullcap Crew'
-    skullcal_pinboard.description = ''
-    skullcal_pinboard.save()
-    skullcal_pinboard.officers.set([25503, 25962, 32384, 25732, 27439])
+    skullcap_pinboard, _ = Pinboard.objects.get_or_create(id='22e66085')
+    skullcap_pinboard.title = 'Skullcap Crew'
+    skullcap_pinboard.description = ''
+    skullcap_pinboard.save()
+    skullcap_pinboard.officers.set([25503, 25962, 32384, 25732, 27439])
 
     watts_pinboard, _ = Pinboard.objects.get_or_create(id='b20c2c36')
     watts_pinboard.title = 'Watts Crew'

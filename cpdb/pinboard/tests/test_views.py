@@ -26,7 +26,7 @@ from data.factories import (
     OfficerYearlyPercentileFactory,
     VictimFactory,
 )
-from pinboard.factories import PinboardFactory
+from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
 
@@ -34,6 +34,73 @@ from trr.factories import TRRFactory, ActionResponseFactory
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
+        officer_1 = OfficerFactory(id=11)
+        officer_2 = OfficerFactory(id=22)
+        allegation_1 = AllegationFactory(crid='abc123')
+        allegation_2 = AllegationFactory(crid='abc456')
+        trr_1 = TRRFactory(id=33)
+        trr_2 = TRRFactory(id=44)
+
+        PinboardFactory(
+            id='f871a13f',
+            title='My Pinboard',
+            description='abc',
+            officers=[officer_1, officer_2],
+            allegations=[allegation_1, allegation_2],
+            trrs=[trr_1, trr_2],
+        )
+
+        # Current client does not own the pinboard, should clone it
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([11, 22])
+        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
+        expect(response.data['trr_ids']).to.eq([33, 44])
+
+        # Now current client owns the user, successive requests should not clone pinboard
+        # `id` is case-insensitive
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data['id']).to.eq(cloned_pinboard_id)
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([11, 22])
+        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
+        expect(response.data['trr_ids']).to.eq([33, 44])
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data).not_to.contain('example_pinboards')
+
+    def test_retrieve_empty_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
         PinboardFactory(
             id='f871a13f',
             title='My Pinboard',
@@ -55,13 +122,22 @@ class PinboardViewSetTestCase(APITestCase):
         # `id` is case-insensitive
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': cloned_pinboard_id,
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
+
+        expect(response.data['id']).to.eq(cloned_pinboard_id)
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('abc')
+
+        expect(response.data['example_pinboards']).to.contain({
+            'id': 'eeee1111',
+            'title': 'Example pinboard 1',
+            'description': 'Example pinboard 1',
+        }, {
+            'id': 'eeee2222',
+            'title': 'Example pinboard 2',
+            'description': 'Example pinboard 2',
         })
 
     def test_retrieve_pinboard_not_found(self):
@@ -264,6 +340,19 @@ class PinboardViewSetTestCase(APITestCase):
         expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
     def test_create_pinboard_ignore_id(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
         ignored_id = '1234ab'
 
         response = self.client.post(
@@ -282,13 +371,22 @@ class PinboardViewSetTestCase(APITestCase):
         expect(response.data['id']).to.be.a.string()
         expect(response.data['id']).to.have.length(8)
         expect(response.data['id']).to.ne(ignored_id)
-        expect(response.data).to.eq({
-            'id': response.data['id'],
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc'
+
+        expect(response.data['id']).to.eq(response.data['id'])
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('abc')
+
+        expect(response.data['example_pinboards']).to.contain({
+            'id': 'eeee1111',
+            'title': 'Example pinboard 1',
+            'description': 'Example pinboard 1',
+        }, {
+            'id': 'eeee2222',
+            'title': 'Example pinboard 2',
+            'description': 'Example pinboard 2',
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
