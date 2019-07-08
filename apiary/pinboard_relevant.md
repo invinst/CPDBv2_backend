@@ -39,6 +39,32 @@
 
                       }
                   }]
+                }
+                "point": {"lon": 12.0, "lat": 21.0},
+              }
+            },
+            {
+              "preview_image_url": "http://via.placeholder.com/121x157",
+              "url": "https://assets.documentcloud.org/documents/5680384/CRID-1083633-CR-CRID-1083633-CR-Tactical.pdf",
+              "allegation": {
+                "crid": "1079876",
+                "category": "Operations/Personnel Violation",
+                "incident_date": "2014-05-02",
+                "coaccused": [{
+                    "id": 1,
+                    "rank": "Police Officer",
+                    "full_name": "Jerome Finnigan",
+                    "coaccusal_count": None,
+                    "allegation_count": 10,
+                    "percentile": {
+                        "year": 2016,
+                        "percentile_trr": "99.9900",
+                        "percentile_allegation": "88.8800",
+                        "percentile_allegation_civilian": "77.7700",
+                        "percentile_allegation_internal": "66.6600",
+
+                    }
+                }]
               }
             },
             ...

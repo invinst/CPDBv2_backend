@@ -465,6 +465,10 @@ class PinboardViewSetTestCase(APITestCase):
             }
         ])
 
+    def test_selected_complaints_pinboard_not_exist(self):
+        response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': '1'}))
+        expect(response.data).to.eq([])
+
     @patch(
         'data.models.Officer.coaccusals',
         new_callable=PropertyMock,
@@ -611,7 +615,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='99.99',
             complaint_percentile='88.88',
             civilian_allegation_percentile='77.77',
-            internal_allegation_percentile='66.66'
+            internal_allegation_percentile='66.66',
         )
         pinned_officer_2 = OfficerFactory(
             id=2,
@@ -636,15 +640,18 @@ class PinboardViewSetTestCase(APITestCase):
         relevant_allegation_1 = AllegationFactory(
             crid='1',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations')
+            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            point=Point([0.01, 0.02]),
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
-            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc)
+            incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
+            point=None,
         )
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -653,14 +660,19 @@ class PinboardViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_2,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
         )
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        AttachmentFileFactory(
+            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+        )
+        AttachmentFileFactory(
+            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+        )
 
         pinboard = PinboardFactory(
             id='66ef1560',
@@ -708,7 +720,8 @@ class PinboardViewSetTestCase(APITestCase):
 
                         }
                     },
-                ]
+                ],
+                'point': None,
             }
         }, {
             'id': 1,
@@ -732,10 +745,13 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation_internal': '66.6600',
 
                     }
-                }]
+                }],
+                'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
         expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['results'][0]).to.eq(expected_results[0])
+        expect(response.data['results'][1]).to.eq(expected_results[1])
         expect(response.data['results']).to.eq(expected_results)
         expect(response.data['count']).to.eq(2)
         expect(response.data['previous']).to.be.none()
@@ -762,6 +778,7 @@ class PinboardViewSetTestCase(APITestCase):
 
         AttachmentFileFactory(
             id=1,
+            file_type='document',
             title='relevant document 1',
             allegation=relevant_allegation_1,
             show=True,
@@ -770,6 +787,7 @@ class PinboardViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=2,
+            file_type='document',
             title='relevant document 2',
             allegation=relevant_allegation_1,
             show=True,
@@ -778,6 +796,7 @@ class PinboardViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=3,
+            file_type='document',
             title='relevant document 3',
             allegation=relevant_allegation_1,
             show=True,
@@ -786,6 +805,7 @@ class PinboardViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=4,
+            file_type='document',
             title='relevant document 4',
             allegation=relevant_allegation_1,
             show=True,
@@ -794,6 +814,7 @@ class PinboardViewSetTestCase(APITestCase):
         )
         AttachmentFileFactory(
             id=5,
+            file_type='document',
             title='relevant document 5',
             allegation=relevant_allegation_1,
             show=True,
@@ -845,11 +866,10 @@ class PinboardViewSetTestCase(APITestCase):
         pinned_allegation_1 = AllegationFactory(crid='1')
         pinned_allegation_2 = AllegationFactory(crid='2')
         pinned_allegation_3 = AllegationFactory(crid='3')
-
         unit = PoliceUnitFactory(
             id=4,
             unit_name='004',
-            description='District 004',
+            description='District 004'
         )
 
         temp_officer = OfficerFactory(
@@ -911,7 +931,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -936,7 +956,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -1240,7 +1260,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -1265,7 +1285,7 @@ class PinboardViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 

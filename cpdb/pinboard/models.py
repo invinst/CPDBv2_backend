@@ -3,9 +3,27 @@ from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
 
 from sortedm2m.fields import SortedManyToManyField
 
+from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
+
+
+class AllegationManager(models.Manager):
+    def get_complaints_in_pinboard(self, pinboard_id):
+        return self.filter(pinboard=pinboard_id).prefetch_related(
+            Prefetch(
+                'officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('allegation_category').prefetch_related('officer'),
+                to_attr='officer_allegations')
+            )
+
+
+class ProxyAllegation(Allegation):
+    objects = AllegationManager()
+
+    class Meta:
+        proxy = True
 
 
 class Pinboard(TimeStampsModel):
@@ -52,6 +70,7 @@ class Pinboard(TimeStampsModel):
 
     def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(
+            file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
         ).only(
             'id',

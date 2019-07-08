@@ -23,7 +23,7 @@ from pinboard.serializers.desktop.relevant import (
     RelevantDocumentSerializer
 )
 
-from .models import Pinboard
+from .models import Pinboard, ProxyAllegation as Allegation
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -81,8 +81,9 @@ class PinboardViewSet(
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
-        pinboard = get_object_or_404(Pinboard, id=pk)
-        serializer = PinnedAllegationSerializer(pinboard.allegations, many=True)
+        allegations = Allegation.objects.get_complaints_in_pinboard(pk)
+
+        serializer = PinnedAllegationSerializer(allegations, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['GET'], url_path='officers')

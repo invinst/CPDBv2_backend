@@ -3,19 +3,21 @@ from rest_framework import serializers
 from shared.serializer import NoNullSerializer
 
 
-class TRRPinboardSerializer(NoNullSerializer):
-    trr_id = serializers.IntegerField(source='id')
+class CRSerializer(NoNullSerializer):
     date = serializers.SerializerMethodField()
+    crid = serializers.CharField()
+    category = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
-    taser = serializers.NullBooleanField()
-    firearm_used = serializers.NullBooleanField()
     point = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
-        return 'FORCE'
+        return 'CR'
+
+    def get_category(self, obj):
+        return obj.most_common_category.category if obj.most_common_category else 'Unknown'
 
     def get_date(self, obj):
-        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+        return obj.incident_date.date().strftime(format='%Y-%m-%d')
 
     def get_point(self, obj):
         try:
