@@ -44,13 +44,13 @@ class CoaccusedSerializer(NoNullSerializer):
 class AllegationSerializer(NoNullSerializer):
     kind = serializers.SerializerMethodField()
     crid = serializers.CharField()
-    to = serializers.SerializerMethodField()
+    to = serializers.CharField(source='v2_to')
     category = serializers.SerializerMethodField()
     subcategory = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d')
     address = serializers.CharField()
     victims = VictimSerializer(many=True)
-    coaccused = serializers.SerializerMethodField()
+    coaccused = CoaccusedSerializer(source='officer_allegations', many=True)
     attachments = AttachmentFileSerializer(source='prefetch_filtered_attachment_files', many=True)
     officer_ids = serializers.SerializerMethodField()
 
@@ -60,16 +60,8 @@ class AllegationSerializer(NoNullSerializer):
     def get_kind(self, obj):
         return 'CR'
 
-    def get_to(self, obj):
-        return f'/complaint/{obj.crid}/'
-
     def get_category(self, obj):
         return obj.most_common_category.category if obj.most_common_category else 'Unknown'
 
     def get_subcategory(self, obj):
         return obj.most_common_category.allegation_name if obj.most_common_category else 'Unknown'
-
-    def get_coaccused(self, obj):
-        officer_allegations = obj.officer_allegations
-
-        return CoaccusedSerializer(officer_allegations, many=True).data
