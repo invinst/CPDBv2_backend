@@ -1,6 +1,17 @@
 from rest_framework import serializers
 
+from shared.serializer import NoNullSerializer
 from ..common import OfficerSerializer as BaseOfficerSerializer
+
+
+class UnitSerializer(NoNullSerializer):
+    id = serializers.IntegerField(source='unit_id')
+    unit_name = serializers.CharField()
+    description = serializers.CharField(source='unit_description')
+    long_unit_name = serializers.SerializerMethodField()
+
+    def get_long_unit_name(self, obj):
+        return f'Unit {obj.unit_name}' if obj.unit_name else 'Unit'
 
 
 class OfficerSerializer(BaseOfficerSerializer):
@@ -8,9 +19,4 @@ class OfficerSerializer(BaseOfficerSerializer):
     unit = serializers.SerializerMethodField()
 
     def get_unit(self, obj):
-        return {
-            'id': obj.unit_id,
-            'unit_name': obj.unit_name,
-            'description': obj.unit_description,
-            'long_unit_name': f'Unit {obj.unit_name}' if obj.unit_name else 'Unit'
-        }
+        return UnitSerializer(obj).data
