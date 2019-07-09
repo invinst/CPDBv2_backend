@@ -278,23 +278,26 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud')
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_search_index')
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENV_TAG="--production"
+              REBUILD_INDEX_TIME=7
             elif [ $CIRCLE_BRANCH == "beta" ]
             then
               export ENV_TAG="--beta"
+              REBUILD_INDEX_TIME=9
             else
               export ENV_TAG="--staging"
+              REBUILD_INDEX_TIME=11
             fi
             bin/cleanup_cronjobs.sh $ENV_TAG "$kept_crobjobs"
-            bin/run_cronjob.sh $ENV_TAG update_documents @daily $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_documents "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG crawl_copa_data "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true

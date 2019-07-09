@@ -31,7 +31,9 @@ Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging latest cache_data`. Check `b
 
 # Setup cronjob on staging, beta or production
 
-Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents @daily latest`. Check `bin/run_cronjob.sh -h` for usage.
+- Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents 0 5 * * * latest`. Check `bin/run_cronjob.sh -h` for usage.
+- Kubernetes uses UTC so we have to +5 to match with Chicago time zone.
+- **Do not** use @daily as it will makes the cronjobs run at 19:00 CDT.
 
 # Deployment
 
