@@ -93,22 +93,8 @@ class AllegationTestCase(TestCase):
         ComplainantFactory(gender='U', allegation=allegation)
         expect(allegation.complainant_genders).to.eq(['Female', 'Unknown'])
 
-    def test_v2_to_with_officer(self):
+    def test_v2_to(self):
         allegation = AllegationFactory(crid='456')
-        officer = OfficerFactory(id=123)
-        OfficerAllegationFactory(allegation=allegation, officer=officer)
-
-        expect(allegation.v2_to).to.eq('/complaint/456/123/')
-
-    def test_v2_to_without_officer(self):
-        allegation = AllegationFactory(crid='456')
-
-        expect(allegation.v2_to).to.eq('/complaint/456/')
-
-    def test_v2_to_with_officerallegation_without_officer(self):
-        allegation = AllegationFactory(crid='456')
-        OfficerAllegationFactory(allegation=allegation, officer=None)
-
         expect(allegation.v2_to).to.eq('/complaint/456/')
 
     def test_filtered_attachment_files(self):

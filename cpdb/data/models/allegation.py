@@ -102,16 +102,8 @@ class Allegation(TimeStampsModel):
     def filtered_attachment_files(self):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
-        return filter_attachments(self.attachment_files.filter(show=True))
+        return filter_attachments(self.attachment_files)
 
     @property
     def v2_to(self):
-        if self.officerallegation_set.count() == 0:
-            return f'/complaint/{self.crid}/'
-
-        officer_allegations = self.officerallegation_set.filter(officer__isnull=False)
-
-        if officer_allegations.count() == 0:
-            return f'/complaint/{self.crid}/'
-
-        return f'/complaint/{self.crid}/{officer_allegations.first().officer.pk}/'
+        return f'/complaint/{self.crid}/'

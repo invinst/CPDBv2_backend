@@ -39,9 +39,10 @@ from search_terms.views import SearchTermCategoryViewSet
 from heatmap.views import CitySummaryViewSet
 from twitterbot.views import WebhookViewSet
 from status.views import StatusViewSet
-from social_graph.views import SocialGraphViewSet
+from social_graph.views import SocialGraphDesktopViewSet, SocialGraphMobileViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
+from pinboard.views import PinboardDesktopViewSet, PinboardMobileViewSet
 
 
 router_v1 = routers.SimpleRouter()
@@ -69,10 +70,13 @@ router_v2.register(r'city-summary', CitySummaryViewSet, base_name='city-summary'
 router_v2.register(r'popup', PopupViewSet, base_name='popup')
 router_v2.register(r'twitter/webhook', WebhookViewSet, base_name='twitter-webhook')
 router_v2.register(r'status', StatusViewSet, base_name='status')
-router_v2.register(r'social-graph', SocialGraphViewSet, base_name='social-graph')
+router_v2.register(r'social-graph', SocialGraphDesktopViewSet, base_name='social-graph')
+router_v2.register(r'mobile/social-graph', SocialGraphMobileViewSet, base_name='social-graph-mobile')
 router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, base_name='attachment-tracking')
 router_v2.register(r'attachments', AttachmentViewSet, base_name='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, base_name='document-crawlers')
+router_v2.register(r'pinboards', PinboardDesktopViewSet, base_name='pinboards')
+router_v2.register(r'mobile/pinboards', PinboardMobileViewSet, base_name='pinboards-mobile')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

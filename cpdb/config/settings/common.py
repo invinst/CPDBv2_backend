@@ -39,7 +39,8 @@ THIRD_PARTY_APPS = (
     'anymail',
     'corsheaders',
     'adminsortable',
-    'bandit'
+    'bandit',
+    'sortedm2m'
 )
 
 LOCAL_APPS = (
@@ -67,6 +68,7 @@ LOCAL_APPS = (
     'social_graph',
     'xlsx',
     'tracker',
+    'pinboard',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -302,3 +304,6 @@ S3_BUCKET_ZIP_DIRECTORY = 'zip'
 
 GOOGLE_APPLICATION_CREDENTIALS = env.str('GOOGLE_APPLICATION_CREDENTIALS', default='')
 GOOGLE_ANALYTICS_VIEW_ID = '129538462'
+
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = None

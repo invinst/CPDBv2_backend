@@ -141,7 +141,7 @@ class CRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
     finding = serializers.CharField(source='final_finding_display')
     outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
-    attachments = AttachmentFileMobileSerializer(many=True, source='filtered_attachments')
+    attachments = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
     victims = VictimMobileSerializer(many=True)
 
@@ -168,6 +168,9 @@ class CRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
             }
         except AttributeError:
             return None
+
+    def get_attachments(self, obj):
+        return AttachmentFileMobileSerializer(obj.allegation.prefetch_filtered_attachments, many=True).data
 
 
 class AwardNewTimelineMobileSerializer(BaseTimelineMobileSerializer):

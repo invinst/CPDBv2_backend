@@ -845,7 +845,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_internal": "95.0000",
                         "percentile_allegation_civilian": "91.0000",
                         "percentile_allegation": "94.0000",
-                        "id": 1,
                         "year": 2016
                     }
                 }, {
@@ -864,7 +863,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_internal": "71.0000",
                         "percentile_allegation_civilian": "98.0000",
                         "percentile_allegation": "95.0000",
-                        "id": 2,
                         "year": 2016
                     }
                 }
@@ -998,7 +996,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "gender": "Male",
                 "rank": "Police Officer",
                 "percentile": {
-                    "officer_id": 8658,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.995",
@@ -1018,7 +1015,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "gender": "Male",
                 "rank": "Detective",
                 "percentile": {
-                    "officer_id": 13788,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.990",
@@ -1350,7 +1346,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 123,
                         "year": 2016
                     }
                 },
@@ -1370,7 +1365,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 456,
                         "year": 2016
                     }
                 }
@@ -1542,7 +1536,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 123,
                         "year": 2016
                     }
                 },
@@ -1563,7 +1556,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 456,
                         "year": 2016
                     }
                 }
@@ -1948,7 +1940,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "race": "White",
                 "sustained_count": 4,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
@@ -1968,7 +1959,6 @@ This api require an api access token set in `Authorization` header. To get an ap
                 "race": "White",
                 "sustained_count": 6,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
@@ -2680,4 +2670,911 @@ This api require an api access token set in `Authorization` header. To get an ap
             ],
             "pages": "10",
             "last_updated_by": "test user"
+        }
+
+## Pinboards [/pinboards/]
+
+### Create a pinboard [POST]
+
++ Request
+
+        {
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ['123abc'],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ["123abc"],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
+
+## Individual Pinboard [/pinboards/{pk}/]
+
+### Retrieve a pinboard [GET]
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ['123abc'],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
+### Update a pinboard [PUT]
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Request
+
+        {
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ['123abc'],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ['123abc'],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
+## Pinboard complaints [/pinboards/{pk}/complaints]
+
+### Get selected complaints
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'address': '16XX N TALMAN AVE, CHICAGO IL',
+                'coaccused': [{
+                    'id': 1,
+                    'full_name': 'Jesse Pinkman',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '11 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Use Of Force',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
+                'sub_category': 'Miscellaneous',
+                'to': '/complaint/123/',
+                'crid': '123',
+                'incident_date': '2002-01-01',
+                'point': {'lon': -35.5, 'lat': 68.9},
+                'most_common_category': 'Use Of Force',
+                'victims': [{
+                    'gender': 'Female',
+                    'race': 'White',
+                    'age': 40,
+                }]
+            },
+            {
+                'address': '17XX N TALMAN AVE, CHICAGO IL',
+                'coaccused': [{
+                    'id': 2,
+                    'full_name': 'Walter White',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '10 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Verbal Abuse',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
+                'sub_category': 'Miscellaneous',
+                'to': '/complaint/124/',
+                'crid': '124',
+                'incident_date': '2002-01-01',
+                'point': {'lon': -35.5, 'lat': 68.9},
+                'most_common_category': 'Verbal Abuse',
+                'victims': [{
+                    'gender': 'Male',
+                    'race': 'White',
+                    'age': 40,
+                }]
+            }
+        ]
+
+## Pinboard officers [/pinboards/{pk}/officers]
+
+### Get selected officers
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'id': 123,
+                'complaint_count': 20,
+                'unit': {
+                    'id': 4,
+                    'unit_name': '004',
+                    'description': 'District 004',
+                    'long_unit_name': 'Unit 004',
+                },
+                'date_of_appt': '2000-01-02',
+                'date_of_resignation': '2010-02-03',
+                'active': 'Active',
+                'rank': 'Sergeant',
+                'full_name': 'Michael Flynn',
+                'has_unique_name': True,
+                'race': 'Black',
+                'badge': '456',
+                'historic_badges': ['789'],
+                'historic_units': [
+                    {
+                        'id': 4,
+                        'unit_name': '004',
+                        'description': 'District 004',
+                        'long_unit_name': 'Unit 004',
+                    },
+                    {
+                        'id': 5,
+                        'unit_name': '005',
+                        'description': 'District 005',
+                        'long_unit_name': 'Unit 005',
+                    }
+                ],
+                'gender': 'Female',
+                'birth_year': 1950,
+                'current_salary': 10000,
+                'allegation_count': 20,
+                'complaint_percentile': 99.99,
+                'honorable_mention_count': 3,
+                'sustained_count': 4,
+                'unsustained_count': 5,
+                'discipline_count': 6,
+                'civilian_compliment_count': 2,
+                'trr_count': 7,
+                'major_award_count': 8,
+                'honorable_mention_percentile': 88.88,
+                'to': '/officer/123/michael-flynn/',
+                'url': f'{settings.V1_URL}/officer/michael-flynn/123',
+                'tags': ['tag1', 'tag2'],
+                'coaccusals': [{
+                    'id': 789,
+                    'coaccusal_count': 10
+                }],
+                'percentiles': [
+                    {
+                        'id': 123,
+                        'year': 2002,
+                        'percentile_trr': '99.8800',
+                        'percentile_allegation_civilian': '77.6600',
+                        'percentile_allegation_internal': '66.5500',
+                    },
+                    {
+                        'id': 123,
+                        'year': 2003,
+                        'percentile_trr': '99.9900',
+                        'percentile_allegation': '88.8800',
+                        'percentile_allegation_civilian': '77.7700',
+                        'percentile_allegation_internal': '66.6600',
+                    },
+                ]
+            }
+        ]
+
+## Pinboard trrs [/pinboards/{pk}/trrs]
+
+### Get selected trrs
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
+            },
+            {
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
+            }
+        ]
+
+## Pinboard relevant documents [/pinboards/{pinboard_id}/relevant-documents/{?offset,limit}]
+
+### Get Pinboard relevant documents list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?limit=20&offset=40",
+          "results": [
+            {
+              "id": 1,
+              "preview_image_url": "https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
+              "url": "http://cr-1-document.com/",
+              "allegation": {
+                  "crid": "1",
+                  "category": "Operation/Personnel Violations",
+                  "incident_date": "2002-02-21",
+                  "coaccused": [{
+                      "id": 1,
+                      "rank": "Police Officer",
+                      "full_name": "Jerome Finnigan",
+                      "coaccusal_count": None,
+                      "allegation_count": 10,
+                      "percentile": {
+                          "year": 2016,
+                          "percentile_trr": "99.9900",
+                          "percentile_allegation": "88.8800",
+                          "percentile_allegation_civilian": "77.7700",
+                          "percentile_allegation_internal": "66.6600",
+                      }
+                  }]
+                }
+                "point": {"lon": 12.0, "lat": 21.0},
+              }
+            },
+            {
+              "preview_image_url": "http://via.placeholder.com/121x157",
+              "url": "https://assets.documentcloud.org/documents/5680384/CRID-1083633-CR-CRID-1083633-CR-Tactical.pdf",
+              "allegation": {
+                "crid": "1079876",
+                "category": "Operations/Personnel Violation",
+                "incident_date": "2014-05-02",
+                "coaccused": [{
+                    "id": 1,
+                    "rank": "Police Officer",
+                    "full_name": "Jerome Finnigan",
+                    "coaccusal_count": None,
+                    "allegation_count": 10,
+                    "percentile": {
+                        "year": 2016,
+                        "percentile_trr": "99.9900",
+                        "percentile_allegation": "88.8800",
+                        "percentile_allegation_civilian": "77.7700",
+                        "percentile_allegation_internal": "66.6600",
+                    }
+                }]
+              }
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard relevant coaccusals [/pinboards/{pinboard_id}/relevant-coaccusals/{?offset,limit}]
+
+### Get Pinboard relevant coaccusals list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-coaccusals/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-coaccusals/?limit=20&offset=40",
+          "results": [{
+              "id": 11,
+              "full_name": "Jerome Finnigan",
+              "date_of_appt": "2000-01-02",
+              "date_of_resignation": "2010-02-03",
+              "badge": "456",
+              "gender": "Female",
+              "to": "/officer/11/jerome-finnigan/",
+              "birth_year": 1950,
+              "race": "Black",
+              "rank": "Police Officer",
+              "unit": {
+                  "id": 4,
+                  "unit_name": "004",
+                  "description": "District 004",
+                  "long_unit_name": "Unit 004"
+              },
+              "percentile": {
+                  "year": 2010,
+                  "percentile_trr": "11.1100",
+                  "percentile_allegation": "22.2200",
+                  "percentile_allegation_civilian": "33.3300",
+                  "percentile_allegation_internal": "44.4400",
+              },
+              "allegation_count": 1,
+              "civilian_compliment_count": 2,
+              "sustained_count": 4,
+              "discipline_count": 6,
+              "trr_count": 7,
+              "major_award_count": 8,
+              "honorable_mention_count": 3,
+              "honorable_mention_percentile": 88.88,
+              "coaccusal_count": 5,
+          }, {
+              "id": 21,
+              "full_name": "Ellis Skol",
+              "date_of_appt": "2000-01-02",
+              "date_of_resignation": "2010-02-03",
+              "badge": "456",
+              "gender": "Female",
+              "to": "/officer/21/ellis-skol/",
+              "birth_year": 1950,
+              "race": "Black",
+              "rank": "Senior Officer",
+              "unit": {
+                  "id": 4,
+                  "unit_name": "004",
+                  "description": "District 004",
+                  "long_unit_name": "Unit 004"
+              },
+              "percentile": {
+                  "year": 2010,
+                  "percentile_trr": "33.3300",
+                  "percentile_allegation": "44.4400",
+                  "percentile_allegation_civilian": "55.5500",
+              },
+              "allegation_count": 1,
+              "civilian_compliment_count": 2,
+              "sustained_count": 4,
+              "discipline_count": 6,
+              "trr_count": 7,
+              "major_award_count": 8,
+              "honorable_mention_count": 3,
+              "honorable_mention_percentile": 88.88,
+              "coaccusal_count": 4,
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard relevant complaints [/pinboards/{pinboard_id}/relevant-complaints/{?offset,limit}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?limit=20&offset=40",
+          "results": [{
+              'crid': '2',
+              'address': '',
+              'category': 'Unknown',
+              'incident_date': '2002-02-22',
+              'victims': [],
+              'point': None,
+              'to': '/complaint/2/',
+              'sub_category': 'Unknown',
+              'coaccused': [{
+                  'id': 2,
+                  'rank': 'Senior Officer',
+                  'full_name': 'Ellis Skol',
+                  'coaccusal_count': None,
+                  'allegation_count': 1,
+                  'percentile': {
+                      'year': 2016,
+                      'percentile_trr': '33.3300',
+                      'percentile_allegation': '44.4400',
+                      'percentile_allegation_civilian': '55.5500',
+                  },
+              }],
+          }, {
+              'crid': '1',
+              'address': '',
+              'category': 'Operation/Personnel Violations',
+              'incident_date': '2002-02-21',
+              'victims': [{
+                  'gender': 'Male',
+                  'race': 'Black',
+                  'age': 35,
+              }],
+              'point': {'lon': 0.01, 'lat': 0.02},
+              'to': '/complaint/1/',
+              'sub_category': 'Subcategory',
+              'coaccused': [{
+                  'id': 99,
+                  'rank': 'Detective',
+                  'full_name': 'Edward May',
+                  'coaccusal_count': None,
+                  'allegation_count': 5,
+                  'percentile': {
+                      'year': 2016,
+                  },
+              }, {
+                  'id': 1,
+                  'rank': 'Police Officer',
+                  'full_name': 'Jerome Finnigan',
+                  'coaccusal_count': None,
+                  'allegation_count': 2,
+                  'percentile': {
+                      'year': 2016,
+                      'percentile_trr': '11.1100',
+                      'percentile_allegation': '22.2200',
+                      'percentile_allegation_civilian': '33.3300',
+                      'percentile_allegation_internal': '44.4400',
+                  },
+              }],
+            },
+            ...
+          ]
+        }
+
+## Pinboard mobile complaints [/mobile/pinboards/{pk}/complaints]
+
+### Get selected complaints
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "crid": "1000001",
+                "incident_date": "2010-01-01",
+                "point": {"lon": 1.0, "lat": 1.0},
+                "category": "Use Of Force",
+            },
+            {
+                "crid": "1000002",
+                "incident_date": "2011-01-01",
+                "point": {"lon": 2.0, "lat": 2.0},
+                "category": "Verbal Abuse",
+            }
+        ]
+
+## Pinboard mobile officers [/mobile/pinboards/{pk}/officers]
+
+### Get selected officers
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "full_name": "Daryl Mack",
+                "complaint_count": 0,
+                "rank": "Police Officer",
+                "percentile": {
+                    "percentile_trr": "12.0000",
+                    "percentile_allegation": "99.3450",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                }
+            },
+            {
+                "id": 2,
+                "full_name": "Ronald Watts",
+                "complaint_count": 0,
+                "rank": "Detective",
+                "percentile": {
+                    "percentile_trr": "0.0000",
+                    "percentile_allegation": "99.5000",
+                    "percentile_allegation_civilian": "98.4344",
+                    "percentile_allegation_internal": "99.7840",
+                    "year": 2016,
+                }
+            }
+        ]
+
+## Pinboard mobile trrs [/mobile/pinboards/{pk}/trrs]
+
+### Get selected trrs
+
++ Parameters
+    + pk (number) - number ID of Pinboard
+
++ Response 200 (application/json)
+
+        [
+            {
+                'id': 1,
+                'trr_datetime': '2012-01-01',
+                'category': 'Impact Weapon',
+                'point': {'lon': 1.0, 'lat': 1.0},
+            },
+            {
+                'id': 2,
+                'trr_datetime': '2013-01-01',
+                'category': 'Unknown',
+                'point': {'lon': 2.0, 'lat': 2.0},
+            }
+        ]
+
+## Pinboard mobile relevant documents [/mobile/pinboards/{pinboard_id}/relevant-documents/{?offset,limit}]
+
+### Get Pinboard relevant documents list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-documents/?limit=20&offset=40",
+          "results": [
+            'id': 2,
+            'preview_image_url': "https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
+            'url': 'http://cr-2-document.com/',
+            'allegation': {
+              'crid': '2',
+              'category': 'Unknown',
+              'incident_date': '2002-02-22',
+              'officers': [
+                {
+                  'id': 4,
+                  'rank': 'Senior Police Officer',
+                  'full_name': 'Raymond Piwinicki',
+                  'coaccusal_count': None,
+                  'percentile': {
+                      'year': 2016,
+                  }
+                },
+                {
+                  'id': 2,
+                  'rank': 'Detective',
+                  'full_name': 'Edward May',
+                  'coaccusal_count': None,
+                  'percentile': {
+                      'year': 2016,
+                      'percentile_trr': '11.1100',
+                      'percentile_allegation': '22.2200',
+                      'percentile_allegation_civilian': '33.3300',
+                      'percentile_allegation_internal': '44.4400',
+
+                  }
+                },
+              ]
+            }
+          }, {
+            'id': 1,
+            'preview_image_url': "https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
+            'url': 'http://cr-1-document.com/',
+            'allegation': {
+              'crid': '1',
+              'category': 'Operation/Personnel Violations',
+              'incident_date': '2002-02-21',
+              'officers': [{
+                'id': 1,
+                'rank': 'Police Officer',
+                'full_name': 'Jerome Finnigan',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '99.9900',
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
+                }
+              }]
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard mobile relevant coaccusals [/mobile/pinboards/{pinboard_id}/relevant-coaccusals/{?offset,limit}]
+
+### Get Pinboard relevant coaccusals list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+            {
+              'id': 11,
+              'rank': 'Police Officer',
+              'full_name': 'Jerome Finnigan',
+              'coaccusal_count': 5,
+              'percentile': {
+                'year': 2016,
+                'percentile_trr': '11.1100',
+                'percentile_allegation': '22.2200',
+                'percentile_allegation_civilian': '33.3300',
+                'percentile_allegation_internal': '44.4400',
+              },
+            }, {
+              'id': 21,
+              'rank': 'Senior Officer',
+              'full_name': 'Ellis Skol',
+              'coaccusal_count': 4,
+              'percentile': {
+                'year': 2016,
+                'percentile_trr': '33.3300',
+                'percentile_allegation': '44.4400',
+                'percentile_allegation_civilian': '55.5500',
+              },
+            },
+            ...
+          ]
+        }
+
+
+## Pinboard mobile relevant complaints [/mobile/pinboards/{pinboard_id}/relevant-complaints/{?offset,limit}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + pinboard_id (number) - number ID of the pinboard
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+          "count": 100,
+          "previous": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?",
+          "next": "http://cpdp.co/pinboards/f871a13f/relevant-complaints/?limit=20&offset=40",
+          "results": [
+            {
+              'crid': '2',
+              'category': 'Unknown',
+              'incident_date': '2002-02-22',
+              'officers': [{
+                'id': 2,
+                'rank': 'Senior Officer',
+                'full_name': 'Ellis Skol',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '33.3300',
+                    'percentile_allegation': '44.4400',
+                    'percentile_allegation_civilian': '55.5500',
+                },
+              }],
+              'point': None,
+            }, {
+              'crid': '1',
+              'category': 'Operation/Personnel Violations',
+              'incident_date': '2002-02-21',
+              'officers': [{
+                'id': 99,
+                'rank': 'Detective',
+                'full_name': 'Edward May',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                },
+              }, {
+                'id': 1,
+                'rank': 'Police Officer',
+                'full_name': 'Jerome Finnigan',
+                'coaccusal_count': None,
+                'percentile': {
+                    'year': 2016,
+                    'percentile_trr': '11.1100',
+                    'percentile_allegation': '22.2200',
+                    'percentile_allegation_civilian': '33.3300',
+                    'percentile_allegation_internal': '44.4400',
+                },
+              }],
+              'point': {'lon': 0.01, 'lat': 0.02},
+            },
+            ...
+          ]
+        }
+
+## Lastest retrieved pinboard [/pinboards/latest-retrieved-pinboard/]
+
+### Get the lastest retrieved pinboard of the current session
+
++ Response 200 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ["123abc"],
+            "trr_ids": [1],
+            "description": "abc"
+        }
+
+## Social graph network data [/social-graph/network/{?officer_ids,unit_id,pinboard_id,complaint_origin,threshold}]
+
+### Get Pinboard relevant complaints list [GET]
+
++ Parameters
+    + We only need to pass one of these parameters:
+      + officer_ids (string) - a comma separated list of number ID of the officers
+      + unit_id (number) - number ID of the unit
+      + pinboard_id (number) - number ID of the pinboard
+    + complaint_origin (string, optional) - type of complaint
+      + Accepted values: `CIVILIAN`, `OFFICER`, `ALL`
+      + Default: `CIVILIAN`
+    + threshold (number, optional) - the minimum number of coaccusals officer
+      + Accepted values: `1` -> `4`
+      + Default: `2`
+
+
++ Response 200 (application/json)
+
+        {
+          "coaccused_data": [
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 4881,
+              "incident_date": "1994-05-24",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "1998-11-09",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "1998-12-03",
+              "accussed_count": 3
+            },
+            {
+              "officer_id_1": 30209,
+              "officer_id_2": 31945,
+              "incident_date": "1998-12-03",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 30209,
+              "incident_date": "1998-12-03",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 4881,
+              "officer_id_2": 31945,
+              "incident_date": "2000-04-28",
+              "accussed_count": 2
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "2002-09-28",
+              "accussed_count": 4
+            },
+            {
+              "officer_id_1": 3663,
+              "officer_id_2": 31945,
+              "incident_date": "2002-10-13",
+              "accussed_count": 5
+            }
+          ],
+          "officers": [
+            {
+              "id": 30209,
+              "full_name": "Bennie Watson",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "35.4196",
+                "percentile_allegation_internal": "83.0449"
+              }
+            },
+            {
+              "id": 3663,
+              "full_name": "Donnell Calhoun",
+              "percentile": {
+                "percentile_allegation_civilian": "87.4780",
+                "percentile_allegation_internal": "96.5164"
+              }
+            },
+            {
+              "id": 4881,
+              "full_name": "Gilbert Cobb",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "85.1838",
+                "percentile_allegation_internal": "0.0000"
+              }
+            },
+            {
+              "id": 31945,
+              "full_name": "Melvin Ector",
+              "percentile": {
+                "percentile_trr": "0.0000",
+                "percentile_allegation_civilian": "94.1100",
+                "percentile_allegation_internal": "61.1521"
+              }
+            }
+          ],
+          "list_event": [
+            "1994-05-24",
+            "1998-11-09",
+            "1998-12-03",
+            "2000-04-28",
+            "2002-09-28",
+            "2002-10-13"
+          ]
         }
