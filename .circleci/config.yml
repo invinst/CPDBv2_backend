@@ -186,7 +186,7 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
-          name: Set ENV_TAG
+          name: Start job
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
@@ -197,9 +197,7 @@ jobs:
             else
               export ENV_TAG="--staging"
             fi
-      - run:
-          name: Start job
-          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
+            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
           no_output_timeout: 2h
 
   rebuild_search_index:
@@ -213,7 +211,7 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
-          name: Set ENV_TAG
+          name: Start job
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
@@ -224,9 +222,7 @@ jobs:
             else
               export ENV_TAG="--staging"
             fi
-      - run:
-          name: Start job
-          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
+            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
           no_output_timeout: 2h
 
   deploy_backend:
