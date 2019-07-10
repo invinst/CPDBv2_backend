@@ -1,9 +1,9 @@
-
 from datetime import datetime
 
-import pytz
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+
+import pytz
 from robber import expect
 
 from data.factories import OfficerFactory
