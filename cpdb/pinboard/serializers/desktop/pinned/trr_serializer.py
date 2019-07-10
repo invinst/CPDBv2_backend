@@ -4,7 +4,7 @@ from shared.serializer import NoNullSerializer
 from .coaccused_serializer import CoaccusedSerializer
 
 
-class PinboardTRRSerializer(NoNullSerializer):
+class TRRSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     to = serializers.SerializerMethodField()
     taser = serializers.NullBooleanField()

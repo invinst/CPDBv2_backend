@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, date
 from urllib.parse import urlencode
 
-import pytz
 from django.contrib.gis.geos import Point
 from django.urls import reverse
-from mock import patch
+
+import pytz
+from mock import patch, Mock, PropertyMock
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
@@ -18,15 +19,86 @@ from data.factories import (
     AttachmentFileFactory,
     InvestigatorAllegationFactory,
     PoliceWitnessFactory,
+    PoliceUnitFactory,
+    OfficerBadgeNumberFactory,
+    OfficerHistoryFactory,
+    VictimFactory,
 )
-from pinboard.factories import PinboardFactory
+from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
 
 
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
-class PinboardViewSetTestCase(APITestCase):
+class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
+        officer_1 = OfficerFactory(id=11)
+        officer_2 = OfficerFactory(id=22)
+        allegation_1 = AllegationFactory(crid='abc123')
+        allegation_2 = AllegationFactory(crid='abc456')
+        trr_1 = TRRFactory(id=33)
+        trr_2 = TRRFactory(id=44)
+
+        PinboardFactory(
+            id='f871a13f',
+            title='My Pinboard',
+            description='abc',
+            officers=[officer_1, officer_2],
+            allegations=[allegation_1, allegation_2],
+            trrs=[trr_1, trr_2],
+        )
+
+        # Current client does not own the pinboard, should clone it
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        cloned_pinboard_id = response.data['id']
+        expect(cloned_pinboard_id).to.ne('f871a13f')
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data['officer_ids']).to.eq([11, 22])
+        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
+        expect(response.data['trr_ids']).to.eq([33, 44])
+
+        # Now current client owns the user, successive requests should not clone pinboard
+        # `id` is case-insensitive
+        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data['id']).to.eq(cloned_pinboard_id)
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([11, 22])
+        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
+        expect(response.data['trr_ids']).to.eq([33, 44])
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data).not_to.contain('example_pinboards')
+
+    def test_retrieve_empty_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
         PinboardFactory(
             id='f871a13f',
             title='My Pinboard',
@@ -48,13 +120,22 @@ class PinboardViewSetTestCase(APITestCase):
         # `id` is case-insensitive
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': cloned_pinboard_id,
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
+
+        expect(response.data['id']).to.eq(cloned_pinboard_id)
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('abc')
+
+        expect(response.data['example_pinboards']).to.contain({
+            'id': 'eeee1111',
+            'title': 'Example pinboard 1',
+            'description': 'Example pinboard 1',
+        }, {
+            'id': 'eeee2222',
+            'title': 'Example pinboard 2',
+            'description': 'Example pinboard 2',
         })
 
     def test_retrieve_pinboard_not_found(self):
@@ -257,6 +338,19 @@ class PinboardViewSetTestCase(APITestCase):
         expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
     def test_create_pinboard_ignore_id(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
         ignored_id = '1234ab'
 
         response = self.client.post(
@@ -275,13 +369,22 @@ class PinboardViewSetTestCase(APITestCase):
         expect(response.data['id']).to.be.a.string()
         expect(response.data['id']).to.have.length(8)
         expect(response.data['id']).to.ne(ignored_id)
-        expect(response.data).to.eq({
-            'id': response.data['id'],
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc'
+
+        expect(response.data['id']).to.eq(response.data['id'])
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('abc')
+
+        expect(response.data['example_pinboards']).to.contain({
+            'id': 'eeee1111',
+            'title': 'Example pinboard 1',
+            'description': 'Example pinboard 1',
+        }, {
+            'id': 'eeee2222',
+            'title': 'Example pinboard 2',
+            'description': 'Example pinboard 2',
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
@@ -291,36 +394,92 @@ class PinboardViewSetTestCase(APITestCase):
             category='Use Of Force',
             allegation_name='Miscellaneous',
         )
+        allegation1 = AllegationFactory(
+            crid='123',
+            old_complaint_address='16XX N TALMAN AVE, CHICAGO IL',
+            most_common_category=category1,
+            point=Point(-35.5, 68.9),
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
+        )
+        coaccused1 = OfficerFactory(
+            id=1,
+            first_name='Jesse',
+            last_name='Pinkman',
+            allegation_count=6,
+            sustained_count=5,
+            birth_year=1940,
+            race='White',
+            gender='M',
+            rank='Sergeant of Police',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            resignation_date=date(2015, 4, 14)
+        )
+        OfficerAllegationFactory(
+            officer=coaccused1,
+            allegation=allegation1,
+            recc_outcome='11 Day Suspension',
+            final_outcome='Separation',
+            final_finding='SU',
+            allegation_category=category1,
+            disciplined=True,
+        )
+        VictimFactory(
+            allegation=allegation1,
+            gender='F',
+            race='White',
+            age=40,
+        )
+
         category2 = AllegationCategoryFactory(
             category='Verbal Abuse',
             allegation_name='Miscellaneous',
         )
-
-        allegation1 = AllegationFactory(
-            crid='1000001',
-            incident_date=datetime(2010, 1, 1, tzinfo=pytz.utc),
-            point=Point(1.0, 1.0),
-        )
         allegation2 = AllegationFactory(
-            crid='1000002',
-            incident_date=datetime(2011, 1, 1, tzinfo=pytz.utc),
-            point=Point(2.0, 2.0),
+            crid='124',
+            old_complaint_address='17XX N TALMAN AVE, CHICAGO IL',
+            most_common_category=category1,
+            point=Point(-35.5, 68.9),
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
         )
-        allegation3 = AllegationFactory(
-            crid='1000003',
-            incident_date=datetime(2012, 1, 1, tzinfo=pytz.utc),
-            point=Point(3.0, 3.0),
+        coaccused2 = OfficerFactory(
+            id=2,
+            first_name='Walter',
+            last_name='White',
+            allegation_count=6,
+            sustained_count=5,
+            birth_year=1940,
+            race='White',
+            gender='M',
+            rank='Sergeant of Police',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            resignation_date=date(2015, 4, 14)
         )
-
-        OfficerAllegationFactory(allegation=allegation1, allegation_category=category1)
-        OfficerAllegationFactory(allegation=allegation2, allegation_category=category2)
-        OfficerAllegationFactory(allegation=allegation3, allegation_category=category2)
+        OfficerAllegationFactory(
+            officer=coaccused2,
+            allegation=allegation2,
+            recc_outcome='10 Day Suspension',
+            final_outcome='Separation',
+            final_finding='SU',
+            allegation_category=category2,
+            disciplined=True,
+        )
+        VictimFactory(
+            allegation=allegation2,
+            gender='M',
+            race='White',
+            age=40,
+        )
 
         allegation_cache_manager.cache_data()
 
         allegation1.refresh_from_db()
         allegation2.refresh_from_db()
-        allegation3.refresh_from_db()
 
         pinboard = PinboardFactory(allegations=(allegation1, allegation2))
 
@@ -329,84 +488,184 @@ class PinboardViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq([
             {
-                'crid': '1000001',
-                'incident_date': '2010-01-01',
-                'point': {'lon': 1.0, 'lat': 1.0},
-                'most_common_category': 'Use Of Force',
+                'crid': '123',
+                'address': '16XX N TALMAN AVE, CHICAGO IL',
+                'category': 'Use Of Force',
+                'incident_date': '2002-01-01',
+                'victims': [{
+                    'gender': 'Female',
+                    'race': 'White',
+                    'age': 40,
+                }],
+                'point': {'lon': -35.5, 'lat': 68.9},
+                'to': '/complaint/123/',
+                'sub_category': 'Miscellaneous',
+                'coaccused': [{
+                    'id': 1,
+                    'full_name': 'Jesse Pinkman',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '11 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Use Of Force',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
             },
             {
-                'crid': '1000002',
-                'incident_date': '2011-01-01',
-                'point': {'lon': 2.0, 'lat': 2.0},
-                'most_common_category': 'Verbal Abuse',
+                'crid': '124',
+                'address': '17XX N TALMAN AVE, CHICAGO IL',
+                'category': 'Verbal Abuse',
+                'incident_date': '2002-01-01',
+                'victims': [{
+                    'gender': 'Male',
+                    'race': 'White',
+                    'age': 40,
+                }],
+                'point': {'lon': -35.5, 'lat': 68.9},
+                'to': '/complaint/124/',
+                'sub_category': 'Miscellaneous',
+                'coaccused': [{
+                    'id': 2,
+                    'full_name': 'Walter White',
+                    'complaint_count': 6,
+                    'sustained_count': 5,
+                    'birth_year': 1940,
+                    'complaint_percentile': 0.0,
+                    'recommended_outcome': '10 Day Suspension',
+                    'final_outcome': 'Separation',
+                    'final_finding': 'Sustained',
+                    'category': 'Verbal Abuse',
+                    'disciplined': True,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Sergeant of Police',
+                    'percentile': {
+                        'year': 2015,
+                        'percentile_trr': '3.3000',
+                        'percentile_allegation': '0.0000',
+                        'percentile_allegation_civilian': '1.1000',
+                        'percentile_allegation_internal': '2.2000'
+                    },
+                }],
             }
         ])
 
-    def test_selected_officers(self):
-        officer1 = OfficerFactory(
-            id=1, first_name='Daryl', last_name='Mack',
-            trr_percentile=12.0000,
-            civilian_allegation_percentile=98.4344,
-            internal_allegation_percentile=99.7840,
-            complaint_percentile=99.3450,
-            race='White', gender='M', birth_year=1975,
-            rank='Police Officer'
-        )
-        officer2 = OfficerFactory(
-            id=2,
-            first_name='Ronald', last_name='Watts',
-            trr_percentile=0.0000,
-            civilian_allegation_percentile=98.4344,
-            internal_allegation_percentile=99.7840,
-            complaint_percentile=99.5000,
-            race='White', gender='M', birth_year=1975,
-            rank='Detective'
-        )
-        OfficerFactory(id=3)
+    def test_selected_complaints_pinboard_not_exist(self):
+        response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': '1'}))
+        expect(response.data).to.eq([])
 
-        pinboard = PinboardFactory(officers=(officer1, officer2))
+    @patch(
+        'data.models.Officer.coaccusals',
+        new_callable=PropertyMock,
+        return_value=[Mock(id=789, coaccusal_count=10)]
+    )
+    def test_selected_officers(self, _):
+        unit = PoliceUnitFactory(
+            id=4,
+            unit_name='004',
+            description='District 004',
+        )
+        old_unit = PoliceUnitFactory(
+            id=5,
+            unit_name='005',
+            description='District 005',
+        )
+
+        officer = OfficerFactory(
+            id=123,
+            tags=['tag1', 'tag2'],
+            first_name='Michael',
+            last_name='Flynn',
+            last_unit=unit,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            active='Yes',
+            rank='Sergeant',
+            race='Black',
+            gender='F',
+            current_badge='456',
+            birth_year=1950,
+            current_salary=10000,
+            allegation_count=20,
+            complaint_percentile='99.9900',
+            honorable_mention_count=3,
+            sustained_count=4,
+            unsustained_count=5,
+            discipline_count=6,
+            civilian_compliment_count=2,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_percentile='88.8800',
+            has_unique_name=True,
+            civilian_allegation_percentile=None,
+            internal_allegation_percentile=None,
+            trr_percentile=None,
+        )
+
+        OfficerBadgeNumberFactory(
+            officer=officer,
+            current=False,
+            star='789'
+        )
+        OfficerBadgeNumberFactory(
+            officer=officer,
+            current=True,
+            star='456'
+        )
+
+        OfficerHistoryFactory(officer=officer, unit=old_unit, effective_date=date(2002, 1, 2))
+        OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
+
+        OfficerFactory(id=2)
+
+        pinboard = PinboardFactory(officers=(officer,))
 
         response = self.client.get(reverse('api-v2:pinboards-officers', kwargs={'pk': pinboard.id}))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
-            {
-                'id': 1,
-                'full_name': 'Daryl Mack',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
-                'complaint_percentile': 99.3450,
-                'race': 'White',
-                'gender': 'Male',
-                'rank': 'Police Officer',
-                'percentile': {
-                    'percentile_trr': '12.0000',
-                    'percentile_allegation': '99.3450',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
-                }
+        expect(response.data).to.eq([{
+            'id': 123,
+            'full_name': 'Michael Flynn',
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/123/michael-flynn/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Sergeant',
+            'percentile': {
+                'year': 2010,
+                'percentile_allegation': '99.9900',
             },
-            {
-                'id': 2,
-                'full_name': 'Ronald Watts',
-                'complaint_count': 0,
-                'sustained_count': 0,
-                'birth_year': 1975,
-                'complaint_percentile': 99.5000,
-                'race': 'White',
-                'gender': 'Male',
-                'rank': 'Detective',
-                'percentile': {
-                    'percentile_trr': '0.0000',
-                    'percentile_allegation': '99.5000',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
-                }
+            'allegation_count': 20,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004',
             }
-        ])
+        }])
 
     def test_selected_trrs(self):
         officer = OfficerFactory(
@@ -593,7 +852,7 @@ class PinboardViewSetTestCase(APITestCase):
                 'crid': '2',
                 'category': 'Unknown',
                 'incident_date': '2002-02-22',
-                'officers': [
+                'coaccused': [
                     {
                         'id': 4,
                         'rank': 'Senior Police Officer',
@@ -616,11 +875,9 @@ class PinboardViewSetTestCase(APITestCase):
                             'percentile_allegation': '22.2200',
                             'percentile_allegation_civilian': '33.3300',
                             'percentile_allegation_internal': '44.4400',
-
                         }
                     },
                 ],
-                'point': None,
             }
         }, {
             'id': 1,
@@ -630,7 +887,7 @@ class PinboardViewSetTestCase(APITestCase):
                 'crid': '1',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
-                'officers': [{
+                'coaccused': [{
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
@@ -642,13 +899,14 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation': '88.8800',
                         'percentile_allegation_civilian': '77.7700',
                         'percentile_allegation_internal': '66.6600',
-
                     }
                 }],
                 'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
         expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['results'][0]).to.eq(expected_results[0])
+        expect(response.data['results'][1]).to.eq(expected_results[1])
         expect(response.data['results']).to.eq(expected_results)
         expect(response.data['count']).to.eq(2)
         expect(response.data['previous']).to.be.none()
@@ -763,19 +1021,38 @@ class PinboardViewSetTestCase(APITestCase):
         pinned_allegation_1 = AllegationFactory(crid='1')
         pinned_allegation_2 = AllegationFactory(crid='2')
         pinned_allegation_3 = AllegationFactory(crid='3')
-        pinned_trr = TRRFactory(
-            officer=OfficerFactory(
-                id=77,
-                rank='Officer',
-                first_name='German',
-                last_name='Lauren',
-                trr_percentile=None,
-                complaint_percentile=None,
-                civilian_allegation_percentile=None,
-                internal_allegation_percentile=None,
-                allegation_count=77,
-            )
+        unit = PoliceUnitFactory(
+            id=4,
+            unit_name='004',
+            description='District 004'
         )
+
+        temp_officer = OfficerFactory(
+            id=77,
+            first_name='German',
+            last_name='Lauren',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Officer',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
+            trr_percentile=None,
+            complaint_percentile=None,
+            civilian_allegation_percentile=None,
+            internal_allegation_percentile=None
+        )
+        pinned_trr = TRRFactory(officer=temp_officer)
         pinboard = PinboardFactory(
             id='66ef1560',
             title='Test pinboard',
@@ -788,25 +1065,53 @@ class PinboardViewSetTestCase(APITestCase):
 
         officer_coaccusal_11 = OfficerFactory(
             id=11,
-            rank='Police Officer',
             first_name='Jerome',
             last_name='Finnigan',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Police Officer',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
             internal_allegation_percentile='44.44',
-            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
-            rank='Senior Officer',
             first_name='Ellis',
             last_name='Skol',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Senior Officer',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
             internal_allegation_percentile=None,
-            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -843,25 +1148,53 @@ class PinboardViewSetTestCase(APITestCase):
 
         allegation_coaccusal_12 = OfficerFactory(
             id=12,
-            rank='IPRA investigator',
             first_name='Raymond',
             last_name='Piwinicki',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='IPRA investigator',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile=None,
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
-            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
-            rank='Detective',
             first_name='Edward',
             last_name='May',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Detective',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile=None,
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
-            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -871,66 +1204,173 @@ class PinboardViewSetTestCase(APITestCase):
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_22)
         OfficerAllegationFactory(allegation=not_relevant_allegation, officer=allegation_coaccusal_22)
 
+        OfficerHistoryFactory(officer=officer_coaccusal_11, unit=unit, effective_date=date(2004, 1, 2))
+        OfficerHistoryFactory(officer=officer_coaccusal_21, unit=unit, effective_date=date(2004, 1, 2))
+        OfficerHistoryFactory(officer=allegation_coaccusal_12, unit=unit, effective_date=date(2004, 1, 2))
+        OfficerHistoryFactory(officer=allegation_coaccusal_22, unit=unit, effective_date=date(2004, 1, 2))
+
         request_url = reverse('api-v2:pinboards-relevant-coaccusals', kwargs={'pk': '66ef1560'})
         response = self.client.get(request_url)
         expect(response.data['count']).to.eq(5)
         expect(response.data['previous']).to.be.none()
         expect(response.data['next']).to.be.none()
-        expect(response.data['results']).to.eq([{
+        results = [{
             'id': 11,
-            'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
-            'coaccusal_count': 5,
-            'allegation_count': 11,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/11/jerome-finnigan/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Police Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_trr': '11.1100',
                 'percentile_allegation': '22.2200',
                 'percentile_allegation_civilian': '33.3300',
                 'percentile_allegation_internal': '44.4400',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 5,
         }, {
             'id': 21,
-            'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
-            'coaccusal_count': 4,
-            'allegation_count': 21,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/21/ellis-skol/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Senior Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
                 'percentile_allegation_civilian': '55.5500',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 4,
         }, {
             'id': 12,
-            'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
-            'coaccusal_count': 3,
-            'allegation_count': 12,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/12/raymond-piwinicki/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'IPRA investigator',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_allegation': '99.9900',
                 'percentile_allegation_civilian': '77.7700',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 3,
         }, {
             'id': 22,
-            'rank': 'Detective',
             'full_name': 'Edward May',
-            'coaccusal_count': 2,
-            'allegation_count': 22,
-            'percentile': {
-                'year': 2016,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/22/edward-may/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Detective',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
             },
+            'percentile': {
+                'year': 2010,
+            },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 2,
         }, {
             'id': 77,
-            'rank': 'Officer',
             'full_name': 'German Lauren',
-            'coaccusal_count': 1,
-            'allegation_count': 77,
-            'percentile': {
-                'year': 2016,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/77/german-lauren/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
             },
-        }])
+            'percentile': {
+                'year': 2010,
+            },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 1,
+        }]
+
+        expect(response.data['results']).to.eq(results)
 
     def test_relevant_coaccusals_pagination(self):
         pinned_officer_1 = OfficerFactory(id=1)
@@ -946,27 +1386,61 @@ class PinboardViewSetTestCase(APITestCase):
         pinboard.allegations.set([pinned_allegation_1, pinned_allegation_2])
         not_relevant_allegation = AllegationFactory(crid='999')
 
+        unit = PoliceUnitFactory(
+            id=4,
+            unit_name='004',
+            description='District 004',
+        )
+
         officer_coaccusal_11 = OfficerFactory(
             id=11,
-            rank='Police Officer',
             first_name='Jerome',
             last_name='Finnigan',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Police Officer',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
             internal_allegation_percentile='44.44',
-            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
-            rank='Senior Officer',
             first_name='Ellis',
             last_name='Skol',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Senior Officer',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
             internal_allegation_percentile=None,
-            allegation_count=21,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -997,25 +1471,53 @@ class PinboardViewSetTestCase(APITestCase):
 
         allegation_coaccusal_12 = OfficerFactory(
             id=12,
-            rank='IPRA investigator',
             first_name='Raymond',
             last_name='Piwinicki',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='IPRA investigator',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile=None,
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
-            allegation_count=12,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
-            rank='Detective',
             first_name='Edward',
             last_name='May',
+            allegation_count=1,
+            appointed_date=date(2000, 1, 2),
+            resignation_date=date(2010, 2, 3),
+            current_badge='456',
+            gender='F',
+            race='Black',
+            rank='Detective',
+            last_unit=unit,
+            birth_year=1950,
+            civilian_compliment_count=2,
+            sustained_count=4,
+            discipline_count=6,
+            trr_count=7,
+            major_award_count=8,
+            honorable_mention_count=3,
+            honorable_mention_percentile='88.8800',
             trr_percentile=None,
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
-            allegation_count=22,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -1028,29 +1530,69 @@ class PinboardViewSetTestCase(APITestCase):
         expect(first_response.status_code).to.eq(status.HTTP_200_OK)
         expect(first_response.data['results']).to.eq([{
             'id': 11,
-            'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
-            'coaccusal_count': 4,
-            'allegation_count': 11,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/11/jerome-finnigan/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Police Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_trr': '11.1100',
                 'percentile_allegation': '22.2200',
                 'percentile_allegation_civilian': '33.3300',
                 'percentile_allegation_internal': '44.4400',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 4,
         }, {
             'id': 21,
-            'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
-            'coaccusal_count': 3,
-            'allegation_count': 21,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/21/ellis-skol/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Senior Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
                 'percentile_allegation_civilian': '55.5500',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 3,
         }])
         expect(first_response.data['count']).to.eq(4)
         expect(first_response.data['previous']).to.be.none()
@@ -1062,27 +1604,67 @@ class PinboardViewSetTestCase(APITestCase):
         expect(second_response.status_code).to.eq(status.HTTP_200_OK)
         expect(second_response.data['results']).to.eq([{
             'id': 21,
-            'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
-            'coaccusal_count': 3,
-            'allegation_count': 21,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/21/ellis-skol/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Senior Officer',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_trr': '33.3300',
                 'percentile_allegation': '44.4400',
                 'percentile_allegation_civilian': '55.5500',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 3,
         }, {
             'id': 12,
-            'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
-            'coaccusal_count': 2,
-            'allegation_count': 12,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/12/raymond-piwinicki/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'IPRA investigator',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
+            },
             'percentile': {
-                'year': 2016,
+                'year': 2010,
                 'percentile_allegation': '99.9900',
                 'percentile_allegation_civilian': '77.7700',
             },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 2,
         }])
         expect(second_response.data['count']).to.eq(4)
         expect(second_response.data['previous']).to.eq(
@@ -1096,13 +1678,33 @@ class PinboardViewSetTestCase(APITestCase):
         expect(last_response.status_code).to.eq(status.HTTP_200_OK)
         expect(last_response.data['results']).to.eq([{
             'id': 22,
-            'rank': 'Detective',
             'full_name': 'Edward May',
-            'coaccusal_count': 1,
-            'allegation_count': 22,
-            'percentile': {
-                'year': 2016,
+            'date_of_appt': '2000-01-02',
+            'date_of_resignation': '2010-02-03',
+            'badge': '456',
+            'gender': 'Female',
+            'to': '/officer/22/edward-may/',
+            'birth_year': 1950,
+            'race': 'Black',
+            'rank': 'Detective',
+            'unit': {
+                'id': 4,
+                'unit_name': '004',
+                'description': 'District 004',
+                'long_unit_name': 'Unit 004'
             },
+            'percentile': {
+                'year': 2010,
+            },
+            'allegation_count': 1,
+            'civilian_compliment_count': 2,
+            'sustained_count': 4,
+            'discipline_count': 6,
+            'trr_count': 7,
+            'major_award_count': 8,
+            'honorable_mention_count': 3,
+            'honorable_mention_percentile': 88.88,
+            'coaccusal_count': 1,
         }])
         expect(last_response.data['count']).to.eq(4)
         expect(last_response.data['previous']).to.eq(
@@ -1131,7 +1733,7 @@ class PinboardViewSetTestCase(APITestCase):
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
             internal_allegation_percentile=None,
-            allegation_count=3,
+            allegation_count=1,
         )
         pinned_officer_3 = OfficerFactory(id=3)
         officer_4 = OfficerFactory(
@@ -1149,8 +1751,17 @@ class PinboardViewSetTestCase(APITestCase):
         relevant_allegation_1 = AllegationFactory(
             crid='1',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            most_common_category=AllegationCategoryFactory(
+                category='Operation/Personnel Violations',
+                allegation_name='Subcategory'
+            ),
             point=Point([0.01, 0.02])
+        )
+        VictimFactory(
+            gender='M',
+            race='Black',
+            age=35,
+            allegation=relevant_allegation_1
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
@@ -1170,20 +1781,25 @@ class PinboardViewSetTestCase(APITestCase):
         request_url = reverse('api-v2:pinboards-relevant-complaints', kwargs={'pk': '66ef1560'})
         response = self.client.get(request_url)
         expect(response.status_code).to.eq(status.HTTP_200_OK)
+
         expect(response.data).to.eq({
             'count': 2,
             'next': None,
             'previous': None,
             'results': [{
                 'crid': '2',
+                'address': '',
                 'category': 'Unknown',
                 'incident_date': '2002-02-22',
-                'officers': [{
+                'victims': [],
+                'to': '/complaint/2/',
+                'sub_category': 'Unknown',
+                'coaccused': [{
                     'id': 2,
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
                     'coaccusal_count': None,
-                    'allegation_count': 3,
+                    'allegation_count': 1,
                     'percentile': {
                         'year': 2016,
                         'percentile_trr': '33.3300',
@@ -1191,12 +1807,20 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation_civilian': '55.5500',
                     },
                 }],
-                'point': None,
             }, {
                 'crid': '1',
+                'address': '',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
-                'officers': [{
+                'victims': [{
+                    'gender': 'Male',
+                    'race': 'Black',
+                    'age': 35,
+                }],
+                'point': {'lon': 0.01, 'lat': 0.02},
+                'to': '/complaint/1/',
+                'sub_category': 'Subcategory',
+                'coaccused': [{
                     'id': 99,
                     'rank': 'Detective',
                     'full_name': 'Edward May',
@@ -1219,7 +1843,6 @@ class PinboardViewSetTestCase(APITestCase):
                         'percentile_allegation_internal': '44.4400',
                     },
                 }],
-                'point': {'lon': 0.01, 'lat': 0.02},
             }]
         })
 
@@ -1331,16 +1954,22 @@ class PinboardViewSetTestCase(APITestCase):
         expect(first_response.status_code).to.eq(status.HTTP_200_OK)
         expect(first_response.data['results']).to.eq([{
             'crid': '3',
+            'address': '',
             'category': 'Unknown',
             'incident_date': '2002-02-23',
-            'officers': [],
-            'point': None,
+            'victims': [],
+            'to': '/complaint/3/',
+            'sub_category': 'Unknown',
+            'coaccused': [],
         }, {
             'crid': '2',
+            'address': '',
             'category': 'Unknown',
             'incident_date': '2002-02-22',
-            'officers': [],
-            'point': None,
+            'victims': [],
+            'to': '/complaint/2/',
+            'sub_category': 'Unknown',
+            'coaccused': [],
         }])
         expect(first_response.data['count']).to.eq(3)
         expect(first_response.data['previous']).to.be.none()
@@ -1352,10 +1981,13 @@ class PinboardViewSetTestCase(APITestCase):
         expect(second_response.status_code).to.eq(status.HTTP_200_OK)
         expect(second_response.data['results']).to.eq([{
             'crid': '2',
+            'address': '',
             'category': 'Unknown',
             'incident_date': '2002-02-22',
-            'officers': [],
-            'point': None,
+            'victims': [],
+            'to': '/complaint/2/',
+            'sub_category': 'Unknown',
+            'coaccused': [],
         }])
         expect(second_response.data['count']).to.eq(3)
         expect(second_response.data['previous']).to.eq(
@@ -1369,10 +2001,13 @@ class PinboardViewSetTestCase(APITestCase):
         expect(last_response.status_code).to.eq(status.HTTP_200_OK)
         expect(last_response.data['results']).to.eq([{
             'crid': '1',
+            'address': '',
             'category': 'Unknown',
             'incident_date': '2002-02-21',
-            'officers': [],
-            'point': None,
+            'victims': [],
+            'to': '/complaint/1/',
+            'sub_category': 'Unknown',
+            'coaccused': [],
         }])
         expect(last_response.data['count']).to.eq(3)
         expect(last_response.data['previous']).to.eq(

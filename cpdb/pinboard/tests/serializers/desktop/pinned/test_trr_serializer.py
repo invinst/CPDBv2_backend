@@ -7,11 +7,11 @@ import pytz
 from robber import expect
 
 from data.factories import OfficerFactory
-from pinboard.serializers.pinboard_trr_serializer import PinboardTRRSerializer
+from pinboard.serializers.desktop.pinned.trr_serializer import TRRSerializer
 from trr.factories import TRRFactory, ActionResponseFactory
 
 
-class PinboardTRRSerializerTestCase(TestCase):
+class PinnedTRRSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(
             id=8562,
@@ -43,7 +43,7 @@ class PinboardTRRSerializerTestCase(TestCase):
 
         ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='2')
 
-        expect(PinboardTRRSerializer(trr).data).to.eq({
+        expect(TRRSerializer(trr).data).to.eq({
             'id': 123456,
             'trr_datetime': '2004-01-01',
             'category': 'Impact Weapon',

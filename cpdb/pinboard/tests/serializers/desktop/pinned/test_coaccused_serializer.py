@@ -6,7 +6,7 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory
-from pinboard.serializers.coaccused_serializer import CoaccusedSerializer
+from pinboard.serializers.desktop.pinned.coaccused_serializer import CoaccusedSerializer
 
 
 class CoaccusedSerializerTestCase(TestCase):

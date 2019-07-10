@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer
 
 from data.models import Allegation, Officer
 from pinboard.models import Pinboard
+from pinboard.serializers.example_pinboard import ExamplePinboardSerializer
 from shared.serializer import NoNullSerializer
 from trr.models import TRR
 
@@ -28,6 +29,7 @@ class PinboardSerializer(ModelSerializer, NoNullSerializer):
         many=True,
         queryset=TRR.objects.all()
     )
+    example_pinboards = ExamplePinboardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pinboard
@@ -38,6 +40,7 @@ class PinboardSerializer(ModelSerializer, NoNullSerializer):
             'crids',
             'trr_ids',
             'description',
+            'example_pinboards',
         )
 
 
@@ -46,6 +49,7 @@ class OrderedPinboardSerializer(ModelSerializer, NoNullSerializer):
     officer_ids = serializers.ListField(child=serializers.IntegerField())
     crids = serializers.ListField(child=serializers.CharField())
     trr_ids = serializers.ListField(child=serializers.IntegerField())
+    example_pinboards = ExamplePinboardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pinboard
@@ -56,4 +60,5 @@ class OrderedPinboardSerializer(ModelSerializer, NoNullSerializer):
             'crids',
             'trr_ids',
             'description',
+            'example_pinboards',
         )
