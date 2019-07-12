@@ -14,10 +14,10 @@ from data.factories import (
     OfficerAllegationFactory,
     VictimFactory,
 )
-from social_graph.serializers.allegation_serializer import AllegationSerializer
+from social_graph.serializers.social_graph_cr_detail_serializer import SocialGraphCRDetailSerializer
 
 
-class AllegationSerializerTestCase(TestCase):
+class SocialGraphCRDetailSerializerTestCase(TestCase):
     def test_serialization(self):
         category = AllegationCategoryFactory(category='Use of Force', allegation_name='Improper Search Of Person')
         allegation = AllegationFactory(
@@ -40,11 +40,6 @@ class AllegationSerializerTestCase(TestCase):
             first_name='Jerome',
             last_name='Finnigan',
             allegation_count=5,
-            sustained_count=2,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
             trr_percentile=80,
             complaint_percentile=85,
             civilian_allegation_percentile=90,
@@ -70,7 +65,7 @@ class AllegationSerializerTestCase(TestCase):
         setattr(allegation, 'prefetch_filtered_attachment_files', [attachment])
         allegation.officerallegation_set.set([officer_allegation])
 
-        expect(AllegationSerializer(allegation).data).to.eq({
+        expect(SocialGraphCRDetailSerializer(allegation).data).to.eq({
             'kind': 'CR',
             'crid': '123',
             'to': '/complaint/123/',
@@ -89,18 +84,7 @@ class AllegationSerializerTestCase(TestCase):
                 {
                     'id': 8562,
                     'full_name': 'Jerome Finnigan',
-                    'gender': 'Male',
-                    'race': 'Asian',
-                    'rank': 'Police Officer',
-                    'birth_year': 1980,
-                    'recommended_outcome': '10 Day Suspension',
-                    'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
-                    'category': 'Use of Force',
-                    'complaint_count': 5,
-                    'sustained_count': 2,
-                    'complaint_percentile': 85.0,
-                    'disciplined': True,
+                    'allegation_count': 5,
                     'percentile': {
                         'percentile_allegation_civilian': '90.0000',
                         'percentile_allegation_internal': '95.0000',

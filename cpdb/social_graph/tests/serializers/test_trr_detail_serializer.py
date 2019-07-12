@@ -6,23 +6,17 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory
-from social_graph.serializers.trr_preview_pane_serializer import TRRPreviewPaneSerializer
+from social_graph.serializers.trr_detail_serializer import TRRDetailSerializer
 from trr.factories import TRRFactory
 
 
-class TRRPreviewPaneSerializerTestCase(TestCase):
+class TRRDetailSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
             allegation_count=20,
-            sustained_count=10,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
             trr_percentile=80,
             complaint_percentile=85,
             civilian_allegation_percentile=90,
@@ -39,7 +33,7 @@ class TRRPreviewPaneSerializerTestCase(TestCase):
             officer=officer,
         )
 
-        expect(TRRPreviewPaneSerializer(trr).data).to.eq({
+        expect(TRRDetailSerializer(trr).data).to.eq({
             'kind': 'FORCE',
             'trr_id': 123456,
             'to': '/trr/123456/',
@@ -50,13 +44,7 @@ class TRRPreviewPaneSerializerTestCase(TestCase):
             'officer': {
                 'id': 8562,
                 'full_name': 'Jerome Finnigan',
-                'complaint_count': 20,
-                'sustained_count': 10,
-                'birth_year': 1980,
-                'complaint_percentile': 85,
-                'race': 'Asian',
-                'gender': 'Male',
-                'rank': 'Police Officer',
+                'allegation_count': 20,
                 'percentile': {
                     'percentile_trr': '80.0000',
                     'percentile_allegation_civilian': '90.0000',

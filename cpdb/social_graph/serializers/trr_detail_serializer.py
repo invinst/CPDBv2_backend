@@ -7,25 +7,17 @@ from social_graph.serializers.officer_percentile_serializer import OfficerPercen
 class CoaccusedSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
-    complaint_count = serializers.IntegerField(source='allegation_count')
-    sustained_count = serializers.IntegerField()
-    birth_year = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField(
-        read_only=True, allow_null=True
-    )
-    race = serializers.CharField()
-    gender = serializers.CharField(source='gender_display')
-    rank = serializers.CharField()
+    allegation_count = serializers.IntegerField()
     percentile = serializers.SerializerMethodField()
 
     def get_percentile(self, obj):
         return OfficerPercentileSerializer(obj).data
 
 
-class TRRPreviewPaneSerializer(NoNullSerializer):
+class TRRDetailSerializer(NoNullSerializer):
     kind = serializers.SerializerMethodField()
     trr_id = serializers.IntegerField(source='id')
-    to = serializers.SerializerMethodField()
+    to = serializers.CharField(source='v2_to')
     taser = serializers.NullBooleanField()
     firearm_used = serializers.NullBooleanField()
     date = serializers.SerializerMethodField()
@@ -34,9 +26,6 @@ class TRRPreviewPaneSerializer(NoNullSerializer):
 
     def get_kind(self, obj):
         return 'FORCE'
-
-    def get_to(self, obj):
-        return f'/trr/{obj.id}/'
 
     def get_date(self, obj):
         return obj.trr_datetime.date().strftime(format='%Y-%m-%d')

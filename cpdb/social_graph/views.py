@@ -12,7 +12,7 @@ from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
 from social_graph.serializers.officer_detail_serializer import OfficerDetailSerializer
-from social_graph.serializers.allegation_serializer import AllegationSerializer
+from social_graph.serializers.social_graph_cr_detail_serializer import SocialGraphCRDetailSerializer
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -37,7 +37,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             'victims',
         )
 
-        return Response(AllegationSerializer(allegations, many=True).data)
+        return Response(SocialGraphCRDetailSerializer(allegations, many=True).data)
 
     @list_route(methods=['get'], url_path='officers')
     def officers(self, _):

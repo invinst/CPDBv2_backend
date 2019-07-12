@@ -11,10 +11,10 @@ from data.factories import (
     OfficerFactory,
     OfficerAllegationFactory,
     VictimFactory)
-from social_graph.serializers.cr_preview_pane_serializer import CRPreviewPaneSerializer
+from social_graph.serializers.cr_detail_serializer import CRDetailSerializer
 
 
-class CRPreviewPaneSerializerTestCase(TestCase):
+class CRDetailSerializerTestCase(TestCase):
     def test_serialization(self):
         category = AllegationCategoryFactory(category='Use of Force', allegation_name='Subcategory')
         allegation = AllegationFactory(
@@ -30,12 +30,6 @@ class CRPreviewPaneSerializerTestCase(TestCase):
             first_name='Jerome',
             last_name='Finnigan',
             allegation_count=20,
-            sustained_count=10,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
             trr_percentile=80,
             complaint_percentile=85,
             civilian_allegation_percentile=90,
@@ -58,7 +52,7 @@ class CRPreviewPaneSerializerTestCase(TestCase):
         )
 
         expected_data = {
-            'date': '2002-01-01',
+            'incident_date': '2002-01-01',
             'crid': '123',
             'category': 'Use of Force',
             'subcategory': 'Subcategory',
@@ -69,25 +63,14 @@ class CRPreviewPaneSerializerTestCase(TestCase):
                 {
                     'gender': 'Male',
                     'race': 'Black',
-                    'age': 35
+                    'age': 35,
                 }
             ],
             'coaccused': [
                 {
                     'id': 1,
                     'full_name': 'Jerome Finnigan',
-                    'complaint_count': 20,
-                    'sustained_count': 10,
-                    'birth_year': 1980,
-                    'complaint_percentile': 85.0,
-                    'recommended_outcome': 'Separation',
-                    'final_outcome': '30 Day Suspension',
-                    'final_finding': 'Unfounded',
-                    'category': 'Use of Force',
-                    'disciplined': True,
-                    'race': 'Asian',
-                    'gender': 'Male',
-                    'rank': 'Police Officer',
+                    'allegation_count': 20,
                     'percentile': {
                         'percentile_trr': '80.0000',
                         'percentile_allegation_civilian': '90.0000',
@@ -97,4 +80,4 @@ class CRPreviewPaneSerializerTestCase(TestCase):
                 }
             ]
         }
-        expect(CRPreviewPaneSerializer(allegation).data).to.eq(expected_data)
+        expect(CRDetailSerializer(allegation).data).to.eq(expected_data)

@@ -3,8 +3,8 @@ from django.db.models.functions import TruncDate
 from data.models import Allegation
 from social_graph.serializers.cr_serializer import CRSerializer
 from social_graph.serializers.trr_serializer import TRRSerializer
-from social_graph.serializers.cr_preview_pane_serializer import CRPreviewPaneSerializer
-from social_graph.serializers.trr_preview_pane_serializer import TRRPreviewPaneSerializer
+from social_graph.serializers.cr_detail_serializer import CRDetailSerializer
+from social_graph.serializers.trr_detail_serializer import TRRDetailSerializer
 from trr.models import TRR
 
 
@@ -29,7 +29,7 @@ class GeographyDataQuery(object):
                 'victims',
             )
 
-        serializer = CRPreviewPaneSerializer if self.detail else CRSerializer
+        serializer = CRDetailSerializer if self.detail else CRSerializer
         return serializer(cr_queryset, many=True).data
 
     @property
@@ -43,7 +43,7 @@ class GeographyDataQuery(object):
         if self.detail:
             trr_queryset = trr_queryset.select_related('officer')
 
-        serializer = TRRPreviewPaneSerializer if self.detail else TRRSerializer
+        serializer = TRRDetailSerializer if self.detail else TRRSerializer
         return serializer(trr_queryset, many=True).data
 
     def execute(self):
