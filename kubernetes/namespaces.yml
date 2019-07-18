@@ -8,6 +8,13 @@ metadata:
 kind: "Namespace"
 apiVersion: "v1"
 metadata:
+  name: "beta"
+  labels:
+    name: "beta"
+---
+kind: "Namespace"
+apiVersion: "v1"
+metadata:
   name: "staging"
   labels:
     name: "staging"

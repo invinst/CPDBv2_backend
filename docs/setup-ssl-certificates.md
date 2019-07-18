@@ -22,7 +22,7 @@ Use 2 files [private-key].zip and [domain-name].zip from [Activate Certificate](
         - file [private-key].txt from [private-key].zip encode base64
         - command: `cat [private-key].crt | base64`
         
-- Update new secrets to production & staging
+- Update new secrets to production, beta & staging
 
     - IMPORTANT NOTE: 
         - make sure we delete the secret `tls-secret` before applying the new secrets.

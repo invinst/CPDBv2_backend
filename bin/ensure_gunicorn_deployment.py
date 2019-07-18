@@ -98,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '-n', '--namespace', nargs='?',
         default='staging',
-        choices=['staging', 'production'],
-        help='Namespace (staging|production)'
+        choices=['staging', 'beta', 'production'],
+        help='Namespace (staging|beta|production)'
     )
     args = parser.parse_args()
     namespace = args.namespace

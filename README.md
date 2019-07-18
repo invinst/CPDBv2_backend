@@ -7,7 +7,7 @@
 - `docker-compose up web` - start Django development container. It should automatically reload when code change.
 - `bin/test.sh` - run all tests in Django development container.
 - `bin/coverage.sh` - run all tests and print code coverage in Django development container.
-- `bin/manage.sh` - run any and all of your Django command in production, staging or local environment. See `bin/manage.sh -h` for detail usage.
+- `bin/manage.sh` - run any and all of your Django command in production, beta, staging or local environment. See `bin/manage.sh -h` for detail usage.
 - **important:** If you ever need to SSH into container, look it up yourself. It should not be necessary in 99% of cases. And if you ever need to SSH in then you should really know what you're doing so no guidance is provided.
 - `bin/build_apiary.sh` - update apiary.apib file. Please run this when ever you change any apiary file. **Note**: please install [hercule](https://github.com/jamesramsay/hercule) first.
 
@@ -19,18 +19,21 @@
 - `gcloud auth login`
 - `gcloud container clusters get-credentials cpdp-gke --zone us-central1-a --project twitterbot-180604`
 
-# Setup production/staging
+# Setup production/beta/staging
 
 1. `git secret reveal`
 2. `bin/initialize_kubernetes_cluster.sh` - again only run this when cluster is newly created.
+3. `bin/initialize_kubernetes_namespace.sh`.
 
-# Run Django command on staging or production
+# Run Django command on staging, beta or production
 
 Use `bin/run_job.sh` e.g. `bin/run_job.sh --staging latest cache_data`. Check `bin/run_job.sh -h` for usage.
 
-# Setup cronjob on staging or production
+# Setup cronjob on staging, beta or production
 
-Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents @daily latest`. Check `bin/run_cronjob.sh -h` for usage.
+- Run `bin/run_cronjob.sh` to run individual cronjobs e.g. `bin/run_cronjob.sh --staging update_documents 0 5 * * * latest`. Check `bin/run_cronjob.sh -h` for usage.
+- Kubernetes uses UTC so we have to +5 to match with Chicago time zone.
+- **Do not** use @daily as it will makes the cronjobs run at 19:00 CDT.
 
 # Deployment
 
@@ -45,11 +48,12 @@ Content of `kubernetes` folder:
 - `pg_proxy.yml` - Postgres CloudSQL Proxy
 - `redis.yml` - Redis deployment and service.
 - `secrets-production.yml` - Secrets for production
+- `secrets-beta.yml` - Secrets for beta
 - `secrets-staging.yml` - Secrets for staging
 - `job` - manifest file for job.
 - `cronjob` - manifest file for cronjob.
 
-Most of our resources are deployed into 2 namespaces: `staging` and `production` therefore most commands should specify either of these 2 namespaces e.g.
+Most of our resources are deployed into 3 namespaces: `staging`, `beta` and `production` therefore most commands should specify either of these 2 namespaces e.g.
 - `kubectl get pods -n staging` - look up all pods in namespace staging
 - `kubectl get services -n staging` - look up all services in namespace staging
 - `kubectl logs update-documents-69567775bc-hr86t -n staging` - look at logs from pod `update-documents-69567775bc-hr86t`
@@ -63,7 +67,7 @@ The following Docker images rarely change so you have to update and build/push t
 
 # Add kubernetes secrets
 
-Secrets for staging and production are stored in following files `kubernetes/secrets-staging.yml.secret` and `kubernetes/secrets-production.yml.secret`
+Secrets for staging, beta and production are stored in following files `kubernetes/secrets-staging.yml.secret`, `kubernetes/secrets-beta.yml.secret` and `kubernetes/secrets-production.yml.secret`
 Run `git secret reveal` to show the secret manifest file.
 
 Secret values are all base64 encoded by running `echo -n <value> | base64`
