@@ -7,6 +7,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+from mock import patch
 
 from data.factories import PoliceUnitFactory, OfficerFactory, AllegationFactory, \
     OfficerAllegationFactory, OfficerHistoryFactory, AttachmentFileFactory, AllegationCategoryFactory, VictimFactory
@@ -1281,11 +1282,11 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
 
-    def test_geographic_with_officer_ids_param(self):
+    def test_geographic_crs_with_officer_ids_param(self):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
-        officer_4 = OfficerFactory(id=4)
+        OfficerFactory(id=4)
 
         category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
         category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
@@ -1310,25 +1311,60 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             coaccused_count=18,
             point=Point(37.3, 80.2),
         )
-        VictimFactory(
-            gender='M',
-            race='Black',
-            age=35,
-            allegation=allegation_1
-        )
-        VictimFactory(
-            gender='F',
-            race='White',
-            age=40,
-            allegation=allegation_2
-        )
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
 
+        expected_data = {
+            'count': 3,
+            'limit': 500,
+            'results': [
+                {
+                    'date': '2002-01-01',
+                    'crid': '123',
+                    'category': 'Use of Force',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': -35.5,
+                        'lat': 68.9
+                    },
+                },
+                {
+                    'date': '2003-01-01',
+                    'crid': '456',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 86.2
+                    },
+                },
+                {
+                    'date': '2004-01-01',
+                    'crid': '789',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 80.2
+                    },
+                },
+            ]
+        }
+
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-crs'), {'officer_ids': '1,2,3,4'})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data).to.eq(expected_data)
+
+    def test_geographic_trrs_with_officer_ids_param(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        OfficerFactory(id=3)
+
         TRRFactory(
             id=1,
-            officer=officer_3,
+            officer=officer_1,
             trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(-32.5, 61.3),
             taser=True,
@@ -1336,74 +1372,48 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         )
         TRRFactory(
             id=2,
-            officer=officer_4,
+            officer=officer_2,
             trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
             point=Point(33.3, 78.4),
             taser=False,
             firearm_used=True,
         )
 
-        expected_data = [
-            {
-                'date': '2002-01-01',
-                'crid': '123',
-                'category': 'Use of Force',
-                'kind': 'CR',
-                'point': {
-                    'lon': -35.5,
-                    'lat': 68.9
+        expected_data = {
+            'count': 2,
+            'limit': 500,
+            'results': [
+                {
+                    'trr_id': 1,
+                    'date': '2004-01-01',
+                    'kind': 'FORCE',
+                    'taser': True,
+                    'firearm_used': False,
+                    'point': {
+                        'lon': -32.5,
+                        'lat': 61.3
+                    }
                 },
-            },
-            {
-                'date': '2003-01-01',
-                'crid': '456',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 86.2
+                {
+                    'trr_id': 2,
+                    'date': '2005-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 33.3,
+                        'lat': 78.4
+                    }
                 },
-            },
-            {
-                'date': '2004-01-01',
-                'crid': '789',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 80.2
-                },
-            },
-            {
-                'trr_id': 1,
-                'date': '2004-01-01',
-                'kind': 'FORCE',
-                'taser': True,
-                'firearm_used': False,
-                'point': {
-                    'lon': -32.5,
-                    'lat': 61.3
-                }
-            },
-            {
-                'trr_id': 2,
-                'date': '2005-01-01',
-                'kind': 'FORCE',
-                'taser': False,
-                'firearm_used': True,
-                'point': {
-                    'lon': 33.3,
-                    'lat': 78.4
-                }
-            },
-        ]
+            ]
+        }
 
-        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'officer_ids': '1,2,3,4'})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-trrs'), {'officer_ids': '1,2,3'})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        for data in expected_data:
-            expect(response.data).to.contain(data)
+        expect(response.data).to.eq(expected_data)
 
-    def test_geographic_with_unit_id_param(self):
+    @patch('social_graph.views.DEFAULT_LIMIT', 2)
+    def test_geographic_crs_with_unit_id_param(self):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
@@ -1439,21 +1449,118 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             coaccused_count=18,
             point=Point(37.3, 80.2),
         )
-        VictimFactory(
-            gender='M',
-            race='Black',
-            age=35,
-            allegation=allegation_1
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
+
+        expected_data = {
+            'count': 3,
+            'limit': 2,
+            'results': [
+                {
+                    'date': '2002-01-01',
+                    'crid': '123',
+                    'category': 'Use of Force',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': -35.5,
+                        'lat': 68.9
+                    },
+                },
+                {
+                    'date': '2003-01-01',
+                    'crid': '456',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 86.2
+                    },
+                },
+            ],
+        }
+
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-crs'), {'unit_id': 123})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data).to.eq(expected_data)
+
+    @patch('social_graph.views.DEFAULT_LIMIT', 2)
+    def test_geographic_crs_with_unit_id_param_and_pagination(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+
+        unit = PoliceUnitFactory(id=123)
+
+        OfficerHistoryFactory(unit=unit, officer=officer_1)
+        OfficerHistoryFactory(unit=unit, officer=officer_2)
+        OfficerHistoryFactory(unit=unit, officer=officer_3)
+        OfficerHistoryFactory(unit=unit, officer=officer_4)
+
+        category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
+        category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
+        allegation_1 = AllegationFactory(
+            crid=123,
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
+            most_common_category=category_1,
+            coaccused_count=15,
+            point=Point(-35.5, 68.9),
         )
-        VictimFactory(
-            gender='F',
-            race='White',
-            age=40,
-            allegation=allegation_2
+        allegation_2 = AllegationFactory(
+            crid=456,
+            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
+            most_common_category=category_2,
+            coaccused_count=20,
+            point=Point(37.3, 86.2),
+        )
+        allegation_3 = AllegationFactory(
+            crid=789,
+            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
+            most_common_category=category_2,
+            coaccused_count=18,
+            point=Point(37.3, 80.2),
         )
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
+
+        expected_data = {
+            'count': 3,
+            'limit': 2,
+            'results': [
+                {
+                    'date': '2004-01-01',
+                    'crid': '789',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 80.2
+                    },
+                },
+            ],
+        }
+
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-crs'), {'unit_id': 123, 'offset': 2})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data).to.eq(expected_data)
+
+    @patch('social_graph.views.DEFAULT_LIMIT', 2)
+    def test_geographic_trrs_with_unit_id_param(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+
+        unit = PoliceUnitFactory(id=123)
+
+        OfficerHistoryFactory(unit=unit, officer=officer_1)
+        OfficerHistoryFactory(unit=unit, officer=officer_2)
+        OfficerHistoryFactory(unit=unit, officer=officer_3)
+        OfficerHistoryFactory(unit=unit, officer=officer_4)
 
         TRRFactory(
             id=1,
@@ -1471,68 +1578,110 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             taser=False,
             firearm_used=True,
         )
+        TRRFactory(
+            id=3,
+            officer=officer_4,
+            trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
+            point=Point(33.3, 78.4),
+            taser=False,
+            firearm_used=True,
+        )
 
-        expected_data = [
-            {
-                'date': '2002-01-01',
-                'crid': '123',
-                'category': 'Use of Force',
-                'kind': 'CR',
-                'point': {
-                    'lon': -35.5,
-                    'lat': 68.9
+        expected_data = {
+            'count': 3,
+            'limit': 2,
+            'results': [
+                {
+                    'trr_id': 1,
+                    'date': '2004-01-01',
+                    'kind': 'FORCE',
+                    'taser': True,
+                    'firearm_used': False,
+                    'point': {
+                        'lon': -32.5,
+                        'lat': 61.3
+                    }
                 },
-            },
-            {
-                'date': '2003-01-01',
-                'crid': '456',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 86.2
+                {
+                    'trr_id': 2,
+                    'date': '2005-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 33.3,
+                        'lat': 78.4
+                    }
                 },
-            },
-            {
-                'date': '2004-01-01',
-                'crid': '789',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 80.2
-                },
-            },
-            {
-                'trr_id': 1,
-                'date': '2004-01-01',
-                'kind': 'FORCE',
-                'taser': True,
-                'firearm_used': False,
-                'point': {
-                    'lon': -32.5,
-                    'lat': 61.3
-                }
-            },
-            {
-                'trr_id': 2,
-                'date': '2005-01-01',
-                'kind': 'FORCE',
-                'taser': False,
-                'firearm_used': True,
-                'point': {
-                    'lon': 33.3,
-                    'lat': 78.4
-                }
-            },
-        ]
+            ],
+        }
 
-        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'unit_id': 123})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-trrs'), {'unit_id': 123})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        for data in expected_data:
-            expect(response.data).to.contain(data)
+        expect(response.data).to.eq(expected_data)
 
-    def test_geographic_with_pinboard_id_param(self):
+    @patch('social_graph.views.DEFAULT_LIMIT', 2)
+    def test_geographic_trrs_with_unit_id_param_and_pagination(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+
+        unit = PoliceUnitFactory(id=123)
+
+        OfficerHistoryFactory(unit=unit, officer=officer_1)
+        OfficerHistoryFactory(unit=unit, officer=officer_2)
+        OfficerHistoryFactory(unit=unit, officer=officer_3)
+        OfficerHistoryFactory(unit=unit, officer=officer_4)
+
+        TRRFactory(
+            id=1,
+            officer=officer_3,
+            trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
+            point=Point(-32.5, 61.3),
+            taser=True,
+            firearm_used=False,
+        )
+        TRRFactory(
+            id=2,
+            officer=officer_4,
+            trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
+            point=Point(33.3, 78.4),
+            taser=False,
+            firearm_used=True,
+        )
+        TRRFactory(
+            id=3,
+            officer=officer_4,
+            trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
+            point=Point(33.3, 78.4),
+            taser=False,
+            firearm_used=True,
+        )
+
+        expected_data = {
+            'count': 3,
+            'limit': 2,
+            'results': [
+                {
+                    'trr_id': 3,
+                    'date': '2005-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 33.3,
+                        'lat': 78.4
+                    }
+                },
+            ],
+        }
+
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-trrs'), {'unit_id': 123, 'offset': 2})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq(expected_data)
+
+    def test_geographic_crs_with_pinboard_id_param(self):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
@@ -1561,25 +1710,68 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             coaccused_count=18,
             point=Point(37.3, 80.2),
         )
-        VictimFactory(
-            gender='M',
-            race='Black',
-            age=35,
-            allegation=allegation_1
-        )
-        VictimFactory(
-            gender='F',
-            race='White',
-            age=40,
-            allegation=allegation_2
-        )
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
         OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
 
+        pinboard = PinboardFactory(
+            title='My Pinboard',
+            description='abc',
+        )
+
+        pinboard.officers.set([officer_3, officer_4])
+        pinboard.allegations.set([allegation_1, allegation_2])
+
+        expected_data = {
+            'count': 3,
+            'limit': 500,
+            'results': [
+                {
+                    'date': '2002-01-01',
+                    'crid': '123',
+                    'category': 'Use of Force',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': -35.5,
+                        'lat': 68.9
+                    },
+                },
+                {
+                    'date': '2003-01-01',
+                    'crid': '456',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 86.2
+                    },
+                },
+                {
+                    'date': '2004-01-01',
+                    'crid': '789',
+                    'category': 'Illegal Search',
+                    'kind': 'CR',
+                    'point': {
+                        'lon': 37.3,
+                        'lat': 80.2
+                    },
+                },
+            ],
+        }
+
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-crs'), {'pinboard_id': pinboard.id})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        expect(response.data).to.eq(expected_data)
+
+    def test_geographic_trrs_with_pinboard_id_param(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        OfficerFactory(id=3)
+
         TRRFactory(
             id=1,
-            officer=officer_3,
+            officer=officer_1,
             trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(-32.5, 61.3),
             taser=True,
@@ -1587,7 +1779,7 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         )
         TRRFactory(
             id=2,
-            officer=officer_4,
+            officer=officer_2,
             trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
             point=Point(33.3, 78.4),
             taser=False,
@@ -1599,65 +1791,37 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
             description='abc',
         )
 
-        pinboard.officers.set([officer_3, officer_4])
-        pinboard.allegations.set([allegation_1, allegation_2])
+        pinboard.officers.set([officer_1, officer_2])
 
-        expected_data = [
-            {
-                'date': '2002-01-01',
-                'crid': '123',
-                'category': 'Use of Force',
-                'kind': 'CR',
-                'point': {
-                    'lon': -35.5,
-                    'lat': 68.9
+        expected_data = {
+            'count': 2,
+            'limit': 500,
+            'results': [
+                {
+                    'trr_id': 1,
+                    'date': '2004-01-01',
+                    'kind': 'FORCE',
+                    'taser': True,
+                    'firearm_used': False,
+                    'point': {
+                        'lon': -32.5,
+                        'lat': 61.3
+                    }
                 },
-            },
-            {
-                'date': '2003-01-01',
-                'crid': '456',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 86.2
+                {
+                    'trr_id': 2,
+                    'date': '2005-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 33.3,
+                        'lat': 78.4
+                    }
                 },
-            },
-            {
-                'date': '2004-01-01',
-                'crid': '789',
-                'category': 'Illegal Search',
-                'kind': 'CR',
-                'point': {
-                    'lon': 37.3,
-                    'lat': 80.2
-                },
-            },
-            {
-                'trr_id': 1,
-                'date': '2004-01-01',
-                'kind': 'FORCE',
-                'taser': True,
-                'firearm_used': False,
-                'point': {
-                    'lon': -32.5,
-                    'lat': 61.3
-                }
-            },
-            {
-                'trr_id': 2,
-                'date': '2005-01-01',
-                'kind': 'FORCE',
-                'taser': False,
-                'firearm_used': True,
-                'point': {
-                    'lon': 33.3,
-                    'lat': 78.4
-                }
-            },
-        ]
+            ],
+        }
 
-        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic'), {'pinboard_id': pinboard.id})
+        response = self.client.get(reverse('api-v2:social-graph-mobile-geographic-trrs'), {'pinboard_id': pinboard.id})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        for data in expected_data:
-            expect(response.data).to.contain(data)
+        expect(response.data).to.eq(expected_data)

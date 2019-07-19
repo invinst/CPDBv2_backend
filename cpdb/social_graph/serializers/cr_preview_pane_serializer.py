@@ -31,7 +31,7 @@ class CoaccusedSerializer(NoNullSerializer):
 class CRPreviewPaneSerializer(NoNullSerializer):
     kind = serializers.SerializerMethodField()
     crid = serializers.CharField()
-    to = serializers.SerializerMethodField()
+    to = serializers.CharField(source='v2_to')
     category = serializers.SerializerMethodField()
     subcategory = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
@@ -50,6 +50,3 @@ class CRPreviewPaneSerializer(NoNullSerializer):
 
     def get_date(self, obj):
         return obj.incident_date.date().strftime(format='%Y-%m-%d')
-
-    def get_to(self, obj):
-        return f'/complaint/{obj.crid}/'
