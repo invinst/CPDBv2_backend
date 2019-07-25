@@ -297,8 +297,9 @@ class PinboardPageSerializer(SlugPageSerializer):
     empty_pinboard_description = RichTextField(
         fake_value=[
             'Use search to find officers and individual complaint records and press the plus button to add cards to '
-            'your pinboard. Come back to the pinboard to give it a title and see a network map or discover relevant '
-            'documents.'
+            'your pinboard.',
+            '',
+            'Come back to the pinboard to give it a title and see a network map or discover relevant documents.'
         ],
         source='fields'
     )
