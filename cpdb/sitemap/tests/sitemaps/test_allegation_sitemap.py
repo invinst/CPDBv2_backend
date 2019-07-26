@@ -1,13 +1,12 @@
 from datetime import datetime
 
-from django.test import TestCase
-from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
-
-from robber import expect
-from freezegun import freeze_time
 import pytz
+from django.test import TestCase
+from freezegun import freeze_time
+from robber import expect
 
 from data.factories import AllegationFactory
+from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
 
 
 class AllegationSitemapTestCase(TestCase):

@@ -1,13 +1,12 @@
 from datetime import datetime
 
-from django.test import TestCase
-from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
-
-from robber import expect
-from freezegun import freeze_time
 import pytz
+from django.test import TestCase
+from freezegun import freeze_time
+from robber import expect
 
 from data.factories import AttachmentFileFactory
+from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
 
 
 class AttachmentSitemapTestCase(TestCase):

@@ -1,12 +1,11 @@
 from datetime import datetime
 
-from django.test import TestCase
-from sitemap.sitemaps.trr_sitemap import TRRSitemap
-
-from robber import expect
-from freezegun import freeze_time
 import pytz
+from django.test import TestCase
+from freezegun import freeze_time
+from robber import expect
 
+from sitemap.sitemaps.trr_sitemap import TRRSitemap
 from trr.factories import TRRFactory
 
 
