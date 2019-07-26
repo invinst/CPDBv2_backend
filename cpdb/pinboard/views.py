@@ -85,8 +85,11 @@ class PinboardViewSet(
                     in request.session.get('owned_pinboards', [])):
             pinboard = get_object_or_404(Pinboard, id=request.session['latest_retrieved_pinboard'])
             return Response(self.serializer_class(pinboard).data)
-
-        return Response({})
+        elif 'create' in request.query_params and request.query_params['create'] == 'true':
+            pinboard = Pinboard.objects.create()
+            return Response(self.serializer_class(pinboard).data)
+        else:
+            return Response({})
 
     @detail_route(methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
