@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.sitemaps.views import sitemap, index
 from django.urls import re_path
 
@@ -15,7 +16,7 @@ sitemaps = {
     'trr': TRRSitemap,
     'unit': UnitSitemap,
     'attachment': AttachmentSitemap,
-}
+} if settings.ENABLE_SITEMAP else {}
 
 urlpatterns = [
     re_path(
