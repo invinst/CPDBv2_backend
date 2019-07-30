@@ -202,6 +202,10 @@ class LandingPageSerializer(SlugPageSerializer):
                     'on cpdp in addition to officers who are mentioned in conversation with our twitter bot,@cpdpbot'],
         source='fields'
     )
+    demo_video_text = RichTextField(
+        fake_value=['What is CPDP?'],
+        source='fields'
+    )
 
     class Meta:
         slug = 'landing-page'
