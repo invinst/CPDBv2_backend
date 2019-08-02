@@ -2,7 +2,7 @@ from django.db.models import Case, When
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from data.models import Officer, OfficerAlias
@@ -39,21 +39,21 @@ class OfficerBaseViewSet(viewsets.ViewSet):
 
 
 class OfficersDesktopViewSet(OfficerBaseViewSet):
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def summary(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerInfoSerializer(officer).data)
 
-    @detail_route(methods=['get'], url_path='new-timeline-items')
+    @action(detail=True, methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineQuery(officer).execute())
 
-    @list_route(methods=['get'], url_path='top-by-allegation')
+    @action(detail=False, methods=['get'], url_path='top-by-allegation', url_name='top-by-allegation')
     def top_officers_by_allegation(self, request):
         limit = int(request.GET.get('limit', 40))
 
@@ -65,7 +65,7 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
         ).order_by('-complaint_percentile')[:limit]
         return Response(OfficerCardSerializer(top_officers, many=True).data)
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def coaccusals(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
@@ -96,7 +96,7 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
 
         return Response(OfficerCardSerializer(officers, many=True).data)
 
-    @detail_route(methods=['get'], url_path='request-download')
+    @action(detail=True, methods=['get'], url_path='request-download')
     def request_download(self, request, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
@@ -115,7 +115,7 @@ class OfficersDesktopViewSet(OfficerBaseViewSet):
             url = ''
         return Response(data=url)
 
-    @detail_route(methods=['get'], url_path='create-zip-file')
+    @action(detail=True, methods=['get'], url_path='create-zip-file')
     def create_zip_file(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
@@ -132,14 +132,14 @@ class OfficersMobileViewSet(OfficerBaseViewSet):
         officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerInfoMobileSerializer(officer).data)
 
-    @detail_route(methods=['get'], url_path='new-timeline-items')
+    @action(detail=True, methods=['get'], url_path='new-timeline-items')
     def new_timeline_items(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()
         officer = get_object_or_404(queryset, id=officer_id)
         return Response(OfficerTimelineMobileQuery(officer).execute())
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def coaccusals(self, _, pk):
         officer_id = self.get_officer_id(pk)
         queryset = Officer.objects.all()

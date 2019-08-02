@@ -1,3 +1,5 @@
+import pytz
+
 from rest_framework.serializers import Serializer, CharField, IntegerField, DateTimeField, NullBooleanField
 
 
@@ -8,7 +10,7 @@ class TRRXlsxSerializer(Serializer):
     direction = CharField(allow_null=True)
     street = CharField(allow_null=True)
     location = CharField(allow_null=True)
-    trr_datetime = DateTimeField(format='%Y-%m-%d', allow_null=True)
+    trr_datetime = DateTimeField(format='%Y-%m-%d', allow_null=True, default_timezone=pytz.utc)
     indoor_or_outdoor = CharField(allow_null=True)
     lighting_condition = CharField(allow_null=True)
     weather_condition = CharField(allow_null=True)

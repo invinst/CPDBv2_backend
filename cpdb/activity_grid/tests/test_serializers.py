@@ -56,7 +56,7 @@ class ActivityCardSerializerTestCase(TestCase):
             },
             'important': True,
             'null_position': 2,
-            'last_activity': '2002-02-27T18:00:00-06:00',
+            'last_activity': '2002-02-28T00:00:00Z',
             'kind': 'single_officer'
         })
 

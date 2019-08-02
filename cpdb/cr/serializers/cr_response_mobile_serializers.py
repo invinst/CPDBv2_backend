@@ -1,3 +1,5 @@
+import pytz
+
 from rest_framework import serializers
 from django.db.models import Prefetch, Exists, OuterRef
 
@@ -96,9 +98,9 @@ class CRMobileSerializer(NoNullSerializer):
     victims = VictimMobileSerializer(many=True)
     summary = serializers.CharField()
     point = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
-    start_date = serializers.DateTimeField(source='first_start_date', format='%Y-%m-%d')
-    end_date = serializers.DateTimeField(source='first_end_date', format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
+    start_date = serializers.DateField(source='first_start_date', format='%Y-%m-%d')
+    end_date = serializers.DateField(source='first_end_date', format='%Y-%m-%d')
     address = serializers.CharField()
     location = serializers.CharField()
     beat = serializers.SerializerMethodField()

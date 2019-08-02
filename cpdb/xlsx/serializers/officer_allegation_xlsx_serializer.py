@@ -1,3 +1,5 @@
+import pytz
+
 from rest_framework.serializers import (
     Serializer, CharField, DateTimeField, BooleanField, IntegerField, DateField, NullBooleanField, FloatField
 )
@@ -9,7 +11,9 @@ class OfficerAllegationXlsxSerializer(Serializer):
     officer_name = CharField(allow_blank=True, source='officer.full_name')
     address = CharField(allow_blank=True, source='allegation.address')
     old_complaint_address = CharField(allow_null=True, source='allegation.old_complaint_address')
-    incident_date = DateTimeField(format='%Y-%m-%d', allow_null=True, source='allegation.incident_date')
+    incident_date = DateTimeField(
+        format='%Y-%m-%d', allow_null=True, source='allegation.incident_date', default_timezone=pytz.utc
+    )
     is_officer_complaint = BooleanField(source='allegation.is_officer_complaint')
     beat = CharField(source='allegation.beat.name', allow_null=True)
     coaccused_count = IntegerField(allow_null=True, source='allegation.coaccused_count')
