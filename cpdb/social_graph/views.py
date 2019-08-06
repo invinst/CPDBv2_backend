@@ -12,12 +12,14 @@ from pinboard.models import Pinboard
 from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
-from social_graph.serializers.officer_detail_serializer import OfficerDetailSerializer
-from social_graph.serializers.allegation_serializer import AllegationSerializer
-from social_graph.serializers.cr_serializer import CRSerializer
-from social_graph.serializers.cr_preview_pane_serializer import CRPreviewPaneSerializer
-from social_graph.serializers.trr_serializer import TRRSerializer
-from social_graph.serializers.trr_preview_pane_serializer import TRRPreviewPaneSerializer
+from social_graph.serializers import (
+    OfficerDetailSerializer,
+    SocialGraphCRDetailSerializer,
+    CRSerializer,
+    CRDetailSerializer,
+    TRRSerializer,
+    TRRDetailSerializer,
+)
 
 DEFAULT_LIMIT = 500
 
@@ -44,7 +46,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             'victims',
         )
 
-        return Response(AllegationSerializer(allegations, many=True).data)
+        return Response(SocialGraphCRDetailSerializer(allegations, many=True).data)
 
     @list_route(methods=['get'], url_path='officers')
     def officers(self, _):
@@ -73,7 +75,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             )
 
         paginated_cr_data = paginator.paginate_queryset(cr_data, request, view=self)
-        serializer_klass = CRPreviewPaneSerializer if self._detail else CRSerializer
+        serializer_klass = CRDetailSerializer if self._detail else CRSerializer
         serializer = serializer_klass(paginated_cr_data, many=True)
 
         return Response({
@@ -95,7 +97,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             trr_data = trr_data.select_related('officer')
 
         paginated_trr_data = paginator.paginate_queryset(trr_data, request, view=self)
-        serializer_klass = TRRPreviewPaneSerializer if self._detail else TRRSerializer
+        serializer_klass = TRRDetailSerializer if self._detail else TRRSerializer
         serializer = serializer_klass(paginated_trr_data, many=True)
 
         return Response({
