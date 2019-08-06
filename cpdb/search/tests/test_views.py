@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from django.urls import reverse
 from rest_framework.test import APITestCase
@@ -131,8 +131,31 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results[0]['id']).to.eq('123456')
 
     def test_search_date_trr_result(self):
-        TRRFactory(id='123', trr_datetime=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
-        TRRFactory(id='456', trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc)).save()
+        officer = OfficerFactory(
+            id=123456,
+            rank='Sergeant of Police',
+            first_name='Jesse',
+            last_name='Pinkman',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            allegation_count=1,
+            resignation_date=date(2015, 4, 14)
+        )
+        TRRFactory(
+            id='123',
+            trr_datetime=datetime(2007, 12, 27, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            id='456',
+            trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc),
+            block='3000',
+            street='Michigan Ave',
+            taser=False,
+            firearm_used=True,
+            officer=officer
+        )
 
         self.rebuild_index()
         self.refresh_index()
@@ -144,8 +167,84 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
 
         results = response.data['DATE > TRR']
         expect(results).to.have.length(1)
-
         expect(results[0]['id']).to.eq('456')
+        expect(results[0]).to.eq({
+            'id': '456',
+            'trr_datetime': '2008-12-27',
+            'to': '/trr/456/',
+            'category': 'Firearm',
+            'address': '3000 Michigan Ave',
+            'officer': {
+                'id': 123456,
+                'full_name': 'Jesse Pinkman',
+                'percentile':
+                {
+                    'id': 123456,
+                    'percentile_trr': '3.3000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000'
+                },
+                'allegation_count': 1
+            }
+        })
+
+    def test_search_date_trr_result_empty_block(self):
+        TRRFactory(
+            id='456',
+            trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc),
+            street='Michigan Ave'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '2008-12-27',
+        })
+
+        results = response.data['DATE > TRR']
+        expect(results).to.have.length(1)
+        expect(results[0]['address']).to.eq('Michigan Ave')
+
+    def test_search_date_trr_result_empty_street(self):
+        TRRFactory(
+            id='456',
+            trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc),
+            block='3000'
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '2008-12-27',
+        })
+
+        results = response.data['DATE > TRR']
+        expect(results).to.have.length(1)
+        expect(results[0]['address']).to.eq('3000')
+
+    def test_search_date_trr_result_empty_officer(self):
+        TRRFactory(
+            id='456',
+            trr_datetime=datetime(2008, 12, 27, tzinfo=pytz.utc),
+            block='3000',
+            officer=None,
+        )
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '2008-12-27',
+        })
+
+        results = response.data['DATE > TRR']
+        expect(results).to.have.length(1)
+        expect(results[0]).not_to.contain('officer')
 
     def test_retrieve_single_with_content_type(self):
         OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)

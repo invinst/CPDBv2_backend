@@ -4,6 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from data.models import Officer, AttachmentFile
@@ -11,8 +12,16 @@ from pinboard.models import Pinboard
 from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
 from social_graph.queries.geographic_data_query import GeographyDataQuery
-from social_graph.serializers.officer_detail_serializer import OfficerDetailSerializer
-from social_graph.serializers.social_graph_cr_detail_serializer import SocialGraphCRDetailSerializer
+from social_graph.serializers import (
+    OfficerDetailSerializer,
+    SocialGraphCRDetailSerializer,
+    CRSerializer,
+    CRDetailSerializer,
+    TRRSerializer,
+    TRRDetailSerializer,
+)
+
+DEFAULT_LIMIT = 500
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -48,10 +57,54 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             ).data
         )
 
-    @list_route(methods=['get'], url_path='geographic')
-    def geographic(self, _):
+    @list_route(methods=['get'], url_path='geographic-crs')
+    def geographic_crs(self, request):
         geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
-        return Response(geographic_data_query.execute())
+
+        paginator = LimitOffsetPagination()
+        paginator.default_limit = DEFAULT_LIMIT
+
+        cr_data = geographic_data_query.cr_data()
+
+        if self._detail:
+            cr_data = cr_data.prefetch_related(
+                'officerallegation_set',
+                'officerallegation_set__officer',
+                'officerallegation_set__allegation_category',
+                'victims',
+            )
+
+        paginated_cr_data = paginator.paginate_queryset(cr_data, request, view=self)
+        serializer_klass = CRDetailSerializer if self._detail else CRSerializer
+        serializer = serializer_klass(paginated_cr_data, many=True)
+
+        return Response({
+            'count': paginator.count,
+            'limit': paginator.default_limit,
+            'results': serializer.data
+        })
+
+    @list_route(methods=['get'], url_path='geographic-trrs')
+    def geographic_trrs(self, request):
+        geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
+
+        paginator = LimitOffsetPagination()
+        paginator.default_limit = DEFAULT_LIMIT
+
+        trr_data = geographic_data_query.trr_data()
+
+        if self._detail:
+            trr_data = trr_data.select_related('officer')
+
+        paginated_trr_data = paginator.paginate_queryset(trr_data, request, view=self)
+        serializer_klass = TRRDetailSerializer if self._detail else TRRSerializer
+        serializer = serializer_klass(paginated_trr_data, many=True)
+
+        return Response({
+            'count': paginator.count,
+            'limit': paginator.default_limit,
+            'results': serializer.data
+        })
 
     @property
     def _social_graph_data_query(self):
@@ -103,14 +156,13 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
     def _complaint_origin(self):
         return self.request.query_params.get('complaint_origin', None)
 
+    @property
+    def _detail(self):
+        return self.request.query_params.get('detail', None)
+
 
 class SocialGraphDesktopViewSet(SocialGraphBaseViewSet):
     PINBOARD_SHOW_CONNECTED_OFFICERS = True
-
-    @list_route(methods=['get'], url_path='detail-geographic')
-    def detail_geographic(self, _):
-        detail_geographic_data_query = GeographyDataQuery(officers=self._data['officers'], detail=True)
-        return Response(detail_geographic_data_query.execute())
 
 
 class SocialGraphMobileViewSet(SocialGraphBaseViewSet):

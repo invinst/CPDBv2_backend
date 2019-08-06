@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer
-from social_graph.serializers.cr_detail_serializer import CRDetailSerializer
+from social_graph.serializers import CRDetailSerializer
 
 
 class AttachmentFileSerializer(NoNullSerializer):

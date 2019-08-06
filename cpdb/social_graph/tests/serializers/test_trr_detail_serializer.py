@@ -6,7 +6,7 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory
-from social_graph.serializers.trr_detail_serializer import TRRDetailSerializer
+from social_graph.serializers import TRRDetailSerializer
 from trr.factories import TRRFactory
 
 

@@ -1,8 +1,7 @@
 import functools
 from django.db import connection
 
-from social_graph.serializers.officer_serializer import OfficerSerializer
-from social_graph.serializers.accused_serializer import AccusedSerializer
+from social_graph.serializers import OfficerSerializer, AccusedSerializer
 from data.models import Officer, Allegation
 from utils.raw_query_utils import dict_fetch_all
 

@@ -289,6 +289,26 @@ class TRRPageSerializer(SlugPageSerializer):
         model = SlugPage
 
 
+class PinboardPageSerializer(SlugPageSerializer):
+    empty_pinboard_title = RichTextField(
+        fake_value=['Get started'],
+        source='fields'
+    )
+    empty_pinboard_description = RichTextField(
+        fake_value=[
+            'Use search to find officers and individual complaint records and press the plus button to add cards to '
+            'your pinboard.',
+            '',
+            'Come back to the pinboard to give it a title and see a network map or discover relevant documents.'
+        ],
+        source='fields'
+    )
+
+    class Meta:
+        slug = 'pinboard-page'
+        model = SlugPage
+
+
 def get_slug_page_serializer(cms_page):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if cms_page.serializer_class == name:

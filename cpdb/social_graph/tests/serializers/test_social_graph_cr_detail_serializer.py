@@ -14,7 +14,7 @@ from data.factories import (
     OfficerAllegationFactory,
     VictimFactory,
 )
-from social_graph.serializers.social_graph_cr_detail_serializer import SocialGraphCRDetailSerializer
+from social_graph.serializers import SocialGraphCRDetailSerializer
 
 
 class SocialGraphCRDetailSerializerTestCase(TestCase):
