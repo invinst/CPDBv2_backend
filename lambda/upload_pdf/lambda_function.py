@@ -1,4 +1,4 @@
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 import boto3
 
@@ -8,7 +8,9 @@ def lambda_handler(event, context):
     url = event['url']
     key = event['key']
     bucket = event['bucket']
-    data = urlopen(url).read()
+    req = Request(url, data=None, headers={'User-Agent': ''})
+    data = urlopen(req).read()
+
     s3.put_object(Body=data, Bucket=bucket, Key=key)
     return {
         'statusCode': 200,

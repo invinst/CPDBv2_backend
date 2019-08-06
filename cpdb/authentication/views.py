@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from authentication.utils import send_forgot_password_email
@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ViewSet):
-    @list_route(methods=['post'], url_path='sign-in')
+    @action(detail=False, methods=['post'], url_path='sign-in', url_name='sign-in')
     def sign_in(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -33,7 +33,7 @@ class UserViewSet(viewsets.ViewSet):
                 'apiAccessToken': token.key
                 }, status=status.HTTP_200_OK)
 
-    @list_route(methods=['post'], url_path='forgot-password')
+    @action(detail=False, methods=['post'], url_path='forgot-password', url_name='forgot-password')
     def password_reset(self, request):
         email = request.data.get('email')
 

@@ -2,19 +2,22 @@
 set -e
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-    echo "Run a job on production or staging."
+    echo "Run a job on production or beta or staging."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging} <backend_image_tag> <django_command> [additional_flags]"
+    echo "Usage: `basename $0` {--production|--beta|--staging} <backend_image_tag> <django_command> [additional_flags]"
     echo "       `basename $0` {-h|--help}"
     echo "Example:"
     echo "    $ `basename $0` --staging latest rebuild_index"
     exit 0
 elif [ -z "$1" ]; then
-    echo "Must specify either --production or --staging."
+    echo "Must specify either --production or --beta or --staging."
     exit 1
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
     NAMESPACE=production
+elif [ "$1" == "--beta" ]; then
+    ENV_FILE=beta.env
+    NAMESPACE=beta
 elif [ "$1" == "--staging" ]; then
     ENV_FILE=staging.env
     NAMESPACE=staging
