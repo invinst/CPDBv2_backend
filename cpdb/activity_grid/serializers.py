@@ -1,6 +1,6 @@
-import pytz
-
 from rest_framework import serializers
+
+import pytz
 
 from twitterbot.constants import RESPONSE_TYPE_COACCUSED_PAIR, RESPONSE_TYPE_SINGLE_OFFICER
 

@@ -1,6 +1,6 @@
-import pytz
-
 from rest_framework.serializers import Serializer, CharField, DateTimeField
+
+import pytz
 
 
 class AttachmentXlsxSerializer(Serializer):

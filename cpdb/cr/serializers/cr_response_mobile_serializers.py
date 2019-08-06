@@ -1,7 +1,7 @@
-import pytz
-
 from rest_framework import serializers
 from django.db.models import Prefetch, Exists, OuterRef
+
+import pytz
 
 from data.models import Investigator
 from shared.serializer import NoNullSerializer

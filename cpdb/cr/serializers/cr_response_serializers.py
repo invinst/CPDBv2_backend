@@ -1,7 +1,7 @@
-import pytz
-
 from rest_framework import serializers
 from django.db.models import Prefetch, Exists, OuterRef
+
+import pytz
 
 from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import AttachmentRequest, Investigator

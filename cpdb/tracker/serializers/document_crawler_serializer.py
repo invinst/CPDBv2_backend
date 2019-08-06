@@ -1,7 +1,7 @@
-import pytz
-
 from rest_framework import serializers
 from shared.serializer import NoNullSerializer
+
+import pytz
 
 
 class DocumentCrawlerSerializer(NoNullSerializer):

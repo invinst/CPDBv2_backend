@@ -1,6 +1,6 @@
-import pytz
-
 from rest_framework.serializers import Serializer, CharField, IntegerField, DateTimeField, NullBooleanField
+
+import pytz
 
 
 class TRRXlsxSerializer(Serializer):

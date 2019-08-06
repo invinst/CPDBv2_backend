@@ -1,8 +1,8 @@
-import pytz
-
 from rest_framework.serializers import (
     Serializer, CharField, DateTimeField, BooleanField, IntegerField, DateField, NullBooleanField, FloatField
 )
+
+import pytz
 
 
 class OfficerAllegationXlsxSerializer(Serializer):
