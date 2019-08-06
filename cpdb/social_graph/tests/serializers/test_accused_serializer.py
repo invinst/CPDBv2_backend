@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from robber import expect
 
-from social_graph.serializers.accused_serializer import AccusedSerializer
+from social_graph.serializers import AccusedSerializer
 
 
 class AccusedSerializerTestCase(TestCase):

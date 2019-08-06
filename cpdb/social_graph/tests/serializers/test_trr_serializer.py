@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.test import TestCase
 from robber import expect
 
-from social_graph.serializers.trr_serializer import TRRSerializer
+from social_graph.serializers import TRRSerializer
 from trr.factories import TRRFactory
 
 
