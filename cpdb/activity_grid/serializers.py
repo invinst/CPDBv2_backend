@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import pytz
+
 from twitterbot.constants import RESPONSE_TYPE_COACCUSED_PAIR, RESPONSE_TYPE_SINGLE_OFFICER
 
 
@@ -32,7 +34,7 @@ class OfficerCardSerializer(serializers.Serializer):
     percentile = OfficerPercentileSerializer(source='officer')
     important = serializers.BooleanField()
     null_position = serializers.IntegerField()
-    last_activity = serializers.DateTimeField()
+    last_activity = serializers.DateTimeField(default_timezone=pytz.utc)
     kind = serializers.CharField(default=RESPONSE_TYPE_SINGLE_OFFICER)
 
 
@@ -55,5 +57,5 @@ class PairCardSerializer(serializers.Serializer):
     coaccusal_count = serializers.IntegerField()
     important = serializers.BooleanField()
     null_position = serializers.IntegerField()
-    last_activity = serializers.DateTimeField()
+    last_activity = serializers.DateTimeField(default_timezone=pytz.utc)
     kind = serializers.CharField(default=RESPONSE_TYPE_COACCUSED_PAIR)
