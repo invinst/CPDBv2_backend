@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import pytz
+
 from shared.serializer import NoNullSerializer
 from .coaccused_serializer import CoaccusedSerializer
 
@@ -11,7 +13,7 @@ class TRRSerializer(NoNullSerializer):
     firearm_used = serializers.NullBooleanField()
     address = serializers.SerializerMethodField()
     officer = serializers.SerializerMethodField()
-    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
+    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     point = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
 

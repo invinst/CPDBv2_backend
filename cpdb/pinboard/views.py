@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, mixins, status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -78,7 +78,7 @@ class PinboardViewSet(
         request.session['latest_retrieved_pinboard'] = pinboard_id
         request.session['modified'] = True
 
-    @list_route(methods=['GET'], url_path='latest-retrieved-pinboard')
+    @action(detail=False, methods=['GET'], url_path='latest-retrieved-pinboard')
     def latest_retrieved_pinboard(self, request):
         if ('latest_retrieved_pinboard' in request.session) and \
                 (request.session['latest_retrieved_pinboard']
@@ -88,26 +88,26 @@ class PinboardViewSet(
 
         return Response({})
 
-    @detail_route(methods=['GET'], url_path='complaints')
+    @action(detail=True, methods=['GET'], url_path='complaints')
     def complaints(self, request, pk):
         allegations = Allegation.objects.get_complaints_in_pinboard(pk)
 
         serializer = self.pinned_complaint_serializer_class(allegations, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET'], url_path='officers')
+    @action(detail=True, methods=['GET'], url_path='officers')
     def officers(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
         serializer = self.pinned_officer_serializer_class(pinboard.officers, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET'], url_path='trrs')
+    @action(detail=True, methods=['GET'], url_path='trrs')
     def trrs(self, request, pk):
         pinboard = get_object_or_404(Pinboard, id=pk)
         serializer = self.pinned_trr_serializer_class(pinboard.trrs, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['get'], url_path='relevant-coaccusals')
+    @action(detail=True, methods=['get'], url_path='relevant-coaccusals')
     def relevant_coaccusals(self, request, pk):
         queryset = Pinboard.objects.all()
         pinboard = get_object_or_404(queryset, id=pk)
@@ -117,7 +117,7 @@ class PinboardViewSet(
         serializer = self.relevant_coaccusal_serializer_class(relevant_coaccusals, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], url_path='relevant-documents')
+    @action(detail=True, methods=['get'], url_path='relevant-documents')
     def relevant_documents(self, request, pk):
         queryset = Pinboard.objects.all()
         pinboard = get_object_or_404(queryset, id=pk)
@@ -127,7 +127,7 @@ class PinboardViewSet(
         serializer = self.relevant_document_serializer_class(relevant_documents, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], url_path='relevant-complaints')
+    @action(detail=True, methods=['get'], url_path='relevant-complaints')
     def relevant_complaints(self, request, pk):
         queryset = Pinboard.objects.all()
         pinboard = get_object_or_404(queryset, id=pk)

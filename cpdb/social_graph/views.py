@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
@@ -24,11 +24,11 @@ DEFAULT_LIMIT = 500
 
 @method_decorator(never_cache, name='dispatch')
 class SocialGraphBaseViewSet(viewsets.ViewSet):
-    @list_route(methods=['get'], url_path='network')
+    @action(detail=False, methods=['get'], url_path='network')
     def network(self, _):
         return Response(self._social_graph_data_query.graph_data())
 
-    @list_route(methods=['get'], url_path='allegations')
+    @action(detail=False, methods=['get'], url_path='allegations')
     def allegations(self, _):
         allegations = self._social_graph_data_query.allegations().select_related(
             'most_common_category'
@@ -46,7 +46,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
 
         return Response(AllegationSerializer(allegations, many=True).data)
 
-    @list_route(methods=['get'], url_path='officers')
+    @action(detail=False, methods=['get'], url_path='officers')
     def officers(self, _):
         return Response(
             OfficerDetailSerializer(
@@ -55,7 +55,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             ).data
         )
 
-    @list_route(methods=['get'], url_path='geographic-crs')
+    @action(detail=False, methods=['get'], url_path='geographic-crs')
     def geographic_crs(self, request):
         geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
 
@@ -82,7 +82,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             'results': serializer.data
         })
 
-    @list_route(methods=['get'], url_path='geographic-trrs')
+    @action(detail=False, methods=['get'], url_path='geographic-trrs')
     def geographic_trrs(self, request):
         geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
 

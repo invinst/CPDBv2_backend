@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import pytz
+
 from shared.serializer import NoNullSerializer
 from .victim_serializer import VictimSerializer
 
@@ -8,7 +10,7 @@ class AllegationSerializer(NoNullSerializer):
     crid = serializers.CharField()
     address = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     victims = VictimSerializer(many=True)
     point = serializers.SerializerMethodField()
     to = serializers.SerializerMethodField()
