@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from search.formatters import AreaFormatter, ZipCodeFormatter
 from search.workers import ZipCodeWorker, DateOfficerWorker
@@ -33,7 +33,7 @@ class SearchViewSet(viewsets.ViewSet):
             hooks=self.hooks
         )
 
-    @list_route(methods=['get'], url_path='single')
+    @action(detail=False, methods=['get'], url_path='single')
     def single(self, request):
         term = self._search_term
         if not self._content_type:

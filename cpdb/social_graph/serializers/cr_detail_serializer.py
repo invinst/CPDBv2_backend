@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import pytz
+
 from shared.serializer import NoNullSerializer
 from social_graph.serializers.victim_serializer import VictimSerializer
 from social_graph.serializers.officer_percentile_serializer import OfficerPercentileSerializer
@@ -21,7 +23,7 @@ class CRDetailSerializer(NoNullSerializer):
     to = serializers.CharField(source='v2_to')
     category = serializers.SerializerMethodField()
     subcategory = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     address = serializers.CharField()
     victims = VictimSerializer(many=True)
     coaccused = CoaccusedSerializer(many=True, source='officer_allegations')

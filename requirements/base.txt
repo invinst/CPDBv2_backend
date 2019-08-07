@@ -1,7 +1,7 @@
-Django==2.1.8
+Django==2.1.11
 django-environ==0.4.0
 django-filter==2.0.0
-djangorestframework==3.7.7
+djangorestframework==3.9.1
 six==1.10.0
 psycopg2==2.7.6.1
 django-cors-headers==2.4.0
@@ -26,7 +26,7 @@ django-admin-sortable==2.1.9
 sh==1.12.14
 Faker==0.9.0
 python-dateutil==2.6.1
-Twisted[tls]==18.4.0
+Twisted[tls]==19.2.1
 dateparser==0.7.0
 tweepy==3.6.0
 zipcodes==1.0.4

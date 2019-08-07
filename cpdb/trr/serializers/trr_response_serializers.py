@@ -1,14 +1,15 @@
 from rest_framework import serializers
 
 from trr.models import TRRAttachmentRequest
+from shared.serializer import NoNullSerializer
 
 
-class UnitSerializer(serializers.Serializer):
+class UnitSerializer(NoNullSerializer):
     unit_name = serializers.CharField(max_length=255)
     description = serializers.CharField(max_length=255, allow_null=True)
 
 
-class OfficerSerializer(serializers.Serializer):
+class OfficerSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField(max_length=255)
     gender = serializers.CharField(max_length=255)
@@ -23,7 +24,7 @@ class OfficerSerializer(serializers.Serializer):
     percentile_trr = serializers.FloatField(required=False, allow_null=True)
 
 
-class TRRSerializer(serializers.Serializer):
+class TRRSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     officer = OfficerSerializer(read_only=True)
     officer_in_uniform = serializers.BooleanField(read_only=True, default=False)

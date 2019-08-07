@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import pytz
+
 from data.models import AttachmentFile
 from shared.serializer import NoNullSerializer
 from ..common import OfficerRowSerializer
@@ -8,7 +10,7 @@ from ..common import OfficerRowSerializer
 class AllegationSerializer(NoNullSerializer):
     crid = serializers.CharField()
     category = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     coaccused = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
 
