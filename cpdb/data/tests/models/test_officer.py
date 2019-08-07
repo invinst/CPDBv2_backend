@@ -33,7 +33,8 @@ class OfficerTestCase(TestCase):
         expect(officer.v2_to).to.eq('/officer/1/jerome-finnigan/')
 
     def test_get_absolute_url(self):
-        expect(Officer(pk=1).get_absolute_url()).to.eq('/officer/1/')
+        officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
+        expect(officer.get_absolute_url()).to.eq('/officer/1/jerome-finnigan/')
 
     @freeze_time('2017-01-14 12:00:01', tz_offset=0)
     def test_current_age(self):

@@ -3,13 +3,13 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.sites.requests import RequestSite
 
 
 def send_forgot_password_email(request, user):
-    current_site = get_current_site(request)
-    site_name = current_site.name
-    domain = current_site.domain
+    request_site = RequestSite(request)
+    site_name = request_site.name
+    domain = request_site.domain
     context = {
         'email': user.email,
         'domain': domain,

@@ -43,7 +43,6 @@ from social_graph.views import SocialGraphViewSet
 from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
 
-
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'vftg', VFTGViewSet, basename='vftg')
 router_v1.register(r'suggestion', SearchV1ViewSet, basename='suggestion')
@@ -86,7 +85,9 @@ urlpatterns = [
     re_path(
         r'^reset-password-complete/$',
         auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    re_path(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect')
+    re_path(r'^sitemap', include('sitemap.urls')),
+    re_path(r'^.+$', RedirectView.as_view(url='/', permanent=True), name='index_redirect'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:  # pragma: no cover

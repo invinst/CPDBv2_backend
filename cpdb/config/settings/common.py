@@ -19,6 +19,8 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='django')
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1
+
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
@@ -29,6 +31,8 @@ DJANGO_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.sitemaps',
+    'django.contrib.sites',
 )
 
 THIRD_PARTY_APPS = (
@@ -67,6 +71,7 @@ LOCAL_APPS = (
     'social_graph',
     'xlsx',
     'tracker',
+    'sitemap',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -302,3 +307,5 @@ S3_BUCKET_ZIP_DIRECTORY = 'zip'
 
 GOOGLE_APPLICATION_CREDENTIALS = env.str('GOOGLE_APPLICATION_CREDENTIALS', default='')
 GOOGLE_ANALYTICS_VIEW_ID = '129538462'
+
+ENABLE_SITEMAP = False
