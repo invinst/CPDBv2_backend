@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 from subprocess import check_output
 import os
 import json
@@ -56,18 +57,18 @@ def call_cmd(cmd):
 
 
 def get_latest_code():
-    call_cmd('git checkout develop')
+    call_cmd('git checkout %s' % feature_branch)
     call_cmd('git pull')
-    call_cmd('git checkout master')
+    call_cmd('git checkout %s' % base_branch)
     call_cmd('git pull')
 
 
 def get_deploy_prs_and_stories():
     current_branch = call_cmd("git branch | grep \\* | cut -d ' ' -f2")
-    call_cmd('git checkout master')
+    call_cmd('git checkout %s' % base_branch)
     cur_id = call_cmd("git rev-parse HEAD")
-    call_cmd('git checkout -b master-%s' % cur_id)
-    call_cmd('git merge develop -q -m "Merge changes from develop"')
+    call_cmd('git checkout -b %s-%s' % (base_branch, cur_id))
+    call_cmd('git merge %s -q -m "Merge changes from %s"' % (feature_branch, feature_branch))
     prs = call_cmd(
         "git --no-pager log %s..HEAD --pretty=oneline --abbrev-commit --grep 'Merge pull request' | "
         "sed -E 's/.+Merge pull request #([0-9]+).+/\\1/p' | sort -u -" % cur_id
@@ -77,7 +78,7 @@ def get_deploy_prs_and_stories():
         r"sed -E '/.+pivotaltracker.com\/story\/show\/([0-9]+).*/!d;s//\1/' | sort -u " % cur_id
     )
     call_cmd('git checkout %s' % current_branch)
-    call_cmd('git branch -D master-%s' % cur_id)
+    call_cmd('git branch -D %s-%s' % (base_branch, cur_id))
     return filter(None, prs.split('\n')), filter(None, stories.split('\n'))
 
 
@@ -187,10 +188,10 @@ def get_pr_deploy_notes(pr_ids, github_token):
 
 def create_deployment_pr(pr_body, github_token):
     pr_data = {
-        'title': 'Production deploy %s' % datetime.now(),
+        'title': '%s deploy %s' % (base_branch.capitalize(), datetime.now()),
         'body': pr_body,
-        'head': 'develop',
-        'base': 'master'
+        'head': feature_branch,
+        'base': base_branch,
     }
 
     data = json.dumps(pr_data)
@@ -213,11 +214,18 @@ def create_deployment_pr(pr_body, github_token):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('feature_branch', help='the branch containing new changes (develop/feature)', default='develop')
+    parser.add_argument('base_branch', help='the branch used to deploy (master/beta)', default='master')
+    args = parser.parse_args()
+    feature_branch = args.feature_branch
+    base_branch = args.base_branch
+
     get_latest_code()
 
     pr_ids, story_ids = get_deploy_prs_and_stories()
     if len(pr_ids) == 0:
-        print('No difference between master and develop.')
+        print('No difference between %s and %s.' % (base_branch, feature_branch))
         sys.exit(0)
 
     pt_stories = get_pt_stories(story_ids)
