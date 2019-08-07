@@ -17,7 +17,7 @@ deploy_lambda () {
   zip -g ./function.zip ./lambda_function.py
 
   echo "Updating Lambda function"
-  aws lambda update-function-code --function-name $FUNCTION_NAME$STAGING_SUFFIX --zip-file fileb://function.zip
+  aws lambda update-function-code --function-name $FUNCTION_NAME$FUNCTION_SUFFIX --zip-file fileb://function.zip
 
   echo "Cleaning stuffs"
   rm ./function.zip
@@ -29,19 +29,22 @@ deploy_lambda () {
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Update lambda function code."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging(default)} <command>"
+    echo "Usage: `basename $0` {--production|--beta|--staging(default)} <command>"
     echo "       `basename $0` {-h|--help}"
     exit 0
 elif [ -z "$1" ]; then
-    STAGING_SUFFIX=Staging
+    FUNCTION_SUFFIX=Staging
 elif [ "$1" == "--production" ]; then
-    STAGING_SUFFIX=''
+    FUNCTION_SUFFIX=''
+    shift
+elif [ "$1" == "--beta" ]; then
+    FUNCTION_SUFFIX='Beta'
     shift
 else
     if [ "$1" == "--staging" ]; then
         shift
     fi
-    STAGING_SUFFIX=Staging
+    FUNCTION_SUFFIX=Staging
 fi
 package=$1
 

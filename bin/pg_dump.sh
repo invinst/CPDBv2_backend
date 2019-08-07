@@ -9,11 +9,15 @@ FILE_DIR="$(cd "$(dirname "$2")"; pwd)"
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Dump data from PostgreSQL database."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging|--local(default)} outfile."
+    echo "Usage: `basename $0` {--production|--beta|--staging|--local(default)} outfile."
     echo "       `basename $0` {-h|--help}"
     exit 0
 elif [ "$1" == "--production" ]; then
     ENV_FILE=prod.env
+    SERVICE=pg-proxy
+    OUTFILE=$2
+elif [ "$1" == "--beta" ]; then
+    ENV_FILE=beta.env
     SERVICE=pg-proxy
     OUTFILE=$2
 elif [ "$1" == "--staging" ]; then

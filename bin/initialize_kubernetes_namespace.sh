@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-    echo "Initialize kubernetes cluster."
+    echo "Initialize kubernetes namespace."
     echo ""
     echo "Usage: `basename $0` {--production|--beta|--staging}"
     echo "       `basename $0` {-h|--help}"
@@ -29,7 +29,14 @@ export $(cut -d= -f1 $ENV_FILE)
 kubectl apply -f kubernetes/namespaces.yml
 kubectl apply -f kubernetes/secrets-$NAMESPACE.yml
 
-# Create nginx ingress controller
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
+cat kubernetes/ingress.yml | envsubst | kubectl apply -f - -n $NAMESPACE
+kubectl apply -f kubernetes/redirect-ingress.yml
+
+# Deploy cloud sql proxy
+cat kubernetes/pg_proxy.yml | envsubst | kubectl apply -f - -n $NAMESPACE
+
+# Deploy Elasticsearch
+kubectl apply -f kubernetes/elasticsearch.yml -n $NAMESPACE
+
+# Deploy Redis
+kubectl apply -f kubernetes/redis.yml -n $NAMESPACE
