@@ -10,7 +10,7 @@ from documentcloud import DocumentCloud, DoesNotExistError
 
 from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws
-from .common import TimeStampsModel
+from .common import TimeStampsModel, TaggableModel
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class ShownAttachmentManager(models.Manager):
         return super().get_queryset().filter(show=True)
 
 
-class AttachmentFile(TimeStampsModel):
+class AttachmentFile(TimeStampsModel, TaggableModel):
     external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)

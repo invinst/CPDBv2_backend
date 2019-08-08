@@ -84,7 +84,8 @@ class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
         fields = AttachmentFileSerializer.Meta.fields + (
             'views_count',
             'downloads_count',
-            'notifications_count'
+            'notifications_count',
+            'tags',
         )
 
 
@@ -95,10 +96,10 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttachmentFile
-        fields = ('show', 'title', 'text_content', 'last_updated_by')
+        fields = ('show', 'title', 'text_content', 'last_updated_by', 'tags')
 
     def save(self):
-        manually_updated_fields = ['text_content', 'title']
+        manually_updated_fields = ['text_content', 'title', 'tags']
 
         changed = False
         for field in manually_updated_fields:
@@ -114,7 +115,7 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         super(UpdateAttachmentFileSerializer, self).save()
 
     def is_valid(self, raise_exception=True):
-        needed_fields = ('show', 'title', 'text_content')
+        needed_fields = ('show', 'title', 'text_content', 'tags')
         if all(key not in self.initial_data for key in needed_fields):
             return False
         return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)
