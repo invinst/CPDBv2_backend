@@ -2021,12 +2021,53 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({})
 
-    def test_latest_retrieved_pinboard(self):
-        # No previous pinboard, data returned should be null
-        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+    def test_latest_retrieved_pinboard_return_null_when_create_is_not_true(self):
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'), {'create': 'not true'})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({})
 
+    def test_latest_retrieved_pinboard_return_new_empty_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'), {'create': 'true'})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        response.data['example_pinboards'] = sorted(
+            response.data['example_pinboards'],
+            key=lambda pinboard: pinboard['id']
+        )
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': '',
+            'description': '',
+            'officer_ids': [],
+            'crids': [],
+            'trr_ids': [],
+            'example_pinboards': [{
+                'id': 'eeee1111',
+                'title': 'Example pinboard 1',
+                'description': 'Example pinboard 1',
+            }, {
+                'id': 'eeee2222',
+                'title': 'Example pinboard 2',
+                'description': 'Example pinboard 2',
+            }],
+        })
+
+    def test_latest_retrieved_pinboard(self):
         # Create a pinboard in current session
         OfficerFactory(id=1)
         OfficerFactory(id=2)
