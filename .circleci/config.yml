@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Submit coverage
           command: |
-            if [ $SKIP_COVERALLS != "true" ]; then
+            if [ -z $SKIP_COVERALLS ] || [ $SKIP_COVERALLS != "true" ]; then
               coveralls
             else
               echo "Skipped due to SKIP_COVERALLS is" $SKIP_COVERALLS
