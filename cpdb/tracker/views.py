@@ -19,6 +19,8 @@ from .serializers import (
     UpdateAttachmentFileSerializer,
     DocumentCrawlerSerializer,
 )
+from activity_log.models import ActivityLog
+from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
 
 
 class AttachmentViewSet(viewsets.ViewSet):
@@ -59,6 +61,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk):
         attachment = get_object_or_404(AttachmentFile, id=pk)
+        old_tags = attachment.tags
 
         serializer = UpdateAttachmentFileSerializer(
             instance=attachment,
@@ -69,6 +72,24 @@ class AttachmentViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             attachment.refresh_from_db()
+            new_tags = attachment.tags
+            if new_tags != old_tags:
+                added_tags = list(set(new_tags).difference(set(old_tags)))
+                removed_tags = list(set(old_tags).difference(set(new_tags)))
+                for tag in added_tags:
+                    ActivityLog.objects.create(
+                        modified_object=attachment,
+                        action_type=ADD_TAG_TO_DOCUMENT,
+                        user=request.user,
+                        data=tag
+                    )
+                for tag in removed_tags:
+                    ActivityLog.objects.create(
+                        modified_object=attachment,
+                        action_type=REMOVE_TAG_FROM_DOCUMENT,
+                        user=request.user,
+                        data=tag
+                    )
             return Response(
                 status=status.HTTP_200_OK,
                 data=AuthenticatedAttachmentFileSerializer(attachment).data
