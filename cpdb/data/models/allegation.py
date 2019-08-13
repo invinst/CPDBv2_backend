@@ -107,3 +107,6 @@ class Allegation(TimeStampsModel):
     @property
     def v2_to(self):
         return f'/complaint/{self.crid}/'
+
+    def get_absolute_url(self):
+        return self.v2_to

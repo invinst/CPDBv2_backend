@@ -340,3 +340,6 @@ class PoliceUnitTestCase(TestCase):
             'count': 1,
             'sustained_count': 1
         }])
+
+    def test_get_absolute_url(self):
+        expect(PoliceUnit(unit_name='011').v2_to).to.eq('/unit/011/')
