@@ -21,6 +21,9 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
     def v2_to(self):
         return f'/unit/{self.unit_name}/'
 
+    def get_absolute_url(self):
+        return self.v2_to
+
     @property
     def v1_url(self):
         return f'{settings.V1_URL}/url-mediator/session-builder?unit={self.unit_name}'
