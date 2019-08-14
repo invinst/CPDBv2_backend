@@ -194,20 +194,18 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Set ENV_TAG
+          no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export ENV_TAG="--production"
+              export ENV_TAG=--production
             elif [ $CIRCLE_BRANCH == "beta" ]
             then
-              export ENV_TAG="--beta"
+              export ENV_TAG=--beta
             else
-              export ENV_TAG="--staging"
+              export ENV_TAG=--staging
             fi
-      - run:
-          name: Start job
-          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
-          no_output_timeout: 2h
+            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
 
   rebuild_search_index:
     docker:
@@ -221,20 +219,18 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Set ENV_TAG
+          no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export ENV_TAG="--production"
+              export ENV_TAG=--production
               elif [ $CIRCLE_BRANCH == "beta" ]
             then
-              export ENV_TAG="--beta"
+              export ENV_TAG=--beta
             else
-              export ENV_TAG="--staging"
+              export ENV_TAG=--staging
             fi
-      - run:
-          name: Start job
-          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
-          no_output_timeout: 2h
+            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
 
   deploy_backend:
     docker:
