@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
@@ -22,7 +22,7 @@ class TRRDesktopViewSet(viewsets.ViewSet):
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @detail_route(methods=['POST'], url_path='request-document')
+    @action(detail=True, methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
         trr = get_object_or_404(TRR, id=pk)
         data = deepcopy(request.data)
@@ -51,7 +51,7 @@ class TRRMobileViewSet(viewsets.ViewSet):
         except IndexError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @detail_route(methods=['POST'], url_path='request-document')
+    @action(detail=True, methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
         trr = get_object_or_404(TRR, id=pk)
         data = deepcopy(request.data)

@@ -10,7 +10,8 @@ class LandingPageSerializerTestCase(SimpleTestCase):
         landing_page = Mock()
         landing_page.fields = {
             'navbar_title_value': 'a',
-            'navbar_subtitle_value': 'b'
+            'navbar_subtitle_value': 'b',
+            'demo_video_text_value': 'What is CPDP?'
         }
 
         serializer = LandingPageSerializer(landing_page)
@@ -29,6 +30,12 @@ class LandingPageSerializerTestCase(SimpleTestCase):
             'name': 'navbar_subtitle',
             'type': 'rich_text',
             'value': 'b'
+        })
+
+        self.assertDictEqual(fields['demo_video_text'], {
+            'name': 'demo_video_text',
+            'type': 'rich_text',
+            'value': 'What is CPDP?'
         })
 
     def test_update(self):

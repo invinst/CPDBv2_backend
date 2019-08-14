@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Prefetch, Exists, OuterRef
 
+import pytz
+
 from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import AttachmentRequest, Investigator
 from shared.serializer import NoNullSerializer
@@ -125,9 +127,9 @@ class CRSerializer(NoNullSerializer):
     victims = VictimSerializer(many=True)
     summary = serializers.CharField()
     point = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
-    start_date = serializers.DateTimeField(source='first_start_date', format='%Y-%m-%d')
-    end_date = serializers.DateTimeField(source='first_end_date', format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
+    start_date = serializers.DateField(source='first_start_date', format='%Y-%m-%d')
+    end_date = serializers.DateField(source='first_end_date', format='%Y-%m-%d')
     address = serializers.CharField()
     location = serializers.CharField()
     beat = serializers.SerializerMethodField()
@@ -172,7 +174,7 @@ class CRSerializer(NoNullSerializer):
 class CRSummarySerializer(NoNullSerializer):
     crid = serializers.CharField()
     category_names = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     summary = serializers.CharField()
 
     def get_category_names(self, obj):
@@ -193,7 +195,9 @@ class AllegationWithNewDocumentsSerializer(NoNullSerializer):
     latest_document = serializers.SerializerMethodField()
     num_recent_documents = serializers.IntegerField()
     category = serializers.CharField(source='allegation.most_common_category.category', allow_null=True)
-    incident_date = serializers.DateTimeField(source='allegation.incident_date', format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(
+        source='allegation.incident_date', format='%Y-%m-%d', default_timezone=pytz.utc
+    )
 
     def get_latest_document(self, obj):
         return AttachmentFileSerializer(obj).data

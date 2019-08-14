@@ -4,7 +4,7 @@ set -e
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     echo "Run manage command."
     echo ""
-    echo "Usage: `basename $0` {--production|--staging|--local(default)} <command>"
+    echo "Usage: `basename $0` {--production|--beta|--staging|--local(default)} <command>"
     echo "       `basename $0` {-h|--help}"
     exit 0
 elif [ -z "$1" ]; then
@@ -12,6 +12,8 @@ elif [ -z "$1" ]; then
     exit 1
 elif [ "$1" == "--production" ]; then
     NAMESPACE=production
+elif [ "$1" == "--beta" ]; then
+    NAMESPACE=beta
 elif [ "$1" == "--staging" ]; then
     NAMESPACE=staging
 else

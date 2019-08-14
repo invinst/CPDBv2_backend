@@ -155,9 +155,9 @@ class ActivityGridViewSetTestCase(APITestCase):
 
     def test_list_order(self):
         ActivityCardFactory.create_batch(3, important=True)
-        ActivityCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
+        ActivityCardFactory.create_batch(10, last_activity=datetime(2017, 5, 21, tzinfo=pytz.utc))
         ActivityCardFactory.create_batch(10)
-        ActivityCardFactory.create_batch(17, last_activity=datetime(2017, 7, 20, tzinfo=pytz.utc))
+        ActivityCardFactory.create_batch(17, last_activity=datetime(2017, 7, 21, tzinfo=pytz.utc))
         ActivityPairCardFactory.create_batch(3, important=True)
         ActivityPairCardFactory.create_batch(10, last_activity=datetime(2017, 5, 20, tzinfo=pytz.utc))
         ActivityPairCardFactory.create_batch(10)
@@ -182,7 +182,7 @@ class ActivityGridViewSetTestCase(APITestCase):
 
         for item in response.data[6:23]:
             activity_card = Officer.objects.get(pk=item['id']).activity_card
-            expect(activity_card.last_activity).to.eq(datetime(2017, 7, 20, tzinfo=pytz.utc))
+            expect(activity_card.last_activity).to.eq(datetime(2017, 7, 21, tzinfo=pytz.utc))
 
         for item in response.data[23:40]:
             pair_card = ActivityPairCard.objects.get(
@@ -192,7 +192,7 @@ class ActivityGridViewSetTestCase(APITestCase):
 
         for item in response.data[40:50]:
             activity_card = Officer.objects.get(pk=item['id']).activity_card
-            expect(activity_card.last_activity).to.eq(datetime(2017, 5, 20, tzinfo=pytz.utc))
+            expect(activity_card.last_activity).to.eq(datetime(2017, 5, 21, tzinfo=pytz.utc))
 
         for item in response.data[50:60]:
             pair_card = ActivityPairCard.objects.get(

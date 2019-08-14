@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .serializers import AliasSerializer
 from .constants import ALIAS_MAPPINGS
-from .utils import set_aliases
+from .utils import set_aliases, formatted_errors
 
 
 class AliasViewSet(viewsets.ViewSet):
@@ -19,7 +19,7 @@ class AliasViewSet(viewsets.ViewSet):
 
         aliases = AliasSerializer(data=request.data)
         if not aliases.is_valid():
-            return Response({'message': aliases.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': formatted_errors(aliases.errors)}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_aliases = aliases.validated_data['aliases']
         try:

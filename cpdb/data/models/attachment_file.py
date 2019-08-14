@@ -95,3 +95,6 @@ class AttachmentFile(TimeStampsModel):
             doc.save()
         except HTTPError:
             logger.error(f'Cannot save document with external id {self.external_id} on DocumentCloud')
+
+    def get_absolute_url(self):
+        return f'/document/{self.pk}/'

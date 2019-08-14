@@ -72,3 +72,6 @@ class TRR(TimeStampsModel):
     @property
     def v2_to(self):
         return f'/trr/{self.id}/'
+
+    def get_absolute_url(self):
+        return self.v2_to

@@ -44,7 +44,14 @@ jobs:
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
       - run: coverage combine
       - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
-      - run: coveralls
+      - run:
+          name: Submit coverage
+          command: |
+            if [ -z $SKIP_COVERALLS ] || [ $SKIP_COVERALLS != "true" ]; then
+              coveralls
+            else
+              echo "Skipped due to SKIP_COVERALLS is" $SKIP_COVERALLS
+            fi
       - store_artifacts:
           path: /usr/src/app/project/cpdb/test_visual_token_media
 
@@ -119,6 +126,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -140,6 +150,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -161,6 +174,9 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENVFLAG=--production
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENVFLAG=--beta
             else
               export ENVFLAG=--staging
             fi
@@ -177,8 +193,21 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
+          name: Set ENV_TAG
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENV_TAG="--production"
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
+            else
+              export ENV_TAG="--staging"
+            fi
+      - run:
           name: Start job
-          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_index
+          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
+          no_output_timeout: 2h
 
   rebuild_search_index:
     docker:
@@ -191,8 +220,21 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
+          name: Set ENV_TAG
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export ENV_TAG="--production"
+              elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
+            else
+              export ENV_TAG="--staging"
+            fi
+      - run:
           name: Start job
-          command: bin/run_job.sh --production $(cat /tmp/workspace/buildnum) rebuild_search_index
+          command: bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
+          no_output_timeout: 2h
 
   deploy_backend:
     docker:
@@ -211,6 +253,10 @@ jobs:
             then
               export NAMESPACE=production
               export ENV_FILE=prod.env
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export NAMESPACE=beta
+              export ENV_FILE=beta.env
             else
               export NAMESPACE=staging
               export ENV_FILE=staging.env
@@ -222,9 +268,16 @@ jobs:
       - run:
           name: Check API is still alive
           command: |
+            export SSL_DIR=$(openssl version -d | sed -E 's/.*\"(.*)\"$/\1/')
+            cp .circleci/extra_certs.pem $SSL_DIR/certs/extra_certs.pem
+            c_rehash $SSL_DIR/certs
+
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export DOMAIN=api.cpdp.co
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export DOMAIN=betaapi.cpdp.co
             else
               export DOMAIN=stagingapi.cpdp.co
             fi
@@ -232,25 +285,26 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud')
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_search_index')
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              bin/cleanup_cronjobs.sh --production "$kept_crobjobs"
-              bin/run_cronjob.sh --production update_documents @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --production rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
+              export ENV_TAG="--production"
+              REBUILD_INDEX_TIME=7
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export ENV_TAG="--beta"
+              REBUILD_INDEX_TIME=9
             else
-              bin/cleanup_cronjobs.sh --staging "$kept_crobjobs"
-              bin/run_cronjob.sh --staging update_documents @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging crawl_copa_data @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging update_attachment_downloads_and_views_count @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging update_titles_to_documentcloud @daily $(cat /tmp/workspace/buildnum)
-              bin/run_cronjob.sh --staging rebuild_search_index "0 3 * * *" $(cat /tmp/workspace/buildnum)
+              export ENV_TAG="--staging"
+              REBUILD_INDEX_TIME=11
             fi
+            bin/cleanup_cronjobs.sh $ENV_TAG "$kept_crobjobs"
+            bin/run_cronjob.sh $ENV_TAG update_documents "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG crawl_copa_data "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true
@@ -335,7 +389,9 @@ workflows:
             branches:
               ignore:
                 - staging
+                - beta
                 - master
+
   deploy_backend_staging:
     jobs:
       - test:
@@ -354,6 +410,36 @@ workflows:
       - deploy_backend:
           requires:
             - django_migrate
+            - django_collect_static
+      - clear_cache:
+          requires:
+            - deploy_backend
+
+  deploy_backend_beta:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: beta
+      - push_backend_image:
+          requires:
+            - test
+      - django_collect_static:
+          requires:
+            - push_backend_image
+      - django_migrate:
+          requires:
+            - push_backend_image
+      - rebuild_index:
+          requires:
+            - django_migrate
+      - rebuild_search_index:
+          requires:
+            - django_migrate
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
             - django_collect_static
       - clear_cache:
           requires:

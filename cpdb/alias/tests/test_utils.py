@@ -5,7 +5,7 @@ from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
 from data.factories import OfficerFactory
 from data.models import Officer
-from alias.utils import set_aliases
+from alias.utils import set_aliases, formatted_errors
 
 
 class AliasUtilsTestCase(IndexMixin, TestCase):
@@ -22,3 +22,7 @@ class AliasUtilsTestCase(IndexMixin, TestCase):
         set_aliases(OfficerInfoDocType, Officer, '1', ['alias1', 'alias2'])
         expect(OfficerInfoDocType.get('1').tags).to.eq(['alias1', 'alias2'])
         expect(Officer.objects.get(pk=1).tags).to.eq(['alias1', 'alias2'])
+
+    def test_formatted_errors(self):
+        errors = {'aliases': {0: ['Ensure this field has no more than 20 characters.']}}
+        expect(formatted_errors(errors)).to.eq({'aliases': ['Ensure this field has no more than 20 characters.']})
