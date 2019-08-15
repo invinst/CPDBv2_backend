@@ -473,12 +473,6 @@ workflows:
       - notify_slack:
           requires:
             - deploy_backend
-      - reset_staging_db:
-          requires:
-            - deploy_backend
-      - reset_staging_branch:
-          requires:
-            - deploy_backend
 
   deploy_cpdpbot:
     jobs:
