@@ -203,6 +203,7 @@ class AttachmentAPITestCase(APITestCase):
             'downloads_count': 99,
             'notifications_count': 200,
             'tags': ['tag123'],
+            'next_document_id': 126,
         })
 
         expect(
@@ -507,6 +508,7 @@ class AttachmentAPITestCase(APITestCase):
             'downloads_count': 99,
             'notifications_count': 200,
             'tags': [],
+            'next_document_id': None,
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
@@ -562,7 +564,8 @@ class AttachmentAPITestCase(APITestCase):
             'views_count': 100,
             'downloads_count': 99,
             'notifications_count': 200,
-            'tags': ['tag1']
+            'tags': ['tag1'],
+            'next_document_id': None
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
@@ -619,6 +622,7 @@ class AttachmentAPITestCase(APITestCase):
             'downloads_count': 99,
             'notifications_count': 200,
             'tags': [],
+            'next_document_id': None,
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
@@ -679,6 +683,7 @@ class AttachmentAPITestCase(APITestCase):
             'downloads_count': 99,
             'notifications_count': 200,
             'tags': [],
+            'next_document_id': None,
         })
         time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
