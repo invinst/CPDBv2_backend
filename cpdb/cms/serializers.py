@@ -202,6 +202,10 @@ class LandingPageSerializer(SlugPageSerializer):
                     'on cpdp in addition to officers who are mentioned in conversation with our twitter bot,@cpdpbot'],
         source='fields'
     )
+    demo_video_text = RichTextField(
+        fake_value=['What is CPDP?'],
+        source='fields'
+    )
 
     class Meta:
         slug = 'landing-page'
@@ -286,6 +290,26 @@ class TRRPageSerializer(SlugPageSerializer):
 
     class Meta:
         slug = 'trr-page'
+        model = SlugPage
+
+
+class PinboardPageSerializer(SlugPageSerializer):
+    empty_pinboard_title = RichTextField(
+        fake_value=['Get started'],
+        source='fields'
+    )
+    empty_pinboard_description = RichTextField(
+        fake_value=[
+            'Use search to find officers and individual complaint records and press the plus button to add cards to '
+            'your pinboard.',
+            '',
+            'Come back to the pinboard to give it a title and see a network map or discover relevant documents.'
+        ],
+        source='fields'
+    )
+
+    class Meta:
+        slug = 'pinboard-page'
         model = SlugPage
 
 

@@ -668,15 +668,36 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         }])
 
     def test_selected_trrs(self):
+        officer = OfficerFactory(
+            id=1, first_name='Daryl',
+            last_name='Mack',
+            trr_percentile=12.0000,
+            civilian_allegation_percentile=98.4344,
+            internal_allegation_percentile=99.7840,
+            complaint_percentile=99.3450,
+            race='White', gender='M', birth_year=1975,
+            rank='Police Officer'
+        )
+
         trr1 = TRRFactory(
             id=1,
             trr_datetime=datetime(2012, 1, 1, tzinfo=pytz.utc),
             point=Point(1.0, 1.0),
+            taser=False,
+            firearm_used=False,
+            block='14XX',
+            street='CHICAGO IL 60636',
+            officer=officer
         )
         trr2 = TRRFactory(
             id=2,
             trr_datetime=datetime(2013, 1, 1, tzinfo=pytz.utc),
             point=None,
+            taser=True,
+            firearm_used=True,
+            block='15xx',
+            street='CHICAGO IL 60636',
+            officer=officer
         )
         TRRFactory(id=3)
 
@@ -694,12 +715,51 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'trr_datetime': '2012-01-01',
                 'category': 'Impact Weapon',
                 'point': {'lon': 1.0, 'lat': 1.0},
+                'to': '/trr/1/',
+                'taser': False,
+                'firearm_used': False,
+                'address': '14XX CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             },
             {
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
-                'point': None,
+                'to': '/trr/2/',
+                'taser': True,
+                'firearm_used': True,
+                'address': '15xx CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             }
         ])
 
@@ -1961,12 +2021,53 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({})
 
-    def test_latest_retrieved_pinboard(self):
-        # No previous pinboard, data returned should be null
-        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'))
+    def test_latest_retrieved_pinboard_return_null_when_create_is_not_true(self):
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'), {'create': 'not true'})
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq({})
 
+    def test_latest_retrieved_pinboard_return_new_empty_pinboard(self):
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
+        response = self.client.get(reverse('api-v2:pinboards-latest-retrieved-pinboard'), {'create': 'true'})
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+
+        response.data['example_pinboards'] = sorted(
+            response.data['example_pinboards'],
+            key=lambda pinboard: pinboard['id']
+        )
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': '',
+            'description': '',
+            'officer_ids': [],
+            'crids': [],
+            'trr_ids': [],
+            'example_pinboards': [{
+                'id': 'eeee1111',
+                'title': 'Example pinboard 1',
+                'description': 'Example pinboard 1',
+            }, {
+                'id': 'eeee2222',
+                'title': 'Example pinboard 2',
+                'description': 'Example pinboard 2',
+            }],
+        })
+
+    def test_latest_retrieved_pinboard(self):
         # Create a pinboard in current session
         OfficerFactory(id=1)
         OfficerFactory(id=2)

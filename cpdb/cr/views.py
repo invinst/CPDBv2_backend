@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.serializers import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -37,7 +37,7 @@ class CRViewSet(viewsets.ViewSet):
         serializer = CRSerializer(allegation)
         return Response(serializer.data)
 
-    @list_route(methods=['GET'], url_path='complaint-summaries')
+    @action(detail=False, methods=['GET'], url_path='complaint-summaries')
     def complaint_summaries(self, request):
         query = Allegation.objects.filter(
             summary__isnull=False
@@ -50,7 +50,7 @@ class CRViewSet(viewsets.ViewSet):
         ).order_by(F('incident_date').desc(nulls_last=True), '-crid')[:40]
         return Response(CRSummarySerializer(query, many=True).data, status=status.HTTP_200_OK)
 
-    @detail_route(methods=['POST'], url_path='request-document')
+    @action(detail=True, methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
         allegation = get_object_or_404(Allegation, crid=pk)
         data = deepcopy(request.data)
@@ -66,14 +66,14 @@ class CRViewSet(viewsets.ViewSet):
         send_attachment_request_email(data['email'], attachment_type=CR_ATTACHMENT_REQUEST, pk=pk)
         return Response({'message': 'Thanks for subscribing', 'crid': pk})
 
-    @list_route(methods=['GET'], url_path='list-by-new-document')
+    @action(detail=False, methods=['GET'], url_path='list-by-new-document', url_name='list-by-new-document')
     def allegations_with_new_documents(self, request):
         limit = int(request.GET.get('limit', 40))
         latest_documents = LatestDocumentsQuery.execute(limit)
         serializer = AllegationWithNewDocumentsSerializer(latest_documents, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET'], url_path='related-complaints')
+    @action(detail=True, methods=['GET'], url_path='related-complaints')
     def related_complaints(self, request, pk):
         allegation = get_object_or_404(Allegation, crid=pk)
 
@@ -159,7 +159,7 @@ class CRMobileViewSet(viewsets.ViewSet):
         serializer = CRMobileSerializer(allegation)
         return Response(serializer.data)
 
-    @detail_route(methods=['POST'], url_path='request-document')
+    @action(detail=True, methods=['POST'], url_path='request-document', url_name='request-document')
     def request_document(self, request, pk):
         allegation = get_object_or_404(Allegation, crid=pk)
         data = deepcopy(request.data)

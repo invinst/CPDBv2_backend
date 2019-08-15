@@ -44,7 +44,14 @@ jobs:
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
       - run: coverage combine
       - run: coverage report --omit="/home/ubuntu/virtualenvs/*"
-      - run: coveralls
+      - run:
+          name: Submit coverage
+          command: |
+            if [ -z $SKIP_COVERALLS ] || [ $SKIP_COVERALLS != "true" ]; then
+              coveralls
+            else
+              echo "Skipped due to SKIP_COVERALLS is" $SKIP_COVERALLS
+            fi
       - store_artifacts:
           path: /usr/src/app/project/cpdb/test_visual_token_media
 
@@ -187,18 +194,18 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
+          no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export ENV_TAG="--production"
+              export ENV_TAG=--production
             elif [ $CIRCLE_BRANCH == "beta" ]
             then
-              export ENV_TAG="--beta"
+              export ENV_TAG=--beta
             else
-              export ENV_TAG="--staging"
+              export ENV_TAG=--staging
             fi
             bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
-          no_output_timeout: 2h
 
   rebuild_search_index:
     docker:
@@ -212,18 +219,18 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
+          no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
             then
-              export ENV_TAG="--production"
+              export ENV_TAG=--production
               elif [ $CIRCLE_BRANCH == "beta" ]
             then
-              export ENV_TAG="--beta"
+              export ENV_TAG=--beta
             else
-              export ENV_TAG="--staging"
+              export ENV_TAG=--staging
             fi
             bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
-          no_output_timeout: 2h
 
   deploy_backend:
     docker:
@@ -464,12 +471,6 @@ workflows:
           requires:
             - deploy_backend
       - notify_slack:
-          requires:
-            - deploy_backend
-      - reset_staging_db:
-          requires:
-            - deploy_backend
-      - reset_staging_branch:
           requires:
             - deploy_backend
 

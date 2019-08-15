@@ -1,10 +1,12 @@
 from rest_framework import serializers
 
+import pytz
+
 from trr.models import TRR
 
 
 class TRRMobileSerializer(serializers.ModelSerializer):
-    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d')
+    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     point = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
 

@@ -27,8 +27,8 @@ class OfficerDetailSerializer(NoNullSerializer):
     trr_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
-    resignation_date = serializers.DateTimeField(format='%Y-%m-%d')
-    appointed_date = serializers.DateTimeField(format='%Y-%m-%d')
+    resignation_date = serializers.DateField(format='%Y-%m-%d')
+    appointed_date = serializers.DateField(format='%Y-%m-%d')
     percentile = serializers.SerializerMethodField()
     honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
 

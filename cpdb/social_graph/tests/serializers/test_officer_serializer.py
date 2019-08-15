@@ -3,7 +3,7 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory
-from social_graph.serializers.officer_serializer import OfficerSerializer
+from social_graph.serializers import OfficerSerializer
 
 
 class OfficerSerializerTestCase(TestCase):

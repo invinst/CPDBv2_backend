@@ -1,5 +1,5 @@
 from mock import Mock, patch
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 from django.test import SimpleTestCase, TestCase
@@ -527,11 +527,46 @@ class TRRIndexerTestCase(TestCase):
         expect(indexer.get_queryset().count()).to.eq(1)
 
     def test_extract_datum(self):
-        trr = TRRFactory(id=123456, trr_datetime=datetime(2017, 7, 27, tzinfo=pytz.utc))
-        ActionResponseFactory(trr=trr, force_type='Physical Force - Stunning', action_sub_category='4')
-        ActionResponseFactory(trr=trr, force_type='Other', action_sub_category=None, person='Subject Action')
-        ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
-        ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
+        officer = OfficerFactory(
+            id=1,
+            rank='Sergeant of Police',
+            first_name='Jesse',
+            last_name='Pinkman',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            allegation_count=1,
+            resignation_date=date(2015, 4, 14),
+        )
+        trr = TRRFactory(
+            id=123456,
+            trr_datetime=datetime(2017, 7, 27, tzinfo=pytz.utc),
+            officer=officer,
+            block='3000',
+            street='Michigan Ave',
+            taser=True
+        )
+        ActionResponseFactory(
+            trr=trr,
+            force_type='Physical Force - Stunning',
+            action_sub_category='4'
+        )
+        ActionResponseFactory(
+            trr=trr,
+            force_type='Other',
+            action_sub_category=None, person='Subject Action'
+        )
+        ActionResponseFactory(
+            trr=trr,
+            force_type='Impact Weapon',
+            action_sub_category='5.2'
+        )
+        ActionResponseFactory(
+            trr=trr,
+            force_type='Taser Display',
+            action_sub_category='3'
+        )
 
         expect(
             TRRIndexer().extract_datum(trr)
@@ -539,11 +574,43 @@ class TRRIndexerTestCase(TestCase):
             'id': 123456,
             'force_type': 'Impact Weapon',
             'trr_datetime': '2017-07-27',
-            'to': '/trr/123456/'
+            'to': '/trr/123456/',
+            'category': 'Taser',
+            'address': '3000 Michigan Ave',
+            'officer': {
+                'id': 1,
+                'full_name': 'Jesse Pinkman',
+                'allegation_count': 1,
+                'percentile': {
+                    'id': 1,
+                    'percentile_trr': '3.3000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                },
+            }
         })
 
     def test_extract_datum_with_missing_trr_datetime_and_force_type(self):
-        trr = TRRFactory(id='123456', trr_datetime=None)
+        officer = OfficerFactory(
+            id=1,
+            rank='Sergeant of Police',
+            first_name='Jesse',
+            last_name='Pinkman',
+            complaint_percentile=0.0,
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+            allegation_count=1,
+            resignation_date=date(2015, 4, 14),
+        )
+        trr = TRRFactory(
+            id='123456',
+            trr_datetime=None,
+            officer=officer,
+            block='3000',
+            street='Michigan Ave',
+            taser=True
+        )
 
         expect(
             TRRIndexer().extract_datum(trr)
@@ -551,7 +618,20 @@ class TRRIndexerTestCase(TestCase):
             'id': '123456',
             'force_type': None,
             'trr_datetime': None,
-            'to': '/trr/123456/'
+            'to': '/trr/123456/',
+            'category': 'Taser',
+            'address': '3000 Michigan Ave',
+            'officer': {
+                'id': 1,
+                'full_name': 'Jesse Pinkman',
+                'allegation_count': 1,
+                'percentile': {
+                    'id': 1,
+                    'percentile_trr': '3.3000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                },
+            }
         })
 
 

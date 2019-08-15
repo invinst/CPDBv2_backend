@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .doc_types import UnitDocType
@@ -7,7 +7,7 @@ from .doc_types import UnitDocType
 
 class UnitsViewSet(viewsets.ViewSet):
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def summary(self, request, pk):
         query = UnitDocType().search().query('term', unit_name=pk)
         search_result = query.execute()

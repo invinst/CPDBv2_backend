@@ -58,6 +58,9 @@ Most of our resources are deployed into 3 namespaces: `staging`, `beta` and `pro
 - `kubectl get services -n staging` - look up all services in namespace staging
 - `kubectl logs update-documents-69567775bc-hr86t -n staging` - look at logs from pod `update-documents-69567775bc-hr86t`
 
+## CircleCi Environment Variables
+- `SKIP_COVERALLS`: set to `true` to skip sending coverage report to Coveralls. Only do this if Coveralls is down.
+
 # Make changes to Docker images
 
 The following Docker images rarely change so you have to update and build/push them manually when there is a change. Run the following snippets depending on which docker image you changed:

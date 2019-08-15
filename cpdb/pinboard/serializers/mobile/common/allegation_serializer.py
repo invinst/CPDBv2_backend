@@ -1,12 +1,14 @@
 from rest_framework import serializers
 
+import pytz
+
 from shared.serializer import NoNullSerializer
 
 
 class AllegationMobileSerializer(NoNullSerializer):
     crid = serializers.CharField()
     point = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d')
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     category = serializers.SerializerMethodField()
 
     def get_point(self, obj):
