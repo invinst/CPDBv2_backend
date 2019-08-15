@@ -1,5 +1,5 @@
 gizeh==0.1.10
-moviepy==0.2.3.5
+moviepy==1.0.0
 requests==2.20.0
 azure==4.0.0
 tweepy==3.6.0
