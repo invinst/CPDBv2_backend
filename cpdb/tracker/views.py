@@ -6,6 +6,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.serializers import ValidationError
 
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
@@ -19,6 +20,7 @@ from .serializers import (
     UpdateAttachmentFileSerializer,
     DocumentCrawlerSerializer,
 )
+from shared.utils import formatted_errors
 
 
 class AttachmentViewSet(viewsets.ViewSet):
@@ -66,15 +68,20 @@ class AttachmentViewSet(viewsets.ViewSet):
             user=request.user
         )
 
-        if serializer.is_valid():
-            serializer.save()
-            attachment.refresh_from_db()
+        try:
+            if serializer.is_valid():
+                serializer.save()
+                attachment.refresh_from_db()
+                return Response(
+                    status=status.HTTP_200_OK,
+                    data=AuthenticatedAttachmentFileSerializer(attachment).data
+                )
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError:
             return Response(
-                status=status.HTTP_200_OK,
-                data=AuthenticatedAttachmentFileSerializer(attachment).data
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'message': formatted_errors(serializer.errors)}
             )
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

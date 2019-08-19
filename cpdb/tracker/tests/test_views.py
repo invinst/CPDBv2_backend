@@ -446,6 +446,24 @@ class AttachmentAPITestCase(APITestCase):
 
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
 
+    def test_update_attachment_bad_request_with_error(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        AttachmentFileFactory(id=1)
+        expected_data = {
+            'message': {
+                'tags': ['Ensure this field has no more than 20 characters.']
+            }
+        }
+
+        url = reverse('api-v2:attachments-detail', kwargs={'pk': '1'})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.patch(url, {'tags': ['this is a tag with more than 20 characters']}, format='json')
+
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(response.data).to.eq(expected_data)
+
     def test_update_attachment_with_invalid_pk(self):
         admin_user = AdminUserFactory()
         token, _ = Token.objects.get_or_create(user=admin_user)

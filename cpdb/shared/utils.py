@@ -14,3 +14,7 @@ def timeit(func, start_message=None):  # pragma: no cover
     res = func()
     print(f'Finished on --- {time.time() - start_time} seconds ---')
     return res
+
+
+def formatted_errors(errors):
+    return dict([(key, [item for items in value.values() for item in items]) for key, value in errors.items()])
