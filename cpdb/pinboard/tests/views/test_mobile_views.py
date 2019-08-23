@@ -1,5 +1,6 @@
 from datetime import datetime
 from urllib.parse import urlencode
+from operator import itemgetter
 
 import pytz
 from django.contrib.gis.geos import Point
@@ -419,8 +420,10 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.get(reverse('api-v2:pinboards-mobile-complaints', kwargs={'pk': pinboard.id}))
 
+        results = sorted(response.data, key=itemgetter('crid'))
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
+        expect(results).to.eq([
             {
                 'crid': '1000001',
                 'incident_date': '2010-01-01',
