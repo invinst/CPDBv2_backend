@@ -76,20 +76,26 @@ class AttachmentViewSet(viewsets.ViewSet):
             if new_tags != old_tags:
                 added_tags = list(set(new_tags).difference(set(old_tags)))
                 removed_tags = list(set(old_tags).difference(set(new_tags)))
-                for tag in added_tags:
-                    ActivityLog.objects.create(
+                added_logs = [
+                    ActivityLog(
                         modified_object=attachment,
                         action_type=ADD_TAG_TO_DOCUMENT,
                         user=request.user,
                         data=tag
                     )
-                for tag in removed_tags:
-                    ActivityLog.objects.create(
+                    for tag in added_tags
+                ]
+                removed_logs = [
+                    ActivityLog(
                         modified_object=attachment,
                         action_type=REMOVE_TAG_FROM_DOCUMENT,
                         user=request.user,
                         data=tag
                     )
+                    for tag in removed_tags
+                ]
+                ActivityLog.objects.bulk_create(added_logs + removed_logs)
+
             return Response(
                 status=status.HTTP_200_OK,
                 data=AuthenticatedAttachmentFileSerializer(attachment).data
