@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 from operator import itemgetter
 
@@ -508,7 +507,6 @@ class AttachmentAPITestCase(APITestCase):
             'notifications_count': 200,
             'tags': [],
         })
-        time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
         expect(updated_attachment.manually_updated).to.be.true()
@@ -564,7 +562,6 @@ class AttachmentAPITestCase(APITestCase):
             'notifications_count': 200,
             'tags': ['tag1']
         })
-        time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
         expect(updated_attachment.manually_updated).to.be.true()
@@ -620,7 +617,6 @@ class AttachmentAPITestCase(APITestCase):
             'notifications_count': 200,
             'tags': [],
         })
-        time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.be.none()
         expect(updated_attachment.manually_updated).to.be.false()
@@ -680,7 +676,6 @@ class AttachmentAPITestCase(APITestCase):
             'notifications_count': 200,
             'tags': [],
         })
-        time.sleep(0.1)
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by).to.eq(admin_user)
         expect(updated_attachment.manually_updated).to.be.true()
