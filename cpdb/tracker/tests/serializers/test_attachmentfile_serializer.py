@@ -252,7 +252,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
 
         expect(next_document_id).to.eq(123)
 
-    def test_next_document_id_most_recent_untagged_document_id_if_current_document_is_latest(self):
+    def test_next_document_id_most_recent_untagged_document_id_if_current_document_is_oldest(self):
         user = UserFactory(username='test user')
 
         allegation = AllegationFactory(crid='456')
