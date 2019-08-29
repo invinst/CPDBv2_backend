@@ -15,6 +15,8 @@ from authentication.factories import AdminUserFactory
 from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory
 from data.models import AttachmentFile
 from document_cloud.factories import DocumentCrawlerFactory
+from activity_log.models import ActivityLog
+from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
 
 
 class AttachmentAPITestCase(APITestCase):
@@ -512,7 +514,7 @@ class AttachmentAPITestCase(APITestCase):
         expect(updated_attachment.manually_updated).to.be.true()
 
     def test_update_attachment_tags(self):
-        admin_user = AdminUserFactory(username='Test admin user')
+        admin_user = AdminUserFactory(id=1, username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
 
         attachment = AttachmentFileFactory(
@@ -532,6 +534,77 @@ class AttachmentAPITestCase(APITestCase):
             downloads_count=99,
             notifications_count=200,
             manually_updated=False,
+            tags=['tag1']
+        )
+        attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
+        attachment.save()
+
+        url = reverse('api-v2:attachments-detail', kwargs={'pk': '1'})
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        with freeze_time('2017-08-05 12:00:01'):
+            response = self.client.patch(url, {'tags': ['tag1', 'tag2', 'tag3']}, format='json')
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': 1,
+            'crid': '456',
+            'title': 'CR document',
+            'text_content': 'CHICAGO POLICE DEPARTMENT RD I HT334604',
+            'url': 'http://foo.com',
+            'preview_image_url': 'https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
+            'original_url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'created_at': '2017-08-04T09:30:00-05:00',
+            'updated_at': '2017-08-05T07:00:01-05:00',
+            'crawler_name': 'Document Cloud',
+            'linked_documents': [],
+            'pages': 10,
+            'last_updated_by': 'Test admin user',
+            'views_count': 100,
+            'downloads_count': 99,
+            'notifications_count': 200,
+            'tags': ['tag1', 'tag2', 'tag3']
+        })
+        time.sleep(0.1)
+        updated_attachment = AttachmentFile.objects.get(pk=1)
+        expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
+        expect(updated_attachment.manually_updated).to.be.true()
+
+        activity_logs = ActivityLog.objects.all().order_by('data')
+        expect(activity_logs.count()).to.eq(2)
+
+        activity_log_1 = activity_logs[0]
+        expect(activity_log_1.action_type).to.eq(ADD_TAG_TO_DOCUMENT)
+        expect(activity_log_1.user_id).to.eq(1)
+        expect(activity_log_1.data).to.eq('tag2')
+
+        activity_log_2 = activity_logs[1]
+        expect(activity_log_2.action_type).to.eq(ADD_TAG_TO_DOCUMENT)
+        expect(activity_log_2.user_id).to.eq(1)
+        expect(activity_log_2.data).to.eq('tag3')
+
+    def test_remove_attachment_tags(self):
+        admin_user = AdminUserFactory(id=1, username='Test admin user')
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        attachment = AttachmentFileFactory(
+            id=1,
+            show=True,
+            title='CR document',
+            text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
+            last_updated_by=None,
+            allegation=AllegationFactory(crid='456'),
+            url='http://foo.com',
+            preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
+            original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            source_type='DOCUMENTCLOUD',
+            file_type='document',
+            pages=10,
+            views_count=100,
+            downloads_count=99,
+            notifications_count=200,
+            manually_updated=False,
+            tags=['tag1', 'tag2', 'tag3']
         )
         attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         attachment.save()
@@ -565,6 +638,19 @@ class AttachmentAPITestCase(APITestCase):
         updated_attachment = AttachmentFile.objects.get(pk=1)
         expect(updated_attachment.last_updated_by_id).to.eq(admin_user.id)
         expect(updated_attachment.manually_updated).to.be.true()
+
+        activity_logs = ActivityLog.objects.all().order_by('data')
+        expect(activity_logs.count()).to.eq(2)
+
+        activity_log_1 = activity_logs[0]
+        expect(activity_log_1.action_type).to.eq(REMOVE_TAG_FROM_DOCUMENT)
+        expect(activity_log_1.user_id).to.eq(1)
+        expect(activity_log_1.data).to.eq('tag2')
+
+        activity_log_2 = activity_logs[1]
+        expect(activity_log_2.action_type).to.eq(REMOVE_TAG_FROM_DOCUMENT)
+        expect(activity_log_2.user_id).to.eq(1)
+        expect(activity_log_2.data).to.eq('tag3')
 
     def test_update_attachment_title_no_change(self):
         admin_user = AdminUserFactory(username='Test admin user')
