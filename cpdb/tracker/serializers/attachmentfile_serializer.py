@@ -80,12 +80,27 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
 
 
 class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
+    next_document_id = serializers.SerializerMethodField()
+
+    def get_next_document_id(self, obj):
+        next_attachment = AttachmentFile.objects.exclude(
+            id=obj.id
+        ).filter(
+            tags=[], created_at__lte=obj.created_at
+        ).order_by('-created_at').first()
+
+        if not next_attachment:
+            next_attachment = AttachmentFile.objects.exclude(id=obj.id).filter(tags=[]).order_by('-created_at').first()
+
+        return next_attachment.id if next_attachment else None
+
     class Meta(AttachmentFileSerializer.Meta):
         fields = AttachmentFileSerializer.Meta.fields + (
             'views_count',
             'downloads_count',
             'notifications_count',
             'tags',
+            'next_document_id',
         )
 
 
