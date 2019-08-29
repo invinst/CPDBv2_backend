@@ -6,6 +6,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.serializers import ValidationError
 
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
@@ -21,6 +22,7 @@ from .serializers import (
 )
 from activity_log.models import ActivityLog
 from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
+from shared.utils import formatted_errors
 
 
 class AttachmentViewSet(viewsets.ViewSet):
@@ -69,39 +71,44 @@ class AttachmentViewSet(viewsets.ViewSet):
             user=request.user
         )
 
-        if serializer.is_valid():
-            serializer.save()
-            attachment.refresh_from_db()
-            new_tags = attachment.tags
-            if new_tags != old_tags:
-                added_tags = list(set(new_tags).difference(set(old_tags)))
-                removed_tags = list(set(old_tags).difference(set(new_tags)))
-                added_logs = [
-                    ActivityLog(
-                        modified_object=attachment,
-                        action_type=ADD_TAG_TO_DOCUMENT,
-                        user=request.user,
-                        data=tag
-                    )
-                    for tag in added_tags
-                ]
-                removed_logs = [
-                    ActivityLog(
-                        modified_object=attachment,
-                        action_type=REMOVE_TAG_FROM_DOCUMENT,
-                        user=request.user,
-                        data=tag
-                    )
-                    for tag in removed_tags
-                ]
-                ActivityLog.objects.bulk_create(added_logs + removed_logs)
+        try:
+            if serializer.is_valid():
+                serializer.save()
+                attachment.refresh_from_db()
+                new_tags = attachment.tags
+                if new_tags != old_tags:
+                    added_tags = list(set(new_tags).difference(set(old_tags)))
+                    removed_tags = list(set(old_tags).difference(set(new_tags)))
+                    added_logs = [
+                        ActivityLog(
+                            modified_object=attachment,
+                            action_type=ADD_TAG_TO_DOCUMENT,
+                            user=request.user,
+                            data=tag
+                        )
+                        for tag in added_tags
+                    ]
+                    removed_logs = [
+                        ActivityLog(
+                            modified_object=attachment,
+                            action_type=REMOVE_TAG_FROM_DOCUMENT,
+                            user=request.user,
+                            data=tag
+                        )
+                        for tag in removed_tags
+                    ]
+                    ActivityLog.objects.bulk_create(added_logs + removed_logs)
 
+                return Response(
+                    status=status.HTTP_200_OK,
+                    data=AuthenticatedAttachmentFileSerializer(attachment).data
+                )
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError:
             return Response(
-                status=status.HTTP_200_OK,
-                data=AuthenticatedAttachmentFileSerializer(attachment).data
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'message': formatted_errors(serializer.errors)}
             )
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
