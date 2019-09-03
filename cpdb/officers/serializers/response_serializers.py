@@ -1,24 +1,7 @@
 from rest_framework import serializers
 
-from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import PoliceUnit
-from shared.serializer import NoNullSerializer
-
-
-class OfficerPercentileSerializer(NoNullSerializer):
-    id = serializers.IntegerField()
-    year = serializers.SerializerMethodField()
-    percentile_trr = serializers.DecimalField(
-        source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        source='complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        source='civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_internal = serializers.DecimalField(
-        source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-
-    def get_year(self, obj):
-        return min(obj.resignation_date.year, MAX_VISUAL_TOKEN_YEAR) if obj.resignation_date else MAX_VISUAL_TOKEN_YEAR
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
 
 class OfficerCardSerializer(NoNullSerializer):
@@ -198,7 +181,7 @@ class CRNewTimelineSerializer(BaseTimelineSerializer):
     finding = serializers.CharField(source='final_finding_display')
     outcome = serializers.CharField(source='final_outcome')
     coaccused = serializers.IntegerField(source='coaccused_count')
-    attachments = AttachmentFileSerializer(many=True, source='filtered_attachments')
+    attachments = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
     victims = VictimSerializer(many=True)
 
@@ -225,6 +208,9 @@ class CRNewTimelineSerializer(BaseTimelineSerializer):
             }
         except AttributeError:
             return None
+
+    def get_attachments(self, obj):
+        return AttachmentFileSerializer(obj.allegation.prefetch_filtered_attachments, many=True).data
 
 
 class AwardNewTimelineSerializer(BaseTimelineSerializer):

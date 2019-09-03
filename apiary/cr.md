@@ -32,7 +32,6 @@
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 123,
                         "year": 2016
                     }
                 },
@@ -53,7 +52,6 @@
                         "percentile_allegation_civilian": "99.8810",
                         "percentile_allegation_internal": "80.5690",
                         "percentile_trr": "92.1100",
-                        "id": 456,
                         "year": 2016
                     }
                 }

@@ -58,7 +58,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
-        officer_allegation = OfficerAllegationFactory(
+        OfficerAllegationFactory(
             officer=officer1, allegation=allegation,
             final_finding='SU', disciplined=True,
             final_outcome='Separation', recc_outcome='10 Day Suspension',
@@ -165,7 +165,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000',
                         'year': 2016,
-                        'id': officer_allegation.id,
                     },
 
                     'disciplined': True
@@ -252,7 +251,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
-        officer_allegation = OfficerAllegationFactory(
+        OfficerAllegationFactory(
             officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
             final_outcome='Separation', recc_outcome='10 Day Suspension',
             start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
@@ -394,7 +393,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000',
                         'year': 2016,
-                        'id': officer_allegation.id,
                     },
 
                     'disciplined': True
