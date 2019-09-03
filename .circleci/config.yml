@@ -193,7 +193,7 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
-          name: Set ENV_TAG
+          name: Start job
           no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
@@ -218,7 +218,7 @@ jobs:
       - run: *reveal-git-secret
       - run: *setup-gcloud
       - run:
-          name: Set ENV_TAG
+          name: Start job
           no_output_timeout: 2h
           command: |
             if [ $CIRCLE_BRANCH == "master" ]
@@ -471,12 +471,6 @@ workflows:
           requires:
             - deploy_backend
       - notify_slack:
-          requires:
-            - deploy_backend
-      - reset_staging_db:
-          requires:
-            - deploy_backend
-      - reset_staging_branch:
           requires:
             - deploy_backend
 
