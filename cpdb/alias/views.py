@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .serializers import AliasSerializer
 from .constants import ALIAS_MAPPINGS
-from .utils import set_aliases, formatted_errors
+from .utils import set_aliases
+from shared.utils import formatted_errors
 
 
 class AliasViewSet(viewsets.ViewSet):

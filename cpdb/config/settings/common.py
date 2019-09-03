@@ -73,6 +73,7 @@ LOCAL_APPS = (
     'xlsx',
     'tracker',
     'sitemap',
+    'activity_log',
     'pinboard',
 )
 
