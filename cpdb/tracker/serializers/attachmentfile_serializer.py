@@ -80,11 +80,27 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
 
 
 class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
+    next_document_id = serializers.SerializerMethodField()
+
+    def get_next_document_id(self, obj):
+        next_attachment = AttachmentFile.objects.exclude(
+            id=obj.id
+        ).filter(
+            tags=[], created_at__lte=obj.created_at
+        ).order_by('-created_at').first()
+
+        if not next_attachment:
+            next_attachment = AttachmentFile.objects.exclude(id=obj.id).filter(tags=[]).order_by('-created_at').first()
+
+        return next_attachment.id if next_attachment else None
+
     class Meta(AttachmentFileSerializer.Meta):
         fields = AttachmentFileSerializer.Meta.fields + (
             'views_count',
             'downloads_count',
-            'notifications_count'
+            'notifications_count',
+            'tags',
+            'next_document_id',
         )
 
 
@@ -95,10 +111,10 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttachmentFile
-        fields = ('show', 'title', 'text_content', 'last_updated_by')
+        fields = ('show', 'title', 'text_content', 'last_updated_by', 'tags')
 
     def save(self):
-        manually_updated_fields = ['text_content', 'title']
+        manually_updated_fields = ['text_content', 'title', 'tags']
 
         changed = False
         for field in manually_updated_fields:
@@ -114,7 +130,7 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         super(UpdateAttachmentFileSerializer, self).save()
 
     def is_valid(self, raise_exception=True):
-        needed_fields = ('show', 'title', 'text_content')
+        needed_fields = ('show', 'title', 'text_content', 'tags')
         if all(key not in self.initial_data for key in needed_fields):
             return False
         return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)
