@@ -17,9 +17,10 @@ from data.models import AttachmentFile
 from document_cloud.factories import DocumentCrawlerFactory
 from activity_log.models import ActivityLog
 from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
+from tracker.tests.mixins import TrackerTestCaseMixin
 
 
-class AttachmentAPITestCase(APITestCase):
+class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
     def test_retrieve_unauthenticated_user(self):
         user = UserFactory(username='test user')
         allegation = AllegationFactory(crid='456')
@@ -929,27 +930,191 @@ class AttachmentAPITestCase(APITestCase):
             ]
         })
 
+    @freeze_time('2017-01-14 12:00:01')
     def test_attachments_full_text_search(self):
-        allegation = AllegationFactory(crid=111333)
+        allegation_1 = AllegationFactory(crid=111333)
+        allegation_2 = AllegationFactory(crid=123456)
 
         AttachmentFileFactory(
             id=11,
-            allegation=allegation)
+            allegation=allegation_1,
+            show=True,
+        )
         AttachmentFileFactory(
             id=22,
-            title='hahaha')
+            title='summary report',
+            show=True,
+        )
+        AttachmentFileFactory(
+            id=33,
+            title='document title',
+            text_content='document content',
+            show=True,
+        )
+        AttachmentFileFactory(
+            id=44,
+            title='This is a title',
+            text_content='This is a content.',
+            source_type='DOCUMENTCLOUD',
+            allegation=allegation_2,
+            show=True,
+            file_type='document',
+            preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
+            url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
+        )
+
+        AttachmentFileFactory(
+            id=55,
+            allegation=allegation_1,
+            show=False,
+        )
+        AttachmentFileFactory(
+            id=66,
+            title='summary report',
+            show=False,
+        )
+        AttachmentFileFactory(
+            id=77,
+            title='document title',
+            text_content='document content',
+            show=False,
+        )
+        AttachmentFileFactory(
+            id=88,
+            title='This is a title',
+            text_content='This is a content.',
+            show=False,
+        )
 
         base_url = reverse('api-v2:attachments-list')
+        self.refresh_index()
 
         response = self.client.get(f'{base_url}?match=11133')
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data['count']).to.eq(1)
         expect(response.data['results'][0]['id']).to.eq(11)
 
-        response = self.client.get(f'{base_url}?match=haha')
+        response = self.client.get(f'{base_url}?match=summary')
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data['count']).to.eq(1)
         expect(response.data['results'][0]['id']).to.eq(22)
+
+        response = self.client.get(f'{base_url}?match=document')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+        expect(response.data['results'][0]['id']).to.eq(33)
+
+        response = self.client.get(f'{base_url}?crid=123456')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(1)
+
+        expect(response.data['results'][0]).to.eq({
+            'id': 44,
+            'created_at': '2017-01-14T06:00:01-06:00',
+            'title': 'This is a title',
+            'source_type': 'DOCUMENTCLOUD',
+            'crid': '123456',
+            'show': True,
+            'file_type': 'document',
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123-CR.html',
+            'preview_image_url': 'https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
+            'documents_count': 1,
+        })
+
+    def test_attachments_full_text_search_match_multiple_fields(self):
+        allegation = AllegationFactory(crid=123456)
+
+        AttachmentFileFactory(
+            id=11,
+            allegation=allegation
+        )
+        AttachmentFileFactory(
+            id=22,
+            title='Title 123456'
+        )
+        AttachmentFileFactory(
+            id=33,
+            title='document title',
+            text_content='document content 123456'
+        )
+        AttachmentFileFactory(
+            id=44,
+            title='document title',
+            text_content='document content'
+        )
+
+        expected_ids = [11, 22, 33]
+
+        base_url = reverse('api-v2:attachments-list')
+        self.refresh_index()
+
+        response = self.client.get(f'{base_url}?match=12345')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(3)
+        expect(expected_ids).to.contain(*[result['id'] for result in response.data['results']])
+
+    def test_attachments_full_text_search_with_pagination(self):
+        allegation = AllegationFactory(crid=111333)
+
+        AttachmentFileFactory(
+            id=11,
+            title='summary',
+            allegation=allegation
+        )
+        AttachmentFileFactory(
+            id=22,
+            title='summary report'
+        )
+        AttachmentFileFactory(
+            id=33,
+            title='summary report title',
+            text_content='document content'
+        )
+
+        base_url = reverse('api-v2:attachments-list')
+        self.refresh_index()
+
+        response = self.client.get(f'{base_url}?match=summary&limit=2&offset=2')
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(3)
+        expect(response.data['next']).to.be.none()
+        expect(response.data['previous']).to.contain(f'{base_url}?limit=2&match=summary')
+        expect(len(response.data['results'])).to.eq(1)
+
+    def test_attachments_full_text_search_as_admin(self):
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+
+        AttachmentFileFactory(
+            id=11,
+            title='document title 1',
+            text_content='document content 1',
+            show=True,
+        )
+        AttachmentFileFactory(
+            id=22,
+            title='document title 2',
+            text_content='document content 2',
+            show=False,
+        )
+        AttachmentFileFactory(
+            id=33,
+            title='this is title',
+            text_content='this is content',
+            show=False,
+        )
+
+        base_url = reverse('api-v2:attachments-list')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        expected_ids = [11, 22]
+
+        self.refresh_index()
+        response = self.client.get(f'{base_url}?match=document')
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(2)
+        expect(expected_ids).to.contain(*[result['id'] for result in response.data['results']])
 
     def test_get_attachments_as_admin(self):
         admin_user = AdminUserFactory()
