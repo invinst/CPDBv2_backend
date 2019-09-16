@@ -36,7 +36,7 @@ class OfficerSerializerTestCase(TestCase):
             id=11,
             first_name='Jerome',
             last_name='Finnigan',
-            allegation_count=1,
+            allegation_count=2,
             appointed_date=date(2000, 1, 2),
             resignation_date=date(2010, 2, 3),
             current_badge='456',
@@ -80,4 +80,5 @@ class OfficerSerializerTestCase(TestCase):
                 'percentile_allegation': '22.2200',
             },
             'coaccusal_count': 1,
+            'allegation_count': 2,
         })
