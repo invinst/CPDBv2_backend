@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, OuterRef
+from django.db.models import OuterRef
 from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, status, mixins
@@ -12,6 +12,8 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 from data.utils.subqueries import SQCount
 from document_cloud.models import DocumentCrawler
+from es_index.pagination import ESQuerysetPagination
+from .doc_types import AttachmentFileDocType
 from .serializers import (
     AttachmentFileListSerializer,
     AuthenticatedAttachmentFileListSerializer,
@@ -26,7 +28,6 @@ from shared.utils import formatted_errors
 
 
 class AttachmentViewSet(viewsets.ViewSet):
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @never_cache
@@ -43,21 +44,34 @@ class AttachmentViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = AttachmentFile.objects.annotate(documents_count=SQCount(
             AttachmentFile.showing.filter(allegation=OuterRef('allegation')).values('allegation')
-        )).order_by('-created_at', '-updated_at', 'id')
+        ))
 
-        if 'crid' in request.query_params:
-            queryset = queryset.filter(allegation_id=request.query_params['crid'])
-        elif 'match' in request.query_params:
+        serializer_class = AttachmentFileListSerializer if request.auth is None else \
+            AuthenticatedAttachmentFileListSerializer
+
+        if 'match' in request.query_params and 'crid' not in request.query_params:
             match = request.query_params['match']
-            queryset = queryset.filter(Q(title__icontains=match) | Q(allegation__crid__icontains=match))
 
-        serializer_class = AuthenticatedAttachmentFileListSerializer
-        if request.auth is None:
-            serializer_class = AttachmentFileListSerializer
-            queryset = queryset.filter(show=True)
+            es_query = AttachmentFileDocType().search().query(
+                'multi_match', query=match, operator='and', fields=['crid', 'title', 'text_content']
+            )
+            if request.auth is None:
+                es_query = es_query.filter('term', show=True)
 
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request, view=self)
+            paginator = ESQuerysetPagination()
+            page = paginator.paginate_es_query(es_query, request, queryset)
+        else:
+            if 'crid' in request.query_params:
+                queryset = queryset.filter(allegation_id=request.query_params['crid'])
+
+            if request.auth is None:
+                queryset = queryset.filter(show=True)
+
+            queryset = queryset.order_by('-created_at', '-updated_at', 'id')
+
+            paginator = LimitOffsetPagination()
+            page = paginator.paginate_queryset(queryset, request, view=self)
+
         serializer = serializer_class(page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
