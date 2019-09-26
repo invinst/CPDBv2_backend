@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
+    PinboardDetailSerializer,
     OrderedPinboardSerializer
 )
 from pinboard.serializers.desktop.pinned import (
@@ -42,9 +43,14 @@ class PinboardViewSet(
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
     queryset = Pinboard.objects.all()
-    serializer_class = PinboardSerializer
+    serializer_class = PinboardDetailSerializer
     permission_classes = (AllowAny,)
     pagination_class = LimitOffsetPagination
+
+    def list(self, request):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        pinboards = Pinboard.objects.filter(id__in=owned_pinboards).order_by('-updated_at')
+        return Response(PinboardSerializer(pinboards, many=True).data)
 
     def create(self, request):
         response = super().create(request)

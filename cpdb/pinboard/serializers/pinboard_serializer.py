@@ -8,7 +8,16 @@ from shared.serializer import NoNullSerializer
 from trr.models import TRR
 
 
-class PinboardSerializer(ModelSerializer, NoNullSerializer):
+class PinboardSerializer(NoNullSerializer):
+    id = serializers.CharField(min_length=8, max_length=8, read_only=True)
+    title = serializers.CharField()
+    created_at = serializers.SerializerMethodField()
+
+    def get_created_at(self, obj):
+        return obj.created_at.date().strftime(format='%Y-%m-%d')
+
+
+class PinboardDetailSerializer(ModelSerializer, NoNullSerializer):
     id = serializers.CharField(
         min_length=8,
         max_length=8,

@@ -1,13 +1,17 @@
+from datetime import datetime
+
 from django.test import TestCase
 
 from robber import expect
+from freezegun import freeze_time
+import pytz
 
-from pinboard.serializers.pinboard_serializer import PinboardSerializer
+from pinboard.serializers.pinboard_serializer import PinboardSerializer, PinboardDetailSerializer
 from data.factories import OfficerFactory, AllegationFactory
 from pinboard.factories import PinboardFactory
 
 
-class PinboardSerializerTestCase(TestCase):
+class PinboardDetailSerializerTestCase(TestCase):
     def test_serialization_without_data(self):
         pinned_officer = OfficerFactory(id=1)
         pinned_allegation = AllegationFactory(crid='1')
@@ -19,7 +23,7 @@ class PinboardSerializerTestCase(TestCase):
         pinboard.officers.set([pinned_officer])
         pinboard.allegations.set([pinned_allegation])
 
-        expect(PinboardSerializer(pinboard).data).to.eq({
+        expect(PinboardDetailSerializer(pinboard).data).to.eq({
             'id': '66ef1560',
             'title': 'Test pinboard',
             'description': 'Test description',
@@ -48,7 +52,7 @@ class PinboardSerializerTestCase(TestCase):
             'trr_ids': [],
         }
 
-        serializer = PinboardSerializer(data=pinboard_data)
+        serializer = PinboardDetailSerializer(data=pinboard_data)
         expect(serializer.is_valid()).to.be.true()
         expect(serializer.data).to.eq({
             'title': 'title',
@@ -78,7 +82,7 @@ class PinboardSerializerTestCase(TestCase):
             'trr_ids': [0, 3, 1],
         }
 
-        serializer = PinboardSerializer(data=pinboard_data)
+        serializer = PinboardDetailSerializer(data=pinboard_data)
         expect(serializer.is_valid()).to.be.true()
         expect(serializer.data).to.eq({
             'title': 'title',
@@ -91,4 +95,16 @@ class PinboardSerializerTestCase(TestCase):
                 'crids':  ['xyz789', '456def'],
                 'trr_ids': [0, 3, 1],
             }
+        })
+
+
+class PinboardSerializerTestCase(TestCase):
+    def test_serialization(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard = PinboardFactory(id='eeee1111', title='Pinboard 1',)
+
+        expect(PinboardSerializer(pinboard).data).to.eq({
+            'id': 'eeee1111',
+            'title': 'Pinboard 1',
+            'created_at': '2018-04-03',
         })

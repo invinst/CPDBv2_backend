@@ -11,6 +11,7 @@ from mock import patch, Mock, PropertyMock
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
+from freezegun import freeze_time
 
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
@@ -2158,3 +2159,48 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_ids': [1],
             'description': 'abc',
         })
+
+    def test_list(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(id='eeee1111', title='Pinboard 1',)
+
+        with freeze_time(datetime(2018, 5, 8, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_2 = PinboardFactory(id='eeee2222', title='Pinboard 2',)
+
+        with freeze_time(datetime(2018, 2, 10, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_3 = PinboardFactory(id='eeee3333', title='Pinboard 3',)
+
+        with freeze_time(datetime(2018, 9, 10, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_2.save()
+
+        with freeze_time(datetime(2018, 8, 20, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_3.save()
+
+        PinboardFactory()
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.get(reverse('api-v2:pinboards-list'))
+        expect(response.data).to.eq([
+            {
+                'id': 'eeee2222',
+                'title': 'Pinboard 2',
+                'created_at': '2018-05-08',
+            },
+            {
+                'id': 'eeee3333',
+                'title': 'Pinboard 3',
+                'created_at': '2018-02-10',
+            },
+            {
+                'id': 'eeee1111',
+                'title': 'Pinboard 1',
+                'created_at': '2018-04-03',
+            }
+        ])
+
+
