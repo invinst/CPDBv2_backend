@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from urllib.parse import urlencode
+from operator import itemgetter
 
 from django.contrib.gis.geos import Point
 from django.urls import reverse
@@ -485,8 +486,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': pinboard.id}))
 
+        results = sorted(response.data, key=itemgetter('crid'))
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
+        expect(results).to.eq([
             {
                 'crid': '123',
                 'address': '16XX N TALMAN AVE, CHICAGO IL',

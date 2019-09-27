@@ -15,7 +15,7 @@ from search.doc_types import (
     RankDocType, ZipCodeDocType, SearchTermItemDocType
 )
 from search.indices import autocompletes_alias
-from search.serializers import (
+from search.indexer_serializers import (
     RacePopulationSerializer, OfficerMostComplaintsSerializer, VictimSerializer,
     CoaccusedSerializer, AttachmentFileSerializer, TRROfficerSerializer
 )
