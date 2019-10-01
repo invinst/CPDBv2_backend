@@ -1,5 +1,7 @@
 from datetime import datetime
 from urllib.parse import urlencode
+from operator import itemgetter
+import json
 
 import pytz
 from django.contrib.gis.geos import Point
@@ -80,25 +82,27 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
         pinboard_id = response.data['id']
 
         response = self.client.put(
             reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': pinboard_id}),
-            {
+            json.dumps({
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
                 'trr_ids': [1, 2],
                 'description': 'def',
-            }
+            }),
+            content_type='application/json',
         )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -136,26 +140,28 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
 
         owned_pinboards.append(response.data['id'])
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
 
         owned_pinboards.append(response.data['id'])
@@ -163,13 +169,14 @@ class PinboardMobileViewSetTestCase(APITestCase):
         # Try updating the old pinboardresponse = self.client.put(
         response = self.client.put(
             reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': owned_pinboards[0]}),
-            {
+            json.dumps({
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
                 'trr_ids': [1, 2],
                 'description': 'def',
-            }
+            }),
+            content_type='application/json',
         )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -194,25 +201,27 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
         self.client.cookies.clear()
 
         response = self.client.put(
             reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': response.data['id']}),
-            {
+            json.dumps({
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
                 'trr_ids': [1, 2],
                 'description': 'def',
-            },
+            }),
+            content_type='application/json',
         )
 
         expect(response.status_code).to.eq(status.HTTP_403_FORBIDDEN)
@@ -227,13 +236,14 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
 
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
@@ -262,14 +272,15 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'id': ignored_id,
                 'title': 'My Pinboard',
                 'officer_ids': [],
                 'crids': [],
                 'trr_ids': [],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
 
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
@@ -287,6 +298,52 @@ class PinboardMobileViewSetTestCase(APITestCase):
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
+
+    def test_create_pinboard_not_found_pinned_item_ids(self):
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-mobile-list'),
+            json.dumps({
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2, 3, 4, 5],
+                'crids': ['789xyz', 'zyx123', '123abc'],
+                'trr_ids': [0, 1, 3, 4],
+                'description': 'abc',
+            }),
+            content_type='application/json'
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_201_CREATED)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2, 3],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+            'not_found_items': {
+                'officer_ids': [4, 5],
+                'crids': ['789xyz', 'zyx123'],
+                'trr_ids': [0, 3, 4],
+            }
+        })
+
+        expect(Pinboard.objects.count()).to.eq(1)
+        pinboard = Pinboard.objects.all()
+
+        expect(pinboard[0].title).to.eq('My Pinboard')
+        expect(pinboard[0].description).to.eq('abc')
+        expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2, 3})
+        expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
+        expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
     def test_latest_retrieved_pinboard_return_null(self):
         # No previous pinboard, data returned should be null
@@ -357,13 +414,14 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-mobile-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json',
         )
         pinboard_id = response.data['id']
 
@@ -419,8 +477,10 @@ class PinboardMobileViewSetTestCase(APITestCase):
 
         response = self.client.get(reverse('api-v2:pinboards-mobile-complaints', kwargs={'pk': pinboard.id}))
 
+        results = sorted(response.data, key=itemgetter('crid'))
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
+        expect(results).to.eq([
             {
                 'crid': '1000001',
                 'incident_date': '2010-01-01',
@@ -779,6 +839,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
                 rank='Officer',
                 first_name='German',
                 last_name='Lauren',
+                allegation_count=27,
                 trr_percentile=None,
                 complaint_percentile=None,
                 civilian_allegation_percentile=None,
@@ -803,7 +864,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -813,7 +875,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=12,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -857,6 +920,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=13,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -867,6 +931,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=14,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -886,6 +951,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 5,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -898,6 +964,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 4,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -909,6 +976,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 3,
+            'allegation_count': 13,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -919,6 +987,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 2,
+            'allegation_count': 14,
             'percentile': {
                 'year': 2016,
             },
@@ -927,6 +996,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Officer',
             'full_name': 'German Lauren',
             'coaccusal_count': 1,
+            'allegation_count': 27,
             'percentile': {
                 'year': 2016,
             },
@@ -954,7 +1024,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
             trr_percentile='11.11',
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
-            internal_allegation_percentile='44.44'
+            internal_allegation_percentile='44.44',
+            allegation_count=11,
         )
         officer_coaccusal_21 = OfficerFactory(
             id=21,
@@ -964,7 +1035,8 @@ class PinboardMobileViewSetTestCase(APITestCase):
             trr_percentile='33.33',
             complaint_percentile='44.44',
             civilian_allegation_percentile='55.55',
-            internal_allegation_percentile=None
+            internal_allegation_percentile=None,
+            allegation_count=12,
         )
         OfficerFactory(id=99, first_name='Not Relevant', last_name='Officer')
 
@@ -1002,6 +1074,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             complaint_percentile='99.99',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile=None,
+            allegation_count=13,
         )
         allegation_coaccusal_22 = OfficerFactory(
             id=22,
@@ -1012,6 +1085,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             complaint_percentile=None,
             civilian_allegation_percentile=None,
             internal_allegation_percentile=None,
+            allegation_count=14,
         )
         OfficerAllegationFactory(allegation=pinned_allegation_1, officer=allegation_coaccusal_12)
         OfficerAllegationFactory(allegation=pinned_allegation_2, officer=allegation_coaccusal_12)
@@ -1027,6 +1101,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Police Officer',
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
+            'allegation_count': 11,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '11.1100',
@@ -1039,6 +1114,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1059,6 +1135,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
+            'allegation_count': 12,
             'percentile': {
                 'year': 2016,
                 'percentile_trr': '33.3300',
@@ -1070,6 +1147,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
+            'allegation_count': 13,
             'percentile': {
                 'year': 2016,
                 'percentile_allegation': '99.9900',
@@ -1091,6 +1169,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 1,
+            'allegation_count': 14,
             'percentile': {
                 'year': 2016,
             },

@@ -1,5 +1,7 @@
 from datetime import datetime, date
 from urllib.parse import urlencode
+from operator import itemgetter
+import json
 
 from django.contrib.gis.geos import Point
 from django.urls import reverse
@@ -160,25 +162,27 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
         pinboard_id = response.data['id']
 
         response = self.client.put(
             reverse('api-v2:pinboards-detail', kwargs={'pk': pinboard_id}),
-            {
+            json.dumps({
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
                 'trr_ids': [1, 2],
                 'description': 'def',
-            }
+            }),
+            content_type='application/json'
         )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -216,26 +220,28 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
 
         owned_pinboards.append(response.data['id'])
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
 
         owned_pinboards.append(response.data['id'])
@@ -243,13 +249,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         # Try updating the old pinboardresponse = self.client.put(
         response = self.client.put(
             reverse('api-v2:pinboards-detail', kwargs={'pk': owned_pinboards[0]}),
-            {
+            json.dumps({
                 'title': 'New Pinboard',
                 'officer_ids': [1],
                 'crids': ['456def'],
                 'trr_ids': [1, 2],
                 'description': 'def',
-            }
+            }),
+            content_type='application/json'
         )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -274,13 +281,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
         self.client.cookies.clear()
 
@@ -307,13 +315,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
 
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
@@ -355,14 +364,15 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'id': ignored_id,
                 'title': 'My Pinboard',
                 'officer_ids': [],
                 'crids': [],
                 'trr_ids': [],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
 
         expect(response.status_code).to.eq(status.HTTP_201_CREATED)
@@ -388,6 +398,52 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         })
 
         expect(Pinboard.objects.filter(id=response.data['id']).exists()).to.be.true()
+
+    def test_create_pinboard_not_found_pinned_item_ids(self):
+        OfficerFactory(id=1)
+        OfficerFactory(id=2)
+
+        AllegationFactory(crid='123abc')
+
+        TRRFactory(id=1, officer=OfficerFactory(id=3))
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            json.dumps({
+                'title': 'My Pinboard',
+                'officer_ids': [1, 2, 3, 4, 5],
+                'crids': ['789xyz', 'zyx123', '123abc'],
+                'trr_ids': [0, 1, 3, 4],
+                'description': 'abc',
+            }),
+            content_type='application/json'
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_201_CREATED)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': 'My Pinboard',
+            'officer_ids': [1, 2, 3],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'abc',
+            'not_found_items': {
+                'officer_ids': [4, 5],
+                'crids': ['789xyz', 'zyx123'],
+                'trr_ids': [0, 3, 4],
+            }
+        })
+
+        expect(Pinboard.objects.count()).to.eq(1)
+        pinboard = Pinboard.objects.all()
+
+        expect(pinboard[0].title).to.eq('My Pinboard')
+        expect(pinboard[0].description).to.eq('abc')
+        expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2, 3})
+        expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
+        expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
     def test_selected_complaints(self):
         category1 = AllegationCategoryFactory(
@@ -485,8 +541,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.get(reverse('api-v2:pinboards-complaints', kwargs={'pk': pinboard.id}))
 
+        results = sorted(response.data, key=itemgetter('crid'))
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
+        expect(results).to.eq([
             {
                 'crid': '123',
                 'address': '16XX N TALMAN AVE, CHICAGO IL',
@@ -2078,13 +2136,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(
             reverse('api-v2:pinboards-list'),
-            {
+            json.dumps({
                 'title': 'My Pinboard',
                 'officer_ids': [1, 2],
                 'crids': ['123abc'],
                 'trr_ids': [1],
                 'description': 'abc',
-            }
+            }),
+            content_type='application/json'
         )
         pinboard_id = response.data['id']
 
