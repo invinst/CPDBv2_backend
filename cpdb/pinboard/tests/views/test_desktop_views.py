@@ -446,6 +446,52 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
         expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
 
+    def test_create_pinboard_with_source_id(self):
+        officer_1 = OfficerFactory(id=111)
+        officer_2 = OfficerFactory(id=222)
+        allegation = AllegationFactory(crid='1111')
+        trr_1 = TRRFactory(id=3)
+        trr_2 = TRRFactory(id=4)
+
+        PinboardFactory(
+            id='1234abcd',
+            title='Duplicate Pinboard Title',
+            description='Duplicate Pinboard Description',
+            officers=[officer_1, officer_2],
+            allegations=[allegation],
+            trrs=[trr_1, trr_2],
+        )
+
+        expect(Pinboard.objects.count()).to.eq(1)
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'source_pinboard_id': '1234abcd',
+            }
+        )
+
+        expect(Pinboard.objects.count()).to.eq(2)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': 'Duplicate Pinboard Title',
+            'officer_ids': [111, 222],
+            'crids': ['1111'],
+            'trr_ids': [3, 4],
+            'description': 'Duplicate Pinboard Description'
+        })
+
+        duplicated_pinboard = Pinboard.objects.get(id=response.data['id'])
+
+        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title')
+        expect(duplicated_pinboard.description).to.eq('Duplicate Pinboard Description')
+        expect(set(duplicated_pinboard.officer_ids)).to.eq({111, 222})
+        expect(set(duplicated_pinboard.crids)).to.eq({'1111'})
+        expect(set(duplicated_pinboard.trr_ids)).to.eq({3, 4})
+
     def test_selected_complaints(self):
         category1 = AllegationCategoryFactory(
             category='Use Of Force',
@@ -2202,5 +2248,3 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'created_at': '2018-04-03',
             }
         ])
-
-

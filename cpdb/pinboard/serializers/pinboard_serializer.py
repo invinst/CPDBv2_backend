@@ -57,7 +57,7 @@ class PinboardDetailSerializer(ModelSerializer, NoNullSerializer):
             self.not_found_officer_ids = None
             self.not_found_crids = None
             self.not_found_trr_ids = None
-            super(PinboardSerializer, self).__init__(instance=instance, *args, **kwargs)
+            super(PinboardDetailSerializer, self).__init__(instance=instance, *args, **kwargs)
         else:
             officer_ids = [int(officer_id) for officer_id in data.get('officer_ids', [])]
             crids = data.get('crids', [])
@@ -75,11 +75,11 @@ class PinboardDetailSerializer(ModelSerializer, NoNullSerializer):
             new_data['officer_ids'] = [i for i in officer_ids if i in found_officer_ids]
             new_data['crids'] = [i for i in crids if i in found_crids]
             new_data['trr_ids'] = [i for i in trr_ids if i in found_trr_ids]
-            super(PinboardSerializer, self).__init__(instance=instance, data=new_data, *args, **kwargs)
+            super(PinboardDetailSerializer, self).__init__(instance=instance, data=new_data, *args, **kwargs)
 
     @property
     def data(self):
-        _data = super(PinboardSerializer, self).data
+        _data = super(PinboardDetailSerializer, self).data
         if self.not_found_officer_ids or self.not_found_crids or self.not_found_trr_ids:
             _data['not_found_items'] = {
                 'officer_ids': self.not_found_officer_ids,
