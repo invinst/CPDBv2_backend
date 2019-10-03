@@ -40,7 +40,7 @@ class OfficerAllegationPercentileSerializer(serializers.Serializer):
     )
 
 
-class CoaccusedSerializer(NoNullSerializer):
+class BaseOfficerSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer.id')
     full_name = serializers.CharField(source='officer.full_name')
     percentile = serializers.SerializerMethodField()
@@ -48,6 +48,14 @@ class CoaccusedSerializer(NoNullSerializer):
 
     def get_percentile(self, obj):
         return OfficerAllegationPercentileSerializer(obj.officer).data
+
+
+class TRROfficerSerializer(BaseOfficerSerializer):
+    pass
+
+
+class CoaccusedSerializer(BaseOfficerSerializer):
+    pass
 
 
 class AttachmentFileSerializer(NoNullSerializer):

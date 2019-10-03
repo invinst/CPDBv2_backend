@@ -2,7 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from search.queries import OfficerQuery, CrQuery, TrrQuery
 from search.formatters import AreaFormatter, ZipCodeFormatter
+from search.serializers import OfficerSerializer, AllegationSerializer, TRRSerializer
 from search.workers import ZipCodeWorker, DateOfficerWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
@@ -24,6 +26,8 @@ class SearchViewSet(viewsets.ViewSet):
     hooks = [
         QueryTrackingSearchHook
     ]
+
+    recent_items_queries = []
 
     def __init__(self, *args, **kwargs):
         super(SearchViewSet, self).__init__(*args, **kwargs)
@@ -64,6 +68,20 @@ class SearchViewSet(viewsets.ViewSet):
     @property
     def _search_term(self):
         return self.request.query_params.get('term', None)
+
+    @action(detail=False, methods=['GET'], url_path='recent-search-items', url_name='recent-search-items')
+    def recent_search_items(self, _):
+        recent_search_data = []
+        for recent_items_query in self.recent_items_queries:
+            ids = self.request.query_params.getlist(f'{recent_items_query["query_param"]}[]', None)
+            if ids:
+                items = recent_items_query['query'](ids).query()
+                recent_search_data += recent_items_query['serializer'](items, many=True).data
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data=recent_search_data
+        )
 
 
 class SearchV1ViewSet(SearchViewSet):
@@ -107,6 +125,24 @@ class SearchV1ViewSet(SearchViewSet):
         'ZIP-CODE': ZipCodeWorker(),
         'INVESTIGATOR > CR': InvestigatorCRWorker(),
     }
+
+    recent_items_queries = [
+        {
+            'query_param': 'officer_ids',
+            'query': OfficerQuery,
+            'serializer': OfficerSerializer,
+        },
+        {
+            'query_param': 'crids',
+            'query': CrQuery,
+            'serializer': AllegationSerializer,
+        },
+        {
+            'query_param': 'trr_ids',
+            'query': TrrQuery,
+            'serializer': TRRSerializer,
+        },
+    ]
 
 
 class SearchV2ViewSet(SearchViewSet):

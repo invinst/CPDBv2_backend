@@ -10,8 +10,8 @@ from robber import expect
 
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
-    OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory
-)
+    OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory,
+    AllegationCategoryFactory)
 from trr.factories import TRRFactory
 from search.tests.utils import IndexMixin
 
@@ -118,3 +118,41 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
 
         for cr_data in results:
             expect(cr_data).to.eq(expected_results[cr_data['id']])
+
+    def test_retrieve_recent_search_items(self):
+        OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan', current_badge='123456')
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        AllegationFactory(
+            crid='C12345',
+            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
+            most_common_category=allegation_category,
+        )
+        TRRFactory(id=123)
+
+        url = reverse('api-v2:search-mobile-recent-search-items')
+        response = self.client.get(url, {
+            'officer_ids[]': 8562,
+            'crids[]': 'C12345',
+            'trr_ids[]': 123,
+        })
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq([
+            {
+                'id': 8562,
+                'name': 'Jerome Finnigan',
+                'badge': '123456',
+                'type': 'OFFICER',
+            },
+            {
+                'id': 'C12345',
+                'crid': 'C12345',
+                'incident_date': '2007-01-01',
+                'category': 'Use of Force',
+                'type': 'CR',
+            },
+            {
+                'id': 123,
+                'type': 'TRR',
+            }
+        ])

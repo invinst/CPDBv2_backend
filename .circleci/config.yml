@@ -431,10 +431,9 @@ workflows:
             - django_migrate
       - rebuild_search_index:
           requires:
-            - django_migrate
+            - rebuild_index
       - deploy_backend:
           requires:
-            - rebuild_index
             - rebuild_search_index
             - django_collect_static
       - clear_cache:
