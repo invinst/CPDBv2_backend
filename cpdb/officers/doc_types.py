@@ -1,5 +1,5 @@
 from elasticsearch_dsl import (
-    DocType, Integer, Date, Keyword, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
+    DocType, Integer, Date, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
 )
 
 from .index_aliases import officers_index_alias
@@ -8,21 +8,7 @@ from search.analyzers import autocomplete, autocomplete_search
 
 
 @officers_index_alias.doc_type
-class OfficerNewTimelineEventDocType(DocType):
-    crid = Keyword()
-    date_sort = Date(format='yyyy-MM-dd', include_in_all=False)
-    priority_sort = Integer()
-    kind = Keyword()
-    officer_id = Integer()
-
-
-@officers_index_alias.doc_type
 class OfficerCoaccusalsDocType(DocType):
-    officer_id = Integer()
-
-
-@officers_index_alias.doc_type
-class OfficerTimelineMinimapDocType(DocType):
     officer_id = Integer()
 
 
