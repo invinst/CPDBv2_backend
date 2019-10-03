@@ -1,11 +1,6 @@
 from officers.index_aliases import officers_index_alias
 from officers.indexers import (
     OfficersIndexer,
-    CRNewTimelineEventIndexer,
-    UnitChangeNewTimelineEventIndexer,
-    JoinedNewTimelineEventIndexer,
-    AwardNewTimelineEventIndexer,
-    TRRNewTimelineEventIndexer,
     OfficerCoaccusalsIndexer,
 )
 
@@ -18,11 +13,6 @@ class OfficerSummaryTestCaseMixin(object):
     def refresh_index(self):
         with officers_index_alias.indexing():
             OfficersIndexer().reindex()
-            CRNewTimelineEventIndexer().reindex()
-            UnitChangeNewTimelineEventIndexer().reindex()
-            JoinedNewTimelineEventIndexer().reindex()
-            AwardNewTimelineEventIndexer().reindex()
-            TRRNewTimelineEventIndexer().reindex()
             OfficerCoaccusalsIndexer().reindex()
 
         officers_index_alias.write_index.refresh()
