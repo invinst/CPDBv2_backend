@@ -11,6 +11,7 @@ from mock import patch, Mock, PropertyMock
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
+from freezegun import freeze_time
 
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
@@ -444,6 +445,52 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(set(pinboard.values_list('officers', flat=True))).to.eq({1, 2, 3})
         expect(set(pinboard.values_list('allegations', flat=True))).to.eq({'123abc'})
         expect(set(pinboard.values_list('trrs', flat=True))).to.eq({1})
+
+    def test_create_pinboard_with_source_id(self):
+        officer_1 = OfficerFactory(id=111)
+        officer_2 = OfficerFactory(id=222)
+        allegation = AllegationFactory(crid='1111')
+        trr_1 = TRRFactory(id=3)
+        trr_2 = TRRFactory(id=4)
+
+        PinboardFactory(
+            id='1234abcd',
+            title='Duplicate Pinboard Title',
+            description='Duplicate Pinboard Description',
+            officers=[officer_1, officer_2],
+            allegations=[allegation],
+            trrs=[trr_1, trr_2],
+        )
+
+        expect(Pinboard.objects.count()).to.eq(1)
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            {
+                'source_pinboard_id': '1234abcd',
+            }
+        )
+
+        expect(Pinboard.objects.count()).to.eq(2)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.be.a.string()
+        expect(response.data['id']).to.have.length(8)
+        expect(response.data).to.eq({
+            'id': response.data['id'],
+            'title': 'Duplicate Pinboard Title',
+            'officer_ids': [111, 222],
+            'crids': ['1111'],
+            'trr_ids': [3, 4],
+            'description': 'Duplicate Pinboard Description'
+        })
+
+        duplicated_pinboard = Pinboard.objects.get(id=response.data['id'])
+
+        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title')
+        expect(duplicated_pinboard.description).to.eq('Duplicate Pinboard Description')
+        expect(set(duplicated_pinboard.officer_ids)).to.eq({111, 222})
+        expect(set(duplicated_pinboard.crids)).to.eq({'1111'})
+        expect(set(duplicated_pinboard.trr_ids)).to.eq({3, 4})
 
     def test_selected_complaints(self):
         category1 = AllegationCategoryFactory(
@@ -2158,3 +2205,46 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_ids': [1],
             'description': 'abc',
         })
+
+    def test_list(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(id='eeee1111', title='Pinboard 1',)
+
+        with freeze_time(datetime(2018, 5, 8, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_2 = PinboardFactory(id='eeee2222', title='Pinboard 2',)
+
+        with freeze_time(datetime(2018, 2, 10, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_3 = PinboardFactory(id='eeee3333', title='Pinboard 3',)
+
+        with freeze_time(datetime(2018, 9, 10, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_2.save()
+
+        with freeze_time(datetime(2018, 8, 20, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_3.save()
+
+        PinboardFactory()
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.get(reverse('api-v2:pinboards-list'))
+        expect(response.data).to.eq([
+            {
+                'id': 'eeee2222',
+                'title': 'Pinboard 2',
+                'created_at': '2018-05-08',
+            },
+            {
+                'id': 'eeee3333',
+                'title': 'Pinboard 3',
+                'created_at': '2018-02-10',
+            },
+            {
+                'id': 'eeee1111',
+                'title': 'Pinboard 1',
+                'created_at': '2018-04-03',
+            }
+        ])

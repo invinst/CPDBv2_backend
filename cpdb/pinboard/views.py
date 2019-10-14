@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
+    PinboardDetailSerializer,
     OrderedPinboardSerializer
 )
 from pinboard.serializers.desktop.pinned import (
@@ -42,15 +43,27 @@ class PinboardViewSet(
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
     queryset = Pinboard.objects.all()
-    serializer_class = PinboardSerializer
+    serializer_class = PinboardDetailSerializer
     permission_classes = (AllowAny,)
     pagination_class = LimitOffsetPagination
 
+    def list(self, request):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        pinboards = Pinboard.objects.filter(id__in=owned_pinboards).order_by('-updated_at')
+        return Response(PinboardSerializer(pinboards, many=True).data)
+
     def create(self, request):
-        response = super().create(request)
-        self.update_owned_pinboards(request, response.data['id'])
-        self.update_latest_retrieved_pinboard(request, response.data['id'])
-        return response
+        source_pinboard = self._source_pinboard
+        if source_pinboard:
+            pinboard = source_pinboard.clone()
+            self.update_owned_pinboards(request, pinboard.id)
+            self.update_latest_retrieved_pinboard(request, pinboard.id)
+            return Response(OrderedPinboardSerializer(pinboard).data)
+        else:
+            response = super().create(request)
+            self.update_owned_pinboards(request, response.data['id'])
+            self.update_latest_retrieved_pinboard(request, response.data['id'])
+            return response
 
     def update(self, request, pk):
         if str(pk) in request.session.get('owned_pinboards', []):
@@ -139,6 +152,12 @@ class PinboardViewSet(
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
         serializer = self.relevant_complaint_serializer_class(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+    @property
+    def _source_pinboard(self):
+        from_pinboard_id = self.request.data.get('source_pinboard_id', None)
+        if from_pinboard_id:
+            return Pinboard.objects.get(id=from_pinboard_id)
 
 
 class PinboardDesktopViewSet(PinboardViewSet):
