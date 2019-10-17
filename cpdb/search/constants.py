@@ -7,3 +7,7 @@ DEFAULT_INDEXERS = [
     UnitIndexer, AreaIndexer, CrIndexer, TRRIndexer,
     RankIndexer, ZipCodeIndexer, SearchTermItemIndexer
 ]
+
+DAILY_INDEXERS = [
+    UnitIndexer
+]

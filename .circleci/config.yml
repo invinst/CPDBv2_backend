@@ -281,7 +281,7 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_search_index')
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_search_index_daily')
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENV_TAG="--production"
@@ -300,7 +300,7 @@ jobs:
             bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG rebuild_search_index_daily "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true
