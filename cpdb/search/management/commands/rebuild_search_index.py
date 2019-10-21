@@ -34,10 +34,10 @@ class Command(BaseCommand):
                 if idx.doc_type_klass._doc_type.name in doc_types]
 
     def _get_migrate_doc_types(self, indexers):
-        return [idx.doc_type_klass._doc_type.name
+        return [idx.doc_type_klass
                 for idx in (set(DEFAULT_INDEXERS) - set(indexers))]
 
     def handle(self, *args, **kwargs):
         indexers = self._get_indexers(kwargs)
         migrate_doc_types = self._get_migrate_doc_types(indexers)
-        IndexerManager(indexers).rebuild_index(migrate_doc_types)
+        IndexerManager(indexers, migrate_doc_types).rebuild_index()
