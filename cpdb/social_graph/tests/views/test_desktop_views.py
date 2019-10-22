@@ -1633,42 +1633,48 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
-        officer_4 = OfficerFactory(id=4)
 
         category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
         category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
-            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_1,
             coaccused_count=15,
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
             point=Point(-35.5, 68.9),
         )
         allegation_2 = AllegationFactory(
             crid=456,
-            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_2,
             coaccused_count=20,
+            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             point=Point(37.3, 86.2),
         )
         allegation_3 = AllegationFactory(
             crid=789,
-            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_2,
             coaccused_count=18,
+            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(37.3, 80.2),
         )
+        allegation_4 = AllegationFactory(
+            crid=987,
+            incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc),
+        )
+        AllegationFactory(
+            crid=654,
+            incident_date=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        )
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_4)
 
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
-        )
+        pinboard = PinboardFactory()
 
-        pinboard.officers.set([officer_3, officer_4])
-        pinboard.allegations.set([allegation_1, allegation_2])
+        pinboard.officers.set([officer_1, officer_2])
+        pinboard.allegations.set([allegation_3])
 
         expected_data = {
             'count': 3,
@@ -1715,34 +1721,52 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
     def test_geographic_trrs_with_pinboard_id_param(self):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
-        OfficerFactory(id=3)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+        officer_5 = OfficerFactory(id=5)
 
-        TRRFactory(
+        trr_1 = TRRFactory(
             id=1,
-            officer=officer_1,
+            officer=officer_3,
             trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(-32.5, 61.3),
             taser=True,
             firearm_used=False,
         )
-        TRRFactory(
+        trr_2 = TRRFactory(
             id=2,
-            officer=officer_2,
+            officer=officer_4,
             trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
             point=Point(33.3, 78.4),
             taser=False,
             firearm_used=True,
         )
-
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
+        TRRFactory(
+            id=3,
+            officer=officer_1,
+            trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc),
+            point=Point(34.3, 79.4),
+            taser=False,
+            firearm_used=True,
+        )
+        TRRFactory(
+            id=4,
+            officer=officer_3,
+            trr_datetime=datetime(2007, 1, 1, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            id=5,
+            officer=officer_5,
+            trr_datetime=datetime(2008, 1, 1, tzinfo=pytz.utc),
         )
 
+        pinboard = PinboardFactory()
+
         pinboard.officers.set([officer_1, officer_2])
+        pinboard.trrs.set([trr_1, trr_2])
 
         expected_data = {
-            'count': 2,
+            'count': 3,
             'limit': 500,
             'results': [
                 {
@@ -1765,6 +1789,17 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'point': {
                         'lon': 33.3,
                         'lat': 78.4
+                    }
+                },
+                {
+                    'trr_id': 3,
+                    'date': '2006-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 34.3,
+                        'lat': 79.4
                     }
                 },
             ],
@@ -2464,7 +2499,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             complaint_percentile=85,
             civilian_allegation_percentile=90,
             internal_allegation_percentile=95
-
         )
         officer_2 = OfficerFactory(
             id=2,
@@ -2475,29 +2509,16 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             complaint_percentile=55,
             civilian_allegation_percentile=60,
             internal_allegation_percentile=65
-
         )
         officer_3 = OfficerFactory(
             id=3,
             first_name='Jon',
             last_name='Snow',
-            allegation_count=20,
-            trr_percentile=80,
-            complaint_percentile=85,
-            civilian_allegation_percentile=90,
-            internal_allegation_percentile=95
-
-        )
-        officer_4 = OfficerFactory(
-            id=4,
-            first_name='David',
-            last_name='May',
-            allegation_count=20,
-            trr_percentile=80,
-            complaint_percentile=85,
-            civilian_allegation_percentile=90,
-            internal_allegation_percentile=95
-
+            allegation_count=18,
+            trr_percentile=70,
+            complaint_percentile=90,
+            civilian_allegation_percentile=91,
+            internal_allegation_percentile=96
         )
 
         category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
@@ -2518,6 +2539,22 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             point=Point(37.3, 86.2),
             old_complaint_address='34XX Douglas Blvd',
         )
+        allegation_3 = AllegationFactory(
+            crid=789,
+            most_common_category=category_2,
+            coaccused_count=20,
+            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
+            point=Point(37.3, 80.2),
+            old_complaint_address='34XX Douglas Blvd',
+        )
+        allegation_4 = AllegationFactory(
+            crid=987,
+            incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc),
+        )
+        AllegationFactory(
+            crid=654,
+            incident_date=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        )
         VictimFactory(
             gender='M',
             race='Black',
@@ -2530,44 +2567,19 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             age=40,
             allegation=allegation_2
         )
-        OfficerAllegationFactory(
-            officer=officer_1,
-            allegation=allegation_1,
-            recc_outcome='Separation',
-            final_outcome='30 Day Suspension',
-            final_finding='UN',
-            allegation_category=category_1,
-            disciplined=True
-        )
-        OfficerAllegationFactory(
-            officer=officer_1,
-            allegation=allegation_2,
-            recc_outcome='Separation',
-            final_outcome='28 Day Suspension',
-            final_finding='UN',
-            allegation_category=category_2,
-            disciplined=True
-        )
-        OfficerAllegationFactory(
-            officer=officer_2,
-            allegation=allegation_2,
-            recc_outcome='Separation',
-            final_outcome='Suspended Over 30 Days',
-            final_finding='SU',
-            allegation_category=category_2,
-            disciplined=True
-        )
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_4)
 
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
-        )
+        pinboard = PinboardFactory()
 
-        pinboard.officers.set([officer_3, officer_4])
-        pinboard.allegations.set([allegation_1, allegation_2])
+        pinboard.officers.set([officer_1, officer_2])
+        pinboard.allegations.set([allegation_3])
 
         expected_data = {
-            'count': 2,
+            'count': 3,
             'limit': 500,
             'results': [
                 {
@@ -2639,6 +2651,29 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         },
                     ],
                 },
+                {
+                    'incident_date': '2004-01-01',
+                    'crid': '789',
+                    'category': 'Illegal Search',
+                    'subcategory': 'Improper Search Of Person',
+                    'kind': 'CR',
+                    'address': '34XX Douglas Blvd',
+                    'to': '/complaint/789/',
+                    'victims': [],
+                    'coaccused': [
+                        {
+                            'id': 3,
+                            'full_name': 'Jon Snow',
+                            'allegation_count': 18,
+                            'percentile': {
+                                'percentile_trr': '70.0000',
+                                'percentile_allegation_civilian': '91.0000',
+                                'percentile_allegation_internal': '96.0000',
+
+                            }
+                        },
+                    ]
+                },
             ],
         }
 
@@ -2653,34 +2688,22 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         expect(response.data).to.eq(expected_data)
 
     def test_detail_geographic_trrs_with_pinboard_id_param(self):
-        OfficerFactory(
+        officer_1 = OfficerFactory(
             id=1,
             first_name='Jerome',
             last_name='Finnigan',
             allegation_count=20,
-            sustained_count=10,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
             trr_percentile=80,
             complaint_percentile=85,
             civilian_allegation_percentile=90,
             internal_allegation_percentile=95
 
         )
-        OfficerFactory(
+        officer_2 = OfficerFactory(
             id=2,
             first_name='Edward',
             last_name='May',
             allegation_count=10,
-            sustained_count=5,
-            birth_year=1970,
-            race='Black',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
             trr_percentile=50,
             complaint_percentile=55,
             civilian_allegation_percentile=60,
@@ -2691,38 +2714,26 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=3,
             first_name='Jon',
             last_name='Snow',
-            allegation_count=20,
-            sustained_count=10,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
-            trr_percentile=80,
-            complaint_percentile=85,
-            civilian_allegation_percentile=90,
-            internal_allegation_percentile=95
+            allegation_count=18,
+            trr_percentile=70,
+            complaint_percentile=90,
+            civilian_allegation_percentile=91,
+            internal_allegation_percentile=96
 
         )
         officer_4 = OfficerFactory(
             id=4,
             first_name='David',
             last_name='May',
-            allegation_count=20,
-            sustained_count=10,
-            birth_year=1980,
-            race='Asian',
-            gender='M',
-            rank='Police Officer',
-            resignation_date=datetime(2000, 1, 1, tzinfo=pytz.utc),
-            trr_percentile=80,
-            complaint_percentile=85,
-            civilian_allegation_percentile=90,
-            internal_allegation_percentile=95
-
+            allegation_count=15,
+            trr_percentile=82,
+            complaint_percentile=87,
+            civilian_allegation_percentile=93,
+            internal_allegation_percentile=89
         )
+        officer_5 = OfficerFactory(id=5)
 
-        TRRFactory(
+        trr_1 = TRRFactory(
             id=1,
             officer=officer_3,
             trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
@@ -2732,7 +2743,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             block='17XX',
             street='Division St',
         )
-        TRRFactory(
+        trr_2 = TRRFactory(
             id=2,
             officer=officer_4,
             trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
@@ -2742,16 +2753,34 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             block='34XX',
             street='Douglas Blvd',
         )
-
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
+        TRRFactory(
+            id=3,
+            officer=officer_1,
+            trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc),
+            point=Point(34.3, 79.4),
+            taser=False,
+            firearm_used=True,
+            block='38XX',
+            street='Douglas Blvd',
+        )
+        TRRFactory(
+            id=4,
+            officer=officer_3,
+            trr_datetime=datetime(2007, 1, 1, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            id=5,
+            officer=officer_5,
+            trr_datetime=datetime(2008, 1, 1, tzinfo=pytz.utc),
         )
 
-        pinboard.officers.set([officer_3, officer_4])
+        pinboard = PinboardFactory()
+
+        pinboard.officers.set([officer_1, officer_2])
+        pinboard.trrs.set([trr_1, trr_2])
 
         expected_data = {
-            'count': 2,
+            'count': 3,
             'limit': 500,
             'results': [
                 {
@@ -2765,11 +2794,11 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'officer': {
                         'id': 3,
                         'full_name': 'Jon Snow',
-                        'allegation_count': 20,
+                        'allegation_count': 18,
                         'percentile': {
-                            'percentile_trr': '80.0000',
-                            'percentile_allegation_civilian': '90.0000',
-                            'percentile_allegation_internal': '95.0000',
+                            'percentile_trr': '70.0000',
+                            'percentile_allegation_civilian': '91.0000',
+                            'percentile_allegation_internal': '96.0000',
                         },
                     },
                 },
@@ -2784,6 +2813,25 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'officer': {
                         'id': 4,
                         'full_name': 'David May',
+                        'allegation_count': 15,
+                        'percentile': {
+                            'percentile_trr': '82.0000',
+                            'percentile_allegation_civilian': '93.0000',
+                            'percentile_allegation_internal': '89.0000',
+                        },
+                    },
+                },
+                {
+                    'kind': 'FORCE',
+                    'trr_id': 3,
+                    'to': '/trr/3/',
+                    'taser': False,
+                    'firearm_used': True,
+                    'date': '2006-01-01',
+                    'address': '38XX Douglas Blvd',
+                    'officer': {
+                        'id': 1,
+                        'full_name': 'Jerome Finnigan',
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
@@ -2799,5 +2847,4 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             'api-v2:social-graph-geographic-trrs'), {'pinboard_id': pinboard.id, 'detail': True}
         )
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-
         expect(response.data).to.eq(expected_data)

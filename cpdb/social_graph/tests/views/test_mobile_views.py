@@ -1582,42 +1582,48 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
         officer_3 = OfficerFactory(id=3)
-        officer_4 = OfficerFactory(id=4)
 
         category_1 = AllegationCategoryFactory(category='Use of Force', allegation_name='Miscellaneous')
         category_2 = AllegationCategoryFactory(category='Illegal Search', allegation_name='Improper Search Of Person')
         allegation_1 = AllegationFactory(
             crid=123,
-            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_1,
             coaccused_count=15,
+            incident_date=datetime(2002, 1, 1, tzinfo=pytz.utc),
             point=Point(-35.5, 68.9),
         )
         allegation_2 = AllegationFactory(
             crid=456,
-            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_2,
             coaccused_count=20,
+            incident_date=datetime(2003, 1, 1, tzinfo=pytz.utc),
             point=Point(37.3, 86.2),
         )
         allegation_3 = AllegationFactory(
             crid=789,
-            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
             most_common_category=category_2,
             coaccused_count=18,
+            incident_date=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(37.3, 80.2),
         )
+        allegation_4 = AllegationFactory(
+            crid=987,
+            incident_date=datetime(2005, 1, 1, tzinfo=pytz.utc),
+        )
+        AllegationFactory(
+            crid=654,
+            incident_date=datetime(2006, 1, 1, tzinfo=pytz.utc),
+        )
         OfficerAllegationFactory(officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(officer=officer_1, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_2, allegation=allegation_2)
         OfficerAllegationFactory(officer=officer_3, allegation=allegation_3)
+        OfficerAllegationFactory(officer=officer_3, allegation=allegation_4)
 
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
-        )
+        pinboard = PinboardFactory()
 
-        pinboard.officers.set([officer_3, officer_4])
-        pinboard.allegations.set([allegation_1, allegation_2])
+        pinboard.officers.set([officer_1, officer_2])
+        pinboard.allegations.set([allegation_3])
 
         expected_data = {
             'count': 3,
@@ -1664,34 +1670,52 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
     def test_geographic_trrs_with_pinboard_id_param(self):
         officer_1 = OfficerFactory(id=1)
         officer_2 = OfficerFactory(id=2)
-        OfficerFactory(id=3)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+        officer_5 = OfficerFactory(id=5)
 
-        TRRFactory(
+        trr_1 = TRRFactory(
             id=1,
-            officer=officer_1,
+            officer=officer_3,
             trr_datetime=datetime(2004, 1, 1, tzinfo=pytz.utc),
             point=Point(-32.5, 61.3),
             taser=True,
             firearm_used=False,
         )
-        TRRFactory(
+        trr_2 = TRRFactory(
             id=2,
-            officer=officer_2,
+            officer=officer_4,
             trr_datetime=datetime(2005, 1, 1, tzinfo=pytz.utc),
             point=Point(33.3, 78.4),
             taser=False,
             firearm_used=True,
         )
-
-        pinboard = PinboardFactory(
-            title='My Pinboard',
-            description='abc',
+        TRRFactory(
+            id=3,
+            officer=officer_1,
+            trr_datetime=datetime(2006, 1, 1, tzinfo=pytz.utc),
+            point=Point(34.3, 79.4),
+            taser=False,
+            firearm_used=True,
+        )
+        TRRFactory(
+            id=4,
+            officer=officer_3,
+            trr_datetime=datetime(2007, 1, 1, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            id=5,
+            officer=officer_5,
+            trr_datetime=datetime(2008, 1, 1, tzinfo=pytz.utc),
         )
 
+        pinboard = PinboardFactory()
+
         pinboard.officers.set([officer_1, officer_2])
+        pinboard.trrs.set([trr_1, trr_2])
 
         expected_data = {
-            'count': 2,
+            'count': 3,
             'limit': 500,
             'results': [
                 {
@@ -1714,6 +1738,17 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
                     'point': {
                         'lon': 33.3,
                         'lat': 78.4
+                    }
+                },
+                {
+                    'trr_id': 3,
+                    'date': '2006-01-01',
+                    'kind': 'FORCE',
+                    'taser': False,
+                    'firearm_used': True,
+                    'point': {
+                        'lon': 34.3,
+                        'lat': 79.4
                     }
                 },
             ],
