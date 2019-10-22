@@ -2,6 +2,8 @@ import re
 from urllib.error import HTTPError
 
 from django.db.models import Q
+from django.conf import settings
+from documentcloud import DocumentCloud
 
 from tqdm import tqdm
 
@@ -24,6 +26,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.kept_attachments = []
         self.updated_attachments = []
         self.force_update = force_update
+        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
     mapping_fields = {
         'url': 'url',
@@ -63,6 +66,31 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         except AttachmentFile.DoesNotExist:
             return
 
+    def public_cloud_document(self, cloud_document):
+        if cloud_document.access == 'public':
+            return cloud_document
+        elif cloud_document.access == 'private' or cloud_document.access == 'organization':
+            cloud_document_access = cloud_document.access
+            cloud_document.access = 'public'
+            cloud_document.save()
+
+            updated_cloud_document = self.client.documents.get(cloud_document.id)
+            if updated_cloud_document.access == 'public':
+                self.log_info(
+                    f'Updated document {cloud_document.canonical_url} access from {cloud_document_access} to public'
+                )
+                return updated_cloud_document
+            else:
+                self.log_info(
+                    f'Can not update document {cloud_document.canonical_url} access '
+                    f'from {cloud_document_access} to public'
+                )
+        elif (cloud_document.access == 'error' and
+              cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES):
+            return cloud_document
+        else:
+            self.log_info(f'Skip document {cloud_document.canonical_url} (access: {cloud_document.access})')
+
     def search_attachments(self):
         self.log_info('Documentcloud crawling process is about to start...')
         self.kept_attachments, self.new_attachments, self.updated_attachments = [], [], []
@@ -70,15 +98,16 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
             if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
-                attachment = self.get_attachment(cloud_document)
-                if attachment:
-                    updated = self.update_attachment(attachment, cloud_document)
-                    if updated:
-                        self.updated_attachments.append(attachment)
+                public_cloud_document = self.public_cloud_document(cloud_document)
+                if public_cloud_document:
+                    attachment = self.get_attachment(cloud_document)
+                    if attachment:
+                        updated = self.update_attachment(attachment, cloud_document)
+                        if updated:
+                            self.updated_attachments.append(attachment)
+                        else:
+                            self.kept_attachments.append(attachment)
                     else:
-                        self.kept_attachments.append(attachment)
-                else:
-                    if cloud_document.access != 'error':
                         self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
                         new_attachment = AttachmentFile(
                             external_id=cloud_document.documentcloud_id,
