@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.db.models import Count
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -11,7 +12,8 @@ from rest_framework.permissions import AllowAny
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
-    OrderedPinboardSerializer
+    OrderedPinboardSerializer,
+    PinboardItemSerializer
 )
 from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
@@ -152,6 +154,22 @@ class PinboardViewSet(
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
         serializer = self.relevant_complaint_serializer_class(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def all(self, request):
+        if request.user.is_authenticated:
+            pinboards = Pinboard.objects.all().order_by('-created_at').annotate(
+                officers_count=Count('officers', distinct=True)
+            ).annotate(
+                allegations_count=Count('allegations', distinct=True)
+            ).annotate(
+                trrs_count=Count('trrs', distinct=True)
+            )
+        else:
+            pinboards = []
+        paginator = self.pagination_class()
+        paginated_pinboards = paginator.paginate_queryset(pinboards, request, view=self)
+        return paginator.get_paginated_response(PinboardItemSerializer(paginated_pinboards, many=True).data)
 
     @property
     def _source_pinboard(self):
