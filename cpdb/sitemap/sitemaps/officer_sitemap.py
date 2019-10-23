@@ -1,14 +1,7 @@
-from django.contrib.sitemaps import Sitemap
-
 from data.models import Officer
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 
 
-class OfficerSitemap(Sitemap):
-    changefreq = 'daily'
-    priority = 0.5
-
+class OfficerSitemap(BaseSitemap):
     def items(self):
         return Officer.objects.all().order_by('-allegation_count')
-
-    def lastmod(self, obj):
-        return obj.updated_at
