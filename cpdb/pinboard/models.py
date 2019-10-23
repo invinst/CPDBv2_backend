@@ -110,15 +110,9 @@ class Pinboard(TimeStampsModel):
         crids = self.allegations.all().values_list('crid', flat=True)
         via_allegation = self.relevant_documents_query(allegation__in=crids)
         via_officer = self.relevant_documents_query(allegation__officerallegation__officer__in=officer_ids)
-        via_investigator = self.relevant_documents_query(
-            allegation__investigatorallegation__investigator__officer__in=officer_ids
-        )
-        via_police_witnesses = self.relevant_documents_query(allegation__police_witnesses__in=officer_ids)
 
         return via_allegation.union(
             via_officer,
-            via_investigator,
-            via_police_witnesses
         ).distinct().order_by('-allegation__incident_date')
 
     @property

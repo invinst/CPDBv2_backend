@@ -11,7 +11,7 @@ from data.models import Officer, AttachmentFile
 from pinboard.models import Pinboard
 from data.utils.attachment_file import filter_attachments
 from social_graph.queries.social_graph_data_query import SocialGraphDataQuery
-from social_graph.queries.geographic_data_query import GeographyDataQuery
+from social_graph.queries.geographic_data_query import GeographyCrsDataQuery, GeographyTrrsDataQuery
 from social_graph.serializers import (
     OfficerDetailSerializer,
     SocialGraphCRDetailSerializer,
@@ -59,12 +59,14 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='geographic-crs')
     def geographic_crs(self, request):
-        geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
+        pinboard = self._pinboard
+        crids = pinboard.crids if pinboard else []
+        geographic_data_query = GeographyCrsDataQuery(crids, officers=self._data(False)['officers'])
 
         paginator = LimitOffsetPagination()
         paginator.default_limit = DEFAULT_LIMIT
 
-        cr_data = geographic_data_query.cr_data()
+        cr_data = geographic_data_query.data()
 
         if self._detail:
             cr_data = cr_data.prefetch_related(
@@ -86,12 +88,14 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='geographic-trrs')
     def geographic_trrs(self, request):
-        geographic_data_query = GeographyDataQuery(officers=self._data['officers'])
+        pinboard = self._pinboard
+        trr_ids = pinboard.trr_ids if pinboard else []
+        geographic_data_query = GeographyTrrsDataQuery(trr_ids, officers=self._data(False)['officers'])
 
         paginator = LimitOffsetPagination()
         paginator.default_limit = DEFAULT_LIMIT
 
-        trr_data = geographic_data_query.trr_data()
+        trr_data = geographic_data_query.data()
 
         if self._detail:
             trr_data = trr_data.select_related('officer')
@@ -108,7 +112,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
 
     @property
     def _social_graph_data_query(self):
-        data = self._data
+        data = self._data()
 
         return SocialGraphDataQuery(
             officers=data['officers'],
@@ -117,24 +121,28 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             show_connected_officers=data['show_connected_officers']
         )
 
-    @property
-    def _data(self):
-        pinboard_id = self._pinboard_id
+    def _data(self, include_connected_officers=True):
+        pinboard = self._pinboard
         officer_ids = self._officer_ids
         unit_id = self._unit_id
         officers = []
         show_connected_officers = False
-        if pinboard_id:
-            queryset = Pinboard.objects.all()
-            pinboard = get_object_or_404(queryset, id=pinboard_id)
+        if pinboard:
             show_connected_officers = self.PINBOARD_SHOW_CONNECTED_OFFICERS
-            officers = pinboard.all_officers
+            officers = pinboard.all_officers if include_connected_officers else pinboard.officers.all()
         elif officer_ids:
             officers = Officer.objects.filter(id__in=officer_ids.split(','))
         elif unit_id:
             officers = Officer.objects.filter(officerhistory__unit_id=unit_id).distinct()
 
         return {'officers': officers, 'show_connected_officers': show_connected_officers}
+
+    @property
+    def _pinboard(self):
+        pinboard_id = self._pinboard_id
+        if pinboard_id:
+            queryset = Pinboard.objects.all()
+            return get_object_or_404(queryset, id=pinboard_id)
 
     @property
     def _pinboard_id(self):
