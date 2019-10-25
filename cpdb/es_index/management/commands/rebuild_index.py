@@ -4,10 +4,13 @@ from django.core.management import BaseCommand
 from django.utils.module_loading import autodiscover_modules
 
 from es_index import indexer_klasses, indexer_klasses_map
+from es_index.constants import DAILY_INDEXERS
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
+        parser.add_argument('--daily', dest='daily', action='store_true')
+        parser.set_defaults(daily=False)
         parser.add_argument('app', nargs='*')
         parser.add_argument(
             '--from-file',
@@ -37,7 +40,9 @@ class Command(BaseCommand):
     def get_indexers(self, **options):
         autodiscover_modules('indexers')
         indexers = []
-        if len(options['app']):
+        if options['daily']:
+            return DAILY_INDEXERS
+        elif len(options['app']):
             indexer_names = self._get_indexer_names_from_args(options['app'])
         elif options['from_file']:
             indexer_names = self._get_indexer_names_from_json(options['from_file'])
