@@ -2696,6 +2696,35 @@ This api require an api access token set in `Authorization` header. To get an ap
             "trr_ids": [1],
             "description": "abc"
         }
+        
+### Create a pinboard with some missing item ids [POST]
+
++ Request
+
+        {
+            "title": "My Pinboard",
+            "officer_ids": [1, 2, 0, 666],
+            "crids": ['123abc', '666zzz'],
+            "trr_ids": [0, 1, 5],
+            "description": "abc"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "id": "5cd06f2b",
+            "title": "My Pinboard",
+            "officer_ids": [1, 2],
+            "crids": ["123abc"],
+            "trr_ids": [1],
+            "description": "abc",
+            "not_found_items": {
+                "officer_ids": [0, 666],
+                "crids": ["666zzz"],
+                "trr_ids": [0, 5]
+            }
+        }
+
 
 
 ## Individual Pinboard [/pinboards/{pk}/]
@@ -2706,7 +2735,6 @@ This api require an api access token set in `Authorization` header. To get an ap
     + pk (number) - number ID of Pinboard
 
 + Response 200 (application/json)
-
 
         {
             "id": "5cd06f2b",
@@ -2741,6 +2769,53 @@ This api require an api access token set in `Authorization` header. To get an ap
             "crids": ['123abc'],
             "trr_ids": [1],
             "description": "abc"
+        }
+
+## All Pinboards [/pinboards/all/]
+
+### Get all pinboards [GET]
+
++ Parameters
+    + offset (number, optional) - offset from which to get additional results
+        + Default: `0`
+    + limit (number, optional) - limit of how many results to return
+        + Default: `20`
+
++ Response 200 (application/json)
+
+        {
+            count: 1000,
+            next: '/pinboards/all/?limit=20&offset=20',
+            previous: null,
+            results: [
+                {
+                    'id': '197dcdc7',
+                    'title': '',
+                    'description': '',
+                    'created_at': '2019-10-25',
+                    'officers_count': 7,
+                    'allegations_count': 7,
+                    'trrs_count': 0,
+                },
+                {
+                    'id': '361ee7cc',
+                    'title': '',
+                    'description': '',
+                    'created_at': '2019-10-25',
+                    'officers_count': 1,
+                    'allegations_count': 0,
+                    'trrs_count': 0,
+                },
+                {
+                    'id': 'c08762fa',
+                    'title': '',
+                    'description': '',
+                    'created_at': '2019-10-25',
+                    'officers_count': 4,
+                    'allegations_count': 4,
+                    'trrs_count': 0,
+                },
+            ],
         }
 
 ## Pinboard complaints [/pinboards/{pk}/complaints]
@@ -2926,12 +3001,52 @@ This api require an api access token set in `Authorization` header. To get an ap
                 'trr_datetime': '2012-01-01',
                 'category': 'Impact Weapon',
                 'point': {'lon': 1.0, 'lat': 1.0},
+                'to': '/trr/1/',
+                'taser': False,
+                'firearm_used': False,
+                'address': '14XX CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             },
             {
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
                 'point': {'lon': 2.0, 'lat': 2.0},
+                'to': '/trr/2/',
+                'taser': False,
+                'firearm_used': False,
+                'address': '14XX CHICAGO IL 60636',
+                'officer': {
+                    'id': 1,
+                    'full_name': 'Daryl Mack',
+                    'complaint_count': 0,
+                    'sustained_count': 0,
+                    'birth_year': 1975,
+                    'complaint_percentile': 99.345,
+                    'race': 'White',
+                    'gender': 'Male',
+                    'rank': 'Police Officer',
+                    'percentile': {
+                        'percentile_trr': '12.0000',
+                        'percentile_allegation_civilian': '98.4344',
+                        'percentile_allegation_internal': '99.7840',
+                    }
+                }
             }
         ]
 
@@ -3252,52 +3367,12 @@ This api require an api access token set in `Authorization` header. To get an ap
                 'trr_datetime': '2012-01-01',
                 'category': 'Impact Weapon',
                 'point': {'lon': 1.0, 'lat': 1.0},
-                'to': '/trr/1/',
-                'taser': False,
-                'firearm_used': False,
-                'address': '14XX CHICAGO IL 60636',
-                'officer': {
-                    'id': 1,
-                    'full_name': 'Daryl Mack',
-                    'complaint_count': 0,
-                    'sustained_count': 0,
-                    'birth_year': 1975,
-                    'complaint_percentile': 99.345,
-                    'race': 'White',
-                    'gender': 'Male',
-                    'rank': 'Police Officer',
-                    'percentile': {
-                        'percentile_trr': '12.0000',
-                        'percentile_allegation_civilian': '98.4344',
-                        'percentile_allegation_internal': '99.7840',
-                    }
-                }
             },
             {
                 'id': 2,
                 'trr_datetime': '2013-01-01',
                 'category': 'Unknown',
                 'point': {'lon': 2.0, 'lat': 2.0},
-                'to': '/trr/2/',
-                'taser': False,
-                'firearm_used': False,
-                'address': '14XX CHICAGO IL 60636',
-                'officer': {
-                    'id': 1,
-                    'full_name': 'Daryl Mack',
-                    'complaint_count': 0,
-                    'sustained_count': 0,
-                    'birth_year': 1975,
-                    'complaint_percentile': 99.345,
-                    'race': 'White',
-                    'gender': 'Male',
-                    'rank': 'Police Officer',
-                    'percentile': {
-                        'percentile_trr': '12.0000',
-                        'percentile_allegation_civilian': '98.4344',
-                        'percentile_allegation_internal': '99.7840',
-                    }
-                }
             }
         ]
 
