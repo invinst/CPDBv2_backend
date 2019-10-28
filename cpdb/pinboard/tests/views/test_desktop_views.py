@@ -9,10 +9,12 @@ from django.urls import reverse
 import pytz
 from mock import patch, Mock, PropertyMock
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from robber import expect
 from freezegun import freeze_time
 
+from authentication.factories import AdminUserFactory
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
     OfficerFactory,
@@ -2248,3 +2250,69 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'created_at': '2018-04-03',
             }
         ])
+
+    def test_all_returns_empty_when_not_authenticated(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard = PinboardFactory(
+                id='aaaa1111',
+                title='Pinboard 1',
+            )
+            pinboard.officers.set(OfficerFactory.create_batch(10))
+            pinboard.allegations.set(AllegationFactory.create_batch(10))
+            pinboard.trrs.set(TRRFactory.create_batch(10))
+
+        base_url = reverse('api-v2:pinboards-all')
+
+        response = self.client.get(f"{base_url}?{urlencode({'limit': 5})}")
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(0)
+        expect(response.data['next']).to.eq(None)
+        expect(response.data['previous']).to.eq(None)
+        expect(response.data['results']).to.eq([])
+
+    def test_all_returns_correct_result_when_authenticated(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard = PinboardFactory(
+                id='aaaa1111',
+                title='Pinboard 1',
+            )
+            pinboard.officers.set(OfficerFactory.create_batch(10))
+            pinboard.allegations.set(AllegationFactory.create_batch(10))
+            pinboard.trrs.set(TRRFactory.create_batch(10))
+
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='bbbb2222',
+                title='Pinboard 2',
+            )
+
+        with freeze_time(datetime(2018, 3, 4, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory.create_batch(8)
+
+        base_url = reverse('api-v2:pinboards-all')
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        response = self.client.get(f"{base_url}?{urlencode({'limit': 5})}")
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(10)
+        expect(response.data['next']).to.eq(f"http://testserver{base_url}?{urlencode({'limit': 5, 'offset': 5})}")
+        expect(response.data['previous']).to.eq(None)
+        expect(response.data['results']).to.have.length(5)
+        expect(response.data['results']).to.contain({
+            'id': 'aaaa1111',
+            'title': 'Pinboard 1',
+            'created_at': '2018-04-03',
+            'officers_count': 10,
+            'allegations_count': 10,
+            'trrs_count': 10,
+        })
+        expect(response.data['results']).to.contain({
+            'id': 'bbbb2222',
+            'title': 'Pinboard 2',
+            'created_at': '2018-04-02',
+            'officers_count': 0,
+            'allegations_count': 0,
+            'trrs_count': 0,
+        })
