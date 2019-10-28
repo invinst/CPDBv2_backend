@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+import time
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -66,6 +67,7 @@ class PinboardViewSet(
             return response
 
     def update(self, request, pk):
+        time.sleep(30)
         if str(pk) in request.session.get('owned_pinboards', []):
             return super().update(request, pk)
         return Response(status=status.HTTP_403_FORBIDDEN)
@@ -100,6 +102,8 @@ class PinboardViewSet(
             return Response(self.serializer_class(pinboard).data)
         elif 'create' in request.query_params and request.query_params['create'] == 'true':
             pinboard = Pinboard.objects.create()
+            self.update_owned_pinboards(request, pinboard.id)
+            self.update_latest_retrieved_pinboard(request, pinboard.id)
             return Response(self.serializer_class(pinboard).data)
         else:
             return Response({})
