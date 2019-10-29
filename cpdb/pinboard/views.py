@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.db.models import Count
+from django.db.models import OuterRef
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -9,6 +9,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from data.utils.subqueries import SQCount
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
@@ -158,15 +159,20 @@ class PinboardViewSet(
     @action(detail=False, methods=['get'])
     def all(self, request):
         if request.user.is_authenticated:
-            pinboards = Pinboard.objects.all().order_by('-created_at').annotate(
-                officers_count=Count('officers', distinct=True)
-            ).annotate(
-                allegations_count=Count('allegations', distinct=True)
-            ).annotate(
-                trrs_count=Count('trrs', distinct=True)
+            pinboards = Pinboard.objects.order_by('-created_at').annotate(
+                officers_count=SQCount(
+                    Pinboard.officers.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
+                ),
+                allegations_count=SQCount(
+                    Pinboard.allegations.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
+                ),
+                trrs_count=SQCount(
+                    Pinboard.trrs.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
+                ),
             )
         else:
             pinboards = []
+
         paginator = self.pagination_class()
         paginated_pinboards = paginator.paginate_queryset(pinboards, request, view=self)
         return paginator.get_paginated_response(PinboardItemSerializer(paginated_pinboards, many=True).data)
