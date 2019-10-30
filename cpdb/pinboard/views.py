@@ -67,7 +67,18 @@ class PinboardViewSet(
 
     def update(self, request, pk):
         if str(pk) in request.session.get('owned_pinboards', []):
-            return super().update(request, pk)
+            source_pinboard = self._source_pinboard
+
+            if source_pinboard:
+                data = PinboardDetailSerializer(source_pinboard).data
+                pinboard = get_object_or_404(Pinboard, id=pk)
+                pinboard_serializer = PinboardDetailSerializer(pinboard, data=data)
+                pinboard_serializer.is_valid(raise_exception=True)
+                pinboard_serializer.save()
+                return Response(pinboard_serializer.data)
+            else:
+                return super().update(request, pk)
+
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
