@@ -16,15 +16,6 @@ class PinboardSerializer(NoNullSerializer):
     created_at = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
 
 
-class PinboardItemSerializer(NoNullSerializer):
-    id = serializers.CharField(min_length=8, max_length=8, read_only=True)
-    title = serializers.CharField()
-    created_at = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
-    officers_count = serializers.IntegerField()
-    allegations_count = serializers.IntegerField()
-    trrs_count = serializers.IntegerField()
-
-
 class PinboardDetailSerializer(ModelSerializer, NoNullSerializer):
     id = serializers.CharField(
         min_length=8,

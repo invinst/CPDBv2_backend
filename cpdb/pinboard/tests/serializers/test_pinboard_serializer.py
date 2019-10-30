@@ -9,8 +9,8 @@ import pytz
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
-    PinboardItemSerializer,
 )
+from pinboard.serializers.pinboard_admin_serializer import PinboardItemSerializer
 from data.factories import OfficerFactory, AllegationFactory
 from pinboard.factories import PinboardFactory
 

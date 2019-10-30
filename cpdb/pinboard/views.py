@@ -13,9 +13,9 @@ from data.utils.subqueries import SQCount
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
-    OrderedPinboardSerializer,
-    PinboardItemSerializer
+    OrderedPinboardSerializer
 )
+from pinboard.serializers.pinboard_admin_serializer import PinboardItemSerializer
 from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
     PinnedAllegationSerializer,
@@ -159,16 +159,8 @@ class PinboardViewSet(
     @action(detail=False, methods=['get'])
     def all(self, request):
         if request.user.is_authenticated:
-            pinboards = Pinboard.objects.order_by('-created_at').annotate(
-                officers_count=SQCount(
-                    Pinboard.officers.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
-                ),
-                allegations_count=SQCount(
-                    Pinboard.allegations.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
-                ),
-                trrs_count=SQCount(
-                    Pinboard.trrs.through.objects.filter(pinboard_id=OuterRef('id')).values('id')
-                ),
+            pinboards = Pinboard.objects.order_by('-created_at').prefetch_related(
+                'officers', 'allegations', 'trrs', 'allegations__most_common_category',
             )
         else:
             pinboards = []
