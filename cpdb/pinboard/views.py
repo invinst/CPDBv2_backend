@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.db.models import OuterRef
+from django.db.models import OuterRef, Prefetch
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -36,6 +36,7 @@ from pinboard.serializers.mobile.relevant import (
     RelevantAllegationMobileSerializer,
     RelevantDocumentMobileSerializer,
 )
+from trr.models import ActionResponse
 from .models import Pinboard, ProxyAllegation as Allegation
 
 
@@ -160,7 +161,14 @@ class PinboardViewSet(
     def all(self, request):
         if request.user.is_authenticated:
             pinboards = Pinboard.objects.order_by('-created_at').prefetch_related(
-                'officers', 'allegations', 'trrs', 'allegations__most_common_category',
+                'officers', 'allegations', 'trrs', 'allegations__most_common_category'
+            ).prefetch_related(
+                Prefetch(
+                    'trrs__actionresponse_set',
+                    queryset=ActionResponse.objects.filter(
+                        person='Member Action'
+                    ).order_by('-action_sub_category', 'force_type')
+                )
             )
         else:
             pinboards = []

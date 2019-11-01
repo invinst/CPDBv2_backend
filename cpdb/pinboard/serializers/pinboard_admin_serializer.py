@@ -28,7 +28,8 @@ class TRRSerializer(NoNullSerializer):
     category = serializers.SerializerMethodField()
 
     def get_category(self, obj):
-        return obj.force_types[0] if len(obj.force_types) > 0 else 'Unknown'
+        force_types = [res.force_type for res in obj.actionresponse_set.all()]
+        return force_types[0] if len(force_types) > 0 else 'Unknown'
 
 
 class PinboardItemSerializer(NoNullSerializer):
@@ -53,10 +54,10 @@ class PinboardItemSerializer(NoNullSerializer):
         return obj.trrs.count()
 
     def get_recent_officers(self, obj):
-        return OfficerSerializer(obj.officers.all().reverse(), many=True).data
+        return OfficerSerializer(reversed(obj.officers.all()), many=True).data
 
     def get_recent_allegations(self, obj):
-        return AllegationSerializer(obj.allegations.all().reverse(), many=True).data
+        return AllegationSerializer(reversed(obj.allegations.all()), many=True).data
 
     def get_recent_trrs(self, obj):
-        return TRRSerializer(obj.trrs.all().reverse(), many=True).data
+        return TRRSerializer(reversed(obj.trrs.all()), many=True).data

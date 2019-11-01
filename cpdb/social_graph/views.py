@@ -115,6 +115,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
         data = self._data()
 
         return SocialGraphDataQuery(
+            pinboard_id=self._pinboard_id,
             officers=data['officers'],
             threshold=self._threshold,
             complaint_origin=self._complaint_origin,
