@@ -33,6 +33,7 @@ class PinboardTestCase(TestCase):
             trrs=(trr_1, trr_2),
         )
         cloned_pinboard = pinboard.clone()
+        cloned_pinboard.refresh_from_db()
 
         officers = set(pinboard.officers.all().values_list('id', flat=True))
         allegations = set(pinboard.allegations.all().values_list('crid', flat=True))
@@ -47,6 +48,7 @@ class PinboardTestCase(TestCase):
         expect(officers).to.eq(cloned_officers)
         expect(allegations).to.eq(cloned_allegations)
         expect(trrs).to.eq(cloned_trrs)
+        expect(cloned_pinboard.source_pinboard).to.eq(pinboard)
 
     def test_str(self):
         pinboard = PinboardFactory(

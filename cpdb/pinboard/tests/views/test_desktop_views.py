@@ -55,7 +55,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         trr_1 = TRRFactory(id=33)
         trr_2 = TRRFactory(id=44)
 
-        PinboardFactory(
+        pinboard = PinboardFactory(
             id='f871a13f',
             title='My Pinboard',
             description='abc',
@@ -71,9 +71,17 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(cloned_pinboard_id).to.ne('f871a13f')
         expect(response.data['title']).to.eq('My Pinboard')
         expect(response.data['description']).to.eq('abc')
-        expect(response.data['officer_ids']).to.eq([11, 22])
-        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
-        expect(response.data['trr_ids']).to.eq([33, 44])
+        expect(set(response.data['officer_ids'])).to.eq({11, 22})
+        expect(set(response.data['crids'])).to.eq({'abc123', 'abc456'})
+        expect(set(response.data['trr_ids'])).to.eq({33, 44})
+
+        cloned_pinboard = Pinboard.objects.get(id=cloned_pinboard_id)
+        expect(cloned_pinboard.source_pinboard).to.eq(pinboard)
+        expect(cloned_pinboard.title).to.eq('My Pinboard')
+        expect(cloned_pinboard.description).to.eq('abc')
+        expect(set(cloned_pinboard.officer_ids)).to.eq({11, 22})
+        expect(set(cloned_pinboard.crids)).to.eq({'abc123', 'abc456'})
+        expect(set(cloned_pinboard.trr_ids)).to.eq({33, 44})
 
         # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
@@ -82,9 +90,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         expect(response.data['id']).to.eq(cloned_pinboard_id)
         expect(response.data['title']).to.eq('My Pinboard')
-        expect(response.data['officer_ids']).to.eq([11, 22])
-        expect(response.data['crids']).to.eq(['abc123', 'abc456'])
-        expect(response.data['trr_ids']).to.eq([33, 44])
+        expect(set(response.data['officer_ids'])).to.eq({11, 22})
+        expect(set(response.data['crids'])).to.eq({'abc123', 'abc456'})
+        expect(set(response.data['trr_ids'])).to.eq({33, 44})
         expect(response.data['description']).to.eq('abc')
         expect(response.data).not_to.contain('example_pinboards')
 
@@ -453,7 +461,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         trr_1 = TRRFactory(id=3)
         trr_2 = TRRFactory(id=4)
 
-        PinboardFactory(
+        pinboard = PinboardFactory(
             id='1234abcd',
             title='Duplicate Pinboard Title',
             description='Duplicate Pinboard Description',
@@ -486,6 +494,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         duplicated_pinboard = Pinboard.objects.get(id=response.data['id'])
 
+        expect(duplicated_pinboard.source_pinboard).to.eq(pinboard)
         expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title')
         expect(duplicated_pinboard.description).to.eq('Duplicate Pinboard Description')
         expect(set(duplicated_pinboard.officer_ids)).to.eq({111, 222})
