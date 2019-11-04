@@ -120,6 +120,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             }
         ]
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -129,7 +130,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_complaint_origin_is_civilian(self):
@@ -242,6 +243,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2005-12-31', '2007-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -251,7 +253,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers, threshold=1)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers, threshold=1)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_3_complaint_origin_is_civilian(self):
@@ -432,6 +434,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2007-12-31', '2008-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -441,7 +444,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers, threshold=3)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers, threshold=3)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_complaint_origin_is_officer(self):
@@ -554,6 +557,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2005-12-31', '2007-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -564,6 +568,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
+            'f871a13f',
             officers,
             threshold=1,
             complaint_origin='OFFICER'
@@ -742,6 +747,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2007-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -751,7 +757,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers, threshold=3, complaint_origin='OFFICER')
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers, threshold=3, complaint_origin='OFFICER')
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_threshold_1_complaint_origin_is_all(self):
@@ -870,6 +876,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2005-12-31', '2006-12-31', '2007-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -880,6 +887,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
+            'f871a13f',
             officers,
             threshold=1,
             complaint_origin='ALL'
@@ -1064,6 +1072,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         expected_list_event = ['2007-12-31', '2008-12-31']
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': expected_officers,
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
@@ -1074,7 +1083,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
-            officers, threshold=3, complaint_origin='ALL'
+            'f871a13f', officers, threshold=3, complaint_origin='ALL'
         )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
@@ -1213,6 +1222,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         OfficerAllegationFactory(id=20, officer=officer_7, allegation=allegation_10)
 
         expected_graph_data = {
+            'pinboard_id': 'f871a13f',
             'officers': [
                 {
                     'full_name': 'Edward May',
@@ -1308,13 +1318,15 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
-            officers, threshold=2, complaint_origin='ALL', show_connected_officers=True
+            'f871a13f', officers, threshold=2, complaint_origin='ALL', show_connected_officers=True
         )
 
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_graph_data_empty_officers(self):
-        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none(), threshold=2, complaint_origin='ALL')
+        social_graph_data_query = SocialGraphDataQuery(
+            'f871a13f', Officer.objects.none(), threshold=2, complaint_origin='ALL'
+        )
         expect(social_graph_data_query.graph_data()).to.be.empty()
 
     def test_all_officers_default(self):
@@ -1347,7 +1359,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers)
         expect(list(social_graph_data_query.all_officers())).to.eq([officer_2, officer_1, officer_3])
 
     def test_all_officers_with_show_connected_officers(self):
@@ -1440,6 +1452,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         )
 
         social_graph_data_query = SocialGraphDataQuery(
+            'f871a13f',
             officers,
             threshold=2,
             complaint_origin='ALL',
@@ -1492,7 +1505,7 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers)
         expect(list(social_graph_data_query.allegations())).to.eq([allegation_1, allegation_2, allegation_3])
 
     def test_empty_allegations(self):
@@ -1503,19 +1516,19 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', officers)
         expect(social_graph_data_query.allegations()).to.be.empty()
 
     def test_graph_data_without_officers(self):
-        social_graph_data_query = SocialGraphDataQuery(None)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', None)
         expect(social_graph_data_query.coaccused_data).to.eq([])
 
-        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none())
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', Officer.objects.none())
         expect(social_graph_data_query.coaccused_data).to.eq([])
 
     def test_allegation_without_officers(self):
-        social_graph_data_query = SocialGraphDataQuery(None)
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', None)
         expect(social_graph_data_query.allegation_ids).to.eq([])
 
-        social_graph_data_query = SocialGraphDataQuery(Officer.objects.none())
+        social_graph_data_query = SocialGraphDataQuery('f871a13f', Officer.objects.none())
         expect(social_graph_data_query.allegation_ids).to.eq([])

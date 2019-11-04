@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.db.models import OuterRef, Prefetch
+from django.db.models import Prefetch
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -9,7 +9,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from data.utils.subqueries import SQCount
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
