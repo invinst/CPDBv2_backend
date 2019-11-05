@@ -383,6 +383,10 @@ class PinboardMobileViewSetTestCase(APITestCase):
             response.data['example_pinboards'],
             key=lambda pinboard: pinboard['id']
         )
+
+        expect(self.client.session.get('owned_pinboards')).to.eq([response.data['id']])
+        expect(self.client.session.get('latest_retrieved_pinboard')).to.eq(response.data['id'])
+
         expect(response.data['id']).to.be.a.string()
         expect(response.data['id']).to.have.length(8)
         expect(response.data).to.eq({
