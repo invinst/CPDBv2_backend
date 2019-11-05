@@ -5,14 +5,14 @@ from django.test import TestCase
 from freezegun import freeze_time
 from robber import expect
 
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 from sitemap.sitemaps.trr_sitemap import TRRSitemap
 from trr.factories import TRRFactory
 
 
 class TRRSitemapTestCase(TestCase):
-    def test_class_properties(self):
-        expect(TRRSitemap.changefreq).to.eq('daily')
-        expect(TRRSitemap.priority).to.eq(0.5)
+    def test_base(self):
+        expect(issubclass(TRRSitemap, BaseSitemap)).to.be.true()
 
     def test_items(self):
         trr_1 = TRRFactory(id=123)

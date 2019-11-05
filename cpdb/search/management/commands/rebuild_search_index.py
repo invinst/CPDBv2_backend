@@ -3,11 +3,13 @@ import json
 from django.core.management.base import BaseCommand
 
 from search.search_indexers import IndexerManager
-from search.constants import DEFAULT_INDEXERS
+from search.constants import DEFAULT_INDEXERS, DAILY_INDEXERS
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
+        parser.add_argument('--daily', dest='daily', action='store_true')
+        parser.set_defaults(daily=False)
         parser.add_argument('app', nargs='*')
         parser.add_argument(
             '--from-file',
@@ -20,7 +22,9 @@ class Command(BaseCommand):
             return json.load(f)
 
     def _get_indexers(self, options):
-        if len(options['app']):
+        if options['daily']:
+            return DAILY_INDEXERS
+        elif len(options['app']):
             doc_types = options['app']
         elif options['from_file']:
             doc_types = self.get_doc_types_from_json(options['from_file'])
@@ -30,10 +34,10 @@ class Command(BaseCommand):
                 if idx.doc_type_klass._doc_type.name in doc_types]
 
     def _get_migrate_doc_types(self, indexers):
-        return [idx.doc_type_klass._doc_type.name
+        return [idx.doc_type_klass
                 for idx in (set(DEFAULT_INDEXERS) - set(indexers))]
 
     def handle(self, *args, **kwargs):
         indexers = self._get_indexers(kwargs)
         migrate_doc_types = self._get_migrate_doc_types(indexers)
-        IndexerManager(indexers).rebuild_index(migrate_doc_types)
+        IndexerManager(indexers, migrate_doc_types).rebuild_index()

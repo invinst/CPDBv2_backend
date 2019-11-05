@@ -7,12 +7,12 @@ from robber import expect
 
 from data.factories import AllegationFactory
 from sitemap.sitemaps.allegation_sitemap import AllegationSitemap
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 
 
 class AllegationSitemapTestCase(TestCase):
-    def test_class_properties(self):
-        expect(AllegationSitemap.changefreq).to.eq('daily')
-        expect(AllegationSitemap.priority).to.eq(0.5)
+    def test_base(self):
+        expect(issubclass(AllegationSitemap, BaseSitemap)).to.be.true()
 
     def test_items(self):
         allegation_1 = AllegationFactory(crid='123', coaccused_count=2)

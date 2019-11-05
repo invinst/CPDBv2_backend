@@ -1,19 +1,18 @@
 from datetime import datetime
 
-from django.test import TestCase
-
-from robber import expect
-from freezegun import freeze_time
 import pytz
+from django.test import TestCase
+from freezegun import freeze_time
+from robber import expect
 
 from data.factories import PoliceUnitFactory
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 from sitemap.sitemaps.unit_sitemap import UnitSitemap
 
 
 class UnitSiteMapTestCase(TestCase):
-    def test_class_properties(self):
-        expect(UnitSitemap.changefreq).to.eq('daily')
-        expect(UnitSitemap.priority).to.eq(0.5)
+    def test_base(self):
+        expect(issubclass(UnitSitemap, BaseSitemap)).to.be.true()
 
     def test_items(self):
         unit_1 = PoliceUnitFactory(id=123, unit_name='002')

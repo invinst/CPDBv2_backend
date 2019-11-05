@@ -5,6 +5,7 @@ from mock import Mock, patch, mock_open
 
 from es_index import indexer_klasses, indexer_klasses_map
 from es_index.management.commands.rebuild_index import Command
+from es_index.management.commands import rebuild_index
 
 
 class RebuildIndexCommandTestCase(TestCase):
@@ -188,7 +189,14 @@ class RebuildIndexCommandTestCase(TestCase):
 
         self._prepare_data(clear=False)
 
-        indexers = rebuild_index_command.get_indexers(app=['test.a'])
+        indexers = rebuild_index_command.get_indexers(app=['test.a'], daily=False)
         self.assertEqual(len(indexers), 3)
         self.assertLess(indexers.index(Indexer1), indexers.index(Indexer2))
         self.assertEqual(indexers[-1], Indexer2)
+
+    def test_handle_called_with_daily_option(self):
+        daily_index = self._prepare_data()
+        with patch.object(rebuild_index, 'DAILY_INDEXERS', [daily_index]):
+            call_command('rebuild_index', '--daily')
+            daily_index.create_mapping.assert_called_once()
+            daily_index.add_new_data.assert_called_once()
