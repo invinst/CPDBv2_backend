@@ -136,13 +136,16 @@ class AreaIndexer(BaseIndexer):
 
 
 class IndexerManager(object):
-    def __init__(self, indexers=None):
+    def __init__(self, indexers=None, migrate_doc_types=None):
         self.indexers = indexers or []
+        self.migrate_doc_types = migrate_doc_types or []
 
     def _build_mapping(self):
         autocompletes_alias.write_index.close()
         for indexer in self.indexers:
             indexer.doc_type_klass.init(index=autocompletes_alias.new_index_name)
+        for migrate_doc_type in self.migrate_doc_types:
+            migrate_doc_type.init(index=autocompletes_alias.new_index_name)
         autocompletes_alias.write_index.open()
 
     def _index_data(self):
@@ -150,10 +153,10 @@ class IndexerManager(object):
             a = indexer_klass()
             bulk(es_client, a.docs())
 
-    def rebuild_index(self, migrate_doc_types=[]):
+    def rebuild_index(self):
         with autocompletes_alias.indexing():
             self._build_mapping()
-            autocompletes_alias.migrate(migrate_doc_types)
+            autocompletes_alias.migrate([doc_type._doc_type.name for doc_type in self.migrate_doc_types])
             self._index_data()
 
 

@@ -145,6 +145,7 @@ class Pinboard(TimeStampsModel):
             'honorable_mention_count',
             'honorable_mention_percentile',
             'last_unit_id',
+            'civilian_compliment_count'
         ]
 
         related_renamed_columns = (
@@ -199,7 +200,11 @@ class Pinboard(TimeStampsModel):
             'crid',
             'incident_date',
             'most_common_category',
-            'point'
+            'point',
+            'old_complaint_address',
+            'add1',
+            'add2',
+            'city'
         ).select_related(
             'most_common_category',
         ).prefetch_related(
