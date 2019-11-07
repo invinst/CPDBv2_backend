@@ -10,7 +10,7 @@ from sitemap.sitemaps.trr_sitemap import TRRSitemap
 from sitemap.sitemaps.unit_sitemap import UnitSitemap
 
 sitemaps = {
-    'static_page': StaticPageSiteMap,
+    'static': StaticPageSiteMap,
     'officer': OfficerSitemap,
     'allegation': AllegationSitemap,
     'trr': TRRSitemap,
