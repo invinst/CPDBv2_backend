@@ -1,12 +1,12 @@
-from django.contrib.sitemaps import Sitemap
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 
 
-class StaticPageSiteMap(Sitemap):
-    changefreq = 'daily'
-    priority = 0.5
-
+class StaticPageSiteMap(BaseSitemap):
     def items(self):
         return ['', 'collaborate', 'terms']
 
     def location(self, item):
         return f'/{item}/' if item else ''
+
+    def lastmod(self, obj):
+        return None

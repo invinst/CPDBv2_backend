@@ -60,6 +60,8 @@ Most of our resources are deployed into 3 namespaces: `staging`, `beta` and `pro
 
 ## CircleCi Environment Variables
 - `SKIP_COVERALLS`: set to `true` to skip sending coverage report to Coveralls. Only do this if Coveralls is down.
+- `$SKIP_REBUILD_INDEX`: set to `true` to skip rebuild index. This will significantly reduce deployment time. Please make sure that no changes in database was made.
+- `$SKIP_REBUILD_SEARCH_INDEX`: set to `true` to skip rebuild search index. This will significantly reduce deployment time. Please make sure that no changes in database was made.
 
 # Make changes to Docker images
 
