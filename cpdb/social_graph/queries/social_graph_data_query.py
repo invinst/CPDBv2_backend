@@ -114,7 +114,9 @@ class SocialGraphDataQuery(object):
                 'list_event': self.list_event()
             }
         else:
-            return {}
+            return {
+                'pinboard_id': self.pinboard_id,
+            }
 
     def allegations(self):
         return Allegation.objects.filter(crid__in=self.allegation_ids).order_by('incident_date')

@@ -1327,7 +1327,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         social_graph_data_query = SocialGraphDataQuery(
             'f871a13f', Officer.objects.none(), threshold=2, complaint_origin='ALL'
         )
-        expect(social_graph_data_query.graph_data()).to.be.empty()
+        expect(social_graph_data_query.graph_data()).to.eq({'pinboard_id': 'f871a13f'})
 
     def test_all_officers_default(self):
         officer_1 = OfficerFactory(
