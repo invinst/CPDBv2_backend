@@ -968,7 +968,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
         expect(log_args['ContentType']).to.eq('text/plain')
 
-    def test_public_cloud_document_with_public_document(self):
+    def test_make_cloud_document_public_with_public_document(self):
         allegation = AllegationFactory(crid='234')
         public_cloud_document = create_object({
             'id': 'CRID-789-CR',
@@ -978,11 +978,11 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
 
-        result = DocumentCloudAttachmentImporter(self.logger).public_cloud_document(public_cloud_document)
-        expect(result).to.eq(public_cloud_document)
+        result = DocumentCloudAttachmentImporter(self.logger).make_cloud_document_public(public_cloud_document)
+        expect(result).to.be.true()
 
     @patch('document_cloud.importers.DocumentCloud')
-    def test_public_cloud_document_with_private_document(self, document_cloud_mock):
+    def test_make_cloud_document_public_with_private_document(self, document_cloud_mock):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
@@ -1006,17 +1006,17 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()
-        result = importer.public_cloud_document(private_cloud_document)
+        result = importer.make_cloud_document_public(private_cloud_document)
 
         expect(save_mock).to.be.called_once()
         expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Updated document https://www.documentcloud.org/documents/CRID-234-CR.html access from private to public'
         )
-        expect(result).to.eq(updated_cloud_document)
+        expect(result).to.be.true()
 
     @patch('document_cloud.importers.DocumentCloud')
-    def test_public_cloud_document_with_organization_document(self, document_cloud_mock):
+    def test_make_cloud_document_public_with_organization_document(self, document_cloud_mock):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
@@ -1040,17 +1040,17 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()
-        result = importer.public_cloud_document(private_cloud_document)
+        result = importer.make_cloud_document_public(private_cloud_document)
 
         expect(save_mock).to.be.called_once()
         expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Updated document https://www.documentcloud.org/canonical_url access from organization to public'
         )
-        expect(result).to.eq(updated_cloud_document)
+        expect(result).to.be.true()
 
     @patch('document_cloud.importers.DocumentCloud')
-    def test_public_cloud_document_with_private_document_not_updated(self, document_cloud_mock):
+    def test_make_cloud_document_public_with_private_document_not_updated(self, document_cloud_mock):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
@@ -1065,16 +1065,16 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()
-        result = importer.public_cloud_document(private_cloud_document)
+        result = importer.make_cloud_document_public(private_cloud_document)
 
         expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Can not update document https://www.documentcloud.org/canonical_url access from private to public'
         )
-        expect(result).to.be.none()
+        expect(result).to.be.false()
 
     @patch('document_cloud.importers.DocumentCloud')
-    def test_public_cloud_document_with_organization_document_not_updated(self, document_cloud_mock):
+    def test_make_cloud_document_public_with_organization_document_not_updated(self, document_cloud_mock):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
@@ -1089,15 +1089,15 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()
-        result = importer.public_cloud_document(private_cloud_document)
+        result = importer.make_cloud_document_public(private_cloud_document)
 
         expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Can not update document https://www.documentcloud.org/canonical_url access from organization to public'
         )
-        expect(result).to.be.none()
+        expect(result).to.be.false()
 
-    def test_public_cloud_document_with_error_document(self):
+    def test_make_cloud_document_public_with_error_document(self):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         error_cloud_document = create_object({
@@ -1112,14 +1112,14 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()
-        result = importer.public_cloud_document(error_cloud_document)
+        result = importer.make_cloud_document_public(error_cloud_document)
 
         expect(importer.log_info).to.be.called_with(
             'Skip document https://www.documentcloud.org/canonical_url (access: error)'
         )
-        expect(result).to.be.none()
+        expect(result).to.be.false()
 
-    def test_public_cloud_document_with_error_document_copa_documentcloud_source_type(self):
+    def test_make_cloud_document_public_with_error_document_copa_documentcloud_source_type(self):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         error_cloud_document = create_object({
@@ -1132,5 +1132,5 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': save_mock
         })
 
-        result = DocumentCloudAttachmentImporter(self.logger).public_cloud_document(error_cloud_document)
-        expect(result).to.eq(error_cloud_document)
+        result = DocumentCloudAttachmentImporter(self.logger).make_cloud_document_public(error_cloud_document)
+        expect(result).to.be.true()

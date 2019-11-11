@@ -66,9 +66,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         except AttachmentFile.DoesNotExist:
             return
 
-    def public_cloud_document(self, cloud_document):
+    def make_cloud_document_public(self, cloud_document):
         if cloud_document.access == 'public':
-            return cloud_document
+            return True
         elif cloud_document.access == 'private' or cloud_document.access == 'organization':
             cloud_document_access = cloud_document.access
             cloud_document.access = 'public'
@@ -79,17 +79,19 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                 self.log_info(
                     f'Updated document {cloud_document.canonical_url} access from {cloud_document_access} to public'
                 )
-                return updated_cloud_document
+                return True
             else:
                 self.log_info(
                     f'Can not update document {cloud_document.canonical_url} access '
                     f'from {cloud_document_access} to public'
                 )
+                return False
         elif (cloud_document.access == 'error' and
               cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES):
-            return cloud_document
+            return True
         else:
             self.log_info(f'Skip document {cloud_document.canonical_url} (access: {cloud_document.access})')
+            return False
 
     def search_attachments(self):
         self.log_info('Documentcloud crawling process is about to start...')
@@ -98,8 +100,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
             if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
-                public_cloud_document = self.public_cloud_document(cloud_document)
-                if public_cloud_document:
+                if self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
                         updated = self.update_attachment(attachment, cloud_document)
