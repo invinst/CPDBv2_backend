@@ -59,7 +59,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
         )
 
         # Current client does not own the pinboard, should clone it
-        response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'f871a13f'}))
+        response = self.client.get(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'f871a13f'}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         cloned_pinboard_id = response.data['id']
         expect(cloned_pinboard_id).to.ne('f871a13f')
