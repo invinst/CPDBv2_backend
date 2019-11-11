@@ -29,10 +29,33 @@ from trr.factories import TRRFactory, ActionResponseFactory
 @patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardMobileViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
-        PinboardFactory(
+        example_pinboard_1 = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        example_pinboard_2 = PinboardFactory(
+            id='eeee2222',
+            title='Example pinboard 2',
+            description='Example pinboard 2',
+        )
+        ExamplePinboardFactory(pinboard=example_pinboard_1)
+        ExamplePinboardFactory(pinboard=example_pinboard_2)
+
+        officer_1 = OfficerFactory(id=11)
+        officer_2 = OfficerFactory(id=22)
+        allegation_1 = AllegationFactory(crid='abc123')
+        allegation_2 = AllegationFactory(crid='abc456')
+        trr_1 = TRRFactory(id=33)
+        trr_2 = TRRFactory(id=44)
+
+        pinboard = PinboardFactory(
             id='f871a13f',
             title='My Pinboard',
             description='abc',
+            officers=[officer_1, officer_2],
+            allegations=[allegation_1, allegation_2],
+            trrs=[trr_1, trr_2],
         )
 
         # Current client does not own the pinboard, should clone it
@@ -42,23 +65,30 @@ class PinboardMobileViewSetTestCase(APITestCase):
         expect(cloned_pinboard_id).to.ne('f871a13f')
         expect(response.data['title']).to.eq('My Pinboard')
         expect(response.data['description']).to.eq('abc')
-        expect(response.data['officer_ids']).to.eq([])
-        expect(response.data['crids']).to.eq([])
-        expect(response.data['trr_ids']).to.eq([])
+        expect(set(response.data['officer_ids'])).to.eq({11, 22})
+        expect(set(response.data['crids'])).to.eq({'abc123', 'abc456'})
+        expect(set(response.data['trr_ids'])).to.eq({33, 44})
+
+        cloned_pinboard = Pinboard.objects.get(id=cloned_pinboard_id)
+        expect(cloned_pinboard.source_pinboard).to.eq(pinboard)
+        expect(cloned_pinboard.title).to.eq('My Pinboard')
+        expect(cloned_pinboard.description).to.eq('abc')
+        expect(set(cloned_pinboard.officer_ids)).to.eq({11, 22})
+        expect(set(cloned_pinboard.crids)).to.eq({'abc123', 'abc456'})
+        expect(set(cloned_pinboard.trr_ids)).to.eq({33, 44})
 
         # Now current client owns the user, successive requests should not clone pinboard
         # `id` is case-insensitive
         response = self.client.get(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': cloned_pinboard_id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq({
-            'id': cloned_pinboard_id,
-            'title': 'My Pinboard',
-            'officer_ids': [],
-            'crids': [],
-            'trr_ids': [],
-            'description': 'abc',
-            'example_pinboards': []
-        })
+
+        expect(response.data['id']).to.eq(cloned_pinboard_id)
+        expect(response.data['title']).to.eq('My Pinboard')
+        expect(set(response.data['officer_ids'])).to.eq({11, 22})
+        expect(set(response.data['crids'])).to.eq({'abc123', 'abc456'})
+        expect(set(response.data['trr_ids'])).to.eq({33, 44})
+        expect(response.data['description']).to.eq('abc')
+        expect(response.data).not_to.contain('example_pinboards')
 
     def test_retrieve_pinboard_not_found(self):
         PinboardFactory(
