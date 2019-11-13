@@ -17,15 +17,11 @@ class DocumentCloudSession(requests.Session):
         super(DocumentCloudSession, self).__init__()
         self.logger = logger
 
-    def __enter__(self):
         login_response = self.post(
             'https://www.documentcloud.org/login',
             {'email': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
-
-        if login_response.status_code == 200:
-            return self
-        else:
+        if login_response.status_code != 200:
             self.logger.error('Cannot login to document cloud to reprocessing text')
             raise requests.exceptions.RequestException(
                 f'Cannot login {login_response.status_code}: {login_response.json()}'
