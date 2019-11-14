@@ -192,7 +192,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     def reprocess_text(self):
         try:
             with DocumentCloudSession(self.log_info) as session:
-                session.request_reprocess_missing_text_documents_with_delay()
+                session.request_reprocess_missing_text_documents()
         except (requests.exceptions.RequestException, urllib3.exceptions.HTTPError):
             pass
 

@@ -453,7 +453,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(MockDocumentCloudSession).to.called_with(importer.log_info)
         expect(session.__enter__).to.be.called()
-        expect(session.request_reprocess_missing_text_documents_with_delay).to.be.called()
+        expect(session.request_reprocess_missing_text_documents).to.be.called()
         expect(session.__exit__).to.be.called()
 
     @patch(
@@ -949,8 +949,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         expect(log_args['Body']).to.contain(
             b'================ REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS ================'
-            b'\nReprocessing text https://www.documentcloud.org/documents/999-CRID-234-CR.html success'
-            b'\nReprocessing text https://www.documentcloud.org/documents/2-CRID-234-CR.html '
+            b'\n[SUCCESS] Reprocessing text https://www.documentcloud.org/documents/2-CRID-234-CR.html'
+            b'\n[FAIL] Reprocessing text https://www.documentcloud.org/documents/999-CRID-234-CR.html '
             b'failed with status code 404: Not Found'
             b'\nSent reprocessing text requests: 1 success, 1 failure, 0 skipped for 2 no-text documents'
         )

@@ -39,7 +39,7 @@ class DocumentCloudSessionTestCase(TestCase):
     )
     def test_login_failure(self, _):
         expect(lambda: DocumentCloudSession(self.log_func)).to.be.to.throw(RequestException)
-        expect(self.log_func).to.be.called_with('ERROR: Cannot login to document cloud to reprocessing text')
+        expect(self.log_func).to.be.called_with('[ERROR] Cannot login to document cloud to reprocessing text')
 
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     def test_request_reprocess_text_success(self, post_mock):
@@ -59,7 +59,7 @@ class DocumentCloudSessionTestCase(TestCase):
                 }
             )
             expect(self.log_func).to.be.called_with(
-                'Reprocessing text https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html success'
+                '[SUCCESS] Reprocessing text https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html'
             )
             expect(requested).to.be.true()
             expect(success).to.be.true()
@@ -90,7 +90,8 @@ class DocumentCloudSessionTestCase(TestCase):
                 }
             )
             expect(self.log_func).to.be.called_with(
-                'Reprocessing text https://www.documentcloud.org/documents/not_exist_documentcloud_id-CRID-234-CR.html'
+                '[FAIL] Reprocessing text'
+                ' https://www.documentcloud.org/documents/not_exist_documentcloud_id-CRID-234-CR.html'
                 ' failed with status code 404: Document does not exist'
             )
             expect(requested).to.be.true()
@@ -122,7 +123,7 @@ class DocumentCloudSessionTestCase(TestCase):
                 }
             )
             expect(self.log_func).to.be.called_with(
-                'Exception when sending reprocess request for '
+                '[ERROR] when sending reprocess request for '
                 'https://www.documentcloud.org/documents/exception_documentcloud_id-CRID-234-CR.html: Invalid request'
             )
             expect(requested).to.be.false()
@@ -130,7 +131,7 @@ class DocumentCloudSessionTestCase(TestCase):
 
     @patch('document_cloud.documentcloud_session.time')
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
-    def test_request_reprocess_missing_text_documents_with_delay(self, post_mock, time_mock):
+    def test_request_reprocess_missing_text_documents(self, post_mock, time_mock):
         AttachmentFileFactory(
             file_type='document',
             text_content='',
@@ -181,7 +182,7 @@ class DocumentCloudSessionTestCase(TestCase):
         )
 
         with DocumentCloudSession(self.log_func) as session:
-            session.request_reprocess_missing_text_documents_with_delay()
+            session.request_reprocess_missing_text_documents()
 
         expect(post_mock).to.be.any_call(
             'https://www.documentcloud.org/login',
@@ -196,8 +197,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text '
-            'https://www.documentcloud.org/documents/DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
+            '[SUCCESS] Reprocessing text '
+            'https://www.documentcloud.org/documents/DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html'
         )
 
         expect(post_mock).to.be.any_call(
@@ -208,8 +209,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text '
-            'https://www.documentcloud.org/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
+            '[SUCCESS] Reprocessing text '
+            'https://www.documentcloud.org/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html'
         )
 
         expect(post_mock).to.be.any_call(
@@ -221,8 +222,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text '
-            'https://www.documentcloud.org/documents/SUMMARY_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
+            '[SUCCESS] Reprocessing text '
+            'https://www.documentcloud.org/documents/SUMMARY_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html'
         )
 
         expect(self.log_func).to.be.any_call(
@@ -290,7 +291,7 @@ class DocumentCloudSessionTestCase(TestCase):
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             side_effect=HTTPError('Invalid request')
         ):
-            session.request_reprocess_missing_text_documents_with_delay()
+            session.request_reprocess_missing_text_documents()
 
         expect(self.log_func).to.be.any_call(
             'Sent reprocessing text requests: 0 success, 2 failure, 1 skipped for 3 no-text documents'
@@ -340,7 +341,7 @@ class DocumentCloudSessionTestCase(TestCase):
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=404, json=Mock(return_value=''))
         ):
-            session.request_reprocess_missing_text_documents_with_delay()
+            session.request_reprocess_missing_text_documents()
 
         expect(self.log_func).to.be.any_call(
             'Sent reprocessing text requests: 0 success, 2 failure, 1 skipped for 3 no-text documents'

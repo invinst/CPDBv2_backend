@@ -22,7 +22,7 @@ class DocumentCloudSession(requests.Session):
             {'email': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
         if login_response.status_code != 200:
-            self.log_func('ERROR: Cannot login to document cloud to reprocessing text')
+            self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
             raise requests.exceptions.RequestException(
                 f'Cannot login {login_response.status_code}: {login_response.json()}'
             )
@@ -37,47 +37,56 @@ class DocumentCloudSession(requests.Session):
                 }
             )
         except (requests.exceptions.RequestException, HTTPError) as e:
-            self.log_func(f'Exception when sending reprocess request for {document.url}: {e}')
+            self.log_func(f'[ERROR] when sending reprocess request for {document.url}: {e}')
             sent, success = False, False
         else:
-            if response.status_code == 200:
-                self.log_func(f'Reprocessing text {document.url} success')
-                sent, success = True, True
+            sent = True
+            success = response.status_code == 200
+            if success:
+                self.log_func(f'[SUCCESS] Reprocessing text {document.url}')
             else:
                 self.log_func(
-                    f'Reprocessing text {document.url} failed'
+                    f'[FAIL] Reprocessing text {document.url} failed'
                     f' with status code {response.status_code}: {response.json()}'
                 )
-                sent, success = True, False
         return sent, success
 
-    def request_reprocess_missing_text_documents_with_delay(self, delay_time=0.01):
+    def _request_reprocess_with_delay(self, reprocess_documents, delay_time=0.01):
+        requested_ids = []
+        success_count = 0
+        for reprocess_document in tqdm(
+            reprocess_documents.order_by('external_id'),
+            desc=f'Reprocessing text on documentcloud'
+        ):
+            sent, success = self._request_reprocess_text(reprocess_document)
+            if sent:
+                requested_ids.append(reprocess_document.external_id)
+            if success:
+                success_count += 1
+            time.sleep(delay_time)
+
+        reprocess_documents.filter(external_id__in=requested_ids).update(
+            reprocess_text_count=F('reprocess_text_count') + 1
+        )
+        return success_count
+
+    def request_reprocess_missing_text_documents(self, ):
         no_text_documents = AttachmentFile.objects.filter(
             file_type='document',
             text_content='',
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         )
-        reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES).distinct()
-        requested_ids = []
-        success_count = 0
-        for reprocess_document in tqdm(reprocess_documents, desc=f'Reprocessing text on documentcloud'):
-            sent, success = self._request_reprocess_text(reprocess_document)
-            if sent:
-                requested_ids.append(reprocess_document.external_id)
-                if success:
-                    success_count += 1
-            time.sleep(delay_time)
+        reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES)
 
-        failure_count = reprocess_documents.count() - success_count
-        skipped_documents_count = no_text_documents.filter(reprocess_text_count__gte=REPROCESS_TEXT_MAX_RETRIES).count()
         no_text_documents_count = no_text_documents.count()
+        reprocess_documents_count = reprocess_documents.count()
+        skipped_documents_count = no_text_documents_count - reprocess_documents_count
+
+        success_count = self._request_reprocess_with_delay(reprocess_documents)
+        failure_count = reprocess_documents_count - success_count
 
         self.log_func(
             'Sent reprocessing text requests: '
             f'{success_count} success, {failure_count} failure, {skipped_documents_count} skipped '
             f'for {no_text_documents_count} no-text documents'
-        )
-
-        no_text_documents.filter(external_id__in=requested_ids).update(
-            reprocess_text_count=F('reprocess_text_count') + 1
         )
