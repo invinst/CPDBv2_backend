@@ -17,13 +17,11 @@ DEFAULT_COMPLAINT_ORIGIN = 'CIVILIAN'
 class SocialGraphDataQuery(object):
     def __init__(
         self,
-        pinboard_id,
         officers,
         threshold=DEFAULT_THRESHOLD,
         complaint_origin=DEFAULT_COMPLAINT_ORIGIN,
         show_connected_officers=False,
     ):
-        self.pinboard_id = pinboard_id
         self.officers = officers
         self.threshold = threshold if threshold else DEFAULT_THRESHOLD
         self.complaint_origin = complaint_origin if complaint_origin is not None else DEFAULT_COMPLAINT_ORIGIN
@@ -108,15 +106,12 @@ class SocialGraphDataQuery(object):
     def graph_data(self):
         if self.officers:
             return {
-                'pinboard_id': self.pinboard_id,
                 'coaccused_data': AccusedSerializer(self.coaccused_data, many=True).data,
                 'officers': OfficerSerializer(self.all_officers(), many=True).data,
                 'list_event': self.list_event()
             }
         else:
-            return {
-                'pinboard_id': self.pinboard_id,
-            }
+            return {}
 
     def allegations(self):
         return Allegation.objects.filter(crid__in=self.allegation_ids).order_by('incident_date')

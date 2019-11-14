@@ -426,7 +426,6 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         pinboard.trrs.set([trr_1])
 
         expected_data = {
-            'pinboard_id': pinboard.id,
             'officers': [
                 {
                     'full_name': 'Edward May',
