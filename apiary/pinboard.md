@@ -99,30 +99,18 @@
 
 ## All Pinboards [/pinboards/all/]
 
-### Get all pinboards by an unauthenticated user [GET]
+### Get all pinboards (authentication required)  [GET]
 
 + Parameters
     + offset (number, optional) - offset from which to get additional results
         + Default: `0`
     + limit (number, optional) - limit of how many results to return
         + Default: `20`
+        
+ + Request
+    + Headers
 
-+ Response 200 (application/json)
-
-        {
-            "count": 0,
-            "next": None,
-            "previous": None,
-            "results": []
-        }
-
-### Get all pinboards by an authenticated user [GET]
-
-+ Parameters
-    + offset (number, optional) - offset from which to get additional results
-        + Default: `0`
-    + limit (number, optional) - limit of how many results to return
-        + Default: `20`
+            Authorization: Token ABC123
 
 + Response 200 (application/json)
 
