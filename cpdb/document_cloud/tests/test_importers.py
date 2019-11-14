@@ -934,8 +934,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         expect(log_args['Body']).to.contain(
             b'================ REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS ================'
-            b'\nReprocessing text with id 1111126 success'
-            b'\nReprocessing text 999 failed with status code 404: Not Found'
+            b'\nReprocessing text https://www.documentcloud.org/documents/999-CRID-234-CR.html success'
+            b'\nReprocessing text https://www.documentcloud.org/documents/2-CRID-234-CR.html '
+            b'failed with status code 404: Not Found'
             b'\nSent reprocessing text requests: 1 success, 1 failure, 0 skipped for 2 no-text documents'
         )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')

@@ -27,28 +27,29 @@ class DocumentCloudSession(requests.Session):
                 f'Cannot login {login_response.status_code}: {login_response.json()}'
             )
 
-    def _request_reprocess_text(self, documentcloud_id):
+    def _request_reprocess_text(self, document):
         try:
             response = self.post(
-                f'https://www.documentcloud.org/documents/{documentcloud_id}/reprocess_text',
+                f'https://www.documentcloud.org/documents/{document.external_id}/reprocess_text',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
         except (requests.exceptions.RequestException, HTTPError) as e:
-            self.log_func(f'Exception when sending reprocess {documentcloud_id} request: {e}')
-            return False, False
+            self.log_func(f'Exception when sending reprocess request for {document.url}: {e}')
+            sent, success = False, False
         else:
             if response.status_code == 200:
-                self.log_func(f'Reprocessing text with id {documentcloud_id} success')
-                return True, True
+                self.log_func(f'Reprocessing text {document.url} success')
+                sent, success = True, True
             else:
                 self.log_func(
-                    f'Reprocessing text {documentcloud_id} failed'
+                    f'Reprocessing text {document.url} failed'
                     f' with status code {response.status_code}: {response.json()}'
                 )
-                return True, False
+                sent, success = True, False
+        return sent, success
 
     def request_reprocess_missing_text_documents_with_delay(self, delay_time=0.01):
         no_text_documents = AttachmentFile.objects.filter(
@@ -56,21 +57,18 @@ class DocumentCloudSession(requests.Session):
             text_content='',
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         )
-        reprocess_document_ids = no_text_documents.filter(
-            reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES
-        ).values_list('external_id', flat=True).distinct()
+        reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES).distinct()
         requested_ids = []
         success_count = 0
-        for documentcloud_id in tqdm(reprocess_document_ids, desc=f'Reprocessing text on documentcloud'):
-            sent, success = self._request_reprocess_text(documentcloud_id)
+        for reprocess_document in tqdm(reprocess_documents, desc=f'Reprocessing text on documentcloud'):
+            sent, success = self._request_reprocess_text(reprocess_document)
             if sent:
-                requested_ids.append(documentcloud_id)
+                requested_ids.append(reprocess_document.external_id)
                 if success:
                     success_count += 1
-
             time.sleep(delay_time)
 
-        failure_count = len(reprocess_document_ids) - success_count
+        failure_count = reprocess_documents.count() - success_count
         skipped_documents_count = no_text_documents.filter(reprocess_text_count__gte=REPROCESS_TEXT_MAX_RETRIES).count()
         no_text_documents_count = no_text_documents.count()
 

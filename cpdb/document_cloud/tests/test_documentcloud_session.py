@@ -43,8 +43,13 @@ class DocumentCloudSessionTestCase(TestCase):
 
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     def test_request_reprocess_text_success(self, post_mock):
+        document = AttachmentFile(
+            external_id='documentcloud_id',
+            url='https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html'
+        )
+
         with DocumentCloudSession(self.log_func) as session:
-            requested, success = session._request_reprocess_text('documentcloud_id')
+            requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/documentcloud_id/reprocess_text',
@@ -53,11 +58,18 @@ class DocumentCloudSessionTestCase(TestCase):
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
-            expect(self.log_func).to.be.called_with('Reprocessing text with id documentcloud_id success')
+            expect(self.log_func).to.be.called_with(
+                'Reprocessing text https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html success'
+            )
             expect(requested).to.be.true()
             expect(success).to.be.true()
 
     def test_request_reprocess_text_failure(self):
+        document = AttachmentFile(
+            external_id='not_exist_documentcloud_id',
+            url='https://www.documentcloud.org/documents/not_exist_documentcloud_id-CRID-234-CR.html'
+        )
+
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=200)
@@ -68,7 +80,7 @@ class DocumentCloudSessionTestCase(TestCase):
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=404, json=Mock(return_value='Document does not exist'))
         ) as post_mock:
-            requested, success = session._request_reprocess_text('not_exist_documentcloud_id')
+            requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/not_exist_documentcloud_id/reprocess_text',
@@ -78,12 +90,18 @@ class DocumentCloudSessionTestCase(TestCase):
                 }
             )
             expect(self.log_func).to.be.called_with(
-                'Reprocessing text not_exist_documentcloud_id failed with status code 404: Document does not exist'
+                'Reprocessing text https://www.documentcloud.org/documents/not_exist_documentcloud_id-CRID-234-CR.html'
+                ' failed with status code 404: Document does not exist'
             )
             expect(requested).to.be.true()
             expect(success).to.be.false()
 
     def test_request_reprocess_text_exception(self):
+        document = AttachmentFile(
+            external_id='exception_documentcloud_id',
+            url='https://www.documentcloud.org/documents/exception_documentcloud_id-CRID-234-CR.html'
+        )
+
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=200)
@@ -94,7 +112,7 @@ class DocumentCloudSessionTestCase(TestCase):
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             side_effect=HTTPError('Invalid request')
         ) as post_mock:
-            requested, success = session._request_reprocess_text('exception_documentcloud_id')
+            requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/exception_documentcloud_id/reprocess_text',
@@ -104,7 +122,8 @@ class DocumentCloudSessionTestCase(TestCase):
                 }
             )
             expect(self.log_func).to.be.called_with(
-                'Exception when sending reprocess exception_documentcloud_id request: Invalid request'
+                'Exception when sending reprocess request for '
+                'https://www.documentcloud.org/documents/exception_documentcloud_id-CRID-234-CR.html: Invalid request'
             )
             expect(requested).to.be.false()
             expect(success).to.be.false()
@@ -117,12 +136,14 @@ class DocumentCloudSessionTestCase(TestCase):
             text_content='',
             external_id='DOCUMENTCLOUD_empty_text_id',
             source_type=AttachmentSourceType.DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html'
         )
         AttachmentFileFactory(
             file_type='document',
             text_content='',
             external_id='PORTAL_COPA_DOCUMENTCLOUD_empty_text_id',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html',
             reprocess_text_count=1,
         )
         AttachmentFileFactory(
@@ -130,6 +151,7 @@ class DocumentCloudSessionTestCase(TestCase):
             text_content='',
             external_id='SUMMARY_REPORTS_COPA_DOCUMENTCLOUD_empty_text_id',
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/SUMMARY_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html',
             reprocess_text_count=2,
         )
         AttachmentFileFactory(
@@ -174,7 +196,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text with id DOCUMENTCLOUD_empty_text_id success'
+            'Reprocessing text '
+            'https://www.documentcloud.org/documents/DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
         )
 
         expect(post_mock).to.be.any_call(
@@ -185,7 +208,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text with id PORTAL_COPA_DOCUMENTCLOUD_empty_text_id success'
+            'Reprocessing text '
+            'https://www.documentcloud.org/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
         )
 
         expect(post_mock).to.be.any_call(
@@ -197,7 +221,8 @@ class DocumentCloudSessionTestCase(TestCase):
             }
         )
         expect(self.log_func).to.be.any_call(
-            'Reprocessing text with id SUMMARY_REPORTS_COPA_DOCUMENTCLOUD_empty_text_id success'
+            'Reprocessing text '
+            'https://www.documentcloud.org/documents/SUMMARY_COPA_DOCUMENTCLOUD_empty_text_id-CRID-234-CR.html success'
         )
 
         expect(self.log_func).to.be.any_call(
