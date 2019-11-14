@@ -1,4 +1,6 @@
 import re
+import requests
+import urllib3
 from urllib.error import HTTPError
 
 from django.db.models import Q
@@ -188,8 +190,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             attachment.upload_to_s3()
 
     def reprocess_text(self):
-        with DocumentCloudSession(self.log_info) as session:
-            session.request_reprocess_missing_text_documents_with_delay()
+        try:
+            with DocumentCloudSession(self.log_info) as session:
+                session.request_reprocess_missing_text_documents_with_delay()
+        except (requests.exceptions.RequestException, urllib3.exceptions.HTTPError):
+            pass
 
     def search_and_update_attachments(self):
         try:

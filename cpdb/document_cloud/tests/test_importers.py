@@ -1,5 +1,6 @@
 import logging
 import json
+import urllib3
 from datetime import datetime
 from urllib.error import HTTPError
 
@@ -454,6 +455,20 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(session.__enter__).to.be.called()
         expect(session.request_reprocess_missing_text_documents_with_delay).to.be.called()
         expect(session.__exit__).to.be.called()
+
+    @patch(
+        'document_cloud.documentcloud_session.DocumentCloudSession.post',
+        return_value=Mock(status_code=401, json=Mock(return_value='Unauthorized'))
+    )
+    def test_reprocess_text_catch_login_failure(self, _):
+        DocumentCloudAttachmentImporter(self.logger).reprocess_text()
+
+    @patch(
+        'document_cloud.documentcloud_session.DocumentCloudSession.post',
+        side_effect=urllib3.exceptions.HTTPError('Invalid request')
+    )
+    def test_reprocess_text_catch_login_exception(self, _):
+        DocumentCloudAttachmentImporter(self.logger).reprocess_text()
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
