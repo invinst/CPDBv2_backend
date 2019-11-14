@@ -7,7 +7,7 @@ from django.test import TestCase, override_settings
 from django.core import management
 
 import pytz
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from robber import expect
 from freezegun import freeze_time
 
@@ -441,6 +441,20 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('new title')
 
+    @patch('document_cloud.importers.DocumentCloudSession')
+    def test_reprocess_text(self, MockDocumentCloudSession):
+        session = MagicMock()
+        session.__enter__ = Mock(return_value=session)
+        MockDocumentCloudSession.return_value = session
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.reprocess_text()
+
+        expect(MockDocumentCloudSession).to.called_with(importer.log_info)
+        expect(session.__enter__).to.be.called()
+        expect(session.request_reprocess_missing_text_documents_with_delay).to.be.called()
+        expect(session.__exit__).to.be.called()
+
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
         S3_BUCKET_PDF_DIRECTORY='pdf',
@@ -451,8 +465,16 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     @patch('shared.attachment_importer.aws')
     @patch('document_cloud.importers.send_cr_attachment_available_email')
     @patch('document_cloud.importers.search_all')
+    @patch(
+        'document_cloud.documentcloud_session.DocumentCloudSession.post',
+        side_effect=[
+            Mock(status_code=200),
+            Mock(status_code=200),
+            Mock(status_code=404, json=Mock(return_value='Not Found')),
+        ]
+    )
     def test_search_and_update_attachments_success(
-        self, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock, document_cloud_mock
+        self, _, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock, document_cloud_mock
     ):
         allegation = AllegationFactory(crid='234')
         new_cloud_document = create_object({
@@ -909,6 +931,12 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             b'\nUpdating 5 attachments'
             b'\nCurrent Total documentcloud attachments: 8'
             b'\nDone importing!'
+        )
+        expect(log_args['Body']).to.contain(
+            b'================ REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS ================'
+            b'\nReprocessing text with id 1111126 success'
+            b'\nReprocessing text 999 failed with status code 404: Not Found'
+            b'\nSent reprocessing text requests: 1 success, 1 failure, 0 skipped for 2 no-text documents'
         )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')

@@ -14,37 +14,37 @@ from document_cloud.documentcloud_session import DocumentCloudSession
 
 class DocumentCloudSessionTestCase(TestCase):
     def setUp(self):
-        self.logger = Mock()
+        self.log_func = Mock()
 
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.close', return_value=Mock(status_code=200))
     def test_login_while_init(self, close_mock, post_mock):
-        with DocumentCloudSession(self.logger) as session:
+        with DocumentCloudSession(self.log_func) as session:
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/login',
                 {'email': 'DOCUMENTCLOUD_USER', 'password': 'DOCUMENTCLOUD_PASSWORD'}
             )
-            expect(session.logger).to.eq(self.logger)
+            expect(session.log_func).to.eq(self.log_func)
             expect(session).to.be.instanceof(Session)
 
         expect(close_mock).to.be.called()
 
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', side_effect=HTTPError('Invalid request'))
     def test_login_exception(self, _):
-        expect(lambda: DocumentCloudSession(self.logger)).to.be.to.throw(HTTPError)
+        expect(lambda: DocumentCloudSession(self.log_func)).to.be.to.throw(HTTPError)
 
     @patch(
         'document_cloud.documentcloud_session.DocumentCloudSession.post',
         return_value=Mock(status_code=401, json=Mock(return_value='Unauthorized'))
     )
     def test_login_failure(self, _):
-        expect(lambda: DocumentCloudSession(self.logger)).to.be.to.throw(RequestException)
-        expect(self.logger.error).to.be.called_with('Cannot login to document cloud to reprocessing text')
+        expect(lambda: DocumentCloudSession(self.log_func)).to.be.to.throw(RequestException)
+        expect(self.log_func).to.be.called_with('ERROR: Cannot login to document cloud to reprocessing text')
 
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     def test_request_reprocess_text_success(self, post_mock):
-        with DocumentCloudSession(self.logger) as session:
-            requested = session._request_reprocess_text('documentcloud_id')
+        with DocumentCloudSession(self.log_func) as session:
+            requested, success = session._request_reprocess_text('documentcloud_id')
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/documentcloud_id/reprocess_text',
@@ -53,21 +53,22 @@ class DocumentCloudSessionTestCase(TestCase):
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
-            expect(self.logger.info).to.be.called_with('Reprocessing text with id documentcloud_id success')
+            expect(self.log_func).to.be.called_with('Reprocessing text with id documentcloud_id success')
             expect(requested).to.be.true()
+            expect(success).to.be.true()
 
     def test_request_reprocess_text_failure(self):
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=200)
         ):
-            session = DocumentCloudSession(self.logger)
+            session = DocumentCloudSession(self.log_func)
 
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=404, json=Mock(return_value='Document does not exist'))
         ) as post_mock:
-            requested = session._request_reprocess_text('not_exist_documentcloud_id')
+            requested, success = session._request_reprocess_text('not_exist_documentcloud_id')
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/not_exist_documentcloud_id/reprocess_text',
@@ -76,23 +77,24 @@ class DocumentCloudSessionTestCase(TestCase):
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
-            expect(self.logger.warn).to.be.called_with(
+            expect(self.log_func).to.be.called_with(
                 'Reprocessing text not_exist_documentcloud_id failed with status code 404: Document does not exist'
             )
             expect(requested).to.be.true()
+            expect(success).to.be.false()
 
     def test_request_reprocess_text_exception(self):
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=200)
         ):
-            session = DocumentCloudSession(self.logger)
+            session = DocumentCloudSession(self.log_func)
 
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             side_effect=HTTPError('Invalid request')
         ) as post_mock:
-            requested = session._request_reprocess_text('exception_documentcloud_id')
+            requested, success = session._request_reprocess_text('exception_documentcloud_id')
 
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/documents/exception_documentcloud_id/reprocess_text',
@@ -101,10 +103,11 @@ class DocumentCloudSessionTestCase(TestCase):
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
-            expect(self.logger.warn).to.be.called_with(
+            expect(self.log_func).to.be.called_with(
                 'Exception when sending reprocess exception_documentcloud_id request: Invalid request'
             )
             expect(requested).to.be.false()
+            expect(success).to.be.false()
 
     @patch('document_cloud.documentcloud_session.time')
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
@@ -155,7 +158,7 @@ class DocumentCloudSessionTestCase(TestCase):
             reprocess_text_count=3,
         )
 
-        with DocumentCloudSession(self.logger) as session:
+        with DocumentCloudSession(self.log_func) as session:
             session.request_reprocess_missing_text_documents_with_delay()
 
         expect(post_mock).to.be.any_call(
@@ -170,7 +173,7 @@ class DocumentCloudSessionTestCase(TestCase):
                 'accept': 'application/json, text/javascript, */*; q=0.01'
             }
         )
-        expect(self.logger.info).to.be.any_call(
+        expect(self.log_func).to.be.any_call(
             'Reprocessing text with id DOCUMENTCLOUD_empty_text_id success'
         )
 
@@ -181,7 +184,7 @@ class DocumentCloudSessionTestCase(TestCase):
                 'accept': 'application/json, text/javascript, */*; q=0.01'
             }
         )
-        expect(self.logger.info).to.be.any_call(
+        expect(self.log_func).to.be.any_call(
             'Reprocessing text with id PORTAL_COPA_DOCUMENTCLOUD_empty_text_id success'
         )
 
@@ -193,8 +196,12 @@ class DocumentCloudSessionTestCase(TestCase):
                 'accept': 'application/json, text/javascript, */*; q=0.01'
             }
         )
-        expect(self.logger.info).to.be.any_call(
+        expect(self.log_func).to.be.any_call(
             'Reprocessing text with id SUMMARY_REPORTS_COPA_DOCUMENTCLOUD_empty_text_id success'
+        )
+
+        expect(self.log_func).to.be.any_call(
+            'Sent reprocessing text requests: 3 success, 0 failure, 1 skipped for 4 no-text documents'
         )
 
         expect(time_mock.sleep.call_count).to.equal(3)
@@ -240,11 +247,19 @@ class DocumentCloudSessionTestCase(TestCase):
             reprocess_text_count=1,
         )
 
+        AttachmentFileFactory(
+            file_type='document',
+            text_content='',
+            external_id='DOCUMENTCLOUD_tries_enough_id',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
+            reprocess_text_count=3,
+        )
+
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
             return_value=Mock(status_code=200)
         ):
-            session = DocumentCloudSession(self.logger)
+            session = DocumentCloudSession(self.log_func)
 
         with patch(
             'document_cloud.documentcloud_session.DocumentCloudSession.post',
@@ -252,9 +267,66 @@ class DocumentCloudSessionTestCase(TestCase):
         ):
             session.request_reprocess_missing_text_documents_with_delay()
 
+        expect(self.log_func).to.be.any_call(
+            'Sent reprocessing text requests: 0 success, 2 failure, 1 skipped for 3 no-text documents'
+        )
+
         expect(
             AttachmentFile.objects.get(external_id='DOCUMENTCLOUD_empty_text_id').reprocess_text_count
         ).to.equal(0)
         expect(
             AttachmentFile.objects.get(external_id='PORTAL_COPA_DOCUMENTCLOUD_empty_text_id').reprocess_text_count
         ).to.equal(1)
+        expect(
+            AttachmentFile.objects.get(external_id='DOCUMENTCLOUD_tries_enough_id').reprocess_text_count
+        ).to.equal(3)
+
+    @patch('document_cloud.documentcloud_session.time')
+    def test_request_reprocess_missing_text_update_count_even_if_status_code_is_not_200(self, _):
+        AttachmentFileFactory(
+            file_type='document',
+            text_content='',
+            external_id='DOCUMENTCLOUD_empty_text_id',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
+        )
+        AttachmentFileFactory(
+            file_type='document',
+            text_content='',
+            external_id='PORTAL_COPA_DOCUMENTCLOUD_empty_text_id',
+            source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+            reprocess_text_count=1,
+        )
+
+        AttachmentFileFactory(
+            file_type='document',
+            text_content='',
+            external_id='DOCUMENTCLOUD_tries_enough_id',
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
+            reprocess_text_count=3,
+        )
+
+        with patch(
+            'document_cloud.documentcloud_session.DocumentCloudSession.post',
+            return_value=Mock(status_code=200)
+        ):
+            session = DocumentCloudSession(self.log_func)
+
+        with patch(
+            'document_cloud.documentcloud_session.DocumentCloudSession.post',
+            return_value=Mock(status_code=404, json=Mock(return_value=''))
+        ):
+            session.request_reprocess_missing_text_documents_with_delay()
+
+        expect(self.log_func).to.be.any_call(
+            'Sent reprocessing text requests: 0 success, 2 failure, 1 skipped for 3 no-text documents'
+        )
+
+        expect(
+            AttachmentFile.objects.get(external_id='DOCUMENTCLOUD_empty_text_id').reprocess_text_count
+        ).to.equal(1)
+        expect(
+            AttachmentFile.objects.get(external_id='PORTAL_COPA_DOCUMENTCLOUD_empty_text_id').reprocess_text_count
+        ).to.equal(2)
+        expect(
+            AttachmentFile.objects.get(external_id='DOCUMENTCLOUD_tries_enough_id').reprocess_text_count
+        ).to.equal(3)

@@ -2,7 +2,6 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from document_cloud.documentcloud_session import DocumentCloudSession
 from document_cloud.importers import DocumentCloudAttachmentImporter
 
 logger = logging.getLogger('crawler.update_documents')
@@ -24,6 +23,3 @@ class Command(BaseCommand):
             logger,
             force_update=options['force']
         ).search_and_update_attachments()
-
-        with DocumentCloudSession(logger) as session:
-            session.request_reprocess_missing_text_documents_with_delay()

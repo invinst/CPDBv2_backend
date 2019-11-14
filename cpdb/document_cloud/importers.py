@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
+from document_cloud.documentcloud_session import DocumentCloudSession
 from document_cloud.utils import parse_link
 from email_service.service import send_cr_attachment_available_email
 from document_cloud.search import search_all
@@ -186,6 +187,10 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         for attachment in self.new_attachments + self.updated_attachments:
             attachment.upload_to_s3()
 
+    def reprocess_text(self):
+        with DocumentCloudSession(self.log_info) as session:
+            session.request_reprocess_missing_text_documents_with_delay()
+
     def search_and_update_attachments(self):
         try:
             self.set_current_step('SEARCH ATTACHMENTS')
@@ -194,6 +199,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.update_attachments()
             self.set_current_step('UPLOADING TO S3')
             self.upload_to_s3()
+            self.set_current_step('REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS')
+            self.reprocess_text()
             self.set_current_step('RECORDING CRAWLER RESULT')
             self.record_success_crawler_result()
             send_cr_attachment_available_email(self.new_attachments)
