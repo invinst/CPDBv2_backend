@@ -40,9 +40,9 @@ class PinboardItemSerializer(NoNullSerializer):
     officers_count = serializers.SerializerMethodField()
     allegations_count = serializers.SerializerMethodField()
     trrs_count = serializers.SerializerMethodField()
-    recent_officers = serializers.SerializerMethodField()
-    recent_allegations = serializers.SerializerMethodField()
-    recent_trrs = serializers.SerializerMethodField()
+    officers = serializers.SerializerMethodField()
+    allegations = serializers.SerializerMethodField()
+    trrs = serializers.SerializerMethodField()
 
     def get_officers_count(self, obj):
         return obj.officers.count()
@@ -53,11 +53,11 @@ class PinboardItemSerializer(NoNullSerializer):
     def get_trrs_count(self, obj):
         return obj.trrs.count()
 
-    def get_recent_officers(self, obj):
+    def get_officers(self, obj):
         return OfficerSerializer(reversed(obj.officers.all()), many=True).data
 
-    def get_recent_allegations(self, obj):
+    def get_allegations(self, obj):
         return AllegationSerializer(reversed(obj.allegations.all()), many=True).data
 
-    def get_recent_trrs(self, obj):
+    def get_trrs(self, obj):
         return TRRSerializer(reversed(obj.trrs.all()), many=True).data

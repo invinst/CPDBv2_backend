@@ -180,7 +180,7 @@ class PinboardItemSerializerTestCase(TestCase):
                 'officers_count': 3,
                 'allegations_count': 2,
                 'trrs_count': 2,
-                'recent_officers': [
+                'officers': [
                     {
                         'id': officer_3.id,
                         'name': 'John Hurley',
@@ -212,7 +212,7 @@ class PinboardItemSerializerTestCase(TestCase):
                         'year': 2016,
                     },
                 ],
-                'recent_allegations': [
+                'allegations': [
                     {
                         'crid': '222222',
                         'category': 'Unknown',
@@ -224,7 +224,7 @@ class PinboardItemSerializerTestCase(TestCase):
                         'incident_date': '2001-01-01',
                     },
                 ],
-                'recent_trrs': [
+                'trrs': [
                     {
                         'id': 222,
                         'trr_datetime': '2002-02-02',

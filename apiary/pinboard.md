@@ -138,8 +138,8 @@
                     description: "",
                     id: "f0e5eba4",
                     officers_count: 1,
-                    recent_allegations: [],
-                    recent_officers: [
+                    allegations: [],
+                    officers: [
                         {
                             count: 2,
                             id: 5200,
@@ -148,7 +148,7 @@
                             year: 1993
                         }
                     ],
-                    recent_trrs: [],
+                    trrs: [],
                     trrs_count: 0,
                 },
                 {
@@ -159,7 +159,7 @@
                     "officers_count": 4,
                     "allegations_count": 1,
                     "trrs_count": 1,
-                    "recent_officers": [
+                    "officers": [
                         {
                             "percentile_allegation": "74.7611",
                             "year": 1993,
@@ -196,14 +196,14 @@
                             "count": 6
                         }
                     ],
-                    "recent_allegations": [
+                    "allegations": [
                         {
                             "crid": "1053673",
                             "category": "False Arrest",
                             "incident_date": "2012-04-26"
                         }
                     ],
-                    "recent_trrs": [
+                    "trrs": [
                         {
                             "id": 123,
                             "trr_datetime": "2004-02-24",
