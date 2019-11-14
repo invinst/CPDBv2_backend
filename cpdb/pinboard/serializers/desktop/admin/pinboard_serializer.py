@@ -1,38 +1,13 @@
 import pytz
 from rest_framework import serializers
 
-from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
+from pinboard.serializers.desktop.admin.allegation_serializer import AllegationSerializer
+from pinboard.serializers.desktop.admin.officer_serializer import OfficerSerializer
+from pinboard.serializers.desktop.admin.trr_serializer import TRRSerializer
+from shared.serializer import NoNullSerializer
 
 
-class OfficerSerializer(OfficerPercentileSerializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField(source='full_name')
-    count = serializers.IntegerField(source='allegation_count')
-
-
-class AllegationSerializer(NoNullSerializer):
-    crid = serializers.CharField()
-    category = serializers.SerializerMethodField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
-
-    def get_category(self, obj):
-        try:
-            return obj.most_common_category.category
-        except AttributeError:
-            return 'Unknown'
-
-
-class TRRSerializer(NoNullSerializer):
-    id = serializers.IntegerField()
-    trr_datetime = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
-    category = serializers.SerializerMethodField()
-
-    def get_category(self, obj):
-        force_types = [res.force_type for res in obj.actionresponse_set.all()]
-        return force_types[0] if len(force_types) > 0 else 'Unknown'
-
-
-class PinboardItemSerializer(NoNullSerializer):
+class PinboardSerializer(NoNullSerializer):
     id = serializers.CharField(min_length=8, max_length=8, read_only=True)
     title = serializers.CharField()
     description = serializers.CharField()

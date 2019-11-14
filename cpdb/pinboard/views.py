@@ -14,7 +14,7 @@ from pinboard.serializers.pinboard_serializer import (
     PinboardDetailSerializer,
     OrderedPinboardSerializer
 )
-from pinboard.serializers.pinboard_admin_serializer import PinboardItemSerializer
+from pinboard.serializers.desktop.admin.pinboard_serializer import PinboardSerializer
 from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
     PinnedAllegationSerializer,
@@ -156,6 +156,22 @@ class PinboardViewSet(
         serializer = self.relevant_complaint_serializer_class(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
 
+    @property
+    def _source_pinboard(self):
+        from_pinboard_id = self.request.data.get('source_pinboard_id', None)
+        if from_pinboard_id:
+            return Pinboard.objects.get(id=from_pinboard_id)
+
+
+class PinboardDesktopViewSet(PinboardViewSet):
+    pinned_officer_serializer_class = PinnedOfficerSerializer
+    pinned_complaint_serializer_class = PinnedAllegationSerializer
+    pinned_trr_serializer_class = PinnedTRRSerializer
+    relevant_document_serializer_class = RelevantDocumentSerializer
+    relevant_coaccusal_serializer_class = RelevantOfficerSerializer
+    relevant_complaint_serializer_class = RelevantAllegationSerializer
+    pinboard_item_serializer_class = PinboardSerializer
+
     @action(detail=False, methods=['get'])
     def all(self, request):
         if request.user.is_authenticated:
@@ -174,22 +190,9 @@ class PinboardViewSet(
 
         paginator = self.pagination_class()
         paginated_pinboards = paginator.paginate_queryset(pinboards, request, view=self)
-        return paginator.get_paginated_response(PinboardItemSerializer(paginated_pinboards, many=True).data)
-
-    @property
-    def _source_pinboard(self):
-        from_pinboard_id = self.request.data.get('source_pinboard_id', None)
-        if from_pinboard_id:
-            return Pinboard.objects.get(id=from_pinboard_id)
-
-
-class PinboardDesktopViewSet(PinboardViewSet):
-    pinned_officer_serializer_class = PinnedOfficerSerializer
-    pinned_complaint_serializer_class = PinnedAllegationSerializer
-    pinned_trr_serializer_class = PinnedTRRSerializer
-    relevant_document_serializer_class = RelevantDocumentSerializer
-    relevant_coaccusal_serializer_class = RelevantOfficerSerializer
-    relevant_complaint_serializer_class = RelevantAllegationSerializer
+        return paginator.get_paginated_response(
+            self.pinboard_item_serializer_class(paginated_pinboards, many=True).data
+        )
 
 
 class PinboardMobileViewSet(PinboardViewSet):
