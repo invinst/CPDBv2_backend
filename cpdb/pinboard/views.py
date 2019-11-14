@@ -14,7 +14,7 @@ from pinboard.serializers.pinboard_serializer import (
     PinboardDetailSerializer,
     OrderedPinboardSerializer
 )
-from pinboard.serializers.desktop.admin.pinboard_serializer import PinboardSerializer
+from pinboard.serializers.desktop.admin.pinboard_serializer import PinboardSerializer as PinboardAdminSerializer
 from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
     PinnedAllegationSerializer,
@@ -170,7 +170,7 @@ class PinboardDesktopViewSet(PinboardViewSet):
     relevant_document_serializer_class = RelevantDocumentSerializer
     relevant_coaccusal_serializer_class = RelevantOfficerSerializer
     relevant_complaint_serializer_class = RelevantAllegationSerializer
-    pinboard_item_serializer_class = PinboardSerializer
+    pinboard_admin_serializer_class = PinboardAdminSerializer
 
     @action(detail=False, methods=['get'])
     def all(self, request):
@@ -191,7 +191,7 @@ class PinboardDesktopViewSet(PinboardViewSet):
         paginator = self.pagination_class()
         paginated_pinboards = paginator.paginate_queryset(pinboards, request, view=self)
         return paginator.get_paginated_response(
-            self.pinboard_item_serializer_class(paginated_pinboards, many=True).data
+            self.pinboard_admin_serializer_class(paginated_pinboards, many=True).data
         )
 
 
