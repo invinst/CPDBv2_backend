@@ -188,6 +188,7 @@ class CRRelatedComplaintSerializer(NoNullSerializer):
     coaccused = serializers.SerializerMethodField()
     category_names = serializers.ListField(child=serializers.CharField())
     point = serializers.SerializerMethodField()
+    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
 
     def get_coaccused(self, obj):
         try:
