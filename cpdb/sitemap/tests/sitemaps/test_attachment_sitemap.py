@@ -7,12 +7,12 @@ from robber import expect
 
 from data.factories import AttachmentFileFactory
 from sitemap.sitemaps.attachment_sitemap import AttachmentSitemap
+from sitemap.sitemaps.base_sitemap import BaseSitemap
 
 
 class AttachmentSitemapTestCase(TestCase):
-    def test_class_properties(self):
-        expect(AttachmentSitemap.changefreq).to.eq('daily')
-        expect(AttachmentSitemap.priority).to.eq(0.5)
+    def test_base(self):
+        expect(issubclass(AttachmentSitemap, BaseSitemap)).to.be.true()
 
     def test_items(self):
         AttachmentFileFactory(id=1, file_type='Video', show=True)
