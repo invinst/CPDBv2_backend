@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -71,10 +72,14 @@ class PinboardViewSet(
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
-        pinboard = self.get_object()
+        try:
+            pinboard = self.get_object()
+        except Http404:
+            pinboard = Pinboard.objects.create()
+            self.update_owned_pinboards(request, pinboard.id)
         owned_pinboards = request.session.get('owned_pinboards', [])
 
-        if pk not in owned_pinboards:
+        if pinboard.id not in owned_pinboards:
             pinboard = pinboard.clone()
             self.update_owned_pinboards(request, pinboard.id)
         self.update_latest_retrieved_pinboard(request, pinboard.id)
