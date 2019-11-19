@@ -6,10 +6,7 @@ from robber import expect
 from freezegun import freeze_time
 import pytz
 
-from pinboard.serializers.pinboard_serializer import (
-    PinboardSerializer,
-    PinboardDetailSerializer,
-)
+from pinboard.serializers.pinboard_serializer import PinboardSerializer, PinboardDetailSerializer
 from data.factories import OfficerFactory, AllegationFactory
 from pinboard.factories import PinboardFactory
 

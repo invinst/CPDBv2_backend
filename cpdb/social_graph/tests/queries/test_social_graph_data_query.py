@@ -1073,7 +1073,9 @@ class SocialGraphDataQueryTestCase(TestCase):
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3, officer_4, officer_5]]
         )
 
-        social_graph_data_query = SocialGraphDataQuery(officers, threshold=3, complaint_origin='ALL')
+        social_graph_data_query = SocialGraphDataQuery(
+            officers, threshold=3, complaint_origin='ALL'
+        )
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
 
     def test_show_connected_officers(self):
