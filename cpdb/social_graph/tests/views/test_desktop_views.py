@@ -269,7 +269,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         expect(response.data['coaccused_data']).to.eq(expected_data['coaccused_data'])
         expect(response.data['list_event']).to.eq(expected_data['list_event'])
 
-    def test_network_with_pinboard_id_param(self):
+    def test_network_with_params(self):
         officer_1 = OfficerFactory(
             id=8562,
             first_name='Jerome',
@@ -425,8 +425,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
         pinboard.allegations.set([allegation_3])
         pinboard.trrs.set([trr_1])
 
-        expected_data = {
-            'officers': [
+        expected_officers = [
                 {
                     'full_name': 'Edward May',
                     'id': 8563,
@@ -490,8 +489,8 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'percentile_trr': '12.1200'
                     }
                 },
-            ],
-            'coaccused_data': [
+            ]
+        expected_coaccused_data = [
                 {
                     'officer_id_1': 8562,
                     'officer_id_2': 8563,
@@ -516,7 +515,11 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'incident_date': '2013-12-31',
                     'accussed_count': 2
                 },
-            ],
+            ]
+
+        expected_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
             'list_event': [
                 '2007-12-31',
                 '2009-12-31',
@@ -524,11 +527,82 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                 '2013-12-31',
             ]
         }
+        expected_static_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': [
+                '2013-12-31',
+            ]
+        }
 
         response = self.client.get(reverse('api-v2:social-graph-network'), {'pinboard_id': pinboard.id})
+        static_response = self.client.get(
+            reverse('api-v2:social-graph-network'),
+            {'pinboard_id': pinboard.id, 'static': 'true'},
+        )
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data).to.eq(expected_data)
+        expect(static_response.data).to.eq(expected_static_data)
+
+    def test_network_with_static_param(self):
+        officer_1 = OfficerFactory(
+            id=8562,
+            first_name='Jerome',
+            last_name='Finnigan',
+            civilian_allegation_percentile=1.1,
+            internal_allegation_percentile=2.2,
+            trr_percentile=3.3,
+        )
+        officer_2 = OfficerFactory(
+            id=8563,
+            first_name='Edward',
+            last_name='May',
+            civilian_allegation_percentile=4.4,
+            internal_allegation_percentile=5.5,
+            trr_percentile=6.6,
+        )
+        officer_3 = OfficerFactory(
+            id=8564,
+            first_name='Joe',
+            last_name='Parker',
+            civilian_allegation_percentile=7.7,
+            internal_allegation_percentile=8.8,
+            trr_percentile=9.9,
+        )
+
+        allegation_1 = AllegationFactory(
+            crid='123',
+            is_officer_complaint=False,
+            incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_2 = AllegationFactory(
+            crid='456',
+            is_officer_complaint=False,
+            incident_date=datetime(2006, 12, 31, tzinfo=pytz.utc)
+        )
+        allegation_3 = AllegationFactory(
+            crid='789',
+            is_officer_complaint=False,
+            incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc)
+        )
+
+        OfficerAllegationFactory(id=1, officer=officer_1, allegation=allegation_1)
+        OfficerAllegationFactory(id=2, officer=officer_2, allegation=allegation_1)
+        OfficerAllegationFactory(id=3, officer=officer_3, allegation=allegation_1)
+        OfficerAllegationFactory(id=4, officer=officer_1, allegation=allegation_2)
+        OfficerAllegationFactory(id=5, officer=officer_2, allegation=allegation_2)
+        OfficerAllegationFactory(id=6, officer=officer_3, allegation=allegation_2)
+        OfficerAllegationFactory(id=7, officer=officer_1, allegation=allegation_3)
+        OfficerAllegationFactory(id=8, officer=officer_2, allegation=allegation_3)
+
+        url = reverse('api-v2:social-graph-network', kwargs={})
+        response = self.client.get(url, {
+            'officer_ids': '8562, 8563, 8564',
+            'static': 'true',
+        })
+
+        expect(response.data['list_event']).to.eq(['2007-12-31'])
 
     def test_network_with_specific_threshold_and_complaint_origin(self):
         officer_1 = OfficerFactory(

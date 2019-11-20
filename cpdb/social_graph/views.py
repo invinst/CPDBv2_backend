@@ -28,7 +28,7 @@ DEFAULT_LIMIT = 500
 class SocialGraphBaseViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='network')
     def network(self, _):
-        return Response(self._social_graph_data_query.graph_data())
+        return Response(self._social_graph_data_query.graph_data(self._static))
 
     @action(detail=False, methods=['get'], url_path='allegations')
     def allegations(self, _):
@@ -147,6 +147,11 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
     @property
     def _pinboard_id(self):
         return self.request.query_params.get('pinboard_id', None)
+
+    @property
+    def _static(self):
+        raw_static = self.request.query_params.get('static', 'false')
+        return True if raw_static == 'true' else False
 
     @property
     def _unit_id(self):
