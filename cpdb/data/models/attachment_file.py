@@ -42,6 +42,7 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     external_created_at = models.DateTimeField(null=True)
     external_last_updated = models.DateTimeField(null=True)
     text_content = models.TextField(blank=True)
+    reprocess_text_count = models.IntegerField(default=0)
     pages = models.IntegerField(default=0)
 
     pending_documentcloud_id = models.CharField(max_length=255, null=True)
