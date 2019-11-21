@@ -93,6 +93,7 @@ class SocialGraphDataQueryTestCase(TestCase):
         ]
 
         expected_list_event = ['2006-12-31', '2007-12-31']
+        expected_static_list_event = ['2007-12-31']
         expected_coaccused_data = [
             {
                 'officer_id_1': 8562,
@@ -124,6 +125,11 @@ class SocialGraphDataQueryTestCase(TestCase):
             'coaccused_data': expected_coaccused_data,
             'list_event': expected_list_event
         }
+        expected_static_graph_data = {
+            'officers': expected_officers,
+            'coaccused_data': expected_coaccused_data,
+            'list_event': expected_static_list_event
+        }
 
         officers = Officer.objects.filter(
             id__in=[officer.id for officer in [officer_1, officer_2, officer_3]]
@@ -131,6 +137,7 @@ class SocialGraphDataQueryTestCase(TestCase):
 
         social_graph_data_query = SocialGraphDataQuery(officers)
         expect(social_graph_data_query.graph_data()).to.eq(expected_graph_data)
+        expect(social_graph_data_query.graph_data(static=True)).to.eq(expected_static_graph_data)
 
     def test_graph_data_threshold_1_complaint_origin_is_civilian(self):
         officer_1 = OfficerFactory(

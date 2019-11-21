@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
+import pytz
+
 from data.models import Allegation, Officer
 from pinboard.models import Pinboard
 from pinboard.serializers.example_pinboard import ExamplePinboardSerializer
@@ -11,10 +13,7 @@ from trr.models import TRR
 class PinboardSerializer(NoNullSerializer):
     id = serializers.CharField(min_length=8, max_length=8, read_only=True)
     title = serializers.CharField()
-    created_at = serializers.SerializerMethodField()
-
-    def get_created_at(self, obj):
-        return obj.created_at.date().strftime(format='%Y-%m-%d')
+    created_at = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
 
 
 class PinboardDetailSerializer(ModelSerializer, NoNullSerializer):

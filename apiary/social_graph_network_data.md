@@ -18,6 +18,7 @@
 + Response 200 (application/json)
 
         {
+          "pinboard_id": "f871a13f",
           "coaccused_data": [
             {
               "officer_id_1": 3663,
