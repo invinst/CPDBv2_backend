@@ -2330,7 +2330,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 id='222',
                 trr_datetime=datetime(2002, 2, 2, tzinfo=pytz.utc)
             )
-            PinboardFactory(
+            pinboard_1 = PinboardFactory(
                 id='aaaa1111',
                 title='Pinboard 1',
                 description='Pinboard description 1',
@@ -2340,14 +2340,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             )
 
         with freeze_time(datetime(2018, 4, 2, 12, 0, 10, tzinfo=pytz.utc)):
-            PinboardFactory(
+            pinboard_2 = PinboardFactory(
                 id='bbbb2222',
                 title='Pinboard 2',
                 description='Pinboard description 2',
             )
 
         with freeze_time(datetime(2018, 3, 4, 12, 0, 10, tzinfo=pytz.utc)):
-            PinboardFactory.create_batch(8)
+            PinboardFactory.create_batch(2, source_pinboard=pinboard_1)
+            PinboardFactory.create_batch(3, source_pinboard=pinboard_2)
+            PinboardFactory.create_batch(3)
 
         base_url = reverse('api-v2:pinboards-all')
         admin_user = AdminUserFactory()
@@ -2368,6 +2370,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officers_count': 3,
             'allegations_count': 2,
             'trrs_count': 2,
+            'child_pinboard_count': 2,
             'officers': [
                 {
                     'id': officer_3.id,
@@ -2433,6 +2436,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officers_count': 0,
             'allegations_count': 0,
             'trrs_count': 0,
+            'child_pinboard_count': 3,
             'officers': [],
             'allegations': [],
             'trrs': [],
