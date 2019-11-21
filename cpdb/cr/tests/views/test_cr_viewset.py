@@ -1,16 +1,16 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
 from django.urls import reverse
 from django.contrib.gis.geos import Point
-from django.utils.timezone import now
-from mock import patch
-
 from rest_framework.test import APITestCase
 from rest_framework import status
-from robber import expect
+
+from mock import patch
 from freezegun import freeze_time
+from robber import expect
 import pytz
 
+from analytics import constants
 from analytics.factories import AttachmentTrackingFactory
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, ComplainantFactory, AreaFactory,
@@ -567,8 +567,8 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             'summary': 'Summary'
         }])
 
+    @freeze_time('2019-04-03')
     def test_cr_new_documents(self):
-        three_month_ago = now() - timedelta(weeks=12)
         allegation_1 = AllegationFactory(crid='123', incident_date=datetime(2001, 2, 28, tzinfo=pytz.utc))
         allegation_2 = AllegationFactory(crid='456', incident_date=datetime(2002, 2, 28, tzinfo=pytz.utc))
         allegation_3 = AllegationFactory(crid='789', incident_date=datetime(2003, 2, 28, tzinfo=pytz.utc))
@@ -585,92 +585,82 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             allegation=allegation_1,
             title='CR document 1',
-            id='1',
+            id=1,
             tag='CR',
             url='http://cr-document.com/1',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url1',
-            external_created_at=three_month_ago + timedelta(days=10)
-        )
-        AttachmentFileFactory(
-            allegation=allegation_1,
-            title='CR document 1',
-            id='111',
-            tag='CR',
-            url='http://cr-document.com/111',
-            file_type=MEDIA_TYPE_DOCUMENT,
-            preview_image_url='http://preview.com/url111',
-            external_created_at=three_month_ago + timedelta(days=9),
-            show=False
+            external_created_at=datetime(2019, 1, 19, 12, 1, 1, tzinfo=pytz.utc)
         )
         AttachmentFileFactory(
             allegation=allegation_1,
             title='CR document 2',
-            id='2',
+            id=2,
             tag='CR',
             url='http://cr-document.com/2',
             file_type=MEDIA_TYPE_DOCUMENT,
-            external_created_at=three_month_ago + timedelta(days=5)
+            external_created_at=datetime(2019, 1, 14, 10, 12, 1, tzinfo=pytz.utc)
         )
 
         AttachmentFileFactory(
             allegation=allegation_2,
             title='CR document 3',
-            id='3',
+            id=3,
             tag='CR',
             url='http://cr-document.com/3',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url3',
-            external_created_at=three_month_ago + timedelta(days=6)
+            external_created_at=datetime(2019, 1, 15, 9, 3, 1, tzinfo=pytz.utc)
         )
 
         AttachmentFileFactory(
             allegation=allegation_2,
             title='CR document 4',
-            id='4',
+            id=4,
             tag='OCIR',
             url='http://cr-document.com/4',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url4',
-            external_created_at=three_month_ago + timedelta(days=10)
+            external_created_at=datetime(2019, 1, 19, 17, 12, 5, tzinfo=pytz.utc)
         )
 
-        AttachmentFileFactory(
-            allegation=allegation_2,
-            title='CR document 5',
-            id='5',
-            tag='AR',
-            url='http://cr-document.com/5',
-            file_type=MEDIA_TYPE_DOCUMENT,
-            preview_image_url='http://preview.com/url5',
-            external_created_at=three_month_ago + timedelta(days=11)
-        )
+        with freeze_time(datetime(2019, 1, 20, 13, 2, 15, tzinfo=pytz.utc)):
+            AttachmentFileFactory(
+                allegation=allegation_2,
+                title='CR document 5',
+                id=5,
+                tag='AR',
+                url='http://cr-document.com/5',
+                file_type=MEDIA_TYPE_DOCUMENT,
+                preview_image_url='http://preview.com/url5',
+                external_created_at=None
+            )
 
         AttachmentFileFactory(
             allegation=allegation_3,
             title='CR document 6',
-            id='6',
+            id=6,
             tag='CR',
             url='http://cr-document.com/6',
             file_type=MEDIA_TYPE_AUDIO,
             preview_image_url='http://preview.com/url6',
-            external_created_at=three_month_ago + timedelta(days=12)
+            external_created_at=datetime(2019, 1, 21, 6, 4, 12, tzinfo=pytz.utc)
         )
 
         AttachmentFileFactory(
             allegation=allegation_3,
             title='CR document 7',
-            id='7',
+            id=7,
             tag='CR',
             url='http://cr-document.com/7',
             file_type=MEDIA_TYPE_VIDEO,
             preview_image_url='http://preview.com/url7',
-            external_created_at=three_month_ago + timedelta(days=13)
+            external_created_at=datetime(2019, 1, 22, 4, 9, 12, tzinfo=pytz.utc)
         )
 
         attachment_file_1 = AttachmentFileFactory(
             title='Tracking document 1',
-            id='8',
+            id=8,
             tag='CR',
             url='http://cr-document.com/8',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -681,7 +671,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         attachment_file_2 = AttachmentFileFactory(
             title='Tracking document 2',
-            id='9',
+            id=9,
             tag='CR',
             url='http://cr-document.com/9',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -703,7 +693,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         attachment_file_3 = AttachmentFileFactory(
             title='Tracking document 3',
-            id='11',
+            id=11,
             tag='CR',
             url='http://cr-document.com/11',
             file_type=MEDIA_TYPE_DOCUMENT,
@@ -712,14 +702,41 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
-        with freeze_time(datetime(2018, 8, 14, 12, 0, 1, tzinfo=pytz.utc)):
+        AttachmentFileFactory(
+            allegation=allegation_1,
+            title='CR document 12',
+            id=12,
+            tag='CR',
+            url='http://cr-document.com/12',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url12',
+            external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc),
+            show=False
+        )
+
+        attachment_file_4 = AttachmentFileFactory(
+            title='Attachment not appear because is download event',
+            id=13,
+            tag='CR',
+            url='http://cr-document.com/13',
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='http://preview.com/url13',
+            allegation=allegation_4,
+            external_created_at=datetime(2015, 7, 13, 12, 0, 1, tzinfo=pytz.utc)
+        )
+        with freeze_time(datetime(2019, 1, 17, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_1)
 
-        with freeze_time(datetime(2018, 9, 14, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2019, 1, 18, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_2)
 
-        with freeze_time(datetime(2018, 7, 14, 12, 0, 1, tzinfo=pytz.utc)):
+        with freeze_time(datetime(2019, 1, 12, 12, 0, 1, tzinfo=pytz.utc)):
             AttachmentTrackingFactory(attachment_file=attachment_file_3)
+
+        with freeze_time(datetime(2019, 10, 14, 12, 0, 1, tzinfo=pytz.utc)):
+            AttachmentTrackingFactory(
+                attachment_file=attachment_file_4,
+                kind=constants.DOWNLOAD_EVENT_TYPE)
 
         allegation_cache_manager.cache_data()
 
@@ -729,30 +746,6 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         expect(len(response.data)).to.eq(4)
         expect(response.data).to.eq([
             {
-                'crid': '321',
-                'latest_document': {
-                    'id': '9',
-                    'title': 'Tracking document 2',
-                    'url': 'http://cr-document.com/9',
-                    'preview_image_url': 'http://preview.com/url9',
-                    'file_type': 'document'
-                },
-                'num_recent_documents': 1,
-                'incident_date': '2004-02-28',
-            },
-            {
-                'crid': '987',
-                'latest_document': {
-                    'id': '11',
-                    'title': 'Tracking document 3',
-                    'url': 'http://cr-document.com/11',
-                    'preview_image_url': 'http://preview.com/url11',
-                    'file_type': 'document'
-                },
-                'num_recent_documents': 1,
-                'incident_date': '2005-02-28',
-            },
-            {
                 'crid': '123',
                 'latest_document': {
                     'id': '1',
@@ -761,9 +754,19 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url1',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 2,
                 'incident_date': '2001-02-28',
                 'category': 'Category 1'
+            },
+            {
+                'crid': '321',
+                'latest_document': {
+                    'id': '9',
+                    'title': 'Tracking document 2',
+                    'url': 'http://cr-document.com/9',
+                    'preview_image_url': 'http://preview.com/url9',
+                    'file_type': 'document'
+                },
+                'incident_date': '2004-02-28',
             },
             {
                 'crid': '456',
@@ -774,7 +777,17 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'preview_image_url': 'http://preview.com/url3',
                     'file_type': 'document'
                 },
-                'num_recent_documents': 1,
                 'incident_date': '2002-02-28',
+            },
+            {
+                'crid': '987',
+                'latest_document': {
+                    'id': '11',
+                    'title': 'Tracking document 3',
+                    'url': 'http://cr-document.com/11',
+                    'preview_image_url': 'http://preview.com/url11',
+                    'file_type': 'document'
+                },
+                'incident_date': '2005-02-28',
             },
         ])

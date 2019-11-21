@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+from datetime import datetime
 
 from django.urls import reverse
 from django.contrib.gis.geos import Point
@@ -6,6 +7,7 @@ from django.contrib.gis.geos import Point
 from rest_framework.test import APITestCase
 from rest_framework import status
 
+import pytz
 from robber import expect
 
 from data.factories import (
@@ -222,6 +224,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
         )
         complaint = OfficerAllegationFactory(
             allegation__point=Point([0.01, 0.01]),
+            allegation__incident_date=datetime(2016, 2, 23, tzinfo=pytz.utc),
             officer=officer,
             allegation_category__category='False Arrest'
         )
@@ -255,6 +258,7 @@ class CRViewSetRelatedComplaintsTestCase(CRTestCaseMixin, APITestCase):
                 'point': {
                     'lat': 0.01,
                     'lon': 0.01
-                }
+                },
+                'incident_date': '2016-02-23',
             }]
         })

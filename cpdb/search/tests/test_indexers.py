@@ -352,11 +352,15 @@ class IndexerManagerTestCase(SimpleTestCase):
         indexer_obj = Mock()
         indexer_obj.docs = Mock(return_value=[])
         indexer = Mock(return_value=indexer_obj)
-        manager = IndexerManager(indexers=[indexer])
+        doc_type = Mock()
+        doc_type._doc_type.name = 'index_doc_type'
+        manager = IndexerManager(indexers=[indexer], migrate_doc_types=[doc_type])
         manager.rebuild_index()
 
         expect(autocompletes_alias.write_index.close.called).to.be.true()
-        expect(autocompletes_alias.migrate.called).to.be.true()
+        expect(autocompletes_alias.migrate).to.be.called_with(
+            ['index_doc_type']
+        )
         expect(autocompletes_alias.indexing.return_value.__enter__.called).to.be.true()
         expect(autocompletes_alias.indexing.return_value.__exit__.called).to.be.true()
         expect(indexer.doc_type_klass.init.called).to.be.true()

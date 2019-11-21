@@ -103,6 +103,8 @@ class PinboardViewSet(
             return Response(self.serializer_class(pinboard).data)
         elif 'create' in request.query_params and request.query_params['create'] == 'true':
             pinboard = Pinboard.objects.create()
+            self.update_owned_pinboards(request, pinboard.id)
+            self.update_latest_retrieved_pinboard(request, pinboard.id)
             return Response(self.serializer_class(pinboard).data)
         else:
             return Response({})

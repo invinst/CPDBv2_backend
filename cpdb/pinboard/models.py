@@ -35,6 +35,7 @@ class Pinboard(TimeStampsModel):
     allegations = SortedManyToManyField('data.Allegation')
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
+    source_pinboard = models.ForeignKey('pinboard.Pinboard', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f'{self.id} - {self.title}' if self.title else self.id
@@ -64,6 +65,7 @@ class Pinboard(TimeStampsModel):
         new_pinboard = Pinboard()
         new_pinboard.title = self.title
         new_pinboard.description = self.description
+        new_pinboard.source_pinboard = self
         new_pinboard.save()
 
         new_pinboard.officers.set(self.officers.all())
@@ -145,6 +147,7 @@ class Pinboard(TimeStampsModel):
             'honorable_mention_count',
             'honorable_mention_percentile',
             'last_unit_id',
+            'civilian_compliment_count'
         ]
 
         related_renamed_columns = (
@@ -199,7 +202,11 @@ class Pinboard(TimeStampsModel):
             'crid',
             'incident_date',
             'most_common_category',
-            'point'
+            'point',
+            'old_complaint_address',
+            'add1',
+            'add2',
+            'city'
         ).select_related(
             'most_common_category',
         ).prefetch_related(

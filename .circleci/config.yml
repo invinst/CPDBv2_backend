@@ -196,16 +196,20 @@ jobs:
           name: Start job
           no_output_timeout: 2h
           command: |
-            if [ $CIRCLE_BRANCH == "master" ]
-            then
-              export ENV_TAG=--production
-            elif [ $CIRCLE_BRANCH == "beta" ]
-            then
-              export ENV_TAG=--beta
+            if [ -z $SKIP_REBUILD_INDEX ] || [ $SKIP_REBUILD_INDEX != "true" ]; then
+              if [ $CIRCLE_BRANCH == "master" ]
+              then
+                export ENV_TAG=--production
+              elif [ $CIRCLE_BRANCH == "beta" ]
+              then
+                export ENV_TAG=--beta
+              else
+                export ENV_TAG=--staging
+              fi
+              bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
             else
-              export ENV_TAG=--staging
+              echo "Skipped due to $SKIP_REBUILD_INDEX is" $SKIP_REBUILD_INDEX
             fi
-            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_index
 
   rebuild_search_index:
     docker:
@@ -221,16 +225,20 @@ jobs:
           name: Start job
           no_output_timeout: 2h
           command: |
-            if [ $CIRCLE_BRANCH == "master" ]
-            then
-              export ENV_TAG=--production
-              elif [ $CIRCLE_BRANCH == "beta" ]
-            then
-              export ENV_TAG=--beta
+            if [ -z $SKIP_REBUILD_SEARCH_INDEX ] || [ $SKIP_REBUILD_SEARCH_INDEX != "true" ]; then
+              if [ $CIRCLE_BRANCH == "master" ]
+              then
+                export ENV_TAG=--production
+                elif [ $CIRCLE_BRANCH == "beta" ]
+              then
+                export ENV_TAG=--beta
+              else
+                export ENV_TAG=--staging
+              fi
+              bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
             else
-              export ENV_TAG=--staging
+              echo "Skipped due to SKIP_REBUILD_SEARCH_INDEX is" $SKIP_REBUILD_SEARCH_INDEX
             fi
-            bin/run_job.sh $ENV_TAG $(cat /tmp/workspace/buildnum) rebuild_search_index
 
   deploy_backend:
     docker:
@@ -281,7 +289,7 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_search_index')
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_index_daily')
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENV_TAG="--production"
@@ -300,7 +308,7 @@ jobs:
             bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
-            bin/run_cronjob.sh $ENV_TAG rebuild_search_index "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG rebuild_index_daily "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true
