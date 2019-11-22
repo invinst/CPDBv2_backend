@@ -17,7 +17,6 @@
                 "race": "White",
                 "sustained_count": 4,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
@@ -37,7 +36,6 @@
                 "race": "White",
                 "sustained_count": 6,
                 "percentile": {
-                    "officer_id": 5193,
                     "year": 2017,
                     "percentile_trr": "91.696",
                     "percentile_allegation": "99.870",
