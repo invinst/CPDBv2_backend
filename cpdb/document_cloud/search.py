@@ -6,7 +6,7 @@ from documentcloud import DocumentCloud
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile, Allegation
 from document_cloud.models import DocumentCloudSearchQuery
-from document_cloud.utils import parse_id, get_url, parse_crid_from_title
+from document_cloud.utils import parse_id, get_url, parse_crid_and_type_from_title
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def _remove_duplicated(cloud_documents):
     return copa_documents + list(cleaned_results.values())
 
 
-def _add_attributes(cloud_documents, document_type):
+def _add_attributes(cloud_documents, document_types):
     for cloud_document in cloud_documents:
         from_copa = hasattr(cloud_document, 'description') \
                     and cloud_document.description in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES
@@ -61,29 +61,34 @@ def _add_attributes(cloud_documents, document_type):
 
         setattr(cloud_document, 'url', get_url(cloud_document))
         setattr(cloud_document, 'documentcloud_id', parse_id(cloud_document.id))
+
+        result = parse_crid_and_type_from_title(cloud_document.title, document_types)
+        crid = result.get('crid', None)
+        document_type = result.get('document_type', None)
+
         setattr(cloud_document, 'document_type', document_type)
 
-        crid = parse_crid_from_title(cloud_document.title, document_type)
+        allegation = None
         if crid is not None:
             allegation = Allegation.objects.filter(crid=crid).first()
             if allegation is None:
                 alternative_crid = crid[1:] if crid.startswith('C') else f'C{crid}'
                 allegation = Allegation.objects.filter(crid=alternative_crid).first()
-            setattr(cloud_document, 'allegation', allegation)
+        setattr(cloud_document, 'allegation', allegation)
 
     return cloud_documents
 
 
 def search_all(logger=_logger):
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
-    search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('type', 'query')
+    search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('types', 'query')
     all_documents = []
-    for document_type, syntax in search_syntaxes:
+    for document_types, syntax in search_syntaxes:
         if syntax:
             logger.info(f'Searching Documentcloud for {syntax}')
             all_documents += _remove_duplicated(
                 _remove_invalid_documents(
-                    _add_attributes(client.documents.search(syntax), document_type)
+                    _add_attributes(client.documents.search(syntax), document_types)
                 )
             )
     return all_documents

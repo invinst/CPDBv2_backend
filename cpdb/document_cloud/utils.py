@@ -6,6 +6,8 @@ DOCUMENTCLOUD_LINK_PATTERN = (
 )
 DOCUMENTCLOUD_ID_PATTERN = r'(?P<documentcloud_id>\d+)-.*'
 
+DEFAULT_DOCUMENT_TYPE = 'CR'
+
 
 def parse_link(link):
     """
@@ -31,19 +33,21 @@ def parse_id(documentcloud_id):
         return matched.group('documentcloud_id')
 
 
-def parse_crid_from_title(documentcloud_title, document_type='CR'):
+def parse_crid_and_type_from_title(documentcloud_title, document_types=[DEFAULT_DOCUMENT_TYPE]):
     """
     Parse title to get allegation CRID
     """
     pattern = re.compile(
-        r'^CRID([- ])(?P<crid>(C?)\d+)([- ])(?P<document_type>{document_type}).*'.format(document_type=document_type)
+        r'^CRID([- ])(?P<crid>(C?)\d+)([- ](?P<document_type>\w+))?.*'.format(document_type=document_types)
     )
 
     matched = re.match(pattern, documentcloud_title)
     if matched:
-        return matched.group('crid')
+        document_type = matched.group('document_type')
+        document_type = document_type if document_type in document_types else DEFAULT_DOCUMENT_TYPE
+        return {'crid': matched.group('crid'), 'document_type': document_type}
 
-    return
+    return {}
 
 
 def get_url(document):
