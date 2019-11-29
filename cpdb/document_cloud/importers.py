@@ -73,12 +73,17 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         if cloud_document.access == 'public':
             return True
         elif cloud_document.access == 'private' or cloud_document.access == 'organization':
-            cloud_document_access = cloud_document.access
-            cloud_document.access = 'public'
-            cloud_document.save()
+            result = False
+            try:
+                cloud_document_access = cloud_document.access
+                cloud_document.access = 'public'
+                cloud_document.save()
+                updated_cloud_document = self.client.documents.get(cloud_document.id)
+                result = updated_cloud_document.access == 'public'
+            except Exception:
+                pass
 
-            updated_cloud_document = self.client.documents.get(cloud_document.id)
-            if updated_cloud_document.access == 'public':
+            if result:
                 self.log_info(
                     f'Updated document {cloud_document.canonical_url} access from {cloud_document_access} to public'
                 )
