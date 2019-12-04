@@ -32,6 +32,11 @@ class PinboardFactory(factory.django.DjangoModelFactory):
             for trr in extracted:
                 self.trrs.add(trr)
 
+    @factory.post_generation
+    def source_pinboard(self, create, extracted, **kwargs):
+        if create and extracted:
+            self.source_pinboard = extracted
+
 
 class ExamplePinboardFactory(factory.django.DjangoModelFactory):
     class Meta:

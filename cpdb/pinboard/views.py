@@ -2,6 +2,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.db.models import Prefetch, Count
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -14,6 +15,7 @@ from pinboard.serializers.pinboard_serializer import (
     PinboardDetailSerializer,
     OrderedPinboardSerializer
 )
+from pinboard.serializers.desktop.admin.pinboard_serializer import PinboardSerializer as PinboardAdminSerializer
 from pinboard.serializers.desktop.pinned import (
     PinnedOfficerSerializer,
     PinnedAllegationSerializer,
@@ -34,6 +36,7 @@ from pinboard.serializers.mobile.relevant import (
     RelevantAllegationMobileSerializer,
     RelevantDocumentMobileSerializer,
 )
+from trr.models import ActionResponse
 from .models import Pinboard, ProxyAllegation as Allegation
 
 
@@ -174,6 +177,31 @@ class PinboardDesktopViewSet(PinboardViewSet):
     relevant_document_serializer_class = RelevantDocumentSerializer
     relevant_coaccusal_serializer_class = RelevantOfficerSerializer
     relevant_complaint_serializer_class = RelevantAllegationSerializer
+    pinboard_admin_serializer_class = PinboardAdminSerializer
+
+    @action(detail=False, methods=['get'])
+    def all(self, request):
+        if request.user.is_authenticated:
+            pinboards = Pinboard.objects.order_by('-created_at').annotate(
+                child_pinboard_count=Count('child_pinboards', distinct=True)
+            ).prefetch_related(
+                'officers', 'allegations', 'trrs', 'allegations__most_common_category',
+            ).prefetch_related(
+                Prefetch(
+                    'trrs__actionresponse_set',
+                    queryset=ActionResponse.objects.filter(
+                        person='Member Action'
+                    ).order_by('-action_sub_category', 'force_type')
+                )
+            )
+        else:
+            pinboards = []
+
+        paginator = self.pagination_class()
+        paginated_pinboards = paginator.paginate_queryset(pinboards, request, view=self)
+        return paginator.get_paginated_response(
+            self.pinboard_admin_serializer_class(paginated_pinboards, many=True).data
+        )
 
 
 class PinboardMobileViewSet(PinboardViewSet):
