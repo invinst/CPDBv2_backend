@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -177,8 +177,10 @@ class PinboardDesktopViewSet(PinboardViewSet):
     @action(detail=False, methods=['get'])
     def all(self, request):
         if request.user.is_authenticated:
-            pinboards = Pinboard.objects.order_by('-created_at').prefetch_related(
-                'officers', 'allegations', 'trrs', 'allegations__most_common_category'
+            pinboards = Pinboard.objects.order_by('-created_at').annotate(
+                child_pinboard_count=Count('child_pinboards', distinct=True)
+            ).prefetch_related(
+                'officers', 'allegations', 'trrs', 'allegations__most_common_category',
             ).prefetch_related(
                 Prefetch(
                     'trrs__actionresponse_set',

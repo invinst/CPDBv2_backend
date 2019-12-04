@@ -138,6 +138,7 @@
                     ],
                     trrs: [],
                     trrs_count: 0,
+                    child_pinboard_count: 2,
                 },
                 {
                    "id": "962d1e05",

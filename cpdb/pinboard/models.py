@@ -35,7 +35,9 @@ class Pinboard(TimeStampsModel):
     allegations = SortedManyToManyField('data.Allegation')
     trrs = SortedManyToManyField('trr.TRR')
     description = models.TextField(default='', blank=True)
-    source_pinboard = models.ForeignKey('pinboard.Pinboard', on_delete=models.SET_NULL, null=True)
+    source_pinboard = models.ForeignKey(
+        'pinboard.Pinboard', on_delete=models.SET_NULL, null=True, related_name='child_pinboards'
+    )
 
     def __str__(self):
         return f'{self.id} - {self.title}' if self.title else self.id
