@@ -157,9 +157,18 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             title='My Pinboard',
             description='abc',
         )
+        expect(Pinboard.objects.count()).to.eq(1)
 
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'a4f34019'}))
-        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+        expect(Pinboard.objects.count()).to.eq(2)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.ne('d91ba25d')
+        expect(response.data['title']).to.eq('')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('')
 
     def test_update_pinboard_in_the_same_session(self):
         OfficerFactory(id=1)
