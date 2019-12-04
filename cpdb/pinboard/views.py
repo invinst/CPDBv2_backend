@@ -1,7 +1,8 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -85,10 +86,14 @@ class PinboardViewSet(
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def retrieve(self, request, pk):
-        pinboard = self.get_object()
+        try:
+            pinboard = self.get_object()
+        except Http404:
+            pinboard = Pinboard.objects.create()
+            self.update_owned_pinboards(request, pinboard.id)
         owned_pinboards = request.session.get('owned_pinboards', [])
 
-        if pk not in owned_pinboards:
+        if pinboard.id not in owned_pinboards:
             pinboard = pinboard.clone()
             self.update_owned_pinboards(request, pinboard.id)
         self.update_latest_retrieved_pinboard(request, pinboard.id)
@@ -188,8 +193,10 @@ class PinboardDesktopViewSet(PinboardViewSet):
     @action(detail=False, methods=['get'])
     def all(self, request):
         if request.user.is_authenticated:
-            pinboards = Pinboard.objects.order_by('-created_at').prefetch_related(
-                'officers', 'allegations', 'trrs', 'allegations__most_common_category'
+            pinboards = Pinboard.objects.order_by('-created_at').annotate(
+                child_pinboard_count=Count('child_pinboards', distinct=True)
+            ).prefetch_related(
+                'officers', 'allegations', 'trrs', 'allegations__most_common_category',
             ).prefetch_related(
                 Prefetch(
                     'trrs__actionresponse_set',

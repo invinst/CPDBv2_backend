@@ -67,6 +67,7 @@ class PinboardSerializerTestCase(TestCase):
                 allegations=[allegation_1, allegation_2],
                 trrs=[trr_1, trr_2],
             )
+            setattr(pinboard, 'child_pinboard_count', 2)
 
             expect(PinboardSerializer(pinboard).data).to.eq({
                 'id': 'aaaa1111',
@@ -76,6 +77,7 @@ class PinboardSerializerTestCase(TestCase):
                 'officers_count': 3,
                 'allegations_count': 2,
                 'trrs_count': 2,
+                'child_pinboard_count': 2,
                 'officers': [
                     {
                         'id': officer_3.id,
