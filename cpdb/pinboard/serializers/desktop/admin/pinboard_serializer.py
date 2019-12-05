@@ -18,6 +18,7 @@ class PinboardSerializer(NoNullSerializer):
     officers = serializers.SerializerMethodField()
     allegations = serializers.SerializerMethodField()
     trrs = serializers.SerializerMethodField()
+    child_pinboard_count = serializers.IntegerField()
 
     def get_officers_count(self, obj):
         return obj.officers.count()

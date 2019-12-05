@@ -157,9 +157,18 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             title='My Pinboard',
             description='abc',
         )
+        expect(Pinboard.objects.count()).to.eq(1)
 
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'a4f34019'}))
-        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+        expect(Pinboard.objects.count()).to.eq(2)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.ne('d91ba25d')
+        expect(response.data['title']).to.eq('')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('')
 
     def test_update_pinboard_in_the_same_session(self):
         OfficerFactory(id=1)
@@ -216,6 +225,67 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(officer_ids).to.eq({1})
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
+
+    def test_update_pinboard_in_the_same_session_with_source_id(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+
+        allegation_1 = AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        trr_1 = TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        source_pinboard = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        source_pinboard.officers.set([officer_1, officer_2])
+        source_pinboard.allegations.set([allegation_1])
+        source_pinboard.trrs.set([trr_1])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            json.dumps({
+                'title': '',
+                'officer_ids': [],
+                'crids': [],
+                'trr_ids': [],
+                'description': '',
+            }),
+            content_type='application/json'
+        )
+        pinboard_id = response.data['id']
+
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': pinboard_id}),
+            json.dumps({
+                'source_pinboard_id': 'eeee1111',
+            }),
+            content_type='application/json'
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'Example pinboard 1',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'Example pinboard 1',
+        })
+
+        pinboard = Pinboard.objects.get(id=pinboard_id)
+        officer_ids = set([officer.id for officer in pinboard.officers.all()])
+        crids = set([allegation.crid for allegation in pinboard.allegations.all()])
+        trr_ids = set([trr.id for trr in pinboard.trrs.all()])
+
+        expect(pinboard.title).to.eq('Example pinboard 1')
+        expect(pinboard.description).to.eq('Example pinboard 1')
+        expect(officer_ids).to.eq({1, 2})
+        expect(crids).to.eq({'123abc'})
+        expect(trr_ids).to.eq({1})
 
     def test_update_when_have_multiple_pinboards_in_session(self):
         owned_pinboards = []
@@ -2330,7 +2400,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 id='222',
                 trr_datetime=datetime(2002, 2, 2, tzinfo=pytz.utc)
             )
-            PinboardFactory(
+            pinboard_1 = PinboardFactory(
                 id='aaaa1111',
                 title='Pinboard 1',
                 description='Pinboard description 1',
@@ -2340,14 +2410,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             )
 
         with freeze_time(datetime(2018, 4, 2, 12, 0, 10, tzinfo=pytz.utc)):
-            PinboardFactory(
+            pinboard_2 = PinboardFactory(
                 id='bbbb2222',
                 title='Pinboard 2',
                 description='Pinboard description 2',
             )
 
         with freeze_time(datetime(2018, 3, 4, 12, 0, 10, tzinfo=pytz.utc)):
-            PinboardFactory.create_batch(8)
+            PinboardFactory.create_batch(2, source_pinboard=pinboard_1)
+            PinboardFactory.create_batch(3, source_pinboard=pinboard_2)
+            PinboardFactory.create_batch(3)
 
         base_url = reverse('api-v2:pinboards-all')
         admin_user = AdminUserFactory()
@@ -2368,6 +2440,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officers_count': 3,
             'allegations_count': 2,
             'trrs_count': 2,
+            'child_pinboard_count': 2,
             'officers': [
                 {
                     'id': officer_3.id,
@@ -2433,6 +2506,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'officers_count': 0,
             'allegations_count': 0,
             'trrs_count': 0,
+            'child_pinboard_count': 3,
             'officers': [],
             'allegations': [],
             'trrs': [],
