@@ -65,6 +65,10 @@ class AttachmentFileTestCase(TestCase):
         expect(attachment.linked_documents).not_to.contain(audio)
         expect(attachment.linked_documents).not_to.contain(video)
 
+    def test_default_reprocess_text_count(self):
+        attachment = AttachmentFileFactory(show=True)
+        expect(attachment.reprocess_text_count).to.equal(0)
+
 
 class UpdateToDocumentcloudTestCase(TestCase):
     def setUp(self):

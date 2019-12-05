@@ -88,10 +88,10 @@ class SocialGraphDataQuery(object):
         else:
             return []
 
-    def list_event(self):
+    def list_event(self, static=False):
         events = list({row['incident_date'].date().strftime(format='%Y-%m-%d') for row in self.coaccused_data})
         events.sort()
-        return events
+        return [events[-1]] if static else events
 
     def all_officers(self):
         if self.show_connected_officers:
@@ -103,12 +103,12 @@ class SocialGraphDataQuery(object):
         else:
             return self.officers.order_by('first_name', 'last_name')
 
-    def graph_data(self):
+    def graph_data(self, static=False):
         if self.officers:
             return {
                 'coaccused_data': AccusedSerializer(self.coaccused_data, many=True).data,
                 'officers': OfficerSerializer(self.all_officers(), many=True).data,
-                'list_event': self.list_event()
+                'list_event': self.list_event(static)
             }
         else:
             return {}

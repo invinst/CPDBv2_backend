@@ -9,10 +9,12 @@ from django.urls import reverse
 import pytz
 from mock import patch, Mock, PropertyMock
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from robber import expect
 from freezegun import freeze_time
 
+from authentication.factories import AdminUserFactory
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
     OfficerFactory,
@@ -155,9 +157,18 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             title='My Pinboard',
             description='abc',
         )
+        expect(Pinboard.objects.count()).to.eq(1)
 
         response = self.client.get(reverse('api-v2:pinboards-detail', kwargs={'pk': 'a4f34019'}))
-        expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+        expect(Pinboard.objects.count()).to.eq(2)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['id']).to.ne('d91ba25d')
+        expect(response.data['title']).to.eq('')
+        expect(response.data['officer_ids']).to.eq([])
+        expect(response.data['crids']).to.eq([])
+        expect(response.data['trr_ids']).to.eq([])
+        expect(response.data['description']).to.eq('')
 
     def test_update_pinboard_in_the_same_session(self):
         OfficerFactory(id=1)
@@ -214,6 +225,67 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(officer_ids).to.eq({1})
         expect(crids).to.eq({'456def'})
         expect(trr_ids).to.eq({1, 2})
+
+    def test_update_pinboard_in_the_same_session_with_source_id(self):
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+
+        allegation_1 = AllegationFactory(crid='123abc')
+        AllegationFactory(crid='456def')
+
+        trr_1 = TRRFactory(id=1, officer=OfficerFactory(id=3))
+        TRRFactory(id=2, officer=OfficerFactory(id=4))
+
+        source_pinboard = PinboardFactory(
+            id='eeee1111',
+            title='Example pinboard 1',
+            description='Example pinboard 1',
+        )
+        source_pinboard.officers.set([officer_1, officer_2])
+        source_pinboard.allegations.set([allegation_1])
+        source_pinboard.trrs.set([trr_1])
+
+        response = self.client.post(
+            reverse('api-v2:pinboards-list'),
+            json.dumps({
+                'title': '',
+                'officer_ids': [],
+                'crids': [],
+                'trr_ids': [],
+                'description': '',
+            }),
+            content_type='application/json'
+        )
+        pinboard_id = response.data['id']
+
+        response = self.client.put(
+            reverse('api-v2:pinboards-detail', kwargs={'pk': pinboard_id}),
+            json.dumps({
+                'source_pinboard_id': 'eeee1111',
+            }),
+            content_type='application/json'
+        )
+
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data).to.eq({
+            'id': pinboard_id,
+            'title': 'Example pinboard 1',
+            'officer_ids': [1, 2],
+            'crids': ['123abc'],
+            'trr_ids': [1],
+            'description': 'Example pinboard 1',
+        })
+
+        pinboard = Pinboard.objects.get(id=pinboard_id)
+        officer_ids = set([officer.id for officer in pinboard.officers.all()])
+        crids = set([allegation.crid for allegation in pinboard.allegations.all()])
+        trr_ids = set([trr.id for trr in pinboard.trrs.all()])
+
+        expect(pinboard.title).to.eq('Example pinboard 1')
+        expect(pinboard.description).to.eq('Example pinboard 1')
+        expect(officer_ids).to.eq({1, 2})
+        expect(crids).to.eq({'123abc'})
+        expect(trr_ids).to.eq({1})
 
     def test_update_when_have_multiple_pinboards_in_session(self):
         owned_pinboards = []
@@ -2261,3 +2333,181 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'created_at': '2018-04-03',
             }
         ])
+
+    def test_all_returns_empty_when_not_authenticated(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard = PinboardFactory(
+                id='aaaa1111',
+                title='Pinboard 1',
+            )
+            pinboard.officers.set(OfficerFactory.create_batch(10))
+            pinboard.allegations.set(AllegationFactory.create_batch(10))
+            pinboard.trrs.set(TRRFactory.create_batch(10))
+
+        base_url = reverse('api-v2:pinboards-all')
+
+        response = self.client.get(f"{base_url}?{urlencode({'limit': 5})}")
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(0)
+        expect(response.data['next']).to.eq(None)
+        expect(response.data['previous']).to.eq(None)
+        expect(response.data['results']).to.eq([])
+
+    def test_all_returns_correct_result_when_authenticated(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            officer_1 = OfficerFactory(
+                first_name='Jerome',
+                last_name='Finnigan',
+                allegation_count=0,
+                complaint_percentile='0.0000',
+                trr_percentile='0.0000',
+                civilian_allegation_percentile='0.0000',
+                internal_allegation_percentile='0.0000',
+            )
+            officer_2 = OfficerFactory(
+                first_name='Joe',
+                last_name='Parker',
+                allegation_count=5,
+                complaint_percentile='50.0000',
+                trr_percentile='50.0000',
+                civilian_allegation_percentile='50.0000',
+                internal_allegation_percentile='50.0000',
+            )
+            officer_3 = OfficerFactory(
+                first_name='John',
+                last_name='Hurley',
+                allegation_count=10,
+                complaint_percentile='99.9999',
+                trr_percentile='99.9999',
+                civilian_allegation_percentile='99.9999',
+                internal_allegation_percentile='99.9999',
+            )
+            allegation_1 = AllegationFactory(
+                crid='111111',
+                most_common_category=AllegationCategoryFactory(category='Use Of Force'),
+                incident_date=datetime(2001, 1, 1, tzinfo=pytz.utc),
+            )
+            allegation_2 = AllegationFactory(
+                crid='222222',
+                incident_date=datetime(2002, 2, 2, tzinfo=pytz.utc),
+            )
+            trr_1 = TRRFactory(
+                id='111',
+                trr_datetime=datetime(2001, 1, 1, tzinfo=pytz.utc)
+            )
+            ActionResponseFactory(trr=trr_1, force_type='Use Of Force')
+            trr_2 = TRRFactory(
+                id='222',
+                trr_datetime=datetime(2002, 2, 2, tzinfo=pytz.utc)
+            )
+            pinboard_1 = PinboardFactory(
+                id='aaaa1111',
+                title='Pinboard 1',
+                description='Pinboard description 1',
+                officers=[officer_1, officer_2, officer_3],
+                allegations=[allegation_1, allegation_2],
+                trrs=[trr_1, trr_2],
+            )
+
+        with freeze_time(datetime(2018, 4, 2, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_2 = PinboardFactory(
+                id='bbbb2222',
+                title='Pinboard 2',
+                description='Pinboard description 2',
+            )
+
+        with freeze_time(datetime(2018, 3, 4, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory.create_batch(2, source_pinboard=pinboard_1)
+            PinboardFactory.create_batch(3, source_pinboard=pinboard_2)
+            PinboardFactory.create_batch(3)
+
+        base_url = reverse('api-v2:pinboards-all')
+        admin_user = AdminUserFactory()
+        token, _ = Token.objects.get_or_create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+        response = self.client.get(f"{base_url}?{urlencode({'limit': 5})}")
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(response.data['count']).to.eq(10)
+        expect(response.data['next']).to.eq(f"http://testserver{base_url}?{urlencode({'limit': 5, 'offset': 5})}")
+        expect(response.data['previous']).to.eq(None)
+        expect(response.data['results']).to.have.length(5)
+        expect(response.data['results']).to.contain({
+            'id': 'aaaa1111',
+            'title': 'Pinboard 1',
+            'description': 'Pinboard description 1',
+            'created_at': '2018-04-03T12:00:10Z',
+            'officers_count': 3,
+            'allegations_count': 2,
+            'trrs_count': 2,
+            'child_pinboard_count': 2,
+            'officers': [
+                {
+                    'id': officer_3.id,
+                    'name': 'John Hurley',
+                    'count': 10,
+                    'percentile_allegation': '99.9999',
+                    'percentile_trr': '99.9999',
+                    'percentile_allegation_civilian': '99.9999',
+                    'percentile_allegation_internal': '99.9999',
+                    'year': 2016,
+                },
+                {
+                    'id': officer_2.id,
+                    'name': 'Joe Parker',
+                    'count': 5,
+                    'percentile_allegation': '50.0000',
+                    'percentile_trr': '50.0000',
+                    'percentile_allegation_civilian': '50.0000',
+                    'percentile_allegation_internal': '50.0000',
+                    'year': 2016,
+                },
+                {
+                    'id': officer_1.id,
+                    'name': 'Jerome Finnigan',
+                    'count': 0,
+                    'percentile_allegation': '0.0000',
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation_civilian': '0.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'year': 2016,
+                },
+            ],
+            'allegations': [
+                {
+                    'crid': '222222',
+                    'category': 'Unknown',
+                    'incident_date': '2002-02-02',
+                },
+                {
+                    'crid': '111111',
+                    'category': 'Use Of Force',
+                    'incident_date': '2001-01-01',
+                },
+            ],
+            'trrs': [
+                {
+                    'id': 222,
+                    'trr_datetime': '2002-02-02',
+                    'category': 'Unknown',
+                },
+                {
+                    'id': 111,
+                    'trr_datetime': '2001-01-01',
+                    'category': 'Use Of Force',
+                }
+            ],
+        })
+        expect(response.data['results']).to.contain({
+            'id': 'bbbb2222',
+            'title': 'Pinboard 2',
+            'description': 'Pinboard description 2',
+            'created_at': '2018-04-02T12:00:10Z',
+            'officers_count': 0,
+            'allegations_count': 0,
+            'trrs_count': 0,
+            'child_pinboard_count': 3,
+            'officers': [],
+            'allegations': [],
+            'trrs': [],
+        })
