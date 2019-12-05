@@ -19,7 +19,6 @@ class UpdateDocumentsTestCase(TestCase):
             logger,
             force_update=False
         )
-
         expect(importer.search_and_update_attachments).to.be.called()
 
     @patch('document_cloud.management.commands.update_documents.DocumentCloudAttachmentImporter')
