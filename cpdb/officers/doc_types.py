@@ -1,5 +1,5 @@
 from elasticsearch_dsl import (
-    DocType, Integer, Date, Float, Nested, InnerObjectWrapper, Text, Long, Boolean
+    DocType, Integer, Date, Float, Nested, InnerObjectWrapper, Text, Long, Boolean, Keyword
 )
 
 from .index_aliases import officers_index_alias
@@ -32,6 +32,8 @@ class OfficerInfoDocType(DocType):
         properties=OfficerYearlyPercentile.mapping())
     full_name = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     badge = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    badge_keyword = Keyword()
+    historic_badges_keyword = Keyword()
     tags = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     historic_badges = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     allegation_count = Long()
