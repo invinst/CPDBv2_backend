@@ -5,12 +5,18 @@ from cms.serializers import (
     OfficerPageSerializer,
     CRPageSerializer,
     TRRPageSerializer,
-    get_slug_page_serializer
+    PinboardPageSerializer,
+    get_slug_page_serializer,
 )
 from cms.models import SlugPage
 
-
-CSM_SERIALIZERS = [LandingPageSerializer, OfficerPageSerializer, CRPageSerializer, TRRPageSerializer]
+CSM_SERIALIZERS = [
+    LandingPageSerializer,
+    OfficerPageSerializer,
+    CRPageSerializer,
+    TRRPageSerializer,
+    PinboardPageSerializer
+]
 
 
 class Command(BaseCommand):

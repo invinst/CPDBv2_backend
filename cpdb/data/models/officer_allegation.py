@@ -73,7 +73,3 @@ class OfficerAllegation(TimeStampsModel):
     @property
     def attachments(self):
         return self.allegation.attachment_files.all()
-
-    @property
-    def filtered_attachments(self):
-        return self.allegation.filtered_attachment_files.all()

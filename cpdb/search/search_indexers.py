@@ -15,9 +15,9 @@ from search.doc_types import (
     RankDocType, ZipCodeDocType, SearchTermItemDocType
 )
 from search.indices import autocompletes_alias
-from search.serializers import (
+from search.indexer_serializers import (
     RacePopulationSerializer, OfficerMostComplaintsSerializer, VictimSerializer,
-    CoaccusedSerializer, AttachmentFileSerializer
+    CoaccusedSerializer, AttachmentFileSerializer, TRROfficerSerializer
 )
 from search.utils import chicago_zip_codes
 
@@ -235,14 +235,17 @@ class TRRIndexer(BaseIndexer):
                 self.top_forcetype_dict[obj.trr_id] = obj.force_type
 
     def get_queryset(self):
-        return TRR.objects.all()
+        return TRR.objects.all().select_related('officer')
 
     def extract_datum(self, datum):
         return {
             'id': datum.id,
             'trr_datetime': datum.trr_datetime.strftime('%Y-%m-%d') if datum.trr_datetime else None,
             'force_type': self.top_forcetype_dict.get(datum.id, None),
-            'to': datum.v2_to
+            'to': datum.v2_to,
+            'category': datum.force_category,
+            'address': ' '.join(filter(None, [datum.block, datum.street])),
+            'officer': TRROfficerSerializer(datum).data if datum.officer else None
         }
 
 
