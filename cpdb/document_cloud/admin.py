@@ -15,7 +15,7 @@ class DocumentCrawlerAdmin(admin.ModelAdmin):
 
 
 class DocumentCloudSearchQueryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'query', 'type')
+    list_display = ('id', 'query', 'types')
 
 
 admin.site.register(DocumentCrawler, DocumentCrawlerAdmin)
