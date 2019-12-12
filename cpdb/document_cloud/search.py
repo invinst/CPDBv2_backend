@@ -64,8 +64,12 @@ def _add_attributes(cloud_documents, document_type):
         setattr(cloud_document, 'document_type', document_type)
 
         crid = parse_crid_from_title(cloud_document.title, document_type)
-        allegation = Allegation.objects.filter(crid=crid).first()
-        setattr(cloud_document, 'allegation', allegation)
+        if crid is not None:
+            allegation = Allegation.objects.filter(crid=crid).first()
+            if allegation is None:
+                alternative_crid = crid[1:] if crid.startswith('C') else f'C{crid}'
+                allegation = Allegation.objects.filter(crid=alternative_crid).first()
+            setattr(cloud_document, 'allegation', allegation)
 
     return cloud_documents
 
