@@ -43,7 +43,8 @@ THIRD_PARTY_APPS = (
     'anymail',
     'corsheaders',
     'adminsortable',
-    'bandit'
+    'bandit',
+    'sortedm2m'
 )
 
 LOCAL_APPS = (
@@ -73,6 +74,7 @@ LOCAL_APPS = (
     'tracker',
     'sitemap',
     'activity_log',
+    'pinboard',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -310,3 +312,6 @@ GOOGLE_APPLICATION_CREDENTIALS = env.str('GOOGLE_APPLICATION_CREDENTIALS', defau
 GOOGLE_ANALYTICS_VIEW_ID = '129538462'
 
 ENABLE_SITEMAP = False
+
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = None

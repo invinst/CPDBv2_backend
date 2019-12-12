@@ -96,6 +96,7 @@ class AllegationTestCase(TestCase):
     def test_v2_to(self):
         allegation = AllegationFactory(crid='456')
         expect(allegation.v2_to).to.eq('/complaint/456/')
+        expect(allegation.v2_to).to.eq('/complaint/456/')
 
     def test_get_absolute_url(self):
         allegation = AllegationFactory(crid='456')
