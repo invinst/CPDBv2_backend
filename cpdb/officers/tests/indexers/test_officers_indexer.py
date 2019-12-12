@@ -124,7 +124,9 @@ class OfficersIndexerTestCase(TestCase):
             'rank': '5',
             'race': 'White',
             'badge': '123456',
+            'badge_keyword': '123456',
             'historic_badges': ['123', '456'],
+            'historic_badges_keyword': ['123', '456'],
             'historic_units': [
                 {
                     'id': 1002,
