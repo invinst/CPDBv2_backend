@@ -29,6 +29,10 @@ class DocumentcloudUtilsTestCase(TestCase):
         document_title = 'CRID-123456 CR'
         expect(parse_crid_from_title(document_title)).to.eq('123456')
 
+    def test_parse_existed_c_prefix_crid_from_title(self):
+        document_title = 'CRID-C123456 CR'
+        expect(parse_crid_from_title(document_title)).to.eq('C123456')
+
     def test_parse_not_existed_crid_from_title(self):
         document_title = 'DOCUMENT TITLE'
         expect(parse_crid_from_title(document_title)).to.be.false()
