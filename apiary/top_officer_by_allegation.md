@@ -17,7 +17,6 @@
                 "gender": "Male",
                 "rank": "Police Officer",
                 "percentile": {
-                    "officer_id": 8658,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.995",
@@ -37,7 +36,6 @@
                 "gender": "Male",
                 "rank": "Detective",
                 "percentile": {
-                    "officer_id": 13788,
                     "year": 2017,
                     "percentile_trr": "0.000",
                     "percentile_allegation": "99.990",

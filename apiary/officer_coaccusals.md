@@ -26,7 +26,6 @@
                         "percentile_allegation_internal": "95.0000",
                         "percentile_allegation_civilian": "91.0000",
                         "percentile_allegation": "94.0000",
-                        "id": 1,
                         "year": 2016
                     }
                 }, {
@@ -45,7 +44,6 @@
                         "percentile_allegation_internal": "71.0000",
                         "percentile_allegation_civilian": "98.0000",
                         "percentile_allegation": "95.0000",
-                        "id": 2,
                         "year": 2016
                     }
                 }
