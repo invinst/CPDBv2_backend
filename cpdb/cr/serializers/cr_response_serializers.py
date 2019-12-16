@@ -3,28 +3,8 @@ from django.db.models import Prefetch, Exists, OuterRef
 
 import pytz
 
-from data.constants import MAX_VISUAL_TOKEN_YEAR
 from data.models import AttachmentRequest, Investigator
-from shared.serializer import NoNullSerializer
-
-
-class OfficerAllegationPercentileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    year = serializers.SerializerMethodField()
-    percentile_trr = serializers.DecimalField(
-        source='officer.trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        source='officer.civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
-    )
-    percentile_allegation_internal = serializers.DecimalField(
-        source='officer.internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
-    )
-
-    def get_year(self, obj):
-        return min(obj.officer.resignation_date.year, MAX_VISUAL_TOKEN_YEAR) if \
-            obj.officer.resignation_date else MAX_VISUAL_TOKEN_YEAR
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
 
 class CoaccusedSerializer(NoNullSerializer):
@@ -47,7 +27,7 @@ class CoaccusedSerializer(NoNullSerializer):
     percentile = serializers.SerializerMethodField()
 
     def get_percentile(self, obj):
-        return OfficerAllegationPercentileSerializer(obj).data
+        return OfficerPercentileSerializer(obj.officer).data
 
 
 class ComplainantSerializer(NoNullSerializer):

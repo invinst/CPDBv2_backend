@@ -295,7 +295,6 @@ class CrFormatterTestCase(SimpleTestCase):
                 Mock(to_dict=Mock(return_value={
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
                     'percentile': {
-                        'id': 10,
                         'percentile_trr': '99.8800',
                         'percentile_allegation_civilian': '77.6600',
                         'percentile_allegation_internal': '66.5500'
@@ -333,7 +332,6 @@ class CrFormatterTestCase(SimpleTestCase):
                 {
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
                     'percentile': {
-                        'id': 10,
                         'percentile_trr': '99.8800',
                         'percentile_allegation_civilian': '77.6600',
                         'percentile_allegation_internal': '66.5500'

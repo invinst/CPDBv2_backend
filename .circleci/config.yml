@@ -272,10 +272,6 @@ jobs:
       - run:
           name: Check API is still alive
           command: |
-            export SSL_DIR=$(openssl version -d | sed -E 's/.*\"(.*)\"$/\1/')
-            cp .circleci/extra_certs.pem $SSL_DIR/certs/extra_certs.pem
-            c_rehash $SSL_DIR/certs
-
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export DOMAIN=api.cpdp.co

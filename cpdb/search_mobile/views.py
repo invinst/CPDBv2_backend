@@ -1,7 +1,16 @@
-from search.workers import OfficerWorker, TRRWorker, CRWorker, DateCRWorker, DateTRRWorker, DateOfficerWorker, \
+from search.workers import (
+    OfficerWorker,
+    TRRWorker,
+    CRWorker,
+    DateCRWorker,
+    DateTRRWorker,
+    DateOfficerWorker,
     InvestigatorCRWorker
+)
 from search.views import SearchViewSet
+from .queries import OfficerMobileQuery, CrMobileQuery, TrrMobileQuery
 from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter
+from .serializers import OfficerSerializer, AllegationSerializer, TRRSerializer
 
 
 class SearchMobileV2ViewSet(SearchViewSet):
@@ -26,3 +35,21 @@ class SearchMobileV2ViewSet(SearchViewSet):
         'DATE > OFFICERS': DateOfficerWorker(),
         'INVESTIGATOR > CR': InvestigatorCRWorker(),
     }
+
+    recent_items_queries = [
+        {
+            'query_param': 'officer_ids',
+            'query': OfficerMobileQuery,
+            'serializer': OfficerSerializer,
+        },
+        {
+            'query_param': 'crids',
+            'query': CrMobileQuery,
+            'serializer': AllegationSerializer,
+        },
+        {
+            'query_param': 'trr_ids',
+            'query': TrrMobileQuery,
+            'serializer': TRRSerializer,
+        },
+    ]
