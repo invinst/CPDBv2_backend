@@ -305,6 +305,9 @@ jobs:
             bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG rebuild_index_daily "0 $REBUILD_INDEX_TIME * * *" $(cat /tmp/workspace/buildnum)
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              bin/run_cronjob.sh $ENV_TAG webhook_statuses_check @daily $(cat /tmp/workspace/buildnum)
 
   build_cpdpbot:
     machine: true
