@@ -285,7 +285,7 @@ jobs:
       - run:
           name: Setup cronjobs
           command: |
-            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_index_daily')
+            kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_index_daily', 'webhook_statuses_check')
             if [ $CIRCLE_BRANCH == "master" ]
             then
               export ENV_TAG="--production"
@@ -308,6 +308,7 @@ jobs:
             if [ $CIRCLE_BRANCH == "master" ]
             then
               bin/run_cronjob.sh $ENV_TAG webhook_statuses_check @daily $(cat /tmp/workspace/buildnum)
+            fi
 
   build_cpdpbot:
     machine: true
