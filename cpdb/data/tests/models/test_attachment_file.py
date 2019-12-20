@@ -110,7 +110,7 @@ class AttachmentFileTestCase(TestCase):
             allegation=allegation,
         )
 
-        attachment_file.update_allegation_summary()
+        expect(attachment_file.update_allegation_summary()).to.be.true()
 
         expect(allegation.summary).to.eq(
             'On September 25, 2015, at approximately 8:50 pm, Officers A and responded to a '
@@ -172,7 +172,7 @@ class AttachmentFileTestCase(TestCase):
             allegation=allegation,
         )
 
-        attachment_file.update_allegation_summary()
+        expect(attachment_file.update_allegation_summary()).to.be.false()
 
         expect(allegation.summary).to.eq('')
         expect(allegation.is_extracted_summary).to.be.false()
@@ -185,7 +185,7 @@ class AttachmentFileTestCase(TestCase):
             allegation=allegation,
         )
 
-        attachment_file.update_allegation_summary()
+        expect(attachment_file.update_allegation_summary()).to.be.false()
 
         expect(allegation.summary).to.eq('')
         expect(allegation.is_extracted_summary).to.be.false()
@@ -230,7 +230,7 @@ class AttachmentFileTestCase(TestCase):
             allegation=allegation,
         )
 
-        attachment_file.update_allegation_summary()
+        expect(attachment_file.update_allegation_summary()).to.be.false()
 
         expect(allegation.summary).to.eq('This allegation already has summary.')
         expect(allegation.is_extracted_summary).to.be.false()
@@ -244,7 +244,7 @@ class AttachmentFileTestCase(TestCase):
             allegation=allegation,
         )
 
-        attachment_file.update_allegation_summary()
+        expect(attachment_file.update_allegation_summary()).to.be.false()
 
         expect(allegation.summary).to.eq('')
         expect(allegation.is_extracted_summary).to.be.false()

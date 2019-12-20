@@ -109,3 +109,4 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
                 self.allegation.summary = summary
                 self.allegation.is_extracted_summary = True
                 self.allegation.save()
+                return True
