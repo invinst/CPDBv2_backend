@@ -137,6 +137,8 @@ class ActivityGridViewSetTestCase(APITestCase):
                     'percentile_allegation': '50.0000',
                     'year': 2016,
                 },
+                'complaint_count': 6,
+                'sustained_count': 2,
             },
             'officer2': {
                 'id': officer2.id,
@@ -152,6 +154,8 @@ class ActivityGridViewSetTestCase(APITestCase):
                     'percentile_allegation': '0.0000',
                     'year': 2016,
                 },
+                'complaint_count': 1,
+                'sustained_count': 1,
             },
             'coaccusal_count': 1,
             'kind': 'coaccused_pair',
