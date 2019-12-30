@@ -463,13 +463,6 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_reprocess_text_catch_login_failure(self, _):
         DocumentCloudAttachmentImporter(self.logger).reprocess_text()
 
-    @patch(
-        'document_cloud.documentcloud_session.DocumentCloudSession.post',
-        side_effect=urllib3.exceptions.HTTPError('Invalid request')
-    )
-    def test_reprocess_text_catch_login_exception(self, _):
-        DocumentCloudAttachmentImporter(self.logger).reprocess_text()
-
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
         S3_BUCKET_PDF_DIRECTORY='pdf',
@@ -1128,6 +1121,32 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'private',
             'save': save_mock
         })
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        result = importer.make_cloud_document_public(private_cloud_document)
+
+        expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
+        expect(importer.log_info).to.be.called_with(
+            'Can not update document https://www.documentcloud.org/canonical_url access from private to public'
+        )
+        expect(result).to.be.false()
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_make_cloud_document_public_with_private_document_not_updated_with_exception(self, document_cloud_mock):
+        allegation = AllegationFactory(crid='234')
+        save_mock = Mock()
+        private_cloud_document = create_object({
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/canonical_url',
+            'access': 'private',
+            'save': save_mock
+        })
+
+        document_cloud_mock().documents.get.side_effect = urllib3.exceptions.HTTPError('404')
 
         importer = DocumentCloudAttachmentImporter(self.logger)
         importer.log_info = Mock()

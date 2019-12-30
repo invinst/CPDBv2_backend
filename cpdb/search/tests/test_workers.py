@@ -92,6 +92,42 @@ class OfficerWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(response.hits.total).to.equal(1)
         expect(response.hits.hits[0]['_source']['full_name']).to.eq('John Doe')
 
+    def test_prioritizing_autocomplete_and_keyword_on_badge_and_historic_badges(self):
+        OfficerInfoDocType(
+            full_name='Badge-Matched Guy',
+            badge='00123',
+            badge_keyword='00123',
+        ).save()
+        OfficerInfoDocType(
+            full_name='Historic-Badge-Matched Guy',
+            historic_badges=['00123'],
+            historic_badges_keyword=['00123']
+        ).save()
+        OfficerInfoDocType(
+            full_name='Partial Badge-Matched Guy',
+            badge='100123',
+            badge_keyword='100123'
+        ).save()
+        OfficerInfoDocType(
+            full_name='Partial Historic-Badge-Matched Guy',
+            historic_badges=['100123'],
+            historic_badges_keyword=['100123']
+        ).save()
+        OfficerInfoDocType(
+            full_name='Unmatched Guy',
+            badge='12345',
+            badge_keyword='12345'
+        ).save()
+
+        self.refresh_index()
+        response = OfficerWorker().search('00123')
+
+        expect(response.hits.total).to.equal(4)
+        expect(response.hits.hits[0]['_source']['full_name']).to.eq('Badge-Matched Guy')
+        expect(response.hits.hits[1]['_source']['full_name']).to.eq('Historic-Badge-Matched Guy')
+        expect(response.hits.hits[2]['_source']['full_name']).to.eq('Partial Badge-Matched Guy')
+        expect(response.hits.hits[3]['_source']['full_name']).to.eq('Partial Historic-Badge-Matched Guy')
+
     def test_search_officer_historic_badge(self):
         OfficerInfoDocType(full_name='John Doe', historic_badges=['100123', '123456']).save()
 

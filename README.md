@@ -128,10 +128,6 @@ A Lambda function package should at least contain these files:
 
 - [Detail](docs/setup-ssl-certificates.md)
 
-# Troubleshooting
-
-- [Adding CA public key to google-cloud-sdk image for API healthcheck](docs/api-healthcheck.md)
-
 # Miscelaneous
 
 - [API standards](docs/api-standards.md)

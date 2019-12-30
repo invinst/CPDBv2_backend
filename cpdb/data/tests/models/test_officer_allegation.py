@@ -62,12 +62,3 @@ class OfficerAllegationTestCase(TestCase):
 
         officer_allegation = OfficerAllegationFactory(allegation=allegation)
         expect(list(officer_allegation.victims)).to.eq([victim1, victim2])
-
-    def test_filtered_attachments(self):
-        allegation = AllegationFactory()
-        attachment1 = AttachmentFileFactory(tag='Other', allegation=allegation)
-        AttachmentFileFactory(tag='OCIR', allegation=allegation)
-        AttachmentFileFactory(tag='AR', allegation=allegation)
-        officer_allegation = OfficerAllegationFactory(allegation=allegation)
-
-        expect(list(officer_allegation.filtered_attachments)).to.eq([attachment1])

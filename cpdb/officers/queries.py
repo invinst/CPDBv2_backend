@@ -1,9 +1,10 @@
 from operator import itemgetter
 
-from django.db.models import Q, Subquery, OuterRef
+from django.db.models import Q, Subquery, OuterRef, Prefetch
 from django.db.models.functions import TruncDate
 
-from data.models import OfficerHistory, Salary, Officer
+from data.models import OfficerHistory, Salary, Officer, AttachmentFile
+from data.utils.attachment_file import filter_attachments
 from officers.serializers.response_serializers import (
     CRNewTimelineSerializer,
     JoinedNewTimelineSerializer,
@@ -67,7 +68,12 @@ class OfficerTimelineBaseQuery(object):
         ).select_related(
             'allegation', 'allegation_category'
         ).prefetch_related(
-            'allegation__victims', 'allegation__attachment_files'
+            'allegation__victims',
+            Prefetch(
+                'allegation__attachment_files',
+                queryset=filter_attachments(AttachmentFile.objects),
+                to_attr='prefetch_filtered_attachments'
+            )
         ).annotate(
             **self.unit_subqueries('allegation__incident_date')
         ).annotate(

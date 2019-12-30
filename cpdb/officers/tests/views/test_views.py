@@ -477,7 +477,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile_allegation_civilian': '98.4344',
                 'percentile_allegation_internal': '99.7840',
                 'year': 2016,
-                'id': 2,
             },
         }, {
             'id': 1,
@@ -495,7 +494,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile_allegation_civilian': '98.4344',
                 'percentile_allegation_internal': '99.7840',
                 'year': 2016,
-                'id': 1,
             },
         }])
 
@@ -593,7 +591,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'percentile_allegation': '95.0000',
                 'percentile_allegation_civilian': '33.3333',
                 'percentile_allegation_internal': '0.0000',
-                'id': officer2.id,
                 'year': 2016
             },
         }, {
@@ -607,7 +604,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'coaccusal_count': 1,
             'rank': 'Police Officer',
             'percentile': {
-                'id': officer4.id,
                 'year': 2016
             },
         }]
@@ -658,7 +654,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'gender': 'Female',
                 'rank': 'Police Officer',
                 'percentile': {
-                    'id': 2,
                     'year': 2016,
                     'percentile_trr': '0.0000',
                     'percentile_allegation': '99.5000',
@@ -676,7 +671,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'gender': 'Male',
                 'rank': 'Police Officer',
                 'percentile': {
-                    'id': 1,
                     'year': 2016,
                     'percentile_trr': '12.0000',
                     'percentile_allegation': '99.3450',

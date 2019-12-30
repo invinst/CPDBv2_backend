@@ -1,9 +1,12 @@
 from .common import *  # NOQA
+from .common import INSTALLED_APPS
 
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 MEDIA_ROOT = str(APPS_DIR('test_media'))  # NOQA
 TEST = True
+
+INSTALLED_APPS += ('pinboard.tests',)
 
 LOGGING = {
     'version': 1,
@@ -41,3 +44,4 @@ GOOGLE_GEOCODE_APIKEY = ''
 AIRTABLE_PROJECT_KEY = ''
 AIRTABLE_TABLE_NAME = ''
 GOOGLE_APPLICATION_CREDENTIALS = ''
+CPDP_ALERTS_WEBHOOK = 'CPDP_ALERTS_WEBHOOK'

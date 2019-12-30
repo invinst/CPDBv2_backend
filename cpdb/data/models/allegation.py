@@ -103,7 +103,7 @@ class Allegation(TimeStampsModel):
     def filtered_attachment_files(self):
         # Due to the privacy issue with the data that was posted on the IPRA / COPA data portal
         # We need to hide those documents
-        return filter_attachments(self.attachment_files.filter(show=True))
+        return filter_attachments(self.attachment_files)
 
     @property
     def v2_to(self):
