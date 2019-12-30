@@ -484,7 +484,16 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_search_and_update_attachments_success(
         self, _, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock, document_cloud_mock
     ):
-        allegation = AllegationFactory(crid='234')
+        allegation = AllegationFactory(crid='234', summary='')
+        text_content = (
+            'Date of COPA Notification: September 25, 2015'
+            '\nTime of COPA Notification: 9:15 pm.'
+            '\nOn September 25, 2015, at approximately 8:50 pm, Officers A and responded to a'
+            '\ncall of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            '\nN. Central Park Avenue, Chicago, IL.'
+            '\nII. INVOLVED PARTIES'
+            '\nInvolved Officer Officer A, star Employee Date of'
+        )
         new_cloud_document = create_object({
             'documentcloud_id': '999',
             'allegation': allegation,
@@ -526,7 +535,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://summary-reports.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'summary reports updated text content'.encode('utf8'),
+            'full_text': text_content.encode('utf8'),
             'pages': 3,
             'access': 'public',
         })
@@ -778,6 +787,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             url='https://www.documentcloud.org/documents/3-CRID-456-CR.html',
             title='CRID-456-CR-3',
             preview_image_url='http://web.com/image',
+            original_url='https://www.copa-documents.com/',
             external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
             external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
             tag='CR',
@@ -865,7 +875,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(updated_attachment_2.external_created_at).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
         expect(updated_attachment_2.tag).to.eq('CR')
         expect(updated_attachment_2.source_type).to.eq(AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD)
-        expect(updated_attachment_2.text_content).to.eq('summary reports updated text content')
+        expect(updated_attachment_2.text_content).to.eq(text_content)
         expect(updated_attachment_2.pages).to.eq(3)
 
         expect(updated_attachment_3.url).to.eq('https://www.documentcloud.org/documents/2-CRID-234-CR.html')
@@ -947,9 +957,21 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             b'failed with status code 404: Not Found'
             b'\nSent reprocessing text requests: 1 success, 1 failure, 0 skipped for 2 no-text documents'
         )
+        expect(log_args['Body']).to.contain(
+            b'============================== EXTRACT COPA SUMMARY =============================='
+            b'\ncrid 234 https://www.copa-documents.com/ - summary extracted'
+        )
         expect(log_args['Bucket']).to.eq('crawler_logs_bucket')
         expect(log_args['Key']).to.eq('documentcloud/documentcloud-2018-04-04-120001.txt')
         expect(log_args['ContentType']).to.eq('text/plain')
+
+        allegation.refresh_from_db()
+        expect(allegation.summary).to.eq(
+            'On September 25, 2015, at approximately 8:50 pm, Officers A and responded to a '
+            'call of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            'N. Central Park Avenue, Chicago, IL.'
+        )
+        expect(allegation.is_extracted_summary).to.be.true()
 
     @override_settings(
         S3_BUCKET_OFFICER_CONTENT='officer-content-test',
@@ -1197,3 +1219,56 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         result = DocumentCloudAttachmentImporter(self.logger).make_cloud_document_public(error_cloud_document)
         expect(result).to.be.true()
+
+    def test_extract_copa_summary(self):
+        text_content = (
+            'Date of COPA Notification: September 25, 2015'
+            '\nTime of COPA Notification: 9:15 pm.'
+            '\nOn September 25, 2015, at approximately 8:50 pm, Officers A and responded to a'
+            '\ncall of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            '\nN. Central Park Avenue, Chicago, IL.'
+            '\nII. INVOLVED PARTIES'
+            '\nInvolved Officer Officer A, star Employee Date of'
+        )
+
+        allegation_1 = AllegationFactory(crid='567', summary='')
+        allegation_2 = AllegationFactory(crid='789', summary='allegation summary')
+
+        AttachmentFileFactory(
+            external_id='4',
+            allegation=allegation_1,
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/4-CRID-567-CR.html',
+            title='CRID-567-CR-4',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content=text_content
+        )
+        AttachmentFileFactory(
+            external_id='5',
+            allegation=allegation_2,
+            source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
+            url='https://www.documentcloud.org/documents/5-CRID-789-CR.html',
+            title='CRID-789-CR-5',
+            preview_image_url='http://web.com/image',
+            external_last_updated=datetime(2017, 1, 2, tzinfo=pytz.utc),
+            external_created_at=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            tag='CR',
+            text_content=text_content
+        )
+
+        DocumentCloudAttachmentImporter(self.logger).extract_copa_summary()
+
+        allegation_1.refresh_from_db()
+        expect(allegation_1.summary).to.eq(
+            'On September 25, 2015, at approximately 8:50 pm, Officers A and responded to a '
+            'call of a disturbance with a mentally ill subject, Involved Civilian 1 (Involved Civilian 1), at '
+            'N. Central Park Avenue, Chicago, IL.'
+        )
+        expect(allegation_1.is_extracted_summary).to.be.true()
+
+        allegation_2.refresh_from_db()
+        expect(allegation_2.summary).to.eq('allegation summary')
+        expect(allegation_2.is_extracted_summary).to.be.false()

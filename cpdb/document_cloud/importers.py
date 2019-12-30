@@ -201,6 +201,14 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         except (requests.exceptions.RequestException, urllib3.exceptions.HTTPError):
             pass
 
+    def extract_copa_summary(self):
+        copa_attachments = AttachmentFile.objects.exclude(text_content='').filter(allegation__summary='')
+        for copa_attachment in copa_attachments:
+            if copa_attachment.update_allegation_summary():
+                self.log_info(
+                    f'crid {copa_attachment.allegation.crid} {copa_attachment.original_url} - summary extracted'
+                )
+
     def search_and_update_attachments(self):
         try:
             self.set_current_step('SEARCH ATTACHMENTS')
@@ -211,6 +219,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.upload_to_s3()
             self.set_current_step('REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS')
             self.reprocess_text()
+            self.set_current_step('EXTRACT COPA SUMMARY')
+            self.extract_copa_summary()
             self.set_current_step('RECORDING CRAWLER RESULT')
             self.record_success_crawler_result()
             send_cr_attachment_available_email(self.new_attachments)
