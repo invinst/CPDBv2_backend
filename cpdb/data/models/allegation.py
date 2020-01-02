@@ -25,6 +25,7 @@ class Allegation(TimeStampsModel):
     old_complaint_address = models.CharField(max_length=255, null=True)
     police_witnesses = models.ManyToManyField('data.Officer', through='PoliceWitness')
     subjects = ArrayField(models.CharField(max_length=255), default=list)
+    is_extracted_summary = models.BooleanField(default=False)
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey('data.AllegationCategory', on_delete=models.SET_NULL, null=True)
