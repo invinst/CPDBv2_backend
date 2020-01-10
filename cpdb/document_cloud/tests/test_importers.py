@@ -1079,28 +1079,10 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
 
-        expect(AttachmentFile.objects.count()).to.eq(2)
+        expect(AttachmentFile.objects.count()).to.eq(0)
 
         expect(new_private_cloud_document.save).not_to.be.called()
         expect(new_organization_cloud_document.save).not_to.be.called()
-        new_private_document = AttachmentFile.objects.get(external_id='1111126')
-        new_organization_document = AttachmentFile.objects.get(external_id='1111127')
-
-        expect(new_private_document.url).to.eq('https://www.documentcloud.org/documents/1111126-CRID-234-CR.html')
-        expect(new_private_document.title).to.eq('CRID-234-CR-1111126')
-        expect(new_private_document.preview_image_url).to.eq('http://web.com/new-image')
-        expect(new_private_document.external_last_updated).to.eq(datetime(2017, 1, 2, tzinfo=pytz.utc))
-        expect(new_private_document.external_created_at).to.eq(datetime(2017, 1, 1, tzinfo=pytz.utc))
-        expect(new_private_document.tag).to.eq('CR')
-        expect(new_private_document.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
-
-        expect(new_organization_document.url).to.eq('https://www.documentcloud.org/documents/1111127-CRID-234-CR.html')
-        expect(new_organization_document.title).to.eq('CRID-234-CR-1111127')
-        expect(new_organization_document.preview_image_url).to.eq('http://web.com/new-image')
-        expect(new_organization_document.external_last_updated).to.eq(datetime(2017, 1, 4, tzinfo=pytz.utc))
-        expect(new_organization_document.external_created_at).to.eq(datetime(2017, 1, 3, tzinfo=pytz.utc))
-        expect(new_organization_document.tag).to.eq('CR')
-        expect(new_organization_document.source_type).to.eq(AttachmentSourceType.DOCUMENTCLOUD)
 
     def test_make_cloud_document_public_with_public_document(self):
         allegation = AllegationFactory(crid='234')
@@ -1182,6 +1164,29 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'Updated document https://www.documentcloud.org/canonical_url access from organization to public'
         )
         expect(result).to.be.true()
+
+    @override_settings(
+        ENABLE_MAKE_CLOUD_DOCUMENTS_PUBLIC=False
+    )
+    def test_make_cloud_document_public_with_private_document_and_disable_make_cloud_document_public(self):
+        allegation = AllegationFactory(crid='234')
+        save_mock = Mock()
+        private_cloud_document = create_object({
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/CRID-234-CR.html',
+            'access': 'private',
+            'save': save_mock
+        })
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        result = importer.make_cloud_document_public(private_cloud_document)
+
+        expect(save_mock).not_to.be.called()
+        expect(result).to.be.false()
 
     @patch('document_cloud.importers.DocumentCloud')
     def test_make_cloud_document_public_with_private_document_not_updated(self, document_cloud_mock):
