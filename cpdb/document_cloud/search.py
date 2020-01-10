@@ -56,7 +56,11 @@ def _add_attributes(cloud_documents, document_types):
     for cloud_document in cloud_documents:
         from_copa = hasattr(cloud_document, 'description') \
                     and cloud_document.description in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES
-        source_type = cloud_document.description if from_copa else AttachmentSourceType.DOCUMENTCLOUD
+
+        from_batch_provided = \
+            hasattr(cloud_document, 'description') and cloud_document.description == AttachmentSourceType.BATCH_PROVIDED
+        valid_description = from_copa or from_batch_provided
+        source_type = cloud_document.description if valid_description else AttachmentSourceType.DOCUMENTCLOUD
         setattr(cloud_document, 'source_type', source_type)
 
         setattr(cloud_document, 'url', get_url(cloud_document))
