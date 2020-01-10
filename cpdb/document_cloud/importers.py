@@ -110,7 +110,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
             if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
-                if self.make_cloud_document_public(cloud_document):
+                if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
                         updated = self.update_attachment(attachment, cloud_document)
