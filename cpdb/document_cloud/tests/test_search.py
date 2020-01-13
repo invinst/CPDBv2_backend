@@ -118,10 +118,10 @@ class SearchTestCase(TestCase):
             'title': 'CRID-C100000 CR',
             'canonical_url': 'https://www.documentcloud.org/documents/9-CRID-C100000-CR.html',
         })
-        batch_provided_cloud_document = create_object({
+        new_document_type_cloud_document = create_object({
             'id': '10-CRID-100000-DOCUMENT',
             'title': 'CRID-100000 DOCUMENT',
-            'description': 'BATCH_PROVIDED',
+            'description': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/10-CRID-100000-DOCUMENT.html',
         })
 
@@ -130,7 +130,7 @@ class SearchTestCase(TestCase):
             copa_document_no_crid, copa_document, should_be_filtered_copa_document,
             duplicated_cloud_document, cloud_document, new_cloud_document, summary_reports_copa_document,
             summary_reports_copa_document_pending, new_cloud_document_without_c_prefix,
-            new_cloud_document_with_c_prefix, batch_provided_cloud_document
+            new_cloud_document_with_c_prefix, new_document_type_cloud_document
         ]
 
         documents = search_all()
@@ -194,7 +194,7 @@ class SearchTestCase(TestCase):
                 'allegation': allegation
             },
             '10-CRID-100000-DOCUMENT': {
-                'source_type': AttachmentSourceType.BATCH_PROVIDED,
+                'source_type': AttachmentSourceType.DOCUMENTCLOUD,
                 'documentcloud_id': '10',
                 'url': 'https://www.documentcloud.org/documents/10-CRID-100000-DOCUMENT.html',
                 'document_type': 'DOCUMENT',
