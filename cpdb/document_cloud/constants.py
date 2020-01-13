@@ -2,6 +2,7 @@ DOCUMENT_TYPES = [
     ('CR', 'CR'),
     ('CPB', 'CPB'),
     ('TRR', 'TRR'),
+    ('DOCUMENT', 'DOCUMENT'),
     ('OCIR', 'OCIR'),
     ('OBR', 'OBR'),
     ('AR', 'AR'),

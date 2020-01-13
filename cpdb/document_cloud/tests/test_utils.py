@@ -29,6 +29,12 @@ class DocumentcloudUtilsTestCase(TestCase):
         document_title = 'CRID-123456 CR'
         expect(parse_crid_and_type_from_title(document_title)).to.eq({'crid': '123456', 'document_type': 'CR'})
 
+    def test_parse_existed_crid_and_document_type_from_title(self):
+        document_title = 'CRID-123456 DOCUMENT CPD 00001234'
+        expect(parse_crid_and_type_from_title(document_title, document_types=['DOCUMENT'])).to.eq(
+            {'crid': '123456', 'document_type': 'DOCUMENT'}
+        )
+
     def test_parse_existed_crid_and_type_from_title_with_extra_text_space_separator_after_document_type(self):
         document_title = 'CRID-123456 CR extra things'
         expect(parse_crid_and_type_from_title(document_title)).to.eq({'crid': '123456', 'document_type': 'CR'})
