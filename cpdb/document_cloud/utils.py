@@ -38,7 +38,7 @@ def parse_crid_and_type_from_title(documentcloud_title, document_types=[DEFAULT_
     Parse title to get allegation CRID
     """
     pattern = re.compile(
-        r'^CRID([- ])(?P<crid>(C?)\d+)([- ](?P<document_type>\w+))?.*'.format(document_type=document_types)
+        r'^CRID([- ])(?P<crid>(C?)\d+)([- ](?P<document_type>\w+))?.*'
     )
 
     matched = re.match(pattern, documentcloud_title)

@@ -12,7 +12,7 @@ from shared.tests.utils import create_object
 class SearchTestCase(TestCase):
     @patch('document_cloud.search.DocumentCloud')
     def test_search_all(self, DocumentCloudMock):
-        DocumentCloudSearchQueryFactory(types=['CR', 'CPB'], query='CRID !AR')
+        DocumentCloudSearchQueryFactory(types=['CR', 'CPB', 'DOCUMENT'], query='CRID !AR')
         DocumentCloudSearchQueryFactory(types=['TRR'], query='')
 
         allegation = AllegationFactory(crid='100000')
@@ -118,12 +118,19 @@ class SearchTestCase(TestCase):
             'title': 'CRID-C100000 CR',
             'canonical_url': 'https://www.documentcloud.org/documents/9-CRID-C100000-CR.html',
         })
+        new_document_type_cloud_document = create_object({
+            'id': '10-CRID-100000-DOCUMENT',
+            'title': 'CRID-100000 DOCUMENT',
+            'description': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/10-CRID-100000-DOCUMENT.html',
+        })
 
         search_mock = DocumentCloudMock().documents.search
         search_mock.return_value = [
             copa_document_no_crid, copa_document, should_be_filtered_copa_document,
             duplicated_cloud_document, cloud_document, new_cloud_document, summary_reports_copa_document,
-            summary_reports_copa_document_pending, new_cloud_document_without_c_prefix, new_cloud_document_with_c_prefix
+            summary_reports_copa_document_pending, new_cloud_document_without_c_prefix,
+            new_cloud_document_with_c_prefix, new_document_type_cloud_document
         ]
 
         documents = search_all()
@@ -186,9 +193,16 @@ class SearchTestCase(TestCase):
                 'document_type': 'CR',
                 'allegation': allegation
             },
+            '10-CRID-100000-DOCUMENT': {
+                'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+                'documentcloud_id': '10',
+                'url': 'https://www.documentcloud.org/documents/10-CRID-100000-DOCUMENT.html',
+                'document_type': 'DOCUMENT',
+                'allegation': allegation
+            },
         }
 
-        expect(documents).to.have.length(8)
+        expect(documents).to.have.length(9)
         for document in documents:
             expect(document.id in expectation_dict).to.be.true()
             expectation = expectation_dict[document.id]
