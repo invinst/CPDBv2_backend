@@ -73,27 +73,29 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         if cloud_document.access == 'public':
             return True
         elif cloud_document.access == 'private' or cloud_document.access == 'organization':
-            result = False
-            try:
-                cloud_document_access = cloud_document.access
-                cloud_document.access = 'public'
-                cloud_document.save()
-                updated_cloud_document = self.client.documents.get(cloud_document.id)
-                result = updated_cloud_document.access == 'public'
-            except Exception:
-                pass
+            if settings.ENABLE_MAKE_CLOUD_DOCUMENTS_PUBLIC:
+                result = False
+                try:
+                    cloud_document_access = cloud_document.access
+                    cloud_document.access = 'public'
+                    cloud_document.save()
+                    updated_cloud_document = self.client.documents.get(cloud_document.id)
+                    result = updated_cloud_document.access == 'public'
+                except Exception:
+                    pass
 
-            if result:
-                self.log_info(
-                    f'Updated document {cloud_document.canonical_url} access from {cloud_document_access} to public'
-                )
-                return True
-            else:
-                self.log_info(
-                    f'Can not update document {cloud_document.canonical_url} access '
-                    f'from {cloud_document_access} to public'
-                )
-                return False
+                if result:
+                    self.log_info(
+                        f'Updated document {cloud_document.canonical_url} access from {cloud_document_access} to public'
+                    )
+                    return True
+                else:
+                    self.log_info(
+                        f'Can not update document {cloud_document.canonical_url} access '
+                        f'from {cloud_document_access} to public'
+                    )
+                    return False
+            return False
         elif (cloud_document.access == 'error' and
               cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES):
             return True
@@ -108,7 +110,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
             if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
-                if self.make_cloud_document_public(cloud_document):
+                if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
                         updated = self.update_attachment(attachment, cloud_document)
