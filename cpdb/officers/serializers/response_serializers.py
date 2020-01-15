@@ -189,7 +189,7 @@ class CRNewTimelineSerializer(BaseTimelineSerializer):
         return obj.allegation.incident_date.date()
 
     def get_date(self, obj):
-        return obj.allegation.incident_date.date().strftime(format='%Y-%m-%d')
+        return obj.allegation.incident_date.date().strftime('%Y-%m-%d')
 
     def get_category(self, obj):
         return obj.category if obj.category else 'Unknown'
@@ -243,7 +243,7 @@ class TRRNewTimelineSerializer(BaseTimelineSerializer):
         return obj.trr_datetime.date()
 
     def get_date(self, obj):
-        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+        return obj.trr_datetime.date().strftime('%Y-%m-%d')
 
     def get_point(self, obj):
         try:

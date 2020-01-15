@@ -265,13 +265,13 @@ class OfficerSerializer(BaseSerializer):
 
     def get_trr_datetimes(self, obj):
         return [
-            trr_datetime.date().strftime(format='%Y-%m-%d') for trr_datetime in obj['trr_datetimes']
+            trr_datetime.date().strftime('%Y-%m-%d') for trr_datetime in obj['trr_datetimes']
             if trr_datetime
         ]
 
     def get_cr_incident_dates(self, obj):
         return [
-            cr_incident_date.date().strftime(format='%Y-%m-%d') for cr_incident_date in obj['cr_incident_dates']
+            cr_incident_date.date().strftime('%Y-%m-%d') for cr_incident_date in obj['cr_incident_dates']
             if cr_incident_date
         ]
 

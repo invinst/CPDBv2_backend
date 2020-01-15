@@ -41,7 +41,7 @@ class AirTableUploader(object):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': raw_object.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': raw_object.created_at.strftime('%Y-%m-%d'),
             'Requester Email': raw_object.email
         }
 
