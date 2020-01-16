@@ -8,3 +8,4 @@ ATTACHMENT_TYPE_CHOICES = [
     [TRR_ATTACHMENT_AVAILABLE, 'TRR attachment available'],
     [TRR_ATTACHMENT_REQUEST, 'TRR attachment request'],
 ]
+DOCUMENT_REQUEST_CC_EMAIL = 'documents@invisibleinstitute.com'

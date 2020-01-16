@@ -13,7 +13,7 @@ from data.models import AttachmentFile, AttachmentRequest
 
 
 class EmailServicesTestCase(TestCase):
-    @patch('email_service.service.send_mail')
+    @patch('email_service.models.EmailMultiAlternatives.send')
     def test_send_attachment_request_email(self, mock_send_email):
         EmailTemplateFactory(
             subject='To {name}',
@@ -30,16 +30,9 @@ class EmailServicesTestCase(TestCase):
             crid='123'
         )
 
-        mock_send_email.assert_called_once_with(
-            subject='To alex',
-            message='This body may contain markdown code and tags (e.g. url http://cr-document.com/)\n',
-            html_message='<p>This body may contain <strong>markdown code</strong> '
-                         'and tags (e.g. url http://cr-document.com/)</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['alex@citizen.com']
-        )
+        mock_send_email.assert_called_once()
 
-    @patch('email_service.service.send_mail')
+    @patch('email_service.models.EmailMultiAlternatives.send')
     def test_send_cr_attachment_available_email(self, mock_send_email):
         EmailTemplateFactory(
             subject='To {name}',
@@ -70,20 +63,8 @@ class EmailServicesTestCase(TestCase):
 
         send_cr_attachment_available_email([attachment_file_123_a, attachment_file_123_b, attachment_file_789])
 
-        mock_send_email.assert_any_call(
-            subject='To to.be.notified',
-            message='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
-            html_message='<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['to.be.notified@citizen.com']
-        )
-        mock_send_email.assert_any_call(
-            subject='To to.be.notified',
-            message='This message is related to crid 789 with url http://foo.com/complaint/789/\n',
-            html_message='<p>This message is related to crid 789 with url http://foo.com/complaint/789/</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['to.be.notified@citizen.com']
-        )
+        expect(mock_send_email.call_count).to.eq(3)
+
         expect(
             AttachmentRequest.objects.get(
                 allegation=allegation_123,
@@ -117,7 +98,7 @@ class EmailServicesTestCase(TestCase):
         expect(attachment_file_123_b.notifications_count).to.eq(2)
         expect(attachment_file_789.notifications_count).to.eq(1)
 
-    @patch('email_service.service.send_mail')
+    @patch('email_service.models.EmailMultiAlternatives.send')
     def test_send_cr_attachment_available_email_raise_error(self, mock_send_email):
         mock_send_email.side_effect = [None, SMTPException('Sending failed'), None]
 
@@ -148,30 +129,10 @@ class EmailServicesTestCase(TestCase):
         expect(AttachmentRequest.objects.filter(noti_email_sent=True).count()).to.eq(2)
         expect(AttachmentRequest.objects.filter(noti_email_sent=False).count()).to.eq(1)
 
-        mock_send_email.assert_any_call(
-            subject='To to.be.notified',
-            message='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
-            html_message='<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['to.be.notified@citizen.com']
-        )
-        mock_send_email.assert_any_call(
-            subject='To to.be.notified',
-            message='This message is related to crid 456 with url http://foo.com/complaint/456/\n',
-            html_message='<p>This message is related to crid 456 with url http://foo.com/complaint/456/</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['to.be.notified@citizen.com']
-        )
-        mock_send_email.assert_any_call(
-            subject='To to.be.notified',
-            message='This message is related to crid 789 with url http://foo.com/complaint/789/\n',
-            html_message='<p>This message is related to crid 789 with url http://foo.com/complaint/789/</p>\n',
-            from_email='test.email@cpdp.co',
-            recipient_list=['to.be.notified@citizen.com']
-        )
+        expect(mock_send_email.call_count).to.eq(3)
 
     @patch('email_service.service.logger')
-    @patch('email_service.service.send_mail')
+    @patch('email_service.models.EmailMultiAlternatives.send')
     def test_logging_when_sending_cr_attachment_available_email_raise_error(self, mock_send_email, mock_logger):
         mock_send_email.side_effect = SMTPException('Sending failed')
 
