@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.serializers import ValidationError
+from rest_framework.decorators import action
 
 from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
@@ -123,6 +124,14 @@ class AttachmentViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={'message': formatted_errors(serializer.errors)}
             )
+
+    @action(detail=False, methods=['get'], url_path='tags')
+    def tags(self, request):
+        # TODO: restructure tags management to improve performance
+        all_tags = AttachmentFile.objects.exclude(tags=[]).values_list('tags', flat=True)
+        tags = list({item for sublist in all_tags for item in sublist})
+        tags.sort()
+        return Response(tags)
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
