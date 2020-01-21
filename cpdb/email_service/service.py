@@ -7,7 +7,8 @@ from django.conf import settings
 from tqdm import tqdm
 
 from email_service.models import EmailTemplate
-from email_service.constants import CR_ATTACHMENT_AVAILABLE, DOCUMENT_REQUEST_CC_EMAIL
+from email_service.constants import CR_ATTACHMENT_AVAILABLE
+from config.settings.common import DOCUMENT_REQUEST_CC_EMAIL
 from data.models import Allegation, AttachmentFile
 
 logger = logging.getLogger(__name__)
