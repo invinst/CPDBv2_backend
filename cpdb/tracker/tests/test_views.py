@@ -1130,6 +1130,14 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         expect(response.data['count']).to.eq(1)
         expect(response.data['results'][0]['id']).to.eq(133)
 
+    def test_tags(self):
+        AttachmentFileFactory(tags=['chicago', 'tactical'])
+        AttachmentFileFactory(tags=['tactical', 'twitter', 'another tag'])
+        AttachmentFileFactory(tags=[])
+        url = reverse('api-v2:attachments-tags')
+        response = self.client.get(url)
+        expect(response.data).to.eq(['another tag', 'chicago', 'tactical', 'twitter'])
+
 
 class DocumentCrawlersViewSetTestCase(APITestCase):
     @override_settings(TIME_ZONE='UTC')
