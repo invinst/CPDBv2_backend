@@ -128,6 +128,7 @@ class AttachmentViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='tags')
     def tags(self, request):
         # TODO: restructure tags management to improve performance
+        # Return all uniq tags from all attachments tags
         all_tags = AttachmentFile.objects.exclude(tags=[]).values_list('tags', flat=True)
         tags = list({item for sublist in all_tags for item in sublist})
         tags.sort()
