@@ -193,7 +193,7 @@ class PinboardDesktopViewSet(PinboardViewSet):
 
     @action(detail=False, methods=['get'])
     def all(self, request):
-        match = request.query_params['match'] if 'match' in request.query_params else ''
+        match = request.query_params.get('match', '')
 
         if request.user.is_authenticated:
             pinboards = Pinboard.objects.order_by('-created_at').annotate(
@@ -207,7 +207,9 @@ class PinboardDesktopViewSet(PinboardViewSet):
                         person='Member Action'
                     ).order_by('-action_sub_category', 'force_type')
                 )
-            ).filter(Q(title__icontains=match) | Q(description__icontains=match))
+            )
+            if match != '':
+                pinboards = pinboards.filter(Q(title__icontains=match) | Q(description__icontains=match))
         else:
             pinboards = []
 
