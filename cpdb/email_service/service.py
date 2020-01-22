@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 from email_service.models import EmailTemplate
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
-from config.settings.common import DOCUMENT_REQUEST_CC_EMAIL
 from data.models import Allegation, AttachmentFile
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ def send_cr_attachment_available_email(new_attachments):
         for attachment_request in requests:
             message = email_template.create_message(
                 [attachment_request.email],
-                [DOCUMENT_REQUEST_CC_EMAIL],
+                [settings.DOCUMENT_REQUEST_CC_EMAIL],
                 name=_get_name_from_email(attachment_request.email),
                 pk=crid,
                 url=f'{settings.DOMAIN}{allegation.v2_to}'
@@ -60,5 +59,5 @@ def send_cr_attachment_available_email(new_attachments):
 def send_attachment_request_email(email, attachment_type, **kwargs):
     email_template = EmailTemplate.objects.get(type=attachment_type)
     name = _get_name_from_email(email)
-    message = email_template.create_message([email], [DOCUMENT_REQUEST_CC_EMAIL], name=name, **kwargs)
+    message = email_template.create_message([email], [settings.DOCUMENT_REQUEST_CC_EMAIL], name=name, **kwargs)
     message.send()

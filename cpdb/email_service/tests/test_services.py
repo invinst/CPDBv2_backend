@@ -1,5 +1,6 @@
 from smtplib import SMTPException
 
+from django.test import override_settings
 from django.test.testcases import TestCase
 
 from mock import patch
@@ -32,8 +33,9 @@ class EmailServicesTestCase(TestCase):
 
         mock_send_email.assert_called_once()
 
-    @patch('email_service.models.EmailMultiAlternatives.send')
-    def test_send_cr_attachment_available_email(self, mock_send_email):
+    @override_settings(DOCUMENT_REQUEST_CC_EMAIL='cc@email.com', DOMAIN='http://foo.com')
+    @patch('email_service.models.EmailMultiAlternatives')
+    def test_send_cr_attachment_available_email(self, MockEmailMultiAlternatives):
         EmailTemplateFactory(
             subject='To {name}',
             body='This message is related to crid {pk} with url {url}',
@@ -63,7 +65,40 @@ class EmailServicesTestCase(TestCase):
 
         send_cr_attachment_available_email([attachment_file_123_a, attachment_file_123_b, attachment_file_789])
 
-        expect(mock_send_email.call_count).to.eq(3)
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To to.be.notified',
+            body='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
+            from_email='test.email@cpdp.co',
+            to=['to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To to.be.notified',
+            body='This message is related to crid 789 with url http://foo.com/complaint/789/\n',
+            from_email='test.email@cpdp.co',
+            to=['to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 789 with url http://foo.com/complaint/789/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To another.to.be.notified',
+            body='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
+            from_email='test.email@cpdp.co',
+            to=['another.to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives().send.call_count).to.be.eq(3)
 
         expect(
             AttachmentRequest.objects.get(
@@ -98,9 +133,10 @@ class EmailServicesTestCase(TestCase):
         expect(attachment_file_123_b.notifications_count).to.eq(2)
         expect(attachment_file_789.notifications_count).to.eq(1)
 
-    @patch('email_service.models.EmailMultiAlternatives.send')
-    def test_send_cr_attachment_available_email_raise_error(self, mock_send_email):
-        mock_send_email.side_effect = [None, SMTPException('Sending failed'), None]
+    @override_settings(DOCUMENT_REQUEST_CC_EMAIL='cc@email.com', DOMAIN='http://foo.com')
+    @patch('email_service.models.EmailMultiAlternatives')
+    def test_send_cr_attachment_available_email_raise_error(self, MockEmailMultiAlternatives):
+        MockEmailMultiAlternatives().send.side_effect = [None, SMTPException('Sending failed'), None]
 
         EmailTemplateFactory(
             subject='To {name}',
@@ -129,7 +165,40 @@ class EmailServicesTestCase(TestCase):
         expect(AttachmentRequest.objects.filter(noti_email_sent=True).count()).to.eq(2)
         expect(AttachmentRequest.objects.filter(noti_email_sent=False).count()).to.eq(1)
 
-        expect(mock_send_email.call_count).to.eq(3)
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To to.be.notified',
+            body='This message is related to crid 123 with url http://foo.com/complaint/123/\n',
+            from_email='test.email@cpdp.co',
+            to=['to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 123 with url http://foo.com/complaint/123/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To to.be.notified',
+            body='This message is related to crid 456 with url http://foo.com/complaint/456/\n',
+            from_email='test.email@cpdp.co',
+            to=['to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 456 with url http://foo.com/complaint/456/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives).to.be.any_call(
+            subject='To to.be.notified',
+            body='This message is related to crid 789 with url http://foo.com/complaint/789/\n',
+            from_email='test.email@cpdp.co',
+            to=['to.be.notified@citizen.com'],
+            cc=['cc@email.com'],
+        )
+        expect(MockEmailMultiAlternatives().attach_alternative).to.be.any_call(
+            '<p>This message is related to crid 789 with url http://foo.com/complaint/789/</p>\n', 'text/html'
+        )
+
+        expect(MockEmailMultiAlternatives().send.call_count).to.be.eq(3)
 
     @patch('email_service.service.logger')
     @patch('email_service.models.EmailMultiAlternatives.send')
