@@ -10,7 +10,6 @@ class Toast(TimeStampsModel):
     )
     tags = models.CharField(
         max_length=255,
-        help_text='This is a list of tags available, please leave this field as is.',
     )
 
     def __str__(self):

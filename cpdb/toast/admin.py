@@ -7,7 +7,8 @@ from toast.models import Toast
 
 
 class ToastAdmin(ModelAdmin):
-    list_display = ('name', 'template', 'tags')
+    list_display = ['name', 'template', 'tags']
+    readonly_fields = ['tags']
 
     formfield_overrides = {
         CharField: {'widget': TextInput(attrs={'size': '101'})},

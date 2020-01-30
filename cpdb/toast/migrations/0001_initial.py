@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('name', models.CharField(max_length=25)),
                 ('template', models.TextField(help_text='Markdown supported')),
-                ('tags', models.CharField(help_text='This is a list of tags available, please leave this field as is.', max_length=255)),
+                ('tags', models.CharField(max_length=255)),
             ],
             options={
                 'abstract': False,
