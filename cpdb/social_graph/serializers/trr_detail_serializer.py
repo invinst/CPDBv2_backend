@@ -28,7 +28,7 @@ class TRRDetailSerializer(NoNullSerializer):
         return 'FORCE'
 
     def get_date(self, obj):
-        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+        return obj.trr_datetime.date().strftime('%Y-%m-%d')
 
     def get_address(self, obj):
         return ' '.join(filter(None, [obj.block, obj.street]))

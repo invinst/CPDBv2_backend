@@ -133,7 +133,7 @@ class BaseCMSPageSerializerTestCase(TransactionTestCase):
         page.b = mock_b
         page.d = 1
         page.save = Mock()
-        page._meta.get_field = lambda x: ManyToManyField(Mock()) if x is 'b' else None
+        page._meta.get_field = lambda x: ManyToManyField(Mock()) if x == 'b' else None
         serializer = self.serializer_class_b(page, data={
             'fields': [{'name': 'c', 'type': 'string', 'value': 'd'}],
             'meta': {'a': 4, 'b': 5}

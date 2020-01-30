@@ -89,7 +89,7 @@ class SocialGraphDataQuery(object):
             return []
 
     def list_event(self, static=False):
-        events = list({row['incident_date'].date().strftime(format='%Y-%m-%d') for row in self.coaccused_data})
+        events = list({row['incident_date'].date().strftime('%Y-%m-%d') for row in self.coaccused_data})
         events.sort()
         return [events[-1]] if static else events
 
