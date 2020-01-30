@@ -58,7 +58,7 @@ class TRRDocSerializer(serializers.Serializer):
         return ' '.join(filter(None, [obj.block, obj.street]))
 
     def get_date_of_incident(self, obj):
-        return obj.trr_datetime.date().strftime(format='%Y-%m-%d')
+        return obj.trr_datetime.date().strftime('%Y-%m-%d')
 
     def get_point(self, obj):
         if obj.point is not None:

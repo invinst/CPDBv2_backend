@@ -82,7 +82,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': cr_request_1.created_at.strftime(format='%Y-%m-%d'),
+                'Date requested by user': cr_request_1.created_at.strftime('%Y-%m-%d'),
                 'Requester Email': 'requester1@example.com',
             }),
             call({
@@ -99,7 +99,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': cr_request_2.created_at.strftime(format='%Y-%m-%d'),
+                'Date requested by user': cr_request_2.created_at.strftime('%Y-%m-%d'),
                 'Requester Email': 'requester3@example.com',
             }),
             call({
@@ -116,7 +116,7 @@ class UpdateDocumentsCommandTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': trr_request.created_at.strftime(format='%Y-%m-%d'),
+                'Date requested by user': trr_request.created_at.strftime('%Y-%m-%d'),
                 'Requester Email': 'requester@example1.com',
             })
         ]

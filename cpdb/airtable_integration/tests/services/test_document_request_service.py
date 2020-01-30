@@ -55,7 +55,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -94,7 +94,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -135,7 +135,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -175,7 +175,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -217,7 +217,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -255,7 +255,7 @@ class DocumentRequestServiceTestCase(TestCase):
                     'name': 'Rajiv Sinclair'
                 }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -291,7 +291,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -333,7 +333,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -374,7 +374,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -414,7 +414,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -455,7 +455,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -490,7 +490,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -531,7 +531,7 @@ class DocumentRequestServiceTestCase(TestCase):
                 'name': 'Rajiv Sinclair'
               }
             ],
-            'Date requested by user': attachment_request.created_at.strftime(format='%Y-%m-%d'),
+            'Date requested by user': attachment_request.created_at.strftime('%Y-%m-%d'),
             'Requester Email': 'requester@example.com'
         }
 
@@ -631,7 +631,7 @@ class DocumentRequestServiceTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': attachment_request_1.created_at.strftime(format='%Y-%m-%d'),
+                'Date requested by user': attachment_request_1.created_at.strftime('%Y-%m-%d'),
                 'Requester Email': 'requester1@example.com'
             }),
             call({
@@ -648,7 +648,7 @@ class DocumentRequestServiceTestCase(TestCase):
                         'name': 'Rajiv Sinclair'
                     }
                 ],
-                'Date requested by user': attachment_request_2.created_at.strftime(format='%Y-%m-%d'),
+                'Date requested by user': attachment_request_2.created_at.strftime('%Y-%m-%d'),
                 'Requester Email': 'requester2@example.com'
             })
         ]
