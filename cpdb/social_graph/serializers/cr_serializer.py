@@ -17,7 +17,7 @@ class CRSerializer(NoNullSerializer):
         return obj.most_common_category.category if obj.most_common_category else 'Unknown'
 
     def get_date(self, obj):
-        return obj.incident_date.date().strftime(format='%Y-%m-%d')
+        return obj.incident_date.date().strftime('%Y-%m-%d')
 
     def get_point(self, obj):
         try:
