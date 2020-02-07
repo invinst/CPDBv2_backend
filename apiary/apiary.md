@@ -73,6 +73,8 @@ CPDP is a simple API serving the CPDP website version 2 (not the same as api ver
 
 :[Popup](popup.md)
 
+:[Toast](toast.md)
+
 :[Attachment](attachment.md)
 
 :[Pinboard](pinboard.md)
