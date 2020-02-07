@@ -21,4 +21,5 @@ class AllegationSerializerTestCase(TestCase):
             'crid': 'C12345',
             'incident_date': '2007-01-01',
             'type': 'CR',
+            'category': 'Unknown'
         })

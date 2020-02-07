@@ -75,6 +75,7 @@ LOCAL_APPS = (
     'sitemap',
     'activity_log',
     'pinboard',
+    'toast',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

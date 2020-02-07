@@ -35,6 +35,8 @@ class SimpleCardSerializer(serializers.Serializer):
     gender = serializers.CharField(source='gender_display')
     percentile = serializers.SerializerMethodField()
     rank = serializers.CharField()
+    complaint_count = serializers.IntegerField(source='allegation_count')
+    sustained_count = serializers.IntegerField()
 
     def get_percentile(self, obj):
         return OfficerPercentileSerializer(obj).data
