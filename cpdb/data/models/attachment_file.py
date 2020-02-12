@@ -2,6 +2,7 @@ import json
 import logging
 from urllib.error import HTTPError
 
+from sortedm2m.fields import SortedManyToManyField
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
@@ -37,6 +38,7 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     show = models.BooleanField(default=True)
     manually_updated = models.BooleanField(default=False)
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    tags = SortedManyToManyField(to='data.Tag')
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)
