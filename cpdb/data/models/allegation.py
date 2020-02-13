@@ -35,6 +35,9 @@ class Allegation(TimeStampsModel):
 
     objects = BulkUpdateManager()
 
+    def __str__(self):
+        return f'CRID {self.crid}'
+
     @property
     def category_names(self):
         query = self.officer_allegations.annotate(
