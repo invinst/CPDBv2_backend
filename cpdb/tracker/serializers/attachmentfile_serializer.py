@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from data.models import AttachmentFile
+from data.models import AttachmentFile, Tag
 from data.constants import AttachmentSourceType
+from shared.serializer import CreatableSlugRelatedField
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -81,16 +82,21 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
 
 class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
     next_document_id = serializers.SerializerMethodField()
+    tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)
 
     def get_next_document_id(self, obj):
         next_attachment = AttachmentFile.objects.exclude(
             id=obj.id
         ).filter(
-            tags=[], created_at__lte=obj.created_at
+            tags__isnull=True, created_at__lte=obj.created_at
         ).order_by('-created_at').first()
 
         if not next_attachment:
-            next_attachment = AttachmentFile.objects.exclude(id=obj.id).filter(tags=[]).order_by('-created_at').first()
+            next_attachment = AttachmentFile.objects.exclude(
+                id=obj.id
+            ).filter(
+                tags__isnull=True
+            ).order_by('-created_at').first()
 
         return next_attachment.id if next_attachment else None
 
@@ -108,6 +114,15 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
     def __init__(self, user, **kwargs):
         self.user = user
         super(UpdateAttachmentFileSerializer, self).__init__(**kwargs)
+
+    tags = CreatableSlugRelatedField(
+        slug_field='name',
+        many=True,
+        queryset=Tag.objects.all(),
+        field_name='tags',
+        max_length=20,
+        required=False,
+    )
 
     class Meta:
         model = AttachmentFile

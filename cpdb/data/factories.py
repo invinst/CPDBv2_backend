@@ -3,7 +3,6 @@ from datetime import datetime
 
 import pytz
 from django.contrib.auth import get_user_model
-
 from django.contrib.gis.geos import MultiPolygon, Polygon, MultiLineString, LineString
 
 import factory
@@ -14,7 +13,7 @@ from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
     PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile,
-    OfficerAlias
+    OfficerAlias, Tag
 )
 from data.constants import ACTIVE_CHOICES
 
@@ -196,6 +195,14 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     manually_updated = False
     last_updated_by = None
 
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.tags.set(extracted)
+
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -266,3 +273,10 @@ class OfficerAliasFactory(factory.django.DjangoModelFactory):
         model = OfficerAlias
 
     new_officer = factory.SubFactory(OfficerFactory)
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Tag
+
+    name = factory.LazyFunction(lambda: fake.word())

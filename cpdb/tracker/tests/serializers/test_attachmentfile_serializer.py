@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from robber import expect
 import pytz
 
-from data.factories import AttachmentFileFactory, UserFactory, AllegationFactory
+from data.factories import AttachmentFileFactory, UserFactory, AllegationFactory, TagFactory
 from tracker.serializers import AttachmentFileSerializer, AuthenticatedAttachmentFileSerializer
 
 
@@ -120,7 +120,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             views_count=100,
             downloads_count=99,
             notifications_count=200,
-            tags=['tag123']
+            tags=[TagFactory(name='tag123')]
         )
         attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         with freeze_time('2017-08-05 12:00:01'):
@@ -133,7 +133,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=['tag124'],
+            tags=[TagFactory(name='tag124')],
         )
         AttachmentFileFactory(
             id=125,
@@ -142,7 +142,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=['tag125'],
+            tags=[TagFactory(name='tag125')],
         )
         AttachmentFileFactory(
             id=126,
@@ -159,7 +159,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             file_type='audio',
             preview_image_url='',
             original_url='http://audio_link',
-            tags=['tag127'],
+            tags=[TagFactory(name='tag127')],
         )
 
         expected_data = {
@@ -317,7 +317,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=['tag123'],
+            tags=[TagFactory(name='tag123')],
         )
         attachment_1.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         with freeze_time('2017-08-05 12:00:01'):
@@ -330,7 +330,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=['tag124'],
+            tags=[TagFactory(name='tag124')],
         )
         attachment_2.created_at = datetime(2017, 9, 4, 14, 30, 00, tzinfo=pytz.utc)
         with freeze_time('2017-09-05 12:00:01'):
@@ -352,7 +352,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
             views_count=100,
             downloads_count=99,
             notifications_count=200,
-            tags=['tag125'],
+            tags=[TagFactory(name='tag125')],
         )
 
         attachment_3.created_at = datetime(2017, 10, 4, 14, 30, 00, tzinfo=pytz.utc)

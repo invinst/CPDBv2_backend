@@ -6,11 +6,13 @@ from rest_framework import serializers
 from robber import expect
 from mock import patch
 
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, AttachmentFileFactory, TagFactory
+from data.models import AttachmentFile, Tag
 from shared.serializer import (
     NoNullSerializer,
     LightweightOfficerPercentileSerializer,
-    OfficerPercentileSerializer
+    OfficerPercentileSerializer,
+    CreatableSlugRelatedField,
 )
 from shared.tests.utils import create_object
 
@@ -115,3 +117,61 @@ class OfficerPercentileSerializerTestCase(TestCase):
         expect(OfficerPercentileSerializer(officer).data).to.eq({
             'year': 2016
         })
+
+
+class DummyAttachmentFileSerializer(serializers.ModelSerializer):
+    tags = CreatableSlugRelatedField(
+        slug_field='name',
+        field_name='tags',
+        many=True,
+        queryset=Tag.objects.all(),
+        max_length=20,
+        required=False,
+    )
+
+    class Meta:
+        model = AttachmentFile
+        fields = ['tags']
+
+
+class CreatableSlugRelatedFieldTestCase(TestCase):
+    def test_update_with_existing_tags(self):
+        tag_1 = TagFactory(name='Tag 1')
+        tag_2 = TagFactory(name='Tag 2')
+        tag_3 = TagFactory(name='Tag 3')
+
+        attachment = AttachmentFileFactory(tags=[tag_1, tag_2])
+
+        serializer = DummyAttachmentFileSerializer(instance=attachment, data={'tags': ['Tag 2', 'Tag 3']})
+        serializer.is_valid()
+        serializer.save()
+
+        expect(list(attachment.tags.all())).to.eq([tag_2, tag_3])
+
+    def test_update_with_non_existing_tags(self):
+        tag_1 = TagFactory(name='Tag 1')
+
+        attachment = AttachmentFileFactory(tags=[tag_1])
+
+        serializer = DummyAttachmentFileSerializer(instance=attachment, data={'tags': ['Tag 2', 'Tag 3']})
+        serializer.is_valid()
+        serializer.save()
+
+        tag_2 = Tag.objects.get(name='Tag 2')
+        tag_3 = Tag.objects.get(name='Tag 3')
+
+        expect(list(attachment.tags.all())).to.eq([tag_2, tag_3])
+
+    def test_update_with_data_longer_than_max_length(self):
+        tag_1 = TagFactory(name='Tag 1')
+
+        attachment = AttachmentFileFactory(tags=[tag_1])
+
+        serializer = DummyAttachmentFileSerializer(
+            instance=attachment,
+            data={'tags': ['This is a really long long long long tag']}
+        )
+
+        expect(serializer.is_valid()).to.be.false()
+        message = str(serializer.errors['tags'][''][0])
+        expect(message).to.eq('Ensure this field has no more than 20 characters.')

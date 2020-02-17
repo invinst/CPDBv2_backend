@@ -10,7 +10,7 @@ from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
 
 from data.constants import MEDIA_TYPE_DOCUMENT
-from data.models import AttachmentFile
+from data.models import AttachmentFile, Tag
 from data.utils.subqueries import SQCount
 from document_cloud.models import DocumentCrawler
 from es_index.pagination import ESQuerysetPagination
@@ -78,7 +78,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk):
         attachment = get_object_or_404(AttachmentFile, id=pk)
-        old_tags = attachment.tags
+        old_tags = list(attachment.tags.all())
 
         serializer = UpdateAttachmentFileSerializer(
             instance=attachment,
@@ -90,7 +90,7 @@ class AttachmentViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 serializer.save()
                 attachment.refresh_from_db()
-                new_tags = attachment.tags
+                new_tags = list(attachment.tags.all())
                 if new_tags != old_tags:
                     added_tags = list(set(new_tags).difference(set(old_tags)))
                     removed_tags = list(set(old_tags).difference(set(new_tags)))
@@ -99,7 +99,7 @@ class AttachmentViewSet(viewsets.ViewSet):
                             modified_object=attachment,
                             action_type=ADD_TAG_TO_DOCUMENT,
                             user=request.user,
-                            data=tag
+                            data=tag.name
                         )
                         for tag in added_tags
                     ]
@@ -108,7 +108,7 @@ class AttachmentViewSet(viewsets.ViewSet):
                             modified_object=attachment,
                             action_type=REMOVE_TAG_FROM_DOCUMENT,
                             user=request.user,
-                            data=tag
+                            data=tag.name
                         )
                         for tag in removed_tags
                     ]
@@ -127,12 +127,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='tags')
     def tags(self, request):
-        # TODO: restructure tags management to improve performance
-        # Return all uniq tags from all attachments tags
-        all_tags = AttachmentFile.objects.exclude(tags=[]).values_list('tags', flat=True)
-        tags = list({item for sublist in all_tags for item in sublist})
-        tags.sort()
-        return Response(tags)
+        return Response([tag.name for tag in Tag.objects.all()])
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

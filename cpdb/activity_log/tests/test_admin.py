@@ -8,7 +8,7 @@ from activity_log.admin import DocumentTagsAnalyze, DocumentTagsAnalyzeAdmin
 from activity_log.factories import ActivityLogFactory
 from authentication.factories import AdminUserFactory
 from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
-from data.factories import AttachmentFileFactory
+from data.factories import AttachmentFileFactory, TagFactory
 
 
 class DocumentTagsAnalyzeAdminTestCase(TestCase):
@@ -16,10 +16,7 @@ class DocumentTagsAnalyzeAdminTestCase(TestCase):
         self.document_tags_analyze_admin = DocumentTagsAnalyzeAdmin(DocumentTagsAnalyze, AdminSite())
         self.request = RequestFactory()
         self.admin_user = AdminUserFactory(id=1, username='admin user')
-        self.attachment = AttachmentFileFactory(
-            id=1,
-            tags=['tag3']
-        )
+        self.attachment = AttachmentFileFactory(id=1, tags=[TagFactory(name='tag3')])
         ActivityLogFactory(
             modified_object=self.attachment,
             action_type=ADD_TAG_TO_DOCUMENT,
