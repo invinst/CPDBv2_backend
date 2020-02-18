@@ -77,7 +77,7 @@ router_v2.register(r'attachments', AttachmentViewSet, basename='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, basename='document-crawlers')
 router_v2.register(r'pinboards', PinboardDesktopViewSet, basename='pinboards')
 router_v2.register(r'mobile/pinboards', PinboardMobileViewSet, basename='pinboards-mobile')
-router_v2.register(r'desktop/toast', ToastDesktopViewSet, basename='toast')
+router_v2.register(r'toast', ToastDesktopViewSet, basename='toast')
 router_v2.register(r'mobile/toast', ToastMobileViewSet, basename='toast-mobile')
 
 urlpatterns = [
