@@ -1,4 +1,4 @@
-## Popup [/v2/toast/]
+## Desktop Toast [/v2/toast/]
 
 ### Get toast [GET]
 
