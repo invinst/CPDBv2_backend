@@ -2,7 +2,6 @@ import json
 import logging
 from urllib.error import HTTPError
 
-from sortedm2m.fields import SortedManyToManyField
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
@@ -12,7 +11,7 @@ from documentcloud import DocumentCloud, DoesNotExistError
 from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws
 from utils.copa_utils import extract_copa_executive_summary
-from .common import TimeStampsModel
+from .common import TimeStampsModel, TaggableModel
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class ShownAttachmentManager(models.Manager):
         return super().get_queryset().filter(show=True)
 
 
-class AttachmentFile(TimeStampsModel):
+class AttachmentFile(TimeStampsModel, TaggableModel):
     external_id = models.CharField(max_length=255, db_index=True)
     file_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, db_index=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -38,7 +37,6 @@ class AttachmentFile(TimeStampsModel):
     show = models.BooleanField(default=True)
     manually_updated = models.BooleanField(default=False)
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    tags = SortedManyToManyField(to='data.Tag')
 
     # Document cloud information
     preview_image_url = models.CharField(max_length=255, null=True)

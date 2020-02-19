@@ -12,8 +12,8 @@ from freezegun import freeze_time
 from urllib.parse import urlencode
 
 from authentication.factories import AdminUserFactory
-from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory, TagFactory
-from data.models import AttachmentFile, Tag
+from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory, OfficerFactory
+from data.models import AttachmentFile
 from document_cloud.factories import DocumentCrawlerFactory
 from activity_log.models import ActivityLog
 from activity_log.constants import ADD_TAG_TO_DOCUMENT, REMOVE_TAG_FROM_DOCUMENT
@@ -129,7 +129,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             views_count=100,
             downloads_count=99,
             notifications_count=200,
-            tags=[TagFactory(name='tag123')]
+            tags=['tag123']
         )
         attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         with freeze_time('2017-08-05 12:00:01'):
@@ -142,7 +142,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=[TagFactory(name='tag124')],
+            tags=['tag124'],
         )
         AttachmentFileFactory(
             id=125,
@@ -151,7 +151,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123-CR.html',
-            tags=[TagFactory(name='tag125')],
+            tags=['tag125'],
         )
         AttachmentFileFactory(
             id=126,
@@ -168,7 +168,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             file_type='audio',
             preview_image_url='',
             original_url='http://audio_link',
-            tags=[TagFactory(name='tag127')],
+            tags=['tag127'],
         )
 
         admin_user = AdminUserFactory()
@@ -555,12 +555,10 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             downloads_count=99,
             notifications_count=200,
             manually_updated=False,
-            tags=[TagFactory(name='tag1')]
+            tags=['tag1']
         )
         attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         attachment.save()
-
-        TagFactory(name='tag2')
 
         url = reverse('api-v2:attachments-detail', kwargs={'pk': '1'})
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -606,12 +604,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         expect(activity_log_2.user_id).to.eq(1)
         expect(activity_log_2.data).to.eq('tag3')
 
-        expect(Tag.objects.count()).to.eq(3)
-        tag1 = Tag.objects.get(name='tag1')
-        tag2 = Tag.objects.get(name='tag2')
-        tag3 = Tag.objects.get(name='tag3')
-
-        expect(list(updated_attachment.tags.all())).to.eq([tag1, tag2, tag3])
+        expect(updated_attachment.tags.names()).to.contain('tag1', 'tag2', 'tag3')
 
     def test_remove_attachment_tags(self):
         admin_user = AdminUserFactory(id=1, username='Test admin user')
@@ -634,7 +627,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             downloads_count=99,
             notifications_count=200,
             manually_updated=False,
-            tags=[TagFactory(name='tag1'), TagFactory(name='tag2'), TagFactory(name='tag3')]
+            tags=['tag1', 'tag2', 'tag3']
         )
         attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
         attachment.save()
@@ -1141,12 +1134,13 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
     def test_tags(self):
         AttachmentFileFactory(
-            tags=[TagFactory(name='chicago'), TagFactory(name='tactical')]
+            tags=['chicago', 'tactical']
         )
         AttachmentFileFactory(
-            tags=[TagFactory(name='twitter'), TagFactory(name='another tag')]
+            tags=['twitter', 'another tag']
         )
         AttachmentFileFactory()
+        OfficerFactory(tags=['officer_tag1', 'officer_tag2'])
         url = reverse('api-v2:attachments-tags')
         response = self.client.get(url)
         expect(response.data).to.eq(['another tag', 'chicago', 'tactical', 'twitter'])

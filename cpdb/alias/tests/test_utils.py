@@ -21,4 +21,4 @@ class AliasUtilsTestCase(IndexMixin, TestCase):
     def test_set_officer_aliases(self):
         set_aliases(OfficerInfoDocType, Officer, '1', ['alias1', 'alias2'])
         expect(OfficerInfoDocType.get('1').tags).to.eq(['alias1', 'alias2'])
-        expect(Officer.objects.get(pk=1).tags).to.eq(['alias1', 'alias2'])
+        expect(list(Officer.objects.get(pk=1).tags.names())).to.eq(['alias1', 'alias2'])

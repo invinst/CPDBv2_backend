@@ -10,7 +10,7 @@ from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
 
 from data.constants import MEDIA_TYPE_DOCUMENT
-from data.models import AttachmentFile, Tag
+from data.models import AttachmentFile
 from data.utils.subqueries import SQCount
 from document_cloud.models import DocumentCrawler
 from es_index.pagination import ESQuerysetPagination
@@ -127,7 +127,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='tags')
     def tags(self, request):
-        return Response([tag.name for tag in Tag.objects.all()])
+        return Response([tag.name for tag in AttachmentFile.tags.all().order_by('name')])
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

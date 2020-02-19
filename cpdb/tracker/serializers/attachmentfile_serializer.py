@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from data.models import AttachmentFile, Tag
+from taggit_serializer.serializers import TagListSerializerField, TaggitSerializer
+
+from data.models import AttachmentFile
 from data.constants import AttachmentSourceType
-from shared.serializer import CreatableSlugRelatedField
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -80,9 +82,13 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
         )
 
 
-class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
+class SortedTagListSerializerField(TagListSerializerField):
+    order_by = ['name']
+
+
+class AuthenticatedAttachmentFileSerializer(TaggitSerializer, AttachmentFileSerializer):
     next_document_id = serializers.SerializerMethodField()
-    tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)
+    tags = SortedTagListSerializerField()
 
     def get_next_document_id(self, obj):
         next_attachment = AttachmentFile.objects.exclude(
@@ -110,19 +116,12 @@ class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
         )
 
 
-class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
+class UpdateAttachmentFileSerializer(TaggitSerializer, serializers.ModelSerializer):
     def __init__(self, user, **kwargs):
         self.user = user
         super(UpdateAttachmentFileSerializer, self).__init__(**kwargs)
 
-    tags = CreatableSlugRelatedField(
-        slug_field='name',
-        many=True,
-        queryset=Tag.objects.all(),
-        field_name='tags',
-        max_length=20,
-        required=False,
-    )
+    tags = SortedTagListSerializerField(required=False)
 
     class Meta:
         model = AttachmentFile
@@ -149,3 +148,10 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         if all(key not in self.initial_data for key in needed_fields):
             return False
         return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)
+
+    def validate_tags(self, tags):
+        tags_max_length = 20
+        for tag in tags:
+            if len(tag) > tags_max_length:
+                raise ValidationError(f'Ensure this field has no more than {tags_max_length} characters.')
+        return tags

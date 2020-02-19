@@ -12,7 +12,8 @@ azure==4.0.0
 azure-mgmt-storage==2.0.0
 azure-storage-blob==1.4.0
 azure-storage-queue==1.4.0
-django-taggit==0.21.2
+django-taggit==1.2.0
+django-taggit-serializer==0.1.7
 pytz==2016.6.1
 newrelic==2.68.0.50
 django-anymail==4.2

@@ -12,8 +12,7 @@ from faker import Faker
 from data.models import (
     Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile,
-    OfficerAlias, Tag
+    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile, OfficerAlias
 )
 from data.constants import ACTIVE_CHOICES
 
@@ -21,12 +20,22 @@ fake = Faker()
 User = get_user_model()
 
 
+class TaggableModelFactory(factory.django.DjangoModelFactory):
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.tags.set(*extracted)
+
+
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
 
-class AreaFactory(factory.django.DjangoModelFactory):
+class AreaFactory(TaggableModelFactory):
     class Meta:
         model = Area
 
@@ -59,7 +68,7 @@ class LineAreaFactory(factory.django.DjangoModelFactory):
     ))
 
 
-class PoliceUnitFactory(factory.django.DjangoModelFactory):
+class PoliceUnitFactory(TaggableModelFactory):
     class Meta:
         model = PoliceUnit
 
@@ -67,7 +76,7 @@ class PoliceUnitFactory(factory.django.DjangoModelFactory):
     description = factory.LazyFunction(lambda: fake.text(25))
 
 
-class OfficerFactory(factory.django.DjangoModelFactory):
+class OfficerFactory(TaggableModelFactory):
     class Meta:
         model = Officer
 
@@ -79,7 +88,6 @@ class OfficerFactory(factory.django.DjangoModelFactory):
     rank = factory.LazyFunction(lambda: fake.word())
     birth_year = factory.LazyFunction(lambda: random.randint(1900, 2000))
     active = factory.LazyFunction(lambda: random.choice(ACTIVE_CHOICES)[0])
-    tags = factory.LazyFunction(lambda: fake.pylist(2, False, str))
     complaint_percentile = factory.LazyFunction(lambda: fake.pyfloat(left_digits=2, right_digits=1, positive=True))
 
 
@@ -176,7 +184,7 @@ class InvolvementFactory(factory.django.DjangoModelFactory):
     officer = factory.SubFactory(OfficerFactory)
 
 
-class AttachmentFileFactory(factory.django.DjangoModelFactory):
+class AttachmentFileFactory(TaggableModelFactory):
     class Meta:
         model = AttachmentFile
 
@@ -194,14 +202,6 @@ class AttachmentFileFactory(factory.django.DjangoModelFactory):
     show = True
     manually_updated = False
     last_updated_by = None
-
-    @factory.post_generation
-    def tags(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            self.tags.set(extracted)
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):
@@ -273,10 +273,3 @@ class OfficerAliasFactory(factory.django.DjangoModelFactory):
         model = OfficerAlias
 
     new_officer = factory.SubFactory(OfficerFactory)
-
-
-class TagFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Tag
-
-    name = factory.LazyFunction(lambda: fake.word())

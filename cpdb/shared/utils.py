@@ -17,4 +17,13 @@ def timeit(func, start_message=None):  # pragma: no cover
 
 
 def formatted_errors(errors):
-    return dict([(key, [item for items in value.values() for item in items]) for key, value in errors.items()])
+    results = []
+    for key, value in errors.items():
+        if isinstance(value, dict):
+            error_messages = []
+            for items in value.values():
+                error_messages.extend(items)
+            results.append((key, error_messages))
+        elif isinstance(value, list):
+            results.append((key, value))
+    return dict(results)

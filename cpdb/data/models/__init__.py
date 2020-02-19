@@ -20,11 +20,10 @@ from .police_witness import PoliceWitness
 from .race_population import RacePopulation
 from .salary import Salary
 from .victim import Victim
-from .tag import Tag
 
 __all__ = [
     'Allegation', 'AllegationCategory', 'Area', 'AttachmentFile', 'AttachmentRequest', 'Award', 'Complainant',
     'Investigator', 'InvestigatorAllegation', 'Involvement', 'LineArea', 'Officer', 'OfficerAlias', 'OfficerAllegation',
     'OfficerBadgeNumber', 'OfficerHistory', 'OfficerYearlyPercentile', 'PoliceUnit', 'PoliceWitness', 'RacePopulation',
-    'Salary', 'Victim', 'Tag'
+    'Salary', 'Victim'
 ]
