@@ -1,21 +1,44 @@
-from django.contrib import admin
-from django.db.models import Max, Count
-from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.contrib.admin import site, SimpleListFilter, ModelAdmin
+from django.db.models import Count
 
 from data.models import AttachmentFile
 
 
-def max_tag_count():
-    query_set = AttachmentFile.objects.all()
-    query_set = query_set.prefetch_related('tags').annotate(tag_count=Count('tags')).aggregate(Max('tag_count'))
-    return query_set['tag_count__max']
+def standardize_field_name(name):
+    return name.replace(' ', '_').lower()
 
 
-MAX_ATTACHMENT_TAG_COUNT = max_tag_count()
+def create_tag_field(tag_name):
+    def tag_field(self, obj):
+        tag_names = [tag_obj.name for tag_obj in list(obj.tags.all())]
+        return tag_name in tag_names
+
+    tag_field.allow_tags = True
+    tag_field.short_description = f'{standardize_field_name(tag_name)}'
+    tag_field.boolean = True
+
+    return tag_field
 
 
-class AttachmentFileAdmin(admin.ModelAdmin):
+class TagListFilter(SimpleListFilter):
+    title = 'Tags'
+    parameter_name = 'tag'
+
+    def lookups(self, request, model_admin):
+        filter_by_tags = [[tag, tag] for tag in AttachmentFile.tags.all().order_by('name')]
+        return [['tagged', 'Tagged']] + filter_by_tags
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        if self.value() == 'tagged':
+            return queryset.filter(tags__isnull=False).distinct()
+
+        return queryset.filter(tags__name=self.value()).distinct()
+
+
+class AttachmentFileAdmin(ModelAdmin):
     readonly_fields = [
         'external_id',
         'file_type',
@@ -31,7 +54,6 @@ class AttachmentFileAdmin(admin.ModelAdmin):
         'preview_image_url',
         'external_created_at',
         'external_last_updated',
-        'text_content',
         'reprocess_text_count',
         'pages',
         'pending_documentcloud_id',
@@ -39,33 +61,24 @@ class AttachmentFileAdmin(admin.ModelAdmin):
         'manually_updated',
         'last_updated_by',
     ]
+    fields = ['tags', 'title'] + readonly_fields
+    list_filter = [TagListFilter]
 
     def get_list_display(self, request):
         list_display = ['id', 'title', 'source_type', 'updated_at']
-        for tag_index in range(0, MAX_ATTACHMENT_TAG_COUNT):
-            list_display.append(f'tag_{tag_index}')
+        for tag in AttachmentFile.tags.all().order_by('name'):
+            list_display.append(standardize_field_name(tag.name))
+            setattr(AttachmentFileAdmin, f'{standardize_field_name(tag.name)}', create_tag_field(tag.name))
         return list_display
 
     def get_queryset(self, request):
-        return AttachmentFile.objects.all().prefetch_related('tags', 'allegation', 'last_updated_by')
+        return AttachmentFile.objects.all().prefetch_related(
+            'tags',
+            'allegation',
+            'last_updated_by',
+            'tags__taggit_taggeditem_items',
+            'tags__taggit_taggeditem_items__content_type',
+        ).annotate(tags_count=Count('tags')).order_by('-tags_count')
 
 
-def create_tag_field(index):
-    def tag_field(self, obj):
-        if obj.tags.count() > index:
-            tag = obj.tags.all()[index]
-            url = reverse('admin:data_tag_change', args=[tag.pk])
-            return mark_safe(f'<a href={url}>{tag.name}</a>')
-        return ''
-
-    tag_field.allow_tags = True
-    tag_field.short_description = f'Tag {index}'
-
-    return tag_field
-
-
-for i in range(0, MAX_ATTACHMENT_TAG_COUNT):
-    setattr(AttachmentFileAdmin, f'tag_{i}', create_tag_field(i))
-
-
-admin.site.register(AttachmentFile, AttachmentFileAdmin)
+site.register(AttachmentFile, AttachmentFileAdmin)
