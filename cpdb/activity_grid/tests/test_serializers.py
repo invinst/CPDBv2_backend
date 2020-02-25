@@ -96,7 +96,9 @@ class SimpleCardSerializerTestCase(TestCase):
                 'percentile_allegation_internal': '0.0200',
                 'percentile_allegation': '0.2300',
                 'year': 2016,
-            }
+            },
+            'complaint_count': 2,
+            'sustained_count': 1,
         })
 
 
@@ -161,7 +163,9 @@ class PairCardSerializerTestCase(TestCase):
                     'percentile_allegation_internal': '0.0200',
                     'percentile_allegation': '38.7000',
                     'year': 2016,
-                }
+                },
+                'complaint_count': 2,
+                'sustained_count': 1,
             },
             'officer2': {
                 'id': 2,
@@ -176,7 +180,9 @@ class PairCardSerializerTestCase(TestCase):
                     'percentile_allegation_internal': '4.0200',
                     'percentile_allegation': '15.6000',
                     'year': 2016,
-                }
+                },
+                'complaint_count': 3,
+                'sustained_count': 2,
             },
             'important': False,
             'null_position': 0,

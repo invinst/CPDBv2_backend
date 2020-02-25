@@ -1,4 +1,4 @@
-FROM python:3.6-slim
+FROM python:3.8-slim
 
 ENV GUNICORN_BIND 0.0.0.0:80
 ENV GUNICORN_WORKERS 1
@@ -19,7 +19,10 @@ RUN apt-get update && \
     curl \
     zlib1g-dev \
     git \
-    zip
+    zip \
+    python3-dev \
+    musl-dev \
+    libpq-dev
 
 ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
 RUN tar xjf geos-3.6.1.tar.bz2 && \

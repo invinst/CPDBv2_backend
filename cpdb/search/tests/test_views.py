@@ -508,6 +508,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             birth_year=1980,
             race='White',
             gender='M',
+            rank='Police Officer'
         )
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         AllegationFactory(
@@ -535,6 +536,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
                 'name': 'Jerome Finnigan',
                 'race': 'White',
                 'gender': 'Male',
+                'rank': 'Police Officer',
                 'allegation_count': 20,
                 'sustained_count': 5,
                 'birth_year': 1980,
@@ -543,6 +545,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             {
                 'id': 'C12345',
                 'crid': 'C12345',
+                'category': 'Use of Force',
                 'incident_date': '2007-01-01',
                 'type': 'CR',
             },

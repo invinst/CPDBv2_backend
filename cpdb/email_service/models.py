@@ -1,4 +1,5 @@
 from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
 from markdown2 import markdown
 
 from django.db import models
@@ -15,12 +16,14 @@ class EmailTemplate(models.Model):
     body = models.TextField()
     from_email = models.EmailField(max_length=255)
 
-    def create_message(self, recipient_list, **kwargs):
+    def create_message(self, to, cc, **kwargs):
         html_message = markdown(self.body.format(**kwargs), extras=['break-on-newline', 'cuddled-lists', 'tables'])
-        return {
-            'subject': self.subject.format(**kwargs),
-            'message': strip_tags(html_message),
-            'html_message': html_message,
-            'from_email': self.from_email,
-            'recipient_list': recipient_list
-        }
+        email = EmailMultiAlternatives(
+            subject=self.subject.format(**kwargs),
+            body=strip_tags(html_message),
+            from_email=self.from_email,
+            to=to,
+            cc=cc,
+        )
+        email.attach_alternative(html_message, 'text/html')
+        return email

@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.db.models import Prefetch, Count
+from django.db.models import Q
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -192,6 +193,8 @@ class PinboardDesktopViewSet(PinboardViewSet):
 
     @action(detail=False, methods=['get'])
     def all(self, request):
+        match = request.query_params.get('match', '')
+
         if request.user.is_authenticated:
             pinboards = Pinboard.objects.order_by('-created_at').annotate(
                 child_pinboard_count=Count('child_pinboards', distinct=True)
@@ -205,6 +208,8 @@ class PinboardDesktopViewSet(PinboardViewSet):
                     ).order_by('-action_sub_category', 'force_type')
                 )
             )
+            if match != '':
+                pinboards = pinboards.filter(Q(title__icontains=match) | Q(description__icontains=match))
         else:
             pinboards = []
 

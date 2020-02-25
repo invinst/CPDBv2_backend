@@ -75,6 +75,7 @@ LOCAL_APPS = (
     'sitemap',
     'activity_log',
     'pinboard',
+    'toast',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -320,3 +321,5 @@ CPDP_ALERTS_WEBHOOK = env.str('CPDP_ALERTS_WEBHOOK', '')
 
 ENABLE_MAKE_CLOUD_DOCUMENTS_PUBLIC = False
 IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS = False
+
+DOCUMENT_REQUEST_CC_EMAIL = 'documents@invisibleinstitute.com'

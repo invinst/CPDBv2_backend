@@ -2,7 +2,6 @@ import logging
 import re
 from smtplib import SMTPException
 
-from django.core.mail import send_mail
 from django.conf import settings
 
 from tqdm import tqdm
@@ -33,12 +32,13 @@ def send_cr_attachment_available_email(new_attachments):
         for attachment_request in requests:
             message = email_template.create_message(
                 [attachment_request.email],
+                [settings.DOCUMENT_REQUEST_CC_EMAIL],
                 name=_get_name_from_email(attachment_request.email),
                 pk=crid,
                 url=f'{settings.DOMAIN}{allegation.v2_to}'
             )
             try:
-                send_mail(**message)
+                message.send()
             except SMTPException:
                 logger.info(f'Cannot send notification email for crid {crid} to {attachment_request.email}')
             else:
@@ -59,5 +59,5 @@ def send_cr_attachment_available_email(new_attachments):
 def send_attachment_request_email(email, attachment_type, **kwargs):
     email_template = EmailTemplate.objects.get(type=attachment_type)
     name = _get_name_from_email(email)
-    message = email_template.create_message([email], name=name, **kwargs)
-    send_mail(**message)
+    message = email_template.create_message([email], [settings.DOCUMENT_REQUEST_CC_EMAIL], name=name, **kwargs)
+    message.send()

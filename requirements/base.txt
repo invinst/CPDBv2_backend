@@ -2,7 +2,7 @@ Django==2.2.9
 django-environ==0.4.0
 django-filter==2.0.0
 djangorestframework==3.11.0
-psycopg2==2.7.6.1
+psycopg2-binary==2.8.4
 django-cors-headers==2.4.0
 iso8601==0.1.11
 tqdm==4.17.1
@@ -27,7 +27,7 @@ Faker==0.9.0
 python-dateutil==2.6.1
 Twisted[tls]==19.7.0
 dateparser==0.7.0
-tweepy==3.6.0
+tweepy==3.8.0
 zipcodes==1.0.4
 sortedcontainers==2.0.5
 airtable-python-wrapper==0.11.3
