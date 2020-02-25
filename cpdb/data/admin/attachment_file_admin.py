@@ -1,5 +1,12 @@
+import csv
+
 from django.contrib.admin import site, SimpleListFilter, ModelAdmin
 from django.db.models import Count
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.urls import path
+
+from tqdm import tqdm
 
 from data.models import AttachmentFile
 
@@ -63,6 +70,7 @@ class AttachmentFileAdmin(ModelAdmin):
     ]
     fields = ['tags', 'title'] + readonly_fields
     list_filter = [TagListFilter]
+    change_list_template = get_template('attachment_changelist.html')
 
     def get_list_display(self, request):
         list_display = ['id', 'title', 'source_type', 'updated_at']
@@ -79,6 +87,40 @@ class AttachmentFileAdmin(ModelAdmin):
             'tags__taggit_taggeditem_items',
             'tags__taggit_taggeditem_items__content_type',
         ).annotate(tags_count=Count('tags')).order_by('-tags_count')
+
+    def download_csv(self, request):
+        attachment_files = AttachmentFile.objects.filter(tags__isnull=False).prefetch_related(
+            'tags',
+            'allegation',
+            'last_updated_by',
+            'tags__taggit_taggeditem_items',
+            'tags__taggit_taggeditem_items__content_type',
+        ).annotate(tags_count=Count('tags')).order_by('-tags_count')
+        all_tags = [tag.name for tag in AttachmentFile.tags.all().order_by('name')]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="review_document_and_tags.csv"'
+        csv_writer = csv.writer(response)
+        csv_writer.writerow(
+            ['ID', 'TITLE', 'SOURCE TYPE', 'UPDATED AT'] +
+            [f'{tag.name}' for tag in AttachmentFile.tags.all().order_by('name')]
+        )
+
+        for attachment_file in tqdm(attachment_files):
+            tag_names = [tag_object.name for tag_object in list(attachment_file.tags.all())]
+            csv_writer.writerow(
+                [
+                    attachment_file.id,
+                    attachment_file.title,
+                    attachment_file.source_type,
+                    attachment_file.created_at.strftime('%Y-%m-%d')
+                ] + ['x' if tag in tag_names else '' for tag in all_tags]
+            )
+        return response
+
+    def get_urls(self):
+        my_urls = [path('download-csv/', self.download_csv)]
+        return my_urls + super().get_urls()
 
 
 site.register(AttachmentFile, AttachmentFileAdmin)

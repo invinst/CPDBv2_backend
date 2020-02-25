@@ -19,8 +19,20 @@ class AttachmentFileAdminTestCase(TestCase):
         self.request = RequestFactory()
         allegation_1 = AllegationFactory(incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
         allegation_2 = AllegationFactory(incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
-        self.attachment_file_1 = AttachmentFileFactory(allegation=allegation_1)
-        self.attachment_file_2 = AttachmentFileFactory(allegation=allegation_2)
+        self.attachment_file_1 = AttachmentFileFactory(
+            id=1,
+            allegation=allegation_1,
+            title='Title 1',
+            source_type='DOCUMENTCLOUD',
+            updated_at=datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)
+        )
+        self.attachment_file_2 = AttachmentFileFactory(
+            id=2,
+            allegation=allegation_2,
+            title='Title 2',
+            source_type='PORTAL_COPA',
+            updated_at=datetime(2018, 5, 5, 12, 0, 1, tzinfo=pytz.utc)
+        )
         self.attachment_file_1.tags.set('Tactical', 'Complaint', 'Taser')
         self.attachment_file_2.tags.set('Taser')
 
@@ -60,6 +72,21 @@ class AttachmentFileAdminTestCase(TestCase):
         expect(tactical_func.allow_tags).to.be.true()
         expect(tactical_func.short_description).to.eq('tactical')
         expect(tactical_func.boolean).to.be.true()
+
+    def test_download_csv(self):
+        response = self.attachment_file_admin.download_csv(self.request)
+        expect(response.status_code).to.eq(200)
+        expect(response._headers['content-type']).to.eq(('Content-Type', 'text/csv'))
+        expect(response._headers['content-disposition']).to.eq(
+            ('Content-Disposition', 'attachment; filename="review_document_and_tags.csv"')
+        )
+        expect(response._container[1]).to.eq(b'ID,TITLE,SOURCE TYPE,UPDATED AT,Complaint,Tactical,Taser\r\n')
+        expect(response._container[2]).to.eq(b'1,Title 1,DOCUMENTCLOUD,2020-02-25,x,x,x\r\n')
+        expect(response._container[3]).to.eq(b'2,Title 2,PORTAL_COPA,2020-02-25,,,x\r\n')
+
+    def test_get_urls(self):
+        result = self.attachment_file_admin.get_urls()
+        expect(str(result[0].pattern)).to.eq('download-csv/')
 
 
 class TagListFilterTestCase(TestCase):
