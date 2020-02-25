@@ -12,6 +12,7 @@ class OfficerSerializer(NoNullSerializer):
     sustained_count = serializers.IntegerField()
     birth_year = serializers.IntegerField()
     type = serializers.SerializerMethodField()
+    rank = serializers.CharField()
 
     def get_type(self, obj):
         return 'OFFICER'

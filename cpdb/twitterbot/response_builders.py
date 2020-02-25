@@ -77,13 +77,15 @@ class NotFoundResponseBuilder(BaseResponseBuilder):
     def get_variables_sets(self, entities, context):
         try:
             tweet = context.get('incoming_tweet', None)
+            # Our's replacing these `raise StopIteration()` with `return` were recommended by
+            # https://www.python.org/dev/peps/pep-0479/#id38
             if context.get('responses_count', 0) > 0:
-                raise StopIteration()
+                return
             if tweet.is_retweet_of_twitterbot:
-                raise StopIteration()
+                return
             if tweet.is_quoted_tweet_of_twitterbot:
-                raise StopIteration()
+                return
 
         except AttributeError:
-            raise StopIteration()
+            return
         yield {'_url': settings.DOMAIN}

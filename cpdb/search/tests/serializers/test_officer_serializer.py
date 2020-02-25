@@ -18,6 +18,7 @@ class OfficerSerializerTestCase(TestCase):
             birth_year=1980,
             race='White',
             gender='M',
+            rank='Police Officer'
         )
 
         expect(OfficerSerializer(officer).data).to.eq({
@@ -29,4 +30,5 @@ class OfficerSerializerTestCase(TestCase):
             'sustained_count': 5,
             'birth_year': 1980,
             'type': 'OFFICER',
+            'rank': 'Police Officer'
         })

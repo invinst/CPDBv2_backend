@@ -187,3 +187,9 @@
             "pages": "10",
             "last_updated_by": "test user"
         }
+
+## Retrieve suggestion tags [GET v2/attachments/tags]
+
++ Response 200 (application/json)
+
+        ['tag1', 'tag2', 'tag3']

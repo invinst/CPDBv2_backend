@@ -25,7 +25,7 @@ class BaseAttachmentImporter(object):
         self.log_data.append(message)
 
     def generate_s3_log_file(self):
-        filename = datetime.now(pytz.utc).strftime(format='%Y-%m-%d-%H%M%S.txt')
+        filename = datetime.now(pytz.utc).strftime('%Y-%m-%d-%H%M%S.txt')
         log_key = f'{self.crawler_name}/{self.crawler_name.replace("_", "-")}-{filename}'
         aws.s3.put_object(
             Body='\n'.join(self.log_data).encode(),
