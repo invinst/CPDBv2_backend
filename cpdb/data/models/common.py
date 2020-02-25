@@ -4,7 +4,7 @@ from taggit.managers import TaggableManager
 
 
 class TaggableModel(models.Model):
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     class Meta:
         abstract = True
