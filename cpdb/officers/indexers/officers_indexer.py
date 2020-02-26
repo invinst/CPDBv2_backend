@@ -155,7 +155,7 @@ class OfficersIndexer(BaseIndexer):
     def populate_tags_dict(self):
         self.tags_dict = dict()
         for officer in Officer.objects.exclude(tags__isnull=True).prefetch_related('tags'):
-            self.tags_dict[officer.id] = list(officer.tags.names())
+            self.tags_dict[officer.id] = [tag.name for tag in officer.tags.all()]
 
     def get_queryset(self):
         self.populate_top_percentile_dict()

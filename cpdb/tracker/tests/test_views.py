@@ -604,7 +604,9 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         expect(activity_log_2.user_id).to.eq(1)
         expect(activity_log_2.data).to.eq('tag3')
 
-        expect(updated_attachment.tags.names()).to.contain('tag1', 'tag2', 'tag3')
+        updated_name = updated_attachment.tags.names()
+        expect(updated_name).to.have.length(3)
+        expect(updated_name).to.contain('tag1', 'tag2', 'tag3')
 
     def test_remove_attachment_tags(self):
         admin_user = AdminUserFactory(id=1, username='Test admin user')
@@ -1133,12 +1135,8 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         expect(response.data['results'][0]['id']).to.eq(133)
 
     def test_tags(self):
-        AttachmentFileFactory(
-            tags=['chicago', 'tactical']
-        )
-        AttachmentFileFactory(
-            tags=['twitter', 'another tag']
-        )
+        AttachmentFileFactory(tags=['chicago', 'tactical'])
+        AttachmentFileFactory(tags=['tactical', 'twitter', 'another tag'])
         AttachmentFileFactory()
         OfficerFactory(tags=['officer_tag1', 'officer_tag2'])
         url = reverse('api-v2:attachments-tags')
