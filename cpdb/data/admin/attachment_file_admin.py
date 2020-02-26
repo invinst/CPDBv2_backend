@@ -119,7 +119,7 @@ class AttachmentFileAdmin(ModelAdmin):
         return response
 
     def get_urls(self):
-        my_urls = [path('download-csv/', self.download_csv)]
+        my_urls = [path('download-csv/', self.admin_site.admin_view(self.download_csv))]
         return my_urls + super().get_urls()
 
 
