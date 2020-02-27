@@ -1,0 +1,12 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+    <div>
+        <form action='download-csv/' method='POST'>
+            {% csrf_token %}
+                <button type='submit'>Download CSV</button>
+        </form>
+    </div>
+    <br />
+    {{ block.super }}
+{% endblock %}
