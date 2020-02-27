@@ -12,7 +12,7 @@ from freezegun import freeze_time
 from urllib.parse import urlencode
 
 from authentication.factories import AdminUserFactory
-from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory
+from data.factories import AttachmentFileFactory, AllegationFactory, UserFactory, OfficerFactory
 from data.models import AttachmentFile
 from document_cloud.factories import DocumentCrawlerFactory
 from activity_log.models import ActivityLog
@@ -604,6 +604,10 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         expect(activity_log_2.user_id).to.eq(1)
         expect(activity_log_2.data).to.eq('tag3')
 
+        updated_name = updated_attachment.tags.names()
+        expect(updated_name).to.have.length(3)
+        expect(updated_name).to.contain('tag1', 'tag2', 'tag3')
+
     def test_remove_attachment_tags(self):
         admin_user = AdminUserFactory(id=1, username='Test admin user')
         token, _ = Token.objects.get_or_create(user=admin_user)
@@ -1133,7 +1137,8 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
     def test_tags(self):
         AttachmentFileFactory(tags=['chicago', 'tactical'])
         AttachmentFileFactory(tags=['tactical', 'twitter', 'another tag'])
-        AttachmentFileFactory(tags=[])
+        AttachmentFileFactory()
+        OfficerFactory(tags=['officer_tag1', 'officer_tag2'])
         url = reverse('api-v2:attachments-tags')
         response = self.client.get(url)
         expect(response.data).to.eq(['another tag', 'chicago', 'tactical', 'twitter'])

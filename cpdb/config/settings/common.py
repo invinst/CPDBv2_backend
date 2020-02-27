@@ -40,6 +40,7 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'django_nose',
     'taggit',
+    'taggit_serializer',
     'anymail',
     'corsheaders',
     'adminsortable',
