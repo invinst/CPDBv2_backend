@@ -325,4 +325,7 @@ IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS = False
 
 DOCUMENT_REQUEST_CC_EMAIL = 'documents@invisibleinstitute.com'
 
+# If you want django-taggit to be CASE-INSENSITIVE when looking up existing tags,
+# you’ll have to set the TAGGIT_CASE_INSENSITIVE setting to True (False by default)
+# https://django-taggit.readthedocs.io/en/latest/getting_started.html
 TAGGIT_CASE_INSENSITIVE = True
