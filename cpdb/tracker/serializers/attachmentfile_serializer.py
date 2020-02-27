@@ -5,6 +5,7 @@ from taggit_serializer.serializers import TagListSerializerField, TaggitSerializ
 
 from data.models import AttachmentFile
 from data.constants import AttachmentSourceType
+from tracker.constants import TAG_MAX_LENGTH
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -150,8 +151,7 @@ class UpdateAttachmentFileSerializer(TaggitSerializer, serializers.ModelSerializ
         return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)
 
     def validate_tags(self, tags):
-        tags_max_length = 20
         for tag in tags:
-            if len(tag) > tags_max_length:
-                raise ValidationError(f'Ensure this field has no more than {tags_max_length} characters.')
+            if len(tag) > TAG_MAX_LENGTH:
+                raise ValidationError(f'Ensure this field has no more than {TAG_MAX_LENGTH} characters.')
         return tags

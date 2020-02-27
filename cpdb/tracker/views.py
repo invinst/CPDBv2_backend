@@ -127,7 +127,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='tags')
     def tags(self, request):
-        return Response([tag.name for tag in AttachmentFile.tags.all().order_by('name')])
+        return Response(list(AttachmentFile.tags.all().order_by('name').values_list('name', flat=True)))
 
 
 class DocumentCrawlersViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
