@@ -16,10 +16,7 @@ class DocumentTagsAnalyzeAdminTestCase(TestCase):
         self.document_tags_analyze_admin = DocumentTagsAnalyzeAdmin(DocumentTagsAnalyze, AdminSite())
         self.request = RequestFactory()
         self.admin_user = AdminUserFactory(id=1, username='admin user')
-        self.attachment = AttachmentFileFactory(
-            id=1,
-            tags=['tag3']
-        )
+        self.attachment = AttachmentFileFactory(id=1, tags=['tag3'])
         ActivityLogFactory(
             modified_object=self.attachment,
             action_type=ADD_TAG_TO_DOCUMENT,

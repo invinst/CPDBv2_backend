@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import AttachmentRequest
+
+from data.models import AttachmentRequest
 
 
 class AttachmentRequestAdmin(admin.ModelAdmin):

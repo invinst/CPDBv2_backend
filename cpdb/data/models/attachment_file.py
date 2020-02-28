@@ -55,6 +55,9 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     class Meta:
         unique_together = (('allegation', 'external_id', 'source_type'),)
 
+    def __str__(self):
+        return self.title
+
     @property
     def s3_key(self):
         return f'{settings.S3_BUCKET_PDF_DIRECTORY}/{self.external_id}'
