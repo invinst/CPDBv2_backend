@@ -7,7 +7,7 @@ from robber import expect
 
 from activity_grid.factories import ActivityCardFactory, ActivityPairCardFactory
 from activity_grid.serializers import OfficerCardSerializer, SimpleCardSerializer, PairCardSerializer
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, AllegationFactory, OfficerAllegationFactory
 
 
 class ActivityCardSerializerTestCase(TestCase):
@@ -140,6 +140,19 @@ class PairCardSerializerTestCase(TestCase):
             trr_percentile='5.000',
             complaint_percentile='15.6000',
         )
+
+        allegation_1 = AllegationFactory()
+        allegation_2 = AllegationFactory()
+        allegation_3 = AllegationFactory()
+        OfficerAllegationFactory(allegation=allegation_1, officer=officer1)
+        OfficerAllegationFactory(allegation=allegation_1, officer=officer2)
+        OfficerAllegationFactory(allegation=allegation_2, officer=officer1)
+        OfficerAllegationFactory(allegation=allegation_2, officer=officer2)
+        OfficerAllegationFactory(allegation=allegation_3, officer=officer1)
+        OfficerAllegationFactory(allegation=allegation_3, officer=officer2)
+        OfficerAllegationFactory(officer=officer1)
+        OfficerAllegationFactory(officer=officer2)
+
         pair_card = ActivityPairCardFactory(
             officer1=officer1,
             officer2=officer2,
