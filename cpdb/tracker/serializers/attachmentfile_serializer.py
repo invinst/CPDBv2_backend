@@ -1,7 +1,11 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from taggit_serializer.serializers import TagListSerializerField, TaggitSerializer
 
 from data.models import AttachmentFile
 from data.constants import AttachmentSourceType
+from tracker.constants import TAG_MAX_LENGTH
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -79,18 +83,27 @@ class AttachmentFileSerializer(serializers.ModelSerializer):
         )
 
 
-class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
+class SortedTagListSerializerField(TagListSerializerField):
+    order_by = ['name']
+
+
+class AuthenticatedAttachmentFileSerializer(TaggitSerializer, AttachmentFileSerializer):
     next_document_id = serializers.SerializerMethodField()
+    tags = SortedTagListSerializerField()
 
     def get_next_document_id(self, obj):
         next_attachment = AttachmentFile.objects.exclude(
             id=obj.id
         ).filter(
-            tags=[], created_at__lte=obj.created_at
+            tags__isnull=True, created_at__lte=obj.created_at
         ).order_by('-created_at').first()
 
         if not next_attachment:
-            next_attachment = AttachmentFile.objects.exclude(id=obj.id).filter(tags=[]).order_by('-created_at').first()
+            next_attachment = AttachmentFile.objects.exclude(
+                id=obj.id
+            ).filter(
+                tags__isnull=True
+            ).order_by('-created_at').first()
 
         return next_attachment.id if next_attachment else None
 
@@ -104,10 +117,12 @@ class AuthenticatedAttachmentFileSerializer(AttachmentFileSerializer):
         )
 
 
-class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
+class UpdateAttachmentFileSerializer(TaggitSerializer, serializers.ModelSerializer):
     def __init__(self, user, **kwargs):
         self.user = user
         super(UpdateAttachmentFileSerializer, self).__init__(**kwargs)
+
+    tags = SortedTagListSerializerField(required=False)
 
     class Meta:
         model = AttachmentFile
@@ -134,3 +149,9 @@ class UpdateAttachmentFileSerializer(serializers.ModelSerializer):
         if all(key not in self.initial_data for key in needed_fields):
             return False
         return super(UpdateAttachmentFileSerializer, self).is_valid(raise_exception)
+
+    def validate_tags(self, tags):
+        for tag in tags:
+            if len(tag) > TAG_MAX_LENGTH:
+                raise ValidationError(f'Ensure this field has no more than {TAG_MAX_LENGTH} characters.')
+        return tags

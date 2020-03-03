@@ -151,6 +151,12 @@ class OfficersIndexer(BaseIndexer):
         for obj in queryset:
             self.salary_dict.setdefault(obj['officer_id'], []).append(obj)
 
+    @timing_validate('OfficersIndexer: Populating tags dict...')
+    def populate_tags_dict(self):
+        self.tags_dict = dict()
+        for officer in Officer.objects.exclude(tags__isnull=True).prefetch_related('tags'):
+            self.tags_dict[officer.id] = [tag.name for tag in officer.tags.all()]
+
     def get_queryset(self):
         self.populate_top_percentile_dict()
         self.populate_allegation_dict()
@@ -158,6 +164,7 @@ class OfficersIndexer(BaseIndexer):
         self.populate_history_dict()
         self.populate_badgenumber_dict()
         self.populate_salary_dict()
+        self.populate_tags_dict()
         allegation_count = OfficerAllegation.objects.filter(
             officer=models.OuterRef('id')
         )
@@ -194,5 +201,6 @@ class OfficersIndexer(BaseIndexer):
         datum['history'] = self.history_dict.get(datum['id'], [])
         datum['badgenumber'] = self.badgenumber_dict.get(datum['id'], [])
         datum['salaries'] = self.salary_dict.get(datum['id'], [])
+        datum['tags'] = self.tags_dict.get(datum['id'], [])
 
         return self.serializer.serialize(datum)

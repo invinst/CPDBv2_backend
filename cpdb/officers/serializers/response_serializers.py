@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from taggit_serializer.serializers import TagListSerializerField
 
 from data.models import PoliceUnit
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
@@ -82,6 +83,10 @@ class OfficerYearlyPercentileSerializer(NoNullSerializer):
         allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
+class SortedTagListSerializerField(TagListSerializerField):
+    order_by = ['name']
+
+
 class CoaccusalSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     coaccusal_count = serializers.IntegerField()
@@ -91,7 +96,7 @@ class OfficerInfoSerializer(OfficerSummarySerializer, OfficerMetricsSerializer):
     percentiles = serializers.SerializerMethodField()
     to = serializers.CharField(source='v2_to')
     url = serializers.CharField(source='v1_url')
-    tags = serializers.ListField(child=serializers.CharField())
+    tags = SortedTagListSerializerField()
     coaccusals = CoaccusalSerializer(many=True, read_only=True)
 
     def get_percentiles(self, obj):
