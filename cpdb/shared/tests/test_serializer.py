@@ -10,7 +10,7 @@ from data.factories import OfficerFactory
 from shared.serializer import (
     NoNullSerializer,
     LightweightOfficerPercentileSerializer,
-    OfficerPercentileSerializer
+    OfficerPercentileSerializer,
 )
 from shared.tests.utils import create_object
 

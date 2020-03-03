@@ -92,13 +92,13 @@ class AreaIndexer(BaseIndexer):
 
     def get_queryset(self):
         self._percentiles = self._compute_police_district_percentiles()
-        return Area.objects.all()
+        return Area.objects.all().prefetch_related('tags')
 
     def _get_area_tag(self, area_type):
         return Area.SESSION_BUILDER_MAPPING.get(area_type, area_type).replace('_', ' ')
 
     def extract_datum(self, datum):
-        tags = list(datum.tags)
+        tags = [tag.name for tag in datum.tags.all()]
         area_tag = self._get_area_tag(datum.area_type)
         if area_tag and area_tag not in tags:
             tags.append(area_tag)
