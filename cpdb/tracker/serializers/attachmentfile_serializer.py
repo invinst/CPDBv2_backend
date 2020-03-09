@@ -6,6 +6,7 @@ from taggit_serializer.serializers import TagListSerializerField, TaggitSerializ
 from data.models import AttachmentFile
 from data.constants import AttachmentSourceType
 from tracker.constants import TAG_MAX_LENGTH
+from data.constants import MEDIA_TYPE_DOCUMENT
 
 
 class AttachmentFileListSerializer(serializers.ModelSerializer):
@@ -95,13 +96,16 @@ class AuthenticatedAttachmentFileSerializer(TaggitSerializer, AttachmentFileSeri
         next_attachment = AttachmentFile.objects.exclude(
             id=obj.id
         ).filter(
-            tags__isnull=True, created_at__lte=obj.created_at
+            file_type=MEDIA_TYPE_DOCUMENT,
+            tags__isnull=True,
+            created_at__lte=obj.created_at
         ).order_by('-created_at').first()
 
         if not next_attachment:
             next_attachment = AttachmentFile.objects.exclude(
                 id=obj.id
             ).filter(
+                file_type=MEDIA_TYPE_DOCUMENT,
                 tags__isnull=True
             ).order_by('-created_at').first()
 
