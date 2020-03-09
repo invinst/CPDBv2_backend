@@ -30,7 +30,7 @@ from search_mobile.views import SearchMobileV2ViewSet
 from authentication.views import UserViewSet
 from cms.views import CMSPageViewSet
 from officers.views import OfficersDesktopViewSet, OfficersMobileViewSet
-from analytics.views import EventViewSet, SearchTrackingViewSet, AttachmentTrackingViewSet
+from analytics.views import EventViewSet, SearchTrackingViewSet, AttachmentTrackingViewSet, TrackingViewSet
 from cr.views import CRViewSet, CRMobileViewSet
 from units.views import UnitsViewSet
 from alias.views import AliasViewSet
@@ -73,6 +73,7 @@ router_v2.register(r'status', StatusViewSet, basename='status')
 router_v2.register(r'social-graph', SocialGraphDesktopViewSet, basename='social-graph')
 router_v2.register(r'mobile/social-graph', SocialGraphMobileViewSet, basename='social-graph-mobile')
 router_v2.register(r'attachment-tracking', AttachmentTrackingViewSet, basename='attachment-tracking')
+router_v2.register(r'tracking', TrackingViewSet, basename='tracking')
 router_v2.register(r'attachments', AttachmentViewSet, basename='attachments')
 router_v2.register(r'document-crawlers', DocumentCrawlersViewSet, basename='document-crawlers')
 router_v2.register(r'pinboards', PinboardDesktopViewSet, basename='pinboards')
