@@ -24,22 +24,22 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
     def test_retrieve_unauthenticated_user(self):
         user = UserFactory(username='test user')
         allegation = AllegationFactory(crid='456')
-        attachment = AttachmentFileFactory(
-            id=123,
-            allegation=allegation,
-            title='CR document',
-            text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
-            url='http://foo.com',
-            preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
-            original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
-            source_type='DOCUMENTCLOUD',
-            show=True,
-            file_type='document',
-            pages=10,
-            last_updated_by=user,
-            views_count=100
-        )
-        attachment.created_at = datetime(2017, 8, 4, 14, 30, 00, tzinfo=pytz.utc)
+        with freeze_time('2017-08-04 14:30:00'):
+            attachment = AttachmentFileFactory(
+                id=123,
+                allegation=allegation,
+                title='CR document',
+                text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
+                url='http://foo.com',
+                preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
+                original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+                source_type='DOCUMENTCLOUD',
+                show=True,
+                file_type='document',
+                pages=10,
+                last_updated_by=user,
+                views_count=100
+            )
         with freeze_time('2017-08-05 12:00:01'):
             attachment.save()
 
