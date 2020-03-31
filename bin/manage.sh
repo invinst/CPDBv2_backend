@@ -30,4 +30,4 @@ cd $DIR/..
 
 POD_NAME="$(kubectl get pods --selector=app=gunicorn -n $NAMESPACE --output=jsonpath={.items..metadata.name})"
 shift
-kubectl exec -it -n $NAMESPACE $POD_NAME cpdb/manage.py -- $@
+kubectl exec -it -n $NAMESPACE $POD_NAME -- cpdb/manage.py $@

@@ -1,10 +1,13 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pg-proxy
   labels:
     app: pg-proxy
 spec:
+  selector:
+    matchLabels:
+      app: pg-proxy
   replicas: 1
   template:
     metadata:

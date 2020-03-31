@@ -1,10 +1,13 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gunicorn
   labels:
     app: gunicorn
 spec:
+  selector:
+    matchLabels:
+      app: gunicorn
   replicas: 1
   template:
     metadata:

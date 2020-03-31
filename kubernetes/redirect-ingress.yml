@@ -1,5 +1,5 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: cpdp-redirect-ingress
@@ -20,7 +20,7 @@ spec:
               serviceName: redirect-nginx
               servicePort: 80
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: cpdb-redirect-ingress
@@ -97,7 +97,7 @@ metadata:
   name: redirect-nginx
   namespace: production
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redirect-nginx
@@ -105,6 +105,9 @@ metadata:
   labels:
     app: redirect-nginx
 spec:
+  selector:
+    matchLabels:
+      app: redirect-nginx
   replicas: 1
   template:
     metadata:
