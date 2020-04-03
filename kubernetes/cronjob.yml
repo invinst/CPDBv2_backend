@@ -125,5 +125,7 @@ spec:
               value: "${AWS_SECRET_ACCESS_KEY}"
             - name: AWS_DEFAULT_REGION
               value: "${AWS_DEFAULT_REGION}"
+            - name: CPDP_ALERTS_WEBHOOK
+              value: "${CPDP_ALERTS_WEBHOOK}"
           restartPolicy: "Never"
   concurrencyPolicy: Replace

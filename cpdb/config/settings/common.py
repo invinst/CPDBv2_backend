@@ -329,3 +329,7 @@ DOCUMENT_REQUEST_CC_EMAIL = 'documents@invisibleinstitute.com'
 # you’ll have to set the TAGGIT_CASE_INSENSITIVE setting to True (False by default)
 # https://django-taggit.readthedocs.io/en/latest/getting_started.html
 TAGGIT_CASE_INSENSITIVE = True
+
+GA_TRACKING_ID = env.str('GA_TRACKING_ID', '')
+CLICKY_TRACKING_ID = env.str('CLICKY_TRACKING_ID', '')
+CLICKY_SITEKEY_ADMIN = env.str('CLICKY_SITEKEY_ADMIN', '')
