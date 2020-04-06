@@ -1,11 +1,14 @@
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cpdpbot
   labels:
     app: cpdpbot
 spec:
+  selector:
+    matchLabels:
+      app: cpdpbot
   replicas: 1
   template:
     metadata:

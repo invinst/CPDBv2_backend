@@ -9,13 +9,16 @@ spec:
     requests:
       storage: 20Gi
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: elasticsearch
   labels:
     app: elasticsearch
 spec:
+  selector:
+    matchLabels:
+      app: elasticsearch
   replicas: 1
   template:
     metadata:

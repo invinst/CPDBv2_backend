@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny
 from pinboard.serializers.pinboard_serializer import (
     PinboardSerializer,
     PinboardDetailSerializer,
+    ListPinboardDetailSerializer,
     OrderedPinboardSerializer
 )
 from pinboard.serializers.desktop.admin.pinboard_serializer import PinboardSerializer as PinboardAdminSerializer
@@ -55,7 +56,11 @@ class PinboardViewSet(
     def list(self, request):
         owned_pinboards = request.session.get('owned_pinboards', [])
         pinboards = Pinboard.objects.filter(id__in=owned_pinboards).order_by('-updated_at')
-        return Response(PinboardSerializer(pinboards, many=True).data)
+        detail = self.request.query_params.get('detail', None)
+        if detail:
+            pinboards = pinboards.prefetch_related('officers', 'allegations', 'trrs')
+        serializer = ListPinboardDetailSerializer if detail else PinboardSerializer
+        return Response(serializer(pinboards, many=True).data)
 
     def create(self, request):
         source_pinboard = self._source_pinboard
