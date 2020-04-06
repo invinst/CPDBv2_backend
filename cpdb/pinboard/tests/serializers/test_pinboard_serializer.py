@@ -6,7 +6,11 @@ from robber import expect
 from freezegun import freeze_time
 import pytz
 
-from pinboard.serializers.pinboard_serializer import PinboardSerializer, PinboardDetailSerializer
+from pinboard.serializers.pinboard_serializer import (
+    PinboardSerializer,
+    PinboardDetailSerializer,
+    ListPinboardDetailSerializer,
+)
 from data.factories import OfficerFactory, AllegationFactory
 from pinboard.factories import PinboardFactory
 
@@ -107,4 +111,26 @@ class PinboardSerializerTestCase(TestCase):
             'id': 'eeee1111',
             'title': 'Pinboard 1',
             'created_at': '2018-04-03',
+        })
+
+
+class ListPinboardDetailSerializerTestCase(TestCase):
+    def test_serialization(self):
+        pinned_officer = OfficerFactory(id=1)
+        pinned_allegation = AllegationFactory(crid='1')
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard = PinboardFactory(
+                id='eeee1111',
+                title='Pinboard 1',
+            )
+        pinboard.officers.set([pinned_officer])
+        pinboard.allegations.set([pinned_allegation])
+
+        expect(ListPinboardDetailSerializer(pinboard).data).to.eq({
+            'id': 'eeee1111',
+            'title': 'Pinboard 1',
+            'created_at': '2018-04-03',
+            'officer_ids': [1],
+            'crids': ['1'],
+            'trr_ids': [],
         })
