@@ -2293,13 +2293,13 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
     def test_list(self):
         with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
-            PinboardFactory(id='eeee1111', title='Pinboard 1',)
+            PinboardFactory(id='eeee1111', title='Pinboard 1')
 
         with freeze_time(datetime(2018, 5, 8, 15, 0, 15, tzinfo=pytz.utc)):
-            pinboard_2 = PinboardFactory(id='eeee2222', title='Pinboard 2',)
+            pinboard_2 = PinboardFactory(id='eeee2222', title='Pinboard 2')
 
         with freeze_time(datetime(2018, 2, 10, 15, 0, 15, tzinfo=pytz.utc)):
-            pinboard_3 = PinboardFactory(id='eeee3333', title='Pinboard 3',)
+            pinboard_3 = PinboardFactory(id='eeee3333', title='Pinboard 3')
 
         with freeze_time(datetime(2018, 9, 10, 12, 0, 10, tzinfo=pytz.utc)):
             pinboard_2.save()
@@ -2331,6 +2331,69 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'id': 'eeee1111',
                 'title': 'Pinboard 1',
                 'created_at': '2018-04-03',
+            }
+        ])
+
+    def test_list_with_detail(self):
+        officer_1 = OfficerFactory()
+        officer_2 = OfficerFactory()
+        allegation = AllegationFactory()
+        trr = TRRFactory()
+
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_1 = PinboardFactory(id='eeee1111', title='Pinboard 1')
+            pinboard_1.officers.set([officer_1])
+            pinboard_1.allegations.set([allegation])
+
+        with freeze_time(datetime(2018, 5, 8, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_2 = PinboardFactory(id='eeee2222', title='Pinboard 2')
+            pinboard_2.officers.set([officer_2])
+            pinboard_2.allegations.set([allegation])
+
+        with freeze_time(datetime(2018, 2, 10, 15, 0, 15, tzinfo=pytz.utc)):
+            pinboard_3 = PinboardFactory(id='eeee3333', title='Pinboard 3')
+            pinboard_3.allegations.set([allegation])
+            pinboard_3.trrs.set([trr])
+
+        with freeze_time(datetime(2018, 9, 10, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_2.save()
+
+        with freeze_time(datetime(2018, 8, 20, 12, 0, 10, tzinfo=pytz.utc)):
+            pinboard_3.save()
+
+        PinboardFactory()
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.get(reverse('api-v2:pinboards-list'), {'detail': True})
+        expect(response.data).to.eq([
+            {
+                'id': 'eeee2222',
+                'title': 'Pinboard 2',
+                'created_at': '2018-05-08',
+                'officer_ids': [officer_2.id],
+                'crids': [allegation.crid],
+                'trr_ids': [],
+            },
+            {
+                'id': 'eeee3333',
+                'title': 'Pinboard 3',
+                'created_at': '2018-02-10',
+                'officer_ids': [],
+                'crids': [allegation.crid],
+                'trr_ids': [trr.id],
+            },
+            {
+                'id': 'eeee1111',
+                'title': 'Pinboard 1',
+                'created_at': '2018-04-03',
+                'officer_ids': [officer_1.id],
+                'crids': [allegation.crid],
+                'trr_ids': [],
             }
         ])
 

@@ -22,7 +22,7 @@
             "trr_ids": [1],
             "description": "abc"
         }
-        
+
 ### Create a pinboard with some missing item ids [POST]
 
 + Request
@@ -97,6 +97,53 @@
             "description": "abc"
         }
 
+## Pinboards list [/pinboards/]
+
+### Get all pinboards of current user [GET]
+
++ Parameters
+    + detail (boolean, optional) - return detail pinboard data
+
+
++ Response 200 (application/json)
+    + detail is false
+        ```
+            [
+                {
+                    "id": "5cd06f2b",
+                    "title": "My Pinboard 1",
+                    "created_at": "2020-04-18"
+                },
+                {
+                    "id": "962d1e05",
+                    "title": "My Pinboard 2",
+                    "created_at": "2020-07-18"
+                }
+            ]
+        ```
+
+    + detail is true
+        ```
+            [
+                {
+                    "id": "5cd06f2b",
+                    "title": "My Pinboard 1",
+                    "created_at": "2020-04-18",
+                    "officer_ids": [1, 2],
+                    "crids": ['123abc'],
+                    "trr_ids": [1]
+                },
+                {
+                    "id": "962d1e05",
+                    "title": "My Pinboard 2",
+                    "created_at": "2020-07-18",
+                    "officer_ids": [2, 3],
+                    "crids": ['456def'],
+                    "trr_ids": [2, 4]
+                }
+            ]
+        ```
+
 ## All Pinboards [/pinboards/all/]
 
 ### Get all pinboards (authentication required)  [GET]
@@ -106,7 +153,7 @@
         + Default: `0`
     + limit (number, optional) - limit of how many results to return
         + Default: `20`
-        
+
  + Request
     + Headers
 
