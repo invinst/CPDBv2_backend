@@ -25,6 +25,7 @@ class OfficerDetailSerializerTestCase(TestCase):
             discipline_count=1,
             civilian_compliment_count=1,
             appointed_date='1976-06-10',
+            complaint_percentile=1.1,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -47,6 +48,7 @@ class OfficerDetailSerializerTestCase(TestCase):
             'civilian_compliment_count': 1,
             'appointed_date': '1976-06-10',
             'percentile': {
+                'percentile_allegation': '1.1000',
                 'percentile_allegation_civilian': '1.1000',
                 'percentile_allegation_internal': '2.2000',
                 'percentile_trr': '3.3000',
