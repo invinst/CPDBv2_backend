@@ -1,0 +1,7 @@
+APP_CONFIG = [
+    {
+        'name': 'PINBOARD_INTRODUCTION_DELAY',
+        'value': '2000',
+        'description': 'Delay before displaying pinboard introduction in millisecond'
+    }
+]
