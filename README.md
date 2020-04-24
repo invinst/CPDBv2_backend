@@ -1,6 +1,3 @@
-[![Circle CI](https://circleci.com/gh/EastAgile/CPDBv2_backend.svg?style=svg&circle-token=bd1ddbc9a13cf577e11776bd73403f551d8df553)](https://circleci.com/gh/EastAgile/CPDBv2_backend)
-
-
 # CPDP API
 
 ## Table of contents
