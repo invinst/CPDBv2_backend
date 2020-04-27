@@ -10,7 +10,7 @@ class ToastBaseViewSet(ViewSet):
     serializer = None
 
     def get_queryset(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def list(self, request):
         serializer = self.serializer(self.get_queryset(), many=True)
