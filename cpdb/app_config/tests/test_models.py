@@ -25,12 +25,12 @@ class VisualTokenColorModelTestCase(TestCase):
         expect(VisualTokenColorFactory.create(text_color='123f56').full_clean).to.throw(ValidationError)
 
     def test_should_not_raise_error_on_valid_lower_range(self):
-        expect(VisualTokenColorFactory.create(lower_range=0).full_clean).not_to.throw(ValidationError)
-        expect(VisualTokenColorFactory.create(lower_range=100).full_clean).not_to.throw(ValidationError)
+        expect(VisualTokenColorFactory.create(lower_range=0.3).full_clean).not_to.throw(ValidationError)
+        expect(VisualTokenColorFactory.create(lower_range=99.9).full_clean).not_to.throw(ValidationError)
 
     def test_should_not_raise_error_on_valid_upper_range(self):
-        expect(VisualTokenColorFactory.create(upper_range=0).full_clean).not_to.throw(ValidationError)
-        expect(VisualTokenColorFactory.create(upper_range=100).full_clean).not_to.throw(ValidationError)
+        expect(VisualTokenColorFactory.create(upper_range=0.3).full_clean).not_to.throw(ValidationError)
+        expect(VisualTokenColorFactory.create(upper_range=99.9).full_clean).not_to.throw(ValidationError)
 
     def test_should_not_raise_error_on_valid_color(self):
         expect(VisualTokenColorFactory.create(color='#123456').full_clean).not_to.throw(ValidationError)
