@@ -44,6 +44,7 @@ from tracker.views import AttachmentViewSet
 from tracker.views import DocumentCrawlersViewSet
 from pinboard.views import PinboardDesktopViewSet, PinboardMobileViewSet
 from toast.views import ToastDesktopViewSet, ToastMobileViewSet
+from app_config.views import AppConfigViewSet
 
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'vftg', VFTGViewSet, basename='vftg')
@@ -80,6 +81,7 @@ router_v2.register(r'pinboards', PinboardDesktopViewSet, basename='pinboards')
 router_v2.register(r'mobile/pinboards', PinboardMobileViewSet, basename='pinboards-mobile')
 router_v2.register(r'toast', ToastDesktopViewSet, basename='toast')
 router_v2.register(r'mobile/toast', ToastMobileViewSet, basename='toast-mobile')
+router_v2.register(r'app-config', AppConfigViewSet, basename='app-config')
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
