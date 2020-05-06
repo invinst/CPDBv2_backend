@@ -5,7 +5,14 @@ from robber import expect
 
 from data.factories import AttachmentFileFactory, AllegationFactory
 from data.models import AttachmentFile
-from es_index.pagination import ESQueryPagination, ESQuerysetPagination
+from es_index.pagination import ESBasePagination, ESQueryPagination, ESQuerysetPagination
+
+
+class ESBasePaginationTestCase(SimpleTestCase):
+    def test_get_response_raise_NotImplementedError(self):
+        response = Mock()
+        pagination = ESBasePagination()
+        expect(lambda: pagination.get_response(response)).to.throw(NotImplementedError)
 
 
 class ESQueryPaginationTestCase(SimpleTestCase):

@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('app_config', '0001_create_app_config'),
     ]
 
     operations = [

@@ -49,7 +49,7 @@ def remove_initial_visual_token_colors(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app_config', '0001_initial'),
+        ('app_config', '0002_create_visual_token_color'),
     ]
 
     operations = [

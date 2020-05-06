@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app_config', '0002_create_initial_visual_token_colors'),
+        ('app_config', '0003_create_initial_visual_token_colors'),
     ]
 
     operations = [
