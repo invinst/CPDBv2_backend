@@ -5,3 +5,5 @@ APP_CONFIG = [
         'description': 'Delay before displaying pinboard introduction in millisecond'
     }
 ]
+
+VISUAL_TOKEN_COLORS_KEY = 'VISUAL_TOKEN_COLORS'
