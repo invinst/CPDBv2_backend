@@ -41,7 +41,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             rank='Officer',
             appointed_date=date(2001, 1, 1),
             birth_year=1993,
-            complaint_percentile=0.0,
+            complaint_percentile=4.4,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -158,9 +158,9 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'complaint_count': 1,
                     'sustained_count': 1,
-                    'complaint_percentile': 0.0,
+                    'complaint_percentile': 4.4,
                     'percentile': {
-                        'percentile_allegation': '0.0000',
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000',
@@ -211,6 +211,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'allegation_count': 1,
                     'sustained_count': 1,
                     'percentile_trr': 5.5,
+                    'percentile_allegation': 4.4,
                 }
             ],
             'attachments': [
@@ -234,7 +235,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             rank='Officer',
             appointed_date=date(2001, 1, 1),
             birth_year=1993,
-            complaint_percentile=0.0,
+            complaint_percentile=4.4,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -386,9 +387,9 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'category': 'Operation/Personnel Violations',
                     'complaint_count': 1,
                     'sustained_count': 1,
-                    'complaint_percentile': 0.0,
+                    'complaint_percentile': 4.4,
                     'percentile': {
-                        'percentile_allegation': '0.0000',
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000',
@@ -460,6 +461,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
                     'allegation_count': 1,
                     'sustained_count': 1,
                     'percentile_trr': 5.5,
+                    'percentile_allegation': 4.4,
                 }
             ],
             'attachments': [
