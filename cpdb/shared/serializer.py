@@ -12,6 +12,8 @@ class NoNullSerializer(serializers.Serializer):
 
 
 class LightweightOfficerPercentileSerializer(NoNullSerializer):
+    percentile_allegation = serializers.DecimalField(
+        source='complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_trr = serializers.DecimalField(
         source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
     percentile_allegation_civilian = serializers.DecimalField(

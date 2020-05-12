@@ -4,9 +4,15 @@ from django.urls import reverse
 from robber import expect
 
 from toast.factories import ToastFactory
+from toast.views import ToastBaseViewSet
 
 
-class ToastDesktopViewSet(TestCase):
+class ToastBaseViewSetTestCase(TestCase):
+    def test_get_queryset_raise_NotImplementedError(self):
+        expect(lambda: ToastBaseViewSet().get_queryset()).to.throw(NotImplementedError)
+
+
+class ToastDesktopViewSetTestCase(TestCase):
     def test_list(self):
         ToastFactory(
             name='OFFICER',
@@ -35,7 +41,7 @@ class ToastDesktopViewSet(TestCase):
         }])
 
 
-class ToastMobileViewSet(TestCase):
+class ToastMobileViewSetTestCase(TestCase):
     def test_list(self):
         ToastFactory(
             name='MOBILE OFFICER',

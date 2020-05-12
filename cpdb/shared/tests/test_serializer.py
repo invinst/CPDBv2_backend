@@ -37,11 +37,13 @@ class LightweightOfficerPercentileSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(
             id=123,
+            complaint_percentile='55.55',
             trr_percentile='11.11',
             civilian_allegation_percentile='33.33',
             internal_allegation_percentile='44.44',
         )
         expect(LightweightOfficerPercentileSerializer(officer).data).to.eq({
+            'percentile_allegation': '55.5500',
             'percentile_trr': '11.1100',
             'percentile_allegation_civilian': '33.3300',
             'percentile_allegation_internal': '44.4400',

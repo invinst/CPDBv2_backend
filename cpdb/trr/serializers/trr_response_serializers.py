@@ -19,6 +19,7 @@ class OfficerSerializer(NoNullSerializer):
     birth_year = serializers.IntegerField(allow_null=True)
     resignation_date = serializers.DateField(read_only=True, allow_null=True)
     unit = UnitSerializer(required=False, source='last_unit')
+    percentile_allegation = serializers.FloatField(required=False, allow_null=True)
     percentile_allegation_civilian = serializers.FloatField(required=False, allow_null=True)
     percentile_allegation_internal = serializers.FloatField(required=False, allow_null=True)
     percentile_trr = serializers.FloatField(required=False, allow_null=True)

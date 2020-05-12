@@ -13,6 +13,10 @@ from data.models import AttachmentFile
 
 
 class AttachmentFileTestCase(TestCase):
+    def test_str(selfs):
+        attachment = AttachmentFileFactory(title='Attachment title')
+        expect(str(attachment)).to.eq('Attachment title')
+
     @override_settings(S3_BUCKET_PDF_DIRECTORY='pdf')
     def test_s3_key(self):
         attachment = AttachmentFileFactory(external_id='123')

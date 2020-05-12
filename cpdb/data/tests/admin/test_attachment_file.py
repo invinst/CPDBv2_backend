@@ -126,10 +126,12 @@ class TagListFilterTestCase(TestCase):
             model=AttachmentFile,
             params='Tag'
         )
-        queryset = AttachmentFile.objects.all()
+        queryset = AttachmentFile.objects.order_by('title')
 
         expect(list(tag_list_filter.queryset(self.request, queryset))).to.eq(
-            [self.attachment_file_1, self.attachment_file_2, self.attachment_file_3]
+            list(
+                sorted([self.attachment_file_1, self.attachment_file_2, self.attachment_file_3], key=lambda x: x.title)
+            )
         )
 
     @patch('data.admin.attachment_file_admin.TagListFilter.value', return_value='tagged')

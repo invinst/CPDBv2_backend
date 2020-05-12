@@ -3,8 +3,8 @@
 -r ../lambda/upload_pdf/requirements.txt
 
 flake8==3.7.9
-coverage==4.0.3
-coveralls==1.1
+coverage==5.0.4
+coveralls==2.0.0
 factory-boy==2.11.1
 freezegun==0.3.13
 mock==2.0.0
