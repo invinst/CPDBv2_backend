@@ -414,6 +414,7 @@ class CrIndexerTestCase(TestCase):
             first_name='Luke',
             last_name='Skywalker',
             allegation_count=4,
+            complaint_percentile='99.70',
             trr_percentile='99.88',
             civilian_allegation_percentile='77.66',
             internal_allegation_percentile='66.55'
@@ -422,6 +423,7 @@ class CrIndexerTestCase(TestCase):
             id=11,
             first_name='John', last_name='Doe',
             allegation_count=2,
+            complaint_percentile='70.33',
             trr_percentile='66.88',
             civilian_allegation_percentile='33.66',
             internal_allegation_percentile='22.55'
@@ -477,6 +479,7 @@ class CrIndexerTestCase(TestCase):
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
                     'percentile': {
                         'id': 10,
+                        'percentile_allegation': '99.7000',
                         'percentile_trr': '99.8800',
                         'percentile_allegation_civilian': '77.6600',
                         'percentile_allegation_internal': '66.5500'
@@ -486,6 +489,7 @@ class CrIndexerTestCase(TestCase):
                     'id': 11, 'full_name': 'John Doe', 'allegation_count': 2,
                     'percentile': {
                         'id': 11,
+                        'percentile_allegation': '70.3300',
                         'percentile_trr': '66.8800',
                         'percentile_allegation_civilian': '33.6600',
                         'percentile_allegation_internal': '22.5500'
@@ -536,7 +540,7 @@ class TRRIndexerTestCase(TestCase):
             rank='Sergeant of Police',
             first_name='Jesse',
             last_name='Pinkman',
-            complaint_percentile=0.0,
+            complaint_percentile=4.4,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -587,6 +591,7 @@ class TRRIndexerTestCase(TestCase):
                 'allegation_count': 1,
                 'percentile': {
                     'id': 1,
+                    'percentile_allegation': '4.4000',
                     'percentile_trr': '3.3000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000',
@@ -600,7 +605,7 @@ class TRRIndexerTestCase(TestCase):
             rank='Sergeant of Police',
             first_name='Jesse',
             last_name='Pinkman',
-            complaint_percentile=0.0,
+            complaint_percentile=4.4,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -631,6 +636,7 @@ class TRRIndexerTestCase(TestCase):
                 'allegation_count': 1,
                 'percentile': {
                     'id': 1,
+                    'percentile_allegation': '4.4000',
                     'percentile_trr': '3.3000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000',
