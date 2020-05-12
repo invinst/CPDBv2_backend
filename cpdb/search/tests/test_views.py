@@ -136,7 +136,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             rank='Sergeant of Police',
             first_name='Jesse',
             last_name='Pinkman',
-            complaint_percentile=0.0,
+            complaint_percentile=4.4,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -180,6 +180,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
                 'percentile':
                 {
                     'id': 123456,
+                    'percentile_allegation': '4.4000',
                     'percentile_trr': '3.3000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000'

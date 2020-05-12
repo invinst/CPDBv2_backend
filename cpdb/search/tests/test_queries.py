@@ -5,8 +5,13 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory
-from search.queries import OfficerQuery, CrQuery, TrrQuery
+from search.queries import BaseModelQuery, OfficerQuery, CrQuery, TrrQuery
 from trr.factories import TRRFactory
+
+
+class BaseModelQueryTestCase(TestCase):
+    def test_queryset_raise_NotImplementedError(self):
+        expect(lambda: BaseModelQuery(ids=[]).queryset()).to.throw(NotImplementedError)
 
 
 class OfficerQueryTestCase(TestCase):

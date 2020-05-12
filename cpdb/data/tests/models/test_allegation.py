@@ -10,6 +10,10 @@ from data.factories import (
 
 
 class AllegationTestCase(TestCase):
+    def test_str(selfs):
+        allegation = AllegationFactory(crid='123456')
+        expect(str(allegation)).to.eq('CRID 123456')
+
     def test_address(self):
         allegation = AllegationFactory(add1='3000', add2='Michigan Ave', city='Chicago IL')
         allegation1 = AllegationFactory(add1='', add2='', city='')

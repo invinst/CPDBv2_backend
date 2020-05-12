@@ -916,6 +916,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'gender': 'Male',
                     'rank': 'Police Officer',
                     'percentile': {
+                        'percentile_allegation': '99.3450',
                         'percentile_trr': '12.0000',
                         'percentile_allegation_civilian': '98.4344',
                         'percentile_allegation_internal': '99.7840',
@@ -941,6 +942,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'gender': 'Male',
                     'rank': 'Police Officer',
                     'percentile': {
+                        'percentile_allegation': '99.3450',
                         'percentile_trr': '12.0000',
                         'percentile_allegation_civilian': '98.4344',
                         'percentile_allegation_internal': '99.7840',

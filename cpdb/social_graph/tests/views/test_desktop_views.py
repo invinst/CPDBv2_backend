@@ -22,6 +22,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            complaint_percentile=1.1,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -30,6 +31,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8563,
             first_name='Edward',
             last_name='May',
+            complaint_percentile=4.4,
             civilian_allegation_percentile=4.4,
             internal_allegation_percentile=5.5,
             trr_percentile=6.6,
@@ -38,6 +40,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            complaint_percentile=7.7,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
             trr_percentile=9.9,
@@ -74,6 +77,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
                     'percentile': {
+                        'percentile_allegation': '1.1000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000'
@@ -83,6 +87,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Edward May',
                     'id': 8563,
                     'percentile': {
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '4.4000',
                         'percentile_allegation_internal': '5.5000',
                         'percentile_trr': '6.6000'
@@ -92,6 +97,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Joe Parker',
                     'id': 8564,
                     'percentile': {
+                        'percentile_allegation': '7.7000',
                         'percentile_allegation_civilian': '7.7000',
                         'percentile_allegation_internal': '8.8000',
                         'percentile_trr': '9.9000'
@@ -145,6 +151,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            complaint_percentile=1.1,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -153,6 +160,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8563,
             first_name='Edward',
             last_name='May',
+            complaint_percentile=4.4,
             civilian_allegation_percentile=4.4,
             internal_allegation_percentile=5.5,
             trr_percentile=6.6,
@@ -161,6 +169,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            complaint_percentile=7.7,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
             trr_percentile=9.9,
@@ -203,6 +212,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
                     'percentile': {
+                        'percentile_allegation': '1.1000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000'
@@ -212,6 +222,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Edward May',
                     'id': 8563,
                     'percentile': {
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '4.4000',
                         'percentile_allegation_internal': '5.5000',
                         'percentile_trr': '6.6000'
@@ -221,6 +232,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Joe Parker',
                     'id': 8564,
                     'percentile': {
+                        'percentile_allegation': '7.7000',
                         'percentile_allegation_civilian': '7.7000',
                         'percentile_allegation_internal': '8.8000',
                         'percentile_trr': '9.9000'
@@ -274,6 +286,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            complaint_percentile=1.1,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -282,6 +295,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8563,
             first_name='Edward',
             last_name='May',
+            complaint_percentile=4.4,
             civilian_allegation_percentile=4.4,
             internal_allegation_percentile=5.5,
             trr_percentile=6.6,
@@ -290,6 +304,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            complaint_percentile=7.7,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
             trr_percentile=9.9,
@@ -298,6 +313,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8565,
             first_name='William',
             last_name='People',
+            complaint_percentile=10.10,
             civilian_allegation_percentile=10.10,
             internal_allegation_percentile=11.11,
             trr_percentile=12.12,
@@ -306,6 +322,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8566,
             first_name='John',
             last_name='Sena',
+            complaint_percentile=13.13,
             civilian_allegation_percentile=13.13,
             internal_allegation_percentile=14.14,
             trr_percentile=15.15,
@@ -314,6 +331,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8567,
             first_name='Tom',
             last_name='Cruise',
+            complaint_percentile=16.16,
             civilian_allegation_percentile=16.16,
             internal_allegation_percentile=17.17,
             trr_percentile=18.18,
@@ -322,6 +340,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8568,
             first_name='Robert',
             last_name='Long',
+            complaint_percentile=19.19,
             civilian_allegation_percentile=19.19,
             internal_allegation_percentile=20.20,
             trr_percentile=21.21,
@@ -330,6 +349,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8569,
             first_name='Jaeho',
             last_name='Jung',
+            complaint_percentile=22.22,
             civilian_allegation_percentile=22.22,
             internal_allegation_percentile=23.23,
             trr_percentile=24.24,
@@ -430,6 +450,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Edward May',
                     'id': 8563,
                     'percentile': {
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '4.4000',
                         'percentile_allegation_internal': '5.5000',
                         'percentile_trr': '6.6000'
@@ -439,6 +460,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
                     'percentile': {
+                        'percentile_allegation': '1.1000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000'
@@ -448,6 +470,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Joe Parker',
                     'id': 8564,
                     'percentile': {
+                        'percentile_allegation': '7.7000',
                         'percentile_allegation_civilian': '7.7000',
                         'percentile_allegation_internal': '8.8000',
                         'percentile_trr': '9.9000'
@@ -457,6 +480,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'John Sena',
                     'id': 8566,
                     'percentile': {
+                        'percentile_allegation': '13.1300',
                         'percentile_allegation_civilian': '13.1300',
                         'percentile_allegation_internal': '14.1400',
                         'percentile_trr': '15.1500'
@@ -466,6 +490,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Robert Long',
                     'id': 8568,
                     'percentile': {
+                        'percentile_allegation': '19.1900',
                         'percentile_allegation_civilian': '19.1900',
                         'percentile_allegation_internal': '20.2000',
                         'percentile_trr': '21.2100'
@@ -475,6 +500,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Tom Cruise',
                     'id': 8567,
                     'percentile': {
+                        'percentile_allegation': '16.1600',
                         'percentile_allegation_civilian': '16.1600',
                         'percentile_allegation_internal': '17.1700',
                         'percentile_trr': '18.1800'
@@ -484,6 +510,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'William People',
                     'id': 8565,
                     'percentile': {
+                        'percentile_allegation': '10.1000',
                         'percentile_allegation_civilian': '10.1000',
                         'percentile_allegation_internal': '11.1100',
                         'percentile_trr': '12.1200'
@@ -609,6 +636,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8562,
             first_name='Jerome',
             last_name='Finnigan',
+            complaint_percentile=1.1,
             civilian_allegation_percentile=1.1,
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
@@ -617,6 +645,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8563,
             first_name='Edward',
             last_name='May',
+            complaint_percentile=4.4,
             civilian_allegation_percentile=4.4,
             internal_allegation_percentile=5.5,
             trr_percentile=6.6,
@@ -625,6 +654,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8564,
             first_name='Joe',
             last_name='Parker',
+            complaint_percentile=7.7,
             civilian_allegation_percentile=7.7,
             internal_allegation_percentile=8.8,
             trr_percentile=9.9,
@@ -633,6 +663,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8565,
             first_name='John',
             last_name='Snow',
+            complaint_percentile=10.10,
             civilian_allegation_percentile=10.10,
             internal_allegation_percentile=11.11,
             trr_percentile=12.12,
@@ -641,6 +672,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             id=8566,
             first_name='John',
             last_name='Sena',
+            complaint_percentile=13.13,
             civilian_allegation_percentile=13.13,
             internal_allegation_percentile=14.14,
             trr_percentile=15.15,
@@ -692,6 +724,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Jerome Finnigan',
                     'id': 8562,
                     'percentile': {
+                        'percentile_allegation': '1.1000',
                         'percentile_allegation_civilian': '1.1000',
                         'percentile_allegation_internal': '2.2000',
                         'percentile_trr': '3.3000'
@@ -701,6 +734,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Edward May',
                     'id': 8563,
                     'percentile': {
+                        'percentile_allegation': '4.4000',
                         'percentile_allegation_civilian': '4.4000',
                         'percentile_allegation_internal': '5.5000',
                         'percentile_trr': '6.6000'
@@ -710,6 +744,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'Joe Parker',
                     'id': 8564,
                     'percentile': {
+                        'percentile_allegation': '7.7000',
                         'percentile_allegation_civilian': '7.7000',
                         'percentile_allegation_internal': '8.8000',
                         'percentile_trr': '9.9000'
@@ -719,6 +754,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'John Snow',
                     'id': 8565,
                     'percentile': {
+                        'percentile_allegation': '10.1000',
                         'percentile_allegation_civilian': '10.1000',
                         'percentile_allegation_internal': '11.1100',
                         'percentile_trr': '12.1200'
@@ -728,6 +764,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                     'full_name': 'John Sena',
                     'id': 8566,
                     'percentile': {
+                        'percentile_allegation': '13.1300',
                         'percentile_allegation_civilian': '13.1300',
                         'percentile_allegation_internal': '14.1400',
                         'percentile_trr': '15.1500'
@@ -812,6 +849,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             discipline_count=1,
             civilian_compliment_count=1,
             appointed_date='1976-06-10',
+            complaint_percentile='88.8800',
             civilian_allegation_percentile='88.8800',
             internal_allegation_percentile='77.7700',
             trr_percentile='66.6600',
@@ -833,6 +871,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             discipline_count=2,
             civilian_compliment_count=2,
             appointed_date='1976-06-10',
+            complaint_percentile='55.6600',
             civilian_allegation_percentile='55.6600',
             internal_allegation_percentile='66.7700',
             trr_percentile='77.8800',
@@ -854,6 +893,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
             discipline_count=3,
             civilian_compliment_count=3,
             appointed_date='1976-06-10',
+            complaint_percentile='44.4400',
             civilian_allegation_percentile='44.4400',
             internal_allegation_percentile='33.3300',
             trr_percentile='22.2200',
@@ -908,6 +948,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                 'civilian_compliment_count': 2,
                 'appointed_date': '1976-06-10',
                 'percentile': {
+                    'percentile_allegation': '55.6600',
                     'percentile_allegation_civilian': '55.6600',
                     'percentile_allegation_internal': '66.7700',
                     'percentile_trr': '77.8800',
@@ -930,6 +971,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                 'civilian_compliment_count': 1,
                 'appointed_date': '1976-06-10',
                 'percentile': {
+                    'percentile_allegation': '88.8800',
                     'percentile_allegation_civilian': '88.8800',
                     'percentile_allegation_internal': '77.7700',
                     'percentile_trr': '66.6600',
@@ -952,6 +994,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                 'civilian_compliment_count': 3,
                 'appointed_date': '1976-06-10',
                 'percentile': {
+                    'percentile_allegation': '44.4400',
                     'percentile_allegation_civilian': '44.4400',
                     'percentile_allegation_internal': '33.3300',
                     'percentile_trr': '22.2200',
@@ -1173,6 +1216,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Jerome Finnigan',
                         'allegation_count': 5,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1183,6 +1227,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Edward May',
                         'allegation_count': 10,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1193,6 +1238,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Joe Parker',
                         'allegation_count': 20,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1221,6 +1267,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Jerome Finnigan',
                         'allegation_count': 5,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1231,6 +1278,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Edward May',
                         'allegation_count': 10,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1241,6 +1289,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Joe Parker',
                         'allegation_count': 20,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1280,6 +1329,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Jerome Finnigan',
                         'allegation_count': 5,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -1290,6 +1340,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'full_name': 'Edward May',
                         'allegation_count': 10,
                         'percentile': {
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                             'percentile_trr': '80.0000',
@@ -2013,6 +2064,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2042,6 +2094,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2053,6 +2106,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 10,
                             'percentile': {
                                 'percentile_trr': '50.0000',
+                                'percentile_allegation': '55.0000',
                                 'percentile_allegation_civilian': '60.0000',
                                 'percentile_allegation_internal': '65.0000',
 
@@ -2182,6 +2236,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                         },
@@ -2201,6 +2256,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                         },
@@ -2353,6 +2409,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2382,6 +2439,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2393,6 +2451,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 10,
                             'percentile': {
                                 'percentile_trr': '50.0000',
+                                'percentile_allegation': '55.0000',
                                 'percentile_allegation_civilian': '60.0000',
                                 'percentile_allegation_internal': '65.0000',
 
@@ -2529,6 +2588,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                         },
@@ -2548,6 +2608,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                         },
@@ -2678,6 +2739,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2707,6 +2769,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 20,
                             'percentile': {
                                 'percentile_trr': '80.0000',
+                                'percentile_allegation': '85.0000',
                                 'percentile_allegation_civilian': '90.0000',
                                 'percentile_allegation_internal': '95.0000',
 
@@ -2718,6 +2781,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 10,
                             'percentile': {
                                 'percentile_trr': '50.0000',
+                                'percentile_allegation': '55.0000',
                                 'percentile_allegation_civilian': '60.0000',
                                 'percentile_allegation_internal': '65.0000',
 
@@ -2741,6 +2805,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                             'allegation_count': 18,
                             'percentile': {
                                 'percentile_trr': '70.0000',
+                                'percentile_allegation': '90.0000',
                                 'percentile_allegation_civilian': '91.0000',
                                 'percentile_allegation_internal': '96.0000',
 
@@ -2871,6 +2936,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 18,
                         'percentile': {
                             'percentile_trr': '70.0000',
+                            'percentile_allegation': '90.0000',
                             'percentile_allegation_civilian': '91.0000',
                             'percentile_allegation_internal': '96.0000',
                         },
@@ -2890,6 +2956,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 15,
                         'percentile': {
                             'percentile_trr': '82.0000',
+                            'percentile_allegation': '87.0000',
                             'percentile_allegation_civilian': '93.0000',
                             'percentile_allegation_internal': '89.0000',
                         },
@@ -2909,6 +2976,7 @@ class SocialGraphDesktopViewSetTestCase(APITestCase):
                         'allegation_count': 20,
                         'percentile': {
                             'percentile_trr': '80.0000',
+                            'percentile_allegation': '85.0000',
                             'percentile_allegation_civilian': '90.0000',
                             'percentile_allegation_internal': '95.0000',
                         },
