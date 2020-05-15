@@ -26,7 +26,7 @@ from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
 
 
-@patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
+@patch('data.constants.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardMobileViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         example_pinboard_1 = PinboardFactory(
@@ -629,26 +629,20 @@ class PinboardMobileViewSetTestCase(APITestCase):
                 'full_name': 'Daryl Mack',
                 'complaint_count': 0,
                 'rank': 'Police Officer',
-                'percentile': {
-                    'percentile_trr': '12.0000',
-                    'percentile_allegation': '99.3450',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
-                }
+                'percentile_trr': '12.0000',
+                'percentile_allegation': '99.3450',
+                'percentile_allegation_civilian': '98.4344',
+                'percentile_allegation_internal': '99.7840',
             },
             {
                 'id': 2,
                 'full_name': 'Ronald Watts',
                 'complaint_count': 0,
                 'rank': 'Detective',
-                'percentile': {
-                    'percentile_trr': '0.0000',
-                    'percentile_allegation': '99.5000',
-                    'percentile_allegation_civilian': '98.4344',
-                    'percentile_allegation_internal': '99.7840',
-                    'year': 2016,
-                }
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '99.5000',
+                'percentile_allegation_civilian': '98.4344',
+                'percentile_allegation_internal': '99.7840',
             }
         ])
 
@@ -778,23 +772,15 @@ class PinboardMobileViewSetTestCase(APITestCase):
                         'id': 4,
                         'rank': 'Senior Police Officer',
                         'full_name': 'Raymond Piwinicki',
-                        'coaccusal_count': None,
-                        'percentile': {
-                            'year': 2016,
-                        }
                     },
                     {
                         'id': 2,
                         'rank': 'Detective',
                         'full_name': 'Edward May',
-                        'coaccusal_count': None,
-                        'percentile': {
-                            'year': 2016,
-                            'percentile_trr': '11.1100',
-                            'percentile_allegation': '22.2200',
-                            'percentile_allegation_civilian': '33.3300',
-                            'percentile_allegation_internal': '44.4400',
-                        }
+                        'percentile_trr': '11.1100',
+                        'percentile_allegation': '22.2200',
+                        'percentile_allegation_civilian': '33.3300',
+                        'percentile_allegation_internal': '44.4400',
                     },
                 ],
             }
@@ -810,14 +796,10 @@ class PinboardMobileViewSetTestCase(APITestCase):
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
-                    'coaccusal_count': None,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '99.9900',
-                        'percentile_allegation': '88.8800',
-                        'percentile_allegation_civilian': '77.7700',
-                        'percentile_allegation_internal': '66.6600',
-                    }
+                    'percentile_trr': '99.9900',
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
                 }],
                 'point': {'lon': 0.01, 'lat': 0.02},
             }
@@ -1056,54 +1038,39 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 5,
             'allegation_count': 11,
-            'percentile': {
-                'year': 2016,
-                'percentile_trr': '11.1100',
-                'percentile_allegation': '22.2200',
-                'percentile_allegation_civilian': '33.3300',
-                'percentile_allegation_internal': '44.4400',
-            },
+            'percentile_trr': '11.1100',
+            'percentile_allegation': '22.2200',
+            'percentile_allegation_civilian': '33.3300',
+            'percentile_allegation_internal': '44.4400',
         }, {
             'id': 21,
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 4,
             'allegation_count': 12,
-            'percentile': {
-                'year': 2016,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
         }, {
             'id': 12,
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 3,
             'allegation_count': 13,
-            'percentile': {
-                'year': 2016,
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '77.7700',
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '77.7700',
         }, {
             'id': 22,
             'rank': 'Detective',
             'full_name': 'Edward May',
             'coaccusal_count': 2,
             'allegation_count': 14,
-            'percentile': {
-                'year': 2016,
-            },
         }, {
             'id': 77,
             'rank': 'Officer',
             'full_name': 'German Lauren',
             'coaccusal_count': 1,
             'allegation_count': 27,
-            'percentile': {
-                'year': 2016,
-            },
         }])
 
     def test_relevant_coaccusals_pagination(self):
@@ -1206,25 +1173,19 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 4,
             'allegation_count': 11,
-            'percentile': {
-                'year': 2016,
-                'percentile_trr': '11.1100',
-                'percentile_allegation': '22.2200',
-                'percentile_allegation_civilian': '33.3300',
-                'percentile_allegation_internal': '44.4400',
-            },
+            'percentile_trr': '11.1100',
+            'percentile_allegation': '22.2200',
+            'percentile_allegation_civilian': '33.3300',
+            'percentile_allegation_internal': '44.4400',
         }, {
             'id': 21,
             'rank': 'Senior Officer',
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
             'allegation_count': 12,
-            'percentile': {
-                'year': 2016,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
         }])
         expect(first_response.data['count']).to.eq(4)
         expect(first_response.data['previous']).to.be.none()
@@ -1240,23 +1201,17 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'full_name': 'Ellis Skol',
             'coaccusal_count': 3,
             'allegation_count': 12,
-            'percentile': {
-                'year': 2016,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
         }, {
             'id': 12,
             'rank': 'IPRA investigator',
             'full_name': 'Raymond Piwinicki',
             'coaccusal_count': 2,
             'allegation_count': 13,
-            'percentile': {
-                'year': 2016,
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '77.7700',
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '77.7700',
         }])
         expect(second_response.data['count']).to.eq(4)
         expect(second_response.data['previous']).to.eq(
@@ -1274,9 +1229,6 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'full_name': 'Edward May',
             'coaccusal_count': 1,
             'allegation_count': 14,
-            'percentile': {
-                'year': 2016,
-            },
         }])
         expect(last_response.data['count']).to.eq(4)
         expect(last_response.data['previous']).to.eq(
@@ -1356,13 +1308,9 @@ class PinboardMobileViewSetTestCase(APITestCase):
                     'id': 2,
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
-                    'coaccusal_count': None,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '33.3300',
-                        'percentile_allegation': '44.4400',
-                        'percentile_allegation_civilian': '55.5500',
-                    },
+                    'percentile_trr': '33.3300',
+                    'percentile_allegation': '44.4400',
+                    'percentile_allegation_civilian': '55.5500',
                 }],
             }, {
                 'crid': '1',
@@ -1372,22 +1320,14 @@ class PinboardMobileViewSetTestCase(APITestCase):
                     'id': 99,
                     'rank': 'Detective',
                     'full_name': 'Edward May',
-                    'coaccusal_count': None,
-                    'percentile': {
-                        'year': 2016,
-                    },
                 }, {
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
-                    'coaccusal_count': None,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '11.1100',
-                        'percentile_allegation': '22.2200',
-                        'percentile_allegation_civilian': '33.3300',
-                        'percentile_allegation_internal': '44.4400',
-                    },
+                    'percentile_trr': '11.1100',
+                    'percentile_allegation': '22.2200',
+                    'percentile_allegation_civilian': '33.3300',
+                    'percentile_allegation_internal': '44.4400',
                 }],
                 'point': {'lon': 0.01, 'lat': 0.02},
             }]

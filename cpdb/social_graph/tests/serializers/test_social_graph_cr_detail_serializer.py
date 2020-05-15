@@ -85,12 +85,10 @@ class SocialGraphCRDetailSerializerTestCase(TestCase):
                     'id': 8562,
                     'full_name': 'Jerome Finnigan',
                     'allegation_count': 5,
-                    'percentile': {
-                        'percentile_allegation': '85.0000',
-                        'percentile_allegation_civilian': '90.0000',
-                        'percentile_allegation_internal': '95.0000',
-                        'percentile_trr': '80.0000',
-                    },
+                    'percentile_allegation': '85.0000',
+                    'percentile_allegation_civilian': '90.0000',
+                    'percentile_allegation_internal': '95.0000',
+                    'percentile_trr': '80.0000',
                 }
             ],
             'attachments': [

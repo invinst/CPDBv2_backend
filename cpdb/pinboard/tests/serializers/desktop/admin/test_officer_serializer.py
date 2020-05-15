@@ -30,5 +30,4 @@ class OfficerSerializerTestCase(TestCase):
                 'percentile_trr': '0.0000',
                 'percentile_allegation_civilian': '0.0000',
                 'percentile_allegation_internal': '0.0000',
-                'year': 2016,
             })

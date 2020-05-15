@@ -96,7 +96,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'trr_count': 1,
             'major_award_count': 1,
             'unsustained_count': 0,
-            'complaint_percentile': 32.5,
+            'percentile_allegation': '32.5000',
             'coaccusals': [],
             'percentiles': [],
             'tags': [],
@@ -467,34 +467,26 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 0,
             'sustained_count': 0,
             'birth_year': 1975,
-            'complaint_percentile': 99.5000,
             'race': 'White',
             'gender': 'Male',
             'rank': 'Detective',
-            'percentile': {
-                'percentile_trr': '0.0000',
-                'percentile_allegation': '99.5000',
-                'percentile_allegation_civilian': '98.4344',
-                'percentile_allegation_internal': '99.7840',
-                'year': 2016,
-            },
+            'percentile_allegation': '99.5000',
+            'percentile_allegation_civilian': '98.4344',
+            'percentile_allegation_internal': '99.7840',
+            'percentile_trr': '0.0000',
         }, {
             'id': 1,
             'full_name': 'Daryl Mack',
             'complaint_count': 0,
             'sustained_count': 0,
             'birth_year': 1975,
-            'complaint_percentile': 99.3450,
             'race': 'White',
             'gender': 'Male',
             'rank': 'Police Officer',
-            'percentile': {
-                'percentile_trr': '12.0000',
-                'percentile_allegation': '99.3450',
-                'percentile_allegation_civilian': '98.4344',
-                'percentile_allegation_internal': '99.7840',
-                'year': 2016,
-            },
+            'percentile_trr': '12.0000',
+            'percentile_allegation': '99.3450',
+            'percentile_allegation_civilian': '98.4344',
+            'percentile_allegation_internal': '99.7840',
         }])
 
     def test_coaccusals_not_found(self):
@@ -581,18 +573,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'complaint_count': 2,
             'sustained_count': 1,
             'birth_year': 1950,
-            'complaint_percentile': 95.0,
             'race': 'White',
             'gender': 'Male',
             'rank': 'Police Officer',
             'coaccusal_count': 2,
-            'percentile': {
-                'percentile_trr': '33.3333',
-                'percentile_allegation': '95.0000',
-                'percentile_allegation_civilian': '33.3333',
-                'percentile_allegation_internal': '0.0000',
-                'year': 2016
-            },
+            'percentile_allegation': '95.0000',
+            'percentile_allegation_civilian': '33.3333',
+            'percentile_allegation_internal': '0.0000',
+            'percentile_trr': '33.3333',
         }, {
             'id': officer4.id,
             'full_name': 'Officer No Percentile',
@@ -603,9 +591,6 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Female',
             'coaccusal_count': 1,
             'rank': 'Police Officer',
-            'percentile': {
-                'year': 2016
-            },
         }]
         response = self.client.get(reverse('api-v2:officers-coaccusals', kwargs={'pk': officer1.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -649,16 +634,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'full_name': 'Ronald Watts',
                 'birth_year': 1971,
                 'complaint_count': 5,
-                'complaint_percentile': 99.5,
                 'race': 'Black',
                 'gender': 'Female',
                 'rank': 'Police Officer',
-                'percentile': {
-                    'year': 2016,
-                    'percentile_trr': '0.0000',
-                    'percentile_allegation': '99.5000',
-                    'percentile_allegation_civilian': '98.4344',
-                }
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '99.5000',
+                'percentile_allegation_civilian': '98.4344',
             },
             {
                 'id': 1,
@@ -666,17 +647,13 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'complaint_count': 12,
                 'sustained_count': 0,
                 'birth_year': 1975,
-                'complaint_percentile': 99.3450,
                 'race': 'White',
                 'gender': 'Male',
                 'rank': 'Police Officer',
-                'percentile': {
-                    'year': 2016,
-                    'percentile_trr': '12.0000',
-                    'percentile_allegation': '99.3450',
-                    'percentile_allegation_civilian': '99.7840',
-                    'percentile_allegation_internal': '99.7840'
-                }
+                'percentile_trr': '12.0000',
+                'percentile_allegation': '99.3450',
+                'percentile_allegation_civilian': '99.7840',
+                'percentile_allegation_internal': '99.7840'
             }
         ])
 

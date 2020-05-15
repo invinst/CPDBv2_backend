@@ -177,14 +177,10 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             'officer': {
                 'id': 123456,
                 'full_name': 'Jesse Pinkman',
-                'percentile':
-                {
-                    'id': 123456,
-                    'percentile_allegation': '4.4000',
-                    'percentile_trr': '3.3000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000'
-                },
+                'percentile_allegation': '4.4000',
+                'percentile_trr': '3.3000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
                 'allegation_count': 1
             }
         })

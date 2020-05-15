@@ -955,8 +955,8 @@ class OfficerPercentileTestCase(TestCase):
                 'metric_trr': 1.0,
                 'metric_honorable_mention': 0.0,
                 'percentile_allegation': 0.0,
-                'percentile_allegation_civilian': 0.0000,
-                'percentile_allegation_internal': 0.0000,
+                'percentile_allegation_civilian': 0.0,
+                'percentile_allegation_internal': 0.0,
                 'percentile_trr': 66.6667,
                 'percentile_honorable_mention': 0.0
             }

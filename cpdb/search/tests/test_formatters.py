@@ -84,6 +84,10 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'annotated_trr_count': 1,
             'major_award_count': 1,
             'honorable_mention_percentile': 10,
+            'complaint_percentile': 99.345,
+            'civilian_allegation_percentile': 99.784,
+            'internal_allegation_percentile': 88.342,
+            'trr_percentile': 77.145,
         }))
 
         expect(
@@ -106,9 +110,12 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'race': 'White',
             'birth_year': 1972,
             'gender': 'Male',
-            'percentiles': [],
             'major_award_count': 1,
             'honorable_mention_percentile': 10,
+            'percentile_allegation': 99.345,
+            'percentile_allegation_civilian': 99.784,
+            'percentile_allegation_internal': 88.342,
+            'percentile_trr': 77.145
         })
 
     def test_officer_doc_format_with_missing_values(self):
@@ -137,9 +144,12 @@ class OfficerFormatterTestCase(SimpleTestCase):
             'race': None,
             'birth_year': None,
             'gender': None,
-            'percentiles': [],
             'major_award_count': 0,
             'honorable_mention_percentile': None,
+            'percentile_allegation': None,
+            'percentile_allegation_civilian': None,
+            'percentile_allegation_internal': None,
+            'percentile_trr': None
         })
 
 
@@ -294,11 +304,10 @@ class CrFormatterTestCase(SimpleTestCase):
             coaccused=[
                 Mock(to_dict=Mock(return_value={
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
-                    'percentile': {
-                        'percentile_trr': '99.8800',
-                        'percentile_allegation_civilian': '77.6600',
-                        'percentile_allegation_internal': '66.5500'
-                    }
+                    'percentile_allegation': '79.6600',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                    'percentile_trr': '99.8800'
                 }))
             ]
         )
@@ -331,11 +340,10 @@ class CrFormatterTestCase(SimpleTestCase):
             'coaccused': [
                 {
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
-                    'percentile': {
-                        'percentile_trr': '99.8800',
-                        'percentile_allegation_civilian': '77.6600',
-                        'percentile_allegation_internal': '66.5500'
-                    }
+                    'percentile_allegation': '79.6600',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                    'percentile_trr': '99.8800'
                 }
             ]
         })
@@ -359,12 +367,10 @@ class CrFormatterTestCase(SimpleTestCase):
             coaccused=[
                 Mock(to_dict=Mock(return_value={
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
-                    'percentile': {
-                        'id': 10,
-                        'percentile_trr': '99.8800',
-                        'percentile_allegation_civilian': '77.6600',
-                        'percentile_allegation_internal': '66.5500'
-                    }
+                    'percentile_allegation': '79.6600',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                    'percentile_trr': '99.8800',
                 }))
             ]
         )
@@ -387,12 +393,10 @@ class CrFormatterTestCase(SimpleTestCase):
             'coaccused': [
                 {
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
-                    'percentile': {
-                        'id': 10,
-                        'percentile_trr': '99.8800',
-                        'percentile_allegation_civilian': '77.6600',
-                        'percentile_allegation_internal': '66.5500'
-                    }
+                    'percentile_allegation': '79.6600',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                    'percentile_trr': '99.8800',
                 }
             ]
         })

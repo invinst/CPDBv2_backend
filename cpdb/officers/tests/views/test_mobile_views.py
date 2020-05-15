@@ -20,6 +20,7 @@ from data.factories import (
 from trr.factories import TRRFactory
 from data import cache_managers
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from data.models import OfficerYearlyPercentile
 
 
 class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
@@ -110,7 +111,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'honorable_mention_count': 1,
             'trr_count': 1,
             'major_award_count': 1,
-            'complaint_percentile': 32.5,
+            'percentile_allegation': '32.5000',
             'percentiles': []
         }
         expect(response.data).to.eq(expected_response)
@@ -200,6 +201,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         officer_cache_manager.build_cached_columns()
         allegation_cache_manager.cache_data()
 
+        yearly_percentiles = OfficerYearlyPercentile.objects.filter(officer_id=123).order_by('year')
+
         response = self.client.get(reverse('api-v2:officers-mobile-detail', kwargs={'pk': 123}))
         expected_response = {
             'officer_id': 123,
@@ -210,20 +213,20 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             },
             'percentiles': [
                 {
-                    'id': 123,
+                    'id': yearly_percentiles[0].id,
                     'year': 2003,
-                    'percentile_trr': u'0.0000',
-                    'percentile_allegation': u'50.0000',
-                    'percentile_allegation_civilian': u'50.0000',
-                    'percentile_allegation_internal': u'50.0000'
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '50.0000',
+                    'percentile_allegation_civilian': '50.0000',
+                    'percentile_allegation_internal': '50.0000'
                 },
                 {
-                    'id': 123,
+                    'id': yearly_percentiles[1].id,
                     'year': 2004,
-                    'percentile_trr': u'33.3333',
-                    'percentile_allegation': u'66.6667',
-                    'percentile_allegation_civilian': u'66.6667',
-                    'percentile_allegation_internal': u'66.6667'
+                    'percentile_trr': '33.3333',
+                    'percentile_allegation': '66.6667',
+                    'percentile_allegation_civilian': '66.6667',
+                    'percentile_allegation_internal': '66.6667'
                 },
             ],
             'date_of_appt': '2002-02-27',
@@ -244,8 +247,8 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'honorable_mention_count': 1,
             'trr_count': 1,
             'major_award_count': 1,
-            'complaint_percentile': 32.5,
-            'honorable_mention_percentile': 66.6667,
+            'percentile_allegation': '32.5000',
+            'honorable_mention_percentile': '66.6667',
         }
         expect(response.data).to.eq(expected_response)
 
@@ -448,20 +451,18 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'id': 2,
                 'full_name': 'Ronald Watts',
                 'complaint_count': 5,
-                'percentile': {
-                    'percentile_trr': '0.0000',
-                    'percentile_allegation_civilian': '98.4344',
-                }
+                'percentile_trr': '0.0000',
+                'percentile_allegation': '99.5000',
+                'percentile_allegation_civilian': '98.4344',
             },
             {
                 'id': 1,
                 'full_name': 'Daryl Mack',
                 'complaint_count': 12,
-                'percentile': {
-                    'percentile_trr': '12.0000',
-                    'percentile_allegation_civilian': '99.7840',
-                    'percentile_allegation_internal': '99.7840'
-                }
+                'percentile_allegation': '99.3450',
+                'percentile_allegation_civilian': '99.7840',
+                'percentile_allegation_internal': '99.7840',
+                'percentile_trr': '12.0000',
             }
         ])
 
@@ -577,17 +578,15 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'full_name': 'Jerome Finnigan',
             'rank': 'Police Officer',
             'coaccusal_count': 2,
-            'percentile': {
-                'percentile_trr': '33.3333',
-                'percentile_allegation_civilian': '33.3333',
-                'percentile_allegation_internal': '0.0000',
-            },
+            'percentile_allegation': '95.0000',
+            'percentile_allegation_civilian': '33.3333',
+            'percentile_allegation_internal': '0.0000',
+            'percentile_trr': '33.3333',
         }, {
             'id': officer4.id,
             'full_name': 'Edward May',
             'coaccusal_count': 1,
             'rank': 'Detective',
-            'percentile': {},
         }]
         response = self.client.get(reverse('api-v2:officers-mobile-coaccusals', kwargs={'pk': officer1.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)

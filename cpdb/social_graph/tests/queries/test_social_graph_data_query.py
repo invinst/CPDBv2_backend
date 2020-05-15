@@ -69,32 +69,26 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
         ]
 
@@ -229,32 +223,26 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
         ]
 
@@ -409,52 +397,42 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
             {
                 'full_name': 'John Sena',
                 'id': 8566,
-                'percentile': {
-                    'percentile_allegation': '13.1300',
-                    'percentile_allegation_civilian': '13.1300',
-                    'percentile_allegation_internal': '14.1400',
-                    'percentile_trr': '15.1500'
-                }
+                'percentile_allegation': '13.1300',
+                'percentile_allegation_civilian': '13.1300',
+                'percentile_allegation_internal': '14.1400',
+                'percentile_trr': '15.1500'
             },
             {
                 'full_name': 'John Snow',
                 'id': 8565,
-                'percentile': {
-                    'percentile_allegation': '10.1000',
-                    'percentile_allegation_civilian': '10.1000',
-                    'percentile_allegation_internal': '11.1100',
-                    'percentile_trr': '12.1200'
-                }
+                'percentile_allegation': '10.1000',
+                'percentile_allegation_civilian': '10.1000',
+                'percentile_allegation_internal': '11.1100',
+                'percentile_trr': '12.1200'
             },
         ]
 
@@ -557,32 +535,26 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
         ]
 
@@ -735,52 +707,42 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
             {
                 'full_name': 'John Sena',
                 'id': 8566,
-                'percentile': {
-                    'percentile_allegation': '13.1300',
-                    'percentile_allegation_civilian': '13.1300',
-                    'percentile_allegation_internal': '14.1400',
-                    'percentile_trr': '15.1500'
-                }
+                'percentile_allegation': '13.1300',
+                'percentile_allegation_civilian': '13.1300',
+                'percentile_allegation_internal': '14.1400',
+                'percentile_trr': '15.1500'
             },
             {
                 'full_name': 'John Snow',
                 'id': 8565,
-                'percentile': {
-                    'percentile_allegation': '10.1000',
-                    'percentile_allegation_civilian': '10.1000',
-                    'percentile_allegation_internal': '11.1100',
-                    'percentile_trr': '12.1200'
-                }
+                'percentile_allegation': '10.1000',
+                'percentile_allegation_civilian': '10.1000',
+                'percentile_allegation_internal': '11.1100',
+                'percentile_trr': '12.1200'
             },
         ]
 
@@ -889,32 +851,26 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
         ]
 
@@ -1073,52 +1029,42 @@ class SocialGraphDataQueryTestCase(TestCase):
             {
                 'full_name': 'Edward May',
                 'id': 8563,
-                'percentile': {
-                    'percentile_allegation': '4.4000',
-                    'percentile_allegation_civilian': '4.4000',
-                    'percentile_allegation_internal': '5.5000',
-                    'percentile_trr': '6.6000'
-                }
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '4.4000',
+                'percentile_allegation_internal': '5.5000',
+                'percentile_trr': '6.6000'
             },
             {
                 'full_name': 'Jerome Finnigan',
                 'id': 8562,
-                'percentile': {
-                    'percentile_allegation': '1.1000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                    'percentile_trr': '3.3000'
-                }
+                'percentile_allegation': '1.1000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000'
             },
             {
                 'full_name': 'Joe Parker',
                 'id': 8564,
-                'percentile': {
-                    'percentile_allegation': '7.7000',
-                    'percentile_allegation_civilian': '7.7000',
-                    'percentile_allegation_internal': '8.8000',
-                    'percentile_trr': '9.9000'
-                }
+                'percentile_allegation': '7.7000',
+                'percentile_allegation_civilian': '7.7000',
+                'percentile_allegation_internal': '8.8000',
+                'percentile_trr': '9.9000'
             },
             {
                 'full_name': 'John Sena',
                 'id': 8566,
-                'percentile': {
-                    'percentile_allegation': '13.1300',
-                    'percentile_allegation_civilian': '13.1300',
-                    'percentile_allegation_internal': '14.1400',
-                    'percentile_trr': '15.1500'
-                }
+                'percentile_allegation': '13.1300',
+                'percentile_allegation_civilian': '13.1300',
+                'percentile_allegation_internal': '14.1400',
+                'percentile_trr': '15.1500'
             },
             {
                 'full_name': 'John Snow',
                 'id': 8565,
-                'percentile': {
-                    'percentile_allegation': '10.1000',
-                    'percentile_allegation_civilian': '10.1000',
-                    'percentile_allegation_internal': '11.1100',
-                    'percentile_trr': '12.1200'
-                }
+                'percentile_allegation': '10.1000',
+                'percentile_allegation_civilian': '10.1000',
+                'percentile_allegation_internal': '11.1100',
+                'percentile_trr': '12.1200'
             },
         ]
 
@@ -1285,62 +1231,50 @@ class SocialGraphDataQueryTestCase(TestCase):
                 {
                     'full_name': 'Edward May',
                     'id': 8001,
-                    'percentile': {
-                        'percentile_allegation': '4.4000',
-                        'percentile_allegation_civilian': '4.4000',
-                        'percentile_allegation_internal': '5.5000',
-                        'percentile_trr': '6.6000'
-                    }
+                    'percentile_allegation': '4.4000',
+                    'percentile_allegation_civilian': '4.4000',
+                    'percentile_allegation_internal': '5.5000',
+                    'percentile_trr': '6.6000'
                 },
                 {
                     'full_name': 'Jerome Finnigan',
                     'id': 8000,
-                    'percentile': {
-                        'percentile_allegation': '1.1000',
-                        'percentile_allegation_civilian': '1.1000',
-                        'percentile_allegation_internal': '2.2000',
-                        'percentile_trr': '3.3000'
-                    }
+                    'percentile_allegation': '1.1000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000'
                 },
                 {
                     'full_name': 'Joe Parker',
                     'id': 8002,
-                    'percentile': {
-                        'percentile_allegation': '7.7000',
-                        'percentile_allegation_civilian': '7.7000',
-                        'percentile_allegation_internal': '8.8000',
-                        'percentile_trr': '9.9000'
-                    }
+                    'percentile_allegation': '7.7000',
+                    'percentile_allegation_civilian': '7.7000',
+                    'percentile_allegation_internal': '8.8000',
+                    'percentile_trr': '9.9000'
                 },
                 {
                     'full_name': 'John Sena',
                     'id': 8004,
-                    'percentile': {
-                        'percentile_allegation': '13.1300',
-                        'percentile_allegation_civilian': '13.1300',
-                        'percentile_allegation_internal': '14.1400',
-                        'percentile_trr': '15.1500'
-                    }
+                    'percentile_allegation': '13.1300',
+                    'percentile_allegation_civilian': '13.1300',
+                    'percentile_allegation_internal': '14.1400',
+                    'percentile_trr': '15.1500'
                 },
                 {
                     'full_name': 'John Snow',
                     'id': 8003,
-                    'percentile': {
-                        'percentile_allegation': '10.1000',
-                        'percentile_allegation_civilian': '10.1000',
-                        'percentile_allegation_internal': '11.1100',
-                        'percentile_trr': '12.1200'
-                    }
+                    'percentile_allegation': '10.1000',
+                    'percentile_allegation_civilian': '10.1000',
+                    'percentile_allegation_internal': '11.1100',
+                    'percentile_trr': '12.1200'
                 },
                 {
                     'full_name': 'Tom Cruise',
                     'id': 8005,
-                    'percentile': {
-                        'percentile_allegation': '16.1600',
-                        'percentile_allegation_civilian': '16.1600',
-                        'percentile_allegation_internal': '17.1700',
-                        'percentile_trr': '18.1800'
-                    }
+                    'percentile_allegation': '16.1600',
+                    'percentile_allegation_civilian': '16.1600',
+                    'percentile_allegation_internal': '17.1700',
+                    'percentile_trr': '18.1800'
                 },
             ],
             'coaccused_data': [
