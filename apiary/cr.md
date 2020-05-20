@@ -26,14 +26,10 @@
                     "final_finding": "Sustained",
                     "recommended_outcome": "10 Day Suspension",
                     "category": "Operation/Personnel Violations",
-                    "complaint_percentile": 99.861,
-                    "percentile": {
-                        "percentile_allegation": "99.8610",
-                        "percentile_allegation_civilian": "99.8810",
-                        "percentile_allegation_internal": "80.5690",
-                        "percentile_trr": "92.1100",
-                        "year": 2016
-                    }
+                    "percentile_allegation": "99.8610",
+                    "percentile_allegation_civilian": "99.8810",
+                    "percentile_allegation_internal": "80.5690",
+                    "percentile_trr": "92.1100",
                 },
                 {
                     "id": 456,
@@ -46,14 +42,10 @@
                     "final_outcome": "Unknown",
                     "final_finding": "Sustained",
                     "category": "Operation/Personnel Violations",
-                    "complaint_percentile": 99.861,
-                    "percentile": {
-                        "percentile_allegation": "99.8610",
-                        "percentile_allegation_civilian": "99.8810",
-                        "percentile_allegation_internal": "80.5690",
-                        "percentile_trr": "92.1100",
-                        "year": 2016
-                    }
+                    "percentile_allegation": "99.8610",
+                    "percentile_allegation_civilian": "99.8810",
+                    "percentile_allegation_internal": "80.5690",
+                    "percentile_trr": "92.1100",
                 }
             ],
             "complainants": [

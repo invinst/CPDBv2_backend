@@ -73,37 +73,29 @@
             {
               "id": 30209,
               "full_name": "Bennie Watson",
-              "percentile": {
-                "percentile_trr": "0.0000",
-                "percentile_allegation_civilian": "35.4196",
-                "percentile_allegation_internal": "83.0449"
-              }
+              "percentile_trr": "0.0000",
+              "percentile_allegation_civilian": "35.4196",
+              "percentile_allegation_internal": "83.0449"
             },
             {
               "id": 3663,
               "full_name": "Donnell Calhoun",
-              "percentile": {
-                "percentile_allegation_civilian": "87.4780",
-                "percentile_allegation_internal": "96.5164"
-              }
+              "percentile_allegation_civilian": "87.4780",
+              "percentile_allegation_internal": "96.5164"
             },
             {
               "id": 4881,
               "full_name": "Gilbert Cobb",
-              "percentile": {
-                "percentile_trr": "0.0000",
-                "percentile_allegation_civilian": "85.1838",
-                "percentile_allegation_internal": "0.0000"
-              }
+              "percentile_trr": "0.0000",
+              "percentile_allegation_civilian": "85.1838",
+              "percentile_allegation_internal": "0.0000"
             },
             {
               "id": 31945,
               "full_name": "Melvin Ector",
-              "percentile": {
-                "percentile_trr": "0.0000",
-                "percentile_allegation_civilian": "94.1100",
-                "percentile_allegation_internal": "61.1521"
-              }
+              "percentile_trr": "0.0000",
+              "percentile_allegation_civilian": "94.1100",
+              "percentile_allegation_internal": "61.1521"
             }
           ],
           "list_event": [

@@ -30,13 +30,10 @@
                       "full_name": "Jerome Finnigan",
                       "coaccusal_count": None,
                       "allegation_count": 10,
-                      "percentile": {
-                          "year": 2016,
-                          "percentile_trr": "99.9900",
-                          "percentile_allegation": "88.8800",
-                          "percentile_allegation_civilian": "77.7700",
-                          "percentile_allegation_internal": "66.6600",
-                      }
+                      "percentile_trr": "99.9900",
+                      "percentile_allegation": "88.8800",
+                      "percentile_allegation_civilian": "77.7700",
+                      "percentile_allegation_internal": "66.6600",
                   }]
                 }
                 "point": {"lon": 12.0, "lat": 21.0},
@@ -55,13 +52,10 @@
                     "full_name": "Jerome Finnigan",
                     "coaccusal_count": None,
                     "allegation_count": 10,
-                    "percentile": {
-                        "year": 2016,
-                        "percentile_trr": "99.9900",
-                        "percentile_allegation": "88.8800",
-                        "percentile_allegation_civilian": "77.7700",
-                        "percentile_allegation_internal": "66.6600",
-                    }
+                    "percentile_trr": "99.9900",
+                    "percentile_allegation": "88.8800",
+                    "percentile_allegation_civilian": "77.7700",
+                    "percentile_allegation_internal": "66.6600",
                 }]
               }
             },
@@ -104,13 +98,10 @@
                   "description": "District 004",
                   "long_unit_name": "Unit 004"
               },
-              "percentile": {
-                  "year": 2010,
-                  "percentile_trr": "11.1100",
-                  "percentile_allegation": "22.2200",
-                  "percentile_allegation_civilian": "33.3300",
-                  "percentile_allegation_internal": "44.4400",
-              },
+              "percentile_trr": "11.1100",
+              "percentile_allegation": "22.2200",
+              "percentile_allegation_civilian": "33.3300",
+              "percentile_allegation_internal": "44.4400",
               "allegation_count": 1,
               "civilian_compliment_count": 2,
               "sustained_count": 4,
@@ -137,12 +128,9 @@
                   "description": "District 004",
                   "long_unit_name": "Unit 004"
               },
-              "percentile": {
-                  "year": 2010,
-                  "percentile_trr": "33.3300",
-                  "percentile_allegation": "44.4400",
-                  "percentile_allegation_civilian": "55.5500",
-              },
+              "percentile_trr": "33.3300",
+              "percentile_allegation": "44.4400",
+              "percentile_allegation_civilian": "55.5500",
               "allegation_count": 1,
               "civilian_compliment_count": 2,
               "sustained_count": 4,
