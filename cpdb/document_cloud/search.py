@@ -79,9 +79,10 @@ def _add_attributes(cloud_documents, document_types):
     return cloud_documents
 
 
-def search_all(logger=_logger):
+def search_all(logger=_logger, custom_search_syntaxes=None):
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
-    search_syntaxes = DocumentCloudSearchQuery.objects.all().values_list('types', 'query')
+
+    search_syntaxes = custom_search_syntaxes or DocumentCloudSearchQuery.objects.all().values_list('types', 'query')
     all_documents = []
     for document_types, syntax in search_syntaxes:
         if syntax:

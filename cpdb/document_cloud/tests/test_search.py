@@ -208,3 +208,59 @@ class SearchTestCase(TestCase):
             expectation = expectation_dict[document.id]
             for field, value in expectation.items():
                 expect(getattr(document, field, None)).to.eq(value)
+
+    @patch('document_cloud.search.DocumentCloud')
+    def test_search_all_with_custom_syntaxes(self, DocumentCloudMock):
+        DocumentCloudSearchQueryFactory(types=['CR', 'CPB', 'DOCUMENT'], query='CRID !AR')
+        DocumentCloudSearchQueryFactory(types=['TRR'], query='')
+
+        allegation = AllegationFactory(crid='100000')
+
+        document_1 = create_object({
+            'id': '1-CRID-100000-CR',
+            'title': 'CRID-100000-CR',
+            'description': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/1-CRID-100000-CR.html',
+        })
+
+        document_2 = create_object({
+            'id': '2-CRID-100000-CR',
+            'title': 'CRID-100000 CR',
+            'description': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/2-CRID-100000-CR.html',
+        })
+
+        search_mock = DocumentCloudMock().documents.search
+        search_mock.return_value = [document_1, document_2]
+
+        custom_search_syntaxes = [
+            (['CR'], 'title:"CRID 1062978 CR Summary"'),
+        ]
+
+        documents = search_all(custom_search_syntaxes=custom_search_syntaxes)
+        expect(search_mock.call_args[0][0]).to.eq('title:"CRID 1062978 CR Summary"')
+
+        expectation_dict = {
+            '1-CRID-100000-CR': {
+                'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+                'documentcloud_id': '1',
+                'url': 'https://www.documentcloud.org/documents/1-CRID-100000-CR.html',
+                'document_type': 'CR',
+                'allegation': allegation
+            },
+            '2-CRID-100000-CR': {
+                'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+                'documentcloud_id': '2',
+                'url': 'https://www.documentcloud.org/documents/2-CRID-100000-CR.html',
+                'document_type': 'CR',
+                'allegation': allegation
+            },
+        }
+
+        expect(documents).to.have.length(2)
+        print([document.id for document in documents])
+        for document in documents:
+            expect(document.id in expectation_dict).to.be.true()
+            expectation = expectation_dict[document.id]
+            for field, value in expectation.items():
+                expect(getattr(document, field, None)).to.eq(value)
