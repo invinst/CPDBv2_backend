@@ -12,17 +12,13 @@
                 "complaint_count": 67,
                 "sustained_count": 5,
                 "birth_year": 1970,
-                "complaint_percentile": 99.995,
                 "race": "Black",
                 "gender": "Male",
                 "rank": "Police Officer",
-                "percentile": {
-                    "year": 2017,
-                    "percentile_trr": "0.000",
-                    "percentile_allegation": "99.995",
-                    "percentile_allegation_civilian": "99.990",
-                    "percentile_allegation_internal": "99.795"
-                }
+                "percentile_trr": "0.000",
+                "percentile_allegation": "99.995",
+                "percentile_allegation_civilian": "99.990",
+                "percentile_allegation_internal": "99.795"
             },
             {
                 "id": 13788,
@@ -31,16 +27,12 @@
                 "complaint_count": 69,
                 "sustained_count": 8,
                 "birth_year": 1971,
-                "complaint_percentile": 99.99,
                 "race": "Black",
                 "gender": "Male",
                 "rank": "Detective",
-                "percentile": {
-                    "year": 2017,
-                    "percentile_trr": "0.000",
-                    "percentile_allegation": "99.990",
-                    "percentile_allegation_civilian": "99.995",
-                    "percentile_allegation_internal": "90.565"
-                }
+                "percentile_trr": "0.000",
+                "percentile_allegation": "99.990",
+                "percentile_allegation_civilian": "99.995",
+                "percentile_allegation_internal": "90.565"
             }
         ]

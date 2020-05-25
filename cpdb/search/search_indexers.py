@@ -212,7 +212,9 @@ class CrIndexer(BaseIndexer):
             'investigator_names': datum.investigator_names,
             'address': datum.address,
             'victims': VictimSerializer(datum.victims, many=True).data,
-            'coaccused': CoaccusedSerializer(officer_allegations, many=True).data,
+            'coaccused': CoaccusedSerializer(
+                [officer_allegation.officer for officer_allegation in officer_allegations], many=True
+            ).data,
             'attachment_files': AttachmentFileSerializer(attachment_files, many=True).data,
         }
 
@@ -245,7 +247,7 @@ class TRRIndexer(BaseIndexer):
             'to': datum.v2_to,
             'category': datum.force_category,
             'address': ' '.join(filter(None, [datum.block, datum.street])),
-            'officer': TRROfficerSerializer(datum).data if datum.officer else None
+            'officer': TRROfficerSerializer(datum.officer).data if datum.officer else None
         }
 
 

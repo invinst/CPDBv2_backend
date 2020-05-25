@@ -1,17 +1,12 @@
 from rest_framework import serializers
 
-from shared.serializer import NoNullSerializer
-from social_graph.serializers.officer_percentile_serializer import OfficerPercentileSerializer
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
 
-class CoaccusedSerializer(NoNullSerializer):
+class CoaccusedSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     allegation_count = serializers.IntegerField()
-    percentile = serializers.SerializerMethodField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data
 
 
 class TRRDetailSerializer(NoNullSerializer):

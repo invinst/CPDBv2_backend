@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from data.constants import GENDER_DICT
 from data.models import Officer, PoliceUnit
+from shared.serializer import OfficerPercentileSerializer
 
 
 class UnitSerializer(serializers.ModelSerializer):
@@ -10,17 +11,9 @@ class UnitSerializer(serializers.ModelSerializer):
         fields = ['unit_name', 'description']
 
 
-class OfficerSerializer(serializers.ModelSerializer):
+class OfficerSerializer(OfficerPercentileSerializer, serializers.ModelSerializer):
     gender = serializers.CharField(source='gender_display', read_only=True)
     last_unit = UnitSerializer(allow_null=True, read_only=True)
-    percentile_allegation = serializers.FloatField(
-        source='complaint_percentile', allow_null=True, read_only=True)
-    percentile_allegation_civilian = serializers.FloatField(
-        allow_null=True, read_only=True, source='civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(
-        allow_null=True, read_only=True, source='internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(
-        allow_null=True, read_only=True, source='trr_percentile')
 
     class Meta:
         model = Officer

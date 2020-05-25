@@ -47,12 +47,9 @@ class PinnedOfficerMobileSerializerTestCase(TestCase):
             'id': 123,
             'full_name': 'Michael Flynn',
             'rank': 'Sergeant',
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '3.3000',
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '1.1000',
-                'percentile_allegation_internal': '2.2000'
-            },
+            'percentile_trr': '3.3000',
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '1.1000',
+            'percentile_allegation_internal': '2.2000',
             'complaint_count': 20,
         })

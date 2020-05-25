@@ -341,12 +341,9 @@
             "coaccused": [{
               "id": 20661,
               "full_name": "Mark Nottoli",
-              "percentile": {
-                "id": 20661,
-                "percentile_trr": "88.0064",
-                "percentile_allegation_civilian": "94.6432",
-                "percentile_allegation_internal": "79.9133"
-              },
+              "percentile_trr": "88.0064",
+              "percentile_allegation_civilian": "94.6432",
+              "percentile_allegation_internal": "79.9133"
               "allegation_count": 52
             }],
             "highlight": {

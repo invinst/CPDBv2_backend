@@ -325,18 +325,18 @@ class AreaIndexerTestCase(TestCase):
                     'id': 123,
                     'name': 'A B',
                     'count': 5,
-                    'percentile_allegation_civilian': 0.0,
-                    'percentile_allegation_internal': 0.0,
-                    'percentile_trr': 0.0,
-                    'percentile_allegation': 0.0,
+                    'percentile_allegation_civilian': '0.0000',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_trr': '0.0000',
+                    'percentile_allegation': '0.0000',
                 }, {
                     'id': 456,
                     'name': 'E F',
                     'count': 3,
-                    'percentile_allegation_civilian': 33.3333,
-                    'percentile_allegation_internal': 0.0,
-                    'percentile_trr': 33.3333,
-                    'percentile_allegation': 33.3333,
+                    'percentile_allegation_civilian': '33.3333',
+                    'percentile_allegation_internal': '0.0000',
+                    'percentile_trr': '33.3333',
+                    'percentile_allegation': '33.3333',
                 }, {
                     'id': 999,
                     'name': 'X Y',
@@ -477,23 +477,17 @@ class CrIndexerTestCase(TestCase):
             'coaccused': [
                 {
                     'id': 10, 'full_name': 'Luke Skywalker', 'allegation_count': 4,
-                    'percentile': {
-                        'id': 10,
-                        'percentile_allegation': '99.7000',
-                        'percentile_trr': '99.8800',
-                        'percentile_allegation_civilian': '77.6600',
-                        'percentile_allegation_internal': '66.5500'
-                    }
+                    'percentile_allegation': '99.7000',
+                    'percentile_allegation_civilian': '77.6600',
+                    'percentile_allegation_internal': '66.5500',
+                    'percentile_trr': '99.8800',
                 },
                 {
                     'id': 11, 'full_name': 'John Doe', 'allegation_count': 2,
-                    'percentile': {
-                        'id': 11,
-                        'percentile_allegation': '70.3300',
-                        'percentile_trr': '66.8800',
-                        'percentile_allegation_civilian': '33.6600',
-                        'percentile_allegation_internal': '22.5500'
-                    }
+                    'percentile_allegation': '70.3300',
+                    'percentile_allegation_civilian': '33.6600',
+                    'percentile_allegation_internal': '22.5500',
+                    'percentile_trr': '66.8800',
                 }
             ],
             'attachment_files': [
@@ -589,13 +583,10 @@ class TRRIndexerTestCase(TestCase):
                 'id': 1,
                 'full_name': 'Jesse Pinkman',
                 'allegation_count': 1,
-                'percentile': {
-                    'id': 1,
-                    'percentile_allegation': '4.4000',
-                    'percentile_trr': '3.3000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                },
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000',
             }
         })
 
@@ -634,13 +625,10 @@ class TRRIndexerTestCase(TestCase):
                 'id': 1,
                 'full_name': 'Jesse Pinkman',
                 'allegation_count': 1,
-                'percentile': {
-                    'id': 1,
-                    'percentile_allegation': '4.4000',
-                    'percentile_trr': '3.3000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000',
-                },
+                'percentile_allegation': '4.4000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000',
+                'percentile_trr': '3.3000',
             }
         })
 

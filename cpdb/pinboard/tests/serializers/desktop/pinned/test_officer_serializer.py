@@ -54,13 +54,10 @@ class PinnedOfficerSerializerTestCase(TestCase):
             'birth_year': 1950,
             'race': 'Black',
             'rank': 'Sergeant',
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '3.3000',
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '1.1000',
-                'percentile_allegation_internal': '2.2000'
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '1.1000',
+            'percentile_allegation_internal': '2.2000',
+            'percentile_trr': '3.3000',
             'allegation_count': 20,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -68,7 +65,7 @@ class PinnedOfficerSerializerTestCase(TestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'unit': {
                 'id': 4,
                 'unit_name': '004',

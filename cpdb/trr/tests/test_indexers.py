@@ -59,7 +59,7 @@ class TRRIndexerTestCase(TestCase):
         ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
 
         indexer = TRRIndexer()
-        expect(indexer.extract_datum(trr)).to.eq({
+        expected_result = {
             'id': trr.id,
             'officer_assigned_beat': 'Beat 1',
             'officer_in_uniform': True,
@@ -67,17 +67,16 @@ class TRRIndexerTestCase(TestCase):
             'officer': {
                 'rank': 'Police Officer',
                 'gender': 'Male',
-                'resignation_date': None,
                 'race': 'White',
                 'full_name': 'Vinh Vu',
                 'appointed_date': '2000-01-01',
                 'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'id': 1,
                 'birth_year': 1980,
-                'percentile_allegation': 4.4444,
-                'percentile_allegation_civilian': 1.1111,
-                'percentile_allegation_internal': 2.2222,
-                'percentile_trr': 3.3333,
+                'percentile_allegation': '4.4444',
+                'percentile_allegation_civilian': '1.1111',
+                'percentile_allegation_internal': '2.2222',
+                'percentile_trr': '3.3333',
             },
 
             'subject_race': 'White',
@@ -99,7 +98,9 @@ class TRRIndexerTestCase(TestCase):
                 'lng': 1.0,
                 'lat': 1.0,
             },
-        })
+        }
+
+        expect(indexer.extract_datum(trr)).to.eq(expected_result)
 
     def test_extract_datum_without_officer(self):
         trr = TRRFactory(
@@ -180,10 +181,9 @@ class TRRIndexerTestCase(TestCase):
                 'last_unit': {'unit_name': '001', 'description': 'Unit 001'},
                 'id': 1,
                 'birth_year': 1980,
-                'percentile_allegation': 5.5555,
-                'percentile_allegation_civilian': 1.1111,
-                'percentile_allegation_internal': 2.2222,
-                'percentile_trr': None,
+                'percentile_allegation': '5.5555',
+                'percentile_allegation_civilian': '1.1111',
+                'percentile_allegation_internal': '2.2222',
             },
             'subject_race': 'White',
             'subject_gender': 'Male',

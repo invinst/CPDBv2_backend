@@ -23,15 +23,11 @@
                     "gender": "Male",
                     "rank": "Police Officer",
                     "birth_year": "1975",
-                    "complaint_percentile": 99.861,
                     "category": "Operation/Personnel Violations",
-                    "percentile": {
-                        "percentile_allegation": "99.8610",
-                        "percentile_allegation_civilian": "99.8810",
-                        "percentile_allegation_internal": "80.5690",
-                        "percentile_trr": "92.1100",
-                        "year": 2016
-                    }
+                    "percentile_allegation": "99.8610",
+                    "percentile_allegation_civilian": "99.8810",
+                    "percentile_allegation_internal": "80.5690",
+                    "percentile_trr": "92.1100",
                 },
                 {
                     "id": 456,
@@ -42,15 +38,11 @@
                     "gender": "Male",
                     "rank": "Detective",
                     "birth_year": "1980",
-                    "complaint_percentile": 92.764,
                     "category": "Operation/Personnel Violations",
-                    "percentile": {
-                        "percentile_allegation": "99.8610",
-                        "percentile_allegation_civilian": "99.8810",
-                        "percentile_allegation_internal": "80.5690",
-                        "percentile_trr": "92.1100",
-                        "year": 2016
-                    }
+                    "percentile_allegation": "99.8610",
+                    "percentile_allegation_civilian": "99.8810",
+                    "percentile_allegation_internal": "80.5690",
+                    "percentile_trr": "92.1100",
                 }
             ],
             "complainants": [

@@ -75,13 +75,10 @@ class AllegationSerializerTestCase(TestCase):
                 'id': 1,
                 'rank': 'Police Officer',
                 'full_name': 'Jerome Finnigan',
-                'coaccusal_count': None,
-                'percentile': {
-                    'percentile_trr': '11.1100',
-                    'percentile_allegation_civilian': '33.3300',
-                    'percentile_allegation_internal': '44.4400',
-                    'percentile_allegation': '22.2200', 'year': 2016,
-                },
+                'percentile_allegation': '22.2200',
+                'percentile_allegation_civilian': '33.3300',
+                'percentile_allegation_internal': '44.4400',
+                'percentile_trr': '11.1100',
                 'allegation_count': 2,
             }],
         })
