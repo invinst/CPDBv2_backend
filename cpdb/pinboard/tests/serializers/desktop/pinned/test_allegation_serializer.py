@@ -85,7 +85,6 @@ class PinnedAllegationSerializerTestCase(TestCase):
                 'complaint_count': 6,
                 'sustained_count': 5,
                 'birth_year': 1940,
-                'complaint_percentile': 0.0,
                 'recommended_outcome': '11 Day Suspension',
                 'final_outcome': 'Separation',
                 'final_finding': 'Sustained',
@@ -94,12 +93,9 @@ class PinnedAllegationSerializerTestCase(TestCase):
                 'race': 'White',
                 'gender': 'Male',
                 'rank': 'Sergeant of Police',
-                'percentile': {
-                    'year': 2015,
-                    'percentile_trr': '3.3000',
-                    'percentile_allegation': '0.0000',
-                    'percentile_allegation_civilian': '1.1000',
-                    'percentile_allegation_internal': '2.2000'
-                }
+                'percentile_trr': '3.3000',
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_civilian': '1.1000',
+                'percentile_allegation_internal': '2.2000'
             }],
         })

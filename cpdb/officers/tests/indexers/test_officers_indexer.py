@@ -195,7 +195,10 @@ class OfficersIndexerTestCase(TestCase):
             'current_allegation_percentile': None,
             'percentiles': [],
             'cr_incident_dates': ['2000-04-26'],
-            'trr_datetimes': ['2002-09-29']
+            'trr_datetimes': ['2002-09-29'],
+            'internal_allegation_percentile': None,
+            'trr_percentile': None,
+            'civilian_allegation_percentile': None,
         })
 
     def test_has_visual_token(self):

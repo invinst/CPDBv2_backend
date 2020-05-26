@@ -1,25 +1,12 @@
 from rest_framework import serializers
 
-from shared.serializer import NoNullSerializer
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer, OfficerYearlyPercentileSerializer
 
 
 class PoliceUnitMobileSerializer(NoNullSerializer):
     unit_id = serializers.IntegerField(source='id')
     unit_name = serializers.CharField()
     description = serializers.CharField()
-
-
-class OfficerYearlyPercentileMobileSerializer(NoNullSerializer):
-    id = serializers.IntegerField(source='officer_id')
-    year = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_internal = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
 class OfficerInfoMobileSerializer(NoNullSerializer):
@@ -38,7 +25,10 @@ class OfficerInfoMobileSerializer(NoNullSerializer):
     percentiles = serializers.SerializerMethodField()
 
     allegation_count = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField()
+    percentile_allegation = serializers.DecimalField(
+        source='complaint_percentile', max_digits=6, decimal_places=4, allow_null=True
+    )
+    percentile_trr = serializers.DecimalField(source='trr_percentile', max_digits=6, decimal_places=4, allow_null=True)
     honorable_mention_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
     unsustained_count = serializers.IntegerField()
@@ -46,11 +36,11 @@ class OfficerInfoMobileSerializer(NoNullSerializer):
     civilian_compliment_count = serializers.IntegerField()
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
+    honorable_mention_percentile = serializers.DecimalField(max_digits=6, decimal_places=4, allow_null=True)
 
     def get_percentiles(self, obj):
         yearly_percentiles = obj.officeryearlypercentile_set.order_by('year')
-        return OfficerYearlyPercentileMobileSerializer(yearly_percentiles, many=True).data
+        return OfficerYearlyPercentileSerializer(yearly_percentiles, many=True).data
 
     def get_active(self, obj):
         return obj.get_active_display()
@@ -224,22 +214,14 @@ class OfficerPercentileMobileSerializer(NoNullSerializer):
         source='internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)
 
 
-class CoaccusalCardMobileSerializer(NoNullSerializer):
+class CoaccusalCardMobileSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     rank = serializers.CharField()
-    percentile = serializers.SerializerMethodField()
     coaccusal_count = serializers.IntegerField()
 
-    def get_percentile(self, obj):
-        return OfficerPercentileMobileSerializer(obj).data
 
-
-class OfficerCardMobileSerializer(NoNullSerializer):
+class OfficerCardMobileSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     complaint_count = serializers.IntegerField(source='allegation_count')
-    percentile = serializers.SerializerMethodField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileMobileSerializer(obj).data

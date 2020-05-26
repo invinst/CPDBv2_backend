@@ -28,14 +28,10 @@ class OfficerRowSerializerTestCase(TestCase):
             'id': 1,
             'rank': 'Sergeant of Police',
             'full_name': 'Jesse Pinkman',
-            'coaccusal_count': None,
-            'percentile': {
-                'year': 2015,
-                'percentile_trr': '3.3000',
-                'percentile_allegation': '0.0000',
-                'percentile_allegation_civilian': '1.1000',
-                'percentile_allegation_internal': '2.2000'
-            },
+            'percentile_trr': '3.3000',
+            'percentile_allegation': '0.0000',
+            'percentile_allegation_civilian': '1.1000',
+            'percentile_allegation_internal': '2.2000',
             'allegation_count': 1,
         })
 
@@ -78,13 +74,10 @@ class OfficerSerializerTestCase(TestCase):
             'birth_year': 1950,
             'race': 'Black',
             'rank': 'Sergeant',
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '3.3000',
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '1.1000',
-                'percentile_allegation_internal': '2.2000'
-            },
+            'percentile_trr': '3.3000',
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '1.1000',
+            'percentile_allegation_internal': '2.2000',
             'allegation_count': 20,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -92,5 +85,5 @@ class OfficerSerializerTestCase(TestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88
+            'honorable_mention_percentile': '88.8800'
         })

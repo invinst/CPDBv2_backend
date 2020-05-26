@@ -21,7 +21,7 @@ class OfficerCoaccusalSerializer(BaseSerializer):
             'gender': get_gender('gender'),
             'birth_year': get('birth_year'),
             'rank': get('rank'),
-            'complaint_percentile': self.get_float('complaint_percentile'),
+            'percentile_allegation': self.get_float('complaint_percentile'),
             'percentile_allegation_civilian': self.get_float('civilian_allegation_percentile'),
             'percentile_allegation_internal': self.get_float('internal_allegation_percentile'),
             'percentile_trr': self.get_float('trr_percentile')

@@ -4,7 +4,7 @@ from django.db.models import Prefetch, Exists, OuterRef
 import pytz
 
 from data.models import Investigator
-from shared.serializer import NoNullSerializer
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
 
 class ComplainantMobileSerializer(NoNullSerializer):
@@ -41,10 +41,18 @@ class CoaccusedMobileSerializer(NoNullSerializer):
     final_finding = serializers.CharField(source='final_finding_display')
     category = serializers.CharField()
 
-    percentile_allegation = serializers.FloatField(source='officer.complaint_percentile')
-    percentile_allegation_civilian = serializers.FloatField(source='officer.civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(source='officer.internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(source='officer.trr_percentile')
+    percentile_allegation = serializers.DecimalField(
+        source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
+    percentile_allegation_civilian = serializers.DecimalField(
+        source='officer.civilian_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
+    percentile_allegation_internal = serializers.DecimalField(
+        source='officer.internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
+    percentile_trr = serializers.DecimalField(
+        source='officer.trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
+    )
 
 
 class InvestigatorMobileSerializer(NoNullSerializer):
@@ -53,12 +61,14 @@ class InvestigatorMobileSerializer(NoNullSerializer):
     full_name = serializers.SerializerMethodField()
     badge = serializers.SerializerMethodField()
 
-    percentile_allegation_civilian = serializers.FloatField(
-        required=False, source='investigator.officer.civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(
-        required=False, source='investigator.officer.internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(
-        required=False, source='investigator.officer.trr_percentile')
+    percentile_allegation = serializers.DecimalField(
+        required=False, source='investigator.officer.complaint_percentile', max_digits=6, decimal_places=4)
+    percentile_allegation_civilian = serializers.DecimalField(
+        required=False, source='investigator.officer.civilian_allegation_percentile', max_digits=6, decimal_places=4)
+    percentile_allegation_internal = serializers.DecimalField(
+        required=False, source='investigator.officer.internal_allegation_percentile', max_digits=6, decimal_places=4)
+    percentile_trr = serializers.DecimalField(
+        required=False, source='investigator.officer.trr_percentile', max_digits=6, decimal_places=4)
 
     def get_involved_type(self, obj):
         return 'investigator'
@@ -75,16 +85,12 @@ class InvestigatorMobileSerializer(NoNullSerializer):
             return 'COPA/IPRA'
 
 
-class PoliceWitnessMobileSerializer(NoNullSerializer):
+class PoliceWitnessMobileSerializer(OfficerPercentileSerializer):
     officer_id = serializers.IntegerField(source='id')
     involved_type = serializers.SerializerMethodField()
     full_name = serializers.CharField()
     allegation_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
-
-    percentile_allegation_civilian = serializers.FloatField(source='civilian_allegation_percentile')
-    percentile_allegation_internal = serializers.FloatField(source='internal_allegation_percentile')
-    percentile_trr = serializers.FloatField(source='trr_percentile')
 
     def get_involved_type(self, obj):
         return 'police_witness'

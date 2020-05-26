@@ -21,10 +21,8 @@ class OfficerSerializerTestCase(TestCase):
         expect(OfficerSerializer(officer).data).to.eq({
             'id': 8562,
             'full_name': 'Jerome Finnigan',
-            'percentile': {
-                'percentile_allegation': '1.1000',
-                'percentile_allegation_civilian': '1.1000',
-                'percentile_allegation_internal': '2.2000',
-                'percentile_trr': '3.3000'
-            }
+            'percentile_allegation': '1.1000',
+            'percentile_allegation_civilian': '1.1000',
+            'percentile_allegation_internal': '2.2000',
+            'percentile_trr': '3.3000'
         })

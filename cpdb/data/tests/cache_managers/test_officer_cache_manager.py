@@ -204,33 +204,33 @@ class OfficerCacheManagerTestCase(TestCase):
             create_object({
                 'officer_id': 2,
                 'year': 2014,
-                'percentile_allegation': 66.6667,
-                'percentile_trr': 0.0,
+                'percentile_allegation': '66.6667',
+                'percentile_trr': '0.0000',
                 'percentile_honorable_mention': 66.6667
             }),
             create_object({
                 'officer_id': 1,
                 'year': 2017,
-                'percentile_allegation_civilian': 66.6667,
-                'percentile_allegation_internal': 66.6667,
-                'percentile_trr': 33.3333,
+                'percentile_allegation_civilian': '66.6667',
+                'percentile_allegation_internal': '66.6667',
+                'percentile_trr': '33.3333',
                 'percentile_honorable_mention': 33.3333,
             }),
             create_object({
                 'officer_id': 3,
                 'year': 2017,
-                'percentile_allegation': 0.0,
-                'percentile_allegation_civilian': 0.0000,
-                'percentile_allegation_internal': 0.0000,
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_civilian': '0.0000',
+                'percentile_allegation_internal': '0.0000',
                 'percentile_honorable_mention': 0.0
             }),
             create_object({
                 'officer_id': 4,
                 'year': 2017,
-                'percentile_allegation': 0.0,
-                'percentile_allegation_civilian': 0.0000,
-                'percentile_allegation_internal': 0.0000,
-                'percentile_trr': 66.6667,
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_civilian': '0.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_trr': '66.6667',
             })
         ])
     )

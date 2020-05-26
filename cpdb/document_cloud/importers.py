@@ -2,6 +2,7 @@ import re
 import requests
 import urllib3
 from urllib.error import HTTPError
+from datetime import datetime, timezone
 
 from django.db.models import Q
 from django.conf import settings
@@ -21,14 +22,24 @@ BATCH_SIZE = 1000
 
 
 class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
+    """
+    :param force_update: force to update for all cloud_documents
+    :param custom_search_syntaxes: Custom syntax to search for cloud_documents
+        example:
+            custom_search_syntaxes = [
+                (['CR'], 'title:"CRID 1062978 CR Summary"'),
+                (['CR', 'CPB'], 'title:"CRID 1083273"'),
+            ]
+    """
     source_type = AttachmentSourceType.DOCUMENTCLOUD
     all_source_types = AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES
 
-    def __init__(self, logger, force_update=False):
+    def __init__(self, logger, force_update=False, custom_search_syntaxes=None):
         super(DocumentCloudAttachmentImporter, self).__init__(logger)
         self.kept_attachments = []
         self.updated_attachments = []
         self.force_update = force_update
+        self.custom_search_syntaxes = custom_search_syntaxes
         self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
     mapping_fields = {
@@ -72,7 +83,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     def make_cloud_document_public(self, cloud_document):
         if cloud_document.access == 'public':
             return True
-        elif cloud_document.access == 'private' or cloud_document.access == 'organization':
+        elif cloud_document.access == 'private' or cloud_document.access == 'organization' or \
+                (cloud_document.access == 'pending' and
+                    (datetime.now(timezone.utc) - cloud_document.created_at).days > 0):
             if settings.ENABLE_MAKE_CLOUD_DOCUMENTS_PUBLIC:
                 result = False
                 try:
@@ -108,8 +121,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.kept_attachments, self.new_attachments, self.updated_attachments = [], [], []
 
         self.log_info('New documentcloud attachments found:')
-        for cloud_document in tqdm(search_all(self.logger), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.documentcloud_id and cloud_document.access != 'pending':
+        for cloud_document in tqdm(search_all(self.logger, self.custom_search_syntaxes), desc='Update documents'):
+            if cloud_document.allegation and cloud_document.documentcloud_id:
                 if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
@@ -132,7 +145,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                             original_url=cloud_document.url,
                             preview_image_url=cloud_document.normal_image_url,
                             external_created_at=cloud_document.created_at,
-                            external_last_updated=cloud_document.updated_at
+                            external_last_updated=cloud_document.updated_at,
+                            text_content=self.get_full_text(cloud_document),
+                            pages=cloud_document.pages
                         )
                         self.new_attachments.append(new_attachment)
 
@@ -170,24 +185,25 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         return changed
 
     def update_attachments(self):
-        all_attachment_ids = set(attachment.id for attachment in self.kept_attachments + self.updated_attachments)
-        deleted_attachments = AttachmentFile.objects.filter(
-            source_type=self.source_type
-        ).exclude(id__in=all_attachment_ids)
-        self.log_info(f'Deleting {deleted_attachments.count()} attachments')
-        deleted_attachments.delete()
+        if not self.custom_search_syntaxes:
+            all_attachment_ids = set(attachment.id for attachment in self.kept_attachments + self.updated_attachments)
+            deleted_attachments = AttachmentFile.objects.filter(
+                source_type=self.source_type
+            ).exclude(id__in=all_attachment_ids)
+            self.log_info(f'Deleting {deleted_attachments.count()} attachments')
+            deleted_attachments.delete()
 
-        self.num_updated_attachments = len(self.updated_attachments)
-        self.log_info(f'Updating {self.num_updated_attachments} attachments')
-        AttachmentFile.objects.bulk_update(
-            self.updated_attachments,
-            update_fields=[
-                'external_id', 'title', 'tag', 'url', 'preview_image_url',
-                'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages',
-                'pending_documentcloud_id', 'upload_fail_attempts'
-            ],
-            batch_size=BATCH_SIZE
-        )
+            self.num_updated_attachments = len(self.updated_attachments)
+            self.log_info(f'Updating {self.num_updated_attachments} attachments')
+            AttachmentFile.objects.bulk_update(
+                self.updated_attachments,
+                update_fields=[
+                    'external_id', 'title', 'tag', 'url', 'preview_image_url',
+                    'external_last_updated', 'external_created_at', 'text_content', 'source_type', 'pages',
+                    'pending_documentcloud_id', 'upload_fail_attempts'
+                ],
+                batch_size=BATCH_SIZE
+            )
 
         self.log_info(f'Creating {len(self.new_attachments)} attachments')
         AttachmentFile.objects.bulk_create(self.new_attachments)
@@ -219,7 +235,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.update_attachments()
             self.set_current_step('UPLOADING TO S3')
             self.upload_to_s3()
-            self.set_current_step('REQUEST REPROCESS TEXT FOR NO ORC TEXT DOCUMENTS')
+            self.set_current_step('REQUEST REPROCESS TEXT FOR NO OCR TEXT DOCUMENTS')
             self.reprocess_text()
             self.set_current_step('EXTRACT COPA SUMMARY')
             self.extract_copa_summary()
