@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
 from data.models import PoliceUnit
-from shared.serializer import NoNullSerializer
-from social_graph.serializers.officer_percentile_serializer import OfficerPercentileSerializer
+from shared.serializer import OfficerPercentileSerializer
 
 
 class UnitSerializer(serializers.ModelSerializer):
@@ -11,7 +10,7 @@ class UnitSerializer(serializers.ModelSerializer):
         fields = ['id', 'unit_name', 'description']
 
 
-class OfficerDetailSerializer(NoNullSerializer):
+class OfficerDetailSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     rank = serializers.CharField()
@@ -29,8 +28,6 @@ class OfficerDetailSerializer(NoNullSerializer):
     civilian_compliment_count = serializers.IntegerField()
     resignation_date = serializers.DateField(format='%Y-%m-%d')
     appointed_date = serializers.DateField(format='%Y-%m-%d')
-    percentile = serializers.SerializerMethodField()
-    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data
+    honorable_mention_percentile = serializers.DecimalField(
+        read_only=True, max_digits=6, decimal_places=4, allow_null=True
+    )

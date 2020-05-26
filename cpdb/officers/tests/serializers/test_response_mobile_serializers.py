@@ -96,6 +96,7 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
         OfficerHistoryFactory(officer=officer, unit=unit, effective_date=date(2004, 1, 2))
 
         OfficerYearlyPercentileFactory(
+            id=129,
             officer=officer,
             year=2002,
             percentile_trr='99.88',
@@ -104,6 +105,7 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             percentile_allegation_internal='66.55'
         )
         OfficerYearlyPercentileFactory(
+            id=130,
             officer=officer,
             year=2003,
             percentile_trr='99.99',
@@ -130,7 +132,7 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             'gender': 'Female',
             'birth_year': 1950,
             'allegation_count': 20,
-            'complaint_percentile': 99.99,
+            'percentile_allegation': '99.9900',
             'honorable_mention_count': 3,
             'sustained_count': 4,
             'unsustained_count': 2,
@@ -138,17 +140,17 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             'civilian_compliment_count': 2,
             'trr_count': 7,
             'major_award_count': 8,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'percentiles': [
                 {
-                    'id': 123,
+                    'id': 129,
                     'year': 2002,
                     'percentile_trr': '99.8800',
                     'percentile_allegation_civilian': '77.6600',
                     'percentile_allegation_internal': '66.5500',
                 },
                 {
-                    'id': 123,
+                    'id': 130,
                     'year': 2003,
                     'percentile_trr': '99.9900',
                     'percentile_allegation': '88.8800',
@@ -406,11 +408,10 @@ class CoaccusalCardMobileSerializerTestCase(TestCase):
             'full_name': 'Jerome Finnigan',
             'coaccusal_count': 7,
             'rank': 'Police Officer',
-            'percentile': {
-                'percentile_allegation_civilian': '88.8800',
-                'percentile_allegation_internal': '77.7700',
-                'percentile_trr': '66.6600',
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '88.8800',
+            'percentile_allegation_internal': '77.7700',
+            'percentile_trr': '66.6600',
         })
 
 
@@ -436,9 +437,8 @@ class OfficerCardMobileSerializerTestCase(TestCase):
             'id': 123,
             'full_name': 'Jame Bone',
             'complaint_count': 2,
-            'percentile': {
-                'percentile_allegation_civilian': '88.8800',
-                'percentile_allegation_internal': '77.7700',
-                'percentile_trr': '66.6600',
-            }
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '88.8800',
+            'percentile_allegation_internal': '77.7700',
+            'percentile_trr': '66.6600',
         })

@@ -107,7 +107,8 @@
                     }
                 ]
             },
-            "complaint_percentile": "58.446",
+            "percentile_trr": "0.000",
+            "percentile_allegation": "58.446",
             "current_salary": 100000,
             "trr_count": 14,
             "major_award_count": 46,

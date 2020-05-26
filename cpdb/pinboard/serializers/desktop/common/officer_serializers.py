@@ -1,16 +1,12 @@
 from rest_framework import serializers
 
 from data.models import Officer
-from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
+from shared.serializer import OfficerPercentileSerializer
 
 
-class OfficerRowSerializer(serializers.ModelSerializer):
+class OfficerRowSerializer(OfficerPercentileSerializer, serializers.ModelSerializer):
     coaccusal_count = serializers.IntegerField(allow_null=True)
     allegation_count = serializers.IntegerField()
-    percentile = serializers.SerializerMethodField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data
 
     class Meta:
         model = Officer
@@ -19,12 +15,15 @@ class OfficerRowSerializer(serializers.ModelSerializer):
             'rank',
             'full_name',
             'coaccusal_count',
-            'percentile',
             'allegation_count',
+            'percentile_allegation',
+            'percentile_allegation_civilian',
+            'percentile_allegation_internal',
+            'percentile_trr'
         )
 
 
-class OfficerSerializer(NoNullSerializer):
+class OfficerSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     date_of_appt = serializers.DateField(source='appointed_date', format='%Y-%m-%d')
@@ -35,7 +34,6 @@ class OfficerSerializer(NoNullSerializer):
     birth_year = serializers.IntegerField()
     race = serializers.CharField()
     rank = serializers.CharField()
-    percentile = serializers.SerializerMethodField()
     allegation_count = serializers.IntegerField()
     civilian_compliment_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
@@ -43,10 +41,9 @@ class OfficerSerializer(NoNullSerializer):
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
     honorable_mention_count = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
+    honorable_mention_percentile = serializers.DecimalField(
+        read_only=True, max_digits=6, decimal_places=4, allow_null=True
+    )
 
     def get_badge(self, obj):
         return obj.current_badge or ''
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data

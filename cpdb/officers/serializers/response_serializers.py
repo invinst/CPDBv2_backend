@@ -2,23 +2,18 @@ from rest_framework import serializers
 from taggit_serializer.serializers import TagListSerializerField
 
 from data.models import PoliceUnit
-from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
+from shared.serializer import NoNullSerializer, OfficerPercentileSerializer, OfficerYearlyPercentileSerializer
 
 
-class OfficerCardSerializer(NoNullSerializer):
+class OfficerCardSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     complaint_count = serializers.IntegerField(source='allegation_count')
     sustained_count = serializers.IntegerField()
     birth_year = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField(read_only=True, allow_null=True)
     race = serializers.CharField()
     gender = serializers.CharField(source='gender_display')
     rank = serializers.CharField()
-    percentile = serializers.SerializerMethodField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj).data
 
 
 class PoliceUnitSerializer(serializers.ModelSerializer):
@@ -59,7 +54,10 @@ class OfficerSummarySerializer(NoNullSerializer):
 class OfficerMetricsSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     allegation_count = serializers.IntegerField()
-    complaint_percentile = serializers.FloatField()
+    percentile_allegation = serializers.DecimalField(
+        source='complaint_percentile', max_digits=6, decimal_places=4, allow_null=True
+    )
+    percentile_trr = serializers.DecimalField(source='trr_percentile', max_digits=6, decimal_places=4, allow_null=True)
     honorable_mention_count = serializers.IntegerField()
     sustained_count = serializers.IntegerField()
     unsustained_count = serializers.IntegerField()
@@ -67,20 +65,9 @@ class OfficerMetricsSerializer(NoNullSerializer):
     civilian_compliment_count = serializers.IntegerField()
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
-    honorable_mention_percentile = serializers.FloatField(allow_null=True, read_only=True)
-
-
-class OfficerYearlyPercentileSerializer(NoNullSerializer):
-    id = serializers.IntegerField(source='officer_id')
-    year = serializers.IntegerField()
-    percentile_trr = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_civilian = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
-    percentile_allegation_internal = serializers.DecimalField(
-        allow_null=True, read_only=True, max_digits=6, decimal_places=4)
+    honorable_mention_percentile = serializers.DecimalField(
+        max_digits=6, decimal_places=4, allow_null=True, read_only=True
+    )
 
 
 class SortedTagListSerializerField(TagListSerializerField):

@@ -4,17 +4,13 @@ import pytz
 
 from shared.serializer import NoNullSerializer
 from social_graph.serializers.victim_serializer import VictimSerializer
-from social_graph.serializers.officer_percentile_serializer import OfficerPercentileSerializer
+from shared.serializer import OfficerPercentileSerializer
 
 
-class CoaccusedSerializer(NoNullSerializer):
-    id = serializers.IntegerField(source='officer.id')
-    full_name = serializers.CharField(source='officer.full_name')
-    allegation_count = serializers.IntegerField(source='officer.allegation_count')
-    percentile = serializers.SerializerMethodField()
-
-    def get_percentile(self, obj):
-        return OfficerPercentileSerializer(obj.officer).data
+class CoaccusedSerializer(OfficerPercentileSerializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    allegation_count = serializers.IntegerField()
 
 
 class CRDetailSerializer(NoNullSerializer):
@@ -26,7 +22,7 @@ class CRDetailSerializer(NoNullSerializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     address = serializers.CharField()
     victims = VictimSerializer(many=True)
-    coaccused = CoaccusedSerializer(many=True, source='officer_allegations')
+    coaccused = serializers.SerializerMethodField()
 
     def get_kind(self, obj):
         return 'CR'
@@ -36,3 +32,7 @@ class CRDetailSerializer(NoNullSerializer):
 
     def get_subcategory(self, obj):
         return obj.most_common_category.allegation_name if obj.most_common_category else 'Unknown'
+
+    def get_coaccused(self, obj):
+        officers = [officer_allegation.officer for officer_allegation in obj.officer_allegations]
+        return CoaccusedSerializer(officers, many=True).data

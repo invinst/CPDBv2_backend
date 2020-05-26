@@ -71,13 +71,10 @@ class CRDetailSerializerTestCase(TestCase):
                     'id': 1,
                     'full_name': 'Jerome Finnigan',
                     'allegation_count': 20,
-                    'percentile': {
-                        'percentile_trr': '80.0000',
-                        'percentile_allegation': '85.0000',
-                        'percentile_allegation_civilian': '90.0000',
-                        'percentile_allegation_internal': '95.0000',
-
-                    }
+                    'percentile_trr': '80.0000',
+                    'percentile_allegation': '85.0000',
+                    'percentile_allegation_civilian': '90.0000',
+                    'percentile_allegation_internal': '95.0000',
                 }
             ]
         }

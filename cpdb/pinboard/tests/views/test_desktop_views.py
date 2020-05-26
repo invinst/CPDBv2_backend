@@ -34,7 +34,7 @@ from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
 
 
-@patch('shared.serializer.MAX_VISUAL_TOKEN_YEAR', 2016)
+@patch('data.constants.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
         example_pinboard_1 = PinboardFactory(
@@ -692,7 +692,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'complaint_count': 6,
                     'sustained_count': 5,
                     'birth_year': 1940,
-                    'complaint_percentile': 0.0,
                     'recommended_outcome': '11 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
@@ -701,13 +700,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'rank': 'Sergeant of Police',
-                    'percentile': {
-                        'year': 2015,
-                        'percentile_trr': '3.3000',
-                        'percentile_allegation': '0.0000',
-                        'percentile_allegation_civilian': '1.1000',
-                        'percentile_allegation_internal': '2.2000'
-                    },
+                    'percentile_allegation': '0.0000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000',
                 }],
             },
             {
@@ -729,7 +725,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'complaint_count': 6,
                     'sustained_count': 5,
                     'birth_year': 1940,
-                    'complaint_percentile': 0.0,
                     'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'final_finding': 'Sustained',
@@ -738,13 +733,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'rank': 'Sergeant of Police',
-                    'percentile': {
-                        'year': 2015,
-                        'percentile_trr': '3.3000',
-                        'percentile_allegation': '0.0000',
-                        'percentile_allegation_civilian': '1.1000',
-                        'percentile_allegation_internal': '2.2000'
-                    },
+                    'percentile_allegation': '0.0000',
+                    'percentile_allegation_civilian': '1.1000',
+                    'percentile_allegation_internal': '2.2000',
+                    'percentile_trr': '3.3000',
                 }],
             }
         ])
@@ -833,10 +825,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'birth_year': 1950,
             'race': 'Black',
             'rank': 'Sergeant',
-            'percentile': {
-                'year': 2010,
-                'percentile_allegation': '99.9900',
-            },
+            'percentile_allegation': '99.9900',
             'allegation_count': 20,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -844,7 +833,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'unit': {
                 'id': 4,
                 'unit_name': '004',
@@ -895,7 +884,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         response = self.client.get(reverse('api-v2:pinboards-trrs', kwargs={'pk': pinboard.id}))
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq([
+        expected_results = [
             {
                 'id': 1,
                 'trr_datetime': '2012-01-01',
@@ -911,16 +900,13 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'complaint_count': 0,
                     'sustained_count': 0,
                     'birth_year': 1975,
-                    'complaint_percentile': 99.345,
                     'race': 'White',
                     'gender': 'Male',
                     'rank': 'Police Officer',
-                    'percentile': {
-                        'percentile_allegation': '99.3450',
-                        'percentile_trr': '12.0000',
-                        'percentile_allegation_civilian': '98.4344',
-                        'percentile_allegation_internal': '99.7840',
-                    }
+                    'percentile_allegation': '99.3450',
+                    'percentile_allegation_civilian': '98.4344',
+                    'percentile_allegation_internal': '99.7840',
+                    'percentile_trr': '12.0000',
                 }
             },
             {
@@ -937,19 +923,17 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'complaint_count': 0,
                     'sustained_count': 0,
                     'birth_year': 1975,
-                    'complaint_percentile': 99.345,
                     'race': 'White',
                     'gender': 'Male',
                     'rank': 'Police Officer',
-                    'percentile': {
-                        'percentile_allegation': '99.3450',
-                        'percentile_trr': '12.0000',
-                        'percentile_allegation_civilian': '98.4344',
-                        'percentile_allegation_internal': '99.7840',
-                    }
+                    'percentile_allegation': '99.3450',
+                    'percentile_allegation_civilian': '98.4344',
+                    'percentile_allegation_internal': '99.7840',
+                    'percentile_trr': '12.0000',
                 }
             }
-        ])
+        ]
+        expect(response.data).to.eq(expected_results)
 
     def test_relevant_documents(self):
         pinned_officer_1 = OfficerFactory(
@@ -1045,25 +1029,17 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'id': 4,
                         'rank': 'Senior Police Officer',
                         'full_name': 'Raymond Piwinicki',
-                        'coaccusal_count': None,
                         'allegation_count': 20,
-                        'percentile': {
-                            'year': 2016,
-                        }
                     },
                     {
                         'id': 2,
                         'rank': 'Detective',
                         'full_name': 'Edward May',
-                        'coaccusal_count': None,
                         'allegation_count': 3,
-                        'percentile': {
-                            'year': 2016,
-                            'percentile_trr': '11.1100',
-                            'percentile_allegation': '22.2200',
-                            'percentile_allegation_civilian': '33.3300',
-                            'percentile_allegation_internal': '44.4400',
-                        }
+                        'percentile_allegation': '22.2200',
+                        'percentile_allegation_civilian': '33.3300',
+                        'percentile_allegation_internal': '44.4400',
+                        'percentile_trr': '11.1100',
                     },
                 ],
             }
@@ -1079,19 +1055,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
-                    'coaccusal_count': None,
                     'allegation_count': 10,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '99.9900',
-                        'percentile_allegation': '88.8800',
-                        'percentile_allegation_civilian': '77.7700',
-                        'percentile_allegation_internal': '66.6600',
-                    }
+                    'percentile_allegation': '88.8800',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '66.6600',
+                    'percentile_trr': '99.9900',
                 }],
                 'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
+
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(response.data['results'][0]).to.eq(expected_results[0])
         expect(response.data['results'][1]).to.eq(expected_results[1])
@@ -1419,13 +1392,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '11.1100',
-                'percentile_allegation': '22.2200',
-                'percentile_allegation_civilian': '33.3300',
-                'percentile_allegation_internal': '44.4400',
-            },
+            'percentile_trr': '11.1100',
+            'percentile_allegation': '22.2200',
+            'percentile_allegation_civilian': '33.3300',
+            'percentile_allegation_internal': '44.4400',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1433,7 +1403,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 5,
         }, {
             'id': 21,
@@ -1452,12 +1422,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1465,7 +1432,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 4,
         }, {
             'id': 12,
@@ -1484,11 +1451,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '77.7700',
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '77.7700',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1496,7 +1460,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 3,
         }, {
             'id': 22,
@@ -1515,9 +1479,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-            },
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1525,7 +1486,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 2,
         }, {
             'id': 77,
@@ -1544,9 +1505,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-            },
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1554,7 +1512,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 1,
         }]
 
@@ -1733,13 +1691,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '11.1100',
-                'percentile_allegation': '22.2200',
-                'percentile_allegation_civilian': '33.3300',
-                'percentile_allegation_internal': '44.4400',
-            },
+            'percentile_trr': '11.1100',
+            'percentile_allegation': '22.2200',
+            'percentile_allegation_civilian': '33.3300',
+            'percentile_allegation_internal': '44.4400',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1747,7 +1702,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 4,
         }, {
             'id': 21,
@@ -1766,12 +1721,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1779,7 +1731,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 3,
         }])
         expect(first_response.data['count']).to.eq(4)
@@ -1807,12 +1759,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_trr': '33.3300',
-                'percentile_allegation': '44.4400',
-                'percentile_allegation_civilian': '55.5500',
-            },
+            'percentile_trr': '33.3300',
+            'percentile_allegation': '44.4400',
+            'percentile_allegation_civilian': '55.5500',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1820,7 +1769,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 3,
         }, {
             'id': 12,
@@ -1839,11 +1788,8 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-                'percentile_allegation': '99.9900',
-                'percentile_allegation_civilian': '77.7700',
-            },
+            'percentile_allegation': '99.9900',
+            'percentile_allegation_civilian': '77.7700',
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1851,7 +1797,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 2,
         }])
         expect(second_response.data['count']).to.eq(4)
@@ -1881,9 +1827,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'description': 'District 004',
                 'long_unit_name': 'Unit 004'
             },
-            'percentile': {
-                'year': 2010,
-            },
             'allegation_count': 1,
             'civilian_compliment_count': 2,
             'sustained_count': 4,
@@ -1891,7 +1834,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_count': 3,
-            'honorable_mention_percentile': 88.88,
+            'honorable_mention_percentile': '88.8800',
             'coaccusal_count': 1,
         }])
         expect(last_response.data['count']).to.eq(4)
@@ -1986,14 +1929,10 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'id': 2,
                     'rank': 'Senior Officer',
                     'full_name': 'Ellis Skol',
-                    'coaccusal_count': None,
                     'allegation_count': 1,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '33.3300',
-                        'percentile_allegation': '44.4400',
-                        'percentile_allegation_civilian': '55.5500',
-                    },
+                    'percentile_trr': '33.3300',
+                    'percentile_allegation': '44.4400',
+                    'percentile_allegation_civilian': '55.5500',
                 }],
             }, {
                 'crid': '1',
@@ -2012,24 +1951,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'id': 99,
                     'rank': 'Detective',
                     'full_name': 'Edward May',
-                    'coaccusal_count': None,
                     'allegation_count': 5,
-                    'percentile': {
-                        'year': 2016,
-                    },
                 }, {
                     'id': 1,
                     'rank': 'Police Officer',
                     'full_name': 'Jerome Finnigan',
-                    'coaccusal_count': None,
                     'allegation_count': 2,
-                    'percentile': {
-                        'year': 2016,
-                        'percentile_trr': '11.1100',
-                        'percentile_allegation': '22.2200',
-                        'percentile_allegation_civilian': '33.3300',
-                        'percentile_allegation_internal': '44.4400',
-                    },
+                    'percentile_trr': '11.1100',
+                    'percentile_allegation': '22.2200',
+                    'percentile_allegation_civilian': '33.3300',
+                    'percentile_allegation_internal': '44.4400',
                 }],
             }]
         })
@@ -2515,7 +2446,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '99.9999',
                     'percentile_allegation_civilian': '99.9999',
                     'percentile_allegation_internal': '99.9999',
-                    'year': 2016,
                 },
                 {
                     'id': officer_2.id,
@@ -2525,7 +2455,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '50.0000',
                     'percentile_allegation_civilian': '50.0000',
                     'percentile_allegation_internal': '50.0000',
-                    'year': 2016,
                 },
                 {
                     'id': officer_1.id,
@@ -2535,7 +2464,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '0.0000',
                     'percentile_allegation_civilian': '0.0000',
                     'percentile_allegation_internal': '0.0000',
-                    'year': 2016,
                 },
             ],
             'allegations': [
@@ -2667,7 +2595,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '99.9999',
                     'percentile_allegation_civilian': '99.9999',
                     'percentile_allegation_internal': '99.9999',
-                    'year': 2016,
                 },
                 {
                     'id': officer_2.id,
@@ -2677,7 +2604,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '50.0000',
                     'percentile_allegation_civilian': '50.0000',
                     'percentile_allegation_internal': '50.0000',
-                    'year': 2016,
                 },
                 {
                     'id': officer_1.id,
@@ -2687,7 +2613,6 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_trr': '0.0000',
                     'percentile_allegation_civilian': '0.0000',
                     'percentile_allegation_internal': '0.0000',
-                    'year': 2016,
                 },
             ],
             'allegations': [

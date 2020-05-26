@@ -87,7 +87,6 @@ class PinboardSerializerTestCase(TestCase):
                         'percentile_trr': '99.9999',
                         'percentile_allegation_civilian': '99.9999',
                         'percentile_allegation_internal': '99.9999',
-                        'year': 2016,
                     },
                     {
                         'id': officer_2.id,
@@ -97,7 +96,6 @@ class PinboardSerializerTestCase(TestCase):
                         'percentile_trr': '50.0000',
                         'percentile_allegation_civilian': '50.0000',
                         'percentile_allegation_internal': '50.0000',
-                        'year': 2016,
                     },
                     {
                         'id': officer_1.id,
@@ -107,7 +105,6 @@ class PinboardSerializerTestCase(TestCase):
                         'percentile_trr': '0.0000',
                         'percentile_allegation_civilian': '0.0000',
                         'percentile_allegation_internal': '0.0000',
-                        'year': 2016,
                     },
                 ],
                 'allegations': [
