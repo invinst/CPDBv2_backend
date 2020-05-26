@@ -291,6 +291,30 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(changed).to.be.true()
         expect(attachment.text_content).to.eq('ABC')
 
+    def test_update_attachment_not_update_full_text_if_is_external_ocr(self):
+        attachment = AttachmentFileFactory(
+            source_type='',
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            is_external_ocr=True,
+        )
+        document = create_object({
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7,
+            'access': 'public'
+        })
+
+        changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.text_content).to.eq('ABC')
+
     def test_update_attachment_with_access_error(self):
         attachment = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
