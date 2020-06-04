@@ -554,6 +554,50 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             }
         ])
 
+    def test_search_with_apostrophe(self):
+        allegation_category = AllegationCategoryFactory(category='Use of Force')
+        allegation_1 = AllegationFactory(
+            crid='C12345',
+            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
+            most_common_category=allegation_category,
+        )
+        allegation_2 = AllegationFactory(
+            crid='C12346',
+            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
+            most_common_category=allegation_category,
+        )
+        allegation_3 = AllegationFactory(
+            crid='C12347',
+            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
+            most_common_category=allegation_category,
+        )
+        allegation_4 = AllegationFactory(
+            crid='C12348',
+            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
+            most_common_category=allegation_category,
+        )
+        AttachmentFileFactory(text_content='Name: OBrien', allegation=allegation_1)
+        AttachmentFileFactory(text_content='Name: O\'Brien', allegation=allegation_2)
+        AttachmentFileFactory(text_content='Name: O Brien', allegation=allegation_3)
+        AttachmentFileFactory(text_content='Name: Jim', allegation=allegation_4)
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        response = self.client.get(reverse('api:suggestion-list'), {
+            'term': 'O\'Brien',
+        })
+        sorted_cr_results = list(sorted(response.data['CR'], key=lambda cr: cr['crid']))
+        print(sorted_cr_results)
+
+        expect(len(sorted_cr_results)).to.eq(3)
+        expect(sorted_cr_results[0]['crid']).to.eq('C12345')
+        expect(sorted_cr_results[0]['highlight']['text_content']).to.eq(['Name: O<em>Brien</em>'])
+        expect(sorted_cr_results[1]['crid']).to.eq('C12346')
+        expect(sorted_cr_results[1]['highlight']['text_content']).to.eq(['Name: O\'<em>Brien</em>'])
+        expect(sorted_cr_results[2]['crid']).to.eq('C12347')
+        expect(sorted_cr_results[2]['highlight']['text_content']).to.eq(['Name: O <em>Brien</em>'])
+
 
 class SearchV2ViewSetTestCase(APITestCase):
     @patch('search.views.SearchManager.search')
