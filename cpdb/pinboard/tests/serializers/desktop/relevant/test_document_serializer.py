@@ -13,6 +13,7 @@ from data.factories import (
     AllegationCategoryFactory,
     OfficerAllegationFactory,
     AttachmentFileFactory,
+    VictimFactory,
 )
 from pinboard.factories import PinboardFactory
 
@@ -30,12 +31,20 @@ class DocumentSerializerTestCase(TestCase):
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile='66.66',
         )
+
         relevant_allegation = AllegationFactory(
             crid='1',
+            add1='LTK street',
             incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc),
-            most_common_category=AllegationCategoryFactory(category='Operation/Personnel Violations'),
+            most_common_category=AllegationCategoryFactory(
+                category='Operation/Personnel Violations', allegation_name='Miscellaneous'
+            ),
             point=Point([0.01, 0.02]),
         )
+
+        VictimFactory(allegation=relevant_allegation, gender='F', age=65)
+        VictimFactory(allegation=relevant_allegation, gender='M', age=54)
+
         AttachmentFileFactory(
             id=1,
             file_type='document',
@@ -57,6 +66,7 @@ class DocumentSerializerTestCase(TestCase):
         expect(pinboard.relevant_documents.count()).to.eq(1)
         expect(AllegationSerializer(pinboard.relevant_documents[0].allegation).data).to.eq({
             'crid': '1',
+            'address': 'LTK street',
             'category': 'Operation/Personnel Violations',
             'incident_date': '2002-02-21',
             'coaccused': [{
@@ -73,12 +83,27 @@ class DocumentSerializerTestCase(TestCase):
                 'lon': 0.01,
                 'lat': 0.02,
             },
+            'victims': [
+                {
+                    'gender': 'Female',
+                    'race': 'Black',
+                    'age': 65
+                },
+                {
+                    'gender': 'Male',
+                    'race': 'Black',
+                    'age': 54
+                }
+            ],
+            'sub_category': 'Miscellaneous',
+            'to': '/complaint/1/',
         })
         expect(DocumentSerializer(pinboard.relevant_documents.first()).data).to.eq({
             'id': 1,
             'preview_image_url': "https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             'url': 'http://cr-1-document.com/',
             'allegation': {
+                'address': 'LTK street',
                 'crid': '1',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
@@ -96,5 +121,19 @@ class DocumentSerializerTestCase(TestCase):
                     'lon': 0.01,
                     'lat': 0.02,
                 },
-            }
+                'victims': [
+                    {
+                        'gender': 'Female',
+                        'race': 'Black',
+                        'age': 65
+                    },
+                    {
+                        'gender': 'Male',
+                        'race': 'Black',
+                        'age': 54
+                    }
+                ],
+                'sub_category': 'Miscellaneous',
+                'to': '/complaint/1/',
+            },
         })

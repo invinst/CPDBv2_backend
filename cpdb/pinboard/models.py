@@ -105,7 +105,8 @@ class Pinboard(TimeStampsModel):
                 'allegation__officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
                 to_attr='prefetched_officer_allegations'
-            )
+            ),
+            'allegation__victims'
         )
 
     @property
