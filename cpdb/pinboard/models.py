@@ -1,3 +1,4 @@
+import re
 from random import sample
 
 from django.contrib.gis.db import models
@@ -9,6 +10,7 @@ from data.constants import MEDIA_TYPE_DOCUMENT
 from data.models import Officer, AttachmentFile, OfficerAllegation, Allegation
 from data.models.common import TimeStampsModel
 from pinboard.fields import HexField
+from pinboard.constants import PINBOARD_TITLE_DUPLICATE_PATTERN
 
 
 class AllegationManager(models.Manager):
@@ -63,9 +65,17 @@ class Pinboard(TimeStampsModel):
             Q(pinboard__id=self.id)
         ).order_by('first_name', 'last_name').distinct()
 
-    def clone(self):
+    def clone(self, is_duplicated=False):
         new_pinboard = Pinboard()
-        new_pinboard.title = self.title
+        if is_duplicated:
+            match = re.match(PINBOARD_TITLE_DUPLICATE_PATTERN, self.title)
+            if match:
+                copy_suffix = int(match.group(2)) + 1 if match.group(2) else 2
+                new_pinboard.title = f'{match.group(1)} copy {copy_suffix}'
+            else:
+                new_pinboard.title = f'{self.title} copy'
+        else:
+            new_pinboard.title = self.title
         new_pinboard.description = self.description
         new_pinboard.source_pinboard = self
         new_pinboard.save()

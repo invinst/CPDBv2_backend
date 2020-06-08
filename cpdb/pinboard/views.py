@@ -65,7 +65,7 @@ class PinboardViewSet(
     def create(self, request):
         source_pinboard = self._source_pinboard
         if source_pinboard:
-            pinboard = source_pinboard.clone()
+            pinboard = source_pinboard.clone(is_duplicated=True)
             self.update_owned_pinboards(request, pinboard.id)
             self.update_latest_retrieved_pinboard(request, pinboard.id)
             return Response(OrderedPinboardSerializer(pinboard).data)

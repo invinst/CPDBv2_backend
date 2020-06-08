@@ -557,7 +557,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(response.data['id']).to.have.length(8)
         expect(response.data).to.eq({
             'id': response.data['id'],
-            'title': 'Duplicate Pinboard Title',
+            'title': 'Duplicate Pinboard Title copy',
             'officer_ids': [111, 222],
             'crids': ['1111'],
             'trr_ids': [3, 4],
@@ -567,7 +567,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         duplicated_pinboard = Pinboard.objects.get(id=response.data['id'])
 
         expect(duplicated_pinboard.source_pinboard).to.eq(pinboard)
-        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title')
+        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title copy')
         expect(duplicated_pinboard.description).to.eq('Duplicate Pinboard Description')
         expect(set(duplicated_pinboard.officer_ids)).to.eq({111, 222})
         expect(set(duplicated_pinboard.crids)).to.eq({'1111'})
