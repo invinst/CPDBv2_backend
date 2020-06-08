@@ -2748,3 +2748,23 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'allegations': [],
             'trrs': [],
         })
+
+    def test_delete_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee3333'])
+
+    def test_delete_not_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee4444'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee2222', 'eeee3333'])

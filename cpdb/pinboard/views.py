@@ -116,6 +116,15 @@ class PinboardViewSet(
         request.session['latest_retrieved_pinboard'] = pinboard_id
         request.session['modified'] = True
 
+    def delete(self, request, pk):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        if pk in owned_pinboards:
+            request.session['owned_pinboards'] = [pinboard for pinboard in owned_pinboards if pinboard != pk]
+            request.session['modified'] = True
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, methods=['GET'], url_path='latest-retrieved-pinboard')
     def latest_retrieved_pinboard(self, request):
         if ('latest_retrieved_pinboard' in request.session) and \
