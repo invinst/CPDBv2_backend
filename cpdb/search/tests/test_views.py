@@ -94,7 +94,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results).to.have.length(1)
 
         expect(results[0]['crid']).to.eq('123')
-        expect(results[0]['highlight']['text_content'][0]).to.contain('a <em>gun</em> at')
+        expect(results[0]['highlight']['text_content'][0]).to.contain('a <em>gun </em>at')
 
     def test_search_date_cr_result(self):
         AllegationFactory(crid='123', incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
