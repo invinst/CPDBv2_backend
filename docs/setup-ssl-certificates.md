@@ -9,15 +9,18 @@
 - Save the certificates zip file ([domain-name].zip)
 
 ## Add certificates to server
-Use 2 files [private-key].zip and [domain-name].zip from [Activate Certificate](#activate-certificate) process
+- Use 2 files [private-key].zip and [domain-name].zip from [Activate Certificate](#activate-certificate) process
+- Generate file `all.[domain-name].crt`: concat files [domain-name].crt and [domain-name].ca-bundle 
+    from [domain-name].zip into one file.
+    Note: ensure [domain-name].crt content in the top of `all.[domain-name].crt`.
 
 ### Update tls secrets for *.cpdp.co
 - Make sure you're on `master` branch
  
 - Update secret named `tls-secret` in kubernetes/secrets-production.yml.secret
     - tls.crt: 
-        - file [domain-name].crt from [domain-name].zip encode base64
-        - command: `cat [domain-name].crt | base64`
+        - file all.[domain-name].crt encode base64
+        - command: `cat all.[domain-name].crt | base64`
     - tls.key: 
         - file [private-key].txt from [private-key].zip encode base64
         - command: `cat [private-key].crt | base64`
@@ -39,8 +42,8 @@ Use 2 files [private-key].zip and [domain-name].zip from [Activate Certificate](
 
 - Update secret field named `cpdb-co-tls-secret` in kubernetes/secrets-production.yml.secret
     - tls.crt: 
-        - file [domain-name].crt from [domain-name].zip encode base64
-        - command: `cat [domain-name].crt | base64`
+        - file all.[domain-name].crt encode base64
+        - command: `cat all.[domain-name].crt | base64`
     - tls.key: 
         - file [private-key].txt encode base64
         - command: `cat [private-key].txt | base64`
