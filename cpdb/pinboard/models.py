@@ -40,6 +40,7 @@ class Pinboard(TimeStampsModel):
     source_pinboard = models.ForeignKey(
         'pinboard.Pinboard', on_delete=models.SET_NULL, null=True, related_name='child_pinboards'
     )
+    last_viewed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.id} - {self.title}' if self.title else self.id

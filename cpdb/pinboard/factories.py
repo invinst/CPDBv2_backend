@@ -1,6 +1,8 @@
 import factory
 from faker import Faker
 
+from django.utils import timezone
+
 from pinboard.models import ExamplePinboard
 from .models import Pinboard
 
@@ -13,6 +15,7 @@ class PinboardFactory(factory.django.DjangoModelFactory):
 
     title = factory.LazyFunction(lambda: fake.sentence())
     description = factory.LazyFunction(lambda: fake.text())
+    last_viewed_at = factory.LazyFunction(lambda: timezone.now())
 
     @factory.post_generation
     def allegations(self, create, extracted, **kwargs):

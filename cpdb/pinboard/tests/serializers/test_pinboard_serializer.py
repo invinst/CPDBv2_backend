@@ -111,6 +111,7 @@ class PinboardSerializerTestCase(TestCase):
             'id': 'eeee1111',
             'title': 'Pinboard 1',
             'created_at': '2018-04-03',
+            'last_viewed_at': '2018-04-03T12:00:10Z',
         })
 
 
@@ -133,4 +134,5 @@ class ListPinboardDetailSerializerTestCase(TestCase):
             'officer_ids': [1],
             'crids': ['1'],
             'trr_ids': [],
+            'last_viewed_at': '2018-04-03T12:00:10Z'
         })
