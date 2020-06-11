@@ -58,7 +58,9 @@ class CrDocType(DocType):
 
     attachment_files = Nested(properties={
         'id': Integer(),
-        'text_content': Text(analyzer='standard', store=True, term_vector='with_positions_offsets'),
+        'text_content': Text(
+            analyzer=autocomplete, search_analyzer=autocomplete_search, store=True, term_vector='with_positions_offsets'
+        ),
     })
 
     class Meta:
