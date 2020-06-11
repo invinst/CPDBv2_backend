@@ -975,9 +975,12 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
+            add1='LTK street',
             incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
             point=None,
         )
+        VictimFactory(allegation=relevant_allegation_2, gender='F', age=65)
+        VictimFactory(allegation=relevant_allegation_2, gender='M', age=54)
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
             id=1,
@@ -1042,6 +1045,21 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'percentile_trr': '11.1100',
                     },
                 ],
+                'address': 'LTK street',
+                'victims': [
+                    {
+                        'gender': 'Female',
+                        'race': 'Black',
+                        'age': 65
+                    },
+                    {
+                        'gender': 'Male',
+                        'race': 'Black',
+                        'age': 54
+                    }
+                ],
+                'to': '/complaint/2/',
+                'sub_category': 'Unknown',
             }
         }, {
             'id': 1,
@@ -1049,6 +1067,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'url': 'http://cr-1-document.com/',
             'allegation': {
                 'crid': '1',
+                'address': '',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
                 'coaccused': [{
@@ -1061,6 +1080,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_allegation_internal': '66.6600',
                     'percentile_trr': '99.9900',
                 }],
+                'sub_category': '',
+                'victims': [],
+                'to': '/complaint/1/',
                 'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
