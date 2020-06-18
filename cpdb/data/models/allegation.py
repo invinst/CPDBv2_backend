@@ -1,10 +1,12 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django_bulk_update.manager import BulkUpdateManager
+from django.contrib.contenttypes.fields import GenericRelation
 
 from data.constants import GENDER_DICT
 from data.utils.aggregation import get_num_range_case
 from data.utils.attachment_file import filter_attachments
+from data.models.attachment_file import AttachmentFile
 from .common import TimeStampsModel
 
 
@@ -26,6 +28,12 @@ class Allegation(TimeStampsModel):
     police_witnesses = models.ManyToManyField('data.Officer', through='PoliceWitness')
     subjects = ArrayField(models.CharField(max_length=255), default=list)
     is_extracted_summary = models.BooleanField(default=False)
+    attachment_files = GenericRelation(
+        AttachmentFile,
+        content_type_field='owner_type',
+        object_id_field='owner_id',
+        related_query_name='allegation'
+    )
 
     # CACHED COLUMNS
     most_common_category = models.ForeignKey('data.AllegationCategory', on_delete=models.SET_NULL, null=True)
