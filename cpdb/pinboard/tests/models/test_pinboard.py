@@ -50,6 +50,61 @@ class PinboardTestCase(TestCase):
         expect(trrs).to.eq(cloned_trrs)
         expect(cloned_pinboard.source_pinboard).to.eq(pinboard)
 
+    def test_clone_duplicate(self):
+        pinboard = PinboardFactory(
+            title='Pinboard title',
+            description='Pinboard title',
+            officers=(),
+            allegations=(),
+            trrs=(),
+        )
+        cloned_pinboard = pinboard.clone(is_duplicated=True)
+        expect(cloned_pinboard.title).to.eq('Pinboard title copy')
+
+    def test_clone_duplicate_with_copy_in_title(self):
+        pinboard = PinboardFactory(
+            title='Pinboard title copy',
+            description='Pinboard title',
+            officers=(),
+            allegations=(),
+            trrs=(),
+        )
+        cloned_pinboard = pinboard.clone(is_duplicated=True)
+        expect(cloned_pinboard.title).to.eq('Pinboard title copy 2')
+
+    def test_clone_duplicate_with_copy_number_in_title(self):
+        pinboard = PinboardFactory(
+            title='Pinboard title copy 2',
+            description='Pinboard title',
+            officers=(),
+            allegations=(),
+            trrs=(),
+        )
+        cloned_pinboard = pinboard.clone(is_duplicated=True)
+        expect(cloned_pinboard.title).to.eq('Pinboard title copy 3')
+
+    def test_clone_duplicate_with_copy_copy_number_in_title(self):
+        pinboard = PinboardFactory(
+            title='Pinboard title copy copy',
+            description='Pinboard title',
+            officers=(),
+            allegations=(),
+            trrs=(),
+        )
+        cloned_pinboard = pinboard.clone(is_duplicated=True)
+        expect(cloned_pinboard.title).to.eq('Pinboard title copy copy 2')
+
+    def test_clone_duplicate_with_copy_number_in_middle_of_title(self):
+        pinboard = PinboardFactory(
+            title='Pinboard title copy 2d',
+            description='Pinboard title',
+            officers=(),
+            allegations=(),
+            trrs=(),
+        )
+        cloned_pinboard = pinboard.clone(is_duplicated=True)
+        expect(cloned_pinboard.title).to.eq('Pinboard title copy 2d copy')
+
     def test_str(self):
         pinboard = PinboardFactory(
             id='abcd1234',
