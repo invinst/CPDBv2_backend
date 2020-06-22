@@ -2840,3 +2840,153 @@ class PinboardDesktopViewSetTestCase(APITestCase):
 
         response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
         expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+
+    def test_complaint_summary(self):
+        allegation_officer1 = OfficerFactory()
+        allegation_officer2 = OfficerFactory()
+        trr_officer1 = OfficerFactory()
+        trr_officer2 = OfficerFactory()
+        pinboard_officer1 = OfficerFactory()
+        pinboard_officer2 = OfficerFactory()
+        other_officer = OfficerFactory()
+
+        pinboard_allegation1 = AllegationFactory()
+        pinboard_allegation2 = AllegationFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        allegation3 = AllegationFactory()
+        allegation4 = AllegationFactory()
+
+        trr1 = TRRFactory(officer=trr_officer1)
+        trr2 = TRRFactory(officer=trr_officer2)
+
+        allegation_category1 = AllegationCategoryFactory(category='Operation/Personnel Violations',)
+        allegation_category2 = AllegationCategoryFactory(category='Illegal Search',)
+        allegation_category3 = AllegationCategoryFactory(category='Verbal Abuse',)
+
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation1,
+            officer=allegation_officer1,
+            allegation_category=allegation_category1
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation2,
+            officer=allegation_officer1,
+            allegation_category=allegation_category2
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation1,
+            officer=allegation_officer2,
+            allegation_category=allegation_category3
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation2,
+            officer=allegation_officer2,
+            allegation_category=allegation_category3
+        )
+        OfficerAllegationFactory(
+            allegation=allegation3,
+            officer=trr_officer1,
+            allegation_category=None
+        )
+        OfficerAllegationFactory(
+            allegation=allegation4,
+            officer=trr_officer1,
+            allegation_category=allegation_category1
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation1,
+            officer=trr_officer1,
+            allegation_category=None
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation2,
+            officer=trr_officer2,
+            allegation_category=None
+        )
+        OfficerAllegationFactory(
+            allegation=pinboard_allegation2,
+            officer=trr_officer2,
+            allegation_category=allegation_category1
+        )
+        OfficerAllegationFactory(
+            allegation=allegation1,
+            officer=pinboard_officer1,
+            allegation_category=None
+        )
+        OfficerAllegationFactory(
+            allegation=allegation2,
+            officer=pinboard_officer1,
+            allegation_category=allegation_category2
+        )
+        OfficerAllegationFactory(
+            allegation=allegation1,
+            officer=other_officer,
+            allegation_category=allegation_category2
+        )
+
+        pinboard = PinboardFactory(
+            trrs=(trr1, trr2),
+            allegations=(pinboard_allegation1, pinboard_allegation2),
+            officers=(pinboard_officer1, pinboard_officer2)
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-complaint-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expected_results = [
+            {'category': None, 'count': 4},
+            {'category': 'Operation/Personnel Violations', 'count': 3},
+            {'category': 'Illegal Search', 'count': 2},
+            {'category': 'Verbal Abuse', 'count': 2}
+        ]
+        expect(list(response.data)).to.eq(expected_results)
+
+    def test_trr_summary(self):
+        allegation_officer1 = OfficerFactory()
+        allegation_officer2 = OfficerFactory()
+        trr_officer_1 = OfficerFactory()
+        trr_officer_2 = OfficerFactory()
+        pinboard_officer1 = OfficerFactory()
+        pinboard_officer2 = OfficerFactory()
+        other_officer = OfficerFactory()
+
+        pinboard_allegation = AllegationFactory()
+        OfficerAllegationFactory(allegation=pinboard_allegation, officer=allegation_officer1)
+        OfficerAllegationFactory(allegation=pinboard_allegation, officer=allegation_officer2)
+
+        pinboard_trr1 = TRRFactory(officer=trr_officer_1)
+        pinboard_trr2 = TRRFactory(officer=trr_officer_2)
+        trr1 = TRRFactory(officer=allegation_officer1)
+        trr2 = TRRFactory(officer=allegation_officer2)
+        trr3 = TRRFactory(officer=allegation_officer2)
+        trr4 = TRRFactory(officer=allegation_officer2)
+        trr5 = TRRFactory(officer=pinboard_officer1)
+        TRRFactory(officer=pinboard_officer2)
+        other_trr1 = TRRFactory(officer=other_officer)
+        other_trr2 = TRRFactory(officer=other_officer)
+
+        ActionResponseFactory(trr=pinboard_trr1, force_type=None)
+        ActionResponseFactory(trr=pinboard_trr2, force_type='Verbal Commands')
+        ActionResponseFactory(trr=trr1, force_type='Physical Force - Stunning')
+        ActionResponseFactory(trr=trr1, force_type=None)
+        ActionResponseFactory(trr=trr2, force_type='Physical Force - Stunning')
+        ActionResponseFactory(trr=trr3, force_type='Verbal Commands')
+        ActionResponseFactory(trr=trr4, force_type='Physical Force - Stunning')
+        ActionResponseFactory(trr=trr5, force_type='Physical Force - Stunning')
+        ActionResponseFactory(trr=other_trr1, force_type='Taser')
+        ActionResponseFactory(trr=other_trr2, force_type='Chemical')
+
+        pinboard = PinboardFactory(
+            trrs=(pinboard_trr1, pinboard_trr2),
+            allegations=(pinboard_allegation,),
+            officers=(pinboard_officer1, pinboard_officer2)
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-trr-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expected_results = [
+            {'force_type': 'Physical Force - Stunning', 'count': 4},
+            {'force_type': 'Verbal Commands', 'count': 2},
+            {'force_type': None, 'count': 2},
+        ]
+        expect(list(response.data)).to.eq(expected_results)

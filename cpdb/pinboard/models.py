@@ -64,7 +64,11 @@ class Pinboard(TimeStampsModel):
             Q(officerallegation__allegation_id__in=allegation_ids) |
             Q(trr__id__in=trr_ids) |
             Q(pinboard__id=self.id)
-        ).order_by('first_name', 'last_name').distinct()
+        ).distinct()
+
+    @property
+    def all_officer_ids(self):
+        return self.all_officers.values_list('id', flat=True)
 
     def clone(self, is_duplicated=False):
         new_pinboard = Pinboard()

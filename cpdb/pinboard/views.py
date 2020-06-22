@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.db.models import Prefetch, Count, Q
+from django.db.models import Prefetch, Count, Q, F
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -40,6 +40,7 @@ from pinboard.serializers.mobile.relevant import (
 )
 from trr.models import ActionResponse
 from .models import Pinboard, ProxyAllegation as Allegation
+from data.models import OfficerAllegation
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -199,6 +200,39 @@ class PinboardViewSet(
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
         serializer = self.relevant_complaint_serializer_class(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='complaint-summary')
+    def complaint_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+
+        summary = OfficerAllegation.objects.filter(
+            officer_id__in=pinboard.all_officer_ids
+        ).annotate(
+            category=F('allegation_category__category')
+        ).values(
+            'category'
+        ).annotate(
+            count=Count('id', distinct=True)
+        ).order_by('-count')
+
+        return Response(summary)
+
+    @action(detail=True, methods=['get'], url_path='trr-summary')
+    def trr_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+        trr_ids = pinboard.trr_ids
+
+        summary = ActionResponse.objects.filter(
+            Q(trr_id__in=trr_ids) | Q(trr__officer_id__in=pinboard.all_officer_ids)
+        ).values(
+            'force_type'
+        ).annotate(
+            count=Count('id', distinct=True)
+        ).order_by('-count')
+
+        return Response(summary)
 
     @property
     def _source_pinboard(self):
