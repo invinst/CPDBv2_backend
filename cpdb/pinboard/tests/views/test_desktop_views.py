@@ -28,6 +28,7 @@ from data.factories import (
     OfficerBadgeNumberFactory,
     OfficerHistoryFactory,
     VictimFactory,
+    ComplainantFactory,
 )
 from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from pinboard.models import Pinboard
@@ -2990,3 +2991,93 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             {'force_type': None, 'count': 2},
         ]
         expect(list(response.data)).to.eq(expected_results)
+
+    def test_officers_summary(self):
+        allegation_officer1 = OfficerFactory(race='White', gender='M')
+        allegation_officer2 = OfficerFactory(race='Hispanic', gender='F')
+        trr_officer_1 = OfficerFactory(race='Black', gender='M')
+        trr_officer_2 = OfficerFactory(race='', gender='M')
+        pinboard_officer1 = OfficerFactory(race='White', gender='X')
+        pinboard_officer2 = OfficerFactory(race='Black', gender='')
+        OfficerFactory(race='White', gender='')
+        OfficerFactory(race='Black', gender='')
+
+        pinboard_allegation = AllegationFactory()
+        OfficerAllegationFactory(allegation=pinboard_allegation, officer=allegation_officer1)
+        OfficerAllegationFactory(allegation=pinboard_allegation, officer=allegation_officer2)
+
+        pinboard_trr1 = TRRFactory(officer=trr_officer_1)
+        pinboard_trr2 = TRRFactory(officer=trr_officer_2)
+
+        pinboard = PinboardFactory(
+            trrs=(pinboard_trr1, pinboard_trr2),
+            allegations=(pinboard_allegation,),
+            officers=(pinboard_officer1, pinboard_officer2)
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-officers-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([
+            {'race': 'Black', 'percentage': 0.33},
+            {'race': 'White', 'percentage': 0.33},
+            {'race': '', 'percentage': 0.17},
+            {'race': 'Hispanic', 'percentage': 0.17}
+        ])
+        expect(list(response.data['gender'])).to.eq([
+            {'gender': 'M', 'percentage': 0.5},
+            {'gender': '', 'percentage': 0.17},
+            {'gender': 'F', 'percentage': 0.17},
+            {'gender': 'X', 'percentage': 0.17}
+        ])
+
+    def test_complainants_summary(self):
+        trr_officer_1 = OfficerFactory()
+        trr_officer_2 = OfficerFactory()
+        pinboard_officer = OfficerFactory()
+        other_officer = OfficerFactory()
+
+        pinboard_allegation = AllegationFactory()
+        allegation1 = AllegationFactory()
+        allegation2 = AllegationFactory()
+        allegation3 = AllegationFactory()
+        allegation4 = AllegationFactory()
+        other_allegation = AllegationFactory()
+
+        OfficerAllegationFactory(allegation=pinboard_allegation, officer=other_officer)
+        OfficerAllegationFactory(allegation=allegation1, officer=trr_officer_1)
+        OfficerAllegationFactory(allegation=allegation2, officer=trr_officer_2)
+        OfficerAllegationFactory(allegation=allegation3, officer=trr_officer_2)
+        OfficerAllegationFactory(allegation=allegation4, officer=pinboard_officer)
+
+        ComplainantFactory(allegation=pinboard_allegation, gender='M', race='White')
+        ComplainantFactory(allegation=pinboard_allegation, gender='F', race='Black')
+        ComplainantFactory(allegation=allegation1, gender='X', race='Black')
+        ComplainantFactory(allegation=allegation1, gender='', race='')
+        ComplainantFactory(allegation=allegation3, gender='F', race='Hispanic')
+        ComplainantFactory(allegation=allegation4, gender='M', race='White')
+        ComplainantFactory(allegation=other_allegation, gender='M', race='')
+        ComplainantFactory(allegation=other_allegation, gender='F', race='Black')
+
+        pinboard_trr1 = TRRFactory(officer=trr_officer_1)
+        pinboard_trr2 = TRRFactory(officer=trr_officer_2)
+
+        pinboard = PinboardFactory(
+            trrs=(pinboard_trr1, pinboard_trr2),
+            allegations=(pinboard_allegation,),
+            officers=(pinboard_officer,)
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-complainants-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([
+            {'race': 'White', 'percentage': 0.33},
+            {'race': 'Black', 'percentage': 0.33},
+            {'race': 'Hispanic', 'percentage': 0.17},
+            {'race': '', 'percentage': 0.17}
+        ])
+        expect(list(response.data['gender'])).to.eq([
+            {'gender': 'F', 'percentage': 0.33},
+            {'gender': 'M', 'percentage': 0.33},
+            {'gender': 'X', 'percentage': 0.17},
+            {'gender': '', 'percentage': 0.17}
+        ])
