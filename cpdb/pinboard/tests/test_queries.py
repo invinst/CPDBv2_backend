@@ -155,12 +155,13 @@ class TrrSummaryQueryQueryTestCase(TestCase):
 
 class OfficersSummaryQueryTestCase(TestCase):
     def test_query(self):
-        allegation_officer1 = OfficerFactory(race='White', gender='M')
-        allegation_officer2 = OfficerFactory(race='Hispanic', gender='F')
-        trr_officer_1 = OfficerFactory(race='Black', gender='M')
+        allegation_officer1 = OfficerFactory(race='White', gender='F')
+        allegation_officer2 = OfficerFactory(race='Hispanic', gender='M')
+        trr_officer_1 = OfficerFactory(race='White', gender='M')
         trr_officer_2 = OfficerFactory(race='', gender='M')
-        pinboard_officer1 = OfficerFactory(race='White', gender='X')
+        pinboard_officer1 = OfficerFactory(race='White', gender='M')
         pinboard_officer2 = OfficerFactory(race='Black', gender='')
+        pinboard_officer3 = OfficerFactory(race='Asian/Pacific', gender='X')
         OfficerFactory(race='White', gender='')
         OfficerFactory(race='Black', gender='')
 
@@ -174,20 +175,20 @@ class OfficersSummaryQueryTestCase(TestCase):
         pinboard = PinboardFactory(
             trrs=(pinboard_trr1, pinboard_trr2),
             allegations=(pinboard_allegation,),
-            officers=(pinboard_officer1, pinboard_officer2)
+            officers=(pinboard_officer1, pinboard_officer2, pinboard_officer3)
         )
         query_results = dict(OfficersSummaryQuery(pinboard).query())
         expect(list(query_results['race'])).to.eq([
-            {'race': 'Black', 'percentage': 0.33},
-            {'race': 'White', 'percentage': 0.33},
-            {'race': '', 'percentage': 0.17},
-            {'race': 'Hispanic', 'percentage': 0.17}
+            {'race': 'White', 'percentage': 0.43},
+            {'race': 'Other', 'percentage': 0.29},
+            {'race': 'Black', 'percentage': 0.14},
+            {'race': 'Hispanic', 'percentage': 0.14}
         ])
         expect(list(query_results['gender'])).to.eq([
-            {'gender': 'M', 'percentage': 0.5},
-            {'gender': '', 'percentage': 0.17},
-            {'gender': 'F', 'percentage': 0.17},
-            {'gender': 'X', 'percentage': 0.17}
+            {'gender': 'M', 'percentage': 0.57},
+            {'gender': '', 'percentage': 0.14},
+            {'gender': 'F', 'percentage': 0.14},
+            {'gender': 'X', 'percentage': 0.14}
         ])
 
 
@@ -212,9 +213,13 @@ class ComplainantsSummaryQueryTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation4, officer=pinboard_officer)
 
         ComplainantFactory(allegation=pinboard_allegation, gender='M', race='White')
+        ComplainantFactory(allegation=pinboard_allegation, gender='F', race='White')
+        ComplainantFactory(allegation=pinboard_allegation, gender='F', race='White')
         ComplainantFactory(allegation=pinboard_allegation, gender='F', race='Black')
         ComplainantFactory(allegation=allegation1, gender='X', race='Black')
-        ComplainantFactory(allegation=allegation1, gender='', race='')
+        ComplainantFactory(allegation=allegation1, gender='F', race='Black')
+        ComplainantFactory(allegation=allegation1, gender='X', race='')
+        ComplainantFactory(allegation=allegation1, gender='', race='Asian/Pacific')
         ComplainantFactory(allegation=allegation3, gender='F', race='Hispanic')
         ComplainantFactory(allegation=allegation4, gender='M', race='White')
         ComplainantFactory(allegation=other_allegation, gender='M', race='')
@@ -230,14 +235,14 @@ class ComplainantsSummaryQueryTestCase(TestCase):
         )
         query_results = dict(ComplainantsSummaryQuery(pinboard).query())
         expect(list(query_results['race'])).to.eq([
-            {'race': 'White', 'percentage': 0.33},
-            {'race': 'Black', 'percentage': 0.33},
-            {'race': 'Hispanic', 'percentage': 0.17},
-            {'race': '', 'percentage': 0.17}
+            {'race': 'White', 'percentage': 0.4},
+            {'race': 'Black', 'percentage': 0.3},
+            {'race': 'Other', 'percentage': 0.2},
+            {'race': 'Hispanic', 'percentage': 0.1}
         ])
         expect(list(query_results['gender'])).to.eq([
-            {'gender': 'F', 'percentage': 0.33},
-            {'gender': 'M', 'percentage': 0.33},
-            {'gender': 'X', 'percentage': 0.17},
-            {'gender': '', 'percentage': 0.17}
+            {'gender': 'F', 'percentage': 0.5},
+            {'gender': 'X', 'percentage': 0.2},
+            {'gender': 'M', 'percentage': 0.2},
+            {'gender': '', 'percentage': 0.1}
         ])

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.db.models import Prefetch, Count, Q, F
+from django.db.models import Prefetch, Count, Q
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action

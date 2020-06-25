@@ -1,7 +1,11 @@
 from django.db.models import Count, Q, F
+from operator import itemgetter
 
 from data.models import Allegation, OfficerAllegation, Complainant
 from trr.models import ActionResponse
+
+
+DISPLAYED_RACES = ['Black', 'White', 'Hispanic']
 
 
 class BaseSummaryQuery(object):
@@ -14,6 +18,20 @@ class BaseSummaryQuery(object):
         for item in result:
             del item['count']
         return result
+
+    def _group_other_races(self, data):
+        grouped_data = []
+        other_count = 0
+        for item in data:
+            if not item['race'] in DISPLAYED_RACES:
+                other_count += item['count']
+            else:
+                grouped_data.append(item)
+        if other_count:
+            grouped_data.append({'race': 'Other', 'count': other_count})
+
+        grouped_data.sort(key=itemgetter('count'), reverse=True)
+        return grouped_data
 
     def query(self):
         raise NotImplementedError
@@ -45,10 +63,10 @@ class TrrSummaryQuery(BaseSummaryQuery):
 
 class OfficersSummaryQuery(BaseSummaryQuery):
     def query(self):
-        race_count = self.pinboard.all_officers.values('race').annotate(count=Count('id')).order_by('-count')
+        race_count = self.pinboard.all_officers.values('race').annotate(count=Count('id'))
         gender_count = self.pinboard.all_officers.values('gender').annotate(count=Count('id')).order_by('-count')
         return {
-            'race': self._calculate_percentage(race_count),
+            'race': self._calculate_percentage(self._group_other_races(race_count)),
             'gender': self._calculate_percentage(gender_count)
         }
 
@@ -62,9 +80,9 @@ class ComplainantsSummaryQuery(BaseSummaryQuery):
 
     def query(self):
         all_complainants = Complainant.objects.filter(allegation_id__in=self.all_allegation_ids())
-        race_count = all_complainants.values('race').annotate(count=Count('id')).order_by('-count')
+        race_count = all_complainants.values('race').annotate(count=Count('id'))
         gender_count = all_complainants.values('gender').annotate(count=Count('id')).order_by('-count')
         return {
-            'race': self._calculate_percentage(race_count),
+            'race': self._calculate_percentage(self._group_other_races(race_count)),
             'gender': self._calculate_percentage(gender_count)
         }

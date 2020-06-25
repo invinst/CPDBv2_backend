@@ -2993,12 +2993,13 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(list(response.data)).to.eq(expected_results)
 
     def test_officers_summary(self):
-        allegation_officer1 = OfficerFactory(race='White', gender='M')
-        allegation_officer2 = OfficerFactory(race='Hispanic', gender='F')
-        trr_officer_1 = OfficerFactory(race='Black', gender='M')
+        allegation_officer1 = OfficerFactory(race='White', gender='F')
+        allegation_officer2 = OfficerFactory(race='Hispanic', gender='M')
+        trr_officer_1 = OfficerFactory(race='White', gender='M')
         trr_officer_2 = OfficerFactory(race='', gender='M')
-        pinboard_officer1 = OfficerFactory(race='White', gender='X')
+        pinboard_officer1 = OfficerFactory(race='White', gender='M')
         pinboard_officer2 = OfficerFactory(race='Black', gender='')
+        pinboard_officer3 = OfficerFactory(race='Asian/Pacific', gender='X')
         OfficerFactory(race='White', gender='')
         OfficerFactory(race='Black', gender='')
 
@@ -3012,22 +3013,22 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         pinboard = PinboardFactory(
             trrs=(pinboard_trr1, pinboard_trr2),
             allegations=(pinboard_allegation,),
-            officers=(pinboard_officer1, pinboard_officer2)
+            officers=(pinboard_officer1, pinboard_officer2, pinboard_officer3)
         )
 
         response = self.client.get(reverse('api-v2:pinboards-officers-summary', kwargs={'pk': pinboard.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(list(response.data['race'])).to.eq([
-            {'race': 'Black', 'percentage': 0.33},
-            {'race': 'White', 'percentage': 0.33},
-            {'race': '', 'percentage': 0.17},
-            {'race': 'Hispanic', 'percentage': 0.17}
+            {'race': 'White', 'percentage': 0.43},
+            {'race': 'Other', 'percentage': 0.29},
+            {'race': 'Black', 'percentage': 0.14},
+            {'race': 'Hispanic', 'percentage': 0.14}
         ])
         expect(list(response.data['gender'])).to.eq([
-            {'gender': 'M', 'percentage': 0.5},
-            {'gender': '', 'percentage': 0.17},
-            {'gender': 'F', 'percentage': 0.17},
-            {'gender': 'X', 'percentage': 0.17}
+            {'gender': 'M', 'percentage': 0.57},
+            {'gender': '', 'percentage': 0.14},
+            {'gender': 'F', 'percentage': 0.14},
+            {'gender': 'X', 'percentage': 0.14}
         ])
 
     def test_complainants_summary(self):
@@ -3050,9 +3051,13 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         OfficerAllegationFactory(allegation=allegation4, officer=pinboard_officer)
 
         ComplainantFactory(allegation=pinboard_allegation, gender='M', race='White')
+        ComplainantFactory(allegation=pinboard_allegation, gender='F', race='White')
+        ComplainantFactory(allegation=pinboard_allegation, gender='F', race='White')
         ComplainantFactory(allegation=pinboard_allegation, gender='F', race='Black')
         ComplainantFactory(allegation=allegation1, gender='X', race='Black')
-        ComplainantFactory(allegation=allegation1, gender='', race='')
+        ComplainantFactory(allegation=allegation1, gender='F', race='Black')
+        ComplainantFactory(allegation=allegation1, gender='X', race='')
+        ComplainantFactory(allegation=allegation1, gender='', race='Asian/Pacific')
         ComplainantFactory(allegation=allegation3, gender='F', race='Hispanic')
         ComplainantFactory(allegation=allegation4, gender='M', race='White')
         ComplainantFactory(allegation=other_allegation, gender='M', race='')
@@ -3070,14 +3075,14 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         response = self.client.get(reverse('api-v2:pinboards-complainants-summary', kwargs={'pk': pinboard.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
         expect(list(response.data['race'])).to.eq([
-            {'race': 'White', 'percentage': 0.33},
-            {'race': 'Black', 'percentage': 0.33},
-            {'race': 'Hispanic', 'percentage': 0.17},
-            {'race': '', 'percentage': 0.17}
+            {'race': 'White', 'percentage': 0.4},
+            {'race': 'Black', 'percentage': 0.3},
+            {'race': 'Other', 'percentage': 0.2},
+            {'race': 'Hispanic', 'percentage': 0.1}
         ])
         expect(list(response.data['gender'])).to.eq([
-            {'gender': 'F', 'percentage': 0.33},
-            {'gender': 'M', 'percentage': 0.33},
-            {'gender': 'X', 'percentage': 0.17},
-            {'gender': '', 'percentage': 0.17}
+            {'gender': 'F', 'percentage': 0.5},
+            {'gender': 'X', 'percentage': 0.2},
+            {'gender': 'M', 'percentage': 0.2},
+            {'gender': '', 'percentage': 0.1}
         ])
