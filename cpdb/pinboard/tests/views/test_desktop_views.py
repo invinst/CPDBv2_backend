@@ -557,7 +557,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         expect(response.data['id']).to.have.length(8)
         expect(response.data).to.eq({
             'id': response.data['id'],
-            'title': 'Duplicate Pinboard Title',
+            'title': 'Duplicate Pinboard Title copy',
             'officer_ids': [111, 222],
             'crids': ['1111'],
             'trr_ids': [3, 4],
@@ -567,7 +567,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         duplicated_pinboard = Pinboard.objects.get(id=response.data['id'])
 
         expect(duplicated_pinboard.source_pinboard).to.eq(pinboard)
-        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title')
+        expect(duplicated_pinboard.title).to.eq('Duplicate Pinboard Title copy')
         expect(duplicated_pinboard.description).to.eq('Duplicate Pinboard Description')
         expect(set(duplicated_pinboard.officer_ids)).to.eq({111, 222})
         expect(set(duplicated_pinboard.crids)).to.eq({'1111'})
@@ -975,9 +975,12 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         )
         relevant_allegation_2 = AllegationFactory(
             crid='2',
+            add1='LTK street',
             incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc),
             point=None,
         )
+        VictimFactory(allegation=relevant_allegation_2, gender='F', age=65)
+        VictimFactory(allegation=relevant_allegation_2, gender='M', age=54)
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         AttachmentFileFactory(
             id=1,
@@ -1042,6 +1045,21 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                         'percentile_trr': '11.1100',
                     },
                 ],
+                'address': 'LTK street',
+                'victims': [
+                    {
+                        'gender': 'Female',
+                        'race': 'Black',
+                        'age': 65
+                    },
+                    {
+                        'gender': 'Male',
+                        'race': 'Black',
+                        'age': 54
+                    }
+                ],
+                'to': '/complaint/2/',
+                'sub_category': 'Unknown',
             }
         }, {
             'id': 1,
@@ -1049,6 +1067,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'url': 'http://cr-1-document.com/',
             'allegation': {
                 'crid': '1',
+                'address': '',
                 'category': 'Operation/Personnel Violations',
                 'incident_date': '2002-02-21',
                 'coaccused': [{
@@ -1061,6 +1080,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'percentile_allegation_internal': '66.6600',
                     'percentile_trr': '99.9900',
                 }],
+                'sub_category': '',
+                'victims': [],
+                'to': '/complaint/1/',
                 'point': {'lon': 0.01, 'lat': 0.02},
             }
         }]
@@ -2240,6 +2262,9 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         with freeze_time(datetime(2018, 8, 20, 12, 0, 10, tzinfo=pytz.utc)):
             pinboard_3.save()
 
+        pinboard_3.last_viewed_at = datetime(2020, 6, 8, 0, 15, 0, tzinfo=pytz.utc)
+        pinboard_3.save()
+
         PinboardFactory()
 
         session = self.client.session
@@ -2251,19 +2276,22 @@ class PinboardDesktopViewSetTestCase(APITestCase):
         response = self.client.get(reverse('api-v2:pinboards-list'))
         expect(response.data).to.eq([
             {
-                'id': 'eeee2222',
-                'title': 'Pinboard 2',
-                'created_at': '2018-05-08',
-            },
-            {
                 'id': 'eeee3333',
                 'title': 'Pinboard 3',
                 'created_at': '2018-02-10',
+                'last_viewed_at': '2020-06-08T00:15:00Z',
+            },
+            {
+                'id': 'eeee2222',
+                'title': 'Pinboard 2',
+                'created_at': '2018-05-08',
+                'last_viewed_at': '2018-05-08T15:00:15Z',
             },
             {
                 'id': 'eeee1111',
                 'title': 'Pinboard 1',
                 'created_at': '2018-04-03',
+                'last_viewed_at': '2018-04-03T12:00:10Z',
             }
         ])
 
@@ -2311,14 +2339,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'officer_ids': [officer_2.id],
                 'crids': [allegation.crid],
                 'trr_ids': [],
-            },
-            {
-                'id': 'eeee3333',
-                'title': 'Pinboard 3',
-                'created_at': '2018-02-10',
-                'officer_ids': [],
-                'crids': [allegation.crid],
-                'trr_ids': [trr.id],
+                'last_viewed_at': '2018-05-08T15:00:15Z',
             },
             {
                 'id': 'eeee1111',
@@ -2327,7 +2348,17 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                 'officer_ids': [officer_1.id],
                 'crids': [allegation.crid],
                 'trr_ids': [],
-            }
+                'last_viewed_at': '2018-04-03T12:00:10Z',
+            },
+            {
+                'id': 'eeee3333',
+                'title': 'Pinboard 3',
+                'created_at': '2018-02-10',
+                'officer_ids': [],
+                'crids': [allegation.crid],
+                'trr_ids': [trr.id],
+                'last_viewed_at': '2018-02-10T15:00:15Z',
+            },
         ])
 
     def test_all_returns_empty_when_not_authenticated(self):
@@ -2726,3 +2757,86 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             'allegations': [],
             'trrs': [],
         })
+
+    def test_delete_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee3333'])
+
+    def test_delete_not_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee4444'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee2222', 'eeee3333'])
+
+    def test_view_owned_pinboard(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee1111',
+                title='Pinboard 1',
+            )
+
+        with freeze_time(datetime(2018, 3, 3, 12, 0, 20, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee2222',
+                title='Pinboard 2',
+            )
+
+        with freeze_time(datetime(2018, 2, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee3333',
+                title='Pinboard 3',
+            )
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        with freeze_time(datetime(2018, 5, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+            expect(response.status_code).to.eq(status.HTTP_200_OK)
+            viewed_pinboard = Pinboard.objects.filter(id='eeee2222').first()
+            expect(viewed_pinboard.last_viewed_at).to.eq(datetime(2018, 5, 3, 12, 0, 10, tzinfo=pytz.utc))
+
+    def test_view_not_owned_pinboard(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+
+    def test_view_not_existed_pinboard(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee1111',
+                title='Pinboard 1',
+            )
+
+        with freeze_time(datetime(2018, 2, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee3333',
+                title='Pinboard 3',
+            )
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)

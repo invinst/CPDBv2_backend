@@ -14,6 +14,7 @@ class PinboardSerializer(NoNullSerializer):
     id = serializers.CharField(min_length=8, max_length=8, read_only=True)
     title = serializers.CharField()
     created_at = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
+    last_viewed_at = serializers.DateTimeField(default_timezone=pytz.utc)
 
 
 class ListPinboardDetailSerializer(PinboardSerializer):

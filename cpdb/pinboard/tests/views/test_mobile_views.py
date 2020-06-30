@@ -10,6 +10,7 @@ from mock import patch
 from rest_framework import status
 from rest_framework.test import APITestCase
 from robber import expect
+from freezegun import freeze_time
 
 from data.cache_managers import allegation_cache_manager
 from data.factories import (
@@ -1485,3 +1486,86 @@ class PinboardMobileViewSetTestCase(APITestCase):
             'http://testserver/api/v2/mobile/pinboards/66ef1560/relevant-complaints/?limit=2'
         )
         expect(last_response.data['next']).to.be.none()
+
+    def test_delete_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee3333'])
+
+    def test_delete_not_owned_pinboard_success(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+        response = self.client.delete(reverse('api-v2:pinboards-mobile-detail', kwargs={'pk': 'eeee4444'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+        expect(self.client.session.get('owned_pinboards')).to.eq(['eeee1111', 'eeee2222', 'eeee3333'])
+
+    def test_view_owned_pinboard(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee1111',
+                title='Pinboard 1',
+            )
+
+        with freeze_time(datetime(2018, 3, 3, 12, 0, 20, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee2222',
+                title='Pinboard 2',
+            )
+
+        with freeze_time(datetime(2018, 2, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee3333',
+                title='Pinboard 3',
+            )
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        with freeze_time(datetime(2018, 5, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+            expect(response.status_code).to.eq(status.HTTP_200_OK)
+            viewed_pinboard = Pinboard.objects.filter(id='eeee2222').first()
+            expect(viewed_pinboard.last_viewed_at).to.eq(datetime(2018, 5, 3, 12, 0, 10, tzinfo=pytz.utc))
+
+    def test_view_not_owned_pinboard(self):
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)
+
+    def test_view_not_existed_pinboard(self):
+        with freeze_time(datetime(2018, 4, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee1111',
+                title='Pinboard 1',
+            )
+
+        with freeze_time(datetime(2018, 2, 3, 12, 0, 10, tzinfo=pytz.utc)):
+            PinboardFactory(
+                id='eeee3333',
+                title='Pinboard 3',
+            )
+
+        session = self.client.session
+        session.update({
+            'owned_pinboards': ['eeee1111', 'eeee2222', 'eeee3333']
+        })
+        session.save()
+
+        response = self.client.post(reverse('api-v2:pinboards-mobile-view', kwargs={'pk': 'eeee2222'}))
+        expect(response.status_code).to.eq(status.HTTP_400_BAD_REQUEST)

@@ -1,9 +1,9 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.db.models import Prefetch, Count
-from django.db.models import Q
+from django.db.models import Prefetch, Count, Q
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -55,7 +55,7 @@ class PinboardViewSet(
 
     def list(self, request):
         owned_pinboards = request.session.get('owned_pinboards', [])
-        pinboards = Pinboard.objects.filter(id__in=owned_pinboards).order_by('-updated_at')
+        pinboards = Pinboard.objects.filter(id__in=owned_pinboards).order_by('-last_viewed_at')
         detail = self.request.query_params.get('detail', None)
         if detail:
             pinboards = pinboards.prefetch_related('officers', 'allegations', 'trrs')
@@ -65,7 +65,7 @@ class PinboardViewSet(
     def create(self, request):
         source_pinboard = self._source_pinboard
         if source_pinboard:
-            pinboard = source_pinboard.clone()
+            pinboard = source_pinboard.clone(is_duplicated=True)
             self.update_owned_pinboards(request, pinboard.id)
             self.update_latest_retrieved_pinboard(request, pinboard.id)
             return Response(OrderedPinboardSerializer(pinboard).data)
@@ -115,6 +115,26 @@ class PinboardViewSet(
     def update_latest_retrieved_pinboard(self, request, pinboard_id):
         request.session['latest_retrieved_pinboard'] = pinboard_id
         request.session['modified'] = True
+
+    def delete(self, request, pk):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        if pk in owned_pinboards:
+            request.session['owned_pinboards'] = [pinboard for pinboard in owned_pinboards if pinboard != pk]
+            request.session['modified'] = True
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['POST'], url_path='view')
+    def view(self, request, pk):
+        owned_pinboards = request.session.get('owned_pinboards', [])
+        if pk in owned_pinboards:
+            viewed_pinboard = Pinboard.objects.filter(id=pk).first()
+            if viewed_pinboard:
+                viewed_pinboard.last_viewed_at = timezone.now()
+                viewed_pinboard.save()
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'], url_path='latest-retrieved-pinboard')
     def latest_retrieved_pinboard(self, request):
