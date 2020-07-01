@@ -58,7 +58,7 @@
 ### Retrieve a pinboard [GET]
 
 + Parameters
-    + pk (number) - number ID of Pinboard
+    + pk (string) - ID of Pinboard
 
 + Response 200 (application/json)
 
@@ -74,7 +74,7 @@
 ### Update a pinboard [PUT]
 
 + Parameters
-    + pk (number) - number ID of Pinboard
+    + pk (string) - ID of Pinboard
 
 + Request
 
@@ -97,6 +97,13 @@
             "description": "abc"
         }
 
+### Remove a pinboard [DELETE]
+
++ Parameters
+    + pk (string) - ID of Pinboard
+
++ Response 200
+
 ## Pinboards list [/pinboards/]
 
 ### Get all pinboards of current user [GET]
@@ -112,12 +119,14 @@
                 {
                     "id": "5cd06f2b",
                     "title": "My Pinboard 1",
-                    "created_at": "2020-04-18"
+                    "created_at": "2020-04-18",
+                    "last_viewed_at": "2020-06-17T03:11:47.384524Z"
                 },
                 {
                     "id": "962d1e05",
                     "title": "My Pinboard 2",
                     "created_at": "2020-07-18"
+                    "last_viewed_at": "2020-06-15T07:08:07.699989Z"
                 }
             ]
         ```
@@ -129,6 +138,7 @@
                     "id": "5cd06f2b",
                     "title": "My Pinboard 1",
                     "created_at": "2020-04-18",
+                    "last_viewed_at": "2020-06-16T02:55:33.132359Z",
                     "officer_ids": [1, 2],
                     "crids": ['123abc'],
                     "trr_ids": [1]
@@ -137,6 +147,7 @@
                     "id": "962d1e05",
                     "title": "My Pinboard 2",
                     "created_at": "2020-07-18",
+                    "last_viewed_at": "2020-06-15T07:09:08.599145Z",
                     "officer_ids": [2, 3],
                     "crids": ['456def'],
                     "trr_ids": [2, 4]

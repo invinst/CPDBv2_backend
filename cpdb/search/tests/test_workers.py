@@ -270,7 +270,7 @@ class CRWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(doc.crid).to.be.eq('123789')
         expect(
             doc.meta.inner_hits.attachment_files.hits[0].meta.highlight['attachment_files.text_content'][0]
-        ).to.contain('<em>CHICAGO</em>')
+        ).to.contain('<em>CHICAGO </em>')
 
 
 class DateCRWorkerTestCase(IndexMixin, SimpleTestCase):

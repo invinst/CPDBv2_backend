@@ -3,7 +3,7 @@
 ### Get selected complaints
 
 + Parameters
-    + pk (number) - number ID of Pinboard
+    + pk (string) - ID of Pinboard
 
 + Response 200 (application/json)
 
