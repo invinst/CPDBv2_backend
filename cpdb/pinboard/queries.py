@@ -1,11 +1,11 @@
 from django.db.models import Count, Q, F
-from operator import itemgetter
 
 from data.models import Allegation, OfficerAllegation, Complainant
 from trr.models import ActionResponse
 
 
 DISPLAYED_RACES = ['Black', 'White', 'Hispanic']
+DISPLAYED_GENDERS = ['M', 'F']
 
 
 class BaseSummaryQuery(object):
@@ -19,19 +19,21 @@ class BaseSummaryQuery(object):
             del item['count']
         return result
 
-    def _group_other_races(self, data):
-        grouped_data = []
-        other_count = 0
-        for item in data:
-            if not item['race'] in DISPLAYED_RACES:
-                other_count += item['count']
-            else:
-                grouped_data.append(item)
-        if other_count:
-            grouped_data.append({'race': 'Other', 'count': other_count})
+    def _group_race_data(self, data):
+        return self._group_geographic_data(data, DISPLAYED_RACES, 'Other', 'race')
 
-        grouped_data.sort(key=itemgetter('count'), reverse=True)
-        return grouped_data
+    def _group_gender_data(self, data):
+        return self._group_geographic_data(data, DISPLAYED_GENDERS, 'Unknown', 'gender')
+
+    def _group_geographic_data(self, data, display_names, other_name, name_key):
+        all_item_names = display_names + [other_name]
+        result = {name: 0 for name in all_item_names}
+        for item in data:
+            if not item[name_key] in display_names:
+                result[other_name] += item['count']
+            else:
+                result[item[name_key]] += item['count']
+        return [{name_key: name, 'count': result[name]} for name in all_item_names]
 
     def query(self):
         raise NotImplementedError
@@ -66,8 +68,8 @@ class OfficersSummaryQuery(BaseSummaryQuery):
         race_count = self.pinboard.all_officers.values('race').annotate(count=Count('id'))
         gender_count = self.pinboard.all_officers.values('gender').annotate(count=Count('id')).order_by('-count')
         return {
-            'race': self._calculate_percentage(self._group_other_races(race_count)),
-            'gender': self._calculate_percentage(gender_count)
+            'race': self._calculate_percentage(self._group_race_data(race_count)),
+            'gender': self._calculate_percentage(self._group_gender_data(gender_count))
         }
 
 
@@ -83,6 +85,6 @@ class ComplainantsSummaryQuery(BaseSummaryQuery):
         race_count = all_complainants.values('race').annotate(count=Count('id'))
         gender_count = all_complainants.values('gender').annotate(count=Count('id')).order_by('-count')
         return {
-            'race': self._calculate_percentage(self._group_other_races(race_count)),
-            'gender': self._calculate_percentage(gender_count)
+            'race': self._calculate_percentage(self._group_race_data(race_count)),
+            'gender': self._calculate_percentage(self._group_gender_data(gender_count))
         }
