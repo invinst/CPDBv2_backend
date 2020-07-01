@@ -193,7 +193,7 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
-          no_output_timeout: 2h
+          no_output_timeout: 4h
           command: |
             if [ -z $SKIP_REBUILD_INDEX ] || [ $SKIP_REBUILD_INDEX != "true" ]; then
               if [ $CIRCLE_BRANCH == "master" ]
@@ -222,7 +222,7 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
-          no_output_timeout: 2h
+          no_output_timeout: 4h
           command: |
             if [ -z $SKIP_REBUILD_SEARCH_INDEX ] || [ $SKIP_REBUILD_SEARCH_INDEX != "true" ]; then
               if [ $CIRCLE_BRANCH == "master" ]
