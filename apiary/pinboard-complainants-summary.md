@@ -11,28 +11,32 @@
             "race": [
                 {
                     "race": "Black",
-                    "percentage": 0.67
+                    "percentage": 0.7
+                },
+                {
+                    "race": "White",
+                    "percentage": 0.13
+                },
+                {
+                    "race": "Hispanic",
+                    "percentage": 0.06
                 },
                 {
                     "race": "Other",
-                    "percentage": 0.18
+                    "percentage": 0.11
                 }
-                {
-                    "race": "White",
-                    "percentage": 0.14
-                },
             ],
             "gender": [
                 {
-                    "gender": "F",
-                    "percentage": 0.49
-                },
-                {
                     "gender": "M",
-                    "percentage": 0.47
+                    "percentage": 0.51
                 },
                 {
-                    "gender": "",
+                    "gender": "F",
+                    "percentage": 0.45
+                },
+                {
+                    "gender": "Unknown",
                     "percentage": 0.04
                 }
             ]
