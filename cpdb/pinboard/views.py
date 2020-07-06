@@ -40,6 +40,7 @@ from pinboard.serializers.mobile.relevant import (
 )
 from trr.models import ActionResponse
 from .models import Pinboard, ProxyAllegation as Allegation
+from .queries import ComplaintSummaryQuery, TrrSummaryQuery, OfficersSummaryQuery, ComplainantsSummaryQuery
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -199,6 +200,30 @@ class PinboardViewSet(
         relevant_complaints = paginator.paginate_queryset(pinboard.relevant_complaints, request, view=self)
         serializer = self.relevant_complaint_serializer_class(relevant_complaints, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='complaint-summary')
+    def complaint_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+        return Response(ComplaintSummaryQuery(pinboard).query())
+
+    @action(detail=True, methods=['get'], url_path='trr-summary')
+    def trr_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+        return Response(TrrSummaryQuery(pinboard).query())
+
+    @action(detail=True, methods=['get'], url_path='officers-summary')
+    def officers_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+        return Response(OfficersSummaryQuery(pinboard).query())
+
+    @action(detail=True, methods=['get'], url_path='complainants-summary')
+    def complainants_summary(self, request, pk):
+        queryset = Pinboard.objects.all()
+        pinboard = get_object_or_404(queryset, id=pk)
+        return Response(ComplainantsSummaryQuery(pinboard).query())
 
     @property
     def _source_pinboard(self):

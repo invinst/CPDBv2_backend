@@ -3,6 +3,7 @@ from random import sample
 
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
+from django.utils.functional import cached_property
 
 from sortedm2m.fields import SortedManyToManyField
 
@@ -58,13 +59,15 @@ class Pinboard(TimeStampsModel):
 
     @property
     def all_officers(self):
-        allegation_ids = self.allegations.all().values_list('crid', flat=True)
-        trr_ids = self.trrs.all().values_list('id', flat=True)
         return Officer.objects.filter(
-            Q(officerallegation__allegation_id__in=allegation_ids) |
-            Q(trr__id__in=trr_ids) |
+            Q(officerallegation__allegation_id__in=self.crids) |
+            Q(trr__id__in=self.trr_ids) |
             Q(pinboard__id=self.id)
-        ).order_by('first_name', 'last_name').distinct()
+        ).distinct()
+
+    @property
+    def all_officer_ids(self):
+        return self.all_officers.values_list('id', flat=True)
 
     def clone(self, is_duplicated=False):
         new_pinboard = Pinboard()
@@ -87,17 +90,17 @@ class Pinboard(TimeStampsModel):
 
         return new_pinboard
 
-    @property
+    @cached_property
     def officer_ids(self):
-        return self.officers.values_list('id', flat=True)
+        return list(self.officers.values_list('id', flat=True))
 
-    @property
+    @cached_property
     def crids(self):
-        return self.allegations.values_list('crid', flat=True)
+        return list(self.allegations.values_list('crid', flat=True))
 
-    @property
+    @cached_property
     def trr_ids(self):
-        return self.trrs.values_list('id', flat=True)
+        return list(self.trrs.values_list('id', flat=True))
 
     def relevant_documents_query(self, **kwargs):
         return AttachmentFile.showing.filter(
