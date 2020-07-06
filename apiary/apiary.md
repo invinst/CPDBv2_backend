@@ -89,6 +89,14 @@ CPDP is a simple API serving the CPDP website version 2 (not the same as api ver
 
 :[Pinboard relevant rows](pinboard_relevant.md)
 
+:[Pinboard complaint summary](pinboard-complaint-summary.md)
+
+:[Pinboard TRR summary](pinboard-trr-summary.md)
+
+:[Pinboard officers summary](pinboard-officers-summary.md)
+
+:[Pinboard complainants summary](pinboard-complainants-summary.md)
+
 :[Pinboard mobile selected complaints](pinboard_mobile_complaints.md)
 
 :[Pinboard mobile selected officers](pinboard_mobile_officers.md)
