@@ -1043,8 +1043,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     @patch('shared.attachment_importer.aws')
     @patch('document_cloud.importers.send_cr_attachment_available_email')
     @patch('document_cloud.importers.search_all')
+    @patch('document_cloud.importers.DocumentCloudSession')
     def test_search_and_update_attachments_success_with_custom_search_syntaxes(
-        self, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock
+        self, _, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock
     ):
         allegation = AllegationFactory(crid='234', summary='')
         new_cloud_document_3 = create_object({
