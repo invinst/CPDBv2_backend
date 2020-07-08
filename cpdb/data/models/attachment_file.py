@@ -35,6 +35,7 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     downloads_count = models.IntegerField(default=0)
     notifications_count = models.IntegerField(default=0)
     show = models.BooleanField(default=True)
+    is_external_ocr = models.BooleanField(default=False)
     manually_updated = models.BooleanField(default=False)
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 

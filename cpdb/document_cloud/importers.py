@@ -177,7 +177,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                 attachment.pending_documentcloud_id = None
 
             if cloud_document.access != 'error':
-                if not attachment.manually_updated:
+                if not attachment.manually_updated and not attachment.is_external_ocr:
                     attachment.text_content = self.get_full_text(cloud_document)
                 for model_field, doc_field in self.mapping_fields.items():
                     setattr(attachment, model_field, getattr(cloud_document, doc_field))
