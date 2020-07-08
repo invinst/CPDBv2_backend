@@ -202,6 +202,7 @@ class AttachmentFileFactory(TaggableModelFactory):
     show = True
     manually_updated = False
     last_updated_by = None
+    is_external_ocr = False
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):
