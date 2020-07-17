@@ -3030,6 +3030,19 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             {'gender': 'Unknown', 'percentage': 0.29}
         ])
 
+    def test_officers_summary_with_no_related_officer(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=(pinboard_allegation,),
+            officers=[]
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-officers-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([])
+        expect(list(response.data['gender'])).to.eq([])
+
     def test_complainants_summary(self):
         trr_officer_1 = OfficerFactory()
         trr_officer_2 = OfficerFactory()
@@ -3084,3 +3097,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             {'gender': 'F', 'percentage': 0.5},
             {'gender': 'Unknown', 'percentage': 0.3}
         ])
+
+    def test_complainants_summary_with_no_complainant(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=[pinboard_allegation],
+            officers=[],
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-complainants-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([])
+        expect(list(response.data['gender'])).to.eq([])
