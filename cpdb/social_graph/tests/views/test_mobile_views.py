@@ -1,5 +1,6 @@
 import pytz
 from datetime import datetime
+from operator import itemgetter
 
 from django.contrib.gis.geos import Point
 from django.urls import reverse
@@ -1173,7 +1174,10 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         ]
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
+        response_data = response.data
+        for item in response_data:
+            item['coaccused'] = sorted(item['coaccused'], key=itemgetter('id'))
+        expect(response_data).to.eq(expected_data)
 
     def test_geographic_crs_with_officer_ids_param(self):
         officer_1 = OfficerFactory(id=1)
