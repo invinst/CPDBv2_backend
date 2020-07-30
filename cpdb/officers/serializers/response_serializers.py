@@ -247,5 +247,22 @@ class TRRNewTimelineSerializer(BaseTimelineSerializer):
             return None
 
 
+class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
+    date_sort = serializers.DateField(source='date', format=None)
+    date = serializers.DateField(format='%Y-%m-%d')
+    case_no = serializers.CharField()
+    misconduct = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'LAWSUIT'
+
+    def get_priority_sort(self, obj):
+        return 50
+
+    def get_misconduct(self, obj):
+        misconduct = obj.misconducts.all()[0]
+        return misconduct.name if misconduct else ''
+
+
 class OfficerCoaccusalSerializer(OfficerCardSerializer):
     coaccusal_count = serializers.IntegerField()
