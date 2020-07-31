@@ -11,6 +11,7 @@ from django.db.models.functions import ExtractYear
 from django.utils import timezone
 from django.utils.text import slugify
 from django_bulk_update.manager import BulkUpdateManager
+from django.contrib.contenttypes.fields import GenericRelation
 
 from data.constants import (
     ACTIVE_CHOICES,
@@ -26,6 +27,7 @@ from .common import TaggableModel
 from data.utils.aggregation import get_num_range_case
 from data.utils.interpolate import ScaleThreshold
 from data.validators import validate_race
+from data.models.attachment_file import AttachmentFile
 from .common import TimeStampsModel
 
 
@@ -42,6 +44,12 @@ class Officer(TimeStampsModel, TaggableModel):
     rank = models.CharField(max_length=100, blank=True)
     birth_year = models.IntegerField(null=True)
     active = models.CharField(choices=ACTIVE_CHOICES, max_length=10, default=ACTIVE_UNKNOWN_CHOICE)
+    attachment_files = GenericRelation(
+        AttachmentFile,
+        content_type_field='owner_type',
+        object_id_field='owner_id',
+        related_query_name = 'officer'
+    )
 
     # CACHED COLUMNS
     complaint_percentile = models.DecimalField(max_digits=6, decimal_places=4, null=True)
