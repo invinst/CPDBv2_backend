@@ -1,6 +1,5 @@
 from django.db import models
 from django.db.models import F
-from django.contrib.contenttypes.models import ContentType
 
 from data.utils.attachment_file import filter_attachments
 from es_index import register_indexer

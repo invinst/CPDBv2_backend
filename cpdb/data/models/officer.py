@@ -5,6 +5,7 @@ from itertools import groupby
 import botocore
 from django.apps import apps
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.db.models import Q, Count
 from django.db.models.functions import ExtractYear
@@ -69,6 +70,8 @@ class Officer(TimeStampsModel, TaggableModel):
     last_unit = models.ForeignKey('data.PoliceUnit', on_delete=models.SET_NULL, null=True)
     current_salary = models.PositiveIntegerField(null=True)
     has_unique_name = models.BooleanField(default=False)
+
+    allegations = models.ManyToManyField('data.Allegation', through='data.OfficerAllegation')
 
     objects = BulkUpdateManager()
 
@@ -314,17 +317,30 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def allegation_attachments(self):
+        Allegation = apps.get_app_config('data').get_model('Allegation')
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
+
+        allegation_ids = self.allegations.values_list('crid', flat=True)
+
         return AttachmentFile.showing.filter(
-            allegation__officerallegation__officer=self,
+            owner_type=ContentType.objects.get_for_model(Allegation),
+            owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 
     @property
     def investigator_attachments(self):
+        Allegation = apps.get_app_config('data').get_model('Allegation')
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
+        InvestigatorAllegation = apps.get_app_config('data').get_model('InvestigatorAllegation')
+
+        investigator_ids = self.investigator_set.values_list('id', flat=True)
+        allegation_ids = InvestigatorAllegation.objects.filter(investigator_id__in=list(investigator_ids))\
+                                                        .values_list('allegation_id', flat=True).distinct()
+
         return AttachmentFile.showing.filter(
-            allegation__investigatorallegation__investigator__officer=self,
+            owner_type=ContentType.objects.get_for_model(Allegation),
+            owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 

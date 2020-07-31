@@ -19,7 +19,7 @@ def migrate_from_attachment_allegation_to_owner(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0122_add_owner_data'),
+        ('data', '0125_add_owner_data'),
     ]
 
     operations = [

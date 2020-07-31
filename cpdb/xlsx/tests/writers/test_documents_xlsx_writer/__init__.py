@@ -43,7 +43,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
             external_created_at=datetime(2019, 1, 9, 9, 11, 38, 41929, tzinfo=pytz.utc),
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
         )
-        AttachmentFileFactory(allegation=allegation, source_type='COPA')
+        AttachmentFileFactory(owner=allegation, source_type='COPA')
         AttachmentFileFactory(source_type='DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1)
@@ -66,7 +66,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
             external_created_at=datetime(2019, 1, 8, 9, 11, 38, 41927, tzinfo=pytz.utc),
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334111',
         )
-        AttachmentFileFactory(allegation=allegation456, source_type='COPA')
+        AttachmentFileFactory(owner=allegation456, source_type='COPA')
         AttachmentFileFactory(source_type='DOCUMENTCLOUD')
         AttachmentFileFactory(source_type='PORTAL_COPA_DOCUMENTCLOUD')
 

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
-        ('data', '0121_allow_tags_to_be_blanked'),
+        ('data', '0124_attachmentnarrative'),
     ]
 
     operations = [

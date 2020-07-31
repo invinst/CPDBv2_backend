@@ -98,9 +98,9 @@ class TagListFilterTestCase(TestCase):
         self.request = RequestFactory()
         allegation_1 = AllegationFactory(incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
         allegation_2 = AllegationFactory(incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
-        self.attachment_file_1 = AttachmentFileFactory(allegation=allegation_1)
-        self.attachment_file_2 = AttachmentFileFactory(allegation=allegation_2)
-        self.attachment_file_3 = AttachmentFileFactory(allegation=allegation_2)
+        self.attachment_file_1 = AttachmentFileFactory(owner=allegation_1)
+        self.attachment_file_2 = AttachmentFileFactory(owner=allegation_2)
+        self.attachment_file_3 = AttachmentFileFactory(owner=allegation_2)
         self.attachment_file_1.tags.set('Tactical', 'Complaint', 'Taser')
         self.attachment_file_2.tags.set('Taser')
 

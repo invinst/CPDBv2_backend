@@ -36,6 +36,7 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
+    allegation = models.ForeignKey('data.Allegation', on_delete=models.SET_NULL, null=True, blank=True)
     source_type = models.CharField(max_length=255, db_index=True)
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)

@@ -57,12 +57,12 @@ class AttachmentFileTestCase(TestCase):
 
     def test_linked_documents(self):
         allegation = AllegationFactory()
-        attachment = AttachmentFileFactory(allegation=allegation, show=True)
-        linked_document1 = AttachmentFileFactory(allegation=allegation, file_type='document', show=True)
-        linked_document2 = AttachmentFileFactory(allegation=allegation, file_type='document', show=True)
-        not_showing_linked_document = AttachmentFileFactory(allegation=allegation, file_type='document', show=False)
-        audio = AttachmentFileFactory(allegation=allegation, file_type='audio', show=True)
-        video = AttachmentFileFactory(allegation=allegation, file_type='video', show=True)
+        attachment = AttachmentFileFactory(owner=allegation, show=True)
+        linked_document1 = AttachmentFileFactory(owner=allegation, file_type='document', show=True)
+        linked_document2 = AttachmentFileFactory(owner=allegation, file_type='document', show=True)
+        not_showing_linked_document = AttachmentFileFactory(owner=allegation, file_type='document', show=False)
+        audio = AttachmentFileFactory(owner=allegation, file_type='audio', show=True)
+        video = AttachmentFileFactory(owner=allegation, file_type='video', show=True)
 
         expect(attachment.linked_documents).to.contain(linked_document1)
         expect(attachment.linked_documents).to.contain(linked_document2)
