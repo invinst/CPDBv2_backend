@@ -184,7 +184,8 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
 
         expect(Allegation.objects.count()).to.eq(1)
         expect(Allegation.objects.get(crid='123').subjects).to.eq(['Subject'])
-        expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
+
+        expect(allegation.attachment_files.count()).to.eq(2)
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).source_type).to.eq(AttachmentSourceType.PORTAL_COPA)
 
         expect(DocumentCrawler.objects.count()).to.eq(1)
@@ -238,7 +239,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         }]
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
         attachment_file = AttachmentFileFactory(
-            allegation__crid='123',
+            owner=AllegationFactory(crid='123'),
             title='old_title',
             source_type=AttachmentSourceType.PORTAL_COPA,
             external_id='document.pdf',
@@ -288,7 +289,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         }
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
         attachment_file = AttachmentFileFactory(
-            allegation__crid='123',
+            owner=AllegationFactory(crid='123'),
             title='old_title',
             source_type=AttachmentSourceType.PORTAL_COPA,
             external_id='288225991',
@@ -322,7 +323,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         }]
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
         attachment_file = AttachmentFileFactory(
-            allegation__crid='123',
+            owner=AllegationFactory(crid='123'),
             title='old_title',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='288225991',
@@ -360,7 +361,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         }]
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
         attachment_file = AttachmentFileFactory(
-            allegation__crid='123',
+            owner=AllegationFactory(crid='123'),
             title='old_title',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='document.pdf',
@@ -443,7 +444,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='123')
         AttachmentFileFactory(
             external_id='123-OCIR-Redacted.pdf',
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='Tactical Response Report',
@@ -478,7 +479,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='456-OCIR-Redacted.pdf',
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='Tactical Response Report',
@@ -607,7 +608,7 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
             new_attachments = CopaSummaryReportsAttachmentImporter(logger).crawl_and_update_attachments()
 
         expect(Allegation.objects.count()).to.eq(1)
-        expect(AttachmentFile.objects.filter(allegation=allegation).count()).to.eq(2)
+        expect(allegation.attachment_files.count()).to.eq(2)
         expect(AttachmentFile.objects.get(pk=attachment_file.pk).source_type).to.eq(
             AttachmentSourceType.SUMMARY_REPORTS_COPA
         )
@@ -703,7 +704,7 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='123')
         AttachmentFileFactory(
             external_id='123-OCIR-Redacted.pdf',
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='COPA Summary Report',
@@ -738,7 +739,7 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='456-OCIR-Redacted.pdf',
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA,
             file_type=MEDIA_TYPE_DOCUMENT,
             title='Tactical Response Report',
