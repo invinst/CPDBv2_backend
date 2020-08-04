@@ -2,7 +2,7 @@ import re
 from random import sample
 
 from django.contrib.gis.db import models
-from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
+from django.db.models import Q, Count, Prefetch, Value, IntegerField, F, OuterRef
 from django.utils.functional import cached_property
 
 from sortedm2m.fields import SortedManyToManyField
@@ -103,6 +103,7 @@ class Pinboard(TimeStampsModel):
         return list(self.trrs.values_list('id', flat=True))
 
     def relevant_documents_query(self, **kwargs):
+        import ipdb; ipdb.set_trace();
         return AttachmentFile.showing.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
@@ -115,6 +116,7 @@ class Pinboard(TimeStampsModel):
             'allegation',
             'allegation__most_common_category',
         ).prefetch_related(
+            Prefetch('allegation', queryset=Allegation.objects.filter(crid=OuterRef('owner_id'))),
             Prefetch(
                 'allegation__officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),

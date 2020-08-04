@@ -598,16 +598,16 @@ class PinboardTestCase(TestCase):
         relevant_allegation_2 = AllegationFactory(crid='2', incident_date=datetime(2002, 2, 22, tzinfo=pytz.utc))
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         relevant_document_1 = AttachmentFileFactory(
-            id=1, file_type='document', allegation=relevant_allegation_1, show=True
+            id=1, file_type='document', owner=relevant_allegation_1, show=True
         )
         relevant_document_2 = AttachmentFileFactory(
-            id=2, file_type='document', allegation=relevant_allegation_2, show=True
+            id=2, file_type='document', owner=relevant_allegation_2, show=True
         )
         AttachmentFileFactory(
-            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+            id=998, file_type='document', title='relevant but not show', owner=relevant_allegation_1, show=False
         )
         AttachmentFileFactory(
-            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+            id=999, file_type='document', title='not relevant', owner=not_relevant_allegation, show=True
         )
 
         pinboard = PinboardFactory(
@@ -641,16 +641,16 @@ class PinboardTestCase(TestCase):
         OfficerAllegationFactory(officer=pinned_officer_2, allegation=pinned_allegation_2)
         not_relevant_allegation = AllegationFactory(crid='not relevant')
         relevant_document_1 = AttachmentFileFactory(
-            id=1, file_type='document', allegation=pinned_allegation_1, show=True
+            id=1, file_type='document', owner=pinned_allegation_1, show=True
         )
         relevant_document_2 = AttachmentFileFactory(
-            id=2, file_type='document', allegation=pinned_allegation_2, show=True
+            id=2, file_type='document', owner=pinned_allegation_2, show=True
         )
         AttachmentFileFactory(
-            id=998, file_type='document',  title='relevant but not show', allegation=pinned_allegation_1, show=False
+            id=998, file_type='document',  title='relevant but not show', owner=pinned_allegation_1, show=False
         )
         AttachmentFileFactory(
-            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+            id=999, file_type='document', title='not relevant', owner=not_relevant_allegation, show=True
         )
 
         relevant_documents = list(pinboard.relevant_documents)
@@ -680,16 +680,16 @@ class PinboardTestCase(TestCase):
         OfficerAllegationFactory(officer=pinned_officer_2, allegation=relevant_allegation_2)
 
         relevant_document_1 = AttachmentFileFactory(
-            id=1, file_type='document', allegation=relevant_allegation_1, show=True
+            id=1, file_type='document', owner=relevant_allegation_1, show=True
         )
         relevant_document_2 = AttachmentFileFactory(
-            id=2, file_type='document', allegation=relevant_allegation_2, show=True
+            id=2, file_type='document', owner=relevant_allegation_2, show=True
         )
         AttachmentFileFactory(
-            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+            id=998, file_type='document', title='relevant but not show', owner=relevant_allegation_1, show=False
         )
         AttachmentFileFactory(
-            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+            id=999, file_type='document', title='not relevant', owner=not_relevant_allegation, show=True
         )
 
         relevant_documents = list(pinboard.relevant_documents)
@@ -711,10 +711,10 @@ class PinboardTestCase(TestCase):
         pinned_officer_1 = OfficerFactory(id=1)
         relevant_allegation = AllegationFactory(crid='1', incident_date=datetime(2002, 2, 21, tzinfo=pytz.utc))
         OfficerAllegationFactory(officer=pinned_officer_1, allegation=relevant_allegation)
-        AttachmentFileFactory(file_type='document', allegation=relevant_allegation, show=True)
-        AttachmentFileFactory(file_type='document', allegation=relevant_allegation, show=True)
-        AttachmentFileFactory(file_type='audio', allegation=relevant_allegation, show=True)
-        AttachmentFileFactory(file_type='video', allegation=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='document', owner=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='document', owner=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='audio', owner=relevant_allegation, show=True)
+        AttachmentFileFactory(file_type='video', owner=relevant_allegation, show=True)
 
         pinboard = PinboardFactory(
             title='Test pinboard',

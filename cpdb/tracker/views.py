@@ -44,7 +44,7 @@ class AttachmentViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = AttachmentFile.objects.annotate(documents_count=SQCount(
-            AttachmentFile.showing.filter(allegation=OuterRef('allegation')).values('allegation')
+            AttachmentFile.showing.filter(allegation__crid=OuterRef('owner_id')).values('allegation')
         ))
 
         serializer_class = AttachmentFileListSerializer if request.auth is None else \
@@ -63,7 +63,7 @@ class AttachmentViewSet(viewsets.ViewSet):
             page = paginator.paginate_es_query(es_query, request, queryset)
         else:
             if 'crid' in request.query_params:
-                queryset = queryset.filter(allegation_id=request.query_params['crid'])
+                queryset = queryset.filter(owner_id=request.query_params['crid'])
 
             if request.auth is None:
                 queryset = queryset.filter(show=True)

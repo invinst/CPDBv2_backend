@@ -796,7 +796,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_456 = AllegationFactory(crid='456')
 
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='DOCUMENTCLOUD',
             external_id='ABC',
             title='allegation 1 attachment'
@@ -811,7 +811,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_2 = AllegationFactory(crid='2')
         allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             source_type='DOCUMENTCLOUD',
             external_id='XYZ',
             title='allegation 2 attachment'
@@ -878,7 +878,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_456 = AllegationFactory(crid='456')
 
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='DOCUMENTCLOUD',
             external_id='ABC',
             title='allegation 1 attachment'
@@ -893,7 +893,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_2 = AllegationFactory(crid='2')
         allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             source_type='DOCUMENTCLOUD',
             external_id='XYZ',
             title='allegation 2 attachment'

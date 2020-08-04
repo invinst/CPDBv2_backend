@@ -31,7 +31,7 @@ class LatestDocumentsQueryTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_12)
 
         attachment_file_1 = AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 1',
             id=1,
             tag='CR',
@@ -41,7 +41,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             external_created_at=datetime(2019, 1, 19, 12, 1, 1, tzinfo=pytz.utc)
         )
         AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 2',
             id=2,
             tag='CR',
@@ -51,7 +51,7 @@ class LatestDocumentsQueryTestCase(TestCase):
         )
 
         attachment_file_2 = AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             title='CR document 3',
             id=3,
             tag='CR',
@@ -62,7 +62,7 @@ class LatestDocumentsQueryTestCase(TestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             title='CR document 4',
             id=4,
             tag='OCIR',
@@ -74,7 +74,7 @@ class LatestDocumentsQueryTestCase(TestCase):
 
         with freeze_time(datetime(2019, 1, 20, 13, 2, 15, tzinfo=pytz.utc)):
             AttachmentFileFactory(
-                allegation=allegation_2,
+                owner=allegation_2,
                 title='CR document 5',
                 id=5,
                 tag='AR',
@@ -85,7 +85,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             )
 
         AttachmentFileFactory(
-            allegation=allegation_3,
+            owner=allegation_3,
             title='CR document 6',
             id=6,
             tag='CR',
@@ -96,7 +96,7 @@ class LatestDocumentsQueryTestCase(TestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation_3,
+            owner=allegation_3,
             title='CR document 7',
             id=7,
             tag='CR',
@@ -113,7 +113,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             url='http://cr-document.com/8',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url8',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2014, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -124,7 +124,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             url='http://cr-document.com/9',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url9',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -135,7 +135,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             url='http://cr-document.com/10',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url10',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 6, 13, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -146,13 +146,13 @@ class LatestDocumentsQueryTestCase(TestCase):
             url='http://cr-document.com/11',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url11',
-            allegation=allegation_5,
+            owner=allegation_5,
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
         # Should not have this in result because show = False
         AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 12',
             id=12,
             tag='CR',
@@ -171,7 +171,7 @@ class LatestDocumentsQueryTestCase(TestCase):
             url='http://cr-document.com/13',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url13',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 7, 13, 12, 0, 1, tzinfo=pytz.utc)
         )
         with freeze_time(datetime(2019, 1, 17, 12, 0, 1, tzinfo=pytz.utc)):

@@ -111,7 +111,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.true()
@@ -173,7 +173,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -186,7 +186,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content='',
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -231,7 +231,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -245,7 +245,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()

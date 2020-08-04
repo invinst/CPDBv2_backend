@@ -28,7 +28,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
     def test_export_xlsx(self):
         allegation = AllegationFactory(crid='123')
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='DOCUMENTCLOUD',
             title='CRID 1045950 CR Original Case Incident Report 1 of 5',
             url='https://assets.documentcloud.org/documents/5679592/CRID.pdf',
@@ -36,7 +36,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='PORTAL_COPA_DOCUMENTCLOUD',
             title='CRID 1045950 CR Original Case Incident Report 2 of 5',
             url='https://assets.documentcloud.org/documents/5678901/CRID.pdf',
@@ -51,7 +51,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
 
         allegation456 = AllegationFactory(crid='456')
         AttachmentFileFactory(
-            allegation=allegation456,
+            owner=allegation456,
             source_type='DOCUMENTCLOUD',
             title='CRID 1041253 CR Original Case Incident Report 1 of 5',
             url='https://assets.documentcloud.org/documents/1041253/CRID.pdf',
@@ -59,7 +59,7 @@ class DocumentsXlsxWriterTestCase(WriterBaseTestCase):
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334111',
         )
         AttachmentFileFactory(
-            allegation=allegation456,
+            owner=allegation456,
             source_type='PORTAL_COPA_DOCUMENTCLOUD',
             title='CRID 1041253 CR Original Case Incident Report 2 of 5',
             url='https://assets.documentcloud.org/documents/1041253/CRID.pdf',

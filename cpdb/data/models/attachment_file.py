@@ -25,7 +25,7 @@ class ShownAttachmentManager(models.Manager):
 
 class ForAllegationManager(models.Manager):
     def get_query_set(self):
-        return super().get_queryset().filter(owner_type=ContentType.objects.get(app_label='data', model='Allegation'))
+        return super().get_queryset().filter(owner_type=ContentType.objects.get(app_label='data', model='allegation'))
 
 
 class AttachmentFile(TimeStampsModel, TaggableModel):
@@ -36,7 +36,6 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
-    allegation = models.ForeignKey('data.Allegation', on_delete=models.SET_NULL, null=True, blank=True)
     source_type = models.CharField(max_length=255, db_index=True)
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)
@@ -89,7 +88,8 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     @property
     def linked_documents(self):
         return AttachmentFile.showing.filter(
-            owner=self.owner,
+            owner_id=self.owner_id,
+            owner_type=ContentType.objects.get(app_label='data', model='allegation'),
             file_type=MEDIA_TYPE_DOCUMENT,
         ).exclude(id=self.id)
 
@@ -120,10 +120,10 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
 
     def update_allegation_summary(self):
         if self.source_type == AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD \
-                and self.text_content and not self.allegation.summary:
+                and self.text_content and not self.owner.summary:
             summary = extract_copa_executive_summary(self.text_content)
             if summary:
-                self.allegation.summary = summary
-                self.allegation.is_extracted_summary = True
-                self.allegation.save()
+                self.owner.summary = summary
+                self.owner.is_extracted_summary = True
+                self.owner.save()
                 return True

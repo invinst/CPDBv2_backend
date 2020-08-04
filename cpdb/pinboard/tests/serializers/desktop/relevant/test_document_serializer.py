@@ -49,7 +49,7 @@ class DocumentSerializerTestCase(TestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation,
+            owner=relevant_allegation,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',

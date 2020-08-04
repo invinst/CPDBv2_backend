@@ -25,7 +25,7 @@ class AttachmentFileAdminTestCase(TestCase):
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             self.attachment_file_1 = AttachmentFileFactory(
                 id=1,
-                allegation=allegation_1,
+                owner=allegation_1,
                 title='Title 1',
                 source_type='DOCUMENTCLOUD',
             )
@@ -33,7 +33,7 @@ class AttachmentFileAdminTestCase(TestCase):
         with freeze_time(datetime(2018, 5, 5, 12, 0, 1, tzinfo=pytz.utc)):
             self.attachment_file_2 = AttachmentFileFactory(
                 id=2,
-                allegation=allegation_2,
+                owner=allegation_2,
                 title='Title 2',
                 source_type='PORTAL_COPA',
             )

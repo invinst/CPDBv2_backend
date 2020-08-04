@@ -171,7 +171,7 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         AllegationCategoryFactory(category='Incident', allegation_name='Allegation Name')
         allegation = AllegationFactory(crid='123')
         attachment_file = AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='',
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
@@ -594,7 +594,7 @@ class CopaSummaryReportsAttachmentImporterTestCase(TestCase):
             )
         allegation = AllegationFactory(crid='123')
         attachment_file = AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='',
             external_id='document.pdf',
             original_url='http://chicagocopa.org/document.pdf')
