@@ -609,6 +609,7 @@ class PinboardTestCase(TestCase):
         AttachmentFileFactory(
             id=999, file_type='document', title='not relevant', owner=not_relevant_allegation, show=True
         )
+        AttachmentFileFactory(owner=pinned_officer_3, file_type='document', show=True)
 
         pinboard = PinboardFactory(
             title='Test pinboard',

@@ -111,25 +111,20 @@ class Pinboard(TimeStampsModel):
             'id',
             'preview_image_url',
             'url',
-            'owner_id',
+        ).prefetch_related(
+            'owner',
+            'owner__victims',
+            'owner__most_common_category',
+            Prefetch(
+                'owner__officerallegation_set',
+                queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
+                to_attr='prefetched_officer_allegations'
+            ),
         )
-        #     .select_related(
-        #     'allegation',
-        #     'allegation__most_common_category',
-        # )
-        #     .prefetch_related(
-        #     Prefetch('allegation', queryset=Allegation.objects.filter(crid=OuterRef('owner_id'))),
-        #     Prefetch(
-        #         'allegation__officerallegation_set',
-        #         queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
-        #         to_attr='prefetched_officer_allegations'
-        #     ),
-        #     'allegation__victims'
-        # )
 
     @property
     def relevant_documents(self):
-        allegation_type = ContentType.objects.get(app_label='data', model='allegation')
+        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
 
         officer_ids = self.officers.values_list('id', flat=True)
         crids = self.allegations.values_list('crid', flat=True)
@@ -140,7 +135,7 @@ class Pinboard(TimeStampsModel):
             [id for id in crids] +
             [id for id in officers_crids]
         ))
-        via_allegation = self.relevant_documents_query(owner_type=allegation_type, owner_id__in=all_crids)
+        via_allegation = self.relevant_documents_query(owner_type_id=allegation_type_id, owner_id__in=all_crids)
 
         return via_allegation.distinct().order_by('-allegation__incident_date')
 
