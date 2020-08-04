@@ -9,6 +9,10 @@ from ..common import (
 class AllegationSerializer(BaseAllegationSerializer):
     coaccused = serializers.SerializerMethodField()
 
-    def get_coaccused(self, obj):
-        coaccused = [officer_allegation.officer for officer_allegation in obj.prefetched_officer_allegations]
+    def get_coaccused(self, allegation):
+        coaccused = [
+            officer_allegation.officer
+            for officer_allegation
+            in allegation.officerallegation_set.select_related('officer').order_by('-officer__allegation_count')
+        ]
         return OfficerRowSerializer(coaccused, many=True).data

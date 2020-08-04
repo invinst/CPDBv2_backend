@@ -64,7 +64,7 @@ class DocumentSerializerTestCase(TestCase):
         OfficerAllegationFactory(officer=pinned_officer, allegation=relevant_allegation)
 
         expect(pinboard.relevant_documents.count()).to.eq(1)
-        expect(AllegationSerializer(pinboard.relevant_documents[0].allegation).data).to.eq({
+        expect(AllegationSerializer(pinboard.relevant_documents[0].owner).data).to.eq({
             'crid': '1',
             'address': 'LTK street',
             'category': 'Operation/Personnel Violations',

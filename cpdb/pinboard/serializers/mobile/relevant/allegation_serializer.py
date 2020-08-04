@@ -9,6 +9,10 @@ from ..common import (
 class AllegationMobileSerializer(BaseAllegationMobileSerializer):
     officers = serializers.SerializerMethodField()
 
-    def get_officers(self, obj):
-        officers = [officer_allegation.officer for officer_allegation in obj.prefetched_officer_allegations]
+    def get_officers(self, allegation):
+        officers = [
+            officer_allegation.officer
+            for officer_allegation
+            in allegation.officerallegation_set.select_related('officer').order_by('-officer__allegation_count')
+        ]
         return OfficerRowMobileSerializer(officers, many=True).data

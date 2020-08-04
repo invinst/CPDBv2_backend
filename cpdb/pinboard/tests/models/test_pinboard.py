@@ -622,9 +622,9 @@ class PinboardTestCase(TestCase):
 
         expect(relevant_documents).to.have.length(2)
         expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
-        expect(relevant_documents[0].allegation.crid).to.eq('2')
+        expect(relevant_documents[0].owner.crid).to.eq('2')
         expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
-        expect(relevant_documents[1].allegation.crid).to.eq('1')
+        expect(relevant_documents[1].owner.crid).to.eq('1')
 
     def test_relevant_documents_with_pinned_allegations(self):
         pinned_officer_1 = OfficerFactory(id=1)
@@ -656,9 +656,9 @@ class PinboardTestCase(TestCase):
         relevant_documents = list(pinboard.relevant_documents)
         expect(relevant_documents).to.have.length(2)
         expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
-        expect(relevant_documents[0].allegation.crid).to.eq('2')
+        expect(relevant_documents[0].owner.crid).to.eq('2')
         expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
-        expect(relevant_documents[1].allegation.crid).to.eq('1')
+        expect(relevant_documents[1].owner.crid).to.eq('1')
 
     def test_relevant_documents_order_officers(self):
         pinned_officer_1 = OfficerFactory(id=1, allegation_count=3)
@@ -696,16 +696,10 @@ class PinboardTestCase(TestCase):
 
         expect(relevant_documents).to.have.length(2)
         expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
-        expect(relevant_documents[0].allegation.crid).to.eq('2')
-        expect(relevant_documents[0].allegation.prefetched_officer_allegations).to.have.length(1)
-        expect(relevant_documents[0].allegation.prefetched_officer_allegations[0].officer.id).to.eq(2)
+        expect(relevant_documents[0].owner.crid).to.eq('2')
 
         expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
-        expect(relevant_documents[1].allegation.crid).to.eq('1')
-        expect(relevant_documents[1].allegation.prefetched_officer_allegations).to.have.length(3)
-        expect(relevant_documents[1].allegation.prefetched_officer_allegations[0].officer.id).to.eq(5)
-        expect(relevant_documents[1].allegation.prefetched_officer_allegations[1].officer.id).to.eq(1)
-        expect(relevant_documents[1].allegation.prefetched_officer_allegations[2].officer.id).to.eq(4)
+        expect(relevant_documents[1].owner.crid).to.eq('1')
 
     def test_relevant_documents_not_showing_audios_and_videos(self):
         pinned_officer_1 = OfficerFactory(id=1)
