@@ -80,6 +80,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'documentcloud_id': '1',
+            'url': copa_attachment.original_url
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(copa_attachment)
