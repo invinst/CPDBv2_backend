@@ -434,7 +434,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_update_attachments_create_new_attachments(self, _):
         allegation = AllegationFactory()
         new_attachment = AttachmentFileFactory.build(
-            allegation=allegation,
+            owner=allegation,
             title='title',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
         )
@@ -446,7 +446,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('title')
-        expect(AttachmentFile.objects.first().allegation.crid).to.eq(allegation.crid)
+        expect(AttachmentFile.objects.first().owner.crid).to.eq(allegation.crid)
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_save_updated_attachments(self, _):
@@ -814,7 +814,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         updated_public_pending_document = AttachmentFileFactory(
             external_id='4-CRID-456-CR.html',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/4-CRID-456-CR.html',
@@ -828,7 +828,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         kept_pending_document = AttachmentFileFactory(
             external_id='5-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/5-CRID-456-CR.html',
@@ -842,7 +842,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         make_public_pending_document = AttachmentFileFactory(
             external_id='1111130-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/1111130-CRID-456-CR.html',
@@ -856,7 +856,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         updated_error_pending_document = AttachmentFileFactory(
             external_id='6-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/6-CRID-456-CR.html',

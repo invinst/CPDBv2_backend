@@ -155,8 +155,8 @@ class EmailServicesTestCase(TestCase):
         AttachmentRequestFactory(
             allegation=allegation_789, email='to.be.notified@citizen.com', noti_email_sent=False)
 
-        AttachmentFileFactory.create_batch(2, allegation=allegation_123)
-        AttachmentFileFactory.create_batch(2, allegation=allegation_456)
+        AttachmentFileFactory.create_batch(2, owner=allegation_123)
+        AttachmentFileFactory.create_batch(2, owner=allegation_456)
         AttachmentFileFactory(owner=allegation_789)
         new_attachments = AttachmentFile.objects.all()
 
