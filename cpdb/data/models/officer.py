@@ -49,7 +49,7 @@ class Officer(TimeStampsModel, TaggableModel):
         AttachmentFile,
         content_type_field='owner_type',
         object_id_field='owner_id',
-        related_query_name = 'officer'
+        related_query_name='officer'
     )
 
     # CACHED COLUMNS
@@ -336,7 +336,7 @@ class Officer(TimeStampsModel, TaggableModel):
 
         investigator_ids = self.investigator_set.values_list('id', flat=True)
         allegation_ids = InvestigatorAllegation.objects.filter(investigator_id__in=list(investigator_ids))\
-                                                        .values_list('allegation_id', flat=True).distinct()
+            .values_list('allegation_id', flat=True).distinct()
 
         return AttachmentFile.showing.filter(
             owner_type=ContentType.objects.get_for_model(Allegation),

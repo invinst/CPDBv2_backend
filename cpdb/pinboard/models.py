@@ -103,7 +103,6 @@ class Pinboard(TimeStampsModel):
         return list(self.trrs.values_list('id', flat=True))
 
     def relevant_documents_query(self, **kwargs):
-        import ipdb; ipdb.set_trace();
         return AttachmentFile.showing.filter(
             file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs

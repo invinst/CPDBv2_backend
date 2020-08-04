@@ -64,7 +64,6 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     showing = ShownAttachmentManager()
     for_allegation = ForAllegationManager()
 
-
     class Meta:
         unique_together = (('owner_id', 'owner_type', 'external_id', 'source_type'),)
 
