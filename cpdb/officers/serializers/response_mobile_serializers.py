@@ -205,6 +205,23 @@ class TRRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
             return None
 
 
+class LawsuitNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
+    date_sort = serializers.DateField(source='date', format=None)
+    date = serializers.DateField(format='%Y-%m-%d')
+    case_no = serializers.CharField()
+    misconduct = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return 'LAWSUIT'
+
+    def get_priority_sort(self, obj):
+        return 50
+
+    def get_misconduct(self, obj):
+        misconduct = obj.misconducts.all()[0]
+        return misconduct.name if misconduct else ''
+
+
 class OfficerPercentileMobileSerializer(NoNullSerializer):
     percentile_trr = serializers.DecimalField(
         source='trr_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4)

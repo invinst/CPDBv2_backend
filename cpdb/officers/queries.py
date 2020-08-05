@@ -21,6 +21,7 @@ from officers.serializers.response_mobile_serializers import (
     RankChangeNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
+    LawsuitNewTimelineMobileSerializer,
 )
 
 
@@ -193,3 +194,4 @@ class OfficerTimelineMobileQuery(OfficerTimelineBaseQuery):
     joined_new_timeline_serializer = JoinedNewTimelineMobileSerializer
     award_new_timeline_serializer = AwardNewTimelineMobileSerializer
     trr_new_timeline_serializer = TRRNewTimelineMobileSerializer
+    lawsuit_new_timeline_serializer = LawsuitNewTimelineMobileSerializer

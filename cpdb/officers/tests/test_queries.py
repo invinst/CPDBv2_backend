@@ -10,6 +10,7 @@ from robber import expect
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, PoliceUnitFactory, OfficerHistoryFactory, SalaryFactory,
     AwardFactory)
+from lawsuit.factories import LawsuitFactory
 from officers.queries import OfficerTimelineQuery
 from trr.factories import TRRFactory
 
@@ -281,6 +282,44 @@ class OfficerTimelineQueryTestCase(TestCase):
         expect(trr_2_arg.rank_name).to.eq('Senior Police Officer')
 
     @patch(
+        'officers.queries.OfficerTimelineQuery.lawsuit_new_timeline_serializer',
+        return_value=Mock(data=[{'id': 1}, {'id': 2}])
+    )
+    def test_lawsuit_timeline(self, lawsuit_new_timeline_serializer_mock):
+        officer = OfficerFactory(id=123, appointed_date=date(2001, 2, 3))
+
+        lawsuit_1 = LawsuitFactory(incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc), summary='Honored Police Star')
+        lawsuit_2 = LawsuitFactory(incident_date=datetime(2003, 1, 5, tzinfo=pytz.utc), summary='Life Saving Award')
+        lawsuit_1.officers.set([officer])
+        lawsuit_2.officers.set([officer])
+
+        unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
+        unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
+        OfficerHistoryFactory(
+            officer=officer, unit=unit_1, effective_date=date(2002, 1, 3), end_date=date(2003, 1, 2)
+        )
+        OfficerHistoryFactory(
+            officer=officer, unit=unit_2, effective_date=date(2003, 1, 3), end_date=date(2018, 1, 3)
+        )
+        SalaryFactory(
+            year=2001, rank='Police Officer', officer=officer, rank_changed=True, spp_date=date(2001, 5, 3)
+        )
+        SalaryFactory(
+            year=2002, rank='Senior Police Officer', officer=officer, rank_changed=True, spp_date=date(2002, 5, 3)
+        )
+
+        expect(OfficerTimelineQuery(officer)._lawsuit_timeline).to.eq([{'id': 1}, {'id': 2}])
+
+        lawsuit_timeline_queryset_arg = lawsuit_new_timeline_serializer_mock.call_args[0][0]
+        lawsuit_1_arg, lawsuit_2_arg = sorted(lawsuit_timeline_queryset_arg, key=attrgetter('id'))
+
+        expect(lawsuit_1_arg.id).to.eq(lawsuit_1.id)
+        expect(lawsuit_1_arg.summary).to.eq('Honored Police Star')
+
+        expect(lawsuit_2_arg.id).to.eq(lawsuit_2.id)
+        expect(lawsuit_2_arg.summary).to.eq('Life Saving Award')
+
+    @patch(
         'officers.queries.OfficerTimelineQuery._cr_timeline',
         new_callable=PropertyMock,
         return_value=[
@@ -327,7 +366,15 @@ class OfficerTimelineQueryTestCase(TestCase):
             {'id': 11, 'date_sort': date(2001, 1, 2), 'priority_sort': 50},
         ]
     )
-    def test_execute(self, _trr, _award, _join, _rank, _unit, _cr):
+    @patch(
+        'officers.queries.OfficerTimelineQuery._lawsuit_timeline',
+        new_callable=PropertyMock,
+        return_value=[
+            {'id': 12, 'date_sort': date(2000, 1, 5), 'priority_sort': 60},
+            {'id': 13, 'date_sort': date(2000, 1, 3), 'priority_sort': 60},
+        ]
+    )
+    def test_execute(self, _trr, _award, _join, _rank, _unit, _cr, _lawsuit):
         sorted_timeline = OfficerTimelineQuery(None).execute()
         sorted_timeline_ids = [item['id'] for item in sorted_timeline]
-        expect(sorted_timeline_ids).to.eq([11, 9, 2, 6, 4, 10, 8, 5, 3, 1, 7])
+        expect(sorted_timeline_ids).to.eq([11, 9, 2, 6, 4, 12, 10, 8, 13, 5, 3, 1, 7])
