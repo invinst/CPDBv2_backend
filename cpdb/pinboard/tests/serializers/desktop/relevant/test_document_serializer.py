@@ -49,7 +49,7 @@ class DocumentSerializerTestCase(TestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation,
+            owner=relevant_allegation,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -64,7 +64,7 @@ class DocumentSerializerTestCase(TestCase):
         OfficerAllegationFactory(officer=pinned_officer, allegation=relevant_allegation)
 
         expect(pinboard.relevant_documents.count()).to.eq(1)
-        expect(AllegationSerializer(pinboard.relevant_documents[0].allegation).data).to.eq({
+        expect(AllegationSerializer(pinboard.relevant_documents[0].owner).data).to.eq({
             'crid': '1',
             'address': 'LTK street',
             'category': 'Operation/Personnel Violations',

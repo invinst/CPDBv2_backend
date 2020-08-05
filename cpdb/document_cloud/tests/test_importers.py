@@ -71,7 +71,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_get_attachment_has_source_type(self):
         allegation = AllegationFactory(crid='123')
         copa_attachment = AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='1'
         )
@@ -80,6 +80,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'documentcloud_id': '1',
+            'url': copa_attachment.original_url
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(copa_attachment)
@@ -87,7 +88,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_get_attachment_source_type_empty(self):
         allegation = AllegationFactory(crid='123')
         copa_attachment = AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='',
             external_id='1',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html'
@@ -105,13 +106,13 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_get_attachment_return_none(self):
         allegation = AllegationFactory(crid='123')
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='1',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html'
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='',
             external_id='2',
             original_url='wrong_url'
@@ -291,6 +292,30 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         expect(changed).to.be.true()
         expect(attachment.text_content).to.eq('ABC')
 
+    def test_update_attachment_not_update_full_text_if_is_external_ocr(self):
+        attachment = AttachmentFileFactory(
+            source_type='',
+            external_last_updated=datetime(2017, 1, 1, tzinfo=pytz.utc),
+            text_content='ABC',
+            is_external_ocr=True,
+        )
+        document = create_object({
+            'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
+            'full_text': 'text content'.encode('utf8'),
+            'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
+            'title': 'new title',
+            'normal_image_url': 'http://web.com/new-image',
+            'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'document_type': 'CR',
+            'pages': 7,
+            'access': 'public'
+        })
+
+        changed = DocumentCloudAttachmentImporter(self.logger).update_attachment(attachment, document)
+        expect(changed).to.be.true()
+        expect(attachment.text_content).to.eq('ABC')
+
     def test_update_attachment_with_access_error(self):
         attachment = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
@@ -410,7 +435,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_update_attachments_create_new_attachments(self, _):
         allegation = AllegationFactory()
         new_attachment = AttachmentFileFactory.build(
-            allegation=allegation,
+            owner=allegation,
             title='title',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
         )
@@ -422,7 +447,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         expect(AttachmentFile.objects.count()).to.eq(1)
         expect(AttachmentFile.objects.first().title).to.eq('title')
-        expect(AttachmentFile.objects.first().allegation.crid).to.eq(allegation.crid)
+        expect(AttachmentFile.objects.first().owner.crid).to.eq(allegation.crid)
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_save_updated_attachments(self, _):
@@ -719,7 +744,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         updated_attachment_3 = AttachmentFileFactory(
             external_id='1111128',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/1111128-CRID-234-CR-old.html',
@@ -732,25 +757,25 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='1111129',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
         )
         AttachmentFileFactory(
             external_id='111',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA
         )
         AttachmentFileFactory(
             external_id='666',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.DOCUMENTCLOUD
         )
         updated_attachment_1 = AttachmentFileFactory(
             external_id='1',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/1-CRID-234-CR-old.html',
@@ -763,7 +788,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='2',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/2-CRID-234-CR.html',
@@ -776,7 +801,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         updated_attachment_2 = AttachmentFileFactory(
             external_id='3',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/3-CRID-456-CR.html',
@@ -790,7 +815,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         updated_public_pending_document = AttachmentFileFactory(
             external_id='4-CRID-456-CR.html',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/4-CRID-456-CR.html',
@@ -804,7 +829,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         kept_pending_document = AttachmentFileFactory(
             external_id='5-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/5-CRID-456-CR.html',
@@ -818,7 +843,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         make_public_pending_document = AttachmentFileFactory(
             external_id='1111130-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/1111130-CRID-456-CR.html',
@@ -832,7 +857,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         updated_error_pending_document = AttachmentFileFactory(
             external_id='6-CRID-456-CR',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA,
             url='https://www.documentcloud.org/documents/6-CRID-456-CR.html',
@@ -1019,8 +1044,9 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     @patch('shared.attachment_importer.aws')
     @patch('document_cloud.importers.send_cr_attachment_available_email')
     @patch('document_cloud.importers.search_all')
+    @patch('document_cloud.importers.DocumentCloudSession')
     def test_search_and_update_attachments_success_with_custom_search_syntaxes(
-        self, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock
+        self, _, search_all_mock, send_cr_attachment_email_mock, shared_aws_mock, data_aws_mock
     ):
         allegation = AllegationFactory(crid='234', summary='')
         new_cloud_document_3 = create_object({
@@ -1061,7 +1087,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         attachment_1 = AttachmentFileFactory(
             external_id='1',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/1-CRID-234-CR.html',
@@ -1074,7 +1100,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         attachment_2 = AttachmentFileFactory(
             external_id='2',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/2-CRID-234-CR.html',
@@ -1708,7 +1734,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
         AttachmentFileFactory(
             external_id='4',
-            allegation=allegation_1,
+            owner=allegation_1,
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/4-CRID-567-CR.html',
             title='CRID-567-CR-4',
@@ -1720,7 +1746,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         )
         AttachmentFileFactory(
             external_id='5',
-            allegation=allegation_2,
+            owner=allegation_2,
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             url='https://www.documentcloud.org/documents/5-CRID-789-CR.html',
             title='CRID-789-CR-5',

@@ -20,7 +20,7 @@ def _get_name_from_email(email):
 def send_cr_attachment_available_email(new_attachments):
     email_template = EmailTemplate.objects.get(type=CR_ATTACHMENT_AVAILABLE)
 
-    crids = {attachment.allegation.crid for attachment in new_attachments}
+    crids = {attachment.owner.crid for attachment in new_attachments}
 
     sent_count = {}
     for crid in tqdm(crids, desc='Sending notification emails'):
@@ -47,7 +47,7 @@ def send_cr_attachment_available_email(new_attachments):
                 attachment_request.save()
 
     for attachment in new_attachments:
-        attachment.notifications_count = sent_count[attachment.allegation.crid]
+        attachment.notifications_count = sent_count[attachment.owner.crid]
 
     AttachmentFile.objects.bulk_update(
         new_attachments,

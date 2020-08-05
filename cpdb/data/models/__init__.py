@@ -2,6 +2,8 @@ from .allegation import Allegation
 from .allegation_category import AllegationCategory
 from .area import Area
 from .attachment_file import AttachmentFile
+from .attachment_ocr import AttachmentOCR
+from .attachment_narrative import AttachmentNarrative
 from .attachment_request import AttachmentRequest
 from .award import Award
 from .complainant import Complainant
@@ -22,8 +24,28 @@ from .salary import Salary
 from .victim import Victim
 
 __all__ = [
-    'Allegation', 'AllegationCategory', 'Area', 'AttachmentFile', 'AttachmentRequest', 'Award', 'Complainant',
-    'Investigator', 'InvestigatorAllegation', 'Involvement', 'LineArea', 'Officer', 'OfficerAlias', 'OfficerAllegation',
-    'OfficerBadgeNumber', 'OfficerHistory', 'OfficerYearlyPercentile', 'PoliceUnit', 'PoliceWitness', 'RacePopulation',
-    'Salary', 'Victim'
+    'Allegation',
+    'AllegationCategory',
+    'Area',
+    'AttachmentFile',
+    'AttachmentOCR',
+    'AttachmentNarrative',
+    'AttachmentRequest',
+    'Award',
+    'Complainant',
+    'Investigator',
+    'InvestigatorAllegation',
+    'Involvement',
+    'LineArea',
+    'Officer',
+    'OfficerAlias',
+    'OfficerAllegation',
+    'OfficerBadgeNumber',
+    'OfficerHistory',
+    'OfficerYearlyPercentile',
+    'PoliceUnit',
+    'PoliceWitness',
+    'RacePopulation',
+    'Salary',
+    'Victim'
 ]

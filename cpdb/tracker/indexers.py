@@ -18,7 +18,7 @@ class AttachmentFileIndexer(BaseIndexer):
     def extract_datum(self, datum):
         return {
             'id': datum.id,
-            'crid': datum.allegation_id,
+            'crid': datum.owner_id,
             'title': datum.title,
             'text_content': datum.text_content,
             'show': datum.show,

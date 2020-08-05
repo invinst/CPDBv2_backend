@@ -193,7 +193,7 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
-          no_output_timeout: 2h
+          no_output_timeout: 4h
           command: |
             if [ -z $SKIP_REBUILD_INDEX ] || [ $SKIP_REBUILD_INDEX != "true" ]; then
               if [ $CIRCLE_BRANCH == "master" ]
@@ -222,7 +222,7 @@ jobs:
       - run: *setup-gcloud
       - run:
           name: Start job
-          no_output_timeout: 2h
+          no_output_timeout: 4h
           command: |
             if [ -z $SKIP_REBUILD_SEARCH_INDEX ] || [ $SKIP_REBUILD_SEARCH_INDEX != "true" ]; then
               if [ $CIRCLE_BRANCH == "master" ]
@@ -268,6 +268,19 @@ jobs:
             source $ENV_FILE
             export $(cut -d= -f1 $ENV_FILE)
             bin/ensure_gunicorn_deployment.py -n $NAMESPACE
+      - run:
+          name: Check API is still alive
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export DOMAIN=api.cpdp.co
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export DOMAIN=betaapi.cpdp.co
+            else
+              export DOMAIN=stagingapi.cpdp.co
+            fi
+            curl -f https://$DOMAIN/api/v2/status/
       - run:
           name: Setup cronjobs
           command: |

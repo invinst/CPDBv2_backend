@@ -103,7 +103,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -111,12 +111,12 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR arrest report document',
+            owner=allegation, title='CR arrest report document',
             url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',
@@ -326,7 +326,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -334,7 +334,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',

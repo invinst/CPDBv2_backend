@@ -1019,15 +1019,15 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         AttachmentFileFactory(
             id=1,
             tag='Other',
-            allegation=allegation_2,
+            owner=allegation_2,
             title='Attachment Title',
             file_type='document',
             url='http://lvh.me/document',
         )
-        AttachmentFileFactory(id=2, tag='OCIR', allegation=allegation_2)
-        AttachmentFileFactory(id=3, tag='AR', allegation=allegation_2)
-        AttachmentFileFactory(id=4, tag='CR', allegation=allegation_2, show=False)
-        AttachmentFileFactory(id=5, tag='CR', allegation=allegation_2, title='arrest report')
+        AttachmentFileFactory(id=2, tag='OCIR', owner=allegation_2)
+        AttachmentFileFactory(id=3, tag='AR', owner=allegation_2)
+        AttachmentFileFactory(id=4, tag='CR', owner=allegation_2, show=False)
+        AttachmentFileFactory(id=5, tag='CR', owner=allegation_2, title='arrest report')
 
         url = reverse('api-v2:social-graph-mobile-allegations', kwargs={})
         response = self.client.get(url, {

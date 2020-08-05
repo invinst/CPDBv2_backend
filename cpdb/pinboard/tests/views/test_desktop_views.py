@@ -987,7 +987,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -996,16 +996,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=2,
             file_type='document',
             title='relevant document 2',
-            allegation=relevant_allegation_2,
+            owner=relevant_allegation_2,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
         )
         AttachmentFileFactory(
-            id=998, file_type='document', title='relevant but not show', allegation=relevant_allegation_1, show=False
+            id=998, file_type='document', title='relevant but not show', owner=relevant_allegation_1, show=False
         )
         AttachmentFileFactory(
-            id=999, file_type='document', title='not relevant', allegation=not_relevant_allegation, show=True
+            id=999, file_type='document', title='not relevant', owner=not_relevant_allegation, show=True
         )
 
         pinboard = PinboardFactory(
@@ -1119,7 +1119,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -1128,7 +1128,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=2,
             file_type='document',
             title='relevant document 2',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
@@ -1137,7 +1137,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=3,
             file_type='document',
             title='relevant document 3',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-3-CR-p1-normal.gif",
             url='http://cr-3-document.com/',
@@ -1146,7 +1146,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=4,
             file_type='document',
             title='relevant document 4',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-4-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -1155,7 +1155,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             id=5,
             file_type='document',
             title='relevant document 5',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-5-CR-p1-normal.gif",
             url='http://cr-5-document.com/',
@@ -3030,6 +3030,19 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             {'gender': 'Unknown', 'percentage': 0.29}
         ])
 
+    def test_officers_summary_with_no_related_officer(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=(pinboard_allegation,),
+            officers=[]
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-officers-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([])
+        expect(list(response.data['gender'])).to.eq([])
+
     def test_complainants_summary(self):
         trr_officer_1 = OfficerFactory()
         trr_officer_2 = OfficerFactory()
@@ -3084,3 +3097,16 @@ class PinboardDesktopViewSetTestCase(APITestCase):
             {'gender': 'F', 'percentage': 0.5},
             {'gender': 'Unknown', 'percentage': 0.3}
         ])
+
+    def test_complainants_summary_with_no_complainant(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=[pinboard_allegation],
+            officers=[],
+        )
+
+        response = self.client.get(reverse('api-v2:pinboards-complainants-summary', kwargs={'pk': pinboard.id}))
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expect(list(response.data['race'])).to.eq([])
+        expect(list(response.data['gender'])).to.eq([])

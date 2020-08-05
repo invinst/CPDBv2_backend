@@ -188,7 +188,7 @@ class AttachmentFileFactory(TaggableModelFactory):
     class Meta:
         model = AttachmentFile
 
-    allegation = factory.SubFactory(AllegationFactory)
+    owner = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
     original_url = factory.LazyFunction(lambda: fake.url())
     source_type = factory.LazyFunction(lambda: fake.word())
@@ -202,6 +202,7 @@ class AttachmentFileFactory(TaggableModelFactory):
     show = True
     manually_updated = False
     last_updated_by = None
+    is_external_ocr = False
 
 
 class AttachmentRequestFactory(factory.django.DjangoModelFactory):
