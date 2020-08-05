@@ -19,7 +19,7 @@ class ImportNarrativeTestCase(TestCase):
 
         AttachmentFileFactory(
             id=1121,
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 1121',
             tag='CR',
             url='https://cr-document.com/1121',
@@ -28,7 +28,7 @@ class ImportNarrativeTestCase(TestCase):
         ),
         AttachmentFileFactory(
             id=1122,
-            allegation=allegation_2,
+            owner=allegation_2,
             title='CR document 1122',
             tag='CR',
             url='https://cr-document.com/1122',

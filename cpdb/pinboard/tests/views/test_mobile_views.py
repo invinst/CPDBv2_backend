@@ -731,7 +731,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -740,13 +740,13 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=2,
             file_type='document',
             title='relevant document 2',
-            allegation=relevant_allegation_2,
+            owner=relevant_allegation_2,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
         )
-        AttachmentFileFactory(id=998, title='relevant but not show', allegation=relevant_allegation_1, show=False)
-        AttachmentFileFactory(id=999, title='not relevant', allegation=not_relevant_allegation, show=True)
+        AttachmentFileFactory(id=998, title='relevant but not show', owner=relevant_allegation_1, show=False)
+        AttachmentFileFactory(id=999, title='not relevant', owner=not_relevant_allegation, show=True)
 
         pinboard = PinboardFactory(
             id='66ef1560',
@@ -834,7 +834,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=1,
             file_type='document',
             title='relevant document 1',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-1-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -843,7 +843,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=2,
             file_type='document',
             title='relevant document 2',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-2-CR-p1-normal.gif",
             url='http://cr-2-document.com/',
@@ -852,7 +852,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=3,
             file_type='document',
             title='relevant document 3',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-3-CR-p1-normal.gif",
             url='http://cr-3-document.com/',
@@ -861,7 +861,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=4,
             file_type='document',
             title='relevant document 4',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-4-CR-p1-normal.gif",
             url='http://cr-1-document.com/',
@@ -870,7 +870,7 @@ class PinboardMobileViewSetTestCase(APITestCase):
             id=5,
             file_type='document',
             title='relevant document 5',
-            allegation=relevant_allegation_1,
+            owner=relevant_allegation_1,
             show=True,
             preview_image_url="https://assets.documentcloud.org/CRID-5-CR-p1-normal.gif",
             url='http://cr-5-document.com/',

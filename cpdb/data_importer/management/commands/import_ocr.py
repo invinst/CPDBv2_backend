@@ -31,7 +31,7 @@ class Command(BaseCommand):
         LOG_KEYS = ['cr_id', 'filename', 'doccloud_url']
 
         for row in tqdm(sorted_ocr_csv_file):
-            attachment = AttachmentFile.objects.filter(allegation_id=row['cr_id'], url=row['doccloud_url']).first()
+            attachment = AttachmentFile.objects.filter(owner_id=row['cr_id'], url=row['doccloud_url']).first()
             log_values = [row[key] for key in LOG_KEYS]
             if attachment:
                 attachment_ocrs.append(

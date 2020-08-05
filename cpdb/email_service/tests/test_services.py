@@ -59,9 +59,9 @@ class EmailServicesTestCase(TestCase):
         AttachmentRequestFactory(
             allegation=allegation_789, email='to.be.notified@citizen.com', noti_email_sent=False)
 
-        attachment_file_123_a = AttachmentFileFactory(allegation=allegation_123)
-        attachment_file_123_b = AttachmentFileFactory(allegation=allegation_123)
-        attachment_file_789 = AttachmentFileFactory(allegation=allegation_789)
+        attachment_file_123_a = AttachmentFileFactory(owner=allegation_123)
+        attachment_file_123_b = AttachmentFileFactory(owner=allegation_123)
+        attachment_file_789 = AttachmentFileFactory(owner=allegation_789)
 
         send_cr_attachment_available_email([attachment_file_123_a, attachment_file_123_b, attachment_file_789])
 
@@ -155,9 +155,9 @@ class EmailServicesTestCase(TestCase):
         AttachmentRequestFactory(
             allegation=allegation_789, email='to.be.notified@citizen.com', noti_email_sent=False)
 
-        AttachmentFileFactory.create_batch(2, allegation=allegation_123)
-        AttachmentFileFactory.create_batch(2, allegation=allegation_456)
-        AttachmentFileFactory(allegation=allegation_789)
+        AttachmentFileFactory.create_batch(2, owner=allegation_123)
+        AttachmentFileFactory.create_batch(2, owner=allegation_456)
+        AttachmentFileFactory(owner=allegation_789)
         new_attachments = AttachmentFile.objects.all()
 
         send_cr_attachment_available_email(new_attachments)
@@ -215,7 +215,7 @@ class EmailServicesTestCase(TestCase):
         allegation_123 = AllegationFactory(crid='123')
         AttachmentRequestFactory(allegation=allegation_123, email='to.be.notified@citizen.com', noti_email_sent=False)
 
-        AttachmentFileFactory(allegation=allegation_123)
+        AttachmentFileFactory(owner=allegation_123)
         new_attachments = AttachmentFile.objects.all()
 
         send_cr_attachment_available_email(new_attachments)

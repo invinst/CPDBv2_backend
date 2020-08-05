@@ -256,7 +256,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
 
         attachment = AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             title='title',
             id='123456',
             url='url',

@@ -125,7 +125,7 @@ class CRIndexerTestCase(TestCase):
 
         AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             title='CR document',
             url='http://foo.com/',
@@ -133,7 +133,7 @@ class CRIndexerTestCase(TestCase):
         )
         AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             title='CR document',
             url='http://foo.com/',
@@ -141,7 +141,7 @@ class CRIndexerTestCase(TestCase):
             show=False
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             tag='OCIR',
             title='CR document',

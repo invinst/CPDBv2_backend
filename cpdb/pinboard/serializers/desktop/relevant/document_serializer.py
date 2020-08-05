@@ -5,7 +5,7 @@ from .allegation_serializer import AllegationSerializer
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    allegation = AllegationSerializer()
+    allegation = AllegationSerializer(source='owner')
 
     class Meta:
         model = AttachmentFile

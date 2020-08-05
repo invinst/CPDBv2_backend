@@ -16,7 +16,7 @@ class AttachmentFileIndexerTestCase(TestCase):
         allegation = AllegationFactory(crid=123456)
         datum = AttachmentFileFactory(
             id=1,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title',
             text_content='This is document text content.',
             show=False,
