@@ -17,7 +17,7 @@ from lawsuit.factories import (
     LawsuitOutcomeFactory,
     PaymentFactory
 )
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, AttachmentFileFactory
 
 
 class LawsuitSerializerTestCase(TestCase):
@@ -29,6 +29,7 @@ class LawsuitSerializerTestCase(TestCase):
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
             city='Chicago IL'
         )
+        attachment = AttachmentFileFactory(owner=lawsuit, show=True, preview_image_url=None)
 
         LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
         LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
@@ -118,7 +119,13 @@ class LawsuitSerializerTestCase(TestCase):
                 'total': '2500007500.00',
                 'total_settlement': '7500.00',
                 'total_legal_fees': '2500000000.00'
-            }
+            },
+            'attachments': [{
+                'id': str(attachment.id),
+                'title': attachment.title,
+                'file_type': attachment.file_type,
+                'url': attachment.url,
+            }]
         }
         serializer_data = LawsuitSerializer(lawsuit).data
         serializer_data['plaintiffs'] = sorted(serializer_data['plaintiffs'], key=itemgetter('name'))
