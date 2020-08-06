@@ -8,6 +8,7 @@ import pytz
 from robber import expect
 from mock import Mock, patch, PropertyMock
 
+from lawsuit.factories import LawsuitFactory, LawsuitMisconductFactory
 from officers.serializers.response_serializers import (
     OfficerInfoSerializer,
     OfficerCardSerializer,
@@ -20,8 +21,8 @@ from officers.serializers.response_serializers import (
     CRNewTimelineSerializer,
     AwardNewTimelineSerializer,
     TRRNewTimelineSerializer,
-    OfficerCoaccusalSerializer
-)
+    OfficerCoaccusalSerializer,
+    LawsuitNewTimelineSerializer)
 from data.factories import (
     OfficerFactory, PoliceUnitFactory, OfficerBadgeNumberFactory,
     OfficerHistoryFactory, OfficerYearlyPercentileFactory, SalaryFactory,
@@ -544,6 +545,62 @@ class TRRNewTimelineSerializerTestCase(TestCase):
         setattr(trr, 'rank_name', 'Police Officer')
 
         expect(TRRNewTimelineSerializer(trr).data).to.exclude('point')
+
+
+class LawsuitNewTimelineSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(id=123)
+        lawsuit = LawsuitFactory(
+            case_no='Lawsuit#456',
+            incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc),
+        )
+
+        lawsuit.misconducts.add(LawsuitMisconductFactory(name='MisConduct'))
+        lawsuit.officers.add(officer)
+
+        attachment = AttachmentFileFactory(
+            tag='Other',
+            owner=lawsuit,
+            title='title',
+            id='123456',
+            url='url',
+            preview_image_url='preview_image_url',
+            file_type='document'
+        )
+
+        AttachmentFileFactory(
+            tag='Officer tag',
+            owner=officer,
+            title='officer attachement file',
+            id='765431',
+            url='officer_url',
+            preview_image_url='officer_preview_image_url',
+            file_type='document'
+        )
+
+        setattr(lawsuit, 'unit_name', 'Unit 001')
+        setattr(lawsuit, 'unit_description', 'District 001')
+        setattr(lawsuit, 'rank_name', 'Police Officer')
+        setattr(lawsuit, 'prefetch_filtered_attachments', [attachment])
+
+        expect(LawsuitNewTimelineSerializer(lawsuit).data).to.eq({
+            'unit_name': 'Unit 001',
+            'unit_description': 'District 001',
+            'rank': 'Police Officer',
+            'priority_sort': 50,
+            'kind': 'LAWSUIT',
+            'case_no': 'Lawsuit#456',
+            'date_sort': date(2002, 2, 3),
+            'date': '2002-02-03',
+            'misconduct': 'MisConduct',
+            'attachments': [{
+                'title': 'title',
+                'url': 'url',
+                'preview_image_url': 'preview_image_url',
+                'file_type': 'document',
+                'id': '123456',
+            }]
+        })
 
 
 class OfficerCoaccusalSerializerTestCase(TestCase):

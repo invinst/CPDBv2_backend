@@ -206,10 +206,17 @@ class TRRNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
 
 
 class LawsuitNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
-    date_sort = serializers.DateField(source='date', format=None)
-    date = serializers.DateField(format='%Y-%m-%d')
+    date_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
     case_no = serializers.CharField()
     misconduct = serializers.SerializerMethodField()
+    attachments = serializers.SerializerMethodField()
+
+    def get_date_sort(self, obj):
+        return obj.incident_date.date()
+
+    def get_date(self, obj):
+        return obj.incident_date.date().strftime('%Y-%m-%d')
 
     def get_kind(self, obj):
         return 'LAWSUIT'
@@ -220,6 +227,9 @@ class LawsuitNewTimelineMobileSerializer(BaseTimelineMobileSerializer):
     def get_misconduct(self, obj):
         misconduct = obj.misconducts.all()[0]
         return misconduct.name if misconduct else ''
+
+    def get_attachments(self, obj):
+        return AttachmentFileMobileSerializer(obj.prefetch_filtered_attachments, many=True).data
 
 
 class OfficerPercentileMobileSerializer(NoNullSerializer):
