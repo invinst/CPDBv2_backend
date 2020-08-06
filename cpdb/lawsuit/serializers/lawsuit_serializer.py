@@ -1,6 +1,8 @@
 import pytz
 
 from rest_framework import serializers
+
+from data.utils.attachment_file import filter_attachments
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
 
@@ -26,6 +28,14 @@ class PlaintiffSerializer(NoNullSerializer):
     name = serializers.CharField()
 
 
+class AttachmentFileSerializer(NoNullSerializer):
+    id = serializers.CharField()
+    title = serializers.CharField()
+    file_type = serializers.CharField()
+    url = serializers.CharField()
+    preview_image_url = serializers.CharField()
+
+
 class LawsuitSerializer(NoNullSerializer):
     case_no = serializers.CharField()
     summary = serializers.CharField()
@@ -40,6 +50,7 @@ class LawsuitSerializer(NoNullSerializer):
     outcomes = serializers.SerializerMethodField()
     payments = PaymentSerializer(many=True)
     total_payments = TotalPaymentSerializer()
+    attachments = serializers.SerializerMethodField()
 
     @staticmethod
     def _get_names(obj, attr):
@@ -65,3 +76,7 @@ class LawsuitSerializer(NoNullSerializer):
 
     def get_outcomes(self, obj):
         return self._get_names(obj, 'outcomes')
+
+    def get_attachments(self, obj):
+        attachments = filter_attachments(obj.attachment_files)
+        return AttachmentFileSerializer(attachments, many=True).data

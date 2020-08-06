@@ -17,7 +17,7 @@ from lawsuit.factories import (
     LawsuitOutcomeFactory,
     PaymentFactory
 )
-from data.factories import OfficerFactory
+from data.factories import OfficerFactory, AttachmentFileFactory
 
 
 class LawsuitViewSetTestCase(APITestCase):
@@ -40,6 +40,9 @@ class LawsuitViewSetTestCase(APITestCase):
         violence = LawsuitViolenceFactory(name='Physical Force')
         misconduct_1 = LawsuitMisconductFactory(name='Excessive force')
         misconduct_2 = LawsuitMisconductFactory(name='Racial epithets')
+        attachment = AttachmentFileFactory(owner=lawsuit, preview_image_url='preview.png', url='/docs/lawsuit.pdf')
+        AttachmentFileFactory(show=False)
+        AttachmentFileFactory(show=True, tag='OCIR')
 
         officer_1 = OfficerFactory(
             first_name='Jerome',
@@ -121,7 +124,14 @@ class LawsuitViewSetTestCase(APITestCase):
                 'total': '2500007500.00',
                 'total_settlement': '7500.00',
                 'total_legal_fees': '2500000000.00'
-            }
+            },
+            'attachments': [{
+                'id': f'{attachment.id}',
+                'title': attachment.title,
+                'file_type': attachment.file_type,
+                'preview_image_url': 'preview.png',
+                'url': '/docs/lawsuit.pdf',
+            }]
         }
         response_data = response.data
         response_data['plaintiffs'] = sorted(response_data['plaintiffs'], key=itemgetter('name'))
