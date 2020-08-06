@@ -430,6 +430,7 @@ class LawsuitNewTimelineMobileSerializerTestCase(TestCase):
             'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'misconduct': 'MisConduct',
+            'outcome': '',
             'attachments': [{
                 'title': 'title',
                 'url': 'url',

@@ -8,7 +8,7 @@ import pytz
 from robber import expect
 from mock import Mock, patch, PropertyMock
 
-from lawsuit.factories import LawsuitFactory, LawsuitMisconductFactory
+from lawsuit.factories import LawsuitFactory, LawsuitMisconductFactory, LawsuitOutcomeFactory
 from officers.serializers.response_serializers import (
     OfficerInfoSerializer,
     OfficerCardSerializer,
@@ -556,6 +556,7 @@ class LawsuitNewTimelineSerializerTestCase(TestCase):
         )
 
         lawsuit.misconducts.add(LawsuitMisconductFactory(name='MisConduct'))
+        lawsuit.outcomes.add(LawsuitOutcomeFactory(name='Outcome'))
         lawsuit.officers.add(officer)
 
         attachment = AttachmentFileFactory(
@@ -593,6 +594,7 @@ class LawsuitNewTimelineSerializerTestCase(TestCase):
             'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
             'misconduct': 'MisConduct',
+            'outcome': 'Outcome',
             'attachments': [{
                 'title': 'title',
                 'url': 'url',

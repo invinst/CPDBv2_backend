@@ -252,6 +252,7 @@ class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
     date = serializers.SerializerMethodField()
     case_no = serializers.CharField()
     misconduct = serializers.SerializerMethodField()
+    outcome = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
 
     def get_date_sort(self, obj):
@@ -267,8 +268,10 @@ class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
         return 50
 
     def get_misconduct(self, obj):
-        misconduct = obj.misconducts.all()[0]
-        return misconduct.name if misconduct else ''
+        return ', '.join(obj.misconducts.values_list('name', flat=True))
+
+    def get_outcome(self, obj):
+        return ', '.join(obj.outcomes.values_list('name', flat=True))
 
     def get_attachments(self, obj):
         return AttachmentFileSerializer(obj.prefetch_filtered_attachments, many=True).data
