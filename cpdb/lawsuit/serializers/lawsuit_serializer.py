@@ -22,6 +22,24 @@ class OfficerSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
     allegation_count = serializers.IntegerField()
+    sustained_count = serializers.IntegerField()
+    birth_year = serializers.IntegerField()
+    race = serializers.CharField()
+    gender = serializers.CharField()
+    lawsuit_count = serializers.SerializerMethodField()
+    lawsuit_payment = serializers.SerializerMethodField()
+
+    def get_lawsuit_count(self, obj):
+        return obj.lawsuit_set.count()
+
+    def get_lawsuit_payment(self, obj):
+        lawsuit_payment = 0
+        lawsuits = obj.lawsuit_set.prefetch_related('payments').all()
+        for lawsuit in lawsuits:
+            for payment in lawsuit.payments.all():
+                lawsuit_payment += payment.settlement or 0
+                lawsuit_payment += payment.legal_fees or 0
+        return str(lawsuit_payment)
 
 
 class PlaintiffSerializer(NoNullSerializer):

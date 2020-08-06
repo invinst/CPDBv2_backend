@@ -50,6 +50,10 @@ class LawsuitSerializerTestCase(TestCase):
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
             internal_allegation_percentile='44.44',
+            sustained_count=1,
+            birth_year=1977,
+            race='White',
+            gender='M'
         )
         officer_2 = OfficerFactory(
             first_name='Michael',
@@ -59,6 +63,10 @@ class LawsuitSerializerTestCase(TestCase):
             complaint_percentile='66.66',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile='88.88',
+            sustained_count=2,
+            birth_year=1990,
+            race='Black',
+            gender='F'
         )
 
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
@@ -88,7 +96,13 @@ class LawsuitSerializerTestCase(TestCase):
                     'percentile_trr': '11.1100',
                     'percentile_allegation': '22.2200',
                     'percentile_allegation_civilian': '33.3300',
-                    'percentile_allegation_internal': '44.4400'
+                    'percentile_allegation_internal': '44.4400',
+                    'sustained_count': 1,
+                    'birth_year': 1977,
+                    'race': 'White',
+                    'gender': 'M',
+                    'lawsuit_count': 1,
+                    'lawsuit_payment': '2500007500.00',
                 },
                 {
                     'id': officer_2.id,
@@ -98,6 +112,12 @@ class LawsuitSerializerTestCase(TestCase):
                     "percentile_allegation": "66.6600",
                     "percentile_allegation_civilian": "77.7700",
                     "percentile_allegation_internal": "88.8800",
+                    'sustained_count': 2,
+                    'birth_year': 1990,
+                    'race': 'Black',
+                    'gender': 'F',
+                    'lawsuit_count': 1,
+                    'lawsuit_payment': '2500007500.00',
                 }
             ],
             'interactions': ['Protest'],
