@@ -9,6 +9,6 @@ from lawsuit.serializers import LawsuitSerializer
 
 class LawsuitViewSet(ViewSet):
     def retrieve(self, _, pk):
-        queryset = Lawsuit.objects.all()
+        queryset = Lawsuit.objects.prefetch_related('payments').all()
         lawsuit = get_object_or_404(queryset, case_no=pk)
         return Response(LawsuitSerializer(lawsuit).data)

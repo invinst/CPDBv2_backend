@@ -33,8 +33,7 @@ class OfficerSerializer(OfficerPercentileSerializer):
 
     def get_lawsuit_payment(self, obj):
         lawsuit_payment = 0
-        lawsuits = obj.lawsuit_set.prefetch_related('payments').all()
-        for lawsuit in lawsuits:
+        for lawsuit in obj.lawsuit_set.all():
             for payment in lawsuit.payments.all():
                 lawsuit_payment += payment.settlement or 0
                 lawsuit_payment += payment.legal_fees or 0
@@ -59,7 +58,7 @@ class LawsuitSerializer(NoNullSerializer):
     address = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
-    officers = OfficerSerializer(many=True)
+    officers = serializers.SerializerMethodField()
     interactions = serializers.SerializerMethodField()
     services = serializers.SerializerMethodField()
     misconducts = serializers.SerializerMethodField()
@@ -94,3 +93,6 @@ class LawsuitSerializer(NoNullSerializer):
     def get_outcomes(self, obj):
         return self._get_names(obj, 'outcomes')
 
+    def get_officers(self, obj):
+        officers = obj.officers.prefetch_related('lawsuit_set', 'lawsuit_set__payments')
+        return OfficerSerializer(officers, many=True).data
