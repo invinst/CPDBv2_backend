@@ -104,7 +104,7 @@ class Pinboard(TimeStampsModel):
         return list(self.trrs.values_list('id', flat=True))
 
     def relevant_documents_query(self, **kwargs):
-        return AttachmentFile.showing.filter(
+        return AttachmentFile.objects.showing().filter(
             file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
         ).only(

@@ -49,7 +49,7 @@ def send_cr_attachment_available_email(new_attachments):
     for attachment in new_attachments:
         attachment.notifications_count = sent_count[attachment.owner.crid]
 
-    AttachmentFile.objects.bulk_update(
+    AttachmentFile.bulk_objects.bulk_update(
         new_attachments,
         update_fields=['notifications_count'],
         batch_size=1000

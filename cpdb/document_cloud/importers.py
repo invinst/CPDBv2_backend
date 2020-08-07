@@ -63,22 +63,18 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
     @staticmethod
     def get_attachment(cloud_document):
-        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
         try:
             try:
-                return AttachmentFile.objects.get(
+                return AttachmentFile.objects.for_allegation().get(
                     Q(owner_id=cloud_document.allegation.pk,
-                      owner_type_id=allegation_type_id,
                       source_type=cloud_document.source_type,
                       external_id=cloud_document.documentcloud_id) |
                     Q(owner_id=cloud_document.allegation.pk,
-                      owner_type_id=allegation_type_id,
                       pending_documentcloud_id=cloud_document.documentcloud_id)
                 )
             except AttachmentFile.DoesNotExist:
-                return AttachmentFile.objects.get(
+                return AttachmentFile.objects.for_allegation().get(
                     owner_id=cloud_document.allegation.pk,
-                    owner_type_id=allegation_type_id,
                     source_type='',
                     original_url=cloud_document.url
                 )
@@ -194,7 +190,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     def update_attachments(self):
         if not self.custom_search_syntaxes:
             all_attachment_ids = set(attachment.id for attachment in self.kept_attachments + self.updated_attachments)
-            deleted_attachments = AttachmentFile.objects.filter(
+            deleted_attachments = AttachmentFile.objects.for_allegation().filter(
                 source_type=self.source_type
             ).exclude(id__in=all_attachment_ids)
             self.log_info(f'Deleting {deleted_attachments.count()} attachments')
@@ -202,7 +198,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
             self.num_updated_attachments = len(self.updated_attachments)
             self.log_info(f'Updating {self.num_updated_attachments} attachments')
-            AttachmentFile.objects.bulk_update(
+            AttachmentFile.bulk_objects.bulk_update(
                 self.updated_attachments,
                 update_fields=[
                     'external_id', 'title', 'tag', 'url', 'preview_image_url',
@@ -213,7 +209,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             )
 
         self.log_info(f'Creating {len(self.new_attachments)} attachments')
-        AttachmentFile.objects.bulk_create(self.new_attachments)
+        AttachmentFile.bulk_objects.bulk_create(self.new_attachments)
 
     def upload_to_s3(self):
         for attachment in self.new_attachments + self.updated_attachments:
@@ -227,9 +223,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             pass
 
     def extract_copa_summary(self):
-        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
-        copa_attachments = AttachmentFile.objects.exclude(text_content='').filter(allegation__summary='',
-                                                                                  owner_type_id=allegation_type_id)
+        copa_attachments = AttachmentFile.objects.for_allegation().exclude(text_content='').filter(allegation__summary='')
         for copa_attachment in copa_attachments:
             if copa_attachment.update_allegation_summary():
                 self.log_info(

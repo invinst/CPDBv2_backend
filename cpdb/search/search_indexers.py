@@ -200,7 +200,7 @@ class CrIndexer(BaseIndexer):
         officer_allegations = datum.officer_allegations.filter(
             officer__isnull=False
         ).prefetch_related('officer').order_by('-officer__allegation_count')
-        attachment_files = AttachmentFile.showing.filter(owner_id=datum.crid).exclude(text_content='')
+        attachment_files = AttachmentFile.objects.for_allegation().showing().filter(owner_id=datum.crid).exclude(text_content='')
 
         return {
             'crid': datum.crid,

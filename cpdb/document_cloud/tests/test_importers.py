@@ -22,6 +22,7 @@ from document_cloud.importers import DocumentCloudAttachmentImporter
 from email_service.constants import CR_ATTACHMENT_AVAILABLE
 from email_service.factories import EmailTemplateFactory
 from shared.tests.utils import create_object
+from lawsuit.factories import LawsuitFactory
 
 
 @override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
@@ -80,7 +81,6 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'documentcloud_id': '1',
-            'url': copa_attachment.original_url
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(copa_attachment)
@@ -409,13 +409,15 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_delete_attachments(self, _):
+        lawsuit_attachment = AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD, owner=LawsuitFactory())
         AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
 
-        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.count()).to.eq(2)
 
         DocumentCloudAttachmentImporter(self.logger).update_attachments()
 
-        expect(AttachmentFile.objects.count()).to.eq(0)
+        expect(AttachmentFile.objects.count()).to.eq(1)
+        expect(AttachmentFile.objects.filter(id=lawsuit_attachment.id).exists()).to.be.true()
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_kept_attachments(self, _):

@@ -317,20 +317,17 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def allegation_attachments(self):
-        Allegation = apps.get_app_config('data').get_model('Allegation')
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
 
         allegation_ids = self.allegations.values_list('crid', flat=True)
 
-        return AttachmentFile.showing.filter(
-            owner_type=ContentType.objects.get_for_model(Allegation),
+        return AttachmentFile.objects.for_allegation().showing().filter(
             owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 
     @property
     def investigator_attachments(self):
-        Allegation = apps.get_app_config('data').get_model('Allegation')
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
         InvestigatorAllegation = apps.get_app_config('data').get_model('InvestigatorAllegation')
 
@@ -338,8 +335,7 @@ class Officer(TimeStampsModel, TaggableModel):
         allegation_ids = InvestigatorAllegation.objects.filter(investigator_id__in=list(investigator_ids))\
             .values_list('allegation_id', flat=True).distinct()
 
-        return AttachmentFile.showing.filter(
-            owner_type=ContentType.objects.get_for_model(Allegation),
+        return AttachmentFile.objects.for_allegation().showing().filter(
             owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')

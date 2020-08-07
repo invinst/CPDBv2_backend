@@ -13,7 +13,7 @@ class AttachmentFileIndexer(BaseIndexer):
     index_alias = tracker_index_alias
 
     def get_queryset(self):
-        return AttachmentFile.objects.all()
+        return AttachmentFile.objects.for_allegation().all()
 
     def extract_datum(self, datum):
         return {

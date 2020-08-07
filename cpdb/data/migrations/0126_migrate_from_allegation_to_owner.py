@@ -13,7 +13,7 @@ def migrate_from_attachment_allegation_to_owner(apps, schema_editor):
         attachment.owner_id = attachment.allegation_id
         attachment.owner_type_id = allegation_content_type.id
 
-    AttachmentFile.objects.bulk_update(attachment_files, ['owner_id', 'owner_type_id'], batch_size=10000)
+    AttachmentFile.bulk_objects.bulk_update(attachment_files, ['owner_id', 'owner_type_id'], batch_size=10000)
 
 
 class Migration(migrations.Migration):
