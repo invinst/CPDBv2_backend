@@ -13,6 +13,7 @@ class Lawsuit(TimeStampsModel):
     add1 = models.CharField(max_length=16, blank=True)
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
+    point = models.PointField(srid=4326, null=True)
     officers = models.ManyToManyField('data.Officer')
     attachment_files = GenericRelation(
         AttachmentFile,

@@ -3,6 +3,7 @@ import datetime
 from operator import itemgetter
 
 from django.test import TestCase
+from django.contrib.gis.geos import Point
 
 from robber import expect
 
@@ -27,7 +28,8 @@ class LawsuitSerializerTestCase(TestCase):
             summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
             incident_date=datetime.datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
-            city='Chicago IL'
+            city='Chicago IL',
+            point=Point(-35.5, 68.9)
         )
         attachment = AttachmentFileFactory(owner=lawsuit, show=True, preview_image_url=None)
 
@@ -125,6 +127,10 @@ class LawsuitSerializerTestCase(TestCase):
             'misconducts': ['Excessive force', 'Racial epithets'],
             'violences': ['Physical Force'],
             'outcomes': ['Killed by officer'],
+            'point': {
+                'lon': -35.5,
+                'lat': 68.9,
+            },
             'payments': [
                 {
                     'payee': 'Genre Wilson',
@@ -155,3 +161,20 @@ class LawsuitSerializerTestCase(TestCase):
         serializer_data['payments'] = sorted(serializer_data['payments'], key=itemgetter('payee'))
 
         expect(serializer_data).to.eq(expected_data)
+
+    def test_serializer_point(self):
+        lawsuit = LawsuitFactory(
+            point=Point(-35.5, 68.9)
+        )
+        serializer_data = LawsuitSerializer(lawsuit).data
+        expect(serializer_data['point']).to.eq({
+            'lon': -35.5,
+            'lat': 68.9,
+        })
+
+        lawsuit = LawsuitFactory(
+            point=None
+        )
+        serializer_data = LawsuitSerializer(lawsuit).data
+
+        expect('point' in serializer_data).to.be.false()

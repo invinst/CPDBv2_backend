@@ -65,6 +65,7 @@ class LawsuitSerializer(NoNullSerializer):
     violences = serializers.SerializerMethodField()
     outcomes = serializers.SerializerMethodField()
     payments = PaymentSerializer(many=True)
+    point = serializers.SerializerMethodField()
     total_payments = TotalPaymentSerializer()
     attachments = AttachmentFileSerializer(source='attachment_files', many=True)
 
@@ -92,6 +93,12 @@ class LawsuitSerializer(NoNullSerializer):
 
     def get_outcomes(self, obj):
         return self._get_names(obj, 'outcomes')
+
+    def get_point(self, obj):
+        if obj.point is not None:
+            return {'lon': obj.point.x, 'lat': obj.point.y}
+        else:
+            return None
 
     def get_officers(self, obj):
         officers = obj.officers.prefetch_related('lawsuit_set', 'lawsuit_set__payments')
