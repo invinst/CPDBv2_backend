@@ -290,8 +290,11 @@ class OfficerTimelineQueryTestCase(TestCase):
 
         lawsuit_1 = LawsuitFactory(incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc), summary='Honored Police Star')
         lawsuit_2 = LawsuitFactory(incident_date=datetime(2003, 1, 5, tzinfo=pytz.utc), summary='Life Saving Award')
+        lawsuit_3 = LawsuitFactory(incident_date=None, summary='No Date Lawsuit')
+        lawsuit_3 = LawsuitFactory(incident_date=None, summary='No Date Lawsuit')
         lawsuit_1.officers.set([officer])
         lawsuit_2.officers.set([officer])
+        lawsuit_3.officers.set([officer])
 
         unit_1 = PoliceUnitFactory(unit_name='001', description='District 001')
         unit_2 = PoliceUnitFactory(unit_name='002', description='District 002')
