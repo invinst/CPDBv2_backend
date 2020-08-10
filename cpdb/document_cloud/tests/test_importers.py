@@ -409,7 +409,10 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_delete_attachments(self, _):
-        lawsuit_attachment = AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD, owner=LawsuitFactory())
+        lawsuit_attachment = AttachmentFileFactory(
+            source_type=AttachmentSourceType.DOCUMENTCLOUD,
+            owner=LawsuitFactory()
+        )
         AttachmentFileFactory(source_type=AttachmentSourceType.DOCUMENTCLOUD)
 
         expect(AttachmentFile.objects.count()).to.eq(2)

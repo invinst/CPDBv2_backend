@@ -223,7 +223,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             pass
 
     def extract_copa_summary(self):
-        copa_attachments = AttachmentFile.objects.for_allegation().exclude(text_content='').filter(allegation__summary='')
+        copa_attachments = AttachmentFile.objects.for_allegation().exclude(text_content='').filter(
+            allegation__summary=''
+        )
         for copa_attachment in copa_attachments:
             if copa_attachment.update_allegation_summary():
                 self.log_info(

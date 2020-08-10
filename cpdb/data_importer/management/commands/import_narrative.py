@@ -26,7 +26,9 @@ class Command(BaseCommand):
         LOG_KEYS = ['cr_id', 'pdf_name', 'doccloud_url']
 
         for row in tqdm(sorted_narrative_csv_file):
-            attachment = AttachmentFile.objects.for_allegation().filter(owner_id=row['cr_id'], url=row['doccloud_url']).first()
+            attachment = AttachmentFile.objects.for_allegation().filter(
+                owner_id=row['cr_id'], url=row['doccloud_url']
+            ).first()
             log_values = [row[key] for key in LOG_KEYS]
             if attachment:
                 attachment_narratives.append(
