@@ -26,6 +26,7 @@ class LawsuitSerializerTestCase(TestCase):
         lawsuit = LawsuitFactory(
             case_no='00-L-5230',
             summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+            primary_cause='EXCESSIVE FORCE/MINOR',
             incident_date=datetime.datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
             city='Chicago IL',
@@ -84,6 +85,7 @@ class LawsuitSerializerTestCase(TestCase):
         expected_data = {
             'case_no': '00-L-5230',
             'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+            'primary_cause': 'EXCESSIVE FORCE/MINOR',
             'address': '200 E. Chicago Ave., Chicago IL',
             'incident_date': '2000-03-16',
             'plaintiffs': [

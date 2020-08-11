@@ -251,8 +251,7 @@ class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
     date_sort = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     case_no = serializers.CharField()
-    misconduct = serializers.SerializerMethodField()
-    outcome = serializers.SerializerMethodField()
+    primary_cause = serializers.CharField()
     attachments = AttachmentFileSerializer(source='attachment_files', many=True)
 
     def get_date_sort(self, obj):
@@ -266,12 +265,6 @@ class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
 
     def get_priority_sort(self, obj):
         return 50
-
-    def get_misconduct(self, obj):
-        return ', '.join(obj.misconducts.values_list('name', flat=True))
-
-    def get_outcome(self, obj):
-        return ', '.join(obj.outcomes.values_list('name', flat=True))
 
 
 class OfficerCoaccusalSerializer(OfficerCardSerializer):

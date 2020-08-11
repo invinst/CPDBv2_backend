@@ -552,11 +552,10 @@ class LawsuitNewTimelineSerializerTestCase(TestCase):
         officer = OfficerFactory(id=123)
         lawsuit = LawsuitFactory(
             case_no='Lawsuit#456',
+            primary_cause='EXCESSIVE FORCE/MINOR',
             incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc),
         )
 
-        lawsuit.misconducts.add(LawsuitMisconductFactory(name='MisConduct'))
-        lawsuit.outcomes.add(LawsuitOutcomeFactory(name='Outcome'))
         lawsuit.officers.add(officer)
 
         attachment = AttachmentFileFactory(
@@ -593,8 +592,7 @@ class LawsuitNewTimelineSerializerTestCase(TestCase):
             'case_no': 'Lawsuit#456',
             'date_sort': date(2002, 2, 3),
             'date': '2002-02-03',
-            'misconduct': 'MisConduct',
-            'outcome': 'Outcome',
+            'primary_cause': 'EXCESSIVE FORCE/MINOR',
             'attachments': [{
                 'title': 'title',
                 'url': 'url',

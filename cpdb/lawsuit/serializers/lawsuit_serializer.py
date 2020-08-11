@@ -55,6 +55,7 @@ class AttachmentFileSerializer(NoNullSerializer):
 class LawsuitSerializer(NoNullSerializer):
     case_no = serializers.CharField()
     summary = serializers.CharField()
+    primary_cause = serializers.CharField()
     address = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
