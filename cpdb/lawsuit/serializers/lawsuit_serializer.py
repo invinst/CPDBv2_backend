@@ -24,7 +24,7 @@ class OfficerSerializer(OfficerPercentileSerializer):
     sustained_count = serializers.IntegerField()
     birth_year = serializers.IntegerField()
     race = serializers.CharField()
-    gender = serializers.CharField()
+    gender = serializers.CharField(source='gender_display')
     rank = serializers.CharField()
     lawsuit_count = serializers.SerializerMethodField()
     lawsuit_payment = serializers.SerializerMethodField()
