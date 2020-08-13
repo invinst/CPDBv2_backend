@@ -31,7 +31,9 @@ class Command(BaseCommand):
         LOG_KEYS = ['cr_id', 'filename', 'doccloud_url']
 
         for row in tqdm(sorted_ocr_csv_file):
-            attachment = AttachmentFile.objects.filter(owner_id=row['cr_id'], url=row['doccloud_url']).first()
+            attachment = AttachmentFile.objects.for_allegation().filter(
+                owner_id=row['cr_id'], url=row['doccloud_url']
+            ).first()
             log_values = [row[key] for key in LOG_KEYS]
             if attachment:
                 attachment_ocrs.append(
@@ -61,7 +63,7 @@ class Command(BaseCommand):
                 [attachment_ocr.ocr_text for attachment_ocr in attachment.attachment_ocrs.all()])
             attachment.is_external_ocr = True
 
-        AttachmentFile.objects.bulk_update(
+        AttachmentFile.bulk_objects.bulk_update(
             attachments, update_fields=['is_external_ocr', 'text_content'], batch_size=BATCH_SIZE
         )
         print(f'Updated attachment OCRs: {len(attachment_ids)}')

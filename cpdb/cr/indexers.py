@@ -95,7 +95,7 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating attachments dict...')
     def populate_attachments_dict(self):
         self.attachments_dict = dict()
-        queryset = filter_attachments(AttachmentFile.for_allegation).annotate(
+        queryset = filter_attachments(AttachmentFile.objects.for_allegation().showing()).annotate(
             allegation_id=F('owner_id')
         ).values('allegation_id', 'title', 'url', 'preview_image_url', 'file_type')
         for obj in queryset:

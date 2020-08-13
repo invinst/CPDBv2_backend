@@ -38,13 +38,13 @@ class AttachmentViewSet(viewsets.ViewSet):
             document = get_object_or_404(queryset, pk=pk)
             return Response(AuthenticatedAttachmentFileSerializer(document).data)
         else:
-            queryset = AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT)
+            queryset = AttachmentFile.objects.showing().filter(file_type=MEDIA_TYPE_DOCUMENT)
             document = get_object_or_404(queryset, pk=pk)
             return Response(AttachmentFileSerializer(document).data)
 
     def list(self, request):
-        queryset = AttachmentFile.objects.annotate(documents_count=SQCount(
-            AttachmentFile.showing.filter(allegation__crid=OuterRef('owner_id')).values('allegation')
+        queryset = AttachmentFile.objects.for_allegation().annotate(documents_count=SQCount(
+            AttachmentFile.objects.showing().filter(allegation__crid=OuterRef('owner_id')).values('allegation')
         ))
 
         serializer_class = AttachmentFileListSerializer if request.auth is None else \

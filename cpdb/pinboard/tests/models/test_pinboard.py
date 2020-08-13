@@ -698,9 +698,15 @@ class PinboardTestCase(TestCase):
         expect(relevant_documents).to.have.length(2)
         expect(relevant_documents[0].id).to.eq(relevant_document_2.id)
         expect(relevant_documents[0].owner.crid).to.eq('2')
+        expect(relevant_documents[0].owner.prefetched_officer_allegations).to.have.length(1)
+        expect(relevant_documents[0].owner.prefetched_officer_allegations[0].officer.id).to.eq(2)
 
         expect(relevant_documents[1].id).to.eq(relevant_document_1.id)
         expect(relevant_documents[1].owner.crid).to.eq('1')
+        expect(relevant_documents[1].owner.prefetched_officer_allegations).to.have.length(3)
+        expect(relevant_documents[1].owner.prefetched_officer_allegations[0].officer.id).to.eq(5)
+        expect(relevant_documents[1].owner.prefetched_officer_allegations[1].officer.id).to.eq(1)
+        expect(relevant_documents[1].owner.prefetched_officer_allegations[2].officer.id).to.eq(4)
 
     def test_relevant_documents_not_showing_audios_and_videos(self):
         pinned_officer_1 = OfficerFactory(id=1)

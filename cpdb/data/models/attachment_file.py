@@ -18,14 +18,23 @@ from .common import TimeStampsModel, TaggableModel
 logger = logging.getLogger(__name__)
 
 
-class ShownAttachmentManager(models.Manager):
+class AttachmentFileQuerySet(models.QuerySet):
+    def showing(self):
+        return self.filter(show=True)
+
+    def for_allegation(self):
+        return self.filter(owner_type=ContentType.objects.get(app_label='data', model='allegation'))
+
+
+class AttachmentFileManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(show=True)
+        return AttachmentFileQuerySet(self.model, using=self._db)
 
+    def showing(self):
+        return self.get_queryset().showing()
 
-class ForAllegationManager(models.Manager):
-    def get_query_set(self):
-        return super().get_queryset().filter(owner_type=ContentType.objects.get(app_label='data', model='allegation'))
+    def for_allegation(self):
+        return self.get_queryset().for_allegation()
 
 
 class AttachmentFile(TimeStampsModel, TaggableModel):
@@ -60,9 +69,8 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     owner_id = models.CharField(max_length=30, null=True)
     owner = GenericForeignKey('owner_type', 'owner_id')
 
-    objects = BulkUpdateManager()
-    showing = ShownAttachmentManager()
-    for_allegation = ForAllegationManager()
+    objects = AttachmentFileManager()
+    bulk_objects = BulkUpdateManager()
 
     class Meta:
         unique_together = (('owner_id', 'owner_type', 'external_id', 'source_type'),)
@@ -86,9 +94,8 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
 
     @property
     def linked_documents(self):
-        return AttachmentFile.showing.filter(
+        return AttachmentFile.objects.for_allegation().showing().filter(
             owner_id=self.owner_id,
-            owner_type=ContentType.objects.get(app_label='data', model='allegation'),
             file_type=MEDIA_TYPE_DOCUMENT,
         ).exclude(id=self.id)
 
@@ -118,7 +125,9 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
         return f'/document/{self.pk}/'
 
     def update_allegation_summary(self):
+        allegation_type = ContentType.objects.get(app_label='data', model='allegation')
         if self.source_type == AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD \
+                and self.owner_type == allegation_type \
                 and self.text_content and not self.owner.summary:
             summary = extract_copa_executive_summary(self.text_content)
             if summary:

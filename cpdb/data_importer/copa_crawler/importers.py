@@ -138,12 +138,10 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
 
     def upload_to_documentcloud(self):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
-        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
-        attachments = AttachmentFile.objects.filter(
+        attachments = AttachmentFile.objects.for_allegation().filter(
             source_type=self.source_type,
             file_type=MEDIA_TYPE_DOCUMENT,
             pending_documentcloud_id__isnull=True,
-            owner_type_id=allegation_type_id,
             upload_fail_attempts__lte=UPLOAD_FAIL_MAX_ATTEMPTS
         )
 

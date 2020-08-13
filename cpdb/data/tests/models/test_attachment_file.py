@@ -9,6 +9,7 @@ from robber import expect
 
 from data.constants import AttachmentSourceType
 from data.factories import AttachmentFileFactory, AllegationFactory
+from lawsuit.factories import LawsuitFactory
 from data.models import AttachmentFile
 
 
@@ -45,15 +46,27 @@ class AttachmentFileTestCase(TestCase):
             })
         )
 
-    def test_attachment_shown_manager(self):
+    def test_attachment_showing(self):
         AttachmentFileFactory(id=1)
         AttachmentFileFactory(id=2, show=False)
         AttachmentFileFactory(id=3, show=False)
 
-        shown_attachments = AttachmentFile.showing.all()
+        shown_attachments = AttachmentFile.objects.showing().all()
 
         expect(shown_attachments).to.have.length(1)
         expect(shown_attachments[0].id).to.eq(1)
+
+    def test_attachment_shown_manager(self):
+        allegation = AllegationFactory()
+        lawsuit = LawsuitFactory()
+        AttachmentFileFactory(id=1, owner=lawsuit)
+        AttachmentFileFactory(id=2, owner=allegation)
+        AttachmentFileFactory(id=3, owner=allegation)
+
+        allegation_attachments = AttachmentFile.objects.for_allegation().all()
+
+        expect(allegation_attachments).to.have.length(2)
+        expect(set(attachment.id for attachment in allegation_attachments)).to.eq({2, 3})
 
     def test_linked_documents(self):
         allegation = AllegationFactory()
