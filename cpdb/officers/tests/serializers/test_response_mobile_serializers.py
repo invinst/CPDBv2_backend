@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Point
 import pytz
 from robber import expect
 
-from lawsuit.factories import LawsuitFactory, LawsuitMisconductFactory
+from lawsuit.factories import LawsuitFactory
 from officers.serializers.response_mobile_serializers import (
     OfficerInfoMobileSerializer,
     PoliceUnitMobileSerializer,

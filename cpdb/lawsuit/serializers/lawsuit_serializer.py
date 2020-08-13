@@ -25,6 +25,7 @@ class OfficerSerializer(OfficerPercentileSerializer):
     birth_year = serializers.IntegerField()
     race = serializers.CharField()
     gender = serializers.CharField()
+    rank = serializers.CharField()
     lawsuit_count = serializers.SerializerMethodField()
     lawsuit_payment = serializers.SerializerMethodField()
 
@@ -68,7 +69,7 @@ class LawsuitSerializer(NoNullSerializer):
     payments = PaymentSerializer(many=True)
     point = serializers.SerializerMethodField()
     total_payments = TotalPaymentSerializer()
-    attachments = AttachmentFileSerializer(source='attachment_files', many=True)
+    attachment = serializers.SerializerMethodField()
 
     @staticmethod
     def _get_names(obj, attr):
@@ -104,3 +105,7 @@ class LawsuitSerializer(NoNullSerializer):
     def get_officers(self, obj):
         officers = obj.officers.prefetch_related('lawsuit_set', 'lawsuit_set__payments')
         return OfficerSerializer(officers, many=True).data
+
+    def get_attachment(self, obj):
+        attachment = obj.attachment_files.first()
+        return AttachmentFileSerializer(attachment).data if attachment else None

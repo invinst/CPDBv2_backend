@@ -13,7 +13,7 @@ import botocore
 from mock import patch
 from robber import expect
 
-from data.constants import ACTIVE_YES_CHOICE
+from data.constants import ACTIVE_YES_CHOICE, MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
@@ -23,6 +23,7 @@ from data.factories import (
     AttachmentFileFactory,
 )
 from trr.factories import TRRFactory
+from lawsuit.factories import LawsuitFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from analytics.models import AttachmentTracking
 from analytics import constants
@@ -171,6 +172,20 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
         SalaryFactory(officer=officer, year=2000, rank='Junior Police Officer', spp_date=date(2000, 1, 1))
 
+        lawsuit = LawsuitFactory(
+            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc),
+            case_no='00-L-5230',
+            primary_cause='EXCESSIVE FORCE/MINOR'
+        )
+        lawsuit.officers.set([officer])
+        lawsuit_attachment = AttachmentFileFactory(
+            owner=lawsuit,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='preview.png',
+            url='/docs/lawsuit.pdf',
+            title='Lawsuit Attachment Title'
+        )
+
         cache_managers.cache_all()
 
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
@@ -252,6 +267,23 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
+            }, {
+                'date': '2002-01-03',
+                'kind': 'LAWSUIT',
+                'unit_name': '',
+                'unit_description': '',
+                'rank': 'Police Officer',
+                'case_no': '00-L-5230',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'attachments': [
+                    {
+                        'title': 'Lawsuit Attachment Title',
+                        'url': '/docs/lawsuit.pdf',
+                        'preview_image_url': 'preview.png',
+                        'file_type': 'document',
+                        'id': str(lawsuit_attachment.id)
+                    }
+                ]
             }, {
                 'date': '2001-09-23',
                 'kind': 'RANK_CHANGE',

@@ -42,8 +42,7 @@ class LawsuitViewSetTestCase(APITestCase):
         misconduct_1 = LawsuitMisconductFactory(name='Excessive force')
         misconduct_2 = LawsuitMisconductFactory(name='Racial epithets')
         attachment = AttachmentFileFactory(owner=lawsuit, preview_image_url='preview.png', url='/docs/lawsuit.pdf')
-        AttachmentFileFactory(show=False)
-        AttachmentFileFactory(show=True, tag='OCIR')
+        AttachmentFileFactory(owner=lawsuit, show=False)
 
         officer_1 = OfficerFactory(
             first_name='Jerome',
@@ -53,6 +52,11 @@ class LawsuitViewSetTestCase(APITestCase):
             complaint_percentile='22.22',
             civilian_allegation_percentile='33.33',
             internal_allegation_percentile='44.44',
+            sustained_count=1,
+            birth_year=1977,
+            race='White',
+            gender='M',
+            rank='Police Officer',
         )
         officer_2 = OfficerFactory(
             first_name='Michael',
@@ -62,6 +66,11 @@ class LawsuitViewSetTestCase(APITestCase):
             complaint_percentile='66.66',
             civilian_allegation_percentile='77.77',
             internal_allegation_percentile='88.88',
+            sustained_count=2,
+            birth_year=1990,
+            race='Black',
+            gender='F',
+            rank='Sergeant',
         )
 
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
@@ -96,12 +105,13 @@ class LawsuitViewSetTestCase(APITestCase):
                     'percentile_allegation': '22.2200',
                     'percentile_allegation_civilian': '33.3300',
                     'percentile_allegation_internal': '44.4400',
-                    'sustained_count': officer_1.sustained_count,
-                    'birth_year': officer_1.birth_year,
-                    'race': officer_1.race,
-                    'gender': officer_1.gender,
+                    'sustained_count': 1,
+                    'birth_year': 1977,
+                    'race': 'White',
+                    'gender': 'M',
                     'lawsuit_count': 1,
                     'lawsuit_payment': '2500007500.00',
+                    'rank': 'Police Officer',
                 },
                 {
                     'id': officer_2.id,
@@ -111,12 +121,13 @@ class LawsuitViewSetTestCase(APITestCase):
                     "percentile_allegation": "66.6600",
                     "percentile_allegation_civilian": "77.7700",
                     "percentile_allegation_internal": "88.8800",
-                    'sustained_count': officer_2.sustained_count,
-                    'birth_year': officer_2.birth_year,
-                    'race': officer_2.race,
-                    'gender': officer_2.gender,
+                    'sustained_count': 2,
+                    'birth_year': 1990,
+                    'race': 'Black',
+                    'gender': 'F',
                     'lawsuit_count': 1,
                     'lawsuit_payment': '2500007500.00',
+                    'rank': 'Sergeant',
                 }
             ],
             'interactions': ['Protest'],
@@ -139,13 +150,13 @@ class LawsuitViewSetTestCase(APITestCase):
                 'total_settlement': '7500.00',
                 'total_legal_fees': '2500000000.00'
             },
-            'attachments': [{
+            'attachment': {
                 'id': f'{attachment.id}',
                 'title': attachment.title,
                 'file_type': attachment.file_type,
                 'preview_image_url': 'preview.png',
                 'url': '/docs/lawsuit.pdf',
-            }]
+            }
         }
         response_data = response.data
         response_data['plaintiffs'] = sorted(response_data['plaintiffs'], key=itemgetter('name'))

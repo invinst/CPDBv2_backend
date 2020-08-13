@@ -8,7 +8,7 @@ import pytz
 from robber import expect
 from mock import Mock, patch, PropertyMock
 
-from lawsuit.factories import LawsuitFactory, LawsuitMisconductFactory, LawsuitOutcomeFactory
+from lawsuit.factories import LawsuitFactory
 from officers.serializers.response_serializers import (
     OfficerInfoSerializer,
     OfficerCardSerializer,

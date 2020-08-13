@@ -56,7 +56,8 @@ class LawsuitSerializerTestCase(TestCase):
             sustained_count=1,
             birth_year=1977,
             race='White',
-            gender='M'
+            gender='M',
+            rank='Police Officer',
         )
         officer_2 = OfficerFactory(
             first_name='Michael',
@@ -69,7 +70,8 @@ class LawsuitSerializerTestCase(TestCase):
             sustained_count=2,
             birth_year=1990,
             race='Black',
-            gender='F'
+            gender='F',
+            rank='Sergeant',
         )
 
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
@@ -107,6 +109,7 @@ class LawsuitSerializerTestCase(TestCase):
                     'gender': 'M',
                     'lawsuit_count': 1,
                     'lawsuit_payment': '2500007500.00',
+                    'rank': 'Police Officer',
                 },
                 {
                     'id': officer_2.id,
@@ -122,6 +125,7 @@ class LawsuitSerializerTestCase(TestCase):
                     'gender': 'F',
                     'lawsuit_count': 1,
                     'lawsuit_payment': '2500007500.00',
+                    'rank': 'Sergeant',
                 }
             ],
             'interactions': ['Protest'],
@@ -148,12 +152,12 @@ class LawsuitSerializerTestCase(TestCase):
                 'total_settlement': '7500.00',
                 'total_legal_fees': '2500000000.00'
             },
-            'attachments': [{
+            'attachment': {
                 'id': str(attachment.id),
                 'title': attachment.title,
                 'file_type': attachment.file_type,
                 'url': attachment.url,
-            }]
+            }
         }
         serializer_data = LawsuitSerializer(lawsuit).data
         serializer_data['plaintiffs'] = sorted(serializer_data['plaintiffs'], key=itemgetter('name'))
