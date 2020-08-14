@@ -45,3 +45,10 @@ class Lawsuit(TimeStampsModel):
     @property
     def v2_to(self):
         return f'/lawsuit/{self.case_no}/'
+
+    @property
+    def address(self):
+        add1 = self.add1.strip()
+        add2 = self.add2.strip()
+        city = self.city.strip()
+        return ', '.join(filter(None, [' '.join(filter(None, [add1, add2])), city]))

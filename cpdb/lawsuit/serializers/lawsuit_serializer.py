@@ -57,7 +57,7 @@ class LawsuitSerializer(NoNullSerializer):
     case_no = serializers.CharField()
     summary = serializers.CharField()
     primary_cause = serializers.CharField()
-    address = serializers.SerializerMethodField()
+    address = serializers.CharField()
     location = serializers.CharField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
@@ -71,12 +71,6 @@ class LawsuitSerializer(NoNullSerializer):
     point = serializers.SerializerMethodField()
     total_payments = TotalPaymentSerializer()
     attachment = serializers.SerializerMethodField()
-
-    def get_address(self, obj):
-        add1 = obj.add1.strip()
-        add2 = obj.add2.strip()
-        city = obj.city.strip()
-        return ', '.join(filter(None, [' '.join(filter(None, [add1, add2])), city]))
 
     def get_point(self, obj):
         if obj.point is not None:

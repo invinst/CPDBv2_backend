@@ -8,7 +8,12 @@ from lawsuit.factories import (LawsuitFactory, PaymentFactory)
 
 class LawsuitTestCase(TestCase):
     def setUp(self):
-        self.lawsuit = LawsuitFactory(case_no='00-L-5230')
+        self.lawsuit = LawsuitFactory(
+            case_no='00-L-5230',
+            add1='200 ',
+            add2='E. Chicago Ave. ',
+            city='Chicago IL '
+        )
 
     def test_total_payments(self):
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=self.lawsuit)
@@ -32,3 +37,6 @@ class LawsuitTestCase(TestCase):
 
     def test_v2_to(self):
         expect(self.lawsuit.v2_to).to.eq('/lawsuit/00-L-5230/')
+
+    def test_address(self):
+        expect(self.lawsuit.address).to.eq('200 E. Chicago Ave., Chicago IL')
