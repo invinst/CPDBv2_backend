@@ -10,11 +10,6 @@ from rest_framework.test import APITestCase
 from lawsuit.factories import (
     LawsuitFactory,
     LawsuitPlaintiffFactory,
-    LawsuitInteractionFactory,
-    LawsuitServiceFactory,
-    LawsuitMisconductFactory,
-    LawsuitViolenceFactory,
-    LawsuitOutcomeFactory,
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
@@ -28,19 +23,16 @@ class LawsuitViewSetTestCase(APITestCase):
             primary_cause='EXCESSIVE FORCE/MINOR',
             incident_date=datetime.datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
-            city='Chicago IL'
+            city='Chicago IL',
+            interactions=['Protest'],
+            outcomes=['Killed by officer'],
+            services=['On Duty', 'Plainclothes'],
+            violences=['Physical Force'],
+            misconducts=['Excessive force', 'Racial epithets'],
         )
 
         LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
         LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
-
-        interaction = LawsuitInteractionFactory(name='Protest')
-        outcome = LawsuitOutcomeFactory(name='Killed by officer')
-        service_1 = LawsuitServiceFactory(name='On Duty')
-        service_2 = LawsuitServiceFactory(name='Plainclothes')
-        violence = LawsuitViolenceFactory(name='Physical Force')
-        misconduct_1 = LawsuitMisconductFactory(name='Excessive force')
-        misconduct_2 = LawsuitMisconductFactory(name='Racial epithets')
         attachment = AttachmentFileFactory(owner=lawsuit, preview_image_url='preview.png', url='/docs/lawsuit.pdf')
         AttachmentFileFactory(owner=lawsuit, show=False)
 
@@ -76,11 +68,6 @@ class LawsuitViewSetTestCase(APITestCase):
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
         PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
 
-        lawsuit.interactions.set([interaction])
-        lawsuit.outcomes.set([outcome])
-        lawsuit.services.set([service_1, service_2])
-        lawsuit.violences.set([violence])
-        lawsuit.misconducts.set([misconduct_1, misconduct_2])
         lawsuit.officers.set([officer_1, officer_2])
 
         url = reverse('api-v2:lawsuit-detail', kwargs={'pk': '00-L-5230'})
@@ -161,8 +148,6 @@ class LawsuitViewSetTestCase(APITestCase):
         }
         response_data = response.data
         response_data['plaintiffs'] = sorted(response_data['plaintiffs'], key=itemgetter('name'))
-        response_data['services'] = sorted(response_data['services'])
-        response_data['misconducts'] = sorted(response_data['misconducts'])
         response_data['officers'] = sorted(response_data['officers'], key=itemgetter('full_name'))
         response_data['payments'] = sorted(response_data['payments'], key=itemgetter('payee'))
         expect(response_data).to.eq(expected_data)

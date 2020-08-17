@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.fields import GenericRelation
 
 from data.models.common import TimeStampsModel
@@ -23,11 +24,11 @@ class Lawsuit(TimeStampsModel):
         related_query_name='lawsuit'
     )
 
-    interactions = models.ManyToManyField('lawsuit.LawsuitInteraction')
-    services = models.ManyToManyField('lawsuit.LawsuitService')
-    misconducts = models.ManyToManyField('lawsuit.LawsuitMisconduct')
-    violences = models.ManyToManyField('lawsuit.LawsuitViolence')
-    outcomes = models.ManyToManyField('lawsuit.LawsuitOutcome')
+    interactions = ArrayField(models.CharField(max_length=255), default=list)
+    services = ArrayField(models.CharField(max_length=255), default=list)
+    misconducts = ArrayField(models.CharField(max_length=255), default=list)
+    violences = ArrayField(models.CharField(max_length=255), default=list)
+    outcomes = ArrayField(models.CharField(max_length=255), default=list)
 
     def __str__(self):
         return f'Lawsuit {self.case_no}'
