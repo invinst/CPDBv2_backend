@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 
 from lawsuit.importers import LawsuitImporter
 
-logger = logging.getLogger('crawler.update_lawsuits')
+logger = logging.getLogger('lawsuit.update_lawsuits')
 
 
 class Command(BaseCommand):

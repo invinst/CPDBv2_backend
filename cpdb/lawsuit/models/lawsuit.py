@@ -39,7 +39,6 @@ class Lawsuit(TimeStampsModel):
     total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
     total_payments = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
 
-
     objects = models.Manager()
     bulk_objects = BulkUpdateManager()
 

@@ -201,6 +201,21 @@ class LawsuitImporter(object):
         self.log_info(f'Deleting {deleted_lawsuits.count()} lawsuits')
         deleted_lawsuits.delete()
 
+    def update_lawsuit_primary_causes(self):
+        updated_lawsuits = []
+        for lawsuit in Lawsuit.objects.only('id', 'airtable_id', 'primary_cause'):
+            primary_cause = self.primary_cause_data_mapping.get(lawsuit.airtable_id)
+            if lawsuit.primary_cause != primary_cause:
+                lawsuit.primary_cause = primary_cause
+                updated_lawsuits.append(lawsuit)
+        if updated_lawsuits:
+            self.log_info(f'Updating {len(updated_lawsuits)} lawsuit primary causes')
+            Lawsuit.bulk_objects.bulk_update(
+                updated_lawsuits,
+                update_fields=['primary_cause'],
+                batch_size=BATCH_SIZE
+            )
+
     def plaintiff_data(self, airtable_plaintiff_data, lawsuit_id):
         airtable_plaintiff_fields = airtable_plaintiff_data['fields']
 
@@ -380,6 +395,7 @@ class LawsuitImporter(object):
     def update_data(self):
         self.load_airtable_data()
         self.update_lawsuits()
+        self.update_lawsuit_primary_causes()
         lawsuits = Lawsuit.objects.prefetch_related('attachment_files').all()
         lawsuit_mapping = {lawsuit.airtable_id: lawsuit.id for lawsuit in lawsuits}
         self.update_plaintiffs(lawsuit_mapping)
