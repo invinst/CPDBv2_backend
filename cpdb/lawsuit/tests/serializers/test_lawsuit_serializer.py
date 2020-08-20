@@ -89,6 +89,7 @@ class LawsuitSerializerTestCase(TestCase):
             'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
             'primary_cause': 'EXCESSIVE FORCE/MINOR',
             'address': '200 E. Chicago Ave., Chicago IL',
+            'location': 'near intersection of N Wavelandand Sheffield',
             'incident_date': '2000-03-16',
             'plaintiffs': [
                 {'name': 'Kevin Vodak'},

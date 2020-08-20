@@ -58,6 +58,7 @@ class LawsuitSerializer(NoNullSerializer):
     summary = serializers.CharField()
     primary_cause = serializers.CharField()
     address = serializers.SerializerMethodField()
+    location = serializers.CharField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
     officers = serializers.SerializerMethodField()
