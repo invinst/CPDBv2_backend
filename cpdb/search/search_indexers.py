@@ -9,10 +9,11 @@ from es_index import es_client
 from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer, AttachmentFile
 from search_terms.models import SearchTermItem
 from trr.models import TRR, ActionResponse
+from lawsuit.models import Lawsuit
 from data.utils.percentile import percentile
 from search.doc_types import (
     UnitDocType, AreaDocType, CrDocType, TRRDocType,
-    RankDocType, ZipCodeDocType, SearchTermItemDocType
+    RankDocType, ZipCodeDocType, SearchTermItemDocType, LawsuitDocType
 )
 from search.indices import autocompletes_alias
 from search.indexer_serializers import (
@@ -252,6 +253,22 @@ class TRRIndexer(BaseIndexer):
             'category': datum.force_category,
             'address': ' '.join(filter(None, [datum.block, datum.street])),
             'officer': TRROfficerSerializer(datum.officer).data if datum.officer else None
+        }
+
+
+class LawsuitIndexer(BaseIndexer):
+    doc_type_klass = LawsuitDocType
+
+    def get_queryset(self):
+        return Lawsuit.objects.all()
+
+    def extract_datum(self, datum):
+        return {
+            'id': datum.id,
+            'case_no': datum.case_no,
+            'primary_cause': datum.primary_cause,
+            'summary': datum.summary,
+            'to': datum.v2_to,
         }
 
 

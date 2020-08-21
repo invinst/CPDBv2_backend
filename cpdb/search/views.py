@@ -10,12 +10,12 @@ from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter, RankFormatter,
-    ReportFormatter, CRFormatter, TRRFormatter, SearchTermFormatter
+    ReportFormatter, CRFormatter, TRRFormatter, SearchTermFormatter, LawsuitFormatter
 )
 from .workers import (
     DateCRWorker, DateTRRWorker, OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
     TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker,
-    RankWorker, SearchTermItemWorker, InvestigatorCRWorker
+    RankWorker, SearchTermItemWorker, InvestigatorCRWorker, LawsuitWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -104,6 +104,7 @@ class SearchV1ViewSet(SearchViewSet):
         'TRR': TRRFormatter,
         'ZIP-CODE': ZipCodeFormatter,
         'INVESTIGATOR > CR': CRFormatter,
+        'LAWSUIT': LawsuitFormatter,
     }
     workers = {
         'SEARCH-TERMS': SearchTermItemWorker(),
@@ -124,6 +125,7 @@ class SearchV1ViewSet(SearchViewSet):
         'TRR': TRRWorker(),
         'ZIP-CODE': ZipCodeWorker(),
         'INVESTIGATOR > CR': InvestigatorCRWorker(),
+        'LAWSUIT': LawsuitWorker(),
     }
 
     recent_items_queries = [

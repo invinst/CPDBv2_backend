@@ -6,7 +6,7 @@ from robber import expect
 from search.formatters import (
     SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter,
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter, LawsuitFormatter,
 )
 
 
@@ -414,6 +414,37 @@ class TRRFormatterTestCase(SimpleTestCase):
         ).to.eq({
             'id': '123456',
             'to': '/trr/123456/'
+        })
+
+
+class LawsuitFormatterTestCase(SimpleTestCase):
+    def test_doc_format(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'case_no': '00-L-5230',
+            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'to': '/lawsuit/00-L-5230/'
+        }))
+
+        expect(
+            LawsuitFormatter().doc_format(doc)
+        ).to.eq({
+            'case_no': '00-L-5230',
+            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'to': '/lawsuit/00-L-5230/'
+        })
+
+    def test_doc_format_with_empty_primary_cause(self):
+        doc = Mock(to_dict=Mock(return_value={
+            'case_no': '00-L-5230',
+            'to': '/lawsuit/00-L-5230/'
+        }))
+
+        expect(
+            LawsuitFormatter().doc_format(doc)
+        ).to.eq({
+            'case_no': '00-L-5230',
+            'primary_cause': None,
+            'to': '/lawsuit/00-L-5230/'
         })
 
 

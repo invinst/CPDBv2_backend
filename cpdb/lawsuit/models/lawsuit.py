@@ -40,3 +40,7 @@ class Lawsuit(TimeStampsModel):
             'total_settlement': total_settlements,
             'total_legal_fees': total_legal_fees
         }
+
+    @property
+    def v2_to(self):
+        return f'/lawsuit/{self.case_no}/'

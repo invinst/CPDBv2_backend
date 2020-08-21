@@ -148,6 +148,17 @@ TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
 
 
+class LawsuitFormatter(SimpleFormatter):
+    def doc_format(self, doc):
+        serialized_doc = doc.to_dict()
+
+        return {
+            'case_no': serialized_doc['case_no'],
+            'primary_cause': serialized_doc.get('primary_cause'),
+            'to': serialized_doc['to'],
+        }
+
+
 class RankFormatter(SimpleFormatter):
     def doc_format(self, doc):
         serialized_doc = doc.to_dict()

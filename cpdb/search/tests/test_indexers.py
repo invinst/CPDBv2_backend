@@ -10,7 +10,8 @@ import pytz
 from data.cache_managers import allegation_cache_manager
 from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
-    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer, SearchTermItemIndexer
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager,
+    RankIndexer, SearchTermItemIndexer, LawsuitIndexer
 )
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
@@ -22,6 +23,7 @@ from data.factories import (
 )
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
+from lawsuit.factories import LawsuitFactory
 from shared.tests.utils import create_object
 
 
@@ -630,6 +632,31 @@ class TRRIndexerTestCase(TestCase):
                 'percentile_allegation_internal': '2.2000',
                 'percentile_trr': '3.3000',
             }
+        })
+
+
+class LawsuitIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        indexer = LawsuitIndexer()
+        expect(indexer.get_queryset().count()).to.eq(0)
+        LawsuitFactory()
+        expect(indexer.get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        lawsuit = LawsuitFactory(
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary',
+        )
+
+        expect(
+            LawsuitIndexer().extract_datum(lawsuit)
+        ).to.eq({
+            'id': lawsuit.id,
+            'case_no': '00-L-5230',
+            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'summary': 'Lawsuit Summary',
+            'to': '/lawsuit/00-L-5230/',
         })
 
 
