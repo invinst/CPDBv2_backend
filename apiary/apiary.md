@@ -43,6 +43,8 @@ CPDP is a simple API serving the CPDP website version 2 (not the same as api ver
 
 :[TRR mobile request document](trr_mobile_request_document.md)
 
+:[Lawsuit](lawsuit.md)
+
 :[Complaint summaries](complaint_summaries.md)
 
 :[Complaint mobile](complaint_mobile.md)
