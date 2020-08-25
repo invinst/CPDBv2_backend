@@ -8,7 +8,7 @@ from lawsuit.factories import (LawsuitFactory, PaymentFactory)
 
 class LawsuitTestCase(TestCase):
     def setUp(self):
-        self.lawsuit = LawsuitFactory(case_no='123')
+        self.lawsuit = LawsuitFactory(case_no='00-L-5230')
 
     def test_total_payments(self):
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=self.lawsuit)
@@ -20,7 +20,7 @@ class LawsuitTestCase(TestCase):
         })
 
     def test_str(self):
-        expect(f'{self.lawsuit}').to.eq('Lawsuit 123')
+        expect(f'{self.lawsuit}').to.eq('Lawsuit 00-L-5230')
 
     def test_lawsuit_has_many_attachment_files(self):
         expect(self.lawsuit.attachment_files.count()).to.eq(0)
@@ -29,3 +29,6 @@ class LawsuitTestCase(TestCase):
         AttachmentFileFactory(owner=LawsuitFactory())
         expect(self.lawsuit.attachment_files.count()).to.eq(2)
         expect(list(self.lawsuit.attachment_files.order_by('id').all())).to.eq([attachment_file_1, attachement_file_2])
+
+    def test_v2_to(self):
+        expect(self.lawsuit.v2_to).to.eq('/lawsuit/00-L-5230/')

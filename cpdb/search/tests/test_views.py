@@ -19,6 +19,7 @@ from data.factories import (
     AttachmentFileFactory,
     AllegationCategoryFactory)
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
+from lawsuit.factories import LawsuitFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from search.tests.utils import IndexMixin
 
@@ -242,6 +243,23 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['DATE > TRR']
         expect(results).to.have.length(1)
         expect(results[0]).not_to.contain('officer')
+
+    def test_search_lawsuit_result(self):
+        LawsuitFactory(case_no='00-L-5230')
+        LawsuitFactory(case_no='00-L-5231')
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '00-L-5230',
+        })
+
+        results = response.data['LAWSUIT']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['case_no']).to.eq('00-L-5230')
 
     def test_retrieve_single_with_content_type(self):
         OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)

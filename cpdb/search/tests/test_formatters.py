@@ -1,13 +1,19 @@
+from datetime import datetime
+import pytz
+
 from django.test import SimpleTestCase
+from django.test.testcases import TestCase
 from elasticsearch_dsl.utils import AttrDict, AttrList
-from mock import Mock
+from mock import Mock, patch
 from robber import expect
 
 from search.formatters import (
-    SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
+    SimpleFormatter, DataFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter,
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter, LawsuitFormatter,
 )
+from search.doc_types import LawsuitDocType
+from lawsuit.factories import LawsuitFactory
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -61,6 +67,23 @@ class SimpleFormatterTestCase(SimpleTestCase):
             'a': 'a',
             'id': 'a_id'
         }])
+
+
+class DataFormatterTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        expect(lambda: DataFormatter().get_queryset([])).to.throw(NotImplementedError)
+
+    def test_item_format(self):
+        expect(lambda: DataFormatter().item_format(None)).to.throw(NotImplementedError)
+
+    @patch('search.formatters.DataFormatter.serialize', return_value='serialize_data')
+    def test_format(self, serialize_mock):
+        docs = [Mock(_id='a_id'), Mock(_id='b_id')]
+        response = Mock(hits=docs)
+
+        expect(DataFormatter().format(response)).to.eq('serialize_data')
+
+        serialize_mock.assert_called_with(docs)
 
 
 class OfficerFormatterTestCase(SimpleTestCase):
@@ -415,6 +438,86 @@ class TRRFormatterTestCase(SimpleTestCase):
             'id': '123456',
             'to': '/trr/123456/'
         })
+
+
+class LawsuitFormatterTestCase(TestCase):
+    def test_get_queryset(self):
+        lawsuit_1 = LawsuitFactory()
+        lawsuit_2 = LawsuitFactory()
+        LawsuitFactory()
+
+        queryset = LawsuitFormatter().get_queryset([lawsuit_1.id, lawsuit_2.id])
+        expect(
+            {item.id for item in queryset}
+        ).to.eq({lawsuit_1.id, lawsuit_2.id})
+
+    def test_item_format(self):
+        lawsuit = LawsuitFactory(
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary',
+            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc)
+        )
+
+        expect(
+            LawsuitFormatter().item_format(lawsuit)
+        ).to.eq({
+            'id': lawsuit.id,
+            'case_no': '00-L-5230',
+            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'to': '/lawsuit/00-L-5230/',
+            'summary': 'Lawsuit Summary',
+            'incident_date': '2002-01-03'
+        })
+
+    def test_item_format_with_empty_incident_date(self):
+        lawsuit = LawsuitFactory(
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary',
+            incident_date=None
+        )
+
+        expect(
+            LawsuitFormatter().item_format(lawsuit)['incident_date']
+        ).to.be.none()
+
+    def test_serialize(self):
+        lawsuit_1 = LawsuitFactory(
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary 1',
+            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc)
+
+        )
+        lawsuit_2 = LawsuitFactory(
+            case_no='00-L-5231',
+            primary_cause='FALSE ARREST',
+            summary='Lawsuit Summary 2',
+            incident_date=None
+        )
+        LawsuitFactory()
+
+        result = LawsuitFormatter().serialize([LawsuitDocType(_id=lawsuit_1.id), LawsuitDocType(_id=lawsuit_2.id)])
+        expected_result = [
+            {
+                'id': lawsuit_1.id,
+                'case_no': '00-L-5230',
+                'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+                'to': '/lawsuit/00-L-5230/',
+                'summary': 'Lawsuit Summary 1',
+                'incident_date': '2002-01-03'
+            },
+            {
+                'id': lawsuit_2.id,
+                'case_no': '00-L-5231',
+                'primary_cause': 'FALSE ARREST',
+                'to': '/lawsuit/00-L-5231/',
+                'summary': 'Lawsuit Summary 2',
+                'incident_date': None
+            }
+        ]
+        expect(result).to.eq(expected_result)
 
 
 class AreaFormatterTestCase(SimpleTestCase):

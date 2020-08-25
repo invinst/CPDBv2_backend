@@ -77,6 +77,17 @@ class TRRDocType(DocType):
 
 
 @autocompletes_alias.doc_type
+class LawsuitDocType(DocType):
+    id = Integer()
+    case_no = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    primary_cause = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    summary = Text(analyzer='standard', store=True, term_vector='with_positions_offsets')
+
+    class Meta:
+        doc_type = 'lawsuit'
+
+
+@autocompletes_alias.doc_type
 class ZipCodeDocType(DocType):
     id = Integer()
     zip_code = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})
