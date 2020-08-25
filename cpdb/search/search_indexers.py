@@ -268,7 +268,6 @@ class LawsuitIndexer(BaseIndexer):
             'case_no': datum.case_no,
             'primary_cause': datum.primary_cause,
             'summary': datum.summary,
-            'to': datum.v2_to,
         }
 
 

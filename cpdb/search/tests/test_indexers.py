@@ -656,7 +656,6 @@ class LawsuitIndexerTestCase(TestCase):
             'case_no': '00-L-5230',
             'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
             'summary': 'Lawsuit Summary',
-            'to': '/lawsuit/00-L-5230/',
         })
 
 

@@ -1,5 +1,7 @@
 from django.conf import settings
 
+from lawsuit.models import Lawsuit
+
 
 class Formatter(object):
     def format(self):
@@ -34,6 +36,24 @@ class SimpleFormatter(Formatter):
 
     def serialize(self, docs):
         return [self.process_doc(doc) for doc in docs]
+
+
+class DataFormatter(Formatter):
+    def get_queryset(self, ids):
+        raise NotImplementedError
+
+    def item_format(self, item):
+        raise NotImplementedError
+
+    def items(self, docs):
+        ids = [doc._id for doc in docs]
+        return self.get_queryset(ids)
+
+    def serialize(self, docs):
+        return [self.item_format(item) for item in self.items(docs)]
+
+    def format(self, response):
+        return self.serialize(response.hits)
 
 
 class OfficerFormatter(SimpleFormatter):
@@ -148,14 +168,18 @@ TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
 
 
-class LawsuitFormatter(SimpleFormatter):
-    def doc_format(self, doc):
-        serialized_doc = doc.to_dict()
+class LawsuitFormatter(DataFormatter):
+    def get_queryset(self, ids):
+        return Lawsuit.objects.filter(id__in=ids)
 
+    def item_format(self, item):
         return {
-            'case_no': serialized_doc['case_no'],
-            'primary_cause': serialized_doc.get('primary_cause'),
-            'to': serialized_doc['to'],
+            'id': item.id,
+            'case_no': item.case_no,
+            'primary_cause': item.primary_cause,
+            'to': item.v2_to,
+            'summary': item.summary,
+            'incident_date': item.incident_date.strftime('%Y-%m-%d') if item.incident_date else None
         }
 
 
