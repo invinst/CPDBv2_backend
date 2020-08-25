@@ -1,6 +1,7 @@
 from django.utils import timezone
 
-from search.formatters import SimpleFormatter
+from search.formatters import SimpleFormatter, DataFormatter
+from lawsuit.models import Lawsuit
 
 
 class OfficerV2Formatter(SimpleFormatter):
@@ -39,4 +40,18 @@ class TRRFormatter(SimpleFormatter):
 
         return {
             'id': serialized_doc['id']
+        }
+
+
+class LawsuitFormatter(DataFormatter):
+    def get_queryset(self, ids):
+        return Lawsuit.objects.filter(id__in=ids)
+
+    def item_format(self, item):
+        return {
+            'id': item.id,
+            'case_no': item.case_no,
+            'primary_cause': item.primary_cause,
+            'summary': item.summary,
+            'incident_date': item.incident_date.strftime('%Y-%m-%d') if item.incident_date else None
         }

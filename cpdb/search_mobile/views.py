@@ -5,11 +5,12 @@ from search.workers import (
     DateCRWorker,
     DateTRRWorker,
     DateOfficerWorker,
-    InvestigatorCRWorker
+    InvestigatorCRWorker,
+    LawsuitWorker
 )
 from search.views import SearchViewSet
 from .queries import OfficerMobileQuery, CrMobileQuery, TrrMobileQuery
-from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter
+from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter, LawsuitFormatter
 from .serializers import OfficerSerializer, AllegationSerializer, TRRSerializer
 
 
@@ -24,6 +25,7 @@ class SearchMobileV2ViewSet(SearchViewSet):
         'CR': CRFormatter,
         'TRR': TRRFormatter,
         'INVESTIGATOR > CR': CRFormatter,
+        'LAWSUIT': LawsuitFormatter,
     }
 
     workers = {
@@ -34,6 +36,7 @@ class SearchMobileV2ViewSet(SearchViewSet):
         'TRR': TRRWorker(),
         'DATE > OFFICERS': DateOfficerWorker(),
         'INVESTIGATOR > CR': InvestigatorCRWorker(),
+        'LAWSUIT': LawsuitWorker(),
     }
 
     recent_items_queries = [

@@ -13,6 +13,7 @@ from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory,
     AllegationCategoryFactory)
 from trr.factories import TRRFactory
+from lawsuit.factories import LawsuitFactory
 from search.tests.utils import IndexMixin
 
 
@@ -118,6 +119,23 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
 
         for cr_data in results:
             expect(cr_data).to.eq(expected_results[cr_data['id']])
+
+    def test_search_lawsuit_result(self):
+        LawsuitFactory(case_no='00-L-5230')
+        LawsuitFactory(case_no='00-L-5231')
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api-v2:search-mobile-list')
+        response = self.client.get(url, {
+            'term': '00-L-5230',
+        })
+
+        results = response.data['LAWSUIT']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['case_no']).to.eq('00-L-5230')
 
     def test_retrieve_recent_search_items(self):
         OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan', current_badge='123456')
