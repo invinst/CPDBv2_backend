@@ -146,12 +146,19 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
             most_common_category=allegation_category,
         )
         TRRFactory(id=123)
+        LawsuitFactory(
+            id=1,
+            case_no='00-L-5230',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+        )
 
         url = reverse('api-v2:search-mobile-recent-search-items')
         response = self.client.get(url, {
             'officer_ids[]': 8562,
             'crids[]': 'C12345',
             'trr_ids[]': 123,
+            'lawsuit_ids[]': 1
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -172,5 +179,12 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
             {
                 'id': 123,
                 'type': 'TRR',
+            },
+            {
+                'id': 1,
+                'case_no': '00-L-5230',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'incident_date': '2000-03-16',
+                'type': 'LAWSUIT',
             }
         ])

@@ -2,9 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from search.queries import OfficerQuery, CrQuery, TrrQuery
+from search.queries import OfficerQuery, CrQuery, TrrQuery, LawsuitQuery
 from search.formatters import AreaFormatter, ZipCodeFormatter
-from search.serializers import OfficerSerializer, AllegationSerializer, TRRSerializer
+from search.serializers import OfficerSerializer, AllegationSerializer, TRRSerializer, LawsuitRSerializer
 from search.workers import ZipCodeWorker, DateOfficerWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
@@ -143,6 +143,11 @@ class SearchV1ViewSet(SearchViewSet):
             'query_param': 'trr_ids',
             'query': TrrQuery,
             'serializer': TRRSerializer,
+        },
+        {
+            'query_param': 'lawsuit_ids',
+            'query': LawsuitQuery,
+            'serializer': LawsuitRSerializer,
         },
     ]
 
