@@ -6,7 +6,7 @@ from . import es_client
 from .indices import Index
 from .utils import per_run_uuid, timing_validate
 
-REINDEX_TIMEOUT = 3600
+REINDEX_TIMEOUT = 10000
 
 
 class IndexAlias:
