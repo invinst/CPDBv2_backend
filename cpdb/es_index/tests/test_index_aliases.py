@@ -71,7 +71,7 @@ class IndexAliasTestCase(TestCase):
             expect(es_client.reindex).to.be.called_with({
                 'dest': {'index': self.alias.new_index_name, 'version_type': 'external'},
                 'source': {'index': 'test_abc'},
-            }, request_timeout=1000)
+            }, request_timeout=3600)
 
     def test_migrate_not_call_reindex_when_doc_types_empty(self):
         with patch('es_index.es_client.reindex'):
@@ -88,4 +88,4 @@ class IndexAliasTestCase(TestCase):
             expect(es_client.reindex).to.be.called_with({
                 'dest': {'index': self.alias.new_index_name, 'version_type': 'external'},
                 'source': {'index': 'test_abc', 'type': ['type1']},
-            }, request_timeout=1000)
+            }, request_timeout=3600)
