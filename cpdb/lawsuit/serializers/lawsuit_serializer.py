@@ -62,40 +62,21 @@ class LawsuitSerializer(NoNullSerializer):
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
     officers = serializers.SerializerMethodField()
-    interactions = serializers.SerializerMethodField()
-    services = serializers.SerializerMethodField()
-    misconducts = serializers.SerializerMethodField()
-    violences = serializers.SerializerMethodField()
-    outcomes = serializers.SerializerMethodField()
+    interactions = serializers.ListField(child=serializers.CharField())
+    services = serializers.ListField(child=serializers.CharField())
+    misconducts = serializers.ListField(child=serializers.CharField())
+    violences = serializers.ListField(child=serializers.CharField())
+    outcomes = serializers.ListField(child=serializers.CharField())
     payments = PaymentSerializer(many=True)
     point = serializers.SerializerMethodField()
     total_payments = TotalPaymentSerializer()
     attachment = serializers.SerializerMethodField()
-
-    @staticmethod
-    def _get_names(obj, attr):
-        return [item.name for item in getattr(obj, attr).all()]
 
     def get_address(self, obj):
         add1 = obj.add1.strip()
         add2 = obj.add2.strip()
         city = obj.city.strip()
         return ', '.join(filter(None, [' '.join(filter(None, [add1, add2])), city]))
-
-    def get_interactions(self, obj):
-        return self._get_names(obj, 'interactions')
-
-    def get_services(self, obj):
-        return self._get_names(obj, 'services')
-
-    def get_misconducts(self, obj):
-        return self._get_names(obj, 'misconducts')
-
-    def get_violences(self, obj):
-        return self._get_names(obj, 'violences')
-
-    def get_outcomes(self, obj):
-        return self._get_names(obj, 'outcomes')
 
     def get_point(self, obj):
         if obj.point is not None:

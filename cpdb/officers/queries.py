@@ -155,7 +155,6 @@ class OfficerTimelineBaseQuery(object):
         lawsuit_timeline = self.officer.lawsuit_set.filter(
             incident_date__isnull=False,
         ).prefetch_related(
-            'misconducts',
             'attachment_files',
         ).annotate(
             date=TruncDate('incident_date')

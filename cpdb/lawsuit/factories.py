@@ -8,11 +8,6 @@ from factory.django import DjangoModelFactory
 from lawsuit.models import (
     Lawsuit,
     LawsuitPlaintiff,
-    LawsuitInteraction,
-    LawsuitService,
-    LawsuitMisconduct,
-    LawsuitViolence,
-    LawsuitOutcome,
     Payment
 )
 
@@ -33,41 +28,6 @@ class LawsuitPlaintiffFactory(DjangoModelFactory):
         model = LawsuitPlaintiff
 
     name = factory.LazyFunction(fake.name)
-
-
-class LawsuitInteractionFactory(DjangoModelFactory):
-    class Meta:
-        model = LawsuitInteraction
-
-    name = factory.LazyFunction(fake.word)
-
-
-class LawsuitServiceFactory(DjangoModelFactory):
-    class Meta:
-        model = LawsuitService
-
-    name = factory.LazyFunction(fake.word)
-
-
-class LawsuitMisconductFactory(DjangoModelFactory):
-    class Meta:
-        model = LawsuitMisconduct
-
-    name = factory.LazyFunction(fake.word)
-
-
-class LawsuitViolenceFactory(DjangoModelFactory):
-    class Meta:
-        model = LawsuitViolence
-
-    name = factory.LazyFunction(fake.word)
-
-
-class LawsuitOutcomeFactory(DjangoModelFactory):
-    class Meta:
-        model = LawsuitOutcome
-
-    name = factory.LazyFunction(fake.word)
 
 
 class PaymentFactory(DjangoModelFactory):
