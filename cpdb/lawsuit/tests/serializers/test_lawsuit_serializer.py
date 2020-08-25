@@ -11,11 +11,6 @@ from lawsuit.serializers import LawsuitSerializer
 from lawsuit.factories import (
     LawsuitFactory,
     LawsuitPlaintiffFactory,
-    LawsuitInteractionFactory,
-    LawsuitServiceFactory,
-    LawsuitMisconductFactory,
-    LawsuitViolenceFactory,
-    LawsuitOutcomeFactory,
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
@@ -30,20 +25,17 @@ class LawsuitSerializerTestCase(TestCase):
             incident_date=datetime.datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
             city='Chicago IL',
-            point=Point(-35.5, 68.9)
+            point=Point(-35.5, 68.9),
+            interactions=['Protest'],
+            outcomes=['Killed by officer'],
+            services=['On Duty', 'Plainclothes'],
+            violences=['Physical Force'],
+            misconducts=['Excessive force', 'Racial epithets'],
         )
         attachment = AttachmentFileFactory(owner=lawsuit, show=True, preview_image_url=None)
 
         LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
         LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
-
-        interaction = LawsuitInteractionFactory(name='Protest')
-        outcome = LawsuitOutcomeFactory(name='Killed by officer')
-        service_1 = LawsuitServiceFactory(name='On Duty')
-        service_2 = LawsuitServiceFactory(name='Plainclothes')
-        violence = LawsuitViolenceFactory(name='Physical Force')
-        misconduct_1 = LawsuitMisconductFactory(name='Excessive force')
-        misconduct_2 = LawsuitMisconductFactory(name='Racial epithets')
 
         officer_1 = OfficerFactory(
             first_name='Jerome',
@@ -76,12 +68,6 @@ class LawsuitSerializerTestCase(TestCase):
 
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
         PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
-
-        lawsuit.interactions.set([interaction])
-        lawsuit.outcomes.set([outcome])
-        lawsuit.services.set([service_1, service_2])
-        lawsuit.violences.set([violence])
-        lawsuit.misconducts.set([misconduct_1, misconduct_2])
         lawsuit.officers.set([officer_1, officer_2])
 
         expected_data = {
@@ -162,8 +148,6 @@ class LawsuitSerializerTestCase(TestCase):
         }
         serializer_data = LawsuitSerializer(lawsuit).data
         serializer_data['plaintiffs'] = sorted(serializer_data['plaintiffs'], key=itemgetter('name'))
-        serializer_data['services'] = sorted(serializer_data['services'])
-        serializer_data['misconducts'] = sorted(serializer_data['misconducts'])
         serializer_data['officers'] = sorted(serializer_data['officers'], key=itemgetter('full_name'))
         serializer_data['payments'] = sorted(serializer_data['payments'], key=itemgetter('payee'))
 
