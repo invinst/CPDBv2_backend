@@ -5,7 +5,7 @@ import pytz
 from shared.serializer import NoNullSerializer
 
 
-class LawsuitRSerializer(NoNullSerializer):
+class LawsuitRecentSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     case_no = serializers.CharField()
     primary_cause = serializers.CharField()

@@ -6,10 +6,10 @@ from robber import expect
 import pytz
 
 from data.factories import AllegationCategoryFactory, AllegationFactory
-from search_mobile.serializers import AllegationSerializer
+from search_mobile.serializers import AllegationRecentSerializer
 
 
-class AllegationSerializerTestCase(TestCase):
+class AllegationRecentSerializerTestCase(TestCase):
     def test_serialization(self):
         allegation_category = AllegationCategoryFactory(category='Use of Force')
         allegation = AllegationFactory(
@@ -18,7 +18,7 @@ class AllegationSerializerTestCase(TestCase):
             most_common_category=allegation_category,
         )
 
-        expect(AllegationSerializer(allegation).data).to.eq({
+        expect(AllegationRecentSerializer(allegation).data).to.eq({
             'id': 'C12345',
             'crid': 'C12345',
             'incident_date': '2007-01-01',
@@ -33,7 +33,7 @@ class AllegationSerializerTestCase(TestCase):
             most_common_category=None,
         )
 
-        expect(AllegationSerializer(allegation).data).to.eq({
+        expect(AllegationRecentSerializer(allegation).data).to.eq({
             'id': 'C12345',
             'crid': 'C12345',
             'incident_date': '2007-01-01',

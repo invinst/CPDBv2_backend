@@ -3,7 +3,7 @@ from rest_framework import serializers
 from shared.serializer import NoNullSerializer
 
 
-class OfficerSerializer(NoNullSerializer):
+class OfficerRecentSerializer(NoNullSerializer):
     id = serializers.IntegerField()
     name = serializers.CharField(source='full_name')
     badge = serializers.CharField(source='current_badge')

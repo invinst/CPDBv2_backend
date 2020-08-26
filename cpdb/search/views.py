@@ -4,7 +4,9 @@ from rest_framework.decorators import action
 
 from search.queries import OfficerQuery, CrQuery, TrrQuery, LawsuitQuery
 from search.formatters import AreaFormatter, ZipCodeFormatter
-from search.serializers import OfficerSerializer, AllegationSerializer, TRRSerializer, LawsuitRSerializer
+from search.serializers import (
+    OfficerRecentSerializer, AllegationRecentSerializer, TRRRecentSerializer, LawsuitRecentSerializer
+)
 from search.workers import ZipCodeWorker, DateOfficerWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
@@ -132,22 +134,22 @@ class SearchV1ViewSet(SearchViewSet):
         {
             'query_param': 'officer_ids',
             'query': OfficerQuery,
-            'serializer': OfficerSerializer,
+            'serializer': OfficerRecentSerializer,
         },
         {
             'query_param': 'crids',
             'query': CrQuery,
-            'serializer': AllegationSerializer,
+            'serializer': AllegationRecentSerializer,
         },
         {
             'query_param': 'trr_ids',
             'query': TrrQuery,
-            'serializer': TRRSerializer,
+            'serializer': TRRRecentSerializer,
         },
         {
             'query_param': 'lawsuit_ids',
             'query': LawsuitQuery,
-            'serializer': LawsuitRSerializer,
+            'serializer': LawsuitRecentSerializer,
         },
     ]
 

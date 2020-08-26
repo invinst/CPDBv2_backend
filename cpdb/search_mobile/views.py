@@ -11,7 +11,7 @@ from search.workers import (
 from search.views import SearchViewSet
 from .queries import OfficerMobileQuery, CrMobileQuery, TrrMobileQuery, LawsuitMobileQuery
 from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter, LawsuitFormatter
-from .serializers import OfficerSerializer, AllegationSerializer, TRRSerializer, LawsuitRSerializer
+from .serializers import OfficerRecentSerializer, AllegationRecentSerializer, TRRRecentSerializer, LawsuitRecentSerializer
 
 
 class SearchMobileV2ViewSet(SearchViewSet):
@@ -43,21 +43,21 @@ class SearchMobileV2ViewSet(SearchViewSet):
         {
             'query_param': 'officer_ids',
             'query': OfficerMobileQuery,
-            'serializer': OfficerSerializer,
+            'serializer': OfficerRecentSerializer,
         },
         {
             'query_param': 'crids',
             'query': CrMobileQuery,
-            'serializer': AllegationSerializer,
+            'serializer': AllegationRecentSerializer,
         },
         {
             'query_param': 'trr_ids',
             'query': TrrMobileQuery,
-            'serializer': TRRSerializer,
+            'serializer': TRRRecentSerializer,
         },
         {
             'query_param': 'lawsuit_ids',
             'query': LawsuitMobileQuery,
-            'serializer': LawsuitRSerializer,
+            'serializer': LawsuitRecentSerializer,
         },
     ]
