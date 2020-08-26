@@ -1,15 +1,9 @@
 from rest_framework import serializers
 
-import pytz
-
-from shared.serializer import NoNullSerializer
+from .lawsuit_serializer import LawsuitSerializer
 
 
-class LawsuitRecentSerializer(NoNullSerializer):
-    id = serializers.IntegerField()
-    case_no = serializers.CharField()
-    primary_cause = serializers.CharField()
-    incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
+class LawsuitRecentSerializer(LawsuitSerializer):
     type = serializers.SerializerMethodField()
 
     def get_type(self, obj):

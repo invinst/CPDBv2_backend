@@ -115,48 +115,16 @@ class LawsuitFormatterTestCase(TestCase):
             {item.id for item in queryset}
         ).to.eq({lawsuit_1.id, lawsuit_2.id})
 
-    def test_item_format(self):
-        lawsuit = LawsuitFactory(
-            case_no='00-L-5230',
-            primary_cause='ILLEGAL SEARCH/SEIZURE',
-            summary='Lawsuit Summary',
-            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc)
-        )
-
-        expect(
-            LawsuitFormatter().item_format(lawsuit)
-        ).to.eq({
-            'id': lawsuit.id,
-            'case_no': '00-L-5230',
-            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
-            'summary': 'Lawsuit Summary',
-            'incident_date': '2002-01-03'
-        })
-
-    def test_item_format_with_empty_incident_date(self):
-        lawsuit = LawsuitFactory(
-            case_no='00-L-5230',
-            primary_cause='ILLEGAL SEARCH/SEIZURE',
-            summary='Lawsuit Summary',
-            incident_date=None
-        )
-
-        expect(
-            LawsuitFormatter().item_format(lawsuit)['incident_date']
-        ).to.be.none()
-
     def test_serialize(self):
         lawsuit_1 = LawsuitFactory(
             case_no='00-L-5230',
             primary_cause='ILLEGAL SEARCH/SEIZURE',
-            summary='Lawsuit Summary 1',
             incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc)
 
         )
         lawsuit_2 = LawsuitFactory(
             case_no='00-L-5231',
             primary_cause='FALSE ARREST',
-            summary='Lawsuit Summary 2',
             incident_date=None
         )
         LawsuitFactory()
@@ -167,15 +135,12 @@ class LawsuitFormatterTestCase(TestCase):
                 'id': lawsuit_1.id,
                 'case_no': '00-L-5230',
                 'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
-                'summary': 'Lawsuit Summary 1',
                 'incident_date': '2002-01-03'
             },
             {
                 'id': lawsuit_2.id,
                 'case_no': '00-L-5231',
                 'primary_cause': 'FALSE ARREST',
-                'summary': 'Lawsuit Summary 2',
-                'incident_date': None
             }
         ]
         expect(result).to.eq(expected_result)

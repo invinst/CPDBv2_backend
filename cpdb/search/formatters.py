@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from lawsuit.models import Lawsuit
+from search.serializers import LawsuitSerializer
 
 
 class Formatter(object):
@@ -39,10 +40,9 @@ class SimpleFormatter(Formatter):
 
 
 class DataFormatter(Formatter):
-    def get_queryset(self, ids):
-        raise NotImplementedError
+    serializer = None
 
-    def item_format(self, item):
+    def get_queryset(self, ids):
         raise NotImplementedError
 
     def items(self, docs):
@@ -50,7 +50,7 @@ class DataFormatter(Formatter):
         return self.get_queryset(ids)
 
     def serialize(self, docs):
-        return [self.item_format(item) for item in self.items(docs)]
+        return [self.serializer(item).data for item in self.items(docs)]
 
     def format(self, response):
         return self.serialize(response.hits)
@@ -169,18 +169,10 @@ AreaFormatter = SimpleFormatter
 
 
 class LawsuitFormatter(DataFormatter):
+    serializer = LawsuitSerializer
+
     def get_queryset(self, ids):
         return Lawsuit.objects.filter(id__in=ids)
-
-    def item_format(self, item):
-        return {
-            'id': item.id,
-            'case_no': item.case_no,
-            'primary_cause': item.primary_cause,
-            'to': item.v2_to,
-            'summary': item.summary,
-            'incident_date': item.incident_date.strftime('%Y-%m-%d') if item.incident_date else None
-        }
 
 
 class RankFormatter(SimpleFormatter):
