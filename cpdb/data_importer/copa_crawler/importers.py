@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from tqdm import tqdm
 
 from django.conf import settings
@@ -63,13 +64,14 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
     def update_attachments(self, allegation, attachment_dicts):
         created_attachments = []
         num_updated = 0
-
+        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
         for attachment_dict in attachment_dicts:
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
             try:
                 attachment = AttachmentFile.objects.get(
                     source_type__in=['', self.documentcloud_source_type],
-                    allegation=allegation,
+                    owner_type_id=allegation_type_id,
+                    owner_id=allegation.pk,
                     original_url__endswith=chicagocopa_external_id
                 )
                 created = False
@@ -77,7 +79,8 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
                 attachment, created = AttachmentFile.objects.get_or_create(
                     source_type=self.source_type,
                     external_id=chicagocopa_external_id,
-                    allegation=allegation,
+                    owner_type_id=allegation_type_id,
+                    owner_id=allegation.pk,
                     defaults=attachment_dict
                 )
 
@@ -135,8 +138,7 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
 
     def upload_to_documentcloud(self):
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
-
-        attachments = AttachmentFile.objects.filter(
+        attachments = AttachmentFile.objects.for_allegation().filter(
             source_type=self.source_type,
             file_type=MEDIA_TYPE_DOCUMENT,
             pending_documentcloud_id__isnull=True,
@@ -150,7 +152,7 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
 
             cloud_document = client.documents.upload(
                 attachment.original_url,
-                title=format_copa_documentcloud_title(attachment.allegation.crid, attachment.title),
+                title=format_copa_documentcloud_title(attachment.owner_id, attachment.title),
                 description=source_type,
                 access='public',
                 force_ocr=True

@@ -29,7 +29,7 @@ class SocialGraphCRDetailSerializerTestCase(TestCase):
         )
         attachment = AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',

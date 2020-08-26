@@ -247,5 +247,25 @@ class TRRNewTimelineSerializer(BaseTimelineSerializer):
             return None
 
 
+class LawsuitNewTimelineSerializer(BaseTimelineSerializer):
+    date_sort = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    case_no = serializers.CharField()
+    primary_cause = serializers.CharField()
+    attachments = AttachmentFileSerializer(source='attachment_files', many=True)
+
+    def get_date_sort(self, obj):
+        return obj.incident_date.date()
+
+    def get_date(self, obj):
+        return obj.incident_date.date().strftime('%Y-%m-%d')
+
+    def get_kind(self, obj):
+        return 'LAWSUIT'
+
+    def get_priority_sort(self, obj):
+        return 50
+
+
 class OfficerCoaccusalSerializer(OfficerCardSerializer):
     coaccusal_count = serializers.IntegerField()

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 
 from data.utils.attachment_file import filter_attachments
 from es_index import register_indexer
@@ -94,9 +95,9 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating attachments dict...')
     def populate_attachments_dict(self):
         self.attachments_dict = dict()
-        queryset = filter_attachments(AttachmentFile.showing).values(
-            'allegation_id', 'title', 'url', 'preview_image_url', 'file_type',
-        )
+        queryset = filter_attachments(AttachmentFile.objects.for_allegation().showing()).annotate(
+            allegation_id=F('owner_id')
+        ).values('allegation_id', 'title', 'url', 'preview_image_url', 'file_type')
         for obj in queryset:
             self.attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
 

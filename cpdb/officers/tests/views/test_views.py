@@ -13,7 +13,7 @@ import botocore
 from mock import patch
 from robber import expect
 
-from data.constants import ACTIVE_YES_CHOICE
+from data.constants import ACTIVE_YES_CHOICE, MEDIA_TYPE_DOCUMENT
 from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, PoliceUnitFactory,
     AllegationCategoryFactory, OfficerHistoryFactory, OfficerBadgeNumberFactory, AwardFactory, ComplainantFactory,
@@ -23,6 +23,7 @@ from data.factories import (
     AttachmentFileFactory,
 )
 from trr.factories import TRRFactory
+from lawsuit.factories import LawsuitFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from analytics.models import AttachmentTracking
 from analytics import constants
@@ -171,6 +172,20 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         SalaryFactory(officer=officer, year=2001, rank='Police Officer', spp_date=date(2001, 9, 23))
         SalaryFactory(officer=officer, year=2000, rank='Junior Police Officer', spp_date=date(2000, 1, 1))
 
+        lawsuit = LawsuitFactory(
+            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc),
+            case_no='00-L-5230',
+            primary_cause='EXCESSIVE FORCE/MINOR'
+        )
+        lawsuit.officers.set([officer])
+        lawsuit_attachment = AttachmentFileFactory(
+            owner=lawsuit,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            preview_image_url='preview.png',
+            url='/docs/lawsuit.pdf',
+            title='Lawsuit Attachment Title'
+        )
+
         cache_managers.cache_all()
 
         response = self.client.get(reverse('api-v2:officers-new-timeline-items', kwargs={'pk': 123}))
@@ -252,6 +267,23 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
                 'unit_name': '001',
                 'unit_description': 'unit_001',
                 'rank': 'Police Officer',
+            }, {
+                'date': '2002-01-03',
+                'kind': 'LAWSUIT',
+                'unit_name': '',
+                'unit_description': '',
+                'rank': 'Police Officer',
+                'case_no': '00-L-5230',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'attachments': [
+                    {
+                        'title': 'Lawsuit Attachment Title',
+                        'url': '/docs/lawsuit.pdf',
+                        'preview_image_url': 'preview.png',
+                        'file_type': 'document',
+                        'id': str(lawsuit_attachment.id)
+                    }
+                ]
             }, {
                 'date': '2001-09-23',
                 'kind': 'RANK_CHANGE',
@@ -687,12 +719,12 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         allegation1 = AllegationFactory()
         OfficerAllegationFactory(officer=officer, allegation=allegation1)
-        AttachmentFileFactory(allegation=allegation1, id=321, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation1, id=321, source_type='DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         allegation2 = AllegationFactory()
         InvestigatorAllegationFactory(investigator=investigator, allegation=allegation2)
-        AttachmentFileFactory(allegation=allegation2, id=322, source_type='PORTAL_COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation2, id=322, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         base_url = reverse('api-v2:officers-request-download', kwargs={'pk': 123})
         query = urlencode({'with-docs': 'true'})
@@ -796,14 +828,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_456 = AllegationFactory(crid='456')
 
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='DOCUMENTCLOUD',
             external_id='ABC',
             title='allegation 1 attachment'
         )
-        AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation, source_type='COPA')
+        AttachmentFileFactory(owner=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -811,14 +843,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_2 = AllegationFactory(crid='2')
         allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             source_type='DOCUMENTCLOUD',
             external_id='XYZ',
             title='allegation 2 attachment'
         )
-        AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_2, source_type='COPA')
+        AttachmentFileFactory(owner=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)
@@ -878,14 +910,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_456 = AllegationFactory(crid='456')
 
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             source_type='DOCUMENTCLOUD',
             external_id='ABC',
             title='allegation 1 attachment'
         )
-        AttachmentFileFactory(allegation=allegation, source_type='COPA')
-        AttachmentFileFactory(allegation=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation, source_type='COPA')
+        AttachmentFileFactory(owner=allegation_456, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         officer = OfficerFactory(id=1, first_name='Jerome', last_name='Finnigan')
         OfficerAllegationFactory(officer=officer, allegation=allegation)
@@ -893,14 +925,14 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         allegation_2 = AllegationFactory(crid='2')
         allegation_789 = AllegationFactory(crid='789')
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             source_type='DOCUMENTCLOUD',
             external_id='XYZ',
             title='allegation 2 attachment'
         )
-        AttachmentFileFactory(allegation=allegation_2, source_type='COPA')
-        AttachmentFileFactory(allegation=allegation_789, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(allegation=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_2, source_type='COPA')
+        AttachmentFileFactory(owner=allegation_789, source_type='DOCUMENTCLOUD')
+        AttachmentFileFactory(owner=allegation_789, source_type='PORTAL_COPA_DOCUMENTCLOUD')
 
         investigator = InvestigatorFactory(officer=officer)
         InvestigatorAllegationFactory(allegation=allegation_2, investigator=investigator)

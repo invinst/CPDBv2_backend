@@ -9,8 +9,10 @@ from tracker.constants import TAG_MAX_LENGTH
 from data.constants import MEDIA_TYPE_DOCUMENT
 
 
+# FIXME 2020-08-03: AttachmentFile is now a generic type of AllegationAttachmentFile, OfficerAttachmentFile, etc
+# Therefore, the below class should be specific to AllegationAttachmentFile
 class AttachmentFileListSerializer(serializers.ModelSerializer):
-    crid = serializers.CharField(source='allegation_id')
+    crid = serializers.CharField(source='owner_id')
     documents_count = serializers.IntegerField()
 
     class Meta:
@@ -31,7 +33,7 @@ class AttachmentFileListSerializer(serializers.ModelSerializer):
 
 
 class AuthenticatedAttachmentFileListSerializer(serializers.ModelSerializer):
-    crid = serializers.CharField(source='allegation_id')
+    crid = serializers.CharField(source='owner_id')
     documents_count = serializers.IntegerField()
 
     class Meta(AttachmentFileListSerializer.Meta):
@@ -57,7 +59,7 @@ class LinkedAttachmentFileSerializer(serializers.ModelSerializer):
 
 
 class AttachmentFileSerializer(serializers.ModelSerializer):
-    crid = serializers.CharField(source='allegation_id')
+    crid = serializers.CharField(source='owner_id')
     last_updated_by = serializers.CharField(source='last_updated_by.username', allow_null=True)
     crawler_name = serializers.SerializerMethodField()
     linked_documents = LinkedAttachmentFileSerializer(many=True)

@@ -77,7 +77,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         allegation_123 = AllegationFactory(crid='123')
         AllegationFactory(crid='456')
         AttachmentFileFactory(
-            allegation=allegation_123,
+            owner=allegation_123,
             show=True,
             text_content='the officer pointed a gun at the victim'
         )
@@ -576,10 +576,10 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
             most_common_category=allegation_category,
         )
-        AttachmentFileFactory(text_content='Name: OBrien', allegation=allegation_1)
-        AttachmentFileFactory(text_content='Name: O\'Brien', allegation=allegation_2)
-        AttachmentFileFactory(text_content='Name: O Brien', allegation=allegation_3)
-        AttachmentFileFactory(text_content='Name: Jim', allegation=allegation_4)
+        AttachmentFileFactory(text_content='Name: OBrien', owner=allegation_1)
+        AttachmentFileFactory(text_content='Name: O\'Brien', owner=allegation_2)
+        AttachmentFileFactory(text_content='Name: O Brien', owner=allegation_3)
+        AttachmentFileFactory(text_content='Name: Jim', owner=allegation_4)
 
         self.rebuild_index()
         self.refresh_index()

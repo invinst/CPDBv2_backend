@@ -78,6 +78,7 @@ LOCAL_APPS = (
     'pinboard',
     'toast',
     'app_config',
+    'lawsuit',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

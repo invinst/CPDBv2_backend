@@ -11,7 +11,8 @@ from officers.serializers.response_serializers import (
     UnitChangeNewTimelineSerializer,
     RankChangeNewTimelineSerializer,
     AwardNewTimelineSerializer,
-    TRRNewTimelineSerializer
+    TRRNewTimelineSerializer,
+    LawsuitNewTimelineSerializer,
 )
 from officers.serializers.response_mobile_serializers import (
     CRNewTimelineMobileSerializer,
@@ -19,7 +20,8 @@ from officers.serializers.response_mobile_serializers import (
     UnitChangeNewTimelineMobileSerializer,
     RankChangeNewTimelineMobileSerializer,
     AwardNewTimelineMobileSerializer,
-    TRRNewTimelineMobileSerializer
+    TRRNewTimelineMobileSerializer,
+    LawsuitNewTimelineMobileSerializer,
 )
 
 
@@ -30,6 +32,7 @@ class OfficerTimelineBaseQuery(object):
     joined_new_timeline_serializer = None
     award_new_timeline_serializer = None
     trr_new_timeline_serializer = None
+    lawsuit_new_timeline_serializer = None
 
     def __init__(self, officer):
         self.officer = officer
@@ -147,9 +150,27 @@ class OfficerTimelineBaseQuery(object):
         )
         return self.trr_new_timeline_serializer(trr_timeline_queryset, many=True).data
 
+    @property
+    def _lawsuit_timeline(self):
+        lawsuit_timeline = self.officer.lawsuit_set.filter(
+            incident_date__isnull=False,
+        ).prefetch_related(
+            'attachment_files',
+        ).annotate(
+            date=TruncDate('incident_date')
+        ).annotate(
+            **self.unit_subqueries('date')
+        ).annotate(
+            **self.rank_subquery('date')
+        )
+
+        return self.lawsuit_new_timeline_serializer(
+            lawsuit_timeline, many=True
+        ).data
+
     def execute(self):
         timeline = self._cr_timeline + self._unit_change_timeline + self._rank_change_timeline + \
-                   self._join_timeline + self._award_timeline + self._trr_timeline
+                   self._join_timeline + self._award_timeline + self._trr_timeline + self._lawsuit_timeline
         sorted_timeline = sorted(timeline, key=itemgetter('date_sort', 'priority_sort'), reverse=True)
 
         for item in sorted_timeline:
@@ -165,6 +186,7 @@ class OfficerTimelineQuery(OfficerTimelineBaseQuery):
     joined_new_timeline_serializer = JoinedNewTimelineSerializer
     award_new_timeline_serializer = AwardNewTimelineSerializer
     trr_new_timeline_serializer = TRRNewTimelineSerializer
+    lawsuit_new_timeline_serializer = LawsuitNewTimelineSerializer
 
 
 class OfficerTimelineMobileQuery(OfficerTimelineBaseQuery):
@@ -174,3 +196,4 @@ class OfficerTimelineMobileQuery(OfficerTimelineBaseQuery):
     joined_new_timeline_serializer = JoinedNewTimelineMobileSerializer
     award_new_timeline_serializer = AwardNewTimelineMobileSerializer
     trr_new_timeline_serializer = TRRNewTimelineMobileSerializer
+    lawsuit_new_timeline_serializer = LawsuitNewTimelineMobileSerializer

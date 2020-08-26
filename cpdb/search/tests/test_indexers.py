@@ -443,12 +443,12 @@ class CrIndexerTestCase(TestCase):
         VictimFactory(allegation=allegation, gender='', race='Black', age=25)
         VictimFactory(allegation=allegation, gender='F', race='Black', age=None)
 
-        AttachmentFileFactory(id=1, allegation=allegation, text_content='')
+        AttachmentFileFactory(id=1, owner=allegation, text_content='')
         AttachmentFileFactory(
-            id=2, allegation=allegation, show=False,
+            id=2, owner=allegation, show=False,
             text_content="CHICAGO POLICE DEPARTMENT RD I HT334604"
         )
-        AttachmentFileFactory(id=3, allegation=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604')
+        AttachmentFileFactory(id=3, owner=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604')
 
         setattr(allegation, 'investigator_names', ['Jerome Finnigan'])
         allegation_cache_manager.cache_data()
