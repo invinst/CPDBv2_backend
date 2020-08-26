@@ -30,17 +30,17 @@ class Lawsuit(TimeStampsModel):
     violences = ArrayField(models.CharField(max_length=255), default=list)
     outcomes = ArrayField(models.CharField(max_length=255), default=list)
 
+    # CACHED COLUMNS
+
+    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+
     def __str__(self):
         return f'Lawsuit {self.case_no}'
 
+    @property
     def total_payments(self):
-        total_settlements = sum(payment.settlement or 0 for payment in self.payments.all())
-        total_legal_fees = sum(payment.legal_fees or 0 for payment in self.payments.all())
-        return {
-            'total': total_settlements + total_legal_fees,
-            'total_settlement': total_settlements,
-            'total_legal_fees': total_legal_fees
-        }
+        return sum([item for item in [self.total_settlement, self.total_legal_fees] if item is not None])
 
     @property
     def v2_to(self):

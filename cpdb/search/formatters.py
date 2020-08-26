@@ -172,7 +172,7 @@ class LawsuitFormatter(DataFormatter):
     serializer = LawsuitSerializer
 
     def get_queryset(self, ids):
-        return Lawsuit.objects.filter(id__in=ids)
+        return Lawsuit.objects.filter(id__in=ids).prefetch_related('plaintiffs', 'officers')
 
 
 class RankFormatter(SimpleFormatter):

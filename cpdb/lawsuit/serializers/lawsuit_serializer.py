@@ -11,12 +11,6 @@ class PaymentSerializer(NoNullSerializer):
     legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
 
-class TotalPaymentSerializer(NoNullSerializer):
-    total = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-    total_settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-    total_legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-
-
 class OfficerSerializer(OfficerPercentileSerializer):
     id = serializers.IntegerField()
     full_name = serializers.CharField()
@@ -69,8 +63,10 @@ class LawsuitSerializer(NoNullSerializer):
     outcomes = serializers.ListField(child=serializers.CharField())
     payments = PaymentSerializer(many=True)
     point = serializers.SerializerMethodField()
-    total_payments = TotalPaymentSerializer()
     attachment = serializers.SerializerMethodField()
+    total_payments = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
+    total_settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
+    total_legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
     def get_point(self, obj):
         if obj.point is not None:

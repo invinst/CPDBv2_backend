@@ -11,7 +11,9 @@ from search.workers import (
 from search.views import SearchViewSet
 from .queries import OfficerMobileQuery, CrMobileQuery, TrrMobileQuery, LawsuitMobileQuery
 from .formatters import OfficerV2Formatter, CRFormatter, TRRFormatter, LawsuitFormatter
-from .serializers import OfficerRecentSerializer, AllegationRecentSerializer, TRRRecentSerializer, LawsuitRecentSerializer
+from .serializers import (
+    OfficerRecentSerializer, AllegationRecentSerializer, TRRRecentSerializer, LawsuitRecentSerializer
+)
 
 
 class SearchMobileV2ViewSet(SearchViewSet):
