@@ -100,7 +100,7 @@ class LawsuitViewSetTestCase(APITestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Police Officer',
                 },
                 {
@@ -116,7 +116,7 @@ class LawsuitViewSetTestCase(APITestCase):
                     'race': 'Black',
                     'gender': 'Female',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Sergeant',
                 }
             ],

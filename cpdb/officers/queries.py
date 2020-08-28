@@ -152,7 +152,7 @@ class OfficerTimelineBaseQuery(object):
 
     @property
     def _lawsuit_timeline(self):
-        lawsuit_timeline = self.officer.lawsuit_set.filter(
+        lawsuit_timeline = self.officer.lawsuits.filter(
             incident_date__isnull=False,
         ).prefetch_related(
             'attachment_files',

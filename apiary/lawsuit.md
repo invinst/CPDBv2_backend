@@ -33,7 +33,7 @@
               "gender": "Male",
               "rank": "Police Officer",
               "lawsuit_count": 1,
-              "lawsuit_payment": "5000000.00"
+              "total_lawsuit_settlements": "5000000.00"
             }
           ],
           "interactions": [],

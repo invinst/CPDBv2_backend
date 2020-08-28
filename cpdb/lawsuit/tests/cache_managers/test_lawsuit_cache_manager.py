@@ -21,7 +21,9 @@ class LawsuitCacheManagerTestCase(TestCase):
         lawsuit_1.refresh_from_db()
         lawsuit_2.refresh_from_db()
 
-        expect(lawsuit_1.total_settlement).to.eq(7500.00)
+        expect(lawsuit_1.total_settlement).to.eq(7500)
         expect(lawsuit_1.total_legal_fees).to.eq(2500000000)
-        expect(lawsuit_2.total_settlement).to.eq(2500.00)
+        expect(lawsuit_1.total_payments).to.eq(2500007500)
+        expect(lawsuit_2.total_settlement).to.eq(2500)
         expect(lawsuit_2.total_legal_fees).to.eq(280000)
+        expect(lawsuit_2.total_payments).to.eq(282500)
