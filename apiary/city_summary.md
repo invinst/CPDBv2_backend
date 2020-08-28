@@ -6,19 +6,7 @@
 
         {
             "allegation_count": 125735,
-            "most_common_complaints": [
-                {
-                    "name": "Operation/Personnel Violations",
-                    "count": 1
-                },
-                {
-                    "name": "Use Of Force",
-                    "count": 1
-                },
-                {
-                    "name": "Illegal Search",
-                    "count": 1
-                },
-            ],
-            "discipline_count": 6404
+            "discipline_count": 6404,
+            'lawsuits_count': 1460,
+            'total_lawsuit_settlements': '470485665.34'
         }
