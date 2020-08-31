@@ -200,7 +200,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
 
         lawsuit_1 = LawsuitFactory()
         PaymentFactory(settlement=5000, legal_fees=2000, lawsuit=lawsuit_1)
-        PaymentFactory(settlement=None, legal_fees=5000, lawsuit=lawsuit_1)
+        PaymentFactory(settlement=0, legal_fees=5000, lawsuit=lawsuit_1)
         lawsuit_1.officers.set([officer])
         lawsuit_2 = LawsuitFactory()
         PaymentFactory(settlement=8500, legal_fees=0, lawsuit=lawsuit_2)

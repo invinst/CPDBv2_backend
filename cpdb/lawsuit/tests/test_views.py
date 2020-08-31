@@ -66,8 +66,8 @@ class LawsuitViewSetTestCase(APITestCase):
             rank='Sergeant',
         )
 
-        PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
-        PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
+        PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=0, lawsuit=lawsuit)
+        PaymentFactory(payee='Genre Wilson', settlement=0, legal_fees='2500000000', lawsuit=lawsuit)
 
         lawsuit.officers.set([officer_1, officer_2])
         lawsuit_cache_manager.cache_data()
@@ -128,11 +128,13 @@ class LawsuitViewSetTestCase(APITestCase):
             'payments': [
                 {
                     'payee': 'Genre Wilson',
+                    'settlement': '0.00',
                     'legal_fees': '2500000000.00'
                 },
                 {
                     'payee': 'Lucy Bells',
-                    'settlement': '7500.00'
+                    'settlement': '7500.00',
+                    'legal_fees': '0.00'
                 }
             ],
             'total_payments': '2500007500.00',

@@ -32,9 +32,9 @@ class Lawsuit(TimeStampsModel):
 
     # CACHED COLUMNS
 
-    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, null=True)
-    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, null=True)
-    total_payments = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
+    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
+    total_payments = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
 
     def __str__(self):
         return f'Lawsuit {self.case_no}'
