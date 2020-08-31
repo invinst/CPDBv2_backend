@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lawsuit', '0007_alter_officers_fields_in_lawsuits'),
+        ('lawsuit', '0008_add_default_value_to_payment_fields'),
     ]
 
     operations = [

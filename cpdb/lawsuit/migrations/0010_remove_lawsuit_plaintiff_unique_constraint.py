@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lawsuit', '0008_change_lawsuit_location_max_length'),
+        ('lawsuit', '0009_change_lawsuit_location_max_length'),
     ]
 
     operations = [
