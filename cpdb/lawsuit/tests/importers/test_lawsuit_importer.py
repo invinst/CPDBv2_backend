@@ -41,7 +41,7 @@ class LawsuitImporterTestCase(TestCase):
                 'Payments': ['recPEuAfrUZd3GCcD', 'rec00AHp30i0xV0Tz'],
                 'Plaintiffs': ['recZyu7ztEVPMqvI2'],
                 'Added Date': '2020-07-06T07:45:18.000Z',
-                'Updated At': '2020-07-22T21:20:29.000Z'
+                'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
             'createdTime': '2020-07-06T07:45:18.000Z'
         }
@@ -67,7 +67,7 @@ class LawsuitImporterTestCase(TestCase):
                 'Payments': [],
                 'Plaintiffs': [],
                 'Added Date': '2020-07-06T07:38:31.000Z',
-                'Updated At': '2020-07-21T21:27:24.000Z'
+                'Last Modified Time': '2020-07-21T21:27:24.000Z'
             },
             'createdTime': '2020-07-06T07:45:18.000Z'
         }
@@ -77,7 +77,7 @@ class LawsuitImporterTestCase(TestCase):
                 'id': 752,
                 'case_no': '11-CV-4549',
                 'Added Date': '2020-07-06T07:45:18.000Z',
-                'Updated At': '2020-07-22T21:20:29.000Z'
+                'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
             'createdTime': '2020-07-06T07:45:18.000Z'
         }
@@ -86,7 +86,7 @@ class LawsuitImporterTestCase(TestCase):
             'fields': {
                 'id': 758,
                 'Added Date': '2020-07-06T07:45:18.000Z',
-                'Updated At': '2020-07-22T21:20:29.000Z'
+                'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
             'createdTime': '2020-07-06T07:45:18.000Z'
         }
@@ -95,7 +95,7 @@ class LawsuitImporterTestCase(TestCase):
             'fields': {
                 'id': 750,
                 'case_no': '14-CV-3849',
-                'Updated At': '2020-08-21T21:27:35.000Z'
+                'Last Modified Time': '2020-08-21T21:27:35.000Z'
             },
             'createdTime': '2020-08-06T07:45:42.000Z'
         }
@@ -119,7 +119,7 @@ class LawsuitImporterTestCase(TestCase):
                 'Payments': ['recyFPPNQVNEVdnK2'],
                 'Plaintiffs': ['recJNqXp86N3j9rok'],
                 'Added Date': '2020-07-06T07:45:59.000Z',
-                'Updated At': '2020-07-21T21:27:24.000Z'
+                'Last Modified Time': '2020-07-21T21:27:24.000Z'
             },
             'createdTime': '2020-07-06T07:45:59.000Z'
         }
@@ -141,7 +141,7 @@ class LawsuitImporterTestCase(TestCase):
                 'date_paid': '2019-01-28',
                 'case': ['rec0FFhCY1MsmZbCC'],
                 'primary_cause_edited': 'MVA/CITY VEHICLE',
-                'Updated At': '2020-07-16T09:27:15.000Z'
+                'Last Modified Time': '2020-07-16T09:27:15.000Z'
             },
             'createdTime': '2020-07-16T09:27:15.000Z'
         }
@@ -150,7 +150,7 @@ class LawsuitImporterTestCase(TestCase):
             'fields': {
                 'case': ['rec05P3viy3ILqTT2'],
                 'primary_cause_edited': 'ILLEGAL SEARCH/SEIZURE',
-                'Updated At': '2020-08-03T19:03:21.000Z'
+                'Last Modified Time': '2020-08-03T19:03:21.000Z'
             },
             'createdTime': '2020-07-06T08:17:54.000Z'
         }
@@ -163,7 +163,7 @@ class LawsuitImporterTestCase(TestCase):
                 'date_paid': '2019-07-25',
                 'case': ['rec06Sa7ZhcwNJMN4'],
                 'primary_cause_edited': 'FIRETRUCK COLLISION',
-                'Updated At': '2020-07-16T09:27:36.000Z'
+                'Last Modified Time': '2020-07-16T09:27:36.000Z'
             },
             'createdTime': '2020-07-16T09:27:36.000Z'
         }
@@ -176,7 +176,7 @@ class LawsuitImporterTestCase(TestCase):
                 'date_paid': '2019-03-20',
                 'case': ['rec06Sa7ZhcwNJMN4'],
                 'primary_cause_edited': 'FIRETRUCK COLLISION',
-                'Updated At': '2020-07-16T09:29:56.000Z'
+                'Last Modified Time': '2020-07-16T09:29:56.000Z'
             },
             'createdTime': '2020-07-16T09:28:46.000Z'
         }
@@ -188,7 +188,7 @@ class LawsuitImporterTestCase(TestCase):
                 'fees_costs': 0,
                 'date_paid': '2019-11-21',
                 'primary_cause_edited': 'MVA / CITY VEHICLE ',
-                'Updated At': '2020-07-16T09:27:59.000Z'
+                'Last Modified Time': '2020-07-16T09:27:59.000Z'
             },
             'createdTime': '2020-07-16T09:27:59.000Z'
         }
@@ -207,7 +207,7 @@ class LawsuitImporterTestCase(TestCase):
                 'fields': {
                     'name': 'Eric Scheidler',
                     'case': ['rec05P3viy3ILqTT2'],
-                    'Updated At': '2020-08-04T19:40:13.000Z'
+                    'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
                 'createdTime': '2020-08-04T19:40:13.000Z'
             },
@@ -216,7 +216,7 @@ class LawsuitImporterTestCase(TestCase):
                 'fields': {
                     'name': 'Mary Sims',
                     'case': ['rec06Sa7ZhcwNJMN4'],
-                    'Updated At': '2020-07-16T08:37:08.000Z'
+                    'Last Modified Time': '2020-07-16T08:37:08.000Z'
                 },
                 'createdTime': '2020-07-06T08:23:08.000Z'
             },
@@ -225,7 +225,7 @@ class LawsuitImporterTestCase(TestCase):
                 'fields': {
                     'name': 'Orlando Edwards',
                     'case': ['rec06Sa7ZhcwNJMN4'],
-                    'Updated At': '2020-07-16T08:37:08.000Z'
+                    'Last Modified Time': '2020-07-16T08:37:08.000Z'
                 },
                 'createdTime': '2020-07-06T08:21:26.000Z'
             },
@@ -234,7 +234,7 @@ class LawsuitImporterTestCase(TestCase):
                 'fields': {
                     'name': 'Wilfredo Rodriguez',
                     'case': ['rec0FFhCY1MsmZbCC'],
-                    'Updated At': '2020-08-04T19:40:13.000Z'
+                    'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
                 'createdTime': '2020-08-04T19:40:13.000Z'
             },
@@ -242,7 +242,7 @@ class LawsuitImporterTestCase(TestCase):
                 'id': 'rec0ywQxzoOB3eMGr',
                 'fields': {
                     'name': 'Steven Wilson',
-                    'Updated At': '2020-08-04T19:40:13.000Z'
+                    'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
                 'createdTime': '2020-08-04T19:40:13.000Z'
             }

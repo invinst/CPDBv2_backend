@@ -115,7 +115,7 @@ class LawsuitImporter(object):
 
         return {
             'airtable_id': lawsuit_airtable_id,
-            'airtable_updated_at': airtable_lawsuit_fields.get('Updated At'),
+            'airtable_updated_at': airtable_lawsuit_fields.get('Last Modified Time'),
             'primary_cause': primary_cause,
             'case_no': case_no,
             'summary': airtable_lawsuit_fields.get('narrative', ''),
@@ -169,7 +169,7 @@ class LawsuitImporter(object):
             airtable_lawsuit_fields = airtable_lawsuit_data['fields']
             airtable_id = airtable_lawsuit_data['id']
             case_no = airtable_lawsuit_fields.get('case_no')
-            airtable_updated_at = airtable_lawsuit_fields.get('Updated At')
+            airtable_updated_at = airtable_lawsuit_fields.get('Last Modified Time')
             lawsuit = Lawsuit.objects.filter(case_no=case_no).first()
 
             if lawsuit:
@@ -221,7 +221,7 @@ class LawsuitImporter(object):
 
         return {
             'airtable_id': airtable_plaintiff_data['id'],
-            'airtable_updated_at': airtable_plaintiff_fields.get('Updated At'),
+            'airtable_updated_at': airtable_plaintiff_fields.get('Last Modified Time'),
             'name': airtable_plaintiff_fields.get('name'),
             'lawsuit_id': lawsuit_id,
         }
@@ -237,7 +237,7 @@ class LawsuitImporter(object):
             airtable_plaintiff_fields = airtable_plaintiff_data['fields']
             airtable_case = airtable_plaintiff_fields.get('case')
             lawsuit_airtable_id = airtable_case[0] if airtable_case else None
-            airtable_updated_at = airtable_plaintiff_fields.get('Updated At')
+            airtable_updated_at = airtable_plaintiff_fields.get('Last Modified Time')
             lawsuit_id = lawsuit_mapping.get(lawsuit_airtable_id)
 
             if lawsuit_id:
@@ -278,7 +278,7 @@ class LawsuitImporter(object):
 
         return {
             'airtable_id': airtable_payment_data['id'],
-            'airtable_updated_at': airtable_payment_fields.get('Updated At'),
+            'airtable_updated_at': airtable_payment_fields.get('Last Modified Time'),
             'lawsuit_id': lawsuit_id,
             'payee': airtable_payment_fields.get('payee'),
             'settlement': airtable_payment_fields.get('payment'),
@@ -297,7 +297,7 @@ class LawsuitImporter(object):
             airtable_payment_fields = airtable_payment_data['fields']
             airtable_case = airtable_payment_fields.get('case')
             lawsuit_airtable_id = airtable_case[0] if airtable_case else None
-            airtable_updated_at = airtable_payment_fields.get('Updated At')
+            airtable_updated_at = airtable_payment_fields.get('Last Modified Time')
             lawsuit_id = lawsuit_mapping.get(lawsuit_airtable_id)
 
             if lawsuit_id:
