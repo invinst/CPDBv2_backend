@@ -9,11 +9,11 @@ from lawsuit.factories import LawsuitFactory, PaymentFactory
 class LawsuitCacheManagerTestCase(TestCase):
     def test_cache_data(self):
         lawsuit_1 = LawsuitFactory()
-        PaymentFactory(settlement=7500, legal_fees=None, lawsuit=lawsuit_1)
-        PaymentFactory(settlement=None, legal_fees=2500000000, lawsuit=lawsuit_1)
+        PaymentFactory(settlement=7500, legal_fees=0, lawsuit=lawsuit_1)
+        PaymentFactory(settlement=0, legal_fees=2500000000, lawsuit=lawsuit_1)
         lawsuit_2 = LawsuitFactory()
-        PaymentFactory(settlement=1000, legal_fees=None, lawsuit=lawsuit_2)
-        PaymentFactory(settlement=None, legal_fees=200000, lawsuit=lawsuit_2)
+        PaymentFactory(settlement=1000, legal_fees=0, lawsuit=lawsuit_2)
+        PaymentFactory(settlement=0, legal_fees=200000, lawsuit=lawsuit_2)
         PaymentFactory(settlement=1500, legal_fees=80000, lawsuit=lawsuit_2)
 
         lawsuit_cache_manager.cache_data()
