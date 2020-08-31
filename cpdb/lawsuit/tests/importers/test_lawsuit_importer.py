@@ -12,7 +12,7 @@ from mock import patch, Mock
 from lawsuit.models import Lawsuit, LawsuitPlaintiff, Payment
 from data.models import AttachmentFile
 from lawsuit.importers import LawsuitImporter
-from data.factories import AttachmentFileFactory
+from data.factories import AttachmentFileFactory, OfficerFactory
 from lawsuit.factories import LawsuitFactory, LawsuitPlaintiffFactory, PaymentFactory
 
 
@@ -30,20 +30,18 @@ class LawsuitImporterTestCase(TestCase):
                 'address': '12000 S. Perry Ave.',
                 'city': 'Chicago',
                 'state': 'IL',
-                'interaction': ['Stop and frisk'],
-                'Officer Tags': ['On duty'],
+                'interaction': ['stop and frisk'],
+                'Officer Tags': ['on duty'],
                 'Location Description': 'Isaac Thomas Jr. residence',
                 'narrative': 'Simmons was visiting his neighbor and one of her sons when Officers Couch and ',
-                'complaint_url': 'https://s3.amazonaws.com/internal.chicagoreporter.com/complaints/11-CV-4549.pdf',
+                'DocumentCloud URL': 'https://assets.documentcloud.org/documents/4797245/11-CV-4549.pdf',
                 'misconduct type': ['Threats/intimidation', 'Excessive force', 'False arrest or report'],
-                'weapons': ['Physical force'],
-                'Incident Outcome': ['Resisting or obstructing arrest charges'],
+                'weapons': ['physical force'],
+                'Incident Outcome': ['resisting or obstructing arrest charges'],
                 'Payments': ['recPEuAfrUZd3GCcD', 'rec00AHp30i0xV0Tz'],
                 'Plaintiffs': ['recZyu7ztEVPMqvI2'],
-                'Added Date': '2020-07-06T07:45:18.000Z',
                 'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
-            'createdTime': '2020-07-06T07:45:18.000Z'
         }
         updated_airtable_lawsuit_data_2 = {
             'id': 'rec0yl7j1eZ54r9FM',
@@ -57,7 +55,7 @@ class LawsuitImporterTestCase(TestCase):
                 'city': 'Chicago',
                 'state': 'IL',
                 'interaction': ['Stop and frisk'],
-                'Officer Tags': ['Plainclothes'],
+                'Officer Tags': ['plainclothes'],
                 'Location Description': 'Mobil Exxon Gas Station',
                 'narrative': 'Dorsey was at a gas station when Officers Brown and Stacker',
                 'complaint_url': '',
@@ -66,29 +64,23 @@ class LawsuitImporterTestCase(TestCase):
                 'Incident Outcome': ['Hospitalized'],
                 'Payments': [],
                 'Plaintiffs': [],
-                'Added Date': '2020-07-06T07:38:31.000Z',
                 'Last Modified Time': '2020-07-21T21:27:24.000Z'
             },
-            'createdTime': '2020-07-06T07:45:18.000Z'
         }
         duplicated_airtable_lawsuit_data = {
             'id': 'rec0zFlSvnxmPrCWL',
             'fields': {
                 'id': 752,
                 'case_no': '11-CV-4549',
-                'Added Date': '2020-07-06T07:45:18.000Z',
                 'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
-            'createdTime': '2020-07-06T07:45:18.000Z'
         }
         invalid_airtable_lawsuit_data = {
             'id': 'rec0zFlSvnxmPrCWL',
             'fields': {
                 'id': 758,
-                'Added Date': '2020-07-06T07:45:18.000Z',
                 'Last Modified Time': '2020-07-22T21:20:29.000Z'
             },
-            'createdTime': '2020-07-06T07:45:18.000Z'
         }
         kept_airtable_lawsuit_data = {
             'id': 'rec0FFhCY1MsmZbCC',
@@ -97,7 +89,6 @@ class LawsuitImporterTestCase(TestCase):
                 'case_no': '14-CV-3849',
                 'Last Modified Time': '2020-08-21T21:27:35.000Z'
             },
-            'createdTime': '2020-08-06T07:45:42.000Z'
         }
         new_airtable_lawsuit_data = {
             'id': 'rec06Sa7ZhcwNJMN4',
@@ -112,16 +103,14 @@ class LawsuitImporterTestCase(TestCase):
                 'lat': 41.7353516,
                 'lon': -87.6534119,
                 'neighborhood': 'Gresham',
-                'complaint_url': 'https://s3.amazonaws.com/internal.chicagoreporter.com/complaints/15-CV-11878.pdf',
+                'DocumentCloud URL': 'https://assets.documentcloud.org/documents/4797391/15-CV-11878.pdf',
                 'Officer Tags': ['On duty'],
                 'misconduct type': ['False arrest or report'],
                 'Incident Outcome': ['Other charges filed'],
                 'Payments': ['recyFPPNQVNEVdnK2'],
                 'Plaintiffs': ['recJNqXp86N3j9rok'],
-                'Added Date': '2020-07-06T07:45:59.000Z',
                 'Last Modified Time': '2020-07-21T21:27:24.000Z'
             },
-            'createdTime': '2020-07-06T07:45:59.000Z'
         }
         airtable_lawsuits_data = [
             updated_airtable_lawsuit_data_1,
@@ -143,7 +132,6 @@ class LawsuitImporterTestCase(TestCase):
                 'primary_cause_edited': 'MVA/CITY VEHICLE',
                 'Last Modified Time': '2020-07-16T09:27:15.000Z'
             },
-            'createdTime': '2020-07-16T09:27:15.000Z'
         }
         kept_airtable_payment_data = {
             'id': 'rec09ET56dA7U3LVw',
@@ -152,7 +140,6 @@ class LawsuitImporterTestCase(TestCase):
                 'primary_cause_edited': 'ILLEGAL SEARCH/SEIZURE',
                 'Last Modified Time': '2020-08-03T19:03:21.000Z'
             },
-            'createdTime': '2020-07-06T08:17:54.000Z'
         }
         new_airtable_payment_data_1 = {
             'id': 'rec00AHp30i0xV0Tz',
@@ -165,7 +152,6 @@ class LawsuitImporterTestCase(TestCase):
                 'primary_cause_edited': 'FIRETRUCK COLLISION',
                 'Last Modified Time': '2020-07-16T09:27:36.000Z'
             },
-            'createdTime': '2020-07-16T09:27:36.000Z'
         }
         new_airtable_payment_data_2 = {
             'id': 'recPEuAfrUZd3GCcD',
@@ -178,7 +164,6 @@ class LawsuitImporterTestCase(TestCase):
                 'primary_cause_edited': 'FIRETRUCK COLLISION',
                 'Last Modified Time': '2020-07-16T09:29:56.000Z'
             },
-            'createdTime': '2020-07-16T09:28:46.000Z'
         }
         invalid_airtable_payment_data = {
             'id': 'rec09dNgxjGk88RY8',
@@ -190,7 +175,6 @@ class LawsuitImporterTestCase(TestCase):
                 'primary_cause_edited': 'MVA / CITY VEHICLE ',
                 'Last Modified Time': '2020-07-16T09:27:59.000Z'
             },
-            'createdTime': '2020-07-16T09:27:59.000Z'
         }
 
         airtable_payments_data = [
@@ -209,7 +193,6 @@ class LawsuitImporterTestCase(TestCase):
                     'case': ['rec05P3viy3ILqTT2'],
                     'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
-                'createdTime': '2020-08-04T19:40:13.000Z'
             },
             {
                 'id': 'rec034jkq0co8PJkR',
@@ -218,7 +201,6 @@ class LawsuitImporterTestCase(TestCase):
                     'case': ['rec06Sa7ZhcwNJMN4'],
                     'Last Modified Time': '2020-07-16T08:37:08.000Z'
                 },
-                'createdTime': '2020-07-06T08:23:08.000Z'
             },
             {
                 'id': 'rec04KPXLakSKPHkA',
@@ -227,7 +209,6 @@ class LawsuitImporterTestCase(TestCase):
                     'case': ['rec06Sa7ZhcwNJMN4'],
                     'Last Modified Time': '2020-07-16T08:37:08.000Z'
                 },
-                'createdTime': '2020-07-06T08:21:26.000Z'
             },
             {
                 'id': 'rec0alTlGQjrzjq7B',
@@ -236,7 +217,6 @@ class LawsuitImporterTestCase(TestCase):
                     'case': ['rec0FFhCY1MsmZbCC'],
                     'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
-                'createdTime': '2020-08-04T19:40:13.000Z'
             },
             {
                 'id': 'rec0ywQxzoOB3eMGr',
@@ -244,14 +224,52 @@ class LawsuitImporterTestCase(TestCase):
                     'name': 'Steven Wilson',
                     'Last Modified Time': '2020-08-04T19:40:13.000Z'
                 },
-                'createdTime': '2020-08-04T19:40:13.000Z'
             }
+        ]
+
+        cops_we_listed_data = [
+            {
+                'id': 'rec01RS9mkT3M0OUL',
+                'fields': {
+                    'case': ['rec05P3viy3ILqTT2'],
+                    'CPDP URL': 'http://cpdp.co/officer/1',
+                },
+            },
+            {
+                'id': 'rec07ZYQyqBFvwxhY',
+                'fields': {
+                    'case': ['rec0yl7j1eZ54r9FM'],
+                    'CPDP URL': 'http://cpdp.co/officer/3',
+                },
+            },
+            {
+                'id': 'recUE1rTy0Uxu1emw',
+                'fields': {
+                    'case': ['rec0yl7j1eZ54r9FM'],
+                    'CPDP URL': 'http://cpdp.co/officer/4',
+                },
+            },
+            {
+                'id': 'rec0NNSCSdWJsEw9K',
+                'fields': {
+                    'case': ['rec06Sa7ZhcwNJMN4'],
+                    'CPDP URL': 'http://cpdp.co/officer/5',
+                },
+            },
+            {
+                'id': 'rec0OfPql6IZd8Sx9',
+                'fields': {
+                    'case': ['rec06Sa7ZhcwNJMN4'],
+                    'CPDP URL': 'http://cpdp.co/officer/9',
+                },
+            },
         ]
 
         airtable_tables = {
             'Case': airtable_lawsuits_data,
             'Victims': airtable_plaintiffs_data,
             'Payments': airtable_payments_data,
+            'Cops (we listed)': cops_we_listed_data,
         }
 
         def side_effect(airtable_probject_key, airtable_table_name):
@@ -266,7 +284,7 @@ class LawsuitImporterTestCase(TestCase):
             airtable_id='rec05P3viy3ILqTT2',
             airtable_updated_at='2020-07-21T21:27:24.000Z',
             case_no='11-CV-4549',
-            primary_cause='FIRETRUCK COLLISION old',
+            primary_cause='Firetruck Collision Old',
             summary='Old summary',
             point=None,
             incident_date=datetime.datetime(2009, 7, 2, tzinfo=pytz.utc),
@@ -304,7 +322,7 @@ class LawsuitImporterTestCase(TestCase):
             airtable_id='rec0FFhCY1MsmZbCC',
             airtable_updated_at='2020-08-21T21:27:35.000Z',
             case_no='14-CV-3849',
-            primary_cause='PROPERTY DAMAGE / CABLE',
+            primary_cause='Property Damage / Cable',
             summary='Dorsey was at a gas station when Officers Brown and Stacker, who were in plaincothes,',
             point=Point(-87.5572968, 41.756176),
             incident_date=datetime.datetime(2012, 3, 21, tzinfo=pytz.utc),
@@ -356,6 +374,15 @@ class LawsuitImporterTestCase(TestCase):
             airtable_updated_at='2020-08-21T21:27:35.000Z',
         )
 
+        officer_1 = OfficerFactory(id=1)
+        officer_2 = OfficerFactory(id=2)
+        officer_3 = OfficerFactory(id=3)
+        officer_4 = OfficerFactory(id=4)
+        officer_5 = OfficerFactory(id=5)
+
+        updated_lawsuit_1.officers.add(officer_1, officer_2)
+        updated_lawsuit_2.officers.add(officer_3)
+
         expect(Lawsuit.objects.count()).to.eq(4)
         expect(AttachmentFile.objects.count()).to.eq(2)
         expect(LawsuitPlaintiff.objects.count()).to.eq(3)
@@ -367,7 +394,7 @@ class LawsuitImporterTestCase(TestCase):
             'airtable_id': 'rec05P3viy3ILqTT2',
             'airtable_updated_at': '2020-07-22T21:20:29.000Z',
             'case_no': '11-CV-4549',
-            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'primary_cause': 'Illegal Search/Seizure',
             'summary': 'Simmons was visiting his neighbor and one of her sons when Officers Couch and ',
             'point': Point(-87.6251221, 41.6761627),
             'incident_date': datetime.datetime(2009, 8, 3, tzinfo=pytz.utc),
@@ -380,12 +407,15 @@ class LawsuitImporterTestCase(TestCase):
             'violences': ['Physical force'],
             'interactions': ['Stop and frisk'],
             'services': ['On duty'],
+            'total_settlement': Decimal('15000'),
+            'total_legal_fees': 0,
+            'total_payments': Decimal('15000'),
         }
         expected_updated_lawsuit_data_2 = {
             'airtable_id': 'rec0yl7j1eZ54r9FM',
             'airtable_updated_at': '2020-07-21T21:27:24.000Z',
             'case_no': '13-CV-2020',
-            'primary_cause': None,
+            'primary_cause': '',
             'summary': 'Dorsey was at a gas station when Officers Brown and Stacker',
             'point': Point(-87.5572968, 41.756176),
             'incident_date': datetime.datetime(2012, 3, 31, tzinfo=pytz.utc),
@@ -398,12 +428,15 @@ class LawsuitImporterTestCase(TestCase):
             'violences': [],
             'interactions': ['Stop and frisk'],
             'services': ['Plainclothes'],
+            'total_settlement': 0,
+            'total_legal_fees': 0,
+            'total_payments': 0,
         }
         expected_kept_lawsuit_data = {
             'airtable_id': 'rec0FFhCY1MsmZbCC',
             'airtable_updated_at': '2020-08-21T21:27:35.000Z',
             'case_no': '14-CV-3849',
-            'primary_cause': 'MVA/CITY VEHICLE',
+            'primary_cause': 'Mva/City Vehicle',
             'summary': 'Dorsey was at a gas station when Officers Brown and Stacker, who were in plaincothes,',
             'point': Point(-87.5572968, 41.756176),
             'incident_date': datetime.datetime(2012, 3, 21, tzinfo=pytz.utc),
@@ -416,12 +449,15 @@ class LawsuitImporterTestCase(TestCase):
             'violences': ['Physical Force'],
             'interactions': ['Protest'],
             'services': ['On Duty', 'Plainclothes'],
+            'total_settlement': Decimal('1713.19'),
+            'total_legal_fees': 0,
+            'total_payments': Decimal('1713.19'),
         }
         expected_created_lawsuit_data = {
             'airtable_id': 'rec06Sa7ZhcwNJMN4',
             'airtable_updated_at': '2020-07-21T21:27:24.000Z',
             'case_no': '15-CV-11878',
-            'primary_cause': 'FIRETRUCK COLLISION',
+            'primary_cause': 'Firetruck Collision',
             'summary': 'Redmond was robbed and called the police to report the incident.',
             'point': Point(-87.6534119, 41.7353516),
             'incident_date': datetime.datetime(2015, 5, 6, tzinfo=pytz.utc),
@@ -434,6 +470,9 @@ class LawsuitImporterTestCase(TestCase):
             'violences': [],
             'interactions': [],
             'services': ['On duty'],
+            'total_settlement': Decimal('3000'),
+            'total_legal_fees': Decimal('21000'),
+            'total_payments': Decimal('24000'),
         }
 
         expect(Lawsuit.objects.count()).to.eq(4)
@@ -462,18 +501,28 @@ class LawsuitImporterTestCase(TestCase):
                 else:
                     expect(getattr(lawsuit, attr)).to.eq(value)
 
+        expect({officer.id for officer in updated_lawsuit_1.officers.all()}).to.eq({officer_1.id})
+        expect({officer.id for officer in updated_lawsuit_2.officers.all()}).to.eq({officer_3.id, officer_4.id})
+        expect({officer.id for officer in created_lawsuit.officers.all()}).to.eq({officer_5.id})
+
         expect(AttachmentFile.objects.count()).to.eq(2)
         expect(AttachmentFile.objects.filter(id=updated_attachment.id).exists()).to.be.true()
         expect(AttachmentFile.objects.filter(id=deleted_attachment.id).exists()).to.be.false()
         updated_attachment.refresh_from_db()
         created_attachment = AttachmentFile.objects.filter(
-            url='https://s3.amazonaws.com/internal.chicagoreporter.com/complaints/15-CV-11878.pdf'
+            url='https://assets.documentcloud.org/documents/4797391/15-CV-11878.pdf'
         ).first()
         expect(updated_attachment.owner).to.eq(updated_lawsuit_1)
         expect(updated_attachment.url).to.eq(
-            'https://s3.amazonaws.com/internal.chicagoreporter.com/complaints/11-CV-4549.pdf'
+            'https://assets.documentcloud.org/documents/4797245/11-CV-4549.pdf'
+        )
+        expect(updated_attachment.preview_image_url).to.eq(
+            'https://assets.documentcloud.org/documents/4797245/pages/11-CV-4549-p1-normal.gif'
         )
         expect(created_attachment.owner).to.eq(created_lawsuit)
+        expect(created_attachment.preview_image_url).to.eq(
+            'https://assets.documentcloud.org/documents/4797391/pages/15-CV-11878-p1-normal.gif'
+        )
 
         expected_lawsuit_plaintiffs_data = {
             updated_lawsuit_1: ['Eric Scheidler'],
@@ -543,5 +592,162 @@ class LawsuitImporterTestCase(TestCase):
             for attr, value in expected_payment_data.items():
                 expect(getattr(payment, attr)).to.eq(value)
 
-    def test_update_data_with_force_update(self):
-        pass
+    @patch('lawsuit.importers.lawsuit_importer.Airtable')
+    def test_update_data_with_force_update(self, airtable_cls_mock):
+        airtable_lawsuit_data = {
+            'id': 'rec05P3viy3ILqTT2',
+            'fields': {
+                'id': 750,
+                'case_no': '11-CV-4549',
+                'incident_date': '2009-08-03',
+                'lat': 41.6761627,
+                'lon': -87.6251221,
+                'address': '12000 S. Perry Ave.',
+                'city': 'Chicago',
+                'state': 'IL',
+                'interaction': ['stop and frisk'],
+                'Officer Tags': ['on duty'],
+                'Location Description': 'Isaac Thomas Jr. residence',
+                'narrative': 'Simmons was visiting his neighbor and one of her sons when Officers Couch and ',
+                'DocumentCloud URL': 'https://assets.documentcloud.org/documents/4797245/11-CV-4549.pdf',
+                'misconduct type': ['Threats/intimidation', 'Excessive force', 'False arrest or report'],
+                'weapons': ['physical force'],
+                'Incident Outcome': ['resisting or obstructing arrest charges'],
+                'Payments': ['recPEuAfrUZd3GCcD', 'rec00AHp30i0xV0Tz'],
+                'Plaintiffs': ['recZyu7ztEVPMqvI2'],
+                'Added Date': '2020-07-06T07:45:18.000Z',
+                'Last Modified Time': '2020-07-22T21:20:29.000Z'
+            },
+        }
+
+        airtable_payment_data = {
+            'id': 'recyFPPNQVNEVdnK2',
+            'fields': {
+                'payment': 1713.19,
+                'payee': 'ALLSTATE A/S/O ORI, SAM',
+                'fees_costs': 0,
+                'date_paid': '2019-01-28',
+                'case': ['rec05P3viy3ILqTT2'],
+                'primary_cause_edited': 'ILLEGAL SEARCH/SEIZURE',
+                'Last Modified Time': '2020-07-16T09:27:15.000Z'
+            },
+        }
+
+        airtable_plaintiff_data = {
+            'id': 'rec00xDFq3qwq2KOE',
+            'fields': {
+                'name': 'Eric Scheidler',
+                'case': ['rec05P3viy3ILqTT2'],
+                'Last Modified Time': '2020-08-04T19:40:13.000Z'
+            },
+        }
+
+        airtable_tables = {
+            'Case': [airtable_lawsuit_data],
+            'Victims': [airtable_plaintiff_data],
+            'Payments': [airtable_payment_data],
+            'Cops (we listed)': [],
+        }
+
+        def side_effect(airtable_probject_key, airtable_table_name):
+            data = []
+            if airtable_probject_key == settings.AIRTABLE_LAWSUITS_PROJECT_KEY:
+                data = airtable_tables[airtable_table_name]
+            return Mock(get_all=Mock(return_value=data))
+
+        airtable_cls_mock.side_effect = side_effect
+
+        lawsuit = LawsuitFactory(
+            airtable_id='rec05P3viy3ILqTT2',
+            airtable_updated_at='2020-07-22T21:20:29.000Z',
+            case_no='11-CV-4549',
+            primary_cause='Firetruck Collision Old',
+            summary='Old summary',
+            point=None,
+            incident_date=datetime.datetime(2009, 7, 2, tzinfo=pytz.utc),
+            location='Old location',
+            add1='Old add1',
+            add2='Old add2',
+            city='Old city',
+            outcomes=['old outcome'],
+            misconducts=['old misconduct'],
+            violences=['old violence'],
+            interactions=['old interaction'],
+            services=['old service'],
+        )
+
+        LawsuitPlaintiffFactory(
+            lawsuit=lawsuit,
+            name='Old plaintiff',
+            airtable_id='rec00xDFq3qwq2KOE',
+            airtable_updated_at='2020-08-04T19:40:13.000Z',
+        )
+
+        payment = PaymentFactory(
+            payee='MOSES, TATIANNA',
+            settlement=15000,
+            legal_fees=0,
+            lawsuit=lawsuit,
+            paid_date=datetime.datetime(2015, 10, 15, tzinfo=pytz.utc),
+            airtable_id='recyFPPNQVNEVdnK2',
+            airtable_updated_at='2020-07-16T09:27:15.000Z'
+        )
+
+        expect(Lawsuit.objects.count()).to.eq(1)
+        expect(LawsuitPlaintiff.objects.count()).to.eq(1)
+        expect(Payment.objects.count()).to.eq(1)
+
+        LawsuitImporter(force_update=True).update_data()
+
+        expected_lawsuit_data = {
+            'airtable_id': 'rec05P3viy3ILqTT2',
+            'airtable_updated_at': '2020-07-22T21:20:29.000Z',
+            'case_no': '11-CV-4549',
+            'primary_cause': 'Illegal Search/Seizure',
+            'summary': 'Simmons was visiting his neighbor and one of her sons when Officers Couch and ',
+            'point': Point(-87.6251221, 41.6761627),
+            'incident_date': datetime.datetime(2009, 8, 3, tzinfo=pytz.utc),
+            'location': 'Isaac Thomas Jr. residence',
+            'add1': '12000',
+            'add2': 'S. Perry Ave.',
+            'city': 'Chicago IL',
+            'outcomes': ['Resisting or obstructing arrest charges'],
+            'misconducts': ['Threats/intimidation', 'Excessive force', 'False arrest or report'],
+            'violences': ['Physical force'],
+            'interactions': ['Stop and frisk'],
+            'services': ['On duty'],
+            'total_settlement': Decimal('1713.19'),
+            'total_legal_fees': 0,
+            'total_payments': Decimal('1713.19'),
+        }
+
+        expect(Lawsuit.objects.count()).to.eq(1)
+        lawsuit.refresh_from_db()
+
+        for attr, value in expected_lawsuit_data.items():
+            if attr == 'point':
+                point = getattr(lawsuit, attr)
+                expect(point.x).to.eq(value.x)
+                expect(point.y).to.eq(value.y)
+            else:
+                expect(getattr(lawsuit, attr)).to.eq(value)
+
+        expect(LawsuitPlaintiff.objects.count()).to.eq(1)
+        plaintiff_names = list(lawsuit.plaintiffs.order_by('name').values_list('name', flat=True))
+        expect(plaintiff_names).to.eq(['Eric Scheidler'])
+
+        expected_payment_data = {
+            'payee': 'ALLSTATE A/S/O ORI, SAM',
+            'settlement': Decimal('1713.19'),
+            'legal_fees': 0,
+            'lawsuit': lawsuit,
+            'paid_date': datetime.datetime(2019, 1, 28, tzinfo=pytz.utc),
+            'airtable_id': 'recyFPPNQVNEVdnK2',
+            'airtable_updated_at': '2020-07-16T09:27:15.000Z'
+        }
+
+        expect(Payment.objects.count()).to.eq(1)
+        payment.refresh_from_db()
+
+        for attr, value in expected_payment_data.items():
+            expect(getattr(payment, attr)).to.eq(value)

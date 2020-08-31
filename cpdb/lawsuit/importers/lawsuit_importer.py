@@ -1,5 +1,6 @@
 from datetime import datetime
 import pytz
+import re
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -12,8 +13,9 @@ from lawsuit.models import (
     LawsuitPlaintiff,
     Payment,
 )
-from data.models import AttachmentFile
+from data.models import AttachmentFile, Officer
 from data.constants import MEDIA_TYPE_DOCUMENT
+from lawsuit.cache_managers import lawsuit_cache_manager
 
 BATCH_SIZE = 1000
 LAWSUIT_UPDATE_FIELDS = [
@@ -66,6 +68,7 @@ class LawsuitImporter(object):
         self.airtable_payments_data = []
         self.airtable_plaintiffs_data = []
         self.primary_cause_data_mapping = {}
+        self.lawsuit_officers_mapping = {}
 
     def log_info(self, message):
         if self.logger:
@@ -77,6 +80,36 @@ class LawsuitImporter(object):
     def parse_datetime(date_string):
         return datetime.strptime(date_string, '%Y-%m-%d').replace(tzinfo=pytz.utc) if date_string else None
 
+    @staticmethod
+    def capitalize_items(items):
+        return list(map(lambda item: item.capitalize(), items))
+
+    def load_lawsuit_officers_mapping(self):
+        airtable_listed_cops_data = Airtable(
+            settings.AIRTABLE_LAWSUITS_PROJECT_KEY, settings.AIRTABLE_LISTED_COPS_TABLE_NAME
+        ).get_all()
+
+        all_officer_ids = [str(officer_id) for officer_id in Officer.objects.values_list('id', flat=True)]
+
+        self.lawsuit_officers_mapping = {}
+        invalid_listed_cops = []
+        for airtable_listed_cop in airtable_listed_cops_data:
+            splitted_officer_url = airtable_listed_cop['fields'].get('CPDP URL', '').split('/')
+            officer_id = splitted_officer_url[-1] if splitted_officer_url else None
+            case = airtable_listed_cop['fields'].get('case')
+            airtable_lawsuit_id = case[0] if case else None
+
+            if airtable_lawsuit_id and officer_id and officer_id in all_officer_ids:
+                officer_ids = self.lawsuit_officers_mapping.get(airtable_lawsuit_id, [])
+                officer_ids.append(officer_id)
+                self.lawsuit_officers_mapping[airtable_lawsuit_id] = officer_ids
+            else:
+                invalid_listed_cops.append(airtable_listed_cop)
+        if invalid_listed_cops:
+            self.log_info(f'==== COPS: Missing lawsuit & officer id rows({len(invalid_listed_cops)}) ====')
+            for invalid_listed_cop in invalid_listed_cops:
+                self.log_info(invalid_listed_cop)
+
     def load_airtable_data(self):
         self.airtable_lawsuits_data = Airtable(
             settings.AIRTABLE_LAWSUITS_PROJECT_KEY, settings.AIRTABLE_LAWSUITS_TABLE_NAME
@@ -87,14 +120,16 @@ class LawsuitImporter(object):
         self.airtable_plaintiffs_data = Airtable(
             settings.AIRTABLE_LAWSUITS_PROJECT_KEY, settings.AIRTABLE_PLAINTIFFS_TABLE_NAME
         ).get_all()
+
         self.primary_cause_data_mapping = {}
         for airtable_payment_data in self.airtable_payments_data:
             airtable_payment_fields = airtable_payment_data['fields']
             airtable_case = airtable_payment_fields.get('case')
-            lawsuit_airtable_id = airtable_case[0] if airtable_case else None
+            airtable_lawsuit_id = airtable_case[0] if airtable_case else None
             primary_cause = airtable_payment_fields.get('primary_cause_edited')
-            if lawsuit_airtable_id and primary_cause:
-                self.primary_cause_data_mapping[lawsuit_airtable_id] = primary_cause
+            if airtable_lawsuit_id and primary_cause:
+                self.primary_cause_data_mapping[airtable_lawsuit_id] = primary_cause
+        self.load_lawsuit_officers_mapping()
 
     def lawsuit_data(self, airtable_lawsuit_data):
         airtable_lawsuit_fields = airtable_lawsuit_data['fields']
@@ -110,11 +145,11 @@ class LawsuitImporter(object):
             add1 = address
             add2 = ''
         city = ' '.join(list(filter(None, [airtable_lawsuit_fields.get('city'), airtable_lawsuit_fields.get('state')])))
-        lawsuit_airtable_id = airtable_lawsuit_data['id']
-        primary_cause = self.primary_cause_data_mapping.get(lawsuit_airtable_id)
+        airtable_lawsuit_id = airtable_lawsuit_data['id']
+        primary_cause = self.primary_cause_data_mapping.get(airtable_lawsuit_id, '').capitalize()
 
         return {
-            'airtable_id': lawsuit_airtable_id,
+            'airtable_id': airtable_lawsuit_id,
             'airtable_updated_at': airtable_lawsuit_fields.get('Last Modified Time'),
             'primary_cause': primary_cause,
             'case_no': case_no,
@@ -125,14 +160,15 @@ class LawsuitImporter(object):
             'add1': add1,
             'add2': add2,
             'city': city,
-            'outcomes': airtable_lawsuit_fields.get('Incident Outcome', []),
-            'misconducts': airtable_lawsuit_fields.get('misconduct type', []),
-            'violences': airtable_lawsuit_fields.get('weapons', []),
-            'interactions': airtable_lawsuit_fields.get('interaction', []),
-            'services': airtable_lawsuit_fields.get('Officer Tags', []),
+            'outcomes': self.capitalize_items(airtable_lawsuit_fields.get('Incident Outcome', [])),
+            'misconducts': self.capitalize_items(airtable_lawsuit_fields.get('misconduct type', [])),
+            'violences': self.capitalize_items(airtable_lawsuit_fields.get('weapons', [])),
+            'interactions': self.capitalize_items(airtable_lawsuit_fields.get('interaction', [])),
+            'services': self.capitalize_items(airtable_lawsuit_fields.get('Officer Tags', [])),
         }
 
     def update_lawsuits(self):
+        self.log_info(f'==== Importing Lawsuits ====')
         new_lawsuits = []
         updated_lawsuits = []
 
@@ -202,9 +238,10 @@ class LawsuitImporter(object):
         deleted_lawsuits.delete()
 
     def update_lawsuit_primary_causes(self):
+        self.log_info(f'==== Importing Primary Cause ====')
         updated_lawsuits = []
         for lawsuit in Lawsuit.objects.only('id', 'airtable_id', 'primary_cause'):
-            primary_cause = self.primary_cause_data_mapping.get(lawsuit.airtable_id)
+            primary_cause = self.primary_cause_data_mapping.get(lawsuit.airtable_id, '').title()
             if lawsuit.primary_cause != primary_cause:
                 lawsuit.primary_cause = primary_cause
                 updated_lawsuits.append(lawsuit)
@@ -227,6 +264,7 @@ class LawsuitImporter(object):
         }
 
     def update_plaintiffs(self, lawsuit_mapping):
+        self.log_info(f'==== Importing Plaintiffs ====')
         new_plaintiffs = []
         updated_plaintiffs = []
         all_plaintiff_airtable_ids = set()
@@ -236,9 +274,9 @@ class LawsuitImporter(object):
             plaintiff_airtable_id = airtable_plaintiff_data['id']
             airtable_plaintiff_fields = airtable_plaintiff_data['fields']
             airtable_case = airtable_plaintiff_fields.get('case')
-            lawsuit_airtable_id = airtable_case[0] if airtable_case else None
+            airtable_lawsuit_id = airtable_case[0] if airtable_case else None
             airtable_updated_at = airtable_plaintiff_fields.get('Last Modified Time')
-            lawsuit_id = lawsuit_mapping.get(lawsuit_airtable_id)
+            lawsuit_id = lawsuit_mapping.get(airtable_lawsuit_id)
 
             if lawsuit_id:
                 all_plaintiff_airtable_ids.add(plaintiff_airtable_id)
@@ -287,6 +325,7 @@ class LawsuitImporter(object):
         }
 
     def update_payments(self, lawsuit_mapping):
+        self.log_info(f'==== Importing Payments ====')
         new_payments = []
         updated_payments = []
         all_payment_airtable_ids = set()
@@ -296,9 +335,9 @@ class LawsuitImporter(object):
             payment_airtable_id = airtable_payment_data['id']
             airtable_payment_fields = airtable_payment_data['fields']
             airtable_case = airtable_payment_fields.get('case')
-            lawsuit_airtable_id = airtable_case[0] if airtable_case else None
+            airtable_lawsuit_id = airtable_case[0] if airtable_case else None
             airtable_updated_at = airtable_payment_fields.get('Last Modified Time')
-            lawsuit_id = lawsuit_mapping.get(lawsuit_airtable_id)
+            lawsuit_id = lawsuit_mapping.get(airtable_lawsuit_id)
 
             if lawsuit_id:
                 all_payment_airtable_ids.add(payment_airtable_id)
@@ -334,15 +373,26 @@ class LawsuitImporter(object):
         Payment.objects.exclude(airtable_id__in=list(all_payment_airtable_ids)).delete()
 
     def attachment_data(self, case_no, attachment_url):
+        matched = re.search(
+            '(https:\/\/assets\.documentcloud\.org\/documents\/\d+)\/([a-zA-Z0-9\-]*)\.pdf$',
+            attachment_url.strip()
+        )
+        preview_image_url = ''
+        if matched:
+            matched_groups = matched.groups()
+            preview_image_url = f'{matched_groups[0]}/pages/{matched_groups[1]}-p1-normal.gif'
+        else:
+            print('=== Invalid documentcloud url ' + attachment_url)
+
         return {
             'title': case_no,
             'file_type': MEDIA_TYPE_DOCUMENT,
-            # TODO add preview_image_url from documentcloud
-            'preview_image_url': '',
+            'preview_image_url': preview_image_url,
             'url': attachment_url,
         }
 
     def update_attachments(self, lawsuit_mapping, lawsuit_attachment_mapping):
+        self.log_info(f'==== Importing Attachments ====')
         new_attachments = []
         updated_attachments = []
         deleted_attachments = []
@@ -351,11 +401,12 @@ class LawsuitImporter(object):
 
         for airtable_lawsuit_data in self.airtable_lawsuits_data:
             airtable_lawsuit_fields = airtable_lawsuit_data['fields']
-            lawsuit_airtable_id = airtable_lawsuit_data['id']
-            attachment = lawsuit_attachment_mapping.get(lawsuit_airtable_id)
-            attachment_url = airtable_lawsuit_fields.get('complaint_url')
+            airtable_lawsuit_id = airtable_lawsuit_data['id']
+            attachment = lawsuit_attachment_mapping.get(airtable_lawsuit_id)
+            attachment_url = airtable_lawsuit_fields.get('DocumentCloud URL')
+
             case_no = airtable_lawsuit_fields.get('case_no')
-            lawsuit_id = lawsuit_mapping.get(lawsuit_airtable_id)
+            lawsuit_id = lawsuit_mapping.get(airtable_lawsuit_id)
 
             if lawsuit_id:
                 if attachment:
@@ -392,9 +443,32 @@ class LawsuitImporter(object):
             deleted_attachment_ids = [attachment.id for attachment in deleted_attachments]
             AttachmentFile.objects.filter(id__in=deleted_attachment_ids).delete()
 
+    def update_involved_officers(self):
+        self.log_info(f'==== Importing Involved Officers ====')
+        ThroughInvolvedOfficers = Lawsuit.officers.through
+
+        throughInvolvedOfficers = []
+
+        for lawsuit in Lawsuit.objects.only('id', 'airtable_id').prefetch_related('officers'):
+            airtable_officer_ids = self.lawsuit_officers_mapping.get(lawsuit.airtable_id, [])
+            officer_ids = [str(officer.id) for officer in lawsuit.officers.all()]
+
+            new_officer_ids = list(set(airtable_officer_ids) - set(officer_ids))
+            deleted_officer_ids = list(set(officer_ids) - set(airtable_officer_ids))
+            throughInvolvedOfficers += [
+                ThroughInvolvedOfficers(lawsuit_id=lawsuit.id, officer_id=officer_id) for officer_id in new_officer_ids
+            ]
+            if deleted_officer_ids:
+                ThroughInvolvedOfficers.objects.filter(
+                    lawsuit_id=lawsuit.id, officer_id__in=deleted_officer_ids
+                ).delete()
+
+        ThroughInvolvedOfficers.objects.bulk_create(throughInvolvedOfficers, batch_size=BATCH_SIZE)
+
     def update_data(self):
         self.load_airtable_data()
         self.update_lawsuits()
+        self.update_involved_officers()
         self.update_lawsuit_primary_causes()
         lawsuits = Lawsuit.objects.prefetch_related('attachment_files').all()
         lawsuit_mapping = {lawsuit.airtable_id: lawsuit.id for lawsuit in lawsuits}
@@ -402,3 +476,4 @@ class LawsuitImporter(object):
         self.update_payments(lawsuit_mapping)
         lawsuit_attachment_mapping = {lawsuit.airtable_id: lawsuit.attachment for lawsuit in lawsuits}
         self.update_attachments(lawsuit_mapping, lawsuit_attachment_mapping)
+        lawsuit_cache_manager.cache_data()
