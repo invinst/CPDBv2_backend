@@ -536,12 +536,20 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         ActionResponseFactory(trr=trr, force_type='Taser', action_sub_category='5.1')
         ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
         ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
+        LawsuitFactory(
+            id=1,
+            case_no='00-L-5230',
+            summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+        )
 
         url = reverse('api:suggestion-recent-search-items')
         response = self.client.get(url, {
             'officer_ids[]': 8562,
             'crids[]': 'C12345',
             'trr_ids[]': 123,
+            'lawsuit_ids[]': 1,
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -569,6 +577,14 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
                 'trr_datetime': '2007-01-01',
                 'force_type': 'Impact Weapon',
                 'type': 'TRR',
+            },
+            {
+                'id': 1,
+                'case_no': '00-L-5230',
+                'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'incident_date': '2000-03-16',
+                'type': 'LAWSUIT',
             }
         ])
 

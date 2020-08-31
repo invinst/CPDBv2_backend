@@ -14,6 +14,7 @@ from lawsuit.factories import (
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
+from lawsuit.cache_managers import lawsuit_cache_manager
 
 
 class LawsuitSerializerTestCase(TestCase):
@@ -70,6 +71,12 @@ class LawsuitSerializerTestCase(TestCase):
         PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
         lawsuit.officers.set([officer_1, officer_2])
 
+        other_lawsuit = LawsuitFactory()
+        other_lawsuit.officers.set([officer_2])
+
+        lawsuit_cache_manager.cache_data()
+        lawsuit.refresh_from_db()
+
         expected_data = {
             'case_no': '00-L-5230',
             'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
@@ -95,7 +102,7 @@ class LawsuitSerializerTestCase(TestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Police Officer',
                 },
                 {
@@ -110,8 +117,8 @@ class LawsuitSerializerTestCase(TestCase):
                     'birth_year': 1990,
                     'race': 'Black',
                     'gender': 'Female',
-                    'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'lawsuit_count': 2,
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Sergeant',
                 }
             ],
@@ -134,11 +141,9 @@ class LawsuitSerializerTestCase(TestCase):
                     'settlement': '7500.00'
                 }
             ],
-            'total_payments': {
-                'total': '2500007500.00',
-                'total_settlement': '7500.00',
-                'total_legal_fees': '2500000000.00'
-            },
+            'total_payments': '2500007500.00',
+            'total_settlement': '7500.00',
+            'total_legal_fees': '2500000000.00',
             'attachment': {
                 'id': str(attachment.id),
                 'title': attachment.title,

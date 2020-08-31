@@ -73,9 +73,6 @@ class DataFormatterTestCase(SimpleTestCase):
     def test_get_queryset(self):
         expect(lambda: DataFormatter().get_queryset([])).to.throw(NotImplementedError)
 
-    def test_item_format(self):
-        expect(lambda: DataFormatter().item_format(None)).to.throw(NotImplementedError)
-
     @patch('search.formatters.DataFormatter.serialize', return_value='serialize_data')
     def test_format(self, serialize_mock):
         docs = [Mock(_id='a_id'), Mock(_id='b_id')]
@@ -451,37 +448,6 @@ class LawsuitFormatterTestCase(TestCase):
             {item.id for item in queryset}
         ).to.eq({lawsuit_1.id, lawsuit_2.id})
 
-    def test_item_format(self):
-        lawsuit = LawsuitFactory(
-            case_no='00-L-5230',
-            primary_cause='ILLEGAL SEARCH/SEIZURE',
-            summary='Lawsuit Summary',
-            incident_date=datetime(2002, 1, 3, tzinfo=pytz.utc)
-        )
-
-        expect(
-            LawsuitFormatter().item_format(lawsuit)
-        ).to.eq({
-            'id': lawsuit.id,
-            'case_no': '00-L-5230',
-            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
-            'to': '/lawsuit/00-L-5230/',
-            'summary': 'Lawsuit Summary',
-            'incident_date': '2002-01-03'
-        })
-
-    def test_item_format_with_empty_incident_date(self):
-        lawsuit = LawsuitFactory(
-            case_no='00-L-5230',
-            primary_cause='ILLEGAL SEARCH/SEIZURE',
-            summary='Lawsuit Summary',
-            incident_date=None
-        )
-
-        expect(
-            LawsuitFormatter().item_format(lawsuit)['incident_date']
-        ).to.be.none()
-
     def test_serialize(self):
         lawsuit_1 = LawsuitFactory(
             case_no='00-L-5230',
@@ -514,7 +480,6 @@ class LawsuitFormatterTestCase(TestCase):
                 'primary_cause': 'FALSE ARREST',
                 'to': '/lawsuit/00-L-5231/',
                 'summary': 'Lawsuit Summary 2',
-                'incident_date': None
             }
         ]
         expect(result).to.eq(expected_result)

@@ -1,5 +1,7 @@
 import pytz
 
+from django.db.models import Sum
+
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
@@ -9,12 +11,6 @@ class PaymentSerializer(NoNullSerializer):
     payee = serializers.CharField()
     settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
     legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-
-
-class TotalPaymentSerializer(NoNullSerializer):
-    total = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-    total_settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
-    total_legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
 
 class OfficerSerializer(OfficerPercentileSerializer):
@@ -27,18 +23,10 @@ class OfficerSerializer(OfficerPercentileSerializer):
     gender = serializers.CharField(source='gender_display')
     rank = serializers.CharField()
     lawsuit_count = serializers.SerializerMethodField()
-    lawsuit_payment = serializers.SerializerMethodField()
+    total_lawsuit_settlements = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
     def get_lawsuit_count(self, obj):
-        return obj.lawsuit_set.count()
-
-    def get_lawsuit_payment(self, obj):
-        lawsuit_payment = 0
-        for lawsuit in obj.lawsuit_set.all():
-            for payment in lawsuit.payments.all():
-                lawsuit_payment += payment.settlement or 0
-                lawsuit_payment += payment.legal_fees or 0
-        return str(lawsuit_payment)
+        return obj.lawsuits.count()
 
 
 class PlaintiffSerializer(NoNullSerializer):
@@ -57,7 +45,7 @@ class LawsuitSerializer(NoNullSerializer):
     case_no = serializers.CharField()
     summary = serializers.CharField()
     primary_cause = serializers.CharField()
-    address = serializers.SerializerMethodField()
+    address = serializers.CharField()
     location = serializers.CharField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
     plaintiffs = PlaintiffSerializer(many=True)
@@ -69,14 +57,10 @@ class LawsuitSerializer(NoNullSerializer):
     outcomes = serializers.ListField(child=serializers.CharField())
     payments = PaymentSerializer(many=True)
     point = serializers.SerializerMethodField()
-    total_payments = TotalPaymentSerializer()
     attachment = serializers.SerializerMethodField()
-
-    def get_address(self, obj):
-        add1 = obj.add1.strip()
-        add2 = obj.add2.strip()
-        city = obj.city.strip()
-        return ', '.join(filter(None, [' '.join(filter(None, [add1, add2])), city]))
+    total_payments = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
+    total_settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
+    total_legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
     def get_point(self, obj):
         if obj.point is not None:
@@ -85,7 +69,9 @@ class LawsuitSerializer(NoNullSerializer):
             return None
 
     def get_officers(self, obj):
-        officers = obj.officers.prefetch_related('lawsuit_set', 'lawsuit_set__payments')
+        officers = obj.officers.annotate(
+            total_lawsuit_settlements=Sum('lawsuits__total_payments'),
+        ).prefetch_related('lawsuits')
         return OfficerSerializer(officers, many=True).data
 
     def get_attachment(self, obj):

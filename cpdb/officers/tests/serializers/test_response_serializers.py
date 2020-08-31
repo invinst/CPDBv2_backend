@@ -213,7 +213,6 @@ class OfficerInfoSerializerTestCase(TestCase):
             sustained_count=4,
             unsustained_count=5,
             discipline_count=6,
-            civilian_compliment_count=2,
             trr_count=7,
             major_award_count=8,
             honorable_mention_percentile='88.8800',
@@ -252,6 +251,11 @@ class OfficerInfoSerializerTestCase(TestCase):
             percentile_allegation_civilian='77.77',
             percentile_allegation_internal='66.66'
         )
+
+        lawsuit_1 = LawsuitFactory(total_payments=12000)
+        lawsuit_1.officers.set([officer])
+        lawsuit_2 = LawsuitFactory(total_payments=8500)
+        lawsuit_2.officers.set([officer])
 
         expect(OfficerInfoSerializer(officer).data).to.eq({
             'id': 123,
@@ -293,7 +297,7 @@ class OfficerInfoSerializerTestCase(TestCase):
             'sustained_count': 4,
             'unsustained_count': 5,
             'discipline_count': 6,
-            'civilian_compliment_count': 2,
+            'total_lawsuit_settlements': '20500.00',
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_percentile': '88.8800',
@@ -322,6 +326,10 @@ class OfficerInfoSerializerTestCase(TestCase):
                 },
             ]
         })
+
+    def test_total_lawsuit_settlements_none(self):
+        officer = OfficerFactory()
+        expect(OfficerInfoSerializer(officer).data.get('total_lawsuit_settlements')).to.be.none()
 
 
 class BaseTimelineSerializerSerializerTestCase(TestCase):

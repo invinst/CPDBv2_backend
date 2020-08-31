@@ -16,7 +16,7 @@ class Lawsuit(TimeStampsModel):
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
     point = models.PointField(srid=4326, null=True)
-    officers = models.ManyToManyField('data.Officer')
+    officers = models.ManyToManyField('data.Officer', related_name='lawsuits')
     attachment_files = GenericRelation(
         AttachmentFile,
         content_type_field='owner_type',
@@ -30,18 +30,22 @@ class Lawsuit(TimeStampsModel):
     violences = ArrayField(models.CharField(max_length=255), default=list)
     outcomes = ArrayField(models.CharField(max_length=255), default=list)
 
+    # CACHED COLUMNS
+
+    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    total_payments = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+
     def __str__(self):
         return f'Lawsuit {self.case_no}'
-
-    def total_payments(self):
-        total_settlements = sum(payment.settlement or 0 for payment in self.payments.all())
-        total_legal_fees = sum(payment.legal_fees or 0 for payment in self.payments.all())
-        return {
-            'total': total_settlements + total_legal_fees,
-            'total_settlement': total_settlements,
-            'total_legal_fees': total_legal_fees
-        }
 
     @property
     def v2_to(self):
         return f'/lawsuit/{self.case_no}/'
+
+    @property
+    def address(self):
+        add1 = self.add1.strip()
+        add2 = self.add2.strip()
+        city = self.city.strip()
+        return ', '.join(filter(None, [' '.join(filter(None, [add1, add2])), city]))

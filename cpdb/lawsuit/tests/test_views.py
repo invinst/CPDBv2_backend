@@ -13,6 +13,7 @@ from lawsuit.factories import (
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
+from lawsuit.cache_managers import lawsuit_cache_manager
 
 
 class LawsuitViewSetTestCase(APITestCase):
@@ -69,6 +70,7 @@ class LawsuitViewSetTestCase(APITestCase):
         PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
 
         lawsuit.officers.set([officer_1, officer_2])
+        lawsuit_cache_manager.cache_data()
 
         url = reverse('api-v2:lawsuit-detail', kwargs={'pk': '00-L-5230'})
         response = self.client.get(url)
@@ -98,7 +100,7 @@ class LawsuitViewSetTestCase(APITestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Police Officer',
                 },
                 {
@@ -114,7 +116,7 @@ class LawsuitViewSetTestCase(APITestCase):
                     'race': 'Black',
                     'gender': 'Female',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Sergeant',
                 }
             ],
@@ -133,11 +135,9 @@ class LawsuitViewSetTestCase(APITestCase):
                     'settlement': '7500.00'
                 }
             ],
-            'total_payments': {
-                'total': '2500007500.00',
-                'total_settlement': '7500.00',
-                'total_legal_fees': '2500000000.00'
-            },
+            'total_payments': '2500007500.00',
+            'total_settlement': '7500.00',
+            'total_legal_fees': '2500000000.00',
             'attachment': {
                 'id': f'{attachment.id}',
                 'title': attachment.title,

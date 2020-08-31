@@ -49,7 +49,7 @@
             "honorable_mention_count": 29,
             "sustained_count": 0,
             "discipline_count": 0,
-            "civilian_compliment_count": 8,
+            'total_lawsuit_settlements': '20500.00',
             "trr_count": 24,
             "major_award_count": 0,
             "honorable_mention_percentile": 75.5604

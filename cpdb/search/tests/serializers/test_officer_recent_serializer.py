@@ -3,10 +3,10 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory
-from search.serializers import OfficerSerializer
+from search.serializers import OfficerRecentSerializer
 
 
-class OfficerSerializerTestCase(TestCase):
+class OfficerRecentSerializerTestCase(TestCase):
     def test_serialization(self):
         officer = OfficerFactory(
             id=1,
@@ -21,7 +21,7 @@ class OfficerSerializerTestCase(TestCase):
             rank='Police Officer'
         )
 
-        expect(OfficerSerializer(officer).data).to.eq({
+        expect(OfficerRecentSerializer(officer).data).to.eq({
             'id': 1,
             'name': 'Jerome Finnigan',
             'race': 'White',

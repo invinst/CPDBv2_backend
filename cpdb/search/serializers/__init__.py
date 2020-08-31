@@ -1,9 +1,13 @@
-from .officer_serializer import OfficerSerializer
-from .allegation_serializer import AllegationSerializer
-from .trr_serializer import TRRSerializer
+from .lawsuit_serializer import LawsuitSerializer
+from .officer_recent_serializer import OfficerRecentSerializer
+from .allegation_recent_serializer import AllegationRecentSerializer
+from .trr_recent_serializer import TRRRecentSerializer
+from .lawsuit_recent_serializer import LawsuitRecentSerializer
 
 __all__ = [
-    'OfficerSerializer',
-    'AllegationSerializer',
-    'TRRSerializer',
+    'LawsuitSerializer',
+    'OfficerRecentSerializer',
+    'AllegationRecentSerializer',
+    'TRRRecentSerializer',
+    'LawsuitRecentSerializer',
 ]
