@@ -248,15 +248,18 @@ class OfficersIndexerTestCase(TestCase):
         rows = self.extract_data()
 
         expect(rows).to.have.length(1)
-        expect(rows[0]['complaint_records']['facets'][0]).to.eq({
+        first_facets = rows[0]['complaint_records']['facets'][0]
+        first_facets['entries'] = sorted(first_facets['entries'], key=itemgetter('name'))
+
+        expect(first_facets).to.eq({
             'name': 'category',
             'entries': [
+                {'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
+                    {'year': None, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
+                ]},
                 {'name': 'Unknown', 'count': 1, 'sustained_count': 1, 'items': [
                     {'year': 2000, 'name': 'Unknown', 'count': 1, 'sustained_count': 1}
                 ]},
-                {'name': 'Illegal Search', 'count': 1, 'sustained_count': 0, 'items': [
-                    {'year': None, 'name': 'Illegal Search', 'count': 1, 'sustained_count': 0}
-                ]}
             ]
         })
 
