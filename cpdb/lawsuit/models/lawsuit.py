@@ -16,7 +16,7 @@ class Lawsuit(TimeStampsModel):
     add2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=True)
     point = models.PointField(srid=4326, null=True)
-    officers = models.ManyToManyField('data.Officer')
+    officers = models.ManyToManyField('data.Officer', related_name='lawsuits')
     attachment_files = GenericRelation(
         AttachmentFile,
         content_type_field='owner_type',
@@ -32,15 +32,12 @@ class Lawsuit(TimeStampsModel):
 
     # CACHED COLUMNS
 
-    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, null=True)
-    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    total_settlement = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
+    total_legal_fees = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
+    total_payments = models.DecimalField(max_digits=16, decimal_places=2, default=0.0)
 
     def __str__(self):
         return f'Lawsuit {self.case_no}'
-
-    @property
-    def total_payments(self):
-        return sum([item for item in [self.total_settlement, self.total_legal_fees] if item is not None])
 
     @property
     def v2_to(self):

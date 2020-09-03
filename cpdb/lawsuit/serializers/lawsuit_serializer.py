@@ -1,5 +1,7 @@
 import pytz
 
+from django.db.models import Sum
+
 from rest_framework import serializers
 
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
@@ -21,18 +23,10 @@ class OfficerSerializer(OfficerPercentileSerializer):
     gender = serializers.CharField(source='gender_display')
     rank = serializers.CharField()
     lawsuit_count = serializers.SerializerMethodField()
-    lawsuit_payment = serializers.SerializerMethodField()
+    total_lawsuit_settlements = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
 
     def get_lawsuit_count(self, obj):
-        return obj.lawsuit_set.count()
-
-    def get_lawsuit_payment(self, obj):
-        lawsuit_payment = 0
-        for lawsuit in obj.lawsuit_set.all():
-            for payment in lawsuit.payments.all():
-                lawsuit_payment += payment.settlement or 0
-                lawsuit_payment += payment.legal_fees or 0
-        return str(lawsuit_payment)
+        return obj.lawsuits.count()
 
 
 class PlaintiffSerializer(NoNullSerializer):
@@ -75,7 +69,9 @@ class LawsuitSerializer(NoNullSerializer):
             return None
 
     def get_officers(self, obj):
-        officers = obj.officers.prefetch_related('lawsuit_set', 'lawsuit_set__payments')
+        officers = obj.officers.annotate(
+            total_lawsuit_settlements=Sum('lawsuits__total_payments'),
+        ).prefetch_related('lawsuits')
         return OfficerSerializer(officers, many=True).data
 
     def get_attachment(self, obj):

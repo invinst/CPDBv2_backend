@@ -67,9 +67,12 @@ class LawsuitSerializerTestCase(TestCase):
             rank='Sergeant',
         )
 
-        PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
-        PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
+        PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=0, lawsuit=lawsuit)
+        PaymentFactory(payee='Genre Wilson', settlement=0, legal_fees='2500000000', lawsuit=lawsuit)
         lawsuit.officers.set([officer_1, officer_2])
+
+        other_lawsuit = LawsuitFactory()
+        other_lawsuit.officers.set([officer_2])
 
         lawsuit_cache_manager.cache_data()
         lawsuit.refresh_from_db()
@@ -99,7 +102,7 @@ class LawsuitSerializerTestCase(TestCase):
                     'race': 'White',
                     'gender': 'Male',
                     'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Police Officer',
                 },
                 {
@@ -114,8 +117,8 @@ class LawsuitSerializerTestCase(TestCase):
                     'birth_year': 1990,
                     'race': 'Black',
                     'gender': 'Female',
-                    'lawsuit_count': 1,
-                    'lawsuit_payment': '2500007500.00',
+                    'lawsuit_count': 2,
+                    'total_lawsuit_settlements': '2500007500.00',
                     'rank': 'Sergeant',
                 }
             ],
@@ -131,11 +134,13 @@ class LawsuitSerializerTestCase(TestCase):
             'payments': [
                 {
                     'payee': 'Genre Wilson',
+                    'settlement': '0.00',
                     'legal_fees': '2500000000.00'
                 },
                 {
                     'payee': 'Lucy Bells',
-                    'settlement': '7500.00'
+                    'settlement': '7500.00',
+                    'legal_fees': '0.00'
                 }
             ],
             'total_payments': '2500007500.00',

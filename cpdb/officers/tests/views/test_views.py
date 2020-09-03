@@ -23,11 +23,12 @@ from data.factories import (
     AttachmentFileFactory,
 )
 from trr.factories import TRRFactory
-from lawsuit.factories import LawsuitFactory
+from lawsuit.factories import LawsuitFactory, PaymentFactory
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from analytics.models import AttachmentTracking
 from analytics import constants
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from lawsuit.cache_managers import lawsuit_cache_manager
 from data import cache_managers
 
 
@@ -39,7 +40,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             appointed_date=date(2017, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1910, complaint_percentile=32.5,
             sustained_count=1, allegation_count=1, discipline_count=1, trr_count=1,
-            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            honorable_mention_count=1, major_award_count=1,
             last_unit_id=1, current_badge='123456', current_salary=90000, has_unique_name=True
         )
         allegation = AllegationFactory()
@@ -58,8 +59,17 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
         SalaryFactory(officer=officer, salary=90000, year=2017)
         TRRFactory(officer=officer)
 
+        lawsuit_1 = LawsuitFactory()
+        PaymentFactory(settlement=5000, legal_fees=2000, lawsuit=lawsuit_1)
+        PaymentFactory(settlement=0, legal_fees=5000, lawsuit=lawsuit_1)
+        lawsuit_1.officers.set([officer])
+        lawsuit_2 = LawsuitFactory()
+        PaymentFactory(settlement=8500, legal_fees=0, lawsuit=lawsuit_2)
+        lawsuit_2.officers.set([officer])
+
         officer_cache_manager.build_cached_columns()
         allegation_cache_manager.cache_data()
+        lawsuit_cache_manager.cache_data()
 
         response = self.client.get(reverse('api-v2:officers-summary', kwargs={'pk': 123}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -87,7 +97,7 @@ class OfficersViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'gender': 'Male',
             'birth_year': 1910,
             'sustained_count': 1,
-            'civilian_compliment_count': 1,
+            'total_lawsuit_settlements': '20500.00',
             'allegation_count': 1,
             'discipline_count': 1,
             'honorable_mention_count': 1,

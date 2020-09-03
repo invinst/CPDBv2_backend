@@ -1,3 +1,5 @@
+from django.db.models import Sum
+
 from rest_framework import serializers
 from taggit_serializer.serializers import TagListSerializerField
 
@@ -62,12 +64,18 @@ class OfficerMetricsSerializer(NoNullSerializer):
     sustained_count = serializers.IntegerField()
     unsustained_count = serializers.IntegerField()
     discipline_count = serializers.IntegerField()
-    civilian_compliment_count = serializers.IntegerField()
+    total_lawsuit_settlements = serializers.SerializerMethodField()
     trr_count = serializers.IntegerField()
     major_award_count = serializers.IntegerField()
     honorable_mention_percentile = serializers.DecimalField(
         max_digits=6, decimal_places=4, allow_null=True, read_only=True
     )
+
+    def get_total_lawsuit_settlements(self, obj):
+        total_lawsuit_settlements = obj.lawsuits.aggregate(
+            total_lawsuit_settlements=Sum('total_payments')
+        )['total_lawsuit_settlements']
+        return '%.2f' % total_lawsuit_settlements if total_lawsuit_settlements else None
 
 
 class SortedTagListSerializerField(TagListSerializerField):

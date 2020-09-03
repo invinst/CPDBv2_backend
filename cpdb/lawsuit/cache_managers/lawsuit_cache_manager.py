@@ -1,4 +1,5 @@
-from django.db.models import Subquery, OuterRef, Sum
+from django.db.models import Subquery, OuterRef, Sum, F
+from django.db.models.functions import Coalesce
 
 from lawsuit.models import Lawsuit
 
@@ -9,14 +10,18 @@ def cache_data():
             Lawsuit.objects.filter(
                 id=OuterRef('id')
             ).annotate(
-                total=Sum('payments__settlement')
+                total=Coalesce(Sum('payments__settlement'), 0)
             ).values('total')[:1]
         ),
         total_legal_fees=Subquery(
             Lawsuit.objects.filter(
                 id=OuterRef('id')
             ).annotate(
-                total=Sum('payments__legal_fees')
+                total=Coalesce(Sum('payments__legal_fees'), 0)
             ).values('total')[:1]
         )
+    )
+
+    Lawsuit.objects.update(
+        total_payments=F('total_settlement') + F('total_legal_fees')
     )

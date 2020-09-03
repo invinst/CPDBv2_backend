@@ -7,16 +7,6 @@ from lawsuit.factories import LawsuitFactory
 
 
 class LawsuitTestCase(TestCase):
-    def test_total_payments(self):
-        lawsuit = LawsuitFactory(total_settlement=2500000, total_legal_fees=None)
-        expect(lawsuit.total_payments).to.eq(2500000.00)
-
-        lawsuit = LawsuitFactory(total_settlement=None, total_legal_fees=1200)
-        expect(lawsuit.total_payments).to.eq(1200.00)
-
-        lawsuit = LawsuitFactory(total_settlement=2500000, total_legal_fees=1200)
-        expect(lawsuit.total_payments).to.eq(2501200.00)
-
     def test_str(self):
         lawsuit = LawsuitFactory(case_no='00-L-5230')
         expect(f'{lawsuit}').to.eq('Lawsuit 00-L-5230')
