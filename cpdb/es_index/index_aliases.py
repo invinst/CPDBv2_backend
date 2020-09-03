@@ -35,7 +35,7 @@ class IndexAlias:
         if migrate_doc_types is not None:
             query['source']['type'] = migrate_doc_types
 
-        es_client.reindex(query, request_timeout=REINDEX_TIMEOUT)
+        es_client.reindex(query, request_timeout=REINDEX_TIMEOUT, slices=10)
         self.write_index.refresh()
 
     @contextmanager
