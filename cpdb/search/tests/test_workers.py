@@ -10,12 +10,12 @@ from data.factories import OfficerFactory, OfficerAllegationFactory, OfficerHist
 from search.workers import (
     ReportWorker, OfficerWorker, UnitWorker, UnitOfficerWorker,
     NeighborhoodsWorker, CommunityWorker, CRWorker, AreaWorker, TRRWorker, RankWorker,
-    DateCRWorker, DateTRRWorker, ZipCodeWorker,
+    DateCRWorker, DateTRRWorker, ZipCodeWorker, LawsuitWorker,
     DateOfficerWorker, SearchTermItemWorker, InvestigatorCRWorker
 )
 from search.doc_types import (
     ReportDocType, UnitDocType, AreaDocType, CrDocType, TRRDocType, RankDocType,
-    ZipCodeDocType
+    ZipCodeDocType, LawsuitDocType
 )
 from officers.doc_types import OfficerInfoDocType
 from search.tests.utils import IndexMixin
@@ -308,6 +308,43 @@ class DateTRRWorkerTestCase(IndexMixin, SimpleTestCase):
         expect(set([hit._id for hit in response.hits])).to.be.eq({'456', '789'})
 
 
+class LawsuitWorkerTestCase(IndexMixin, SimpleTestCase):
+    def test_search(self):
+        LawsuitDocType(
+            _id='1',
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary',
+        ).save()
+        LawsuitDocType(
+            _id='2',
+            case_no='00-L-5231',
+            primary_cause='EXCESSIVE FORCE/SERIOUS',
+            summary='Lawsuit Summary',
+        ).save()
+        LawsuitDocType(
+            _id='3',
+            case_no='18-CV-6054',
+            primary_cause='FALSE ARREST',
+            summary='To cover up their use of excessive force, officers falsely charged Givens with battery',
+        ).save()
+        LawsuitDocType(
+            _id='4',
+            case_no='18-CV-6055',
+            primary_cause='FAILURE TO PROVIDE MEDICAL CARE',
+            summary='Lawsuit Summary',
+        ).save()
+        self.refresh_index()
+
+        response = LawsuitWorker().search('00-L-523')
+        expect(response.hits.total).to.be.equal(2)
+        expect(set([hit.case_no for hit in response.hits])).to.be.eq({'00-L-5230', '00-L-5231'})
+
+        response = LawsuitWorker().search('EXCESSIVE')
+        expect(response.hits.total).to.be.equal(2)
+        expect(set([hit.case_no for hit in response.hits])).to.be.eq({'00-L-5231', '18-CV-6054'})
+
+
 class RankWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search_by_rank(self):
         RankDocType(rank='Officer').save()
@@ -331,13 +368,13 @@ class RankWorkerTestCase(IndexMixin, SimpleTestCase):
 
 class ZipCodeWorkerTestCase(IndexMixin, SimpleTestCase):
     def test_search(self):
-        ZipCodeDocType(zip_code='123456', tags=['zip code']).save()
-        ZipCodeDocType(zip_code='555555', tags=['zip code']).save()
+        ZipCodeDocType(zip_code='123456', tags=['zipcode']).save()
+        ZipCodeDocType(zip_code='555555', tags=['zipcode']).save()
 
         self.refresh_index()
 
         response1 = ZipCodeWorker().search('123456')
-        response2 = ZipCodeWorker().search('zip-code')
+        response2 = ZipCodeWorker().search('zipcode')
         expect(response1.hits.total).to.be.equal(1)
         expect(response2.hits.total).to.be.equal(2)
 

@@ -14,6 +14,7 @@ from lawsuit.factories import (
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
+from lawsuit.cache_managers import lawsuit_cache_manager
 
 
 class LawsuitSerializerTestCase(TestCase):
@@ -69,6 +70,9 @@ class LawsuitSerializerTestCase(TestCase):
         PaymentFactory(payee='Lucy Bells', settlement='7500', legal_fees=None, lawsuit=lawsuit)
         PaymentFactory(payee='Genre Wilson', settlement=None, legal_fees='2500000000', lawsuit=lawsuit)
         lawsuit.officers.set([officer_1, officer_2])
+
+        lawsuit_cache_manager.cache_data()
+        lawsuit.refresh_from_db()
 
         expected_data = {
             'case_no': '00-L-5230',
@@ -134,11 +138,9 @@ class LawsuitSerializerTestCase(TestCase):
                     'settlement': '7500.00'
                 }
             ],
-            'total_payments': {
-                'total': '2500007500.00',
-                'total_settlement': '7500.00',
-                'total_legal_fees': '2500000000.00'
-            },
+            'total_payments': '2500007500.00',
+            'total_settlement': '7500.00',
+            'total_legal_fees': '2500000000.00',
             'attachment': {
                 'id': str(attachment.id),
                 'title': attachment.title,

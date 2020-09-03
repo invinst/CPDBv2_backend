@@ -6,17 +6,17 @@ from robber import expect
 import pytz
 
 from data.factories import AllegationFactory
-from search.serializers import AllegationSerializer
+from search.serializers import AllegationRecentSerializer
 
 
-class AllegationSerializerTestCase(TestCase):
+class AllegationRecentSerializerTestCase(TestCase):
     def test_serialization(self):
         allegation = AllegationFactory(
             crid='C12345',
             incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
         )
 
-        expect(AllegationSerializer(allegation).data).to.eq({
+        expect(AllegationRecentSerializer(allegation).data).to.eq({
             'id': 'C12345',
             'crid': 'C12345',
             'incident_date': '2007-01-01',
