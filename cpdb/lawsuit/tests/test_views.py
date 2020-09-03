@@ -1,6 +1,7 @@
 import pytz
 import datetime
 from operator import itemgetter
+import random
 
 from robber import expect
 from django.urls import reverse
@@ -158,3 +159,14 @@ class LawsuitViewSetTestCase(APITestCase):
         url = reverse('api-v2:lawsuit-detail', kwargs={'pk': '00-L-5230'})
         response = self.client.get(url)
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
+
+    def test_top_lawsuits(self):
+        lawsuits_ids = {LawsuitFactory(total_payments=random.uniform(1000, 10000)).id for _ in range(100)}
+        for _ in range(50):
+            LawsuitFactory(total_payments=random.uniform(0, 1000))
+
+        url = reverse('api-v2:lawsuit-top-lawsuits')
+        response = self.client.get(url)
+        expect(response.status_code).to.eq(status.HTTP_200_OK)
+        expected_lawsuits_ids = [item['id'] for item in response.data]
+        expect(set(expected_lawsuits_ids).issubset(lawsuits_ids)).to.be.true()
