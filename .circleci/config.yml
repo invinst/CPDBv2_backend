@@ -300,6 +300,7 @@ jobs:
             bin/cleanup_cronjobs.sh $ENV_TAG "$kept_crobjobs"
             bin/run_cronjob.sh $ENV_TAG update_documents "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG crawl_copa_data "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_lawsuits "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)

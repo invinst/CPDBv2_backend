@@ -57,7 +57,7 @@ class LawsuitSerializer(NoNullSerializer):
     outcomes = serializers.ListField(child=serializers.CharField())
     payments = PaymentSerializer(many=True)
     point = serializers.SerializerMethodField()
-    attachment = serializers.SerializerMethodField()
+    attachment = AttachmentFileSerializer()
     total_payments = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
     total_settlement = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
     total_legal_fees = serializers.DecimalField(max_digits=16, decimal_places=2, allow_null=True)
@@ -73,7 +73,3 @@ class LawsuitSerializer(NoNullSerializer):
             total_lawsuit_settlements=Sum('lawsuits__total_payments'),
         ).prefetch_related('lawsuits')
         return OfficerSerializer(officers, many=True).data
-
-    def get_attachment(self, obj):
-        attachment = obj.attachment_files.first()
-        return AttachmentFileSerializer(attachment).data if attachment else None

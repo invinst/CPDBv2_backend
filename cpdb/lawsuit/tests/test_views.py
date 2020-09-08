@@ -36,7 +36,6 @@ class LawsuitViewSetTestCase(APITestCase):
         LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
         LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
         attachment = AttachmentFileFactory(owner=lawsuit, preview_image_url='preview.png', url='/docs/lawsuit.pdf')
-        AttachmentFileFactory(owner=lawsuit, show=False)
 
         officer_1 = OfficerFactory(
             first_name='Jerome',

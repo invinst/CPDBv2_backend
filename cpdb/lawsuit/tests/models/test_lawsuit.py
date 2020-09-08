@@ -32,3 +32,12 @@ class LawsuitTestCase(TestCase):
         )
 
         expect(lawsuit.address).to.eq('200 E. Chicago Ave., Chicago IL')
+
+    def test_attachment(self):
+        lawsuit = LawsuitFactory()
+        attachment_file = AttachmentFileFactory(owner=lawsuit)
+        expect(lawsuit.attachment).to.eq(attachment_file)
+
+    def test_lawsuit_with_empty_attachment(self):
+        lawsuit = LawsuitFactory()
+        expect(lawsuit.attachment).to.be.none()
