@@ -188,33 +188,38 @@ class AllegationWithNewDocumentsSerializer(NoNullSerializer):
 
 class CRRelatedComplaintSerializer(NoNullSerializer):
     crid = serializers.CharField()
-    complainants = serializers.SerializerMethodField()
+    complainants = ComplainantSerializer(many=True)
     coaccused = serializers.SerializerMethodField()
-    category_names = serializers.ListField(child=serializers.CharField())
+    category_names = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
     incident_date = serializers.DateTimeField(format='%Y-%m-%d', default_timezone=pytz.utc)
 
     def get_coaccused(self, obj):
-        try:
-            return [coaccused.abbr_name for coaccused in obj.coaccused]
-        except AttributeError:  # pragma: no cover
-            return []
+        return [
+            officer_allegation.officer.abbr_name for officer_allegation in obj.officer_allegations
+            if officer_allegation.officer
+        ]
 
-    def get_complainants(self, obj):
-        try:
-            return [complainant.to_dict() for complainant in obj.complainants]
-        except AttributeError:
-            return []
+    def get_category_names(self, obj):
+        categories = [
+            officer_allegation.allegation_category.category
+            for officer_allegation in obj.officer_allegations
+            if officer_allegation.allegation_category
+        ]
+        if categories:
+            return sorted(category if category is not None else 'Unknown' for category in set(categories))
+        else:
+            return ['Unknown']
 
     def get_point(self, obj):
-        try:
-            return obj.point.to_dict()
-        except AttributeError:  # pragma: no cover
+        if obj.point is not None:
+            return {'lon': obj.point.x, 'lat': obj.point.y}
+        else:
             return None
 
 
 class CRRelatedComplaintRequestSerializer(NoNullSerializer):
     match = serializers.ChoiceField(choices=['categories', 'officers'], required=True)
-    distance = serializers.ChoiceField(choices=['0.5mi', '1mi', '2.5mi', '5mi', '10mi'], required=True)
+    distance = serializers.ChoiceField(choices=['0.5', '1', '2.5', '5', '10'], required=True)
     offset = serializers.IntegerField(default=0)
     limit = serializers.IntegerField(default=20)

@@ -1714,13 +1714,13 @@ This api require an api access token set in `Authorization` header. To get an ap
         + Members
             + `categories`
             + `officers`
-    + distance (enum[string], required) - distance from where this incident happen
+    + distance (enum[number], required) - distance from where this incident happen in miles
         + Members
-            + `0.5mi`
-            + `1mi`
-            + `2.5mi`
-            + `5mi`
-            + `10mi`
+            + `0.5`
+            + `1`
+            + `2.5`
+            + `5`
+            + `10`
     + offset (number, optional) - offset from which to get additional results
         + Default: `0`
     + limit (number, optional) - limit of how many results to return
