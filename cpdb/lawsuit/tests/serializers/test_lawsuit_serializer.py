@@ -1,5 +1,5 @@
 import pytz
-import datetime
+from datetime import datetime
 from operator import itemgetter
 
 from django.test import TestCase
@@ -14,7 +14,6 @@ from lawsuit.factories import (
     PaymentFactory
 )
 from data.factories import OfficerFactory, AttachmentFileFactory
-from lawsuit.cache_managers import lawsuit_cache_manager
 
 
 class LawsuitSerializerTestCase(TestCase):
@@ -23,7 +22,7 @@ class LawsuitSerializerTestCase(TestCase):
             case_no='00-L-5230',
             summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
             primary_cause='EXCESSIVE FORCE/MINOR',
-            incident_date=datetime.datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
             location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
             city='Chicago IL',
             point=Point(-35.5, 68.9),
@@ -32,6 +31,9 @@ class LawsuitSerializerTestCase(TestCase):
             services=['On Duty', 'Plainclothes'],
             violences=['Physical Force'],
             misconducts=['Excessive force', 'Racial epithets'],
+            total_settlement=7500,
+            total_legal_fees=2500000000,
+            total_payments=2500007500,
         )
         attachment = AttachmentFileFactory(owner=lawsuit, show=True, preview_image_url=None)
 
@@ -74,7 +76,6 @@ class LawsuitSerializerTestCase(TestCase):
         other_lawsuit = LawsuitFactory()
         other_lawsuit.officers.set([officer_2])
 
-        lawsuit_cache_manager.cache_data()
         lawsuit.refresh_from_db()
 
         expected_data = {
@@ -109,10 +110,10 @@ class LawsuitSerializerTestCase(TestCase):
                     'id': officer_2.id,
                     'full_name': 'Michael Flynn',
                     'allegation_count': 7,
-                    "percentile_trr": "55.5500",
-                    "percentile_allegation": "66.6600",
-                    "percentile_allegation_civilian": "77.7700",
-                    "percentile_allegation_internal": "88.8800",
+                    'percentile_trr': '55.5500',
+                    'percentile_allegation': '66.6600',
+                    'percentile_allegation_civilian': '77.7700',
+                    'percentile_allegation_internal': '88.8800',
                     'sustained_count': 2,
                     'birth_year': 1990,
                     'race': 'Black',
