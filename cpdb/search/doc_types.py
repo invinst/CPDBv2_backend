@@ -2,7 +2,7 @@ from elasticsearch_dsl import DocType, Text, Keyword, Float, Integer, String, Ne
 
 from .indices import autocompletes_alias
 
-from search.analyzers import autocomplete, autocomplete_search
+from search.analyzers import autocomplete, autocomplete_search, text_analyzer, text_search_analyzer
 
 
 @autocompletes_alias.doc_type
@@ -53,13 +53,17 @@ class RankDocType(DocType):
 class CrDocType(DocType):
     crid = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
     incident_date = Keyword()
-    summary = Text(analyzer='standard', store=True, term_vector='with_positions_offsets')
+    summary = Text(
+        analyzer=text_analyzer, search_analyzer=text_search_analyzer,
+        store=True, term_vector='with_positions_offsets'
+    )
     investigator_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     attachment_files = Nested(properties={
         'id': Integer(),
         'text_content': Text(
-            analyzer=autocomplete, search_analyzer=autocomplete_search, store=True, term_vector='with_positions_offsets'
+            analyzer=text_analyzer, search_analyzer=text_search_analyzer,
+            store=True, term_vector='with_positions_offsets'
         ),
     })
 
