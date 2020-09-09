@@ -315,18 +315,21 @@ class LawsuitWorkerTestCase(IndexMixin, SimpleTestCase):
             case_no='00-L-5230',
             primary_cause='ILLEGAL SEARCH/SEIZURE',
             summary='Lawsuit Summary',
+            officer_names=['Jerome Finnigan', 'Michael Flynn'],
         ).save()
         LawsuitDocType(
             _id='2',
             case_no='00-L-5231',
             primary_cause='EXCESSIVE FORCE/SERIOUS',
             summary='Lawsuit Summary',
+            plaintiff_names=['Kevin Vodak', 'Sharon Ambielli'],
         ).save()
         LawsuitDocType(
             _id='3',
             case_no='18-CV-6054',
             primary_cause='FALSE ARREST',
             summary='To cover up their use of excessive force, officers falsely charged Givens with battery',
+            payee_names=['Genre Wilson', 'Lucy Bells'],
         ).save()
         LawsuitDocType(
             _id='4',
@@ -343,6 +346,18 @@ class LawsuitWorkerTestCase(IndexMixin, SimpleTestCase):
         response = LawsuitWorker().search('EXCESSIVE')
         expect(response.hits.total).to.be.equal(2)
         expect(set([hit.case_no for hit in response.hits])).to.be.eq({'00-L-5231', '18-CV-6054'})
+
+        response = LawsuitWorker().search('Jerome')
+        expect(response.hits.total).to.be.equal(1)
+        expect([hit.case_no for hit in response.hits]).to.be.eq(['00-L-5230'])
+
+        response = LawsuitWorker().search('Vodak')
+        expect(response.hits.total).to.be.equal(1)
+        expect([hit.case_no for hit in response.hits]).to.be.eq(['00-L-5231'])
+
+        response = LawsuitWorker().search('Genre')
+        expect(response.hits.total).to.be.equal(1)
+        expect([hit.case_no for hit in response.hits]).to.be.eq(['18-CV-6054'])
 
 
 class RankWorkerTestCase(IndexMixin, SimpleTestCase):

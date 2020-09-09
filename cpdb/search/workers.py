@@ -225,4 +225,4 @@ class InvestigatorCRWorker(Worker):
 
 class LawsuitWorker(Worker):
     doc_type_klass = LawsuitDocType
-    fields = ['case_no', 'primary_cause', 'summary']
+    fields = ['case_no', 'primary_cause', 'summary', 'officer_names', 'plaintiff_names', 'payee_names']
