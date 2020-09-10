@@ -23,7 +23,7 @@ from data.factories import (
 )
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
-from lawsuit.factories import LawsuitFactory
+from lawsuit.factories import LawsuitFactory, LawsuitPlaintiffFactory, PaymentFactory
 from shared.tests.utils import create_object
 
 
@@ -660,13 +660,31 @@ class LawsuitIndexerTestCase(TestCase):
             summary='Lawsuit Summary',
         )
 
+        LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
+        LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
+
+        officer_1 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(first_name='Michael', last_name='Flynn')
+
+        PaymentFactory(payee='Lucy Bells', lawsuit=lawsuit)
+        PaymentFactory(payee='Genre Wilson', lawsuit=lawsuit)
+        lawsuit.officers.set([officer_1, officer_2])
+
+        lawsuit_data = LawsuitIndexer().extract_datum(lawsuit)
+        lawsuit_data['officer_names'] = sorted(lawsuit_data['officer_names'])
+        lawsuit_data['plaintiff_names'] = sorted(lawsuit_data['plaintiff_names'])
+        lawsuit_data['payee_names'] = sorted(lawsuit_data['payee_names'])
+
         expect(
-            LawsuitIndexer().extract_datum(lawsuit)
+            lawsuit_data
         ).to.eq({
             'id': lawsuit.id,
             'case_no': '00-L-5230',
             'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
             'summary': 'Lawsuit Summary',
+            'officer_names': ['Jerome Finnigan', 'Michael Flynn'],
+            'plaintiff_names': ['Kevin Vodak', 'Sharon Ambielli'],
+            'payee_names': ['Genre Wilson', 'Lucy Bells'],
         })
 
 

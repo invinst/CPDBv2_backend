@@ -89,6 +89,9 @@ class LawsuitDocType(DocType):
         analyzer=text_analyzer, search_analyzer=text_search_analyzer,
         store=True, term_vector='with_positions_offsets'
     )
+    officer_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    plaintiff_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    payee_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
 
     class Meta:
         doc_type = 'lawsuit'
