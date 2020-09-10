@@ -378,12 +378,24 @@ class CrIndexerTestCase(TestCase):
         investigator = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
         InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
 
+        AttachmentFileFactory(id=1, owner=allegation, text_content='')
+        AttachmentFileFactory(
+            id=2, owner=allegation, show=False,
+            text_content="CHICAGO POLICE DEPARTMENT RD I HT334604"
+        )
+        attachment_file = AttachmentFileFactory(
+            id=3,
+            owner=allegation,
+            text_content='CHICAGO POLICE DEPARTMENT RD I HT334604'
+        )
+
         querysets = CrIndexer().get_queryset()
 
         expect(querysets.count()).to.eq(1)
         allegation = querysets[0]
         expect(allegation.crid).to.eq('123456')
         expect(allegation.investigator_names).to.eq(['Jerome Finnigan'])
+        expect(allegation.prefetch_filtered_attachments).to.eq([attachment_file])
 
     def test_get_queryset_with_investigator_is_officer(self):
         allegation = AllegationFactory(
@@ -445,14 +457,12 @@ class CrIndexerTestCase(TestCase):
         VictimFactory(allegation=allegation, gender='', race='Black', age=25)
         VictimFactory(allegation=allegation, gender='F', race='Black', age=None)
 
-        AttachmentFileFactory(id=1, owner=allegation, text_content='')
-        AttachmentFileFactory(
-            id=2, owner=allegation, show=False,
-            text_content="CHICAGO POLICE DEPARTMENT RD I HT334604"
+        attachment_file = AttachmentFileFactory(
+            id=3, owner=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604'
         )
-        AttachmentFileFactory(id=3, owner=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604')
 
         setattr(allegation, 'investigator_names', ['Jerome Finnigan'])
+        setattr(allegation, 'prefetch_filtered_attachments', [attachment_file])
         allegation_cache_manager.cache_data()
         allegation.refresh_from_db()
 
@@ -505,6 +515,7 @@ class CrIndexerTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, officer=None, allegation_category=None)
 
         setattr(allegation, 'investigator_names', [])
+        setattr(allegation, 'prefetch_filtered_attachments', [])
 
         expect(
             CrIndexer().extract_datum(allegation)

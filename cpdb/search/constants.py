@@ -9,5 +9,5 @@ DEFAULT_INDEXERS = [
 ]
 
 DAILY_INDEXERS = [
-    CrIndexer
+    CrIndexer, LawsuitIndexer
 ]

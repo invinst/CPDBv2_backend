@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.functions import Concat
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Prefetch
 
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
@@ -166,23 +167,29 @@ class CrIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(CrIndexer, self).__init__(*args, **kwargs)
-        self.populate_officerallegation_dict()
+        self.populate_officers_dict()
 
-    def populate_officerallegation_dict(self):
-        self.officerallegation_dict = dict()
-        queryset = OfficerAllegation.objects.filter(allegation_category__isnull=False)\
-            .select_related('allegation_category')\
-            .values(
-                'allegation_category__category',
-                'allegation_category__allegation_name',
-                'allegation_category_id',
+    def populate_officers_dict(self):
+        self.officers_dict = dict()
+        queryset = OfficerAllegation.objects.filter(officer__isnull=False)\
+            .select_related('officer').order_by('-officer__allegation_count')\
+            .only(
+                'officer',
                 'allegation_id'
             )
+
         for obj in queryset:
-            self.officerallegation_dict.setdefault(obj['allegation_id'], []).append(obj)
+            self.officers_dict.setdefault(obj.allegation_id, []).append(obj.officer)
 
     def get_queryset(self):
-        return Allegation.objects.all().annotate(
+        return Allegation.objects.all().select_related('most_common_category').prefetch_related(
+            'victims',
+            Prefetch(
+                'attachment_files',
+                queryset=AttachmentFile.objects.showing().exclude(text_content=''),
+                to_attr='prefetch_filtered_attachments'
+            ),
+        ).annotate(
             investigator_names=ArrayAgg(
                 models.Case(
                     models.When(investigatorallegation__investigator__officer_id__isnull=False, then=Concat(
@@ -198,15 +205,6 @@ class CrIndexer(BaseIndexer):
         )
 
     def extract_datum(self, datum):
-        officer_allegations = datum.officer_allegations.filter(
-            officer__isnull=False
-        ).prefetch_related('officer').order_by('-officer__allegation_count')
-        attachment_files = AttachmentFile.objects.for_allegation().showing().filter(
-            owner_id=datum.crid
-        ).exclude(
-            text_content=''
-        )
-
         return {
             'crid': datum.crid,
             'category': getattr(datum.most_common_category, 'category', '') or 'Unknown',
@@ -217,10 +215,8 @@ class CrIndexer(BaseIndexer):
             'investigator_names': datum.investigator_names,
             'address': datum.address,
             'victims': VictimSerializer(datum.victims, many=True).data,
-            'coaccused': CoaccusedSerializer(
-                [officer_allegation.officer for officer_allegation in officer_allegations], many=True
-            ).data,
-            'attachment_files': AttachmentFileSerializer(attachment_files, many=True).data,
+            'coaccused': CoaccusedSerializer(self.officers_dict.get(datum.crid, []), many=True).data,
+            'attachment_files': AttachmentFileSerializer(datum.prefetch_filtered_attachments, many=True).data,
         }
 
 
