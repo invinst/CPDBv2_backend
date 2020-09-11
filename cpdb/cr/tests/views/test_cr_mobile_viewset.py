@@ -15,13 +15,12 @@ from data.factories import (
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
-from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.constants import CR_ATTACHMENT_REQUEST
 from email_service.factories import EmailTemplateFactory
 
 
-class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRMobileViewSetTestCase(APITestCase):
 
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')

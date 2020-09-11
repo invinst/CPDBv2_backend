@@ -18,13 +18,12 @@ from data.factories import (
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
-from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.factories import EmailTemplateFactory
 from email_service.constants import CR_ATTACHMENT_REQUEST
 
 
-class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRViewSetTestCase(APITestCase):
     @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def setUp(self):
         super(CRViewSetTestCase, self).setUp()
