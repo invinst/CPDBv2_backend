@@ -10,17 +10,12 @@ from email_service.constants import TRR_ATTACHMENT_REQUEST
 from email_service.service import send_attachment_request_email
 from trr.models import TRR
 from trr.serializers.trr_response_serializers import TRRSerializer, AttachmentRequestSerializer
-from .doc_types import TRRDocType
 
 
 class TRRDesktopViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        query = TRRDocType().search().query('term', id=pk)
-        search_result = query.execute()
-        try:
-            return Response(TRRSerializer(search_result[0].to_dict()).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        trr = get_object_or_404(TRR, id=pk)
+        return Response(TRRSerializer(trr).data)
 
     @action(detail=True, methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
@@ -44,12 +39,8 @@ class TRRDesktopViewSet(viewsets.ViewSet):
 
 class TRRMobileViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        query = TRRDocType().search().query('term', id=pk)
-        search_result = query.execute()
-        try:
-            return Response(TRRSerializer(search_result[0].to_dict()).data)
-        except IndexError:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        trr = get_object_or_404(TRR, id=pk)
+        return Response(TRRSerializer(trr).data)
 
     @action(detail=True, methods=['POST'], url_path='request-document')
     def request_document(self, request, pk):
