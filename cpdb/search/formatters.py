@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Case, When
 
 from lawsuit.models import Lawsuit
 from search.serializers import LawsuitSerializer
@@ -47,7 +48,8 @@ class DataFormatter(Formatter):
 
     def items(self, docs):
         ids = [doc._id for doc in docs]
-        return self.get_queryset(ids)
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
+        return self.get_queryset(ids).order_by(preserved)
 
     def serialize(self, docs):
         return [self.serializer(item).data for item in self.items(docs)]

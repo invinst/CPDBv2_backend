@@ -480,8 +480,20 @@ class LawsuitFormatterTestCase(TestCase):
         )
         LawsuitFactory()
 
-        result = LawsuitFormatter().serialize([LawsuitDocType(_id=lawsuit_1.id), LawsuitDocType(_id=lawsuit_2.id)])
+        result = LawsuitFormatter().serialize([LawsuitDocType(_id=lawsuit_2.id), LawsuitDocType(_id=lawsuit_1.id)])
         expected_result = [
+            {
+                'id': lawsuit_2.id,
+                'case_no': '00-L-5231',
+                'primary_cause': 'FALSE ARREST',
+                'to': '/lawsuit/00-L-5231/',
+                'address': '',
+                'location': '',
+                'plaintiffs': [],
+                'officers': [],
+                'total_payments': '0.00',
+                'summary': 'Lawsuit Summary 2',
+            },
             {
                 'id': lawsuit_1.id,
                 'case_no': '00-L-5230',
@@ -506,18 +518,6 @@ class LawsuitFormatterTestCase(TestCase):
                 ],
                 'total_payments': '2500007500.00',
                 'to': '/lawsuit/00-L-5230/',
-            },
-            {
-                'id': lawsuit_2.id,
-                'case_no': '00-L-5231',
-                'primary_cause': 'FALSE ARREST',
-                'to': '/lawsuit/00-L-5231/',
-                'address': '',
-                'location': '',
-                'plaintiffs': [],
-                'officers': [],
-                'total_payments': '0.00',
-                'summary': 'Lawsuit Summary 2',
             }
         ]
         expect(result).to.eq(expected_result)
