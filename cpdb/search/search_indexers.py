@@ -256,7 +256,7 @@ class LawsuitIndexer(BaseIndexer):
     doc_type_klass = LawsuitDocType
 
     def get_queryset(self):
-        return Lawsuit.objects.all()
+        return Lawsuit.objects.prefetch_related('officers', 'plaintiffs', 'payments')
 
     def extract_datum(self, datum):
         return {
@@ -264,6 +264,9 @@ class LawsuitIndexer(BaseIndexer):
             'case_no': datum.case_no,
             'primary_cause': datum.primary_cause,
             'summary': datum.summary,
+            'officer_names': [officer.full_name for officer in datum.officers.all()],
+            'plaintiff_names': [plaintiff.name for plaintiff in datum.plaintiffs.all()],
+            'payee_names': [payment.payee for payment in datum.payments.all()],
         }
 
 
