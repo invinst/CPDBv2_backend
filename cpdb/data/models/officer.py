@@ -62,6 +62,8 @@ class Officer(TimeStampsModel, TaggableModel):
     current_salary = models.PositiveIntegerField(null=True)
     has_unique_name = models.BooleanField(default=False)
 
+    allegations = models.ManyToManyField('data.Allegation', through='data.OfficerAllegation')
+
     objects = BulkUpdateManager()
 
     def __str__(self):
@@ -307,16 +309,25 @@ class Officer(TimeStampsModel, TaggableModel):
     @property
     def allegation_attachments(self):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
-        return AttachmentFile.showing.filter(
-            allegation__officerallegation__officer=self,
+
+        allegation_ids = self.allegations.values_list('crid', flat=True)
+
+        return AttachmentFile.objects.for_allegation().showing().filter(
+            owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 
     @property
     def investigator_attachments(self):
         AttachmentFile = apps.get_app_config('data').get_model('AttachmentFile')
-        return AttachmentFile.showing.filter(
-            allegation__investigatorallegation__investigator__officer=self,
+        InvestigatorAllegation = apps.get_app_config('data').get_model('InvestigatorAllegation')
+
+        investigator_ids = self.investigator_set.values_list('id', flat=True)
+        allegation_ids = InvestigatorAllegation.objects.filter(investigator_id__in=list(investigator_ids))\
+            .values_list('allegation_id', flat=True).distinct()
+
+        return AttachmentFile.objects.for_allegation().showing().filter(
+            owner_id__in=list(allegation_ids),
             source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
         ).distinct('id')
 

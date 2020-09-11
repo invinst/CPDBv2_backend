@@ -186,7 +186,7 @@ class AttachmentTrackingViewSetTestCase(APITestCase):
         allegation = AllegationFactory(crid=123456)
         attachment_file = AttachmentFileFactory(
             id=123,
-            allegation=allegation,
+            owner=allegation,
             title='CR document 10',
             tag='CR',
             url='https://cr-document.com/10',

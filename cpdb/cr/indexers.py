@@ -1,9 +1,10 @@
 from django.db import models
+from django.db.models import F
 
 from data.utils.attachment_file import filter_attachments
 from es_index import register_indexer
 from es_index.utils import timing_validate
-from es_index.indexers import BaseIndexer, PartialIndexer
+from es_index.indexers import BaseIndexer
 from data.models import (
     Allegation, PoliceWitness, OfficerAllegation, InvestigatorAllegation,
     AttachmentFile, Complainant, Victim
@@ -94,9 +95,9 @@ class CRIndexer(BaseIndexer):
     @timing_validate('CRIndexer: Populating attachments dict...')
     def populate_attachments_dict(self):
         self.attachments_dict = dict()
-        queryset = filter_attachments(AttachmentFile.showing).values(
-            'allegation_id', 'title', 'url', 'preview_image_url', 'file_type',
-        )
+        queryset = filter_attachments(AttachmentFile.objects.for_allegation().showing()).annotate(
+            allegation_id=F('owner_id')
+        ).values('allegation_id', 'title', 'url', 'preview_image_url', 'file_type')
         for obj in queryset:
             self.attachments_dict.setdefault(obj['allegation_id'], []).append(obj)
 
@@ -134,14 +135,3 @@ class CRIndexer(BaseIndexer):
         datum['victims'] = self.victims_dict.get(datum['crid'], [])
 
         return self.serializer.serialize(datum)
-
-
-class CRPartialIndexer(PartialIndexer, CRIndexer):
-    def get_batch_queryset(self, keys):
-        return Allegation.objects.filter(crid__in=keys).select_related('beat').values(
-            'crid', 'beat__name', 'summary', 'point', 'incident_date',
-            'old_complaint_address', 'add1', 'add2', 'city', 'location'
-        )
-
-    def get_batch_update_docs_queries(self, keys):
-        return self.doc_type_klass.search().query('terms', crid=keys)

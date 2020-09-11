@@ -1,5 +1,6 @@
 import pytz
 from datetime import datetime
+from operator import itemgetter
 
 from django.contrib.gis.geos import Point
 from django.urls import reverse
@@ -1019,15 +1020,15 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         AttachmentFileFactory(
             id=1,
             tag='Other',
-            allegation=allegation_2,
+            owner=allegation_2,
             title='Attachment Title',
             file_type='document',
             url='http://lvh.me/document',
         )
-        AttachmentFileFactory(id=2, tag='OCIR', allegation=allegation_2)
-        AttachmentFileFactory(id=3, tag='AR', allegation=allegation_2)
-        AttachmentFileFactory(id=4, tag='CR', allegation=allegation_2, show=False)
-        AttachmentFileFactory(id=5, tag='CR', allegation=allegation_2, title='arrest report')
+        AttachmentFileFactory(id=2, tag='OCIR', owner=allegation_2)
+        AttachmentFileFactory(id=3, tag='AR', owner=allegation_2)
+        AttachmentFileFactory(id=4, tag='CR', owner=allegation_2, show=False)
+        AttachmentFileFactory(id=5, tag='CR', owner=allegation_2, title='arrest report')
 
         url = reverse('api-v2:social-graph-mobile-allegations', kwargs={})
         response = self.client.get(url, {
@@ -1173,7 +1174,10 @@ class SocialGraphMobileViewSetTestCase(APITestCase):
         ]
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
-        expect(response.data).to.eq(expected_data)
+        response_data = response.data
+        for item in response_data:
+            item['coaccused'] = sorted(item['coaccused'], key=itemgetter('id'))
+        expect(response_data).to.eq(expected_data)
 
     def test_geographic_crs_with_officer_ids_param(self):
         officer_1 = OfficerFactory(id=1)

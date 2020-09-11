@@ -8,9 +8,7 @@ from robber import expect
 from freezegun import freeze_time
 import pytz
 
-from cr.indexers import CRIndexer, CRPartialIndexer
-from cr.doc_types import CRDocType
-from cr.index_aliases import cr_index_alias
+from cr.indexers import CRIndexer
 from data.factories import (
     OfficerFactory, OfficerAllegationFactory, AllegationFactory, AllegationCategoryFactory,
     AreaFactory, ComplainantFactory, AttachmentFileFactory, VictimFactory,
@@ -125,7 +123,7 @@ class CRIndexerTestCase(TestCase):
 
         AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             title='CR document',
             url='http://foo.com/',
@@ -133,7 +131,7 @@ class CRIndexerTestCase(TestCase):
         )
         AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             title='CR document',
             url='http://foo.com/',
@@ -141,7 +139,7 @@ class CRIndexerTestCase(TestCase):
             show=False
         )
         AttachmentFileFactory(
-            allegation=allegation,
+            owner=allegation,
             file_type='document',
             tag='OCIR',
             title='CR document',
@@ -422,72 +420,3 @@ class CRIndexerTestCase(TestCase):
         expect(rows).to.have.length(4)
         expect(rows[-1]['involvements']).to.have.length(1)
         expect(rows[-1]['involvements'][0]['num_cases']).to.eq(4)
-
-
-class CRPartialIndexerTestCase(TestCase):
-    def test_get_queryset(self):
-        AllegationFactory(crid='123')
-        AllegationFactory(crid='456')
-        AllegationFactory(crid='789')
-
-        indexer = CRPartialIndexer(updating_keys=['123', '456'])
-        result = indexer.get_queryset()
-        crids = [cr['crid'] for cr in result]
-        expect(set(crids)).to.eq({
-            '123',
-            '456',
-        })
-
-    def test_get_batch_querysets(self):
-        AllegationFactory(crid='123')
-        AllegationFactory(crid='456')
-        AllegationFactory(crid='789')
-
-        result = CRPartialIndexer().get_batch_queryset(keys=['123', '456'])
-        crids = [cr['crid'] for cr in result]
-        expect(set(crids)).to.eq({
-            '123',
-            '456',
-        })
-
-    def test_get_batch_update_docs_queries(self):
-        CRDocType(meta={'id': '1'}, **{
-            'crid': '123456',
-            'address': '30XX E NEW YORK ST , AURORA IL',
-            'attachments': [],
-            'beat': '3100',
-            'category_names': [],
-        }).save()
-
-        CRDocType(meta={'id': '2'}, **{
-            'crid': '789',
-            'address': '30XX E NEW YORK ST , AURORA IL',
-            'attachments': [],
-            'beat': '3100',
-            'category_names': [],
-        }).save()
-
-        CRDocType(meta={'id': '3'}, **{
-            'crid': '789123',
-            'address': 'AURORA IL',
-            'attachments': [],
-            'beat': '300',
-            'category_names': [],
-        }).save()
-        cr_index_alias.read_index.refresh()
-
-        update_docs_queries = CRPartialIndexer().get_batch_update_docs_queries(keys=['123456', '789', '432'])
-
-        expect(set(update_docs_query.crid for update_docs_query in update_docs_queries)).to.eq({
-            '123456', '789',
-        })
-
-    def test_extra_data_populated(self):
-        allegation = AllegationFactory(crid='1122123')
-        OfficerAllegationFactory(allegation=allegation)
-        InvestigatorAllegationFactory(allegation=allegation)
-        PoliceWitnessFactory(allegation=allegation)
-        indexer = CRPartialIndexer(updating_keys=['123', '456'])
-        expect(indexer.coaccused_dict['1122123']).to.have.length(1)
-        expect(indexer.investigator_dict['1122123']).to.have.length(1)
-        expect(indexer.policewitness_dict['1122123']).to.have.length(1)

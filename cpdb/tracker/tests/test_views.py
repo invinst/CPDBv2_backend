@@ -27,7 +27,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         with freeze_time('2017-08-04 14:30:00'):
             attachment = AttachmentFileFactory(
                 id=123,
-                allegation=allegation,
+                owner=allegation,
                 title='CR document',
                 text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
                 url='http://foo.com',
@@ -45,7 +45,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             id=124,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
@@ -53,7 +53,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=125,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -61,7 +61,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=126,
-            allegation=allegation,
+            owner=allegation,
             show=False,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -69,7 +69,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=127,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='audio',
             preview_image_url='',
@@ -115,7 +115,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         allegation = AllegationFactory(crid='456')
         attachment = AttachmentFileFactory(
             id=123,
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             url='http://foo.com',
@@ -137,7 +137,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             id=124,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
@@ -146,7 +146,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=125,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -155,7 +155,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=126,
-            allegation=allegation,
+            owner=allegation,
             show=False,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -163,7 +163,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             id=127,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='audio',
             preview_image_url='',
@@ -217,7 +217,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         allegation1 = AllegationFactory(crid=123)
         allegation2 = AllegationFactory(crid=456)
         AttachmentFileFactory(
-            allegation=allegation1,
+            owner=allegation1,
             id=1,
             file_type='document',
             title='CRID 1051117 CR',
@@ -228,7 +228,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             url='http://document/link/1',
         )
         AttachmentFileFactory(
-            allegation=allegation1,
+            owner=allegation1,
             id=2,
             file_type='audio',
             title='Log 1087021 911',
@@ -239,7 +239,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             url='http://audio/link/2',
         )
         AttachmentFileFactory(
-            allegation=allegation2,
+            owner=allegation2,
             id=3,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -249,7 +249,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             downloads_count=3,
             url='http://video/link/3',
         )
-        AttachmentFileFactory(id=4, allegation=allegation2, show=False)
+        AttachmentFileFactory(id=4, owner=allegation2, show=False)
 
         expected_data = {
             'count': 3,
@@ -306,7 +306,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         allegation1 = AllegationFactory(crid=123)
         allegation2 = AllegationFactory(crid=456)
         AttachmentFileFactory(
-            allegation=allegation1,
+            owner=allegation1,
             id=1,
             file_type='document',
             title='CRID 1051117 CR',
@@ -317,7 +317,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             url='http://document/link/1',
         )
         AttachmentFileFactory(
-            allegation=allegation1,
+            owner=allegation1,
             id=2,
             file_type='audio',
             title='Log 1087021 911',
@@ -328,7 +328,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             url='http://audio/link/2',
         )
         AttachmentFileFactory(
-            allegation=allegation2,
+            owner=allegation2,
             id=3,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -339,7 +339,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             url='http://video/link/3',
         )
         AttachmentFileFactory(
-            allegation=allegation2,
+            owner=allegation2,
             id=4,
             file_type='video',
             title='Log 1086127 Body Worn Camera #1',
@@ -488,7 +488,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             last_updated_by=None,
-            allegation=AllegationFactory(crid='456'),
+            owner=AllegationFactory(crid='456'),
             url='http://foo.com',
             preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -544,7 +544,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             last_updated_by=None,
-            allegation=AllegationFactory(crid='456'),
+            owner=AllegationFactory(crid='456'),
             url='http://foo.com',
             preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -618,7 +618,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             last_updated_by=None,
-            allegation=AllegationFactory(crid='456'),
+            owner=AllegationFactory(crid='456'),
             url='http://foo.com',
             preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -688,7 +688,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='No changed CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             last_updated_by=None,
-            allegation=AllegationFactory(crid='456'),
+            owner=AllegationFactory(crid='456'),
             url='http://foo.com',
             preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -744,7 +744,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             last_updated_by=None,
-            allegation=AllegationFactory(crid='456'),
+            owner=AllegationFactory(crid='456'),
             url='http://foo.com',
             preview_image_url='https://assets.documentcloud.org/CRID-456-CR-p1-normal.gif',
             original_url='https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
@@ -807,7 +807,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            allegation=allegation1,
+            owner=allegation1,
             url='http://document/link/1',
         )
         AttachmentFileFactory(
@@ -818,7 +818,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            allegation=allegation2,
+            owner=allegation2,
             url='http://audio/link/2',
         )
 
@@ -861,7 +861,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            allegation=allegation1,
+            owner=allegation1,
             url='http://document/link/1',
         )
         AttachmentFileFactory(
@@ -872,7 +872,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             preview_image_url=None,
             views_count=2,
             downloads_count=2,
-            allegation=allegation2,
+            owner=allegation2,
             url='http://audio/link/2',
         )
         AttachmentFileFactory(
@@ -883,7 +883,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             preview_image_url='http://web.com/image/CRID-1051117-CR-p1-normal.gif',
             views_count=1,
             downloads_count=1,
-            allegation=allegation1,
+            owner=allegation1,
             url='http://document/link/3',
             show=False,
         )
@@ -941,7 +941,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             id=11,
-            allegation=allegation_1,
+            owner=allegation_1,
             show=True,
         )
         AttachmentFileFactory(
@@ -960,7 +960,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
             title='This is a title',
             text_content='This is a content.',
             source_type='DOCUMENTCLOUD',
-            allegation=allegation_2,
+            owner=allegation_2,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -969,7 +969,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             id=55,
-            allegation=allegation_1,
+            owner=allegation_1,
             show=False,
         )
         AttachmentFileFactory(
@@ -1030,7 +1030,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             id=11,
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             id=22,
@@ -1039,7 +1039,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             id=33,
             title='document title',
-            text_content='document content 123456'
+            text_content='document content 12345'
         )
         AttachmentFileFactory(
             id=44,
@@ -1063,7 +1063,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             id=11,
             title='summary',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             id=22,

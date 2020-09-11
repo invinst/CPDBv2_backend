@@ -2,20 +2,22 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from search.queries import OfficerQuery, CrQuery, TrrQuery
+from search.queries import OfficerQuery, CrQuery, TrrQuery, LawsuitQuery
 from search.formatters import AreaFormatter, ZipCodeFormatter
-from search.serializers import OfficerSerializer, AllegationSerializer, TRRSerializer
+from search.serializers import (
+    OfficerRecentSerializer, AllegationRecentSerializer, TRRRecentSerializer, LawsuitRecentSerializer
+)
 from search.workers import ZipCodeWorker, DateOfficerWorker
 from .services import SearchManager
 from .pagination import SearchQueryPagination
 from .formatters import (
     OfficerFormatter, UnitFormatter, OfficerV2Formatter, NameV2Formatter, RankFormatter,
-    ReportFormatter, CRFormatter, TRRFormatter, SearchTermFormatter
+    ReportFormatter, CRFormatter, TRRFormatter, SearchTermFormatter, LawsuitFormatter
 )
 from .workers import (
     DateCRWorker, DateTRRWorker, OfficerWorker, UnitWorker, CommunityWorker, NeighborhoodsWorker, ReportWorker,
     TRRWorker, UnitOfficerWorker, CRWorker, BeatWorker, PoliceDistrictWorker, WardWorker, SchoolGroundWorker,
-    RankWorker, SearchTermItemWorker, InvestigatorCRWorker
+    RankWorker, SearchTermItemWorker, InvestigatorCRWorker, LawsuitWorker
 )
 from analytics.search_hooks import QueryTrackingSearchHook
 
@@ -104,6 +106,7 @@ class SearchV1ViewSet(SearchViewSet):
         'TRR': TRRFormatter,
         'ZIP-CODE': ZipCodeFormatter,
         'INVESTIGATOR > CR': CRFormatter,
+        'LAWSUIT': LawsuitFormatter,
     }
     workers = {
         'SEARCH-TERMS': SearchTermItemWorker(),
@@ -124,23 +127,29 @@ class SearchV1ViewSet(SearchViewSet):
         'TRR': TRRWorker(),
         'ZIP-CODE': ZipCodeWorker(),
         'INVESTIGATOR > CR': InvestigatorCRWorker(),
+        'LAWSUIT': LawsuitWorker(),
     }
 
     recent_items_queries = [
         {
             'query_param': 'officer_ids',
             'query': OfficerQuery,
-            'serializer': OfficerSerializer,
+            'serializer': OfficerRecentSerializer,
         },
         {
             'query_param': 'crids',
             'query': CrQuery,
-            'serializer': AllegationSerializer,
+            'serializer': AllegationRecentSerializer,
         },
         {
             'query_param': 'trr_ids',
             'query': TrrQuery,
-            'serializer': TRRSerializer,
+            'serializer': TRRRecentSerializer,
+        },
+        {
+            'query_param': 'lawsuit_ids',
+            'query': LawsuitQuery,
+            'serializer': LawsuitRecentSerializer,
         },
     ]
 

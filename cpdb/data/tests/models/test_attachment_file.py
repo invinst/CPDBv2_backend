@@ -9,6 +9,7 @@ from robber import expect
 
 from data.constants import AttachmentSourceType
 from data.factories import AttachmentFileFactory, AllegationFactory
+from lawsuit.factories import LawsuitFactory
 from data.models import AttachmentFile
 
 
@@ -45,24 +46,36 @@ class AttachmentFileTestCase(TestCase):
             })
         )
 
-    def test_attachment_shown_manager(self):
+    def test_attachment_showing(self):
         AttachmentFileFactory(id=1)
         AttachmentFileFactory(id=2, show=False)
         AttachmentFileFactory(id=3, show=False)
 
-        shown_attachments = AttachmentFile.showing.all()
+        shown_attachments = AttachmentFile.objects.showing().all()
 
         expect(shown_attachments).to.have.length(1)
         expect(shown_attachments[0].id).to.eq(1)
 
+    def test_attachment_shown_manager(self):
+        allegation = AllegationFactory()
+        lawsuit = LawsuitFactory()
+        AttachmentFileFactory(id=1, owner=lawsuit)
+        AttachmentFileFactory(id=2, owner=allegation)
+        AttachmentFileFactory(id=3, owner=allegation)
+
+        allegation_attachments = AttachmentFile.objects.for_allegation().all()
+
+        expect(allegation_attachments).to.have.length(2)
+        expect(set(attachment.id for attachment in allegation_attachments)).to.eq({2, 3})
+
     def test_linked_documents(self):
         allegation = AllegationFactory()
-        attachment = AttachmentFileFactory(allegation=allegation, show=True)
-        linked_document1 = AttachmentFileFactory(allegation=allegation, file_type='document', show=True)
-        linked_document2 = AttachmentFileFactory(allegation=allegation, file_type='document', show=True)
-        not_showing_linked_document = AttachmentFileFactory(allegation=allegation, file_type='document', show=False)
-        audio = AttachmentFileFactory(allegation=allegation, file_type='audio', show=True)
-        video = AttachmentFileFactory(allegation=allegation, file_type='video', show=True)
+        attachment = AttachmentFileFactory(owner=allegation, show=True)
+        linked_document1 = AttachmentFileFactory(owner=allegation, file_type='document', show=True)
+        linked_document2 = AttachmentFileFactory(owner=allegation, file_type='document', show=True)
+        not_showing_linked_document = AttachmentFileFactory(owner=allegation, file_type='document', show=False)
+        audio = AttachmentFileFactory(owner=allegation, file_type='audio', show=True)
+        video = AttachmentFileFactory(owner=allegation, file_type='video', show=True)
 
         expect(attachment.linked_documents).to.contain(linked_document1)
         expect(attachment.linked_documents).to.contain(linked_document2)
@@ -111,7 +124,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.true()
@@ -173,7 +186,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -186,7 +199,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content='',
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -231,7 +244,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
@@ -245,7 +258,7 @@ class AttachmentFileTestCase(TestCase):
         attachment_file = AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             text_content=text_content,
-            allegation=allegation,
+            owner=allegation,
         )
 
         expect(attachment_file.update_allegation_summary()).to.be.false()
