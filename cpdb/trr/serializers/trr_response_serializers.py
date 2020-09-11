@@ -1,49 +1,68 @@
 from rest_framework import serializers
 
-from trr.models import TRRAttachmentRequest
+from data.constants import GENDER_DICT
+from data.models import Officer, PoliceUnit
+from shared.serializer import OfficerPercentileSerializer
 from shared.serializer import NoNullSerializer
+from trr.models import TRRAttachmentRequest
 
 
-class UnitSerializer(NoNullSerializer):
-    unit_name = serializers.CharField(max_length=255)
-    description = serializers.CharField(max_length=255, allow_null=True)
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PoliceUnit
+        fields = ['unit_name', 'description']
 
 
-class OfficerSerializer(NoNullSerializer):
-    id = serializers.IntegerField()
-    full_name = serializers.CharField(max_length=255)
-    gender = serializers.CharField(max_length=255)
-    race = serializers.CharField(max_length=50)
-    rank = serializers.CharField(max_length=100)
-    appointed_date = serializers.DateField(allow_null=True)
-    birth_year = serializers.IntegerField(allow_null=True)
-    resignation_date = serializers.DateField(read_only=True, allow_null=True)
-    unit = UnitSerializer(required=False, source='last_unit')
-    percentile_allegation = serializers.DecimalField(max_digits=6, decimal_places=4, allow_null=True)
-    percentile_allegation_civilian = serializers.DecimalField(max_digits=6, decimal_places=4, allow_null=True)
-    percentile_allegation_internal = serializers.DecimalField(max_digits=6, decimal_places=4, allow_null=True)
-    percentile_trr = serializers.DecimalField(max_digits=6, decimal_places=4, allow_null=True)
+class OfficerSerializer(OfficerPercentileSerializer, serializers.ModelSerializer):
+    gender = serializers.CharField(source='gender_display', read_only=True)
+    unit = UnitSerializer(source='last_unit', allow_null=True, read_only=True)
+
+    class Meta:
+        model = Officer
+        fields = [
+            'id', 'full_name', 'race', 'appointed_date', 'birth_year',
+            'resignation_date', 'unit', 'gender', 'rank',
+            'percentile_allegation', 'percentile_allegation_civilian',
+            'percentile_allegation_internal', 'percentile_trr'
+        ]
 
 
 class TRRSerializer(NoNullSerializer):
     id = serializers.IntegerField()
-    officer = OfficerSerializer(read_only=True)
-    officer_in_uniform = serializers.BooleanField(read_only=True, default=False)
-    officer_assigned_beat = serializers.CharField(read_only=True, max_length=16, allow_null=True)
-    officer_on_duty = serializers.BooleanField(read_only=True, default=False)
+    officer = OfficerSerializer()
+    officer_in_uniform = serializers.BooleanField(default=False)
+    officer_assigned_beat = serializers.CharField(max_length=16, allow_null=True)
+    officer_on_duty = serializers.BooleanField(default=False)
 
-    subject_race = serializers.CharField(read_only=True, max_length=32, allow_null=True)
-    subject_gender = serializers.CharField(read_only=True, max_length=32, allow_null=True)
-    subject_age = serializers.IntegerField(allow_null=True, read_only=True)
+    subject_race = serializers.CharField(max_length=32)
+    subject_gender = serializers.SerializerMethodField()
+    subject_age = serializers.IntegerField()
     force_category = serializers.CharField(max_length=255)
-    force_types = serializers.ListField(read_only=True, child=serializers.CharField(max_length=255))
+    force_types = serializers.ListField(child=serializers.CharField(max_length=255))
 
-    date_of_incident = serializers.CharField(max_length=10)
+    date_of_incident = serializers.SerializerMethodField()
+    location_type = serializers.CharField(source='location_recode')
+    address = serializers.SerializerMethodField()
+    beat = serializers.IntegerField()
+    point = serializers.SerializerMethodField()
 
-    location_type = serializers.CharField(required=False, max_length=255)
-    address = serializers.CharField(max_length=255, allow_null=True)
-    beat = serializers.IntegerField(required=False, allow_null=True)
-    point = serializers.DictField(read_only=True, child=serializers.FloatField())
+    def get_subject_gender(self, obj):
+        try:
+            return GENDER_DICT[obj.subject_gender]
+        except KeyError:
+            return obj.subject_gender
+
+    def get_address(self, obj):
+        return ' '.join(filter(None, [obj.block, obj.street]))
+
+    def get_date_of_incident(self, obj):
+        return obj.trr_datetime.date().strftime('%Y-%m-%d')
+
+    def get_point(self, obj):
+        if obj.point is not None:
+            return {'lng': obj.point.x, 'lat': obj.point.y}
+        else:
+            return None
 
 
 class AttachmentRequestSerializer(serializers.ModelSerializer):

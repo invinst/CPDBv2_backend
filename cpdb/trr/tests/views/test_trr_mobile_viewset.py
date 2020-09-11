@@ -11,10 +11,9 @@ from data.factories import PoliceUnitFactory, OfficerFactory, OfficerHistoryFact
 from email_service.constants import TRR_ATTACHMENT_REQUEST
 from email_service.factories import EmailTemplateFactory
 from trr.factories import TRRFactory, ActionResponseFactory
-from trr.tests.mixins import TRRTestCaseMixin
 
 
-class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
+class TRRMobileViewSetTestCase(APITestCase):
     def test_retrieve(self):
         unit = PoliceUnitFactory(unit_name='001', description='Unit 001')
         officer = OfficerFactory(
@@ -53,8 +52,6 @@ class TRRMobileViewSetTestCase(TRRTestCaseMixin, APITestCase):
             start_date=date(2004, 1, 1),
             end_date=date(2005, 1, 1), final_finding='SU')
         ActionResponseFactory(trr=trr, force_type='Verbal Commands', action_sub_category=1)
-
-        self.refresh_index()
 
         response = self.client.get(reverse('api-v2:trr-mobile-detail', kwargs={'pk': trr.id}))
         expect(response.status_code).to.eq(status.HTTP_200_OK)
