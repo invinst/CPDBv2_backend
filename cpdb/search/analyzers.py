@@ -33,3 +33,17 @@ text_search_analyzer = analyzer(
     filter=['lowercase'],
     tokenizer=tokenizer('autocomplete_search', 'pattern', pattern='[^a-zA-Z0-9\-]+')
 )
+
+text_analyzer = analyzer(
+    'text_analyzer',
+    char_filter=[remove_new_lines, remove_apostrophe],
+    filter=['lowercase'],
+    tokenizer='standard'
+)
+
+text_search_analyzer = analyzer(
+    'text_search_analyzer',
+    char_filter=[remove_apostrophe],
+    filter=['lowercase'],
+    tokenizer=tokenizer('autocomplete_search', 'pattern', pattern='[^a-zA-Z0-9\-]+')
+)
