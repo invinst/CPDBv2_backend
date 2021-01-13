@@ -1039,7 +1039,7 @@ class AttachmentAPITestCase(TrackerTestCaseMixin, APITestCase):
         AttachmentFileFactory(
             id=33,
             title='document title',
-            text_content='document content 123456'
+            text_content='document content 12345'
         )
         AttachmentFileFactory(
             id=44,
