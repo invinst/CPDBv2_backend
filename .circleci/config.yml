@@ -411,9 +411,16 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
-      - deploy_backend:
+      - rebuild_index:
           requires:
             - django_migrate
+      - rebuild_search_index:
+          requires:
+            - django_migrate
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
             - django_collect_static
       - clear_cache:
           requires:
