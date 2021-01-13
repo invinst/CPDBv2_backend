@@ -94,7 +94,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         expect(results).to.have.length(1)
 
         expect(results[0]['crid']).to.eq('123')
-        expect(results[0]['highlight']['text_content'][0]).to.contain('a <em>gun </em>at')
+        expect(results[0]['highlight']['text_content'][0]).to.contain('a <em>gun</em> at')
 
     def test_search_date_cr_result(self):
         AllegationFactory(crid='123', incident_date=datetime(2007, 12, 27, tzinfo=pytz.utc)).save()
@@ -571,15 +571,10 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
             most_common_category=allegation_category,
         )
-        allegation_4 = AllegationFactory(
-            crid='C12348',
-            incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
-            most_common_category=allegation_category,
-        )
+
         AttachmentFileFactory(text_content='Name: OBrien', allegation=allegation_1)
         AttachmentFileFactory(text_content='Name: O\'Brien', allegation=allegation_2)
-        AttachmentFileFactory(text_content='Name: O Brien', allegation=allegation_3)
-        AttachmentFileFactory(text_content='Name: Jim', allegation=allegation_4)
+        AttachmentFileFactory(text_content='Name: Jim', allegation=allegation_3)
 
         self.rebuild_index()
         self.refresh_index()
@@ -590,13 +585,11 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         sorted_cr_results = list(sorted(response.data['CR'], key=lambda cr: cr['crid']))
         print(sorted_cr_results)
 
-        expect(len(sorted_cr_results)).to.eq(3)
+        expect(len(sorted_cr_results)).to.eq(2)
         expect(sorted_cr_results[0]['crid']).to.eq('C12345')
-        expect(sorted_cr_results[0]['highlight']['text_content']).to.eq(['Name: O<em>Brien</em>'])
+        expect(sorted_cr_results[0]['highlight']['text_content']).to.eq(['Name: <em>OBrien</em>'])
         expect(sorted_cr_results[1]['crid']).to.eq('C12346')
-        expect(sorted_cr_results[1]['highlight']['text_content']).to.eq(['Name: O\'<em>Brien</em>'])
-        expect(sorted_cr_results[2]['crid']).to.eq('C12347')
-        expect(sorted_cr_results[2]['highlight']['text_content']).to.eq(['Name: O <em>Brien</em>'])
+        expect(sorted_cr_results[1]['highlight']['text_content']).to.eq(['Name: <em>O\'Brien</em>'])
 
 
 class SearchV2ViewSetTestCase(APITestCase):
