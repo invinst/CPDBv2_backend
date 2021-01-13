@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from robber import expect
+from freezegun import freeze_time
 
 from data.factories import (
     OfficerFactory, OfficerHistoryFactory, PoliceUnitFactory, AllegationFactory,
@@ -16,6 +17,7 @@ class UnitsViewSetTestCase(UnitSummaryTestCaseMixin, APITestCase):
         response = self.client.get(reverse('api-v2:units-summary', kwargs={'pk': '123'}))
         expect(response.status_code).to.eq(status.HTTP_404_NOT_FOUND)
 
+    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
     def test_summary(self):
         unit = PoliceUnitFactory(unit_name='123', description='foo')
         officer = OfficerFactory(race='White', gender='F', birth_year='1980')
