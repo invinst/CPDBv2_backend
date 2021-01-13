@@ -5,6 +5,7 @@ import pytz
 from django.test.testcases import TestCase, override_settings
 
 from robber.expect import expect
+from freezegun import freeze_time
 
 from data.models import PoliceUnit
 from data.factories import (
@@ -90,6 +91,7 @@ class PoliceUnitTestCase(TestCase):
             }
         ])
 
+    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
     def test_member_age_aggregation(self):
         unit = PoliceUnitFactory()
         OfficerHistoryFactory(unit=unit, officer=OfficerFactory(birth_year='1980'))
@@ -105,6 +107,7 @@ class PoliceUnitTestCase(TestCase):
             }
         ])
 
+    @freeze_time('2017-01-14 12:00:01', tz_offset=0)
     def test_member_age_aggregation_in_case_officer_left_and_rejoin(self):
         unit1 = PoliceUnitFactory()
         unit2 = PoliceUnitFactory()
