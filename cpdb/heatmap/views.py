@@ -4,8 +4,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
 from data.models import OfficerAllegation
-from data.constants import ALLEGATION_MIN_DATETIME
-from django.utils.timezone import now
+from data.constants import ALLEGATION_MIN_DATETIME, HEATMAP_END_YEAR
 
 
 class CitySummaryViewSet(ViewSet):
@@ -14,7 +13,7 @@ class CitySummaryViewSet(ViewSet):
 
         city_summary = {
             'start_year': ALLEGATION_MIN_DATETIME.year,
-            'end_year': now().year,
+            'end_year': HEATMAP_END_YEAR,
             'allegation_count': officer_allegations.count(),
             'discipline_count': officer_allegations.filter(disciplined=True).distinct().count(),
             'most_common_complaints': [
