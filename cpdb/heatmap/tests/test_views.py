@@ -3,7 +3,6 @@ from datetime import datetime
 from django.test import TestCase
 from django.urls import reverse
 
-from freezegun import freeze_time
 from robber import expect
 from mock import patch
 import pytz
@@ -11,10 +10,10 @@ import pytz
 from data.factories import OfficerAllegationFactory
 from lawsuit.factories import LawsuitFactory, PaymentFactory
 from lawsuit.cache_managers import lawsuit_cache_manager
+from data.constants import HEATMAP_END_YEAR
 
 
 class CitySummaryViewSetTestCase(TestCase):
-    @freeze_time('2017-04-04 12:00:01', tz_offset=0)
     @patch('heatmap.views.ALLEGATION_MIN_DATETIME', datetime(1988, 1, 1, tzinfo=pytz.utc))
     def test_get_city_summary(self):
         before_min_date = datetime(1987, 12, 31, tzinfo=pytz.utc)
@@ -43,7 +42,7 @@ class CitySummaryViewSetTestCase(TestCase):
         response = self.client.get(reverse('api-v2:city-summary-list'))
         expect(response.data).to.eq({
             'start_year': 1988,
-            'end_year': 2017,
+            'end_year': HEATMAP_END_YEAR,
             'allegation_count': 12,
             'discipline_count': 8,
             'lawsuits_count': 3,
