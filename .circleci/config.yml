@@ -335,14 +335,14 @@ jobs:
             export $(cut -d= -f1 prod.env)
             cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
-  notify_slack:
-    docker:
-      - image: python:3.7-alpine
-    steps:
-      - run: apk add git
-      - run: pip install requests
-      - checkout
-      - run: bin/notify_slack.py
+#  notify_slack:
+#    docker:
+#      - image: python:3.7-alpine
+#    steps:
+#      - run: apk add git
+#      - run: pip install requests
+#      - checkout
+#      - run: bin/notify_slack.py
 
   reset_staging_db:
     docker:
