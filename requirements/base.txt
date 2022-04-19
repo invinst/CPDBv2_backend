@@ -21,7 +21,7 @@ django-nose==1.4.4
 beautifulsoup4==4.6.0
 selenium==3.11.0
 google-cloud-language==0.29.0
-python-documentcloud==1.1.1
+python-documentcloud==3.0.0
 django-admin-sortable==2.1.9
 sh==1.12.14
 Faker==4.0.2
