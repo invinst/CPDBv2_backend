@@ -464,9 +464,9 @@ workflows:
       - clear_cache:
           requires:
             - deploy_backend
-#      - notify_slack:
-#          requires:
-#            - deploy_backend
+      - notify_slack:
+          requires:
+            - deploy_backend
 
   deploy_cpdpbot:
     jobs:
