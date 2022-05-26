@@ -268,19 +268,19 @@ jobs:
             source $ENV_FILE
             export $(cut -d= -f1 $ENV_FILE)
             bin/ensure_gunicorn_deployment.py -n $NAMESPACE
-      #- run:
-          #name: Check API is still alive
-          #command: |
-          #  if [ $CIRCLE_BRANCH == "master" ]
-          #  then
-          #    export DOMAIN=api.cpdp.co
-          #  elif [ $CIRCLE_BRANCH == "beta" ]
-          #  then
-          #    export DOMAIN=betaapi.cpdp.co
-          #  else
-          #    export DOMAIN=stagingapi.cpdp.co
-          #  fi
-          #  curl -f https://$DOMAIN/api/v2/status/
+      - run:
+          name: Check API is still alive
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export DOMAIN=api.cpdp.co
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export DOMAIN=betaapi.cpdp.co
+            else
+              export DOMAIN=stagingapi.cpdp.co
+            fi
+            curl -f https://$DOMAIN/api/v2/status/
       - run:
           name: Setup cronjobs
           command: |
