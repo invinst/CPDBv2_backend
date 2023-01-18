@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.10-slim
 
 ENV GUNICORN_BIND 0.0.0.0:80
 ENV GUNICORN_WORKERS 1
@@ -24,22 +24,25 @@ RUN apt-get update && \
     musl-dev \
     libpq-dev
 
-ADD http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 .
-RUN tar xjf geos-3.6.1.tar.bz2 && \
-    cd geos-3.6.1 && \
-    ./configure && \
-    make && \
-    make install && \
-    rm -rf /geos-3.6.1 && \
-    rm /geos-3.6.1.tar.bz2
+RUN pip install poetry
 
 WORKDIR /usr/src/app
 
-RUN curl -o $PAPERTRAIL_CA_FILE https://papertrailapp.com/tools/papertrail-bundle.pem
+COPY pyproject.toml .
+COPY poetry.lock poetry.lock
 
-ADD requirements requirements
-ADD lambda lambda
-RUN pip install --no-cache-dir -r requirements/local.txt
+RUN poetry install
+
+# This was required by gdal-bin but now it is provided by libgeos-3.9.0/stable
+# RUN curl http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 | tar xjv && \
+#     cd geos-3.6.1 && \
+#     ./configure && \
+#     make && \
+#     make install && \
+#     cd - && \
+#     rm -rf geos-3.6.1
+
+RUN curl -o $PAPERTRAIL_CA_FILE https://papertrailapp.com/tools/papertrail-bundle.pem
 
 COPY . .
 
@@ -51,4 +54,4 @@ USER root
 
 EXPOSE 80
 
-CMD [ "gunicorn", "--config", "/usr/src/app/gunicorn.conf", "config.wsgi" ]
+CMD [ "poetry", "run", "gunicorn", "--config", "/usr/src/app/gunicorn.conf", "config.wsgi" ]

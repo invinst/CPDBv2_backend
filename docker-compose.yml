@@ -1,25 +1,25 @@
 ---
 version: '3'
 services:
-  web:
-    build: .
-    environment:
-      GUNICORN_RELOAD: "True"
-      GOOGLE_APPLICATION_CREDENTIALS: "/usr/src/app/twitterbot-nl-api.json"
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-    ports:
-      - "8000:80"
-    depends_on:
-      - postgres
-      - elasticsearch
-    volumes:
-      - .:/usr/src/app
-      - logfiles:/logfiles
-    command: cpdb/manage.py runserver 0.0.0.0:80
-    tty: true
-    stdin_open: true
+  # web:
+  #   build: .
+  #   environment:
+  #     GUNICORN_RELOAD: "True"
+  #     GOOGLE_APPLICATION_CREDENTIALS: "/usr/src/app/twitterbot-nl-api.json"
+  #     AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  #     AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  #     AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+  #   ports:
+  #     - "8000:80"
+  #   depends_on:
+  #     - postgres
+  #     - elasticsearch
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - logfiles:/logfiles
+  #   command: cpdb/manage.py runserver 0.0.0.0:80
+  #   tty: true
+  #   stdin_open: true
   postgres:
     build: ./docker/postgres
     ports:
@@ -33,17 +33,17 @@ services:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
-  cpdpbot:
-    build: ./docker/cpdpbot
-    env_file: .env
-  pg-proxy:
-    image: gcr.io/cloudsql-docker/gce-proxy:1.11
-    volumes:
-      - .:/app
-    command:
-      - "/cloud_sql_proxy"
-      - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
-      - "-credential_file=$PG_CREDENTIAL_FILE"
+  # cpdpbot:
+  #   build: ./docker/cpdpbot
+  #   env_file: .env
+  # pg-proxy:
+  #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
+  #   volumes:
+  #     - .:/app
+  #   command:
+  #     - "/cloud_sql_proxy"
+  #     - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
+  #     - "-credential_file=$PG_CREDENTIAL_FILE"
   psql:
     image: postgres:9.6-alpine
     environment:
