@@ -1,8 +1,6 @@
-FROM python:3.10-slim
+FROM python:3.7-slim
 
 RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get dist-upgrade -y && \
     apt-get install build-essential software-properties-common gcc curl -y
 
 RUN apt-get -qq update && apt-get -y install \
