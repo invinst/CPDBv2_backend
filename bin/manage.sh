@@ -21,7 +21,7 @@ else
         shift
     fi
 
-    docker-compose run web cpdb/manage.py $@
+    docker-compose run web poetry run cpdb/manage.py $@
     exit 0
 fi
 
