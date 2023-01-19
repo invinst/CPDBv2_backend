@@ -11,9 +11,9 @@ services:
       AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
     ports:
       - "8000:80"
-    # depends_on:
-    #   - postgres
-    #   - elasticsearch
+    depends_on:
+      - postgres
+      - elasticsearch
     volumes:
       - .:/usr/src/app
       - logfiles:/logfiles
@@ -21,19 +21,19 @@ services:
     command: poetry run ./manage.py runserver 0.0.0.0:80
     tty: true
     stdin_open: true
-  # postgres:
-  #   build: ./docker/postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   command: postgres -c ssl=off
-  # elasticsearch:
-  #   image: elasticsearch:5-alpine
-  #   ports:
-  #     - "9200:9200"
-  #   volumes:
-  #     - esdata:/usr/share/elasticsearch/data
+  postgres:
+    build: ./docker/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: postgres -c ssl=off
+  elasticsearch:
+    image: elasticsearch:5-alpine
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
   # # cpdpbot:
   # #   build: ./docker/cpdpbot
   # #   env_file: .env
@@ -45,11 +45,11 @@ services:
   # #     - "/cloud_sql_proxy"
   # #     - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
   # #     - "-credential_file=$PG_CREDENTIAL_FILE"
-  # psql:
-  #   image: postgres:9.6-alpine
-  #   environment:
-  #     PGPASSWORD: $PGPASSWORD
-  #   command: "psql -h postgres -U cpdb postgres"
+  psql:
+    image: postgres:9.6-alpine
+    environment:
+      PGPASSWORD: $PGPASSWORD
+    command: "psql -h postgres -U cpdb cpdb"
   # kibana:
   #   image: kibana:5
   #   ports:
