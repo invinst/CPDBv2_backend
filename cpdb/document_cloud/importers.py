@@ -221,9 +221,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         )
         reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES)
 
-        no_text_documents_count = no_text_documents.count()
+        # no_text_documents_count = no_text_documents.count()
         reprocess_documents_count = reprocess_documents.count()
-        skipped_documents_count = no_text_documents_count - reprocess_documents_count
+        # skipped_documents_count = no_text_documents_count - reprocess_documents_count
 
         requested_ids = []
 
