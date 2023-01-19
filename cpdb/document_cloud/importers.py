@@ -212,12 +212,36 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         for attachment in self.new_attachments + self.updated_attachments:
             attachment.upload_to_s3()
 
-    def reprocess_text(self):
-        try:
-            with DocumentCloudSession(self.log_info) as session:
-                session.request_reprocess_missing_text_documents()
-        except (requests.exceptions.RequestException, urllib3.exceptions.HTTPError):
-            pass
+    def reprocess_text(self, reprocess_delay_time=0.01):
+        no_text_documents = AttachmentFile.objects.filter(
+            file_type='document',
+            text_content='',
+            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
+        )
+        reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES)
+
+        no_text_documents_count = no_text_documents.count()
+        reprocess_documents_count = reprocess_documents.count()
+        skipped_documents_count = no_text_documents_count - reprocess_documents_count
+
+        requested_ids = []
+
+        for reprocess_document in tqdm(
+            reprocess_documents.order_by('external_id'),
+            desc=f'Reprocessing text on documentcloud'
+        ):
+            doc = self.client.documents.get(reprocess_document.external_id)
+            doc.process()
+            requested_ids.append(reprocess_document.external_id)
+            time.sleep(reprocess_delay_time)
+
+        reprocess_documents.filter(external_id__in=requested_ids).update(
+            reprocess_text_count=F('reprocess_text_count') + 1
+        )
+
+        self.log_info(
+            f'Reprocessing {reproccess_documents_count} no-text documents'
+        )
 
     def extract_copa_summary(self):
         copa_attachments = AttachmentFile.objects.exclude(text_content='').filter(allegation__summary='')
