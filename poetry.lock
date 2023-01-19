@@ -2422,6 +2422,21 @@ python-dateutil = ">=2.4"
 text-unidecode = "1.3"
 
 [[package]]
+name = "fastjsonschema"
+version = "2.16.2"
+description = "Fastest Python implementation of JSON schema"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fastjsonschema-2.16.2-py3-none-any.whl", hash = "sha256:21f918e8d9a1a4ba9c22e09574ba72267a6762d47822db9add95f6454e51cc1c"},
+    {file = "fastjsonschema-2.16.2.tar.gz", hash = "sha256:01e366f25d9047816fe3d288cbfc3e10541daf0af2044763f3d0ade42476da18"},
+]
+
+[package.extras]
+devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benchmark", "pytest-cache", "validictory"]
+
+[[package]]
 name = "flake8"
 version = "3.7.9"
 description = "the modular source code checker: pep8, pyflakes and co"
@@ -2454,6 +2469,17 @@ files = [
 [package.dependencies]
 python-dateutil = ">=1.0,<2.0 || >2.0"
 six = "*"
+
+[[package]]
+name = "future"
+version = "0.18.3"
+description = "Clean single-source support for Python 3 and 2"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "future-0.18.3.tar.gz", hash = "sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307"},
+]
 
 [[package]]
 name = "gizeh"
@@ -2848,6 +2874,18 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
+]
+
+[[package]]
+name = "listcrunch"
+version = "1.0.1"
+description = "A simple human-readable way to compress redundant sequential data"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "listcrunch-1.0.1-py3-none-any.whl", hash = "sha256:2d95b83ef52efac47b86776a8962ae34d81c6835a7e5945f12c1d9c8472bb9fb"},
+    {file = "listcrunch-1.0.1.tar.gz", hash = "sha256:2b90aa04196061976baaf642868178edcba85826da2845a452530df8596d006e"},
 ]
 
 [[package]]
@@ -3529,20 +3567,29 @@ six = ">=1.5"
 
 [[package]]
 name = "python-documentcloud"
-version = "1.1.1"
+version = "3.3.0"
 description = "A simple Python wrapper for the DocumentCloud API"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "python-documentcloud-1.1.1.tar.gz", hash = "sha256:9720a27d16c0db5f29c9296f7295e91dd5751195e718d0903bce044444ff5b1f"},
-    {file = "python_documentcloud-1.1.1-py2.py3-none-any.whl", hash = "sha256:f1cb1ca8844fab362dc5b2d164d214e2618046158c19b79d24f61a07d1152ab8"},
+    {file = "python-documentcloud-3.3.0.tar.gz", hash = "sha256:150a19a32aee1fd2183b4e5552589485cc8b944b0800dea8418ac5015e6a7af7"},
+    {file = "python_documentcloud-3.3.0-py2.py3-none-any.whl", hash = "sha256:5042eb0c16b324c32c8a55caf59a81d50fbece9cd2d585d13248f364b38ffe56"},
 ]
 
 [package.dependencies]
-python-dateutil = ">=2.1"
-rfc3987 = "*"
-six = ">=1.4.1"
+fastjsonschema = "*"
+future = "*"
+listcrunch = ">=1.0.1"
+python-dateutil = "*"
+pyyaml = "*"
+ratelimit = "*"
+requests = "*"
+urllib3 = "*"
+
+[package.extras]
+dev = ["black", "coverage", "isort", "pylint", "sphinx", "twine"]
+test = ["pytest", "pytest-mock", "pytest-recording", "vcrpy"]
 
 [[package]]
 name = "pytz"
@@ -3593,6 +3640,17 @@ files = [
     {file = "PyYAML-5.2-cp38-cp38-win32.whl", hash = "sha256:8100c896ecb361794d8bfdb9c11fce618c7cf83d624d73d5ab38aef3bc82d43f"},
     {file = "PyYAML-5.2-cp38-cp38-win_amd64.whl", hash = "sha256:2e9f0b7c5914367b0916c3c104a024bb68f269a486b9d04a2e8ac6f6597b7803"},
     {file = "PyYAML-5.2.tar.gz", hash = "sha256:c0ee8eca2c582d29c3c2ec6e2c4f703d1b7f1fb10bc72317355a746057e7346c"},
+]
+
+[[package]]
+name = "ratelimit"
+version = "2.2.1"
+description = "API rate limit decorator"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ratelimit-2.2.1.tar.gz", hash = "sha256:af8a9b64b821529aca09ebaf6d8d279100d766f19e90b5059ac6a718ca6dee42"},
 ]
 
 [[package]]
@@ -3767,18 +3825,6 @@ urllib3 = ">=1.25.10"
 
 [package.extras]
 tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asyncio", "pytest-cov", "pytest-httpserver", "types-requests"]
-
-[[package]]
-name = "rfc3987"
-version = "1.3.8"
-description = "Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "rfc3987-1.3.8-py2.py3-none-any.whl", hash = "sha256:10702b1e51e5658843460b189b185c0366d2cf4cff716f13111b0ea9fd2dce53"},
-    {file = "rfc3987-1.3.8.tar.gz", hash = "sha256:d3c4d257a560d544e9826b38bc81db676890c79ab9d7ac92b39c7a253d5ca733"},
-]
 
 [[package]]
 name = "robber"
@@ -4323,5 +4369,5 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.7.0"
-content-hash = "0cf85809292e833dfc49eab3becfe85bcc316790c232933862341e970c99253c"
+python-versions = "^3.7"
+content-hash = "6a5587e93357de7186ac9ae0476cbeae9516c7823cb90e552f700180dbc1cb64"
