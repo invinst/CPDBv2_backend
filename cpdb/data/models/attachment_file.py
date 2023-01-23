@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
 from django.conf import settings
 from documentcloud import DocumentCloud
-from documentcloud import DoesNotExistError
+from documentcloud.exceptions import DoesNotExistError
 
 from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws
