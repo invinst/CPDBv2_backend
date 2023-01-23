@@ -1,13 +1,11 @@
 import re
 import requests
 import urllib3
-import time
 from urllib.error import HTTPError
 from datetime import datetime, timezone
 
 from django.db.models import Q
 from django.conf import settings
-from django.db.models import F
 from documentcloud import DocumentCloud
 
 from tqdm import tqdm
@@ -19,8 +17,6 @@ from document_cloud.utils import parse_link
 from email_service.service import send_cr_attachment_available_email
 from document_cloud.search import search_all
 from shared.attachment_importer import BaseAttachmentImporter
-
-from document_cloud.constants import REPROCESS_TEXT_MAX_RETRIES
 
 BATCH_SIZE = 1000
 
@@ -45,8 +41,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
         if settings.DOCUMENTCLOUD_USER and settings.DOCUMENTCLOUD_PASSWORD:
-            print(f"DOCUMENTCLOUD_USER={settings.DOCUMENTCLOUD_USER} DOCUMENTCLOUD_PASSWORD={settings.DOCUMENTCLOUD_PASSWORD}")
-            self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD) 
+            self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
         else:
             self.client = DocumentCloud()
 
