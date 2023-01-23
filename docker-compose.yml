@@ -29,6 +29,7 @@ services:
       - pgdata:/var/lib/postgresql/data
     command: postgres -c ssl=off
   elasticsearch:
+    platform: linux/amd64
     image: elasticsearch:5-alpine
     ports:
       - "9200:9200"
