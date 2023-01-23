@@ -22,7 +22,7 @@ class DocumentCloudSessionTestCase(TestCase):
         with DocumentCloudSession(self.log_func) as session:
             expect(post_mock).to.be.called_with(
                 'https://www.documentcloud.org/login',
-                {'email': 'DOCUMENTCLOUD_USER', 'password': 'DOCUMENTCLOUD_PASSWORD'}
+                {'email': '', 'password': ''}
             )
             expect(session.log_func).to.eq(self.log_func)
             expect(session).to.be.instanceof(Session)
@@ -186,7 +186,7 @@ class DocumentCloudSessionTestCase(TestCase):
 
         expect(post_mock).to.be.any_call(
             'https://www.documentcloud.org/login',
-            {'email': 'DOCUMENTCLOUD_USER', 'password': 'DOCUMENTCLOUD_PASSWORD'}
+            {'email': '', 'password': ''}
         )
 
         expect(post_mock).to.be.any_call(
