@@ -1,4 +1,6 @@
 import re
+import requests
+import urllib3
 import time
 from urllib.error import HTTPError
 from datetime import datetime, timezone
@@ -12,6 +14,7 @@ from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
+from document_cloud.documentcloud_session import DocumentCloudSession
 from document_cloud.utils import parse_link
 from email_service.service import send_cr_attachment_available_email
 from document_cloud.search import search_all
@@ -41,7 +44,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.updated_attachments = []
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
-        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        if settings.DOCUMENTCLOUD_USER and settings.DOCUMENTCLOUD_PASSWORD:
+            print(f"DOCUMENTCLOUD_USER={settings.DOCUMENTCLOUD_USER} DOCUMENTCLOUD_PASSWORD={settings.DOCUMENTCLOUD_PASSWORD}")
+            self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD) 
+        else:
+            self.client = DocumentCloud()
 
     mapping_fields = {
         'url': 'url',
@@ -57,7 +64,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     @staticmethod
     def get_full_text(cloud_document):
         try:
-            return re.sub(r'(\n *)+', '\n', cloud_document.full_text).strip()
+            return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
         except (HTTPError, NotImplementedError):
             return ''
 
@@ -213,36 +220,12 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         for attachment in self.new_attachments + self.updated_attachments:
             attachment.upload_to_s3()
 
-    def reprocess_text(self, reprocess_delay_time=0.01):
-        no_text_documents = AttachmentFile.objects.filter(
-            file_type='document',
-            text_content='',
-            source_type__in=AttachmentSourceType.DOCUMENTCLOUD_SOURCE_TYPES,
-        )
-        reprocess_documents = no_text_documents.filter(reprocess_text_count__lt=REPROCESS_TEXT_MAX_RETRIES)
-
-        # no_text_documents_count = no_text_documents.count()
-        reprocess_documents_count = reprocess_documents.count()
-        # skipped_documents_count = no_text_documents_count - reprocess_documents_count
-
-        requested_ids = []
-
-        for reprocess_document in tqdm(
-            reprocess_documents.order_by('external_id'),
-            desc=f'Reprocessing text on documentcloud'
-        ):
-            doc = self.client.documents.get(reprocess_document.external_id)
-            doc.process()
-            requested_ids.append(reprocess_document.external_id)
-            time.sleep(reprocess_delay_time)
-
-        reprocess_documents.filter(external_id__in=requested_ids).update(
-            reprocess_text_count=F('reprocess_text_count') + 1
-        )
-
-        self.log_info(
-            f'Reprocessing {reprocess_documents_count} no-text documents'
-        )
+    def reprocess_text(self):
+        try:
+            with DocumentCloudSession(self.log_info) as session:
+                session.request_reprocess_missing_text_documents()
+        except (requests.exceptions.RequestException, urllib3.exceptions.HTTPError):
+            pass
 
     def extract_copa_summary(self):
         copa_attachments = AttachmentFile.objects.exclude(text_content='').filter(allegation__summary='')
