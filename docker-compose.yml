@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: "3"
 services:
   web:
     build: .
@@ -35,30 +35,30 @@ services:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
-  # # cpdpbot:
-  # #   build: ./docker/cpdpbot
-  # #   env_file: .env
-  # # pg-proxy:
-  # #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
-  # #   volumes:
-  # #     - .:/app
-  # #   command:
-  # #     - "/cloud_sql_proxy"
-  # #     - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
-  # #     - "-credential_file=$PG_CREDENTIAL_FILE"
+  cpdpbot:
+    build: ./docker/cpdpbot
+    env_file: .env
+  pg-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.11
+    volumes:
+      - .:/app
+    command:
+      - "/cloud_sql_proxy"
+      - "-instances=$PGCLOUD_INSTANCE=tcp:0.0.0.0:5432"
+      - "-credential_file=$PG_CREDENTIAL_FILE"
   psql:
     image: postgres:9.6-alpine
     environment:
       PGPASSWORD: $PGPASSWORD
     command: "psql -h postgres -U cpdb cpdb"
-  # kibana:
-  #   image: kibana:5
-  #   ports:
-  #     - "5601:5601"
-  #   environment:
-  #     ELASTICSEARCH_URL: http://elasticsearch:9200
-  #   depends_on:
-  #     - elasticsearch
+  kibana:
+    image: kibana:5
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
 
 volumes:
   pgdata:
