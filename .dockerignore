@@ -4,6 +4,8 @@
 !requirements
 !lambda
 !gunicorn.conf
+!poetry.lock
+!pyproject.toml
 
 # further stuffs to ignore
 cpdb/static

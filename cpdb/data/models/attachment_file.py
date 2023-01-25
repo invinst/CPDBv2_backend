@@ -6,7 +6,8 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
 from django.conf import settings
-from documentcloud import DocumentCloud, DoesNotExistError
+from documentcloud import DocumentCloud
+from documentcloud.exceptions import DoesNotExistError
 
 from data.constants import MEDIA_TYPE_CHOICES, MEDIA_TYPE_DOCUMENT, AttachmentSourceType
 from shared.aws import aws

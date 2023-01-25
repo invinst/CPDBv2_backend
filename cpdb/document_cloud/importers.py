@@ -40,7 +40,10 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.updated_attachments = []
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
-        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        if settings.DOCUMENTCLOUD_USER and settings.DOCUMENTCLOUD_PASSWORD:
+            self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        else:
+            self.client = DocumentCloud()
 
     mapping_fields = {
         'url': 'url',

@@ -21,8 +21,8 @@ class DocumentCloudSessionTestCase(TestCase):
     def test_login_while_init(self, close_mock, post_mock):
         with DocumentCloudSession(self.log_func) as session:
             expect(post_mock).to.be.called_with(
-                'https://www.documentcloud.org/api/token',
-                {'username': 'DOCUMENTCLOUD_USER', 'password': 'DOCUMENTCLOUD_PASSWORD'}
+                'https://www.documentcloud.org/login',
+                {'email': '', 'password': ''}
             )
             expect(session.log_func).to.eq(self.log_func)
             expect(session).to.be.instanceof(Session)
@@ -185,8 +185,8 @@ class DocumentCloudSessionTestCase(TestCase):
             session.request_reprocess_missing_text_documents()
 
         expect(post_mock).to.be.any_call(
-            'https://www.documentcloud.org/api/token',
-            {'username': 'DOCUMENTCLOUD_USER', 'password': 'DOCUMENTCLOUD_PASSWORD'}
+            'https://www.documentcloud.org/login',
+            {'email': '', 'password': ''}
         )
 
         expect(post_mock).to.be.any_call(

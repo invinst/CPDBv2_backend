@@ -41,6 +41,7 @@ jobs:
       - run: pip install --user --upgrade pip
       - run: pip install --user -r requirements/test.txt -v
       - run: flake8
+      - run: python --version
       - run: ./cpdb/manage.py makemigrations --dry-run --settings=config.settings.test
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
       #- run: coverage report --omit="/home/ubuntu/virtualenvs/*"
@@ -336,14 +337,14 @@ jobs:
             export $(cut -d= -f1 prod.env)
             cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
-  notify_slack:
-    docker:
-      - image: python:3.7-alpine
-    steps:
-      - run: apk add git
-      - run: pip install requests
-      - checkout
-      - run: bin/notify_slack.py
+#  notify_slack:
+#    docker:
+#      - image: python:3.7-alpine
+#    steps:
+#      - run: apk add git
+#      - run: pip install requests
+#      - checkout
+#      - run: bin/notify_slack.py
 
   reset_staging_db:
     docker:
@@ -465,9 +466,9 @@ workflows:
       - clear_cache:
           requires:
             - deploy_backend
-      - notify_slack:
-          requires:
-            - deploy_backend
+      #- notify_slack:
+      #    requires:
+      #      - deploy_backend
 
   deploy_cpdpbot:
     jobs:

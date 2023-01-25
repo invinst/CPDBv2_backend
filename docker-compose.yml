@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: "3"
 services:
   web:
     build: .
@@ -17,7 +17,8 @@ services:
     volumes:
       - .:/usr/src/app
       - logfiles:/logfiles
-    command: cpdb/manage.py runserver 0.0.0.0:80
+    working_dir: /usr/src/app/cpdb
+    command: poetry run ./manage.py runserver 0.0.0.0:80
     tty: true
     stdin_open: true
   postgres:
@@ -28,6 +29,7 @@ services:
       - pgdata:/var/lib/postgresql/data
     command: postgres -c ssl=off
   elasticsearch:
+    platform: linux/amd64
     image: elasticsearch:5-alpine
     ports:
       - "9200:9200"
@@ -48,7 +50,7 @@ services:
     image: postgres:9.6-alpine
     environment:
       PGPASSWORD: $PGPASSWORD
-    command: "psql -h postgres -U cpdb postgres"
+    command: "psql -h postgres -U cpdb cpdb"
   kibana:
     image: kibana:5
     ports:
