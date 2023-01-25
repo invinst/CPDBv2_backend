@@ -8,7 +8,7 @@ spec:
       containers:
       - name: gunicorn
         image: cpdbdev/backend:${BACKEND_IMAGE_TAG}
-        command: ["cpdb/manage.py", "${COMMAND}"]
+        command: ["poetry", "run", "./manage.py", "${COMMAND}"]
         env:
         - name: DB_NAME
           value: "${POSTGRES_APP_DB}"
