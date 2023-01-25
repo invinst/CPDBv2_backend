@@ -47,7 +47,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
 JOB_NAME="$(echo $JOB_COMMAND | tr -s '_' | tr '_' '-')"
-echo "Running $JOB_NAME with image cpdbdev/bachend:$IMAGE_TAG"
+echo "Running $JOB_NAME with image cpdbdev/backend:$IMAGE_TAG"
 
 export BACKEND_IMAGE_TAG=$IMAGE_TAG
 source $ENV_FILE
