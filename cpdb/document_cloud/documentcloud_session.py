@@ -18,8 +18,8 @@ class DocumentCloudSession(requests.Session):
         self.log_func = log_func
 
         login_response = self.post(
-            'https://www.documentcloud.org/api/token',
-            {'username': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
+            'https://www.documentcloud.org/login',
+            {'email': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
         if login_response.status_code != 200:
             self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
