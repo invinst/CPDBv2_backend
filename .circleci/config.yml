@@ -38,7 +38,8 @@ jobs:
     steps:
       - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
       - checkout
-      - run: pip install --user -r requirements/test.txt
+      - run: pip install --user --upgrade pip
+      - run: pip install --user -r requirements/test.txt -v
       - run: flake8
       - run: python --version
       - run: ./cpdb/manage.py makemigrations --dry-run --settings=config.settings.test

@@ -52,7 +52,7 @@ class DocumentCloudSessionTestCase(TestCase):
             requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
-                'https://www.documentcloud.org/documents/documentcloud_id/reprocess_text',
+                'https://www.documentcloud.org/api/documents/documentcloud_id/process',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
@@ -83,7 +83,7 @@ class DocumentCloudSessionTestCase(TestCase):
             requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
-                'https://www.documentcloud.org/documents/not_exist_documentcloud_id/reprocess_text',
+                'https://www.documentcloud.org/api/documents/not_exist_documentcloud_id/process',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
@@ -116,7 +116,7 @@ class DocumentCloudSessionTestCase(TestCase):
             requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
-                'https://www.documentcloud.org/documents/exception_documentcloud_id/reprocess_text',
+                'https://www.documentcloud.org/api/documents/exception_documentcloud_id/process',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
@@ -190,7 +190,7 @@ class DocumentCloudSessionTestCase(TestCase):
         )
 
         expect(post_mock).to.be.any_call(
-            'https://www.documentcloud.org/documents/DOCUMENTCLOUD_empty_text_id/reprocess_text',
+            'https://www.documentcloud.org/api/documents/DOCUMENTCLOUD_empty_text_id/process',
             headers={
                 'x-requested-with': 'XMLHttpRequest',
                 'accept': 'application/json, text/javascript, */*; q=0.01'
@@ -202,7 +202,7 @@ class DocumentCloudSessionTestCase(TestCase):
         )
 
         expect(post_mock).to.be.any_call(
-            'https://www.documentcloud.org/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id/reprocess_text',
+            'https://www.documentcloud.org/api/documents/PORTAL_COPA_DOCUMENTCLOUD_empty_text_id/process',
             headers={
                 'x-requested-with': 'XMLHttpRequest',
                 'accept': 'application/json, text/javascript, */*; q=0.01'
@@ -214,8 +214,8 @@ class DocumentCloudSessionTestCase(TestCase):
         )
 
         expect(post_mock).to.be.any_call(
-            'https://www.documentcloud.org/documents/SUMMARY_'
-            'REPORTS_COPA_DOCUMENTCLOUD_empty_text_id/reprocess_text',
+            'https://www.documentcloud.org/api/documents/SUMMARY_'
+            'REPORTS_COPA_DOCUMENTCLOUD_empty_text_id/process',
             headers={
                 'x-requested-with': 'XMLHttpRequest',
                 'accept': 'application/json, text/javascript, */*; q=0.01'
