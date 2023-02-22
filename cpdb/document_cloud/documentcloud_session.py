@@ -19,7 +19,6 @@ class DocumentCloudSession(requests.Session):
             'https://accounts.muckrock.com/api/token',
             {'username': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
-        
         if login_response.status_code != 200:
             self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
             self.log_func(f'[ERROR DETAIL]: : {login_response.json()}')
