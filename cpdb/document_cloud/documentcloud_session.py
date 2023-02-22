@@ -23,6 +23,7 @@ class DocumentCloudSession(requests.Session):
         )
         if login_response.status_code != 200:
             self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
+            self.log_func(f'[ERROR DETAIL]: : {login_response.json()}')
             raise requests.exceptions.RequestException(
                 f'Cannot login {login_response.status_code}: {login_response.json()}'
             )

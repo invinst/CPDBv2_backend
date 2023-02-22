@@ -12,7 +12,7 @@ spec:
           containers:
           - name: gunicorn
             image: cpdbdev/backend:${BACKEND_IMAGE_TAG}
-            command: ["cpdb/manage.py",  "${CRONJOB_COMMAND}"]
+            command: ["poetry", "run", "cpdb/manage.py",  "${CRONJOB_COMMAND}"]
             env:
             - name: DB_NAME
               value: "${POSTGRES_APP_DB}"
