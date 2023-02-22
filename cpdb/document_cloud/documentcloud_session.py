@@ -1,15 +1,13 @@
 import time
+
 import requests
-from urllib3.exceptions import HTTPError
-
-from django.db.models import F
-from django.conf import settings
-
-from tqdm import tqdm
-
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile
+from django.conf import settings
+from django.db.models import F
 from document_cloud.constants import REPROCESS_TEXT_MAX_RETRIES
+from tqdm import tqdm
+from urllib3.exceptions import HTTPError
 
 
 class DocumentCloudSession(requests.Session):
@@ -18,9 +16,10 @@ class DocumentCloudSession(requests.Session):
         self.log_func = log_func
 
         login_response = self.post(
-            'https://www.documentcloud.org/login',
-            {'email': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
+            'https://accounts.muckrock.com/api/token',
+            {'username': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
+        
         if login_response.status_code != 200:
             self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
             self.log_func(f'[ERROR DETAIL]: : {login_response.json()}')
@@ -31,7 +30,7 @@ class DocumentCloudSession(requests.Session):
     def _request_reprocess_text(self, document):
         try:
             response = self.post(
-                f'https://www.documentcloud.org/api/documents/{document.external_id}/process',
+                f'https://accounts.muckrock.com/api/documents/{document.external_id}/process',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
