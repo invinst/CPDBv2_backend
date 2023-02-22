@@ -4,7 +4,6 @@ from data.models import AttachmentFile
 from django.test import TestCase
 from document_cloud.documentcloud_session import DocumentCloudSession
 from mock import Mock, patch
-#from requests import RequestException, Session
 from requests import Session
 from robber import expect
 from urllib3.exceptions import HTTPError
