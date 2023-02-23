@@ -16,7 +16,7 @@ class DocumentCloudSession(requests.Session):
         self.log_func = log_func
 
         login_response = self.post(
-            'https://accounts.muckrock.com/api/token',
+            'https://accounts.muckrock.com/api/token/',
             {'username': settings.DOCUMENTCLOUD_USER, 'password': settings.DOCUMENTCLOUD_PASSWORD}
         )
         if login_response.status_code != 200:
@@ -29,7 +29,7 @@ class DocumentCloudSession(requests.Session):
     def _request_reprocess_text(self, document):
         try:
             response = self.post(
-                f'https://accounts.muckrock.com/api/documents/{document.external_id}/process',
+                f'https://accounts.muckrock.com/api/documents/{document.external_id}/process/',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
