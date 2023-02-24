@@ -40,7 +40,7 @@ jobs:
       - checkout
       - run: pip install --user --upgrade pip
       - run: pip install --user -r requirements/test.txt -v
-      #- run: flake8
+      - run: flake8
       - run: python --version
       - run: ./cpdb/manage.py makemigrations --dry-run --settings=config.settings.test
       - run: coverage run cpdb/manage.py test --noinput --nologcapture
