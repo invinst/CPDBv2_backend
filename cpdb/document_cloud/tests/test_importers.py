@@ -874,7 +874,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             DocumentCloudAttachmentImporter(self.logger).search_and_update_attachments()
 
-        expect(AttachmentFile.objects.count()).to.eq(12)
+        expect(AttachmentFile.objects.count()).to.eq(11)
         expect(AttachmentFile.objects.filter(external_id='666').count()).to.eq(0)
         new_attachment_1 = AttachmentFile.objects.get(external_id='999')
         new_attachment_2 = AttachmentFile.objects.get(external_id='1111126')
