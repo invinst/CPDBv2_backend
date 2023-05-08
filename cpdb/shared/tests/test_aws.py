@@ -1,12 +1,12 @@
-#from django.test import SimpleTestCase
+# from django.test import SimpleTestCase
 
-#from robber import expect
-#from moto import mock_s3, mock_lambda
+# from robber import expect
+# from moto import mock_s3, mock_lambda
 
-#from shared.aws import aws
+# from shared.aws import aws
 
 
-#class AWSTestCase(SimpleTestCase):
+# class AWSTestCase(SimpleTestCase):
 #    @mock_s3
 #    @mock_lambda
 #    def test_aws_lazy_init_s3_and_lambda_client(self):
