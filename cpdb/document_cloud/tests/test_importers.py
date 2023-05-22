@@ -1445,7 +1445,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         result = importer.make_cloud_document_public(private_cloud_document)
 
         expect(save_mock).to.be.called_once()
-        expect(document_cloud_mock().documents.get).to.be.called_with('777')
+        expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Updated document https://www.documentcloud.org/documents/CRID-234-CR.html access from private to public'
         )
@@ -1526,7 +1526,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         importer.log_info = Mock()
         result = importer.make_cloud_document_public(private_cloud_document)
 
-        expect(document_cloud_mock().documents.get).to.be.called_with('777')
+        expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Can not update document https://www.documentcloud.org/canonical_url access from private to public'
         )
@@ -1552,7 +1552,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         importer.log_info = Mock()
         result = importer.make_cloud_document_public(private_cloud_document)
 
-        expect(document_cloud_mock().documents.get).to.be.called_with('777')
+        expect(document_cloud_mock().documents.get).to.be.called_with('CRID-234-CR')
         expect(importer.log_info).to.be.called_with(
             'Can not update document https://www.documentcloud.org/canonical_url access from private to public'
         )
