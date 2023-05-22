@@ -446,7 +446,7 @@ class OfficerTestCase(TestCase):
             attachment_1.id, attachment_2.id
         })
 
-    #def test_investigator_attachments(self):
+    # def test_investigator_attachments(self):
     #    allegation = AllegationFactory(crid='123')
     #    allegation_456 = AllegationFactory(crid='456')
     #    attachment_1 = AttachmentFileFactory(allegation=allegation, source_type='DOCUMENTCLOUD')
