@@ -245,8 +245,6 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.set_current_step('RECORDING CRAWLER RESULT')
             self.record_success_crawler_result()
             send_cr_attachment_available_email(self.new_attachments)
-        except Exception as e:
+        except Exception:
             self.record_failed_crawler_result()
-            self.log_info(f"Got error {e}")
-            self.logger.exception("Document crawler failed")
             return []
