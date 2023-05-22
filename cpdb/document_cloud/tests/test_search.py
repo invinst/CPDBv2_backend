@@ -139,63 +139,63 @@ class SearchTestCase(TestCase):
         expectation_dict = {
             '1-CRID-CR': {
                 'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-                'id': '1',
+                'documentcloud_id': '1',
                 'url': 'https://www.documentcloud.org/documents/1-CRID-CR.html',
                 'document_type': None,
                 'allegation': None
             },
             '2-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-                'id': '2',
+                'documentcloud_id': '2',
                 'url': 'https://www.documentcloud.org/documents/2-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '7-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
-                'id': '7',
+                'documentcloud_id': '7',
                 'url': 'https://www.documentcloud.org/documents/7-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '4-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '4',
+                'documentcloud_id': '4',
                 'url': 'https://www.documentcloud.org/documents/4-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '5-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '5',
+                'documentcloud_id': '5',
                 'url': 'https://www.documentcloud.org/documents/5-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '8-CRID-200000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '8',
+                'documentcloud_id': '8',
                 'url': 'https://www.documentcloud.org/documents/8-CRID-200000-CR.html',
                 'document_type': 'CR',
                 'allegation': c_prefix_allegation
             },
             '9-CRID-C100000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '9',
+                'documentcloud_id': '9',
                 'url': 'https://www.documentcloud.org/documents/9-CRID-C100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '456789-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
-                'id': '456789',
+                'documentcloud_id': '456789',
                 'url': 'https://www.documentcloud.org/documents/456789-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '10-CRID-100000-DOCUMENT': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '10',
+                'documentcloud_id': '10',
                 'url': 'https://www.documentcloud.org/documents/10-CRID-100000-DOCUMENT.html',
                 'document_type': 'DOCUMENT',
                 'allegation': allegation
@@ -243,14 +243,14 @@ class SearchTestCase(TestCase):
         expectation_dict = {
             '1-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '1',
+                'documentcloud_id': '1',
                 'url': 'https://www.documentcloud.org/documents/1-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
             },
             '2-CRID-100000-CR': {
                 'source_type': AttachmentSourceType.DOCUMENTCLOUD,
-                'id': '2',
+                'documentcloud_id': '2',
                 'url': 'https://www.documentcloud.org/documents/2-CRID-100000-CR.html',
                 'document_type': 'CR',
                 'allegation': allegation
