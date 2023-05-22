@@ -70,9 +70,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                 return AttachmentFile.objects.get(
                     Q(allegation=cloud_document.allegation,
                       source_type=cloud_document.source_type,
-                      external_id=cloud_document.id) |
+                      external_id=cloud_document.documentcloud_id) |
                     Q(allegation=cloud_document.allegation,
-                      pending_documentcloud_id=cloud_document.id)
+                      pending_documentcloud_id=cloud_document.documentcloud_id)
                 )
             except AttachmentFile.DoesNotExist:
                 return AttachmentFile.objects.get(
@@ -125,7 +125,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger, self.custom_search_syntaxes), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.id:
+            if cloud_document.allegation and cloud_document.documentcloud_id:
                 if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
@@ -137,7 +137,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                     else:
                         self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
                         new_attachment = AttachmentFile(
-                            external_id=cloud_document.id,
+                            external_id=cloud_document.documentcloud_id,
                             allegation=cloud_document.allegation,
                             source_type=cloud_document.source_type,
                             title=cloud_document.title,
@@ -165,7 +165,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
         if changed:
             if attachment.pending_documentcloud_id and \
-                attachment.pending_documentcloud_id == cloud_document.id and \
+                attachment.pending_documentcloud_id == cloud_document.documentcloud_id and \
                     cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES:
                 if cloud_document.access == 'error':
                     attachment.upload_fail_attempts += 1

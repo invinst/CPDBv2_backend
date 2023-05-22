@@ -22,8 +22,8 @@ def _remove_invalid_documents(cloud_documents):
 
     def valid_document(cloud_document):
         return cloud_document.source_type not in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES or \
-               cloud_document.id in existing_copa_documentcloud_ids or \
-               cloud_document.id in pending_documentcloud_ids
+               cloud_document.documentcloud_id in existing_copa_documentcloud_ids or \
+               cloud_document.documentcloud_id in pending_documentcloud_ids
 
     return filter(valid_document, cloud_documents)
 
@@ -45,7 +45,7 @@ def _remove_duplicated(cloud_documents):
     # which means it will be kept after dict comprehending
     ordered_documentcloud_documents = sorted(
         documentcloud_documents,
-        key=lambda d: d.id in existing_documentcloud_ids
+        key=lambda d: d.documentcloud_id in existing_documentcloud_ids
     )
     cleaned_results = {cloud_document.title: cloud_document for cloud_document in ordered_documentcloud_documents}
 
