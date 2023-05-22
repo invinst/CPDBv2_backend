@@ -79,7 +79,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'id': '1',
+            'documentcloud_id': '1',
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(copa_attachment)
@@ -97,7 +97,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
-            'id': '2',
+            'documentcloud_id': '2',
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(copa_attachment)
@@ -121,7 +121,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
-            'id': '3',
+            'documentcloud_id': '3',
         })
 
         expect(DocumentCloudAttachmentImporter(self.logger).get_attachment(document)).to.be.eq(None)
