@@ -325,7 +325,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             upload_fail_attempts=0,
         )
         document = create_object({
-            'id': '123456',
+            'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
             'full_text': 'text content'.encode('utf8'),
@@ -356,7 +356,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             upload_fail_attempts=0,
         )
         document = create_object({
-            'id': '123456',
+            'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
             'full_text': 'text content'.encode('utf8'),
@@ -384,7 +384,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             upload_fail_attempts=0,
         )
         document = create_object({
-            'id': '123456',
+            'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
             'full_text': 'text content'.encode('utf8'),
@@ -519,7 +519,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             '\nInvolved Officer Officer A, star Employee Date of'
         )
         new_cloud_document = create_object({
-            'id': '999',
+            'documentcloud_id': '999',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
@@ -534,7 +534,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         update_cloud_document_1 = create_object({
-            'id': '1',
+            'documentcloud_id': '1',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1-CRID-234-CR-updated.html',
@@ -549,7 +549,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         update_cloud_document_2 = create_object({
-            'id': '3',
+            'documentcloud_id': '3',
             'allegation': allegation,
             'source_type': AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/3-CRID-456-CR-updated.html',
@@ -564,7 +564,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         kept_cloud_document = create_object({
-            'id': '2',
+            'documentcloud_id': '2',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/2-CRID-234-CR.html',
@@ -579,7 +579,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         update_pending_cloud_document = create_object({
-            'id': '1111123',
+            'documentcloud_id': '1111123',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111123-CRID-234-CR.html',
@@ -594,7 +594,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         kept_pending_cloud_document = create_object({
-            'id': '1111124',
+            'documentcloud_id': '1111124',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111124-CRID-234-CR.html',
@@ -609,8 +609,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'pending',
         })
         make_public_pending_cloud_document = create_object({
-            'documentcloud_id': '1111130-CRID-234-CR',
-            'id': '1111130',
+            'id': '1111130-CRID-234-CR',
+            'documentcloud_id': '1111130',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111130-CRID-234-CR.html',
@@ -626,7 +626,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock(),
         })
         error_pending_cloud_document = create_object({
-            'id': '1111125',
+            'documentcloud_id': '1111125',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111125-CRID-234-CR.html',
@@ -642,8 +642,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'delete': Mock(return_value=True)
         })
         new_private_cloud_document = create_object({
-            'documentcloud_id': '1111126-CRID-234-CR',
-            'id': '1111126',
+            'id': '1111126-CRID-234-CR',
+            'documentcloud_id': '1111126',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111126-CRID-234-CR.html',
@@ -659,8 +659,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock()
         })
         new_organization_cloud_document = create_object({
-            'documentcloud_id': '1111127-CRID-234-CR',
-            'id': '1111127',
+            'id': '1111127-CRID-234-CR',
+            'documentcloud_id': '1111127',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111127-CRID-234-CR.html',
@@ -676,8 +676,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock()
         })
         updated_private_cloud_document = create_object({
-            'documentcloud_id': '1111128-CRID-234-CR',
-            'id': '1111128',
+            'id': '1111128-CRID-234-CR',
+            'documentcloud_id': '1111128',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111128-CRID-234-CR.html',
@@ -693,8 +693,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock()
         })
         updated_organization_cloud_document = create_object({
-            'documentcloud_id': '1111129-CRID-234-CR',
-            'id': '1111129',
+            'id': '1111129-CRID-234-CR',
+            'documentcloud_id': '1111129',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111129-CRID-234-CR.html',
@@ -1049,7 +1049,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     ):
         allegation = AllegationFactory(crid='234', summary='')
         new_cloud_document_3 = create_object({
-            'id': '3',
+            'documentcloud_id': '3',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/3-CRID-234-CR.html',
@@ -1064,7 +1064,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'access': 'public',
         })
         new_cloud_document_4 = create_object({
-            'id': '4',
+            'documentcloud_id': '4',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/4-CRID-234-CR.html',
@@ -1272,8 +1272,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_search_and_update_attachments_with_disable_make_cloud_document_public(self, search_all_mock, _):
         allegation = AllegationFactory(crid='234')
         new_private_cloud_document = create_object({
-            'documentcloud_id': '1111126-CRID-234-CR',
-            'id': '1111126',
+            'id': '1111126-CRID-234-CR',
+            'documentcloud_id': '1111126',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111126-CRID-234-CR.html',
@@ -1287,8 +1287,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock()
         })
         new_organization_cloud_document = create_object({
-            'documentcloud_id': '1111127-CRID-234-CR',
-            'id': '1111127',
+            'id': '1111127-CRID-234-CR',
+            'documentcloud_id': '1111127',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111127-CRID-234-CR.html',
@@ -1332,8 +1332,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     ):
         allegation = AllegationFactory(crid='234')
         new_private_cloud_document = create_object({
-            'documentcloud_id': '1111126-CRID-234-CR',
-            'id': '1111126',
+            'id': '1111126-CRID-234-CR',
+            'documentcloud_id': '1111126',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111126-CRID-234-CR.html',
@@ -1349,8 +1349,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': Mock()
         })
         new_organization_cloud_document = create_object({
-            'documentcloud_id': '1111127-CRID-234-CR',
-            'id': '1111127',
+            'id': '1111127-CRID-234-CR',
+            'documentcloud_id': '1111127',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'url': 'https://www.documentcloud.org/documents/1111127-CRID-234-CR.html',
@@ -1407,8 +1407,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
     def test_make_cloud_document_public_with_public_document(self):
         allegation = AllegationFactory(crid='234')
         public_cloud_document = create_object({
-            'documentcloud_id': 'CRID-789-CR',
-            'id': '777',
+            'id': 'CRID-789-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'access': 'public',
@@ -1422,8 +1422,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/CRID-234-CR.html',
@@ -1431,8 +1431,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': save_mock
         })
         updated_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/CRID-234-CR.html',
@@ -1456,8 +1456,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1465,8 +1465,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'save': save_mock
         })
         updated_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1492,8 +1492,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/documents/CRID-234-CR.html',
@@ -1513,8 +1513,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1537,8 +1537,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1563,8 +1563,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         private_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1586,8 +1586,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         error_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1608,8 +1608,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         error_cloud_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/canonical_url',
@@ -1627,8 +1627,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         pending_document = create_object({
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/CRID-234-CR-canonical_url',
@@ -1658,8 +1658,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         document_data = {
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/CRID-234-CR-canonical_url',
@@ -1692,8 +1692,8 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation = AllegationFactory(crid='234')
         save_mock = Mock()
         document_data = {
-            'documentcloud_id': 'CRID-234-CR',
-            'id': '777',
+            'id': 'CRID-234-CR',
+            'documentcloud_id': '777',
             'allegation': allegation,
             'source_type': AttachmentSourceType.DOCUMENTCLOUD,
             'canonical_url': 'https://www.documentcloud.org/CRID-234-CR-canonical_url',
