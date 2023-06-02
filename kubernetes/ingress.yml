@@ -1,5 +1,5 @@
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cpdp-ingress
@@ -17,32 +17,50 @@ spec:
       http:
         paths:
           - path: /admin
+            pathType: ImplementationSpecific
             backend:
-              serviceName: gunicorn
-              servicePort: 80
+              service:
+                name: gunicorn
+                port:
+                  number: 80
           - path: /sitemap
+            pathType: ImplementationSpecific
             backend:
-              serviceName: gunicorn
-              servicePort: 80
+              service:
+                name: gunicorn
+                port:
+                  number: 80
           - path: /
+            pathType: ImplementationSpecific
             backend:
-              serviceName: desktop-frontend
-              servicePort: 80
+              service:
+                name: desktop-frontend
+                port:
+                  number: 80
     - host: ${MOBILE_DOMAIN}
       http:
         paths:
           - path: /admin
+            pathType: ImplementationSpecific
             backend:
-              serviceName: gunicorn
-              servicePort: 80
+              service:
+                name: gunicorn
+                port:
+                  number: 80
           - path: /
+            pathType: ImplementationSpecific
             backend:
-              serviceName: mobile-frontend
-              servicePort: 80
+              service:
+                name: mobile-frontend
+                port:
+                  number: 80
     - host: ${API_DOMAIN}
       http:
         paths:
           - path: /
+            pathType: ImplementationSpecific
             backend:
-              serviceName: gunicorn
-              servicePort: 80
+              service:
+                name: gunicorn
+                port:
+                  number: 80
