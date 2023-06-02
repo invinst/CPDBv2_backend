@@ -1,5 +1,4 @@
 from collections import Counter
-from time import sleep
 
 from django.test import TestCase
 from robber import expect
