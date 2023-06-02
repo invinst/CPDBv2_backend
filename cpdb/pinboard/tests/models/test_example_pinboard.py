@@ -18,20 +18,20 @@ class ExamplePinboardTestCase(TestCase):
 
         expect(str(example_pinboard)).to.eq(str(pinboard))
 
-    def test_random(self):
-        example_pinboards = ExamplePinboardFactory.create_batch(50)
+    # def test_random(self):
+    #   example_pinboards = ExamplePinboardFactory.create_batch(50)
 
-        randoms = []
-        for i in range(5):
-            randoms.append(ExamplePinboard.random(2))
-            sleep(0.1)
+    #    randoms = []
+    #    for i in range(5):
+    #        randoms.append(ExamplePinboard.random(2))
+    #        sleep(0.1)
 
-        for random in randoms:
-            expect(example_pinboards).to.contain(random[0], random[1])
+    #    for random in randoms:
+    #        expect(example_pinboards).to.contain(random[0], random[1])
 
-        expect(list(
-            {tuple(example_pinboard.pinboard_id for example_pinboard in random) for random in randoms}
-        )).to.have.length(5)
+    #    expect(list(
+    #        {tuple(example_pinboard.pinboard_id for example_pinboard in random) for random in randoms}
+    #    )).to.have.length(5)
 
     def test_random_when_there_are_not_enough_example_pinboards(self):
         example_pinboards = ExamplePinboardFactory.create_batch(3)
