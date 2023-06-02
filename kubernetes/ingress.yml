@@ -17,21 +17,21 @@ spec:
       http:
         paths:
           - path: /admin
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: gunicorn
                 port:
                   number: 80
           - path: /sitemap
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: gunicorn
                 port:
                   number: 80
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: desktop-frontend
@@ -41,14 +41,14 @@ spec:
       http:
         paths:
           - path: /admin
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: gunicorn
                 port:
                   number: 80
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: mobile-frontend
@@ -58,7 +58,7 @@ spec:
       http:
         paths:
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: gunicorn
