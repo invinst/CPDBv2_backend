@@ -19,7 +19,7 @@
 - `bin/test.sh` - run all tests in Django development container.
 - `bin/coverage.sh` - run all tests and print code coverage in Django development container.
 
-### CircleCi 
+### CircleCi
 
 Environment Variables
 
@@ -29,16 +29,16 @@ Environment Variables
 
 ## Deployment
 
-Deployment should be almost automatic depending on which branch you pushed. 
+Deployment should be almost automatic depending on which branch you pushed.
 - `master` branch push will trigger production deploy
 - `beta` branch push will trigger beta deploy
 - `staging` branch push will trigger staging deploy
 
-Staging deployment is completely automated but production deployment require your approval (to proceed) between `django_migrate` step and `rebuild_index` step so that you have the chance to run a command that alter data such as `cache_data`. 
+Staging deployment is completely automated but production deployment require your approval (to proceed) between `django_migrate` step and `rebuild_index` step so that you have the chance to run a command that alter data such as `cache_data`.
 
 If you want to see each step, look at `.circleci/config.yml`.
 
-### Kubernetes 
+### Kubernetes
 
 - Read [Kubernetes guides](docs/kubernetes.md)
 
