@@ -40,7 +40,10 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.updated_attachments = []
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
-        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        if settings.DOCUMENTCLOUD_USER and settings.DOCUMENTCLOUD_PASSWORD:
+            self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        else:
+            self.client = DocumentCloud()
 
     mapping_fields = {
         'url': 'url',
@@ -67,9 +70,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                 return AttachmentFile.objects.get(
                     Q(allegation=cloud_document.allegation,
                       source_type=cloud_document.source_type,
-                      external_id=cloud_document.documentcloud_id) |
+                      external_id=cloud_document.id) |
                     Q(allegation=cloud_document.allegation,
-                      pending_documentcloud_id=cloud_document.documentcloud_id)
+                      pending_documentcloud_id=cloud_document.id)
                 )
             except AttachmentFile.DoesNotExist:
                 return AttachmentFile.objects.get(
@@ -122,7 +125,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
         self.log_info('New documentcloud attachments found:')
         for cloud_document in tqdm(search_all(self.logger, self.custom_search_syntaxes), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.documentcloud_id:
+            if cloud_document.allegation and cloud_document.id:
                 if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
                     attachment = self.get_attachment(cloud_document)
                     if attachment:
@@ -134,7 +137,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                     else:
                         self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
                         new_attachment = AttachmentFile(
-                            external_id=cloud_document.documentcloud_id,
+                            external_id=cloud_document.id,
                             allegation=cloud_document.allegation,
                             source_type=cloud_document.source_type,
                             title=cloud_document.title,
@@ -162,7 +165,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
         if changed:
             if attachment.pending_documentcloud_id and \
-                attachment.pending_documentcloud_id == cloud_document.documentcloud_id and \
+                attachment.pending_documentcloud_id == cloud_document.id and \
                     cloud_document.source_type in AttachmentSourceType.COPA_DOCUMENTCLOUD_SOURCE_TYPES:
                 if cloud_document.access == 'error':
                     attachment.upload_fail_attempts += 1
@@ -242,6 +245,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.set_current_step('RECORDING CRAWLER RESULT')
             self.record_success_crawler_result()
             send_cr_attachment_available_email(self.new_attachments)
-        except Exception:
+        except Exception as e:
             self.record_failed_crawler_result()
+            self.log_info(f"Got error {e}")
+            self.logger.exception("Document crawler failed")
             return []
