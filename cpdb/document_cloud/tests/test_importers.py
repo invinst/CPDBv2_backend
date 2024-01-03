@@ -356,7 +356,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             upload_fail_attempts=0,
         )
         document = create_object({
-            'documentcloud_id': '123456',
+            'id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
             'full_text': 'text content'.encode('utf8'),
