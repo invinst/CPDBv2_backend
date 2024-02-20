@@ -428,7 +428,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         importer.update_attachments()
 
         expect(AttachmentFile.objects.count()).to.eq(1)
-        expect(AttachmentFile.objects.first().id_).to.eq(kept_attachment.id_)
+        expect(AttachmentFile.objects.first().id).to.eq(kept_attachment.id)
 
     @patch('shared.attachment_importer.aws')
     def test_update_attachments_create_new_attachments(self, _):
