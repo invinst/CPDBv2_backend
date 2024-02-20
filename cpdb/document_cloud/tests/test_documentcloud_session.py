@@ -44,22 +44,22 @@ class DocumentCloudSessionTestCase(TestCase):
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     def test_request_reprocess_text_success(self, post_mock):
         document = AttachmentFile(
-            external_id='documentcloud_id',
-            url='https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html'
+            external_id='id',
+            url='https://www.documentcloud.org/documents/id-CRID-234-CR.html'
         )
 
         with DocumentCloudSession(self.log_func) as session:
             requested, success = session._request_reprocess_text(document)
 
             expect(post_mock).to.be.called_with(
-                'https://www.documentcloud.org/documents/documentcloud_id/reprocess_text',
+                'https://www.documentcloud.org/documents/id/reprocess_text',
                 headers={
                     'x-requested-with': 'XMLHttpRequest',
                     'accept': 'application/json, text/javascript, */*; q=0.01'
                 }
             )
             expect(self.log_func).to.be.called_with(
-                '[SUCCESS] Reprocessing text https://www.documentcloud.org/documents/documentcloud_id-CRID-234-CR.html'
+                '[SUCCESS] Reprocessing text https://www.documentcloud.org/documents/id-CRID-234-CR.html'
             )
             expect(requested).to.be.true()
             expect(success).to.be.true()
