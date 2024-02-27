@@ -8,6 +8,7 @@ from data.models.attachment_file import AttachmentFile
 
 
 class Lawsuit(TimeStampsModel):
+
     case_no = models.CharField(max_length=20, db_index=True, unique=True)
     incident_date = models.DateTimeField(null=True)
     primary_cause = models.CharField(max_length=255, null=True, blank=True)
