@@ -10,7 +10,8 @@ import pytz
 from data.cache_managers import allegation_cache_manager
 from data.constants import ACTIVE_YES_CHOICE
 from search.search_indexers import (
-    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager, RankIndexer, SearchTermItemIndexer
+    CrIndexer, TRRIndexer, BaseIndexer, UnitIndexer, AreaIndexer, IndexerManager,
+    RankIndexer, SearchTermItemIndexer, LawsuitIndexer
 )
 from data.factories import (
     AreaFactory, OfficerFactory, PoliceUnitFactory,
@@ -22,6 +23,7 @@ from data.factories import (
 )
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
 from trr.factories import TRRFactory, ActionResponseFactory
+from lawsuit.factories import LawsuitFactory, LawsuitPlaintiffFactory, PaymentFactory
 from shared.tests.utils import create_object
 
 
@@ -376,12 +378,24 @@ class CrIndexerTestCase(TestCase):
         investigator = InvestigatorFactory(first_name='Jerome', last_name='Finnigan')
         InvestigatorAllegationFactory(investigator=investigator, allegation=allegation)
 
+        AttachmentFileFactory(id=1, owner=allegation, text_content='')
+        AttachmentFileFactory(
+            id=2, owner=allegation, show=False,
+            text_content="CHICAGO POLICE DEPARTMENT RD I HT334604"
+        )
+        attachment_file = AttachmentFileFactory(
+            id=3,
+            owner=allegation,
+            text_content='CHICAGO POLICE DEPARTMENT RD I HT334604'
+        )
+
         querysets = CrIndexer().get_queryset()
 
         expect(querysets.count()).to.eq(1)
         allegation = querysets[0]
         expect(allegation.crid).to.eq('123456')
         expect(allegation.investigator_names).to.eq(['Jerome Finnigan'])
+        expect(allegation.prefetch_filtered_attachments).to.eq([attachment_file])
 
     def test_get_queryset_with_investigator_is_officer(self):
         allegation = AllegationFactory(
@@ -443,14 +457,12 @@ class CrIndexerTestCase(TestCase):
         VictimFactory(allegation=allegation, gender='', race='Black', age=25)
         VictimFactory(allegation=allegation, gender='F', race='Black', age=None)
 
-        AttachmentFileFactory(id=1, allegation=allegation, text_content='')
-        AttachmentFileFactory(
-            id=2, allegation=allegation, show=False,
-            text_content="CHICAGO POLICE DEPARTMENT RD I HT334604"
+        attachment_file = AttachmentFileFactory(
+            id=3, owner=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604'
         )
-        AttachmentFileFactory(id=3, allegation=allegation, text_content='CHICAGO POLICE DEPARTMENT RD I HT334604')
 
         setattr(allegation, 'investigator_names', ['Jerome Finnigan'])
+        setattr(allegation, 'prefetch_filtered_attachments', [attachment_file])
         allegation_cache_manager.cache_data()
         allegation.refresh_from_db()
 
@@ -503,6 +515,7 @@ class CrIndexerTestCase(TestCase):
         OfficerAllegationFactory(allegation=allegation, officer=None, allegation_category=None)
 
         setattr(allegation, 'investigator_names', [])
+        setattr(allegation, 'prefetch_filtered_attachments', [])
 
         expect(
             CrIndexer().extract_datum(allegation)
@@ -630,6 +643,48 @@ class TRRIndexerTestCase(TestCase):
                 'percentile_allegation_internal': '2.2000',
                 'percentile_trr': '3.3000',
             }
+        })
+
+
+class LawsuitIndexerTestCase(TestCase):
+    def test_get_queryset(self):
+        indexer = LawsuitIndexer()
+        expect(indexer.get_queryset().count()).to.eq(0)
+        LawsuitFactory()
+        expect(indexer.get_queryset().count()).to.eq(1)
+
+    def test_extract_datum(self):
+        lawsuit = LawsuitFactory(
+            case_no='00-L-5230',
+            primary_cause='ILLEGAL SEARCH/SEIZURE',
+            summary='Lawsuit Summary',
+        )
+
+        LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit)
+        LawsuitPlaintiffFactory(name='Sharon Ambielli', lawsuit=lawsuit)
+
+        officer_1 = OfficerFactory(first_name='Jerome', last_name='Finnigan')
+        officer_2 = OfficerFactory(first_name='Michael', last_name='Flynn')
+
+        PaymentFactory(payee='Lucy Bells', lawsuit=lawsuit)
+        PaymentFactory(payee='Genre Wilson', lawsuit=lawsuit)
+        lawsuit.officers.set([officer_1, officer_2])
+
+        lawsuit_data = LawsuitIndexer().extract_datum(lawsuit)
+        lawsuit_data['officer_names'] = sorted(lawsuit_data['officer_names'])
+        lawsuit_data['plaintiff_names'] = sorted(lawsuit_data['plaintiff_names'])
+        lawsuit_data['payee_names'] = sorted(lawsuit_data['payee_names'])
+
+        expect(
+            lawsuit_data
+        ).to.eq({
+            'id': lawsuit.id,
+            'case_no': '00-L-5230',
+            'primary_cause': 'ILLEGAL SEARCH/SEIZURE',
+            'summary': 'Lawsuit Summary',
+            'officer_names': ['Jerome Finnigan', 'Michael Flynn'],
+            'plaintiff_names': ['Kevin Vodak', 'Sharon Ambielli'],
+            'payee_names': ['Genre Wilson', 'Lucy Bells'],
         })
 
 

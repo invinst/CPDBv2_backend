@@ -18,13 +18,12 @@ from data.factories import (
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
 from data.constants import MEDIA_TYPE_DOCUMENT, MEDIA_TYPE_AUDIO, MEDIA_TYPE_VIDEO
-from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.factories import EmailTemplateFactory
 from email_service.constants import CR_ATTACHMENT_REQUEST
 
 
-class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRViewSetTestCase(APITestCase):
     @freeze_time('2018-04-04 12:00:01', tz_offset=0)
     def setUp(self):
         super(CRViewSetTestCase, self).setUp()
@@ -113,7 +112,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -121,12 +120,12 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR arrest report document',
+            owner=allegation, title='CR arrest report document',
             url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',
@@ -343,7 +342,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -351,7 +350,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',
@@ -579,7 +578,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         OfficerAllegationFactory(allegation=allegation_1, allegation_category=allegation_category_12)
 
         AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 1',
             id=1,
             tag='CR',
@@ -589,7 +588,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             external_created_at=datetime(2019, 1, 19, 12, 1, 1, tzinfo=pytz.utc)
         )
         AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 2',
             id=2,
             tag='CR',
@@ -599,7 +598,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             title='CR document 3',
             id=3,
             tag='CR',
@@ -610,7 +609,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation_2,
+            owner=allegation_2,
             title='CR document 4',
             id=4,
             tag='OCIR',
@@ -622,7 +621,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         with freeze_time(datetime(2019, 1, 20, 13, 2, 15, tzinfo=pytz.utc)):
             AttachmentFileFactory(
-                allegation=allegation_2,
+                owner=allegation_2,
                 title='CR document 5',
                 id=5,
                 tag='AR',
@@ -633,7 +632,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             )
 
         AttachmentFileFactory(
-            allegation=allegation_3,
+            owner=allegation_3,
             title='CR document 6',
             id=6,
             tag='CR',
@@ -644,7 +643,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
 
         AttachmentFileFactory(
-            allegation=allegation_3,
+            owner=allegation_3,
             title='CR document 7',
             id=7,
             tag='CR',
@@ -661,7 +660,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/8',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url8',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2014, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -672,7 +671,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/9',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url9',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -683,7 +682,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/10',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url10',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 6, 13, 12, 0, 1, tzinfo=pytz.utc)
         )
 
@@ -694,12 +693,12 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/11',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url11',
-            allegation=allegation_5,
+            owner=allegation_5,
             external_created_at=datetime(2015, 9, 14, 12, 0, 1, tzinfo=pytz.utc)
         )
 
         AttachmentFileFactory(
-            allegation=allegation_1,
+            owner=allegation_1,
             title='CR document 12',
             id=12,
             tag='CR',
@@ -717,7 +716,7 @@ class CRViewSetTestCase(CRTestCaseMixin, APITestCase):
             url='http://cr-document.com/13',
             file_type=MEDIA_TYPE_DOCUMENT,
             preview_image_url='http://preview.com/url13',
-            allegation=allegation_4,
+            owner=allegation_4,
             external_created_at=datetime(2015, 7, 13, 12, 0, 1, tzinfo=pytz.utc)
         )
         with freeze_time(datetime(2019, 1, 17, 12, 0, 1, tzinfo=pytz.utc)):

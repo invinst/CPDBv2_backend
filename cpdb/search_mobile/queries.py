@@ -1,6 +1,6 @@
 from data.models import Allegation
 
-from search.queries import OfficerQuery, CrQuery, TrrQuery
+from search.queries import OfficerQuery, CrQuery, TrrQuery, LawsuitQuery
 
 
 class OfficerMobileQuery(OfficerQuery):
@@ -13,4 +13,8 @@ class CrMobileQuery(CrQuery):
 
 
 class TrrMobileQuery(TrrQuery):
+    pass
+
+
+class LawsuitMobileQuery(LawsuitQuery):
     pass

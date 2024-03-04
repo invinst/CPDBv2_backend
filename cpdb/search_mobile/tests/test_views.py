@@ -13,6 +13,7 @@ from data.factories import (
     OfficerFactory, AllegationFactory, OfficerAllegationFactory, InvestigatorFactory, InvestigatorAllegationFactory,
     AllegationCategoryFactory)
 from trr.factories import TRRFactory
+from lawsuit.factories import LawsuitFactory
 from search.tests.utils import IndexMixin
 
 
@@ -119,6 +120,23 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
         for cr_data in results:
             expect(cr_data).to.eq(expected_results[cr_data['id']])
 
+    def test_search_lawsuit_result(self):
+        LawsuitFactory(case_no='00-L-5230')
+        LawsuitFactory(case_no='00-L-5231')
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api-v2:search-mobile-list')
+        response = self.client.get(url, {
+            'term': '00-L-5230',
+        })
+
+        results = response.data['LAWSUIT']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['case_no']).to.eq('00-L-5230')
+
     def test_retrieve_recent_search_items(self):
         OfficerFactory(id=8562, first_name='Jerome', last_name='Finnigan', current_badge='123456')
         allegation_category = AllegationCategoryFactory(category='Use of Force')
@@ -128,12 +146,19 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
             most_common_category=allegation_category,
         )
         TRRFactory(id=123)
+        LawsuitFactory(
+            id=1,
+            case_no='00-L-5230',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+        )
 
         url = reverse('api-v2:search-mobile-recent-search-items')
         response = self.client.get(url, {
             'officer_ids[]': 8562,
             'crids[]': 'C12345',
             'trr_ids[]': 123,
+            'lawsuit_ids[]': 1
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -154,5 +179,12 @@ class SearchV2ViewSetTestCase(IndexMixin, APITestCase):
             {
                 'id': 123,
                 'type': 'TRR',
+            },
+            {
+                'id': 1,
+                'case_no': '00-L-5230',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'incident_date': '2000-03-16',
+                'type': 'LAWSUIT',
             }
         ])

@@ -9,6 +9,7 @@ import pytz
 from robber import expect
 from mock import patch
 
+from lawsuit.factories import LawsuitFactory, PaymentFactory
 from data.tests.officer_percentile_utils import mock_percentile_map_range
 from officers.tests.mixins import OfficerSummaryTestCaseMixin
 from data.constants import ACTIVE_YES_CHOICE
@@ -20,6 +21,7 @@ from data.factories import (
 from trr.factories import TRRFactory
 from data import cache_managers
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
+from lawsuit.cache_managers import lawsuit_cache_manager
 from data.models import OfficerYearlyPercentile
 
 
@@ -35,7 +37,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             appointed_date=date(2002, 2, 27), rank='PO', resignation_date=date(2017, 12, 27),
             active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
             sustained_count=1, allegation_count=2, discipline_count=1, trr_count=1,
-            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            honorable_mention_count=1, major_award_count=1,
             last_unit_id=1, current_badge='123456'
         )
         allegation = AllegationFactory(incident_date=datetime(2002, 3, 1, tzinfo=pytz.utc))
@@ -105,7 +107,6 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1960,
             'sustained_count': 1,
             'unsustained_count': 1,
-            'civilian_compliment_count': 1,
             'allegation_count': 2,
             'discipline_count': 1,
             'honorable_mention_count': 1,
@@ -136,7 +137,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             active=ACTIVE_YES_CHOICE, birth_year=1960, complaint_percentile=32.5,
             honorable_mention_percentile=66.6667,
             sustained_count=1, allegation_count=3, discipline_count=1, trr_count=1,
-            civilian_compliment_count=1, honorable_mention_count=1, major_award_count=1,
+            honorable_mention_count=1, major_award_count=1,
             last_unit_id=1, current_badge='123456'
         )
 
@@ -197,9 +198,18 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             active=ACTIVE_YES_CHOICE, birth_year=1970
         )
 
+        lawsuit_1 = LawsuitFactory()
+        PaymentFactory(settlement=5000, legal_fees=2000, lawsuit=lawsuit_1)
+        PaymentFactory(settlement=0, legal_fees=5000, lawsuit=lawsuit_1)
+        lawsuit_1.officers.set([officer])
+        lawsuit_2 = LawsuitFactory()
+        PaymentFactory(settlement=8500, legal_fees=0, lawsuit=lawsuit_2)
+        lawsuit_2.officers.set([officer])
+
         officer_cache_manager.build_cached_yearly_percentiles()
         officer_cache_manager.build_cached_columns()
         allegation_cache_manager.cache_data()
+        lawsuit_cache_manager.cache_data()
 
         yearly_percentiles = OfficerYearlyPercentile.objects.filter(officer_id=123).order_by('year')
 
@@ -241,7 +251,7 @@ class OfficersMobileViewSetTestCase(OfficerSummaryTestCaseMixin, APITestCase):
             'birth_year': 1960,
             'sustained_count': 1,
             'unsustained_count': 2,
-            'civilian_compliment_count': 1,
+            'total_lawsuit_settlements': '20500.00',
             'allegation_count': 3,
             'discipline_count': 1,
             'honorable_mention_count': 1,

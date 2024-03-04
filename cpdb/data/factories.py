@@ -188,7 +188,7 @@ class AttachmentFileFactory(TaggableModelFactory):
     class Meta:
         model = AttachmentFile
 
-    allegation = factory.SubFactory(AllegationFactory)
+    owner = factory.SubFactory(AllegationFactory)
     additional_info = factory.LazyFunction(lambda: {'info': fake.word()})
     original_url = factory.LazyFunction(lambda: fake.url())
     source_type = factory.LazyFunction(lambda: fake.word())

@@ -26,6 +26,8 @@ class BaseSummaryQuery(object):
         return self._group_geographic_data(data, DISPLAYED_GENDERS, 'Unknown', 'gender')
 
     def _group_geographic_data(self, data, display_names, other_name, name_key):
+        if not data:
+            return []
         all_item_names = display_names + [other_name]
         result = {name: 0 for name in all_item_names}
         for item in data:

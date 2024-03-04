@@ -49,7 +49,7 @@ class AttachmentFileAdmin(ModelAdmin):
     readonly_fields = [
         'external_id',
         'file_type',
-        'allegation',
+        'owner',
         'tag',
         'source_type',
         'url',
@@ -82,7 +82,7 @@ class AttachmentFileAdmin(ModelAdmin):
     def get_queryset(self, request):
         return AttachmentFile.objects.all().prefetch_related(
             'tags',
-            'allegation',
+            'owner',
             'last_updated_by',
             'tags__taggit_taggeditem_items',
             'tags__taggit_taggeditem_items__content_type',
@@ -91,7 +91,7 @@ class AttachmentFileAdmin(ModelAdmin):
     def download_csv(self, request):
         attachment_files = AttachmentFile.objects.filter(tags__isnull=False).prefetch_related(
             'tags',
-            'allegation',
+            'owner',
             'last_updated_by',
             'tags__taggit_taggeditem_items',
             'tags__taggit_taggeditem_items__content_type',

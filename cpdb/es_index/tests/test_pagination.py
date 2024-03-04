@@ -58,20 +58,20 @@ class ESQuerysetPaginationTestCase(TestCase):
         allegation = AllegationFactory(crid=123456)
         attachment_1 = AttachmentFileFactory(
             id=1,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 1',
             text_content='Text Content 1'
         )
         attachment_2 = AttachmentFileFactory(
             id=2,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 2',
             text_content='Text Content 2'
         )
 
         AttachmentFileFactory(
             id=3,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 3',
             text_content='Text Content 3'
         )
@@ -107,20 +107,20 @@ class ESQuerysetPaginationTestCase(TestCase):
         allegation = AllegationFactory(crid=123456)
         AttachmentFileFactory(
             id=1,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 1',
             text_content='Text Content 1'
         )
         AttachmentFileFactory(
             id=2,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 2',
             text_content='Text Content 2'
         )
 
         AttachmentFileFactory(
             id=3,
-            allegation=allegation,
+            owner=allegation,
             title='Document Title 3',
             text_content='Text Content 3'
         )

@@ -21,43 +21,43 @@ class SearchTestCase(TestCase):
         AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='1',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='2',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD,
             external_id='7',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.DOCUMENTCLOUD,
             external_id='4',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA,
             external_id='5',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
             external_id='6',
-            allegation=allegation
+            owner=allegation
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.PORTAL_COPA,
             external_id='8',
-            allegation=allegation,
+            owner=allegation,
             pending_documentcloud_id='123456',
         )
         AttachmentFileFactory(
             source_type=AttachmentSourceType.SUMMARY_REPORTS_COPA,
             external_id='9',
-            allegation=allegation,
+            owner=allegation,
             pending_documentcloud_id='456789',
         )
 
