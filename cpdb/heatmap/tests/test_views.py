@@ -7,14 +7,9 @@ from robber import expect
 from mock import patch
 import pytz
 
-<<<<<<< HEAD
-from data.factories import OfficerAllegationFactory, AllegationCategoryFactory
-from data.constants import HEATMAP_END_YEAR
-=======
 from data.factories import OfficerAllegationFactory
 from lawsuit.factories import LawsuitFactory, PaymentFactory
 from lawsuit.cache_managers import lawsuit_cache_manager
->>>>>>> staging
 
 
 class CitySummaryViewSetTestCase(TestCase):
@@ -42,30 +37,6 @@ class CitySummaryViewSetTestCase(TestCase):
                 allegation__incident_date=date,
                 disciplined=False)
 
-<<<<<<< HEAD
-    @patch('heatmap.views.ALLEGATION_MIN_DATETIME', datetime(1988, 1, 1, tzinfo=pytz.utc))
-    def test_get_city_summary(self):
-        response = self.client.get(reverse('api-v2:city-summary-list'))
-        expect(response.data).to.eq({
-            'start_year': 1988,
-            'end_year': HEATMAP_END_YEAR,
-            'allegation_count': 20,
-            'discipline_count': 14,
-            'most_common_complaints': [
-                {
-                    'name': 'Operation/Personnel Violations',
-                    'count': 8
-                },
-                {
-                    'name': 'Use Of Force',
-                    'count': 6
-                },
-                {
-                    'name': 'Illegal Search',
-                    'count': 4
-                }
-            ]
-=======
         lawsuit_cache_manager.cache_data()
 
         response = self.client.get(reverse('api-v2:city-summary-list'))
@@ -76,7 +47,6 @@ class CitySummaryViewSetTestCase(TestCase):
             'discipline_count': 8,
             'lawsuits_count': 3,
             'total_lawsuit_settlements': '20500.00',
->>>>>>> staging
         })
 
     def test_get_city_summary_with_total_lawsuit_settlements_is_none(self):
