@@ -39,7 +39,6 @@ class TRRSerializer(NoNullSerializer):
     subject_age = serializers.IntegerField()
     force_category = serializers.CharField(max_length=255)
     force_types = serializers.ListField(child=serializers.CharField(max_length=255))
-    actions = serializers.ListField(child=serializers.CharField(max_length=255))
 
     date_of_incident = serializers.SerializerMethodField()
     location_type = serializers.CharField(source='location_recode')
