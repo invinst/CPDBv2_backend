@@ -17,6 +17,7 @@ from data.factories import (
 from data.models import Officer
 
 
+
 class OfficerTestCase(TestCase):
     def test_str(self):
         self.assertEqual(str(Officer(first_name='Daniel', last_name='Abate')), 'Daniel Abate')
