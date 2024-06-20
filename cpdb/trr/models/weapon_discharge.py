@@ -11,8 +11,8 @@ from data.models.common import TimeStampsModel
 
 class WeaponDischarge(TimeStampsModel):
     trr = models.ForeignKey('trr.TRR', on_delete=models.CASCADE)
-    weapon_type = models.CharField(max_length=32, null=True)
-    weapon_type_description = models.CharField(max_length=32, null=True)
+    weapon_type = models.CharField(max_length=50, null=True)
+    weapon_type_description = models.CharField(max_length=70, null=True)
     firearm_make = models.CharField(max_length=64, null=True)
     firearm_model = models.CharField(max_length=32, null=True)
     firearm_barrel_length = models.CharField(max_length=16, null=True)
