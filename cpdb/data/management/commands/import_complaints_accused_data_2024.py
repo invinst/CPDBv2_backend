@@ -7,7 +7,6 @@ from django.db import connection
 from datetime import date
 from tqdm import tqdm
 from data.models import Officer, Allegation, OfficerAllegation, AllegationCategory
-import pytz
 
 logger = logging.getLogger(__name__)
 
