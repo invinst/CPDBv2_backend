@@ -15,7 +15,7 @@ class OfficerAllegation(TimeStampsModel):
     officer_age = models.IntegerField(null=True)
 
     recc_finding = models.CharField(
-        choices=FINDINGS, max_length=30 , blank=True)
+        choices=FINDINGS, max_length=30, blank=True)
     recc_outcome = models.CharField(max_length=32, blank=True)
     final_finding = models.CharField(
         choices=FINDINGS, max_length=3, blank=True)

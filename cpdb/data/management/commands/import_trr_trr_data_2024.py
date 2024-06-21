@@ -2,7 +2,7 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
 from datetime import date
 from tqdm import tqdm
@@ -13,6 +13,7 @@ from django.contrib.gis.geos import Point
 import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -27,7 +28,7 @@ class Command(BaseCommand):
 
         with open(file_path) as f:
             reader = DictReader(f)
-            tag = ''
+            # tag = ''
             eastern = pytz.utc
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
@@ -51,9 +52,12 @@ class Command(BaseCommand):
                             lighting_condition=row['lighting_condition'],
                             weather_condition=row['weather_condition'],
                             notify_OEMC=True if (row['notify_OEMC'] == 'Y' or row['notify_OEMC'] =='Yes') else False,
-                            notify_district_sergeant=True if (row['notify_district_sergeant'] == 'Y' or row['notify_district_sergeant'] =='Yes') else False,
-                            notify_OP_command=True if (row['notify_OP_command'] == 'Y' or row['notify_OP_command'] =='Yes') else False,
-                            notify_DET_division=True if (row['notify_DET_division'] == 'Y' or row['notify_DET_division'] =='Yes') else False,
+                            notify_district_sergeant=True if (row['notify_district_sergeant'] == 'Y'
+                                                              or row['notify_district_sergeant'] =='Yes') else False,
+                            notify_OP_command=True if (row['notify_OP_command'] == 'Y'
+                                                       or row['notify_OP_command'] =='Yes') else False,
+                            notify_DET_division=True if (row['notify_DET_division'] == 'Y'
+                                                         or row['notify_DET_division'] =='Yes') else False,
                             number_of_weapons_discharged=float(row['number_of_weapons_discharged']) if row['number_of_weapons_discharged']!='' else 0,
                             party_fired_first=row['party_fired_first'],
                             location_recode=row['location_recode'],
@@ -80,7 +84,7 @@ class Command(BaseCommand):
                             dt = datetime.strptime(row['trr_datetime'], '%Y-%m-%d %H:%M:%S')
                             localized_dt = eastern.localize(dt)
                             trr.trr_datetime = localized_dt
-                        except pytz.AmbiguousTimeError as e:
+                        except pytz.AmbiguousTimeError:
                             print("Except")
                         except ValueError:
                             dt = datetime.strptime(row['trr_datetime'], '%Y-%m-%d')

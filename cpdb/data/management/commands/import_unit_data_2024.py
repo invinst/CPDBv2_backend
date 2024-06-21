@@ -2,9 +2,9 @@ import logging
 from csv import DictReader
 import sys
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
-from datetime import date
+# from datetime import date
 from tqdm import tqdm
 from data.models import OfficerHistory, Officer, PoliceUnit
 from datetime import datetime
@@ -25,10 +25,10 @@ class Command(BaseCommand):
 
         with open(file_path) as f:
             reader = DictReader(f)
-            tag = ''
+            # tag = ''
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
                     print("Deleting previous objects")
                     OfficerHistory.objects.all().delete()
 
@@ -51,4 +51,3 @@ class Command(BaseCommand):
                         officer_history.save()
 
         logger.info("Finished successfully")
-

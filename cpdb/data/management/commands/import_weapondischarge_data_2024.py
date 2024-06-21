@@ -2,17 +2,18 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
-from datetime import date
+# from datetime import date
 from tqdm import tqdm
-from data.models import Officer, PoliceUnit
+# from data.models import Officer, PoliceUnit
 from trr.models import TRR, WeaponDischarge
-from datetime import datetime
-from django.contrib.gis.geos import Point
-import pytz
+# from datetime import datetime
+# from django.contrib.gis.geos import Point
+# import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -31,12 +32,12 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
-            eastern = pytz.utc
+            # tag = ''
+            # eastern = pytz.utc
 
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
 
                     for row in tqdm(reader, desc='Updating TRR Weapon discharge'):
                         if row['trr_id'] != '':

@@ -2,16 +2,17 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
 from datetime import date
 from tqdm import tqdm
-from data.models import Officer, Allegation, Victim
+from data.models import Allegation, Victim
 from datetime import datetime
-from django.contrib.gis.geos import Point
-import pytz
+# from django.contrib.gis.geos import Point
+# import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -30,8 +31,8 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
-            eastern = pytz.utc
+            # tag = ''
+            # eastern = pytz.utc
 
             with transaction.atomic():
                 Victim.objects.all().delete()
@@ -62,6 +63,5 @@ class Command(BaseCommand):
 
                     cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id SET NOT NULL;')
                     cursor.execute('ALTER TABLE public.data_victim ENABLE TRIGGER ALL;')
-
 
         logger.info("Finished successfully")
