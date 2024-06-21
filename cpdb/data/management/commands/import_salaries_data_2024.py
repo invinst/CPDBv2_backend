@@ -1,8 +1,8 @@
 import logging
 from csv import DictReader
-import sys
+# import sys
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
 from datetime import date
 from tqdm import tqdm
@@ -11,6 +11,7 @@ from datetime import datetime
 
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -25,10 +26,10 @@ class Command(BaseCommand):
 
         with open(file_path) as f:
             reader = DictReader(f)
-            tag = ''
+            # tag = ''
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
                     print("Deleting previous objects")
                     Salary.objects.all().delete()
 

@@ -60,7 +60,7 @@ class Command(BaseCommand):
                             error_writer.writerow(row)
                             print(row)
 
-                        #print(row)
+                        # print(row)
                         complaint.save()
 
         logger.info("Complaints Finished successfully")

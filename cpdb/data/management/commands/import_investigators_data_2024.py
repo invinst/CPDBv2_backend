@@ -2,16 +2,17 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
-from datetime import date
+# from datetime import date
 from tqdm import tqdm
-from data.models import Officer, Allegation, OfficerAllegation, AllegationCategory, Investigator, InvestigatorAllegation, PoliceUnit
+from data.models import Allegation, Investigator, InvestigatorAllegation, PoliceUnit
 from datetime import datetime
-from django.contrib.gis.geos import Point
-import pytz
+# from django.contrib.gis.geos import Point
+# import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -30,13 +31,13 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
-            eastern = pytz.utc
+            # tag = ''
+            # eastern = pytz.utc
 
             with transaction.atomic():
                 Investigator.objects.all().delete()
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
                     for row in tqdm(reader, desc='Updating Investigators'):
                         investigator = Investigator(
                             first_name=row['first_name'],
@@ -44,7 +45,7 @@ class Command(BaseCommand):
                             middle_initial=row['middle_initial'],
                             suffix_name=row['suffix_name'],
                             appointed_date=datetime.strptime(row['appointed_date'], '%Y-%m-%d') if row[
-                            'appointed_date'].strip() else None
+                                'appointed_date'].strip() else None
                         )
                         investigator.save()
 
@@ -71,6 +72,5 @@ class Command(BaseCommand):
                             continue
 
                         investigator_allegation.save()
-
 
         logger.info("Investigators Finished successfully")
