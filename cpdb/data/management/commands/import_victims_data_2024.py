@@ -7,7 +7,7 @@ from django.db import connection
 from datetime import date
 from tqdm import tqdm
 from data.models import Allegation, Victim
-from datetime import datetime
+# from datetime import datetime
 # from django.contrib.gis.geos import Point
 # import pytz
 
