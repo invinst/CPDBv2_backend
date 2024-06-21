@@ -1,6 +1,6 @@
 import logging
 from csv import DictReader
-import csv
+# import csv
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
@@ -51,25 +51,25 @@ class Command(BaseCommand):
                             indoor_or_outdoor=row['indoor_or_outdoor'],
                             lighting_condition=row['lighting_condition'],
                             weather_condition=row['weather_condition'],
-                            notify_OEMC=True if (row['notify_OEMC'] == 'Y' or row['notify_OEMC'] =='Yes') else False,
+                            notify_OEMC=True if (row['notify_OEMC'] == 'Y' or row['notify_OEMC'] == 'Yes') else False,
                             notify_district_sergeant=True if (row['notify_district_sergeant'] == 'Y' or row['notify_district_sergeant'] == 'Yes') else False,
                             notify_OP_command=True if (row['notify_OP_command'] == 'Y' or row['notify_OP_command'] == 'Yes') else False,
                             notify_DET_division=True if (row['notify_DET_division'] == 'Y' or row['notify_DET_division'] == 'Yes') else False,
-                            number_of_weapons_discharged=float(row['number_of_weapons_discharged']) if row['number_of_weapons_discharged']!= '' else 0,
+                            number_of_weapons_discharged=float(row['number_of_weapons_discharged']) if row['number_of_weapons_discharged'] != '' else 0,
                             party_fired_first=row['party_fired_first'],
                             location_recode=row['location_recode'],
                             taser=row['taser'],
                             total_number_of_shots=total_shots,
                             firearm_used=row['firearm_used'],
-                            number_of_officers_using_firearm=float(row['number_of_officers_using_firearm']) if row['number_of_officers_using_firearm'] !='' else 0,
+                            number_of_officers_using_firearm=float(row['number_of_officers_using_firearm']) if row['number_of_officers_using_firearm'] != '' else 0,
                             officer_assigned_beat=row['officer_assigned_beat'],
                             officer_on_duty=True if row['officer_on_duty'] == '1' else False,
                             officer_in_uniform=True if row['officer_in_uniform'] == '1' else False,
                             officer_injured=True if row['officer_injured'] == '1' else False,
                             officer_rank=row['officer_rank'],
                             subject_id=float(row['subject_id']) if row['subject_id'] != '' else None,
-                            subject_armed=True if (row['subject_armed']  == 'Y' or row['subject_armed'] == 'Yes') else False,
-                            subject_injured=True if (row['subject_injured']  == 'Y' or row['subject_injured'] == 'Yes') else False,
+                            subject_armed=True if (row['subject_armed'] == 'Y' or row['subject_armed'] == 'Yes') else False,
+                            subject_injured=True if (row['subject_injured'] == 'Y' or row['subject_injured'] == 'Yes') else False,
                             subject_alleged_injury=True if (row['subject_alleged_injury'] == 'Y' or row['subject_alleged_injury'] == 'Yes') else False,
                             subject_age=row['subject_age'] if row['subject_age'] != '' else None,
                             subject_birth_year=float(row['subject_birth_year']) if row['subject_birth_year'] != '' else None,
