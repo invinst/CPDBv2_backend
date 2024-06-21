@@ -72,7 +72,7 @@ class Command(BaseCommand):
                                 dt = datetime.strptime(incident_value, '%Y-%m-%d %H:%M:%S')
                                 localized_dt = eastern.localize(dt)
                                 allegation.incident_date = localized_dt
-                            except pytz.AmbiguousTimeError as e:
+                            except pytz.AmbiguousTimeError:
                                 allegation.incident_date = incident_value
 
                         allegation.add1 = row['add1'].strip()

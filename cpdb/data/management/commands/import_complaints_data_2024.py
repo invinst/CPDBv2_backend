@@ -2,16 +2,17 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
 from datetime import date
 from tqdm import tqdm
-from data.models import Officer, Allegation, Complainant
-from datetime import datetime
-from django.contrib.gis.geos import Point
-import pytz
+from data.models import Allegation, Complainant
+# from datetime import datetime
+# from django.contrib.gis.geos import Point
+# import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -30,12 +31,12 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
-            eastern = pytz.utc
+            # tag = ''
+            # eastern = pytz.utc
 
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
                     Complainant.objects.all().delete()
                     for row in tqdm(reader, desc='Updating complaints'):
 
@@ -50,7 +51,7 @@ class Command(BaseCommand):
                             year = row['birth_year'].split('.')
                             complaint.birth_year = year[0] if year[0].isnumeric() else None
                         if row['gender'] != '':
-                            complaint.gender=row['gender'][0]
+                            complaint.gender = row['gender'][0]
 
                         try:
                             allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
@@ -61,6 +62,5 @@ class Command(BaseCommand):
 
                         #print(row)
                         complaint.save()
-
 
         logger.info("Complaints Finished successfully")
