@@ -1,6 +1,6 @@
 import logging
 from csv import DictReader
-import sys
+# import sys
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
@@ -11,6 +11,7 @@ from datetime import datetime
 
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):

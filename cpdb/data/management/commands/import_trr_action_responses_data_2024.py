@@ -14,6 +14,7 @@ from trr.models import TRR, ActionResponse
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--file_path', help='Path to the CSV file')
