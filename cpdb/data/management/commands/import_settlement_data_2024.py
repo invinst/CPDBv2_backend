@@ -54,6 +54,7 @@ class Command(BaseCommand):
                         lawsuit.location = row['location']
                         lawsuit.primary_cause = row['complaint']
                         lawsuit.total_settlement = row['settlement'].replace('$', '').replace(',', '')
+                        lawsuit.total_payments = row['settlement'].replace('$', '').replace(',', '')
                         lawsuit.save()
                         if row['UID'].strip() != '':
                             lawsuit.officers.add(officer1)
