@@ -10,10 +10,10 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--file_path', help='Path to the CSV file')
-
 
     def handle(self, *args, **kwargs):
         file_path = kwargs.get('file_path')

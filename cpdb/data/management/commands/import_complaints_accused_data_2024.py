@@ -2,16 +2,15 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
 from datetime import date
 from tqdm import tqdm
 from data.models import Officer, Allegation, OfficerAllegation, AllegationCategory
-from datetime import datetime
-from django.contrib.gis.geos import Point
 import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -30,24 +29,23 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
-            eastern = pytz.utc
+            # tag = ''
+            # eastern = pytz.utc
 
             with transaction.atomic():
                 OfficerAllegation.objects.all().delete()
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
 
                     for row in tqdm(reader, desc='Updating officer allegations'):
 
-                        #days
-                        #final_penalty
-                        #recc_penalty
+                        # days
+                        # final_penalty
+                        # recc_penalty
                         if row['UID'].strip() != '':
                             id = row['UID'].split('.')
-                            #print(id[0])
+                            # print(id[0])
                             officer = Officer.objects.get(id=id[0])
-
 
                         officer_allegation = OfficerAllegation(
                             created_at=date.today(),
@@ -81,6 +79,5 @@ class Command(BaseCommand):
                             officer_allegation.allegation_category = category
 
                         officer_allegation.save()
-
 
         logger.info("Complaints Accused Finished successfully")
