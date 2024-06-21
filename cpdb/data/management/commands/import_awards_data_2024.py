@@ -1,10 +1,8 @@
 import logging
 from csv import DictReader
-import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
-from datetime import date
 from tqdm import tqdm
 from data.models import Award, Officer
 from datetime import datetime
@@ -16,6 +14,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--file_path', help='Path to the CSV file')
 
+
     def handle(self, *args, **kwargs):
         file_path = kwargs.get('file_path')
 
@@ -25,18 +24,16 @@ class Command(BaseCommand):
 
         with open(file_path) as f:
             reader = DictReader(f)
-            tag = ''
 
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
-                    #cursor.execute('ALTER TABLE data_salary DISABLE TRIGGER ALL;')
+                    # cursor = connection.cursor()
+                    # cursor.execute('ALTER TABLE data_salary DISABLE TRIGGER ALL;')
                     print("Deleting previous objects")
                     Award.objects.all().delete()
-                    #print("Dropping constraints")
-                    #cursor.execute('ALTER TABLE public.data_salary ALTER COLUMN tags DROP NOT NULL;')
-                    #cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
-
+                    # print("Dropping constraints")
+                    # cursor.execute('ALTER TABLE public.data_salary ALTER COLUMN tags DROP NOT NULL;')
+                    # cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
 
                     for row in tqdm(reader, desc='Updating salarys'):
 
@@ -61,10 +58,9 @@ class Command(BaseCommand):
                         award.save()
 
                     # cursor.execute('ALTER TABLE data_salary ENABLE TRIGGER ALL;')
-                    #cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
+                    # cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
                     print("Enabling constraints")
-                    #cursor.execute("UPDATE public.data_salary SET tags = '{}' WHERE tags is null;")
-                    #cursor.execute('ALTER TABLE public.data_salary ALTER COLUMN tags SET NOT NULL;')
+                    # cursor.execute("UPDATE public.data_salary SET tags = '{}' WHERE tags is null;")
+                    # cursor.execute('ALTER TABLE public.data_salary ALTER COLUMN tags SET NOT NULL;')
 
         logger.info("Awards Finished successfully")
-
