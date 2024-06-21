@@ -2,17 +2,18 @@ import logging
 from csv import DictReader
 import csv
 from django.core.management import BaseCommand
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import connection
-from datetime import date
+# from datetime import date
 from tqdm import tqdm
-from data.models import Officer, PoliceUnit
+# from data.models import Officer, PoliceUnit
 from trr.models import TRR, TRRStatus
 from datetime import datetime
-from django.contrib.gis.geos import Point
+# from django.contrib.gis.geos import Point
 import pytz
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -31,12 +32,12 @@ class Command(BaseCommand):
             fieldnames = reader.fieldnames
             error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
             error_writer.writeheader()
-            tag = ''
+            # tag = ''
             eastern = pytz.utc
 
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
+                    # cursor = connection.cursor()
 
                     for row in tqdm(reader, desc='Updating TRR Statuses'):
                         if row['trr_id'] != '':
@@ -55,7 +56,7 @@ class Command(BaseCommand):
                                                            '%Y-%m-%d %H:%M:%S')
                                     localized_dt = eastern.localize(dt)
                                     status.status_datetime = localized_dt
-                                except pytz.AmbiguousTimeError as e:
+                                except pytz.AmbiguousTimeError:
                                     print("Except")
                                     # trr.incident_date = incident_value
 

@@ -4,7 +4,7 @@ from csv import DictReader
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
-from datetime import date
+# from datetime import date
 from tqdm import tqdm
 from data.models import Salary, Officer
 from datetime import datetime

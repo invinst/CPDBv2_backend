@@ -49,7 +49,7 @@ class Command(BaseCommand):
                                     weapon_type=row['weapon_type'],
                                     firearm_caliber=row['firearm_caliber'],
                                     weapon_description=row['weapon_description'] if
-                                        len(row['weapon_description']) < 150 else None,
+                                    len(row['weapon_description']) < 150 else None,
                                 )
 
                                 weapon.save()
