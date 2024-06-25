@@ -30,6 +30,7 @@ class Command(BaseCommand):
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
+                    cursor.execute('ALTER ROLE cpdb REPLICATION;')
                     cursor.execute('SET session_replication_role = replica;')
                     print("Deleting previous objects")
                     Officer.objects.all().delete()
