@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
                     print("Dropping constraints")
-                    cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;');
+                    cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags DROP NOT NULL;')
                     print("Deleting previous objects")
                     cursor.execute('delete from trr_trr where officer_id in (select id from data_officer);')
@@ -71,6 +71,6 @@ class Command(BaseCommand):
 
                     cursor.execute("UPDATE public.data_officer SET tags = '{}' WHERE tags is null;")
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags SET NOT NULL;')
-                    cursor.execute('SET CONSTRAINTS ALL DEFERRED;');
+                    cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
 
         logger.info("Officers Finished successfully")
