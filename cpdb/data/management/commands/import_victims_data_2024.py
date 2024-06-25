@@ -38,7 +38,6 @@ class Command(BaseCommand):
                 Victim.objects.all().delete()
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
-                    cursor.execute('ALTER ROLE cpdb REPLICATION;')
                     cursor.execute('SET session_replication_role = replica;')
                     cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id DROP NOT NULL;')
                     for row in tqdm(reader, desc='Updating officer allegations'):
