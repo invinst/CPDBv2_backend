@@ -30,7 +30,7 @@ class Command(BaseCommand):
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
-                    cursor.execute('SET session_replication_role = replica;');
+                    cursor.execute('SET session_replication_role = replica;')
                     print("Deleting previous objects")
                     Officer.objects.all().delete()
                     print("Dropping constraints")
@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
                     cursor.execute("UPDATE public.data_officer SET tags = '{}' WHERE tags is null;")
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags SET NOT NULL;')
-                    cursor.execute('SET session_replication_role = default;');
+                    cursor.execute('SET session_replication_role = default;')
                     print("Enabling constraints")
 
         logger.info("Officers Finished successfully")
