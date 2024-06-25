@@ -44,7 +44,11 @@ class Command(BaseCommand):
             call_command('import_trr_trr_data_2024', file_path=file_path)
 
             print("TRR action responses")
-            file_path = "../data-updates/trrs/trr_actions_responses.csv"
+            file_path = "../data-updates/trrs/trr_actions_responses-1.csv"
+            call_command('import_trr_action_responses_data_2024', file_path=file_path)
+            file_path = "../data-updates/trrs/trr_actions_responses-2.csv"
+            call_command('import_trr_action_responses_data_2024', file_path=file_path)
+            file_path = "../data-updates/trrs/trr_actions_responses-3.csv"
             call_command('import_trr_action_responses_data_2024', file_path=file_path)
 
             print("TRR statuses")
