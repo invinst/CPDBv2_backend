@@ -12,7 +12,7 @@ class Command(BaseCommand):
             # execute migrations
             call_command('migrate')
             print("Officers")
-            file_path = "../../../../data-updates/officers/final-profiles.csv"
+            file_path = "../../../data-updates/officers/final-profiles.csv"
             call_command('import_officer_data_2024', file_path=file_path)
 
             print("Complaints-Complaints")
