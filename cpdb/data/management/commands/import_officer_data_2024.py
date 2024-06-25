@@ -34,7 +34,15 @@ class Command(BaseCommand):
                     cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags DROP NOT NULL;')
                     print("Deleting previous objects")
-                    cursor.execute('delete from trr_trr where officer_id in (select id from data_officer);')
+                    cursor.execute('delete from trr_charge where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_subjectweapon where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_actionresponse where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_trrattachmentrequest where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_trrstatus where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_weapondischarge where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from pinboard_pinboard_trrs  where trr_id in (select id from trr_trr where officer_id in (select id from data_officer) )')
+                    cursor.execute('delete from trr_trr where officer_id in (select id from data_officer)')
+
                     Officer.objects.all().delete()
 
                     for row in tqdm(reader, desc='Updating officers'):
