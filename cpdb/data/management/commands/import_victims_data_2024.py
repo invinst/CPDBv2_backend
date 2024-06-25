@@ -35,11 +35,11 @@ class Command(BaseCommand):
             # eastern = pytz.utc
 
             with transaction.atomic():
-                Victim.objects.all().delete()
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
-                    cursor.execute('SET session_replication_role = replica;')
+                    cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;');
                     cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id DROP NOT NULL;')
+                    Victim.objects.all().delete()
                     for row in tqdm(reader, desc='Updating officer allegations'):
                         print(row)
 
@@ -63,5 +63,6 @@ class Command(BaseCommand):
 
                     cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id SET NOT NULL;')
                     cursor.execute('SET session_replication_role = default;')
+                    cursor.execute('SET CONSTRAINTS ALL DEFERRED;');
 
         logger.info("Finished successfully")

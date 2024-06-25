@@ -30,11 +30,12 @@ class Command(BaseCommand):
             with transaction.atomic():
                 with connection.constraint_checks_disabled():
                     cursor = connection.cursor()
-                    cursor.execute('SET session_replication_role = replica;')
-                    print("Deleting previous objects")
-                    Officer.objects.all().delete()
                     print("Dropping constraints")
+                    cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;');
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags DROP NOT NULL;')
+                    print("Deleting previous objects")
+                    cursor.execute('delete from trr_trr where officer_id in (select id from data_officer);')
+                    Officer.objects.all().delete()
 
                     for row in tqdm(reader, desc='Updating officers'):
                         officer = Officer(id=row['UID'])
@@ -70,7 +71,6 @@ class Command(BaseCommand):
 
                     cursor.execute("UPDATE public.data_officer SET tags = '{}' WHERE tags is null;")
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags SET NOT NULL;')
-                    cursor.execute('SET session_replication_role = default;')
-                    print("Enabling constraints")
+                    cursor.execute('SET CONSTRAINTS ALL DEFERRED;');
 
         logger.info("Officers Finished successfully")
