@@ -5,7 +5,6 @@ from django.db import connection
 from data.models import Award, Officer
 from datetime import datetime
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -47,10 +46,8 @@ class Command(BaseCommand):
                         requester_full_name=row['requester_full_name'],
                         officer=officer1
                     )
-
                     award.save()
 
                 print("Enabling constraints")
-
 
         logger.info("Awards Finished successfully")

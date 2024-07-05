@@ -51,7 +51,7 @@ class Command(BaseCommand):
                         officer.middle_initial = row['middle_initial'].strip()
                         officer.middle_initial2 = row['middle_initial2'].strip()
                         officer.suffix_name = row['suffix_name'].strip()
-                        if row['birth_year'] == None:
+                        if row['birth_year'] is None:
                             officer.birth_year = None
                         else:
                             officer.birth_year = row['birth_year']

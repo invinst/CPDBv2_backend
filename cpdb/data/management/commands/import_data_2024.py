@@ -48,7 +48,6 @@ class Command(BaseCommand):
             table_name = "csv_trr_actions_responses"
             call_command('import_trr_action_responses_data_2024', table_name=table_name)
 
-
             print("TRR statuses")
             table_name = "csv_trr_statuses"
             call_command('import_trr_statuses_data_2024', table_name=table_name)

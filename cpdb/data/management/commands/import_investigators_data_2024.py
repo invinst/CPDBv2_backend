@@ -19,7 +19,6 @@ class Command(BaseCommand):
             logger.error("Please provide a valid file path.")
             return
 
-
         with transaction.atomic():
             Investigator.objects.all().delete()
             with connection.constraint_checks_disabled():
