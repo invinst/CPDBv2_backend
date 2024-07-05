@@ -1,9 +1,7 @@
 import logging
-from csv import DictReader
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
-from tqdm import tqdm
 from data.models import Award, Officer
 from datetime import datetime
 

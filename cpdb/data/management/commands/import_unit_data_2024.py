@@ -1,11 +1,7 @@
 import logging
-from csv import DictReader
-# import sys
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
-# from datetime import date
-from tqdm import tqdm
 from data.models import OfficerHistory, Officer, PoliceUnit
 from datetime import datetime
 
