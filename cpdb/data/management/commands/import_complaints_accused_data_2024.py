@@ -13,70 +13,60 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--file_path', help='Path to the CSV file')
+        parser.add_argument('--table_name', help='Path to the CSV file')
 
     def handle(self, *args, **kwargs):
-        file_path = kwargs.get('file_path')
+        table_name = kwargs.get('table_name')
 
-        if not file_path:
+        if not table_name:
             logger.error("Please provide a valid file path.")
             return
 
-        with open(file_path) as f, open('error_complaints_accused.csv', 'w', newline='') as error_file:
-            reader = DictReader(f)
+        with transaction.atomic():
+            OfficerAllegation.objects.all().delete()
+            with connection.constraint_checks_disabled():
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM " + table_name)
+                columns = [col[0] for col in cursor.description]
+                for data in cursor.fetchall():
+                    row = dict(zip(columns, data))
+                    # days
+                    # final_penalty
+                    # recc_penalty
+                    if row['uid'].strip() != '':
+                        id = row['uid'].split('.')
+                        # print(id[0])
+                        officer = Officer.objects.get(id=id[0])
 
-            fieldnames = reader.fieldnames
-            error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
-            error_writer.writeheader()
-            # tag = ''
-            # eastern = pytz.utc
+                    officer_allegation = OfficerAllegation(
+                        created_at=date.today(),
+                        officer=officer,
+                        final_finding=row['final_finding'],
+                        final_outcome=row['final_outcome'],
+                        recc_finding=row['recc_finding'],
+                        recc_outcome=row['recc_outcome'],
+                    )
+                    try:
+                        allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
+                        officer_allegation.allegation = allegation
+                    except Allegation.DoesNotExist:
+                        continue
 
-            with transaction.atomic():
-                OfficerAllegation.objects.all().delete()
-                with connection.constraint_checks_disabled():
-                    # cursor = connection.cursor()
+                    category = None
+                    try:
+                        if row['complaint_code'] != '':
+                            category = AllegationCategory.objects.get(category_code=row['complaint_code'])
+                    except AllegationCategory.DoesNotExist:
+                        last_id = AllegationCategory.objects.last().id
 
-                    for row in tqdm(reader, desc='Updating officer allegations'):
+                        category = AllegationCategory(
+                                id=last_id+1,
+                                category_code=row['complaint_code'],
+                                category=row['complaint_category'])
+                        category.save()
+                    if category is not None:
+                        officer_allegation.allegation_category = category
 
-                        # days
-                        # final_penalty
-                        # recc_penalty
-                        if row['UID'].strip() != '':
-                            id = row['UID'].split('.')
-                            # print(id[0])
-                            officer = Officer.objects.get(id=id[0])
-
-                        officer_allegation = OfficerAllegation(
-                            created_at=date.today(),
-                            officer=officer,
-                            final_finding=row['final_finding'],
-                            final_outcome=row['final_outcome'],
-                            recc_finding=row['recc_finding'],
-                            recc_outcome=row['recc_outcome'],
-                        )
-                        try:
-                            allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
-                            officer_allegation.allegation = allegation
-                        except Allegation.DoesNotExist:
-                            error_writer.writerow(row)
-                            print("Not found")
-                            continue
-
-                        category = None
-                        try:
-                            if row['complaint_code'] != '':
-                                category = AllegationCategory.objects.get(category_code=row['complaint_code'])
-                        except AllegationCategory.DoesNotExist:
-                            last_id = AllegationCategory.objects.last().id
-
-                            category = AllegationCategory(
-                                    id=last_id+1,
-                                    category_code=row['complaint_code'],
-                                    category=row['complaint_category'])
-                            category.save()
-                        if category is not None:
-                            officer_allegation.allegation_category = category
-
-                        officer_allegation.save()
+                    officer_allegation.save()
 
         logger.info("Complaints Accused Finished successfully")

@@ -16,53 +16,44 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--file_path', help='Path to the CSV file')
+        parser.add_argument('--table_name', help='Path to the CSV file')
 
     def handle(self, *args, **kwargs):
-        file_path = kwargs.get('file_path')
+        table_name = kwargs.get('table_name')
 
-        if not file_path:
+        if not table_name:
             logger.error("Please provide a valid file path.")
             return
 
-        with open(file_path) as f, open('error_victims.csv', 'w', newline='') as error_file:
-            reader = DictReader(f)
+        with transaction.atomic():
+            with connection.constraint_checks_disabled():
+                cursor = connection.cursor()
+                cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
+                cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id DROP NOT NULL;')
+                Victim.objects.all().delete()
+                cursor.execute("SELECT * FROM " + table_name)
+                columns = [col[0] for col in cursor.description]
+                for data in cursor.fetchall():
+                    row = dict(zip(columns, data))
 
-            fieldnames = reader.fieldnames
-            error_writer = csv.DictWriter(error_file, fieldnames=fieldnames)
-            error_writer.writeheader()
-            # tag = ''
-            # eastern = pytz.utc
+                    victim = Victim(
+                        created_at=date.today(),
+                        gender=row['gender'].strip()[0] if row['gender'].strip() != '' else '',
+                        race=row['race'],
+                        age=row['age'],
+                        birth_year=row['birth_year']
+                    )
 
-            with transaction.atomic():
-                with connection.constraint_checks_disabled():
-                    cursor = connection.cursor()
-                    cursor.execute('SET CONSTRAINTS ALL IMMEDIATE;')
-                    cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id DROP NOT NULL;')
-                    Victim.objects.all().delete()
-                    for row in tqdm(reader, desc='Updating officer allegations'):
-                        print(row)
+                    try:
+                        allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
+                        victim.allegation = allegation
+                    except Allegation.DoesNotExist:
+                        continue
 
-                        victim = Victim(
-                            created_at=date.today(),
-                            gender=row['gender'].strip()[0] if row['gender'].strip() != '' else '',
-                            race=row['race'].strip(),
-                            age=row['age'].split('.')[0] if row['age'].strip() != '' else None,
-                            birth_year=row['birth_year'].split('.')[0] if row['birth_year'].strip() != '' else None
-                        )
+                    victim.save()
 
-                        try:
-                            allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
-                            victim.allegation = allegation
-                        except Allegation.DoesNotExist:
-                            error_writer.writerow(row)
-                            print(row)
-                            continue
+                cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id SET NOT NULL;')
+                cursor.execute('SET session_replication_role = default;')
+                cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
 
-                        victim.save()
-
-                    cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id SET NOT NULL;')
-                    cursor.execute('SET session_replication_role = default;')
-                    cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
-
-        logger.info("Finished successfully")
+        logger.info("Victims Finished successfully")

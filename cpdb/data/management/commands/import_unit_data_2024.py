@@ -15,40 +15,40 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--file_path', help='Path to the CSV file')
+        parser.add_argument('--table_name', help='Path to the CSV file')
 
     def handle(self, *args, **kwargs):
-        file_path = kwargs.get('file_path')
+        table_name = kwargs.get('table_name')
 
-        if not file_path:
+        if not table_name:
             logger.error("Please provide a valid file path.")
             return
 
-        with open(file_path) as f:
-            reader = DictReader(f)
-            # tag = ''
-            with transaction.atomic():
-                with connection.constraint_checks_disabled():
-                    # cursor = connection.cursor()
-                    print("Deleting previous objects")
-                    OfficerHistory.objects.all().delete()
+        with transaction.atomic():
+            with connection.constraint_checks_disabled():
+                # cursor = connection.cursor()
+                print("Deleting previous objects")
+                OfficerHistory.objects.all().delete()
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM " + table_name)
+                columns = [col[0] for col in cursor.description]
+                for data in cursor.fetchall():
+                    row = dict(zip(columns, data))
+                    id = row['uid'].split('.')
+                    officer1 = Officer.objects.get(pk=int(id[0]))
 
-                    for row in tqdm(reader, desc='Updating Units'):
-                        id = row['UID'].split('.')
-                        officer1 = Officer.objects.get(pk=int(id[0]))
+                    policy_unit = PoliceUnit.objects.filter(
+                        unit_name=row['unit'].zfill(3)
+                    )
 
-                        policy_unit = PoliceUnit.objects.filter(
-                            unit_name=row['unit'].zfill(3)
-                        )
+                    officer_history = OfficerHistory(
+                        effective_date=datetime.strptime(row['unit_start_date'], '%Y-%m-%d') if row[
+                            'unit_start_date'].strip() else None,
+                        end_date=datetime.strptime(row['unit_end_date'], '%Y-%m-%d') if row[
+                            'unit_end_date'].strip() else None,
+                        officer=officer1,
+                        unit=policy_unit[0] if len(policy_unit) > 0 else None
+                    )
+                    officer_history.save()
 
-                        officer_history = OfficerHistory(
-                            effective_date=datetime.strptime(row['unit_start_date'], '%Y-%m-%d') if row[
-                                'unit_start_date'].strip() else None,
-                            end_date=datetime.strptime(row['unit_end_date'], '%Y-%m-%d') if row[
-                                'unit_end_date'].strip() else None,
-                            officer=officer1,
-                            unit=policy_unit[0] if len(policy_unit) > 0 else None
-                        )
-                        officer_history.save()
-
-        logger.info("Finished successfully")
+        logger.info("Unit data Finished successfully")
