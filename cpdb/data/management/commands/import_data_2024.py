@@ -13,7 +13,6 @@ class Command(BaseCommand):
             call_command('migrate')
             print("Officers")
             table_name = "csv_officer"
-            table_name = "gs://cpdp-csv-data/final-profiles.csv"
             call_command('import_officer_data_2024', table_name=table_name)
 
             print("Complaints-Complaints")
