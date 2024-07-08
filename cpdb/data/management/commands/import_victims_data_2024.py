@@ -47,7 +47,6 @@ class Command(BaseCommand):
                     victim.save()
 
                 cursor.execute('ALTER TABLE public.data_victim ALTER COLUMN allegation_id SET NOT NULL;')
-                cursor.execute('SET session_replication_role = default;')
                 cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
 
         logger.info("Victims Finished successfully")
