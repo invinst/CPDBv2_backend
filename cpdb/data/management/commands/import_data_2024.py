@@ -10,30 +10,30 @@ class Command(BaseCommand):
         # Call other Django commands with the table_name argument
         try:
             # execute migrations
-            # call_command('migrate')
-            # print("Officers")
-            # table_name = "csv_officer"
-            # call_command('import_officer_data_2024', table_name=table_name)
-            #
-            # print("Complaints-Complaints")
-            # table_name = "csv_complaints_complaints"
-            # call_command('import_complaints_complaints_data_2024', table_name=table_name)
-            #
-            # print("Complaints")
-            # table_name = "csv_complaints"
-            # call_command('import_complaints_data_2024', table_name=table_name)
-            #
-            # print("Complaints Accused")
-            # table_name = "csv_complaints_accused"
-            # call_command('import_complaints_accused_data_2024', table_name=table_name)
-            #
-            # print("Witness")
-            # table_name = "csv_civilian_witnesses"
-            # call_command('import_complaints_data_2024', table_name=table_name)
-            #
-            # print("Investigators")
-            # table_name = "csv_investigators"
-            # call_command('import_investigators_data_2024', table_name=table_name)
+            call_command('migrate')
+            print("Officers")
+            table_name = "csv_officer"
+            call_command('import_officer_data_2024', table_name=table_name)
+
+            print("Complaints-Complaints")
+            table_name = "csv_complaints_complaints"
+            call_command('import_complaints_complaints_data_2024', table_name=table_name)
+
+            print("Complaints")
+            table_name = "csv_complaints"
+            call_command('import_complaints_data_2024', table_name=table_name)
+
+            print("Complaints Accused")
+            table_name = "csv_complaints_accused"
+            call_command('import_complaints_accused_data_2024', table_name=table_name)
+
+            print("Witness")
+            table_name = "csv_civilian_witnesses"
+            call_command('import_complaints_data_2024', table_name=table_name)
+
+            print("Investigators")
+            table_name = "csv_investigators"
+            call_command('import_investigators_data_2024', table_name=table_name)
 
             print("Victims")
             table_name = "csv_victims"
