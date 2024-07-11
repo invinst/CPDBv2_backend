@@ -83,7 +83,6 @@ class Command(BaseCommand):
                             )
                             badge.save()
 
-
                     cursor.execute("UPDATE public.data_officer SET tags = '{}' WHERE tags is null;")
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags SET NOT NULL;')
                     cursor.execute('SET CONSTRAINTS ALL DEFERRED;')
