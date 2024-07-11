@@ -2,7 +2,7 @@ import logging
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db import connection
-from data.models import Officer
+from data.models import Officer, OfficerBadgeNumber
 from datetime import datetime
 
 
@@ -74,6 +74,15 @@ class Command(BaseCommand):
                             logger.info(f"Tag set to: {tag}")
 
                         officer.save()
+
+                        if officer.current_star is not None:
+                            badge = OfficerBadgeNumber(
+                                officer=officer,
+                                star=officer.current_star,
+                                current=officer.current_status
+                            )
+                            badge.save()
+
 
                     cursor.execute("UPDATE public.data_officer SET tags = '{}' WHERE tags is null;")
                     cursor.execute('ALTER TABLE public.data_officer ALTER COLUMN tags SET NOT NULL;')
