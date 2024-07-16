@@ -42,6 +42,7 @@ class Command(BaseCommand):
                         final_outcome=row['final_outcome'],
                         recc_finding=row['recc_finding'],
                         recc_outcome=row['recc_outcome'],
+                        disciplined=True if row['disciplined'] == 'TRUE' else False
                     )
                     try:
                         allegation = Allegation.objects.get(crid=row['cr_id'].replace("-", ""))
