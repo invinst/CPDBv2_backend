@@ -74,7 +74,7 @@ class Command(BaseCommand):
 
                     allegation.location = row['location'].strip()
                     if row['latitude'] is not None and row['longitude'] is not None:
-                        allegation.point = Point(float(row['latitude']), float(row['longitude']))
+                        allegation.point = Point(float(row['longitude']), float(row['latitude']))
 
                     allegation.save()
 

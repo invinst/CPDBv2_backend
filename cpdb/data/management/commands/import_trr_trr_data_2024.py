@@ -88,7 +88,7 @@ class Command(BaseCommand):
                         # trr.incident_date = incident_value
 
                     if (row['latitude'] != '' and row['longitude'] != ''):
-                        trr.point = Point(float(row['latitude']), float(row['longitude']))
+                        trr.point = Point(float(row['longitude']), float(row['latitude']))
                     if row['uid'] != '':
                         trr.officer = officer
                     if row['beat'] != '':
