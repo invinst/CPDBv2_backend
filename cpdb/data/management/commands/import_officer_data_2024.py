@@ -64,7 +64,7 @@ class Command(BaseCommand):
                         officer.current_status = row['current_status']
                         officer.current_star = row['current_star']
                         officer.current_unit = row['current_unit']
-                        officer.current_rank = row['current_rank'].strip()
+                        officer.rank = row['current_rank'].strip()
                         officer.foia_names = row['foia_names'].strip()
                         officer.matches = row['matches'].strip()
                         officer.profile_count = row['profile_count']
