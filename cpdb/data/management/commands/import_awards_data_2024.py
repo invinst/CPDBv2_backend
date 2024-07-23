@@ -23,12 +23,14 @@ class Command(BaseCommand):
             with connection.constraint_checks_disabled():
 
                 print("Deleting previous objects")
-                # Award.objects.all().delete()
+                Award.objects.all().delete()
 
+                print("Done deleting previous objects")
                 cursor = connection.cursor()
                 cursor.execute("SELECT * FROM " + table_name)
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():
+                    print("row in awards data")
                     row = dict(zip(columns, data))
                     id = row['uid'].split('.')
                     officer1 = Officer.objects.get(pk=int(id[0]))
