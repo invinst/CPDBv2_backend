@@ -23,7 +23,7 @@ class Command(BaseCommand):
             with connection.constraint_checks_disabled():
 
                 print("Deleting previous objects")
-                Award.objects.all().delete()
+                # Award.objects.all().delete()
 
                 cursor = connection.cursor()
                 cursor.execute("SELECT * FROM " + table_name)
