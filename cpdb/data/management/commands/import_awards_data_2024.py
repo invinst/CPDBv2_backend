@@ -29,8 +29,8 @@ class Command(BaseCommand):
                 cursor = connection.cursor()
                 cursor.execute("SELECT * FROM " + table_name)
                 columns = [col[0] for col in cursor.description]
+                x = 1
                 for data in cursor.fetchall():
-                    print("row in awards data")
                     row = dict(zip(columns, data))
                     id = row['uid'].split('.')
                     officer1 = Officer.objects.get(pk=int(id[0]))
@@ -49,6 +49,8 @@ class Command(BaseCommand):
                         officer=officer1
                     )
                     award.save()
+                    print("award " + x + " done")
+                    x = x + 1
 
                 print("Enabling constraints")
 
