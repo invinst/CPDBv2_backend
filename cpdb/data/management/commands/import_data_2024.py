@@ -10,18 +10,18 @@ class Command(BaseCommand):
         # Call other Django commands with the table_name argument
         try:
             # execute migrations
-            call_command('migrate')
+            # call_command('migrate')
             print("Officers")
             table_name = "csv_officer"
-            call_command('import_officer_data_2024', table_name=table_name)
+            # call_command('import_officer_data_2024', table_name=table_name)
 
             print("Complaints-Complaints")
             table_name = "csv_complaints_complaints"
-            call_command('import_complaints_complaints_data_2024', table_name=table_name)
+            # call_command('import_complaints_complaints_data_2024', table_name=table_name)
 
             print("Complaints")
             table_name = "csv_complaints"
-            call_command('import_complaints_data_2024', table_name=table_name)
+            # call_command('import_complaints_data_2024', table_name=table_name)
 
             print("Complaints Accused")
             table_name = "csv_complaints_accused"
