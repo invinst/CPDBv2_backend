@@ -27,13 +27,18 @@ class Command(BaseCommand):
 
                 print("Done deleting previous objects")
                 cursor = connection.cursor()
-                cursor.execute("SELECT * FROM " + table_name)
+                cursor.execute(f"""
+                               select 
+                                    t.*, 
+                                    cast(cast(o.officer_id as float) as int) as officer_id
+                                from {table_name} t 
+                                left join data_officer o 
+                                    on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 x = 1
                 for data in cursor.fetchall():
                     row = dict(zip(columns, data))
-                    id = row['uid'].split('.')
-                    officer1 = Officer.objects.get(pk=int(id[0]))
+                    officer1 = Officer.objects.get(pk=row['officer_id'])
                     award = Award(
                         award_type=row['award_type'].strip(),
                         current_status=row['current_award_status'].strip(),

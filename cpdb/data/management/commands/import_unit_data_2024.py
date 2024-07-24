@@ -26,12 +26,17 @@ class Command(BaseCommand):
                 print("Deleting previous objects")
                 OfficerHistory.objects.all().delete()
                 cursor = connection.cursor()
-                cursor.execute("SELECT * FROM " + table_name)
+                cursor.execute(f"""
+                               select 
+                                    t.*, 
+                                    cast(cast(o.officer_id as float) as int) as officer_id
+                                from {table_name} t 
+                                left join data_officer o 
+                                    on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():
                     row = dict(zip(columns, data))
-                    id = row['uid'].split('.')
-                    officer1 = Officer.objects.get(pk=int(id[0]))
+                    officer1 = Officer.objects.get(pk=row['officer_id'])
 
                     policy_unit = PoliceUnit.objects.filter(
                         unit_name=row['unit'].zfill(3)

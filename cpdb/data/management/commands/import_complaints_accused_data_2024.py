@@ -23,17 +23,19 @@ class Command(BaseCommand):
             OfficerAllegation.objects.all().delete()
             with connection.constraint_checks_disabled():
                 cursor = connection.cursor()
-                cursor.execute("SELECT * FROM " + table_name)
+                cursor.execute(f"""
+                               select 
+                                    t.*, 
+                                    cast(cast(o.officer_id as float) as int) as officer_id
+                                from {table_name} t 
+                                left join data_officer o 
+                                    on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():
                     row = dict(zip(columns, data))
-                    # days
-                    # final_penalty
-                    # recc_penalty
-                    if row['uid'].strip() != '':
-                        id = row['uid'].split('.')
-                        # print(id[0])
-                        officer = Officer.objects.get(id=id[0])
+
+                    if row['officer_id']:
+                        officer = Officer.objects.get(id=row['officer_id'])
 
                     officer_allegation = OfficerAllegation(
                         created_at=date.today(),
