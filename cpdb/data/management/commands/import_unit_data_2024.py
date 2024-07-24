@@ -30,8 +30,8 @@ class Command(BaseCommand):
                                select
                                     t.*,
                                     cast(cast(o.officer_id as float) as int) as officer_id
-                                from {table_name} t
-                                left join data_officer o
+                                from {table_name} t 
+                                left join csv_officer o 
                                     on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():

@@ -27,8 +27,13 @@ class Command(BaseCommand):
                                select
                                     t.*,
                                     cast(cast(o.officer_id as float) as int) as officer_id
+<<<<<<< HEAD
                                 from {table_name} t
                                 left join data_officer o
+=======
+                                from {table_name} t 
+                                left join csv_officer o 
+>>>>>>> 2b0ddf5a (should be 'csv_officer' not 'data_offficer'. fixed)
                                     on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():
