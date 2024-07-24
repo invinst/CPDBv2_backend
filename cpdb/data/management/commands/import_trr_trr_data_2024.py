@@ -29,11 +29,11 @@ class Command(BaseCommand):
                 cursor = connection.cursor()
                 cursor.execute('ALTER TABLE public.data_policeunit ALTER COLUMN tags DROP NOT NULL;')
                 cursor.execute(f"""
-                               select 
-                                    t.*, 
+                               select
+                                    t.*,
                                     cast(cast(o.officer_id as float) as int) as officer_id
-                                from {table_name} t 
-                                left join data_officer o 
+                                from {table_name} t
+                                left join data_officer o
                                     on o.uid = cast(cast(t.uid as float) as int)""")
                 columns = [col[0] for col in cursor.description]
                 for data in cursor.fetchall():
