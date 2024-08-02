@@ -2,7 +2,7 @@
 -r test.txt
 
 # imported REPL
-ipdb==0.9.3
+ipdb==0.13.13
 
 django-extensions==1.9.0
 pre-commit==0.8.0
