@@ -1,11 +1,10 @@
 import copy
 import types
 
-from django.utils.module_loading import autodiscover_modules
 from elasticsearch.helpers import bulk
 from tqdm import tqdm
 
-from es_index import es_client, indexer_klasses
+from es_index import es_client
 
 
 class BaseIndexer(object):
@@ -83,71 +82,3 @@ class BaseIndexer(object):
     def reindex(self):
         self.create_mapping()
         self.add_new_data()
-
-
-class PartialIndexer(BaseIndexer):
-    batch_size = 1000
-
-    def __init__(self, updating_keys=None):
-        super(PartialIndexer, self).__init__()
-        self.updating_keys = list(updating_keys) if updating_keys else []
-
-    @classmethod
-    def create_mapping(cls):
-        cls.index_alias.write_index.close()
-        autodiscover_modules('indexers')
-        doc_types = [indexer.doc_type_klass for indexer in indexer_klasses if indexer.index_alias == cls.index_alias]
-        for doc_type in doc_types:
-            doc_type.init(index=cls.index_alias.new_index_name)
-
-    def reindex(self):
-        self.validate_updated_docs()
-        self.create_mapping()
-        self.index_alias.migrate()
-        self.delete_existing_docs()
-        self.add_new_data()
-
-    def get_keys_batches(self):
-        for i in range(0, len(self.updating_keys), self.batch_size):
-            yield self.updating_keys[i:i + self.batch_size]
-
-    def get_batch_queryset(self, keys):
-        raise NotImplementedError
-
-    def get_batch_update_docs_queries(self, keys):
-        raise NotImplementedError
-
-    @property
-    def batch_querysets(self):
-        for keys_batch in self.get_keys_batches():
-            yield self.get_batch_queryset(keys_batch)
-
-    @property
-    def batch_update_docs_queries(self):
-        for keys_batch in self.get_keys_batches():
-            yield self.get_batch_update_docs_queries(keys_batch)
-
-    def get_queryset(self):
-        for queryset in self.batch_querysets:
-            for item in queryset:
-                yield item
-
-    def delete_existing_docs(self):
-        self.index_alias.write_index.open()
-        for update_docs_query in self.batch_update_docs_queries:
-            es_client.delete_by_query(
-                index=self.index_alias.new_index_name,
-                body=update_docs_query.to_dict(),
-                doc_type=self.doc_type_klass._doc_type.name)
-
-        self.index_alias.write_index.refresh()
-
-    def validate_updated_docs(self):
-        num_es_docs = sum(update_docs_query.count() for update_docs_query in self.batch_update_docs_queries)
-        num_postgres_rows = sum(queryset.count() for queryset in self.batch_querysets)
-
-        if num_postgres_rows != num_es_docs:
-            raise ValueError(
-                f'Can not update index for {self.doc_type_klass._doc_type.name}. '
-                f'Number of ES doc ({num_es_docs}) is not equal to number of PostgreS rows ({num_postgres_rows})'
-            )

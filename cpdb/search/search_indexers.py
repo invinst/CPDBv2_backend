@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.functions import Concat
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Prefetch
 
 from tqdm import tqdm
 from elasticsearch.helpers import bulk
@@ -9,10 +10,11 @@ from es_index import es_client
 from data.models import PoliceUnit, Area, Allegation, Salary, OfficerAllegation, Officer, AttachmentFile
 from search_terms.models import SearchTermItem
 from trr.models import TRR, ActionResponse
+from lawsuit.models import Lawsuit
 from data.utils.percentile import percentile
 from search.doc_types import (
     UnitDocType, AreaDocType, CrDocType, TRRDocType,
-    RankDocType, ZipCodeDocType, SearchTermItemDocType
+    RankDocType, ZipCodeDocType, SearchTermItemDocType, LawsuitDocType
 )
 from search.indices import autocompletes_alias
 from search.indexer_serializers import (
@@ -165,23 +167,29 @@ class CrIndexer(BaseIndexer):
 
     def __init__(self, *args, **kwargs):
         super(CrIndexer, self).__init__(*args, **kwargs)
-        self.populate_officerallegation_dict()
+        self.populate_officers_dict()
 
-    def populate_officerallegation_dict(self):
-        self.officerallegation_dict = dict()
-        queryset = OfficerAllegation.objects.filter(allegation_category__isnull=False)\
-            .select_related('allegation_category')\
-            .values(
-                'allegation_category__category',
-                'allegation_category__allegation_name',
-                'allegation_category_id',
+    def populate_officers_dict(self):
+        self.officers_dict = dict()
+        queryset = OfficerAllegation.objects.filter(officer__isnull=False)\
+            .select_related('officer').order_by('-officer__allegation_count')\
+            .only(
+                'officer',
                 'allegation_id'
             )
+
         for obj in queryset:
-            self.officerallegation_dict.setdefault(obj['allegation_id'], []).append(obj)
+            self.officers_dict.setdefault(obj.allegation_id, []).append(obj.officer)
 
     def get_queryset(self):
-        return Allegation.objects.all().annotate(
+        return Allegation.objects.all().select_related('most_common_category').prefetch_related(
+            'victims',
+            Prefetch(
+                'attachment_files',
+                queryset=AttachmentFile.objects.showing().exclude(text_content=''),
+                to_attr='prefetch_filtered_attachments'
+            ),
+        ).annotate(
             investigator_names=ArrayAgg(
                 models.Case(
                     models.When(investigatorallegation__investigator__officer_id__isnull=False, then=Concat(
@@ -197,11 +205,6 @@ class CrIndexer(BaseIndexer):
         )
 
     def extract_datum(self, datum):
-        officer_allegations = datum.officer_allegations.filter(
-            officer__isnull=False
-        ).prefetch_related('officer').order_by('-officer__allegation_count')
-        attachment_files = AttachmentFile.showing.filter(allegation_id=datum.crid).exclude(text_content='')
-
         return {
             'crid': datum.crid,
             'category': getattr(datum.most_common_category, 'category', '') or 'Unknown',
@@ -212,10 +215,8 @@ class CrIndexer(BaseIndexer):
             'investigator_names': datum.investigator_names,
             'address': datum.address,
             'victims': VictimSerializer(datum.victims, many=True).data,
-            'coaccused': CoaccusedSerializer(
-                [officer_allegation.officer for officer_allegation in officer_allegations], many=True
-            ).data,
-            'attachment_files': AttachmentFileSerializer(attachment_files, many=True).data,
+            'coaccused': CoaccusedSerializer(self.officers_dict.get(datum.crid, []), many=True).data,
+            'attachment_files': AttachmentFileSerializer(datum.prefetch_filtered_attachments, many=True).data,
         }
 
 
@@ -248,6 +249,24 @@ class TRRIndexer(BaseIndexer):
             'category': datum.force_category,
             'address': ' '.join(filter(None, [datum.block, datum.street])),
             'officer': TRROfficerSerializer(datum.officer).data if datum.officer else None
+        }
+
+
+class LawsuitIndexer(BaseIndexer):
+    doc_type_klass = LawsuitDocType
+
+    def get_queryset(self):
+        return Lawsuit.objects.prefetch_related('officers', 'plaintiffs', 'payments')
+
+    def extract_datum(self, datum):
+        return {
+            'id': datum.id,
+            'case_no': datum.case_no,
+            'primary_cause': datum.primary_cause,
+            'summary': datum.summary,
+            'officer_names': [officer.full_name for officer in datum.officers.all()],
+            'plaintiff_names': [plaintiff.name for plaintiff in datum.plaintiffs.all()],
+            'payee_names': [payment.payee for payment in datum.payments.all()],
         }
 
 

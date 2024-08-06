@@ -5,6 +5,8 @@ from urllib.error import HTTPError
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django_bulk_update.manager import BulkUpdateManager
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from documentcloud import DocumentCloud, DoesNotExistError
 
@@ -16,9 +18,23 @@ from .common import TimeStampsModel, TaggableModel
 logger = logging.getLogger(__name__)
 
 
-class ShownAttachmentManager(models.Manager):
+class AttachmentFileQuerySet(models.QuerySet):
+    def showing(self):
+        return self.filter(show=True)
+
+    def for_allegation(self):
+        return self.filter(owner_type=ContentType.objects.get(app_label='data', model='allegation'))
+
+
+class AttachmentFileManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(show=True)
+        return AttachmentFileQuerySet(self.model, using=self._db)
+
+    def showing(self):
+        return self.get_queryset().showing()
+
+    def for_allegation(self):
+        return self.get_queryset().for_allegation()
 
 
 class AttachmentFile(TimeStampsModel, TaggableModel):
@@ -29,7 +45,6 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     additional_info = JSONField(null=True)
     tag = models.CharField(max_length=50)
     original_url = models.CharField(max_length=255, db_index=True)
-    allegation = models.ForeignKey('data.Allegation', on_delete=models.CASCADE, related_name='attachment_files')
     source_type = models.CharField(max_length=255, db_index=True)
     views_count = models.IntegerField(default=0)
     downloads_count = models.IntegerField(default=0)
@@ -50,11 +65,15 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
     pending_documentcloud_id = models.CharField(max_length=255, null=True)
     upload_fail_attempts = models.IntegerField(default=0)
 
-    objects = BulkUpdateManager()
-    showing = ShownAttachmentManager()
+    owner_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    owner_id = models.CharField(max_length=30, null=True)
+    owner = GenericForeignKey('owner_type', 'owner_id')
+
+    objects = AttachmentFileManager()
+    bulk_objects = BulkUpdateManager()
 
     class Meta:
-        unique_together = (('allegation', 'external_id', 'source_type'),)
+        unique_together = (('owner_id', 'owner_type', 'external_id', 'source_type'),)
 
     def __str__(self):
         return self.title
@@ -75,8 +94,8 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
 
     @property
     def linked_documents(self):
-        return AttachmentFile.showing.filter(
-            allegation_id=self.allegation_id,
+        return AttachmentFile.objects.for_allegation().showing().filter(
+            owner_id=self.owner_id,
             file_type=MEDIA_TYPE_DOCUMENT,
         ).exclude(id=self.id)
 
@@ -106,11 +125,13 @@ class AttachmentFile(TimeStampsModel, TaggableModel):
         return f'/document/{self.pk}/'
 
     def update_allegation_summary(self):
+        allegation_type = ContentType.objects.get(app_label='data', model='allegation')
         if self.source_type == AttachmentSourceType.SUMMARY_REPORTS_COPA_DOCUMENTCLOUD \
-                and self.text_content and not self.allegation.summary:
+                and self.owner_type == allegation_type \
+                and self.text_content and not self.owner.summary:
             summary = extract_copa_executive_summary(self.text_content)
             if summary:
-                self.allegation.summary = summary
-                self.allegation.is_extracted_summary = True
-                self.allegation.save()
+                self.owner.summary = summary
+                self.owner.is_extracted_summary = True
+                self.owner.save()
                 return True

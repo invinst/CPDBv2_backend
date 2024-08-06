@@ -1,22 +1,23 @@
 from copy import deepcopy
-from collections import OrderedDict
 
+from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import F
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
+
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.serializers import ValidationError
-from django.shortcuts import get_object_or_404
-from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import F
 
-from cr.doc_types import CRDocType
 from cr.serializers.cr_response_serializers import (
     CRSerializer, CRSummarySerializer, AttachmentRequestSerializer,
     AllegationWithNewDocumentsSerializer, CRRelatedComplaintRequestSerializer, CRRelatedComplaintSerializer
 )
 from cr.serializers.cr_response_mobile_serializers import CRMobileSerializer
 from email_service.constants import CR_ATTACHMENT_REQUEST
-from es_index.pagination import ESQueryPagination
 from data.models import Allegation
 from cr.queries import LatestDocumentsQuery
 from email_service.service import send_attachment_request_email
@@ -81,75 +82,44 @@ class CRViewSet(viewsets.ViewSet):
         if not request_serializer.is_valid():
             return Response({'message': request_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            query_filter = {
-                'geo_distance': {
-                    'distance': request_serializer.validated_data['distance'],
-                    'point': {
-                        'lat': allegation.point.y,
-                        'lon': allegation.point.x
-                    }
-                }
-            }
-
+        if allegation.point:
+            allegations = Allegation.objects.exclude(crid=allegation.crid).filter(
+                point__distance_lte=(
+                    allegation.point,
+                    D(mi=request_serializer.validated_data['distance'])
+                ),
+            ).annotate(
+                distance=Distance('point', allegation.point)
+            ).order_by(
+                'distance'
+            )
             if request_serializer.validated_data['match'] == 'categories':
                 categories = list(filter(None, [
                     obj.category
-                    for obj in allegation.officerallegation_set.all()
+                    for obj in allegation.officerallegation_set.select_related('allegation_category')
                 ]))
-                if len(categories) == 0:
-                    raise NoCategoryError()
-
-                query = CRDocType().search().query(
-                    'bool',
-                    must={
-                        'terms': {
-                            'category_names': categories
-                        }
-                    },
-                    must_not={
-                        'terms': {'crid': [pk]}
-                    },
-                    filter=query_filter
+                allegations = allegations.filter(
+                    officerallegation__allegation_category__category__in=categories
                 )
+
             elif request_serializer.validated_data['match'] == 'officers':
-                officers = list(filter(None, [
-                    obj.officer_id
-                    for obj in allegation.officerallegation_set.all()
-                ]))
-                if len(officers) == 0:
-                    raise NoOfficerError()
-
-                query = CRDocType().search().query(
-                    'bool',
-                    must={
-                        'nested': {
-                            'path': 'coaccused',
-                            'query': {
-                                'terms': {
-                                    'coaccused.id': officers
-                                }
-                            }
-                        }
-                    },
-                    must_not={
-                        'terms': {'crid': [pk]}
-                    },
-                    filter=query_filter
+                officer_ids = list(filter(None, allegation.officerallegation_set.values_list('officer_id', flat=True)))
+                allegations = allegations.filter(
+                    officerallegation__officer_id__in=officer_ids
                 )
+        else:
+            allegations = Allegation.objects.none()
 
-            paginator = ESQueryPagination()
-            paginated_query = paginator.paginate_es_query(query, request)
-            related_complaint_serializer = CRRelatedComplaintSerializer(paginated_query, many=True)
-            return paginator.get_paginated_response(related_complaint_serializer.data)
+        allegations = allegations.prefetch_related(
+            'officerallegation_set__allegation_category',
+            'officerallegation_set__officer',
+            'complainant_set'
+        )
 
-        except (NoCategoryError, NoOfficerError, AttributeError):
-            return Response(OrderedDict([
-                ('count', 0),
-                ('next', None),
-                ('previous', None),
-                ('results', [])
-            ]))
+        paginator = LimitOffsetPagination()
+        page = paginator.paginate_queryset(allegations, request, view=self)
+        serializer = CRRelatedComplaintSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class CRMobileViewSet(viewsets.ViewSet):

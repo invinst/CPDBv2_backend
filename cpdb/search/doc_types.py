@@ -81,6 +81,23 @@ class TRRDocType(DocType):
 
 
 @autocompletes_alias.doc_type
+class LawsuitDocType(DocType):
+    id = Integer()
+    case_no = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    primary_cause = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    summary = Text(
+        analyzer=text_analyzer, search_analyzer=text_search_analyzer,
+        store=True, term_vector='with_positions_offsets'
+    )
+    officer_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    plaintiff_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+    payee_names = Text(analyzer=autocomplete, search_analyzer=autocomplete_search)
+
+    class Meta:
+        doc_type = 'lawsuit'
+
+
+@autocompletes_alias.doc_type
 class ZipCodeDocType(DocType):
     id = Integer()
     zip_code = Text(analyzer=autocomplete, search_analyzer=autocomplete_search, fields={'keyword': Keyword()})

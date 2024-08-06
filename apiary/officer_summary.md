@@ -36,7 +36,7 @@
             "gender": "Male",
             "birth_year": 1951,
             "allegation_count": 90,
-            "civilian_compliment_count": 0,
+            'total_lawsuit_settlements': '20500.00',
             "discipline_count": 0,
             "honorable_mention_count": 1,
             "honorable_mention_percentile": "88.777",

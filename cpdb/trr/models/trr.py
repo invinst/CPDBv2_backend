@@ -41,7 +41,7 @@ class TRR(TimeStampsModel):
     officer_on_duty = models.NullBooleanField()
     officer_in_uniform = models.NullBooleanField()
     officer_injured = models.NullBooleanField()
-    officer_rank = models.CharField(max_length=32, null=True)
+    officer_rank = models.CharField(max_length=50, null=True)
     subject_id = models.PositiveIntegerField(null=True)
     subject_armed = models.NullBooleanField()
     subject_injured = models.NullBooleanField()

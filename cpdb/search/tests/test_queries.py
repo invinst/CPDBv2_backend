@@ -5,8 +5,9 @@ from django.test import TestCase
 from robber import expect
 
 from data.factories import OfficerFactory, AllegationFactory
-from search.queries import BaseModelQuery, OfficerQuery, CrQuery, TrrQuery
+from search.queries import BaseModelQuery, OfficerQuery, CrQuery, TrrQuery, LawsuitQuery
 from trr.factories import TRRFactory
+from lawsuit.factories import LawsuitFactory
 
 
 class BaseModelQueryTestCase(TestCase):
@@ -39,3 +40,12 @@ class TrrQueryTestCase(TestCase):
         TRRFactory(id=789)
         results = sorted(list(TrrQuery(ids=[123, 456]).query()), key=attrgetter('id'))
         expect(results).to.eq([trr_1, trr_2])
+
+
+class LawsuitQueryTestCase(TestCase):
+    def test_query(self):
+        lawsuit_1 = LawsuitFactory(id=1)
+        lawsuit_2 = LawsuitFactory(id=2)
+        LawsuitFactory(id=3)
+        results = sorted(list(LawsuitQuery(ids=[1, 2]).query()), key=attrgetter('id'))
+        expect(results).to.eq([lawsuit_1, lawsuit_2])

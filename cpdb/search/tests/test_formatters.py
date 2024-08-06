@@ -1,13 +1,20 @@
+from datetime import datetime
+import pytz
+
 from django.test import SimpleTestCase
+from django.test.testcases import TestCase
 from elasticsearch_dsl.utils import AttrDict, AttrList
-from mock import Mock
+from mock import Mock, patch
 from robber import expect
 
 from search.formatters import (
-    SimpleFormatter, OfficerFormatter, OfficerV2Formatter,
+    SimpleFormatter, DataFormatter, OfficerFormatter, OfficerV2Formatter,
     NameV2Formatter, ReportFormatter, Formatter, UnitFormatter, CRFormatter, TRRFormatter,
-    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter,
+    AreaFormatter, RankFormatter, ZipCodeFormatter, SearchTermFormatter, LawsuitFormatter,
 )
+from search.doc_types import LawsuitDocType
+from lawsuit.factories import LawsuitFactory, LawsuitPlaintiffFactory
+from data.factories import OfficerFactory
 
 
 class FormatterTestCase(SimpleTestCase):
@@ -61,6 +68,20 @@ class SimpleFormatterTestCase(SimpleTestCase):
             'a': 'a',
             'id': 'a_id'
         }])
+
+
+class DataFormatterTestCase(SimpleTestCase):
+    def test_get_queryset(self):
+        expect(lambda: DataFormatter().get_queryset([])).to.throw(NotImplementedError)
+
+    @patch('search.formatters.DataFormatter.serialize', return_value='serialize_data')
+    def test_format(self, serialize_mock):
+        docs = [Mock(_id='a_id'), Mock(_id='b_id')]
+        response = Mock(hits=docs)
+
+        expect(DataFormatter().format(response)).to.eq('serialize_data')
+
+        serialize_mock.assert_called_with(docs)
 
 
 class OfficerFormatterTestCase(SimpleTestCase):
@@ -415,6 +436,91 @@ class TRRFormatterTestCase(SimpleTestCase):
             'id': '123456',
             'to': '/trr/123456/'
         })
+
+
+class LawsuitFormatterTestCase(TestCase):
+    def test_get_queryset(self):
+        lawsuit_1 = LawsuitFactory()
+        lawsuit_2 = LawsuitFactory()
+        LawsuitFactory()
+
+        queryset = LawsuitFormatter().get_queryset([lawsuit_1.id, lawsuit_2.id])
+        expect(
+            {item.id for item in queryset}
+        ).to.eq({lawsuit_1.id, lawsuit_2.id})
+
+    def test_serialize(self):
+        lawsuit_1 = LawsuitFactory(
+            case_no='00-L-5230',
+            summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+            location='near intersection of N Wavelandand Sheffield', add1='200', add2='E. Chicago Ave.',
+            city='Chicago IL',
+            total_settlement=7500,
+            total_legal_fees=2500000000,
+            total_payments=2500007500,
+        )
+        officer = OfficerFactory(
+            first_name='Jerome',
+            last_name='Finnigan',
+            allegation_count=4,
+            trr_percentile='11.11',
+            complaint_percentile='22.22',
+            civilian_allegation_percentile='33.33',
+            internal_allegation_percentile='44.44',
+        )
+        LawsuitPlaintiffFactory(name='Kevin Vodak', lawsuit=lawsuit_1)
+        lawsuit_1.officers.set([officer])
+        lawsuit_2 = LawsuitFactory(
+            case_no='00-L-5231',
+            primary_cause='FALSE ARREST',
+            summary='Lawsuit Summary 2',
+            incident_date=None
+        )
+        LawsuitFactory()
+
+        result = LawsuitFormatter().serialize([LawsuitDocType(_id=lawsuit_2.id), LawsuitDocType(_id=lawsuit_1.id)])
+        expected_result = [
+            {
+                'id': lawsuit_2.id,
+                'case_no': '00-L-5231',
+                'primary_cause': 'FALSE ARREST',
+                'to': '/lawsuit/00-L-5231/',
+                'address': '',
+                'location': '',
+                'plaintiffs': [],
+                'officers': [],
+                'total_payments': '0.00',
+                'summary': 'Lawsuit Summary 2',
+            },
+            {
+                'id': lawsuit_1.id,
+                'case_no': '00-L-5230',
+                'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'address': '200 E. Chicago Ave., Chicago IL',
+                'location': 'near intersection of N Wavelandand Sheffield',
+                'incident_date': '2000-03-16',
+                'plaintiffs': [
+                    {'name': 'Kevin Vodak'},
+                ],
+                'officers': [
+                    {
+                        'id': officer.id,
+                        'full_name': 'Jerome Finnigan',
+                        'allegation_count': 4,
+                        'percentile_trr': '11.1100',
+                        'percentile_allegation': '22.2200',
+                        'percentile_allegation_civilian': '33.3300',
+                        'percentile_allegation_internal': '44.4400',
+                    },
+                ],
+                'total_payments': '2500007500.00',
+                'to': '/lawsuit/00-L-5230/',
+            }
+        ]
+        expect(result).to.eq(expected_result)
 
 
 class AreaFormatterTestCase(SimpleTestCase):

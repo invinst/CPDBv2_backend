@@ -2,7 +2,7 @@ from elasticsearch_dsl.query import Q
 
 from .doc_types import (
     UnitDocType, ReportDocType, AreaDocType, CrDocType,
-    TRRDocType, RankDocType, ZipCodeDocType, SearchTermItemDocType
+    TRRDocType, RankDocType, ZipCodeDocType, SearchTermItemDocType, LawsuitDocType
 )
 from officers.doc_types import OfficerInfoDocType
 
@@ -54,7 +54,7 @@ class OfficerWorker(Worker):
     doc_type_klass = OfficerInfoDocType
 
     def query(self, term, **kwargs):
-        _query = self._searcher.query(
+        return self._searcher.query(
             'function_score',
             query={
                 'multi_match': {
@@ -101,7 +101,6 @@ class OfficerWorker(Worker):
                 }
             ]
         )
-        return _query
 
 
 class UnitWorker(Worker):
@@ -222,3 +221,8 @@ class SearchTermItemWorker(Worker):
 class InvestigatorCRWorker(Worker):
     doc_type_klass = CrDocType
     fields = ['investigator_names']
+
+
+class LawsuitWorker(Worker):
+    doc_type_klass = LawsuitDocType
+    fields = ['case_no', 'primary_cause', 'summary', 'officer_names', 'plaintiff_names', 'payee_names']

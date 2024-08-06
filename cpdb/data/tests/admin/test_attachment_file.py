@@ -25,7 +25,7 @@ class AttachmentFileAdminTestCase(TestCase):
         with freeze_time(datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc)):
             self.attachment_file_1 = AttachmentFileFactory(
                 id=1,
-                allegation=allegation_1,
+                owner=allegation_1,
                 title='Title 1',
                 source_type='DOCUMENTCLOUD',
             )
@@ -33,7 +33,7 @@ class AttachmentFileAdminTestCase(TestCase):
         with freeze_time(datetime(2018, 5, 5, 12, 0, 1, tzinfo=pytz.utc)):
             self.attachment_file_2 = AttachmentFileFactory(
                 id=2,
-                allegation=allegation_2,
+                owner=allegation_2,
                 title='Title 2',
                 source_type='PORTAL_COPA',
             )
@@ -98,9 +98,9 @@ class TagListFilterTestCase(TestCase):
         self.request = RequestFactory()
         allegation_1 = AllegationFactory(incident_date=datetime(2005, 12, 31, tzinfo=pytz.utc))
         allegation_2 = AllegationFactory(incident_date=datetime(2007, 12, 31, tzinfo=pytz.utc))
-        self.attachment_file_1 = AttachmentFileFactory(allegation=allegation_1)
-        self.attachment_file_2 = AttachmentFileFactory(allegation=allegation_2)
-        self.attachment_file_3 = AttachmentFileFactory(allegation=allegation_2)
+        self.attachment_file_1 = AttachmentFileFactory(owner=allegation_1)
+        self.attachment_file_2 = AttachmentFileFactory(owner=allegation_2)
+        self.attachment_file_3 = AttachmentFileFactory(owner=allegation_2)
         self.attachment_file_1.tags.set('Tactical', 'Complaint', 'Taser')
         self.attachment_file_2.tags.set('Taser')
 

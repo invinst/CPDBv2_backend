@@ -1,6 +1,7 @@
 import re
 from random import sample
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.db.models import Q, Count, Prefetch, Value, IntegerField, F
 from django.utils.functional import cached_property
@@ -103,36 +104,40 @@ class Pinboard(TimeStampsModel):
         return list(self.trrs.values_list('id', flat=True))
 
     def relevant_documents_query(self, **kwargs):
-        return AttachmentFile.showing.filter(
+        return AttachmentFile.objects.showing().filter(
             file_type=MEDIA_TYPE_DOCUMENT,
             **kwargs
         ).only(
             'id',
             'preview_image_url',
             'url',
-            'allegation',
-        ).select_related(
-            'allegation',
-            'allegation__most_common_category',
         ).prefetch_related(
+            'owner',
+            'owner__victims',
+            'owner__most_common_category',
             Prefetch(
-                'allegation__officerallegation_set',
+                'owner__officerallegation_set',
                 queryset=OfficerAllegation.objects.select_related('officer').order_by('-officer__allegation_count'),
                 to_attr='prefetched_officer_allegations'
             ),
-            'allegation__victims'
         )
 
     @property
     def relevant_documents(self):
-        officer_ids = self.officers.all().values_list('id', flat=True)
-        crids = self.allegations.all().values_list('crid', flat=True)
-        via_allegation = self.relevant_documents_query(allegation__in=crids)
-        via_officer = self.relevant_documents_query(allegation__officerallegation__officer__in=officer_ids)
+        allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
 
-        return via_allegation.union(
-            via_officer,
-        ).distinct().order_by('-allegation__incident_date')
+        officer_ids = self.officers.values_list('id', flat=True)
+        crids = self.allegations.values_list('crid', flat=True)
+        officers_crids = OfficerAllegation.objects.filter(officer_id__in=officer_ids)\
+            .values_list('allegation_id', flat=True)
+
+        all_crids = list(set(
+            [id for id in crids] +
+            [id for id in officers_crids]
+        ))
+        via_allegation = self.relevant_documents_query(owner_type_id=allegation_type_id, owner_id__in=all_crids)
+
+        return via_allegation.distinct().order_by('-allegation__incident_date')
 
     @property
     def relevant_coaccusals(self):

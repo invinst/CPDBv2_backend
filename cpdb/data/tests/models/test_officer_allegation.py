@@ -47,8 +47,8 @@ class OfficerAllegationTestCase(TestCase):
     def test_attachments(self):
         allegation = AllegationFactory()
         officer_allegation = OfficerAllegationFactory(allegation=allegation)
-        attachment_1 = AttachmentFileFactory(allegation=allegation)
-        attachment_2 = AttachmentFileFactory(allegation=allegation)
+        attachment_1 = AttachmentFileFactory(owner=allegation)
+        attachment_2 = AttachmentFileFactory(owner=allegation)
 
         result = list(officer_allegation.attachments)
         expect(result).to.have.length(2)

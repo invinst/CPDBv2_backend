@@ -87,6 +87,11 @@ spec:
                 secretKeyRef:
                   name: airtable
                   key: project-key
+            - name: AIRTABLE_LAWSUITS_PROJECT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airtable
+                  key: lawsuits-project-key
             - name: TWITTER_CONSUMER_KEY
               valueFrom:
                 secretKeyRef:

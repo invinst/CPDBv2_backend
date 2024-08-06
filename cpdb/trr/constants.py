@@ -16,13 +16,23 @@ INDOOR_OUTDOOR_CHOICES = (
 )
 LC_DAYLIGHT = 'DAYLIGHT'
 LC_GOOD_ARTIFICIAL = 'GOOD ARTIFICIAL'
+LC_ARTIFICIAL = 'ARTIFICIAL'  # TODO: check that there isn't another column specifying good or poor in new format
+LC_ART = 'ART'
+LC_DAR = 'DAR'
+LC_DAY = 'DAY'
 LC_DUSK = 'DUSK'
 LC_NIGHT = 'NIGHT'
+LC_DARKNESS = 'DARKNESS'
 LC_POOR_ARTIFICIAL = 'POOR ARTIFICIAL'
 LC_DAWN = 'DAWN'
 LIGHTNING_CONDITION_CHOICES = (
     (LC_DAYLIGHT, 'Daylight'),
+    (LC_DAY, 'Daylight'),
     (LC_GOOD_ARTIFICIAL, 'Good Artificial'),
+    (LC_ARTIFICIAL, 'Artificial'),
+    (LC_ART, 'Artificial'),
+    (LC_DARKNESS, 'Darkness'),
+    (LC_DAR, 'Darkness'),
     (LC_DUSK, 'Dusk'),
     (LC_NIGHT, 'Night'),
     (LC_POOR_ARTIFICIAL, 'Poor Artificial'),
@@ -32,17 +42,21 @@ WC_OTHER = 'OTHER'
 WC_CLEAR = 'CLEAR'
 WC_SNOW = 'SNOW'
 WC_RAIN = 'RAIN'
+WC_CLOUD = 'CLOUD'
 WC_SLEET_HAIL = 'SLEET/HAIL'
 WC_SEVERE_CROSS_WIND = 'SEVERE CROSS WIND'
 WC_FOG_SMOKE_HAZE = 'FOG/SMOKE/HAZE'
+WC_FOG = 'FOG'
 WEATHER_CONDITION_CHOICES = (
     (WC_OTHER, 'Other'),
     (WC_CLEAR, 'Clear'),
     (WC_SNOW, 'Snow'),
     (WC_RAIN, 'Rain'),
+    (WC_CLOUD, 'Cloud'),
     (WC_SLEET_HAIL, 'Sleet/hail'),
     (WC_SEVERE_CROSS_WIND, 'Severe Cross Wind'),
-    (WC_FOG_SMOKE_HAZE, 'Fog/smoke/haze')
+    (WC_FOG_SMOKE_HAZE, 'Fog/smoke/haze'),
+    (WC_FOG, 'Fog/smoke/haze')
 )
 PFF_MEMBER = 'MEMBER'
 PFF_OTHER = 'OTHER'
@@ -102,11 +116,13 @@ OSD_OBJECT = 'OBJECT'
 OSD_PERSON = 'PERSON'
 OSD_UNKNOWN = 'UNKNOWN'
 OSD_BOTH = 'BOTH'
+OSD_ANIMAL = 'ANIMAL'
 OBJECT_STRUCK_OF_DISCHARGE_CHOICES = (
     (OSD_OBJECT, 'OBJECT'),
     (OSD_PERSON, 'PERSON'),
     (OSD_UNKNOWN, 'UNKNOWN'),
-    (OSD_BOTH, 'BOTH')
+    (OSD_BOTH, 'BOTH'),
+    (OSD_ANIMAL, 'ANIMAL')
 )
 DS_STANDING = 'STANDING'
 DS_SITTING = 'SITTING'

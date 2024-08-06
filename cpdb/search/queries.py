@@ -1,5 +1,6 @@
 from data.models import Officer, Allegation
 from trr.models import TRR
+from lawsuit.models import Lawsuit
 
 
 class BaseModelQuery(object):
@@ -34,3 +35,10 @@ class TrrQuery(BaseModelQuery):
 
     def queryset(self):
         return TRR.objects
+
+
+class LawsuitQuery(BaseModelQuery):
+    query_field = 'id'
+
+    def queryset(self):
+        return Lawsuit.objects
