@@ -3,11 +3,11 @@ from datetime import datetime
 from django.test import TestCase
 from django.urls import reverse
 
+from freezegun import freeze_time
 from robber import expect
 from mock import patch
 import pytz
 
-from data.factories import OfficerAllegationFactory
 from data.factories import OfficerAllegationFactory
 from lawsuit.factories import LawsuitFactory, PaymentFactory
 from lawsuit.cache_managers import lawsuit_cache_manager
