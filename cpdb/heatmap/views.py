@@ -4,7 +4,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
 from data.models import OfficerAllegation
-from data.constants import ALLEGATION_MIN_DATETIME, HEATMAP_END_YEAR
+from data.constants import ALLEGATION_MIN_DATETIME
 from lawsuit.models import Lawsuit
 
 
@@ -17,7 +17,7 @@ class CitySummaryViewSet(ViewSet):
 
         city_summary = {
             'start_year': ALLEGATION_MIN_DATETIME.year,
-            'end_year': HEATMAP_END_YEAR,
+            'end_year': now().year,
             'allegation_count': officer_allegations.count(),
             'discipline_count': officer_allegations.filter(disciplined=True).distinct().count(),
             'lawsuits_count': Lawsuit.objects.count(),
