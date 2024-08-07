@@ -443,7 +443,6 @@ class OfficerTestCase(TestCase):
             attachment_1.id, attachment_2.id
         })
 
-<<<<<<< HEAD
     # def test_investigator_attachments(self):
     #    allegation = AllegationFactory(crid='123')
     #    allegation_456 = AllegationFactory(crid='456')
@@ -462,26 +461,6 @@ class OfficerTestCase(TestCase):
     #    expect({attachment.id for attachment in investigator.officer.investigator_attachments}).to.eq({
     #        attachment_1.id, attachment_2.id
     #    })
-=======
-    def test_investigator_attachments(self):
-        allegation = AllegationFactory(crid='123')
-        allegation_456 = AllegationFactory(crid='456')
-        attachment_1 = AttachmentFileFactory(owner=allegation, source_type='DOCUMENTCLOUD')
-        attachment_2 = AttachmentFileFactory(owner=allegation, source_type='PORTAL_COPA_DOCUMENTCLOUD')
-        AttachmentFileFactory(owner=allegation, source_type='PORTAL_COPA_DOCUMENTCLOUD', show=False)
-        AttachmentFileFactory(owner=allegation, source_type='COPA')
-        AttachmentFileFactory(owner=allegation, source_type='COPA', show=False)
-        AttachmentFileFactory(owner=allegation_456, source_type='DOCUMENTCLOUD')
-        AttachmentFileFactory(owner=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD')
-        AttachmentFileFactory(owner=allegation_456, source_type='PORTAL_COPA_DOCUMENTCLOUD', show=False)
-
-        investigator = InvestigatorFactory(officer=OfficerFactory(id=1))
-        InvestigatorAllegationFactory(allegation=allegation, investigator=investigator)
-
-        expect({attachment.id for attachment in investigator.officer.investigator_attachments}).to.eq({
-            attachment_1.id, attachment_2.id
-        })
->>>>>>> staging
 
     @override_settings(S3_BUCKET_ZIP_DIRECTORY='zip')
     def test_get_zip_filename(self):

@@ -7,14 +7,10 @@ from robber import expect
 from mock import patch
 import pytz
 
-<<<<<<< HEAD
-from data.factories import OfficerAllegationFactory, AllegationCategoryFactory
-from data.constants import HEATMAP_END_YEAR
-=======
+from data.factories import OfficerAllegationFactory
 from data.factories import OfficerAllegationFactory
 from lawsuit.factories import LawsuitFactory, PaymentFactory
 from lawsuit.cache_managers import lawsuit_cache_manager
->>>>>>> staging
 
 
 class CitySummaryViewSetTestCase(TestCase):
