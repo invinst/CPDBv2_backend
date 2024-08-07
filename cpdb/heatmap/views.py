@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from data.models import OfficerAllegation
 from data.constants import ALLEGATION_MIN_DATETIME
 from lawsuit.models import Lawsuit
+from django.utils.timezone import now
 
 
 class CitySummaryViewSet(ViewSet):
