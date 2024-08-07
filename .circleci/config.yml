@@ -270,6 +270,19 @@ jobs:
             export $(cut -d= -f1 $ENV_FILE)
             bin/ensure_gunicorn_deployment.py -n $NAMESPACE
       - run:
+          name: Check API is still alive
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]
+            then
+              export DOMAIN=api.cpdp.co
+            elif [ $CIRCLE_BRANCH == "beta" ]
+            then
+              export DOMAIN=betaapi.cpdp.co
+            else
+              export DOMAIN=stagingapi.cpdp.co
+            fi
+            curl -f https://$DOMAIN/api/v2/status/
+      - run:
           name: Setup cronjobs
           command: |
             kept_crobjobs=('update_documents', 'crawl_copa_data', 'upload_document_requests', 'update_attachment_downloads_and_views_count', 'update_titles_to_documentcloud', 'rebuild_index_daily', 'webhook_statuses_check')
@@ -288,6 +301,7 @@ jobs:
             bin/cleanup_cronjobs.sh $ENV_TAG "$kept_crobjobs"
             bin/run_cronjob.sh $ENV_TAG update_documents "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG crawl_copa_data "0 5 * * *" $(cat /tmp/workspace/buildnum)
+            bin/run_cronjob.sh $ENV_TAG update_lawsuits "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG upload_document_requests @hourly $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_attachment_downloads_and_views_count "0 5 * * *" $(cat /tmp/workspace/buildnum)
             bin/run_cronjob.sh $ENV_TAG update_titles_to_documentcloud "0 5 * * *" $(cat /tmp/workspace/buildnum)
@@ -398,9 +412,16 @@ workflows:
       - django_migrate:
           requires:
             - push_backend_image
-      - deploy_backend:
+      - rebuild_index:
           requires:
             - django_migrate
+      - rebuild_search_index:
+          requires:
+            - django_migrate
+      - deploy_backend:
+          requires:
+            - rebuild_index
+            - rebuild_search_index
             - django_collect_static
       - clear_cache:
           requires:

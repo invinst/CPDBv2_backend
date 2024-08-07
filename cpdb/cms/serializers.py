@@ -202,6 +202,15 @@ class LandingPageSerializer(SlugPageSerializer):
                     'on cpdp in addition to officers who are mentioned in conversation with our twitter bot,@cpdpbot'],
         source='fields'
     )
+    carousel_lawsuit_title = RichTextField(
+        fake_value=['Lawsuits'],
+        source='fields'
+    )
+    carousel_lawsuit_desc = RichTextField(
+        fake_value=['In partnership with The Chicago Reporter, CPDP now contains data and documents relating to the '
+                    '1,112 lawsuits that resulted in the City of Chicago paying $313 million in settlements.'],
+        source='fields'
+    )
     demo_video_text = RichTextField(
         fake_value=['What is CPDP?'],
         source='fields'

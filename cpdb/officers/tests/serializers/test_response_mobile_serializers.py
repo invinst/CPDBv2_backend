@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Point
 import pytz
 from robber import expect
 
+from lawsuit.factories import LawsuitFactory
 from officers.serializers.response_mobile_serializers import (
     OfficerInfoMobileSerializer,
     PoliceUnitMobileSerializer,
@@ -17,8 +18,8 @@ from officers.serializers.response_mobile_serializers import (
     AwardNewTimelineMobileSerializer,
     TRRNewTimelineMobileSerializer,
     CoaccusalCardMobileSerializer,
-    OfficerCardMobileSerializer
-)
+    OfficerCardMobileSerializer,
+    LawsuitNewTimelineMobileSerializer)
 from data.factories import (
     OfficerFactory, PoliceUnitFactory, OfficerBadgeNumberFactory,
     OfficerHistoryFactory, OfficerYearlyPercentileFactory, SalaryFactory,
@@ -75,7 +76,6 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             sustained_count=4,
             unsustained_count=2,
             discipline_count=6,
-            civilian_compliment_count=2,
             trr_count=7,
             major_award_count=8,
             honorable_mention_percentile='88.8800',
@@ -114,6 +114,11 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             percentile_allegation_internal='66.66'
         )
 
+        lawsuit_1 = LawsuitFactory(total_payments=12000)
+        lawsuit_1.officers.set([officer])
+        lawsuit_2 = LawsuitFactory(total_payments=8500)
+        lawsuit_2.officers.set([officer])
+
         expect(OfficerInfoMobileSerializer(officer).data).to.eq({
             'officer_id': 123,
             'unit': {
@@ -137,7 +142,7 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
             'sustained_count': 4,
             'unsustained_count': 2,
             'discipline_count': 6,
-            'civilian_compliment_count': 2,
+            'total_lawsuit_settlements': '20500.00',
             'trr_count': 7,
             'major_award_count': 8,
             'honorable_mention_percentile': '88.8800',
@@ -159,6 +164,10 @@ class OfficerInfoMobileSerializerTestCase(TestCase):
                 },
             ]
         })
+
+    def test_total_lawsuit_settlements_none(self):
+        officer = OfficerFactory()
+        expect(OfficerInfoMobileSerializer(officer).data.get('total_lawsuit_settlements')).to.be.none()
 
 
 class BaseTimelineMobileSerializerMobileSerializerTestCase(TestCase):
@@ -256,7 +265,7 @@ class CRNewTimelineMobileSerializerTestCase(TestCase):
 
         attachment = AttachmentFileFactory(
             tag='Other',
-            allegation=allegation,
+            owner=allegation,
             title='title',
             id='123456',
             url='url',
@@ -381,6 +390,62 @@ class TRRNewTimelineMobileSerializerTestCase(TestCase):
         setattr(trr, 'rank_name', 'Police Officer')
 
         expect(TRRNewTimelineMobileSerializer(trr).data).to.exclude('point')
+
+
+class LawsuitNewTimelineMobileSerializerTestCase(TestCase):
+    def test_serialization(self):
+        officer = OfficerFactory(id=123)
+        lawsuit = LawsuitFactory(
+            case_no='Lawsuit#456',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2002, 2, 3, tzinfo=pytz.utc),
+        )
+
+        lawsuit.officers.add(officer)
+
+        attachment = AttachmentFileFactory(
+            tag='Other',
+            owner=lawsuit,
+            title='title',
+            id='123456',
+            url='url',
+            preview_image_url='preview_image_url',
+            file_type='document'
+        )
+
+        AttachmentFileFactory(
+            tag='Officer tag',
+            owner=officer,
+            title='officer attachement file',
+            id='765431',
+            url='officer_url',
+            preview_image_url='officer_preview_image_url',
+            file_type='document'
+        )
+
+        setattr(lawsuit, 'unit_name', 'Unit 001')
+        setattr(lawsuit, 'unit_description', 'District 001')
+        setattr(lawsuit, 'rank_name', 'Police Officer')
+        setattr(lawsuit, 'prefetch_filtered_attachments', [attachment])
+
+        expect(LawsuitNewTimelineMobileSerializer(lawsuit).data).to.eq({
+            'unit_name': 'Unit 001',
+            'unit_description': 'District 001',
+            'rank': 'Police Officer',
+            'priority_sort': 50,
+            'kind': 'LAWSUIT',
+            'case_no': 'Lawsuit#456',
+            'date_sort': date(2002, 2, 3),
+            'date': '2002-02-03',
+            'primary_cause': 'EXCESSIVE FORCE/MINOR',
+            'attachments': [{
+                'title': 'title',
+                'url': 'url',
+                'preview_image_url': 'preview_image_url',
+                'file_type': 'document',
+                'id': '123456',
+            }]
+        })
 
 
 class CoaccusalCardMobileSerializerTestCase(TestCase):

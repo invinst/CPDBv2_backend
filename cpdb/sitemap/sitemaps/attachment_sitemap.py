@@ -5,4 +5,4 @@ from sitemap.sitemaps.base_sitemap import BaseSitemap
 
 class AttachmentSitemap(BaseSitemap):
     def items(self):
-        return AttachmentFile.showing.filter(file_type=MEDIA_TYPE_DOCUMENT).order_by('id')
+        return AttachmentFile.objects.showing().filter(file_type=MEDIA_TYPE_DOCUMENT).order_by('id')

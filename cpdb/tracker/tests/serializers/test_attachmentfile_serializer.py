@@ -17,7 +17,7 @@ class AttachmentFileSerializerSerializerTestCase(TestCase):
         allegation = AllegationFactory(crid='456')
         attachment = AttachmentFileFactory(
             id=123,
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
             url='http://foo.com',
@@ -36,7 +36,7 @@ class AttachmentFileSerializerSerializerTestCase(TestCase):
 
         AttachmentFileFactory(
             id=124,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
@@ -44,7 +44,7 @@ class AttachmentFileSerializerSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=125,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -52,7 +52,7 @@ class AttachmentFileSerializerSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=126,
-            allegation=allegation,
+            owner=allegation,
             show=False,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -60,7 +60,7 @@ class AttachmentFileSerializerSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=127,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='audio',
             preview_image_url='',
@@ -108,7 +108,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         with freeze_time('2017-08-04 14:30:00'):
             attachment = AttachmentFileFactory(
                 id=123,
-                allegation=allegation,
+                owner=allegation,
                 title='CR document',
                 text_content='CHICAGO POLICE DEPARTMENT RD I HT334604',
                 url='http://foo.com',
@@ -130,7 +130,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
 
         AttachmentFileFactory(
             id=124,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/124/CRID-456-CR-p1-normal.gif',
@@ -139,7 +139,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=125,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -148,7 +148,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=126,
-            allegation=allegation,
+            owner=allegation,
             show=False,
             file_type='document',
             preview_image_url='https://assets.documentcloud.org/125/CRID-456-CR-p1-normal.gif',
@@ -156,7 +156,7 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         )
         AttachmentFileFactory(
             id=127,
-            allegation=allegation,
+            owner=allegation,
             show=True,
             file_type='audio',
             preview_image_url='',
@@ -203,32 +203,32 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         allegation = AllegationFactory(crid='456')
         with freeze_time('2017-08-04'):
             next_attachment = AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
         with freeze_time('2017-08-07'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='audio',
             )
 
         with freeze_time('2017-08-10'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
                 tags=['tag1'],
             )
 
         with freeze_time('2017-09-04'):
             attachment = AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
         with freeze_time('2017-10-04'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
@@ -240,31 +240,31 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
 
         with freeze_time('2017-08-04'):
             attachment = AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
         with freeze_time('2017-09-04'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
         with freeze_time('2017-10-04'):
             next_attachment = AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
             )
 
         with freeze_time('2017-10-05'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='audio',
             )
 
         with freeze_time('2017-10-06'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
                 tags=['tag1']
             )
@@ -276,28 +276,28 @@ class AuthenticatedAttachmentFileSerializerTestCase(TestCase):
         allegation = AllegationFactory(crid='456')
         with freeze_time('2017-08-04'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
                 tags=['tag123'],
             )
 
         with freeze_time('2017-09-04'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
                 tags=['tag124'],
             )
 
         with freeze_time('2017-10-05'):
             attachment = AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='document',
                 tags=['tag125'],
             )
 
         with freeze_time('2017-08-05'):
             AttachmentFileFactory(
-                allegation=allegation,
+                owner=allegation,
                 file_type='audio',
             )
 

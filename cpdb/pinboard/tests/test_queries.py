@@ -190,6 +190,17 @@ class OfficersSummaryQueryTestCase(TestCase):
             {'gender': 'Unknown', 'percentage': 0.29}
         ])
 
+    def test_query_with_no_related_officer(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=[pinboard_allegation],
+            officers=[],
+        )
+        query_results = dict(OfficersSummaryQuery(pinboard).query())
+        expect(list(query_results['race'])).to.eq([])
+        expect(list(query_results['gender'])).to.eq([])
+
 
 class ComplainantsSummaryQueryTestCase(TestCase):
     def test_query(self):
@@ -244,3 +255,14 @@ class ComplainantsSummaryQueryTestCase(TestCase):
             {'gender': 'F', 'percentage': 0.5},
             {'gender': 'Unknown', 'percentage': 0.3}
         ])
+
+    def test_query_with_no_complainant(self):
+        pinboard_allegation = AllegationFactory()
+        pinboard = PinboardFactory(
+            trrs=[],
+            allegations=[pinboard_allegation],
+            officers=[],
+        )
+        query_results = dict(ComplainantsSummaryQuery(pinboard).query())
+        expect(list(query_results['race'])).to.eq([])
+        expect(list(query_results['gender'])).to.eq([])

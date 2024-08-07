@@ -1,6 +1,8 @@
 from django.utils import timezone
 
-from search.formatters import SimpleFormatter
+from search.formatters import SimpleFormatter, DataFormatter
+from search_mobile.serializers import LawsuitSerializer
+from lawsuit.models import Lawsuit
 
 
 class OfficerV2Formatter(SimpleFormatter):
@@ -40,3 +42,10 @@ class TRRFormatter(SimpleFormatter):
         return {
             'id': serialized_doc['id']
         }
+
+
+class LawsuitFormatter(DataFormatter):
+    serializer = LawsuitSerializer
+
+    def get_queryset(self, ids):
+        return Lawsuit.objects.filter(id__in=ids)

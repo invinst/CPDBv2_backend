@@ -153,7 +153,11 @@ MAJOR_AWARDS = [
 ALLEGATION_MIN_DATETIME = datetime.strptime(settings.ALLEGATION_MIN, '%Y-%m-%d').replace(tzinfo=pytz.utc)
 ALLEGATION_MAX_DATETIME = datetime.strptime(settings.ALLEGATION_MAX, '%Y-%m-%d').replace(tzinfo=pytz.utc)
 
+<<<<<<< HEAD
 HEATMAP_END_YEAR = 2018
+=======
+HEATMAP_END_YEAR = 2023
+>>>>>>> staging
 
 INTERNAL_CIVILIAN_ALLEGATION_MIN_DATETIME = datetime.strptime(
     settings.INTERNAL_CIVILIAN_ALLEGATION_MIN, '%Y-%m-%d'

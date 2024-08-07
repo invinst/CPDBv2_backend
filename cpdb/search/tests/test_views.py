@@ -19,6 +19,7 @@ from data.factories import (
     AttachmentFileFactory,
     AllegationCategoryFactory)
 from search_terms.factories import SearchTermItemFactory, SearchTermCategoryFactory
+from lawsuit.factories import LawsuitFactory
 from trr.factories import TRRFactory, ActionResponseFactory
 from search.tests.utils import IndexMixin
 
@@ -77,7 +78,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         allegation_123 = AllegationFactory(crid='123')
         AllegationFactory(crid='456')
         AttachmentFileFactory(
-            allegation=allegation_123,
+            owner=allegation_123,
             show=True,
             text_content='the officer pointed a gun at the victim'
         )
@@ -242,6 +243,23 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         results = response.data['DATE > TRR']
         expect(results).to.have.length(1)
         expect(results[0]).not_to.contain('officer')
+
+    def test_search_lawsuit_result(self):
+        LawsuitFactory(case_no='00-L-5230')
+        LawsuitFactory(case_no='00-L-5231')
+
+        self.rebuild_index()
+        self.refresh_index()
+
+        url = reverse('api:suggestion-list')
+        response = self.client.get(url, {
+            'term': '00-L-5230',
+        })
+
+        results = response.data['LAWSUIT']
+        expect(results).to.have.length(1)
+
+        expect(results[0]['case_no']).to.eq('00-L-5230')
 
     def test_retrieve_single_with_content_type(self):
         OfficerFactory(first_name='Kevin', last_name='Osborn', id=123)
@@ -518,12 +536,20 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
         ActionResponseFactory(trr=trr, force_type='Taser', action_sub_category='5.1')
         ActionResponseFactory(trr=trr, force_type='Impact Weapon', action_sub_category='5.2')
         ActionResponseFactory(trr=trr, force_type='Taser Display', action_sub_category='3')
+        LawsuitFactory(
+            id=1,
+            case_no='00-L-5230',
+            summary='Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+            primary_cause='EXCESSIVE FORCE/MINOR',
+            incident_date=datetime(2000, 3, 16, 0, 0, 0, tzinfo=pytz.utc),
+        )
 
         url = reverse('api:suggestion-recent-search-items')
         response = self.client.get(url, {
             'officer_ids[]': 8562,
             'crids[]': 'C12345',
             'trr_ids[]': 123,
+            'lawsuit_ids[]': 1,
         })
 
         expect(response.status_code).to.eq(status.HTTP_200_OK)
@@ -551,6 +577,14 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
                 'trr_datetime': '2007-01-01',
                 'force_type': 'Impact Weapon',
                 'type': 'TRR',
+            },
+            {
+                'id': 1,
+                'case_no': '00-L-5230',
+                'summary': 'Hutchinson was shot and killed outside a bar near the Addison Red Line stop.',
+                'primary_cause': 'EXCESSIVE FORCE/MINOR',
+                'incident_date': '2000-03-16',
+                'type': 'LAWSUIT',
             }
         ])
 
@@ -571,10 +605,9 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
             incident_date=datetime(2007, 1, 1, tzinfo=pytz.utc),
             most_common_category=allegation_category,
         )
-
-        AttachmentFileFactory(text_content='Name: OBrien', allegation=allegation_1)
-        AttachmentFileFactory(text_content='Name: O\'Brien', allegation=allegation_2)
-        AttachmentFileFactory(text_content='Name: Jim', allegation=allegation_3)
+        AttachmentFileFactory(text_content='Name: OBrien', owner=allegation_1)
+        AttachmentFileFactory(text_content='Name: O\'Brien', owner=allegation_2)
+        AttachmentFileFactory(text_content='Name: Jim', owner=allegation_3)
 
         self.rebuild_index()
         self.refresh_index()

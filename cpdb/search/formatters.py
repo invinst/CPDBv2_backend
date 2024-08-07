@@ -1,4 +1,8 @@
 from django.conf import settings
+from django.db.models import Case, When
+
+from lawsuit.models import Lawsuit
+from search.serializers import LawsuitSerializer
 
 
 class Formatter(object):
@@ -34,6 +38,24 @@ class SimpleFormatter(Formatter):
 
     def serialize(self, docs):
         return [self.process_doc(doc) for doc in docs]
+
+
+class DataFormatter(Formatter):
+    serializer = None
+
+    def get_queryset(self, ids):
+        raise NotImplementedError
+
+    def items(self, docs):
+        ids = [doc._id for doc in docs]
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
+        return self.get_queryset(ids).order_by(preserved)
+
+    def serialize(self, docs):
+        return [self.serializer(item).data for item in self.items(docs)]
+
+    def format(self, response):
+        return self.serialize(response.hits)
 
 
 class OfficerFormatter(SimpleFormatter):
@@ -146,6 +168,13 @@ class CRFormatter(SimpleFormatter):
 
 TRRFormatter = SimpleFormatter
 AreaFormatter = SimpleFormatter
+
+
+class LawsuitFormatter(DataFormatter):
+    serializer = LawsuitSerializer
+
+    def get_queryset(self, ids):
+        return Lawsuit.objects.filter(id__in=ids).prefetch_related('plaintiffs', 'officers')
 
 
 class RankFormatter(SimpleFormatter):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from operator import itemgetter
 
 from django.test import TestCase
 from django.contrib.gis.geos import Point
@@ -11,6 +12,7 @@ from cr.serializers.cr_response_serializers import (
     CRSerializer,
     InvestigatorAllegationSerializer,
     CRSummarySerializer,
+    CRRelatedComplaintSerializer
 )
 from data.factories import (
     AllegationFactory,
@@ -20,7 +22,8 @@ from data.factories import (
     OfficerAllegationFactory,
     PoliceWitnessFactory,
     OfficerBadgeNumberFactory,
-    InvestigatorFactory
+    InvestigatorFactory,
+    ComplainantFactory
 )
 
 
@@ -169,3 +172,57 @@ class CRSummarySerializerTestCase(TestCase):
         setattr(allegation, 'categories', [])
         result = CRSummarySerializer(allegation).data
         expect(result['category_names']).to.eq(['Unknown'])
+
+
+class CRRelatedComplaintSerializerTestCase(TestCase):
+    def test_serializer(self):
+        officer_1 = OfficerFactory(first_name='Jos', last_name='Parker')
+        officer_2 = OfficerFactory(first_name='John', last_name='Hurley')
+        allegation = AllegationFactory(
+            point=Point([0.01, 0.01]),
+            incident_date=datetime(2016, 2, 23, tzinfo=pytz.utc),
+        )
+        OfficerAllegationFactory(
+            allegation=allegation,
+            officer=officer_1,
+            allegation_category__category='False Arrest'
+        )
+        OfficerAllegationFactory(
+            allegation=allegation,
+            officer=officer_2,
+            allegation_category__category='Use of Force'
+        )
+        ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
+        ComplainantFactory(allegation=allegation, gender='F', race='Black', age='19')
+
+        expected_data = {
+            'crid': allegation.crid,
+            'coaccused': [
+                'J. Hurley',
+                'J. Parker'
+            ],
+            'category_names': [
+                'False Arrest', 'Use of Force'
+            ],
+            'complainants': [
+                {
+                    'race': 'Black',
+                    'gender': 'Female',
+                    'age': 19
+                },
+                {
+                    'race': 'Black',
+                    'gender': 'Male',
+                    'age': 18
+                }
+            ],
+            'point': {
+                'lat': 0.01,
+                'lon': 0.01
+            },
+            'incident_date': '2016-02-23',
+        }
+        serializer_data = CRRelatedComplaintSerializer(allegation).data
+        serializer_data['coaccused'] = sorted(serializer_data['coaccused'])
+        serializer_data['complainants'] = sorted(serializer_data['complainants'], key=itemgetter('gender'))
+        expect(serializer_data).to.eq(expected_data)

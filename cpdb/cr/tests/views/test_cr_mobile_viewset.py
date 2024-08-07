@@ -15,13 +15,12 @@ from data.factories import (
     AllegationCategoryFactory, AttachmentFileFactory, OfficerBadgeNumberFactory, VictimFactory
 )
 from data.constants import MEDIA_TYPE_DOCUMENT
-from cr.tests.mixins import CRTestCaseMixin
 from data.cache_managers import officer_cache_manager, allegation_cache_manager
 from email_service.constants import CR_ATTACHMENT_REQUEST
 from email_service.factories import EmailTemplateFactory
 
 
-class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
+class CRMobileViewSetTestCase(APITestCase):
 
     def test_retrieve(self):
         area = AreaFactory(name='Lincoln Square')
@@ -103,7 +102,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -111,12 +110,12 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation, title='CR arrest report document',
+            owner=allegation, title='CR arrest report document',
             url='http://cr-document.com/', file_type=MEDIA_TYPE_DOCUMENT
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',
@@ -326,7 +325,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
 
         AttachmentFileFactory(
             tag='TRR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document',
             id='123456',
             url='http://cr-document.com/',
@@ -334,7 +333,7 @@ class CRMobileViewSetTestCase(CRTestCaseMixin, APITestCase):
         )
         AttachmentFileFactory(
             tag='AR',
-            allegation=allegation,
+            owner=allegation,
             title='CR document 2',
             id='654321',
             url='http://AR-document.com/',
