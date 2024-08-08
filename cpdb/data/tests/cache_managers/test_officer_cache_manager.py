@@ -19,7 +19,7 @@ from data.factories import (
 )
 from data.cache_managers import officer_cache_manager
 from data.models import Officer
-# from shared.tests.utils import create_object
+from shared.tests.utils import create_object
 from trr.factories import TRRFactory
 
 
