@@ -1,7 +1,7 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
-import pytz
-from django.test import override_settings
+# import pytz
+# from django.test import override_settings
 from django.test.testcases import TestCase
 
 from mock import patch, Mock
@@ -18,8 +18,8 @@ from data.factories import (
     SalaryFactory
 )
 from data.cache_managers import officer_cache_manager
-from data.models import Officer, OfficerYearlyPercentile
-from shared.tests.utils import create_object
+from data.models import Officer
+# from shared.tests.utils import create_object
 from trr.factories import TRRFactory
 
 
