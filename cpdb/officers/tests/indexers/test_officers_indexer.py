@@ -417,125 +417,125 @@ class OfficersIndexerTestCase(TestCase):
     @override_settings(INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01')
     @override_settings(TRR_MIN='2004-01-08')
     @override_settings(TRR_MAX='2016-04-12')
-    # def test_extract_datum_percentiles(self):
-    #     officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
-    #     officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
-    #     OfficerFactory(id=3, appointed_date=date(2014, 3, 1), resignation_date=date(2015, 4, 14))
+    def test_extract_datum_percentiles(self):
+        officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
+        officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))
+        OfficerFactory(id=3, appointed_date=date(2014, 3, 1), resignation_date=date(2015, 4, 14))
 
-    #     OfficerAllegationFactory(
-    #         officer=officer1,
-    #         allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
-    #         start_date=date(2015, 1, 1),
-    #         allegation__is_officer_complaint=False)
-    #     OfficerAllegationFactory(
-    #         officer=officer1,
-    #         start_date=date(2015, 1, 1),
-    #         allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
-    #         allegation__is_officer_complaint=False)
-    #     OfficerAllegationFactory(
-    #         officer=officer1,
-    #         start_date=date(2016, 1, 22),
-    #         allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
-    #         allegation__is_officer_complaint=False)
-    #     OfficerAllegationFactory.create_batch(
-    #         2,
-    #         officer=officer2,
-    #         start_date=date(2017, 10, 19),
-    #         allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
-    #         allegation__is_officer_complaint=False
-    #     )
-    #     OfficerAllegationFactory(
-    #         officer=officer2,
-    #         start_date=date(2017, 10, 19),
-    #         allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
-    #         allegation__is_officer_complaint=True
-    #     )
-    #     OfficerAllegationFactory(
-    #         officer=officer2,
-    #         start_date=date(2017, 10, 19),
-    #         allegation__incident_date=datetime(2017, 3, 15, tzinfo=pytz.utc),
-    #         allegation__is_officer_complaint=True
-    #     )
-    #     TRRFactory(
-    #         officer=officer1,
-    #         trr_datetime=datetime(2017, 3, 15, tzinfo=pytz.utc),
-    #     )
-    #     TRRFactory(
-    #         officer=officer1,
-    #         trr_datetime=datetime(2016, 3, 15, tzinfo=pytz.utc),
-    #     )
-    #     rows = sorted(self.extract_data(), key=itemgetter('id'))
-    #     expect(rows).to.have.length(3)
-    #     expect(rows[0]['current_allegation_percentile']).to.eq('33.3333')
-    #     expect(rows[0]['percentiles']).to.eq([
-    #         {
-    #             'id': 1,
-    #             'year': 2014,
-    #             'percentile_allegation': '0.0000',
-    #             'percentile_allegation_civilian': '0.0000',
-    #             'percentile_allegation_internal': '0.0000',
-    #             'percentile_trr': '0.0000'
-    #         },
-    #         {
-    #             'id': 1,
-    #             'year': 2015,
-    #             'percentile_allegation': '50.0000',
-    #             'percentile_allegation_civilian': '50.0000',
-    #             'percentile_allegation_internal': '0.0000',
-    #             'percentile_trr': '0.0000'
-    #         },
-    #         {
-    #             'id': 1,
-    #             'year': 2016,
-    #             'percentile_allegation': '33.3333',
-    #             'percentile_allegation_civilian': '33.3333',
-    #             'percentile_allegation_internal': '0.0000',
-    #             'percentile_trr': '66.6667'
-    #         }
-    #     ])
-    #     expect(rows[1]['current_allegation_percentile']).to.eq('66.6667')
-    #     expect(rows[1]['percentiles']).to.eq([
-    #         {
-    #             'id': 2,
-    #             'year': 2016,
-    #             'percentile_allegation': '66.6667',
-    #             'percentile_allegation_civilian': '66.6667',
-    #             'percentile_allegation_internal': '66.6667',
-    #             'percentile_trr': '0.0000'
-    #         }
-    #     ])
-    #     expect(rows[2]['current_allegation_percentile']).to.eq('0.0000')
-    #     expect(rows[2]['percentiles']).to.eq([
-    #         {
-    #             'id': 3,
-    #             'year': 2015,
-    #             'percentile_allegation': '0.0000',
-    #             'percentile_allegation_civilian': '0.0000',
-    #             'percentile_allegation_internal': '0.0000',
-    #             'percentile_trr': '0.0000'
-    #         }
-    #     ])
+        OfficerAllegationFactory(
+            officer=officer1,
+            allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
+            start_date=date(2015, 1, 1),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(
+            officer=officer1,
+            start_date=date(2015, 1, 1),
+            allegation__incident_date=datetime(2015, 1, 1, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory(
+            officer=officer1,
+            start_date=date(2016, 1, 22),
+            allegation__incident_date=datetime(2016, 1, 1, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False)
+        OfficerAllegationFactory.create_batch(
+            2,
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 1, 16, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=False
+        )
+        OfficerAllegationFactory(
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2016, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
+        )
+        OfficerAllegationFactory(
+            officer=officer2,
+            start_date=date(2017, 10, 19),
+            allegation__incident_date=datetime(2017, 3, 15, tzinfo=pytz.utc),
+            allegation__is_officer_complaint=True
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2017, 3, 15, tzinfo=pytz.utc),
+        )
+        TRRFactory(
+            officer=officer1,
+            trr_datetime=datetime(2016, 3, 15, tzinfo=pytz.utc),
+        )
+        rows = sorted(self.extract_data(), key=itemgetter('id'))
+        expect(rows).to.have.length(3)
+        expect(rows[0]['current_allegation_percentile']).to.eq('33.3333')
+        expect(rows[0]['percentiles']).to.eq([
+            {
+                'id': 1,
+                'year': 2014,
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_civilian': '0.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_trr': '0.0000'
+            },
+            {
+                'id': 1,
+                'year': 2015,
+                'percentile_allegation': '50.0000',
+                'percentile_allegation_civilian': '50.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_trr': '0.0000'
+            },
+            {
+                'id': 1,
+                'year': 2016,
+                'percentile_allegation': '33.3333',
+                'percentile_allegation_civilian': '33.3333',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_trr': '66.6667'
+            }
+        ])
+        expect(rows[1]['current_allegation_percentile']).to.eq('66.6667')
+        expect(rows[1]['percentiles']).to.eq([
+            {
+                'id': 2,
+                'year': 2016,
+                'percentile_allegation': '66.6667',
+                'percentile_allegation_civilian': '66.6667',
+                'percentile_allegation_internal': '66.6667',
+                'percentile_trr': '0.0000'
+            }
+        ])
+        expect(rows[2]['current_allegation_percentile']).to.eq('0.0000')
+        expect(rows[2]['percentiles']).to.eq([
+            {
+                'id': 3,
+                'year': 2015,
+                'percentile_allegation': '0.0000',
+                'percentile_allegation_civilian': '0.0000',
+                'percentile_allegation_internal': '0.0000',
+                'percentile_trr': '0.0000'
+            }
+        ])
 
-    # @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2016)
-    # @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2016)
-    # @patch(
-    #     'officers.indexers.officers_indexer.officer_percentile.top_percentile',
-    #     Mock(return_value=[Mock(
-    #         spec=[
-    #             'id',
-    #             'year',
-    #             'resignation_date',
-    #             'percentile_allegation',
-    #             'percentile_allegation_civilian',
-    #             'percentile_allegation_internal'],
-    #         id=123,
-    #         year=2016,
-    #         resignation_date=date(2017, 3, 4),
-    #         percentile_allegation=23.4543,
-    #         percentile_allegation_civilian=54.2342,
-    #         percentile_allegation_internal=54.3432
-    #     )])
-    # )
+    @patch('officers.indexers.officers_indexer.MIN_VISUAL_TOKEN_YEAR', 2016)
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2016)
+    @patch(
+        'officers.indexers.officers_indexer.officer_percentile.top_percentile',
+        Mock(return_value=[Mock(
+            spec=[
+                'id',
+                'year',
+                'resignation_date',
+                'percentile_allegation',
+                'percentile_allegation_civilian',
+                'percentile_allegation_internal'],
+            id=123,
+            year=2016,
+            resignation_date=date(2017, 3, 4),
+            percentile_allegation=23.4543,
+            percentile_allegation_civilian=54.2342,
+            percentile_allegation_internal=54.3432
+        )])
+    )
     def test_extract_datum_percentiles_missing_value(self):
         OfficerFactory(id=123)
         rows = self.extract_data()
