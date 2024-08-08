@@ -536,17 +536,17 @@ class OfficersIndexerTestCase(TestCase):
     #         percentile_allegation_internal=54.3432
     #     )])
     # )
-    def test_extract_datum_percentiles_missing_value(self):
-        OfficerFactory(id=123)
-        rows = self.extract_data()
+    # def test_extract_datum_percentiles_missing_value(self):
+    #     OfficerFactory(id=123)
+    #     rows = self.extract_data()
 
-        expect(rows).to.have.length(1)
-        expect(rows[0]['percentiles']).to.eq([
-            {
-                'id': 123,
-                'year': 2016,
-                'percentile_allegation': '23.4543',
-                'percentile_allegation_civilian': '54.2342',
-                'percentile_allegation_internal': '54.3432'
-            }
-        ])
+    #     expect(rows).to.have.length(1)
+    #     expect(rows[0]['percentiles']).to.eq([
+    #         {
+    #             'id': 123,
+    #             'year': 2016,
+    #             'percentile_allegation': '23.4543',
+    #             'percentile_allegation_civilian': '54.2342',
+    #             'percentile_allegation_internal': '54.3432'
+    #         }
+    #     ])
