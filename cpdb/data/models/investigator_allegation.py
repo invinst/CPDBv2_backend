@@ -11,5 +11,6 @@ class InvestigatorAllegation(TimeStampsModel):
     current_rank = models.CharField(max_length=100, null=True)
     current_unit = models.ForeignKey('data.PoliceUnit', on_delete=models.SET_NULL, null=True)
     investigator_type = models.CharField(max_length=32, null=True)
+    investigating_agency = models.CharField(max_length=32, null=True)
 
     objects = BulkUpdateManager()
