@@ -19,8 +19,5 @@ class Migration(migrations.Migration):
             model_name='officerallegation',
             name='recc_finding',
             field=models.CharField(blank=True, choices=[['UN', 'Unfounded'], ['EX', 'Exonerated'], ['AC', 'Administratively Closed'], ['NS', 'Not Sustained'], ['SU', 'Sustained'], ['NC', 'No Cooperation'], ['NA', 'No Affidavit'], ['DS', 'Discharged'], ['ZZ', 'Unknown']], max_length=30),
-        ),
-        migrations.RunSQL(
-            "alter table data_officer alter column tags drop not null;"
         )
     ]
