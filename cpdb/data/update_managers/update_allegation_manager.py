@@ -12,13 +12,13 @@ class AllegationSerializer(serializers.ModelSerializer):
         # exclude crid and beat specifically as these result in database calls
         # assume crid is valid, manually check if beat exists with a single query
         fields = ['incident_date', 'point', 'location', 'first_start_date', 'first_end_date',
-                  'add1', 'add2', 'city', 'old_complaint_address']
+                  'add1', 'add2', 'city', 'old_complaint_address', 'is_officer_complaint']
 
 
 class UpdateAllegationManager(UpdateManagerBase):
     def __init__(self, batch_size=100000):
         super().__init__(table_name='csv_complaints_complaints',
-                         filename="data-updates/complaints/complaints_complaints.csv",
+                         filename="data-updates/complaints/complaints-complaints.csv",
                          Model=Allegation,
                          Serializer=AllegationSerializer,
                          batch_size=batch_size)
@@ -44,10 +44,17 @@ class UpdateAllegationManager(UpdateManagerBase):
                         then (nullif(incident_date, '') || ' ' ||
                             coalesce(nullif(incident_time, ''), '00:00:00'))::timestamp
                         else null
-                        end as incident_date
+                        end as incident_date,
+                    case when
+                        complainant_type = 'CPD EMPLOYEE' then True
+                        else False end as is_officer_complaint
                 from {self.table_name} t
-                left join data_area a
-                    on a.id = trim(replace(t.beat, ' ', ''))::float::int
+                left join (
+                    select distinct on (name) *
+                    from data_area
+                    order by name, id
+                ) a
+                    on lpad(replace(t.beat, '.0', ''), 4, '0') = a.name::varchar
                     and a.area_type = 'beat'
                 where
                     cr_id != ''

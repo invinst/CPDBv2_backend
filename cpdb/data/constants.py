@@ -48,6 +48,7 @@ AGENCY_CHOICES = [['IPRA', 'IPRA'], ['IAD', 'IAD']]
 FINDINGS = [
     ['UN', 'Unfounded'],  # means final_outcome_class = not-sustained
     ['EX', 'Exonerated'],  # means final_outcome_class = not-sustained
+    ['AC', 'Administratively Closed'],  # means final_outcome_class = not-sustained
     ['NS', 'Not Sustained'],  # means final_outcome_class = not-sustained
     ['SU', 'Sustained'],  # means final_outcome_class = sustained
     ['NC', 'No Cooperation'],  # means final_outcome_class = not-sustained

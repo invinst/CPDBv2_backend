@@ -17,13 +17,13 @@ class InvestigatorAllegationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InvestigatorAllegation
-        fields = ['current_star', 'current_rank', 'investigator_type']
+        fields = ['current_star', 'current_rank', 'investigator_type', 'current_unit_id']
 
 
 class UpdateInvestigatorManager(UpdateManagerBase):
     def __init__(self, batch_size):
         super().__init__(table_name='csv_investigators',
-                         filename='data-updates/investigators/investigators.csv',
+                         filename='data-updates/complaints/investigators.csv',
                          Model=Investigator,
                          Serializer=InvestigatorSerializer,
                          batch_size=batch_size)
@@ -35,6 +35,8 @@ class UpdateInvestigatorManager(UpdateManagerBase):
     @transaction.atomic
     def update_data(self, update_holding_table):
         table_name = self.table_name
+
+        self.update_holding_table()
 
         cursor = connection.cursor()
         cursor.execute(f"select count(*) from {table_name}")
@@ -70,10 +72,7 @@ class UpdateInvestigatorManager(UpdateManagerBase):
                                         last_name,
                                         middle_initial,
                                         suffix_name,
-                                        appointed_date,
-                                        current_star,
-                                        current_rank,
-                                        current_unit
+                                        appointed_date
                                     desc) as id,
                                 initcap(first_name) as first_name,
                                 initcap(last_name) as last_name,
@@ -82,6 +81,8 @@ class UpdateInvestigatorManager(UpdateManagerBase):
                                 appointed_date::date as appointed_date,
                                 current_star,
                                 current_rank,
+                                investigator_type,
+                                investigating_agency,
                                 lpad(current_unit::float::int::text, 3, '0') as unit_name
                             from {table_name} t
                             join data_allegation a
