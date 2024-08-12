@@ -78,7 +78,8 @@ class UpdateManagerBase:
 
         if update_holding_table:
             print(f"Updating holding table {self.table_name}")
-            self.update_holding_table()
+            updated_table = self.update_holding_table()
+            print(f"Updated holding table {updated_table}")
 
         cursor.execute(f"select count(*) from {self.table_name}")
         row_count = cursor.fetchone()[0]
@@ -111,12 +112,12 @@ class UpdateManagerBase:
             header = f.readline().strip()
             f.seek(0)
             with connection.cursor() as cursor:
-                cursor.execute(f"drop table if exists csv_{self.table_name}")
+                cursor.execute(f"drop table if exists {self.table_name}")
 
-                cursor.execute(f"""create table csv_{self.table_name} (
+                cursor.execute(f"""create table {self.table_name} (
                                     {', '.join([f"{column} text" for column in header.split(',')])}
                                 )""")
 
-                cursor.copy_expert(f"copy csv_{self.table_name} from stdin with csv header", f)
+                cursor.copy_expert(f"copy {self.table_name} from stdin with csv header", f)
 
-        return f"csv_{self.table_name}"
+        return f"{self.table_name}"
