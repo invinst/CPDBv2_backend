@@ -37,7 +37,7 @@ class UpdateTRRManager(UpdateManagerBase):
                     d.direction,
                     initcap(nullif(street, '')) as street,
                     initcap(nullif(location, '')) as location,
-                    nullif(trr_datetime, '')::timestamp as trr_datetime,
+                    coalesce(nullif(trr_datetime, ''), trr_date)::timestamp as trr_datetime,
                     initcap(nullif(indoor_or_outdoor, '')) as indoor_or_outdoor,
                     nullif(lighting_condition, '') as lighting_condition,
                     nullif(weather_condition, '') as weather_condition,
@@ -122,8 +122,8 @@ class UpdateTRRManager(UpdateManagerBase):
                         'E' as dir, 'East' as direction
                 ) d
                     on m.direction = d.dir
-                left join csv_officer o
-                    on o.uid = case
+                left join csv_final_profiles o
+                    on o.uid::float::int = case
                         when m.uid != '' then m.uid::float::int
                         else null end
                 left join data_policeunit u

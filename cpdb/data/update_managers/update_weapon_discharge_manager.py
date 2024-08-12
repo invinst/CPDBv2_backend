@@ -15,7 +15,7 @@ class WeaponDischargeSerializer(serializers.ModelSerializer):
 class UpdateWeaponDischargeManager(UpdateManagerBase):
     def __init__(self, batch_size):
         super().__init__(table_name="csv_weapon_discharges",
-                         filename="data-updates/trrs/weapon_discharges.csv",
+                         filename="data-updates/trrs/trr_weapon_discharges.csv",
                          Model=WeaponDischarge,
                          Serializer=WeaponDischargeSerializer,
                          batch_size=batch_size*10)
@@ -42,6 +42,7 @@ class UpdateWeaponDischargeManager(UpdateManagerBase):
                         when t.object_struck_of_discharge = 'NONE' then null
                         when t.object_struck_of_discharge = 'OTHER PERSON' then 'PERSON'
                         when t.object_struck_of_discharge = 'ANY OTHER COMBINATION' then 'UNKNOWN'
+                        when t.object_struck_of_discharge = 'SUBJECT' then 'UNKNOWN'
                         else t.object_struck_of_discharge end as object_struck_of_discharge,
                     t.discharge_position
                 from {self.table_name} t

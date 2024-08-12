@@ -12,7 +12,7 @@ class OfficerHistorySerializer(serializers.ModelSerializer):
 class UpdateOfficerHistoryManager(UpdateManagerBase):
     def __init__(self, batch_size):
         super().__init__(table_name="csv_unit_history",
-                         filename="data-updates/unit_history/unit_history.csv",
+                         filename="data-updates/unit_history/unit-history.csv",
                          Model=OfficerHistory,
                          Serializer=OfficerHistorySerializer,
                          batch_size=batch_size*10)

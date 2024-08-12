@@ -37,4 +37,6 @@ class UpdateSalaryManager(UpdateManagerBase):
                 on t.UID::float::int = o.uid::float::int
             join data_officer d
                 on d.id = o.officer_id::float::int
+            where
+                pay_grade is not null
             limit {self.batch_size} offset {self.offset}"""
