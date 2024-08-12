@@ -12,7 +12,7 @@ class AllegationSerializer(serializers.ModelSerializer):
         # exclude crid and beat specifically as these result in database calls
         # assume crid is valid, manually check if beat exists with a single query
         fields = ['incident_date', 'point', 'location', 'first_start_date', 'first_end_date',
-                  'add1', 'add2', 'city', 'old_complaint_address', 'is_officer_complaint']
+                  'add1', 'add2', 'city', 'is_officer_complaint']
 
 
 class UpdateAllegationManager(UpdateManagerBase):

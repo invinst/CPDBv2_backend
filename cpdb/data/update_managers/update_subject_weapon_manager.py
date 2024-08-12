@@ -11,8 +11,8 @@ class SubjectWeaponSerializer(serializers.ModelSerializer):
 
 class UpdateSubjectWeaponManager(UpdateManagerBase):
     def __init__(self, batch_size):
-        super().__init__(table_name='csv_trr_subject_weapon',
-                         filename='data-updates/trrs/trr_subject_weapon.csv',
+        super().__init__(table_name='csv_trr_subject_weapons',
+                         filename='data-updates/trrs/trr_subject_weapons.csv',
                          Model=SubjectWeapon,
                          Serializer=SubjectWeaponSerializer,
                          batch_size=batch_size)

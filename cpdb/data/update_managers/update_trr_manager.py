@@ -122,8 +122,8 @@ class UpdateTRRManager(UpdateManagerBase):
                         'E' as dir, 'East' as direction
                 ) d
                     on m.direction = d.dir
-                left join csv_officer o
-                    on o.uid = case
+                left join csv_final_profiles o
+                    on o.uid::float::int = case
                         when m.uid != '' then m.uid::float::int
                         else null end
                 left join data_policeunit u
