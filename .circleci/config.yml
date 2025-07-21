@@ -311,44 +311,44 @@ jobs:
               bin/run_cronjob.sh $ENV_TAG webhook_statuses_check @daily $(cat /tmp/workspace/buildnum)
             fi
 
-  build_cpdpbot:
-    machine: true
-    steps:
-      - checkout
-      - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
-      - persist_to_workspace:
-          root: .
-          paths:
-            - buildnum
-      - run:
-          name: Build cpdpbot image
-          command: docker build -t cpdbdev/cpdpbot:$(cat buildnum) docker/cpdpbot
-      - run:
-          name: Test cpdpbot image
-          command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat buildnum) python -m cpdpbot.test
-      - run:
-          name: Push cpdpbot image
-          command: |
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push cpdbdev/cpdpbot:$(cat buildnum)
+  # build_cpdpbot:
+  #   machine: true
+  #   steps:
+  #     - checkout
+  #     - run: echo "build-$CIRCLE_BUILD_NUM" > buildnum
+  #     - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - buildnum
+  #     - run:
+  #         name: Build cpdpbot image
+  #         command: docker build -t cpdbdev/cpdpbot:$(cat buildnum) docker/cpdpbot
+  #     - run:
+  #         name: Test cpdpbot image
+  #         command: docker run -e "SETUP_LOGGING=no" --rm cpdbdev/cpdpbot:$(cat buildnum) python -m cpdpbot.test
+  #     - run:
+  #         name: Push cpdpbot image
+  #         command: |
+  #           echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+  #           docker push cpdbdev/cpdpbot:$(cat buildnum)
 
-  deploy_cpdpbot:
-    docker:
-      - image: cpdbdev/google-cloud-sdk:latest
-    environment: *gcloud-env
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run: *setup-gcloud
-      - run: *reveal-git-secret
-      - run:
-          name: Deploy cpdpbot
-          command: |
-            export CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
-            source prod.env
-            export $(cut -d= -f1 prod.env)
-            cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
+  # deploy_cpdpbot:
+  #   docker:
+  #     - image: cpdbdev/google-cloud-sdk:latest
+  #   environment: *gcloud-env
+  #   steps:
+  #     - checkout
+  #     - attach_workspace:
+  #         at: /tmp/workspace
+  #     - run: *setup-gcloud
+  #     - run: *reveal-git-secret
+  #     - run:
+  #         name: Deploy cpdpbot
+  #         command: |
+  #           export CPDPBOT_IMAGE_TAG=$(cat /tmp/workspace/buildnum)
+  #           source prod.env
+  #           export $(cut -d= -f1 prod.env)
+  #           cat kubernetes/cpdpbot.yml | envsubst | kubectl apply --namespace=production -f -
 
 #  notify_slack:
 #    docker:
@@ -490,18 +490,18 @@ workflows:
       #    requires:
       #      - deploy_backend
 
-  deploy_cpdpbot:
-    jobs:
-      - build_cpdpbot:
-          filters:
-            branches:
-              only:
-                - staging
-                - master
-      - deploy_cpdpbot:
-          requires:
-            - build_cpdpbot
-          filters:
-            branches:
-              only:
-                - master
+  # deploy_cpdpbot:
+  #   jobs:
+  #     - build_cpdpbot:
+  #         filters:
+  #           branches:
+  #             only:
+  #               - staging
+  #               - master
+  #     - deploy_cpdpbot:
+  #         requires:
+  #           - build_cpdpbot
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
