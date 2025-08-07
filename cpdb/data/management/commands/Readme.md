@@ -1,116 +1,56 @@
-# Import Data 2024 Command
+# Updating CPDP Data from CSV Files
+This README outlines how to update data for CPDP, by replacing existing data with data given by csv files. 
 
-This Django management command, `import_data_2024.py`, is designed to streamline the process of importing various data
-sets into your Django application. It sequentially calls other custom management commands, each responsible for importing
-specific data files into the database.
-
-## Prerequisites
-
-- Django installed in your project
-- Custom Django management commands for importing data
-- Data files located in the specified paths
-
-## File Structure
-
-Ensure your project directory has the following structure:
-
+## Usage 
+### Setup
+- Ensure that the updated csv files are present at `cpdb/data-updates`
+- Update the .env file in the root directory with the relevant database being updated. It should look like: 
 ```
-project/
-│
-├── manage.py
-├── app/
-│   ├── management/
-│   │   ├── commands/
-│   │   │   ├── import_data_2024.py
-│   │   │   ├── import_officer_data_2024.py
-│   │   │   ├── import_complaints_complaints_data_2024.py
-│   │   │   ├── import_complaints_data_2024.py
-│   │   │   ├── import_complaints_accused_data_2024.py
-│   │   │   ├── import_investigators_data_2024.py
-│   │   │   ├── import_victims_data_2024.py
-│   │   │   ├── import_trr_trr_data_2024.py
-│   │   │   ├── import_trr_action_responses_data_2024.py
-│   │   │   ├── import_trr_statuses_data_2024.py
-│   │   │   ├── import_subjectweapon_data_2024.py
-│   │   │   ├── import_weapondischarge_data_2024.py
-│   │   │   ├── import_awards_data_2024.py
-│   │   │   ├── import_salaries_data_2024.py
-│   │   │   ├── import_settlement_data_2024.py
-│   │   │   ├── import_unit_data_2024.py
-│   │   └── __init__.py
-│   └── __init__.py
-└── data-updates/
-    ├── officers/
-    │   └── final-profiles.csv
-    ├── complaints/
-    │   ├── complaints-complaints.csv
-    │   ├── complainants.csv
-    │   ├── complaints-accused.csv
-    │   ├── civilian_witnesses.csv
-    │   ├── investigators.csv
-    │   └── victims.csv
-    ├── trrs/
-    │   ├── trr_main.csv
-    │   ├── trr_actions_responses.csv
-    │   ├── trr_statuses.csv
-    │   ├── trr_subject_weapons.csv
-    │   └── trr_weapon_discharges.csv
-    ├── awards/
-    │   └── awards.csv
-    ├── salaries/
-    │   └── salaries.csv
-    └── settlements/
-        └── settlements.csv
+DB_HOST=server_name_here
+DB_NAME=db_name_here
+DB_USER=db_username_here
+DB_PASSWORD=db_password_here
 ```
 
-## Usage
+### Full Data Update
+In the root directory of the project run:
+`docker compose exec web python cpdb/manage.py update_data --all`
 
-To execute the `import_data_2024.py` command, run the following command in your terminal from your project directory:
+Note: this will also run the update_cache function. 
 
-```sh
-python manage.py import_data_2024
-```
+### Single Table Update
+To update just a single table/model, feed the model in as a parameter, i.e., 
+`docker compose exec web python cpdb/manage.py update_data --model=OfficerAllegation`
 
-## Command Description
+Note: this will not automatically run the update_cache function, even if that would be warranted. 
 
-This command performs the following tasks in sequence:
+### Update Cache 
+To update the cache manually, run:
+`docker compose exec web python cpdp/manage.py cache_data`
 
-1. **Migrations**:
-   - Executes Django migrations to ensure the database schema is up-to-date.
+## Outline of How it Works
+* CSV files are read in and bulk inserted to holding tables, with every field treated as a string for speed
+* Existing model data, and associated model data, is deleted. 
+* The code queries from the holding table, defining data types in the query itself, and constructs model objects from it
+* A serializer runs basic field validations, then inserts objects. 
 
-2. **Data Imports**:
-   - **Officers**: Imports officer data from `final-profiles.csv`.
-   - **Complaints**: Imports complaints data from multiple CSV files.
-     - `complaints-complaints.csv`
-     - `complainants.csv`
-     - `complaints-accused.csv`
-     - `civilian_witnesses.csv`
-     - `investigators.csv`
-     - `victims.csv`
-   - **TRRs**: Imports Tactical Response Reports (TRR) data from multiple CSV files.
-     - `trr_main.csv`
-     - `trr_actions_responses.csv`
-     - `trr_statuses.csv`
-     - `trr_subject_weapons.csv`
-     - `trr_weapon_discharges.csv`
-   - **Awards**: Imports awards data from `awards.csv`.
-   - **Salaries**: Imports salaries data from `salaries.csv`.
-   - **Settlements**: Imports settlements data from `settlements.csv`.
-   - **Unit History**: Imports unit history data from `unit-history.csv`.
+The naive implementation of just reading through each row of the CSV, constructing an object and running validations, then inserting that object is prohibitively slow. This approach allows for a good balance between performance and safety, exploiting the speed of postgres's fast copy, and the general speedup of doing operations in SQL rather than ORM objects, while still using a serializer for validations for safety.
 
-3. **Cache Generation**:
-   - Generates cache data by calling the `cache_data` command.
+## Implementation 
 
-## Error Handling
+A base class in `cpdb/update_managers/base.py` generically defines how an update works, and each of the models gets its own subclass with a model specific implementation in the same folder, e.g., `cpdb/update_managers/update_officer_manage.py` defines updating officer data. 
 
-If an error occurs during the execution of any command, it will be caught and displayed in the terminal.
+A subclass of the base class really only needs the following 2 things implemented to be fully functional: 
+- a serializer, which is used for model validation for objects before inserting them
+- a query, which is a SQL query that attempts to do as much of the required data processing as possible for the sake of efficiency
 
-## Customization
+The main method is the "update_data" method, which does the following in order: 
+* updates the csv holding table
+* deletes existing data, as well as existing associated data (all officer data if deleting officers, for example)
+* queries the holding table with the given query method, which does as much data processing as possible
+* gets one batch_size worth of data with that query
+* runs optional in-python processing
+* run model validations in bulk through the given serializer, which constructs model objects
+* inserts that batch, repeats until all data is inserted
 
-You can customize or extend the `import_data_2024.py` command by adding more calls to `call_command` with appropriate file paths and custom commands as needed.
-
-```python
-# Add more calls to other commands as needed
-file_path = "path_to_your_file.csv"
-call_command('your_custom_command', file_path=file_path)
-```
+Subclasses will often add preprocessing steps to insert related data, such as inserting OfficerBadgeNumber objects when inserting new Officer objects. 
