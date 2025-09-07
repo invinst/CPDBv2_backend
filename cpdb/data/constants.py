@@ -152,7 +152,7 @@ MAJOR_AWARDS = [
 
 # awards types displayed on the timeline (all others are not)
 TIMELINE_AWARDS = [
-    # https://directives.chicagopolice.org/#directive/public/6398: section V A 
+    # https://directives.chicagopolice.org/#directive/public/6398: section V A
     "Superintendents Award Of Valor",
     "Superintendents Award Of Merit",
     "Honored Police Star",
@@ -171,10 +171,10 @@ TIMELINE_AWARDS = [
     "Top Gun Arrest Award",
     "Special Service Award",
     # section V B
-    "Department Commendation", 
+    "Department Commendation",
     "Life Saving Award",
-    "Police Officer Of The Month Award", 
-    "Chicago Police Leadership Award", 
+    "Police Officer Of The Month Award",
+    "Chicago Police Leadership Award",
     "Problem Solving Award",
     # formatted major awards
     "Carter Harrison",

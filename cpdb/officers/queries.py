@@ -24,7 +24,7 @@ from officers.serializers.response_mobile_serializers import (
     LawsuitNewTimelineMobileSerializer,
 )
 
-from data.constants import TIMELINE_AWARDS, MAJOR_AWARDS
+from data.constants import TIMELINE_AWARDS
 
 
 class OfficerTimelineBaseQuery(object):
