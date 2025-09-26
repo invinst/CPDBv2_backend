@@ -150,6 +150,45 @@ MAJOR_AWARDS = [
     "superintendent's award of merit",
 ]
 
+# awards types displayed on the timeline (all others are not)
+TIMELINE_AWARDS = [
+    # https://directives.chicagopolice.org/#directive/public/6398: section V A
+    "Superintendents Award Of Valor",
+    "Superintendents Award Of Merit",
+    "Honored Police Star",
+    "Police Blue Star Award",
+    "Police Blue Shield Award",
+    "Superintendents Award Of Tactical Excellence",
+    "Thomas Wortham IV Military and Community Service Award",
+    "Paul R. Bauer Leadership Award",
+    "William Powers Leadership Award",
+    "Arnold Mireles Special Partner",
+    "Annual Bureau Award Of Recognition",
+    "Special Commendation",
+    "Excellence in Victim Service Award",
+    "Joint Operations Award",
+    "Unit Meritorious Performance Award",
+    "Top Gun Arrest Award",
+    "Special Service Award",
+    # section V B
+    "Department Commendation",
+    "Life Saving Award",
+    "Police Officer Of The Month Award",
+    "Chicago Police Leadership Award",
+    "Problem Solving Award",
+    # formatted major awards
+    "Carter Harrison",
+    "Lambert Tree",
+    "Richard J. Daley Police Medal Of Honor",
+    "Police Medal",
+    "Hundred Club Of Cook County Medal Of Valor",
+
+
+
+
+
+]
+
 
 ALLEGATION_MIN_DATETIME = datetime.strptime(settings.ALLEGATION_MIN, '%Y-%m-%d').replace(tzinfo=pytz.utc)
 ALLEGATION_MAX_DATETIME = datetime.strptime(settings.ALLEGATION_MAX, '%Y-%m-%d').replace(tzinfo=pytz.utc)
