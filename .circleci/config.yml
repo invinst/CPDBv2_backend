@@ -98,8 +98,8 @@ jobs:
           name: Push image
           command: |
             if [ -z "$DOCKER_USER" ] || [ -z "$DOCKER_PASS" ]; then
-              echo "DOCKER_USER and DOCKER_PASS must be set in CircleCI project environment variables"
-              exit 1
+              echo "Skipping Docker push: set DOCKER_USER and DOCKER_PASS in CircleCI Project Settings → Environment Variables to push images."
+              exit 0
             fi
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             docker push cpdbdev/backend:$(cat buildnum)
