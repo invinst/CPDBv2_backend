@@ -97,7 +97,11 @@ jobs:
       - run:
           name: Push image
           command: |
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            if [ -z "$DOCKER_USER" ] || [ -z "$DOCKER_PASS" ]; then
+              echo "DOCKER_USER and DOCKER_PASS must be set in CircleCI project environment variables"
+              exit 1
+            fi
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             docker push cpdbdev/backend:$(cat buildnum)
       - run:
           name: Save Docker image layer cache
