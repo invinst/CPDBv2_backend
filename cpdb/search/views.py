@@ -57,7 +57,13 @@ class SearchViewSet(viewsets.ViewSet):
     def list(self, request):
         term = self._search_term
         if term:
-            results = self.search_manager.search(term, content_type=self._content_type)
+            try:
+                limit = int(request.query_params.get('limit', 10))
+            except (TypeError, ValueError):
+                limit = 10
+            results = self.search_manager.search(
+                term, content_type=self._content_type, limit=limit
+            )
         else:
             results = SearchManager(formatters=self.formatters, workers=self.workers).suggest_sample()
 
