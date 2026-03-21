@@ -91,6 +91,12 @@ class DateTimeFieldTest(SimpleTestCase):
             DateTimeField(field_name='key').parse({'key': '2018-10-30T15:00:03+00:00'})
         ).to.be.eq(datetime(2018, 10, 30, 15, 0, 3, tzinfo=pytz.utc))
 
+        expect(DateTimeField(field_name='key').parse({'key': '03-09-2026'})).to.be.eq(
+            datetime(2026, 3, 9, 0, 0, 0, tzinfo=pytz.utc))
+
+        expect(DateTimeField(field_name='key').parse({'key': '-'})).to.be.none()
+        expect(DateTimeField(field_name='key').parse({'key': 'N/A'})).to.be.none()
+
         expect(DateTimeField(field_name='key').parse({'other_key': '1-4-2011 9:35 PM'})).to.be.none()
 
         expect(
