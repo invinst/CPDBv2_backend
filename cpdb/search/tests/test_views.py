@@ -38,7 +38,7 @@ class SearchV1ViewSetTestCase(IndexMixin, APITestCase):
 
         expect(response.status_code).to.equal(status.HTTP_200_OK)
         expect(response.data).to.equal('anything_suggester_returns')
-        search.assert_called_with(text, content_type='OFFICER')
+        search.assert_called_with(text, content_type='OFFICER', limit=10)
 
     def test_search_unit_officer(self):
         officer = OfficerFactory()
@@ -639,4 +639,4 @@ class SearchV2ViewSetTestCase(APITestCase):
 
         expect(response.status_code).to.equal(status.HTTP_200_OK)
         expect(response.data).to.equal('anything_suggester_returns')
-        search.assert_called_with(text, content_type='OFFICER')
+        search.assert_called_with(text, content_type='OFFICER', limit=10)
