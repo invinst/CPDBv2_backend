@@ -5,6 +5,9 @@ from dateparser import parse
 
 
 MIN_DATE_STRING = 6
+# Standalone 4-digit numbers in this range are treated as years; outside = likely ID (CRID/badge)
+REASONABLE_YEAR_MIN = 1900
+REASONABLE_YEAR_MAX = 2099
 DIGITS_MODIFIER_PATTERN = r'\d{1,2}st|\d{1,2}nd|\d{1,2}rd|\d{1,2}th'
 DIGITS_PATTERN = r'\d{1,4}'
 MONTHS_PATTERN = 'january|february|march|april|may|june|july|august|september|october|november|december|' \
@@ -37,16 +40,29 @@ def _search_first_date(string):
 
 
 def find_dates_from_string(string):
+    if not string:
+        return []
+    stripped = string.strip()
+    # Only skip 4-digit numbers that are not reasonable years (likely CRID/badge, e.g. "5767")
+    # So "2023", "1995" are still parsed as dates; "5767", "1234" are not
+    if len(stripped) == 4 and stripped.isdigit():
+        year = int(stripped, 10)
+        if year < REASONABLE_YEAR_MIN or year > REASONABLE_YEAR_MAX:
+            return []
+
     string = _remove_illegal_words(string)
 
     dates = []
-    date, remaining = _search_first_date(string)
-    if date:
-        dates.append(date)
-
-    while remaining:
-        date, remaining = _search_first_date(remaining)
-        if date and date not in dates:
+    try:
+        date, remaining = _search_first_date(string)
+        if date:
             dates.append(date)
+
+        while remaining:
+            date, remaining = _search_first_date(remaining)
+            if date and date not in dates:
+                dates.append(date)
+    except (TypeError, ValueError, AttributeError):
+        return []
 
     return dates
