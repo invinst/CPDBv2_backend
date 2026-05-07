@@ -1,14 +1,14 @@
 from django.db.models import OuterRef, Subquery, Count
 
-from data.models import OfficerAllegation, Allegation
+from data.models import OfficerAllegationFinding, OfficerAllegation, Allegation
 
 
 def cache_data():
     Allegation.objects.update(
         most_common_category=Subquery(
-            OfficerAllegation.objects.filter(
-                allegation_id=OuterRef('crid')
-            ).values('allegation_id').annotate(
+            OfficerAllegationFinding.objects.filter(
+                officer_allegation__allegation_id=OuterRef('crid')
+            ).values('officer_allegation__allegation_id').annotate(
                 cat_count=Count('allegation_category__id')
             ).order_by('-cat_count').values('allegation_category__id')[:1]
         ),

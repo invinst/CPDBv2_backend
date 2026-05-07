@@ -14,6 +14,7 @@ from .line_area import LineArea
 from .officer import Officer
 from .officer_alias import OfficerAlias
 from .officer_allegation import OfficerAllegation
+from .officer_allegation_finding import OfficerAllegationFinding
 from .officer_badge_number import OfficerBadgeNumber
 from .officer_history import OfficerHistory
 from .officer_yearly_percentile import OfficerYearlyPercentile
@@ -40,6 +41,7 @@ __all__ = [
     'Officer',
     'OfficerAlias',
     'OfficerAllegation',
+    'OfficerAllegationFinding',
     'OfficerBadgeNumber',
     'OfficerHistory',
     'OfficerYearlyPercentile',

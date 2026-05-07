@@ -70,7 +70,7 @@ class UpdateTRRManager(UpdateManagerBase):
                         when lower(taser) in ('no', 'n', 'false', '0') then false
                         else null
                     end as taser,
-                    nullif(total_number_of_shots, '')::float::int as total_number_of_shots,
+                    safe_cast_to_int(total_number_of_shots) as total_number_of_shots,
                     case
                         when lower(firearm_used) in ('yes', 'y', 'true', '1') then true
                         when lower(firearm_used) in ('no', 'n', 'false', '0') then false

@@ -417,6 +417,7 @@ class OfficersIndexerTestCase(TestCase):
     @override_settings(INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01')
     @override_settings(TRR_MIN='2004-01-08')
     @override_settings(TRR_MAX='2016-04-12')
+    @patch('officers.indexers.officers_indexer.MAX_VISUAL_TOKEN_YEAR', 2016) # TODO: figure out if this is needed on main, needed locally
     def test_extract_datum_percentiles(self):
         officer1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
         officer2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))

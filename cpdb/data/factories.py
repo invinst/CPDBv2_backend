@@ -10,7 +10,7 @@ from factory.fuzzy import FuzzyInteger
 from faker import Faker
 
 from data.models import (
-    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
+    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation, OfficerAllegationFinding,
     Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
     PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile, OfficerAlias
 )
@@ -140,11 +140,45 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
     allegation = factory.SubFactory(AllegationFactory)
     officer = factory.SubFactory(OfficerFactory)
     start_date = factory.LazyFunction(lambda: fake.date())
-    final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
     final_outcome = factory.LazyFunction(
         lambda: random.choice(['27 Day Suspension', '28 Day Suspension', 'No Action Taken'])
     )
+
+    @classmethod
+    def _extract_legacy_finding_kwargs(cls, kwargs):
+        legacy_finding_keys = {
+            'final_finding', 'recc_finding',
+            'allegation_category', 'final_outcome_class',
+        }
+        finding_kwargs = {}
+        for key in list(kwargs):
+            if key in legacy_finding_keys or key.startswith('allegation_category__'):
+                finding_kwargs[key] = kwargs.pop(key)
+        return finding_kwargs
+
+    @classmethod
+    def create(cls, **kwargs):
+        finding_kwargs = cls._extract_legacy_finding_kwargs(kwargs)
+        instance = super().create(**kwargs)
+        if finding_kwargs:
+            OfficerAllegationFindingFactory(
+                officer_allegation=instance, **finding_kwargs
+            )
+        return instance
+
+    @classmethod
+    def build(cls, **kwargs):
+        cls._extract_legacy_finding_kwargs(kwargs)
+        return super().build(**kwargs)
+
+class OfficerAllegationFindingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OfficerAllegationFinding 
+
+    officer_allegation = factory.SubFactory(OfficerAllegationFactory)
     allegation_category = factory.SubFactory(AllegationCategoryFactory)
+    recc_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
+    final_finding = factory.LazyFunction(lambda: random.choice(['SU', 'NS']))
 
 
 class OfficerBadgeNumberFactory(factory.django.DjangoModelFactory):

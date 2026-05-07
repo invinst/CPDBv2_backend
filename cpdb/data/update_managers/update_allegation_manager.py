@@ -58,6 +58,7 @@ class UpdateAllegationManager(UpdateManagerBase):
                     and a.area_type = 'beat'
                 where
                     cr_id != ''
+                order by cr_id
                 limit {self.batch_size} offset {self.offset}"""
 
     def preprocess_batch(self, batch):
@@ -76,14 +77,16 @@ class UpdateAllegationManager(UpdateManagerBase):
 
         return batch
 
-    def delete_existing_data(self):
-        cursor = connection.cursor()
+    # def delete_existing_data(self):
+    #     cursor = connection.cursor()
 
-        # have to delete all referencing columns
-        cursor.execute("delete from data_officerallegation")
-        cursor.execute("delete from data_investigatorallegation")
-        cursor.execute("delete from data_policewitness")
-        cursor.execute("delete from data_victim")
-        cursor.execute("delete from data_complainant")
-        cursor.execute("delete from data_allegation_areas")
-        cursor.execute("delete from data_allegation")
+    #     # have to delete all referencing columns
+    #     cursor.execute("delete from data_officerallegation")
+    #     cursor.execute("delete from data_investigatorallegation")
+    #     cursor.execute("delete from data_policewitness")
+    #     cursor.execute("delete from data_victim")
+    #     cursor.execute("delete from data_complainant")
+    #     cursor.execute("delete from data_allegation_areas")
+    #     cursor.execute("delete from data_allegation_line_areas")
+    #     cursor.execute("delete from data_attachmentrequest")
+    #     cursor.execute("delete from data_allegation")

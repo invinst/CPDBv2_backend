@@ -18,7 +18,7 @@ class SQCountTestCase(TestCase):
         results = list(
             OfficerAllegation.objects.all()
             .annotate(allegation_count=SQCount(subquery.values('id')))
-            .annotate(sustained_count=SQCount(subquery.filter(final_finding='SU').values('id')))
+            .annotate(sustained_count=SQCount(subquery.filter(officerallegationfinding__final_finding='SU').values('id')))
             .values('allegation_count', 'sustained_count')
         )
 

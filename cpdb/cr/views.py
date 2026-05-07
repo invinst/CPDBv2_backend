@@ -45,7 +45,7 @@ class CRViewSet(viewsets.ViewSet):
         ).exclude(
             summary__exact=''
         ).annotate(
-            categories=ArrayAgg('officerallegation__allegation_category__category')
+            categories=ArrayAgg('officerallegation__officerallegationfinding__allegation_category__category')
         ).only(
             'crid', 'summary', 'incident_date'
         ).order_by(F('incident_date').desc(nulls_last=True), '-crid')[:40]
@@ -95,12 +95,12 @@ class CRViewSet(viewsets.ViewSet):
             )
             if request_serializer.validated_data['match'] == 'categories':
                 categories = list(filter(None, [
-                    obj.category
-                    for obj in allegation.officerallegation_set.select_related('allegation_category')
+                    finding.category for obj in allegation.officerallegation_set.prefetch_related('officerallegationfinding_set__allegation_category')
+                    for finding in obj.findings
                 ]))
                 allegations = allegations.filter(
-                    officerallegation__allegation_category__category__in=categories
-                )
+                    officerallegation__officerallegationfinding__allegation_category__category__in=categories
+                ).distinct()
 
             elif request_serializer.validated_data['match'] == 'officers':
                 officer_ids = list(filter(None, allegation.officerallegation_set.values_list('officer_id', flat=True)))
@@ -111,7 +111,7 @@ class CRViewSet(viewsets.ViewSet):
             allegations = Allegation.objects.none()
 
         allegations = allegations.prefetch_related(
-            'officerallegation_set__allegation_category',
+            'officerallegation_set__officerallegationfinding_set__allegation_category',
             'officerallegation_set__officer',
             'complainant_set'
         )

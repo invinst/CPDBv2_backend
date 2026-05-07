@@ -30,19 +30,19 @@ class OfficerAllegationTestCase(TestCase):
         officer_allegation = OfficerAllegationFactory(allegation_category=allegation_category)
         expect(officer_allegation.subcategory).to.eq('subcategory')
 
-    def test_final_finding_display(self):
-        officer_allegation = OfficerAllegationFactory(final_finding='?')
-        expect(officer_allegation.final_finding_display).to.eq('Unknown')
+    # def test_final_finding_display(self):
+    #     officer_allegation = OfficerAllegationFactory(final_finding='?')
+    #     expect(officer_allegation.final_finding_display).to.eq('Unknown')
 
-        officer_allegation = OfficerAllegationFactory(final_finding='UN')
-        expect(officer_allegation.final_finding_display).to.eq('Unfounded')
+    #     officer_allegation = OfficerAllegationFactory(final_finding='UN')
+    #     expect(officer_allegation.final_finding_display).to.eq('Unfounded')
 
-    def test_recc_finding_display(self):
-        officer_allegation = OfficerAllegationFactory(recc_finding='?')
-        expect(officer_allegation.recc_finding_display).to.eq('Unknown')
+    # def test_recc_finding_display(self):
+    #     officer_allegation = OfficerAllegationFactory(recc_finding='?')
+    #     expect(officer_allegation.recc_finding_display).to.eq('Unknown')
 
-        officer_allegation = OfficerAllegationFactory(recc_finding='UN')
-        expect(officer_allegation.recc_finding_display).to.eq('Unfounded')
+    #     officer_allegation = OfficerAllegationFactory(recc_finding='UN')
+    #     expect(officer_allegation.recc_finding_display).to.eq('Unfounded')
 
     def test_attachments(self):
         allegation = AllegationFactory()

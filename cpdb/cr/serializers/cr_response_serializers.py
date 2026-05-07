@@ -6,21 +6,28 @@ import pytz
 from data.models import AttachmentRequest, Investigator
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
+class OfficerAllegationFindingSerializer(NoNullSerializer):
+    recc_finding = serializers.CharField(source="recc_finding_display")
+    final_finding = serializers.CharField(source="final_finding_display")
+    category = serializers.CharField()
+    subcategory = serializers.CharField()
+
 
 class CoaccusedSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer.id')
     full_name = serializers.CharField(source='officer.full_name')
-    complaint_count = serializers.IntegerField(source='officer.allegation_count')
-    sustained_count = serializers.IntegerField(source='officer.sustained_count')
+    # complaint_count = serializers.IntegerField(source='officer.allegation_count')
+    # sustained_count = serializers.IntegerField(source='officer.sustained_count')
+    complaint_count = serializers.SerializerMethodField()
+    sustained_count = serializers.SerializerMethodField()
     birth_year = serializers.IntegerField(source='officer.birth_year')
     recommended_outcome = serializers.CharField(source='recc_outcome')
     final_outcome = serializers.CharField()
-    final_finding = serializers.CharField(source='final_finding_display')
-    category = serializers.CharField()
-    disciplined = serializers.NullBooleanField()
+    disciplined = serializers.BooleanField()
     race = serializers.CharField(source='officer.race')
     gender = serializers.CharField(source='officer.gender_display')
     rank = serializers.CharField(source='officer.rank')
+    findings = OfficerAllegationFindingSerializer(many=True)
 
     percentile_allegation = serializers.DecimalField(
         source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
@@ -35,6 +42,11 @@ class CoaccusedSerializer(NoNullSerializer):
         source='officer.internal_allegation_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
     )
 
+    def get_complaint_count(self, obj):
+        return obj.findings.count()
+    
+    def get_sustained_count(self, obj):
+        return obj.findings.filter(recc_finding='SU').count()
 
 class ComplainantSerializer(NoNullSerializer):
     gender = serializers.CharField(source='gender_display')
@@ -121,9 +133,9 @@ class CRSerializer(NoNullSerializer):
     attachments = AttachmentFileSerializer(source='filtered_attachment_files', many=True)
 
     def get_coaccused(self, obj):
-        officer_allegations = obj.officer_allegations.select_related(
-            'allegation_category'
-        ).prefetch_related('officer')
+        officer_allegations = obj.officer_allegations.prefetch_related(
+            'officerallegationfinding_set__allegation_category'
+            ).prefetch_related('officer')
 
         return CoaccusedSerializer(officer_allegations, many=True).data
 
@@ -202,9 +214,10 @@ class CRRelatedComplaintSerializer(NoNullSerializer):
 
     def get_category_names(self, obj):
         categories = [
-            officer_allegation.allegation_category.category
+            finding.category
             for officer_allegation in obj.officer_allegations
-            if officer_allegation.allegation_category
+            for finding in officer_allegation.findings
+            if finding.category
         ]
         if categories:
             return sorted(category if category is not None else 'Unknown' for category in set(categories))
