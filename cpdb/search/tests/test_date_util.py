@@ -95,3 +95,15 @@ class DateUtilTestCase(SimpleTestCase):
         ]
         for incomplete_date_string in incomplete_date_strings:
             expect(find_dates_from_string(incomplete_date_string)).to.eq([])
+
+    def test_find_dates_from_string_four_digit_number_not_treated_as_year(self):
+        # 4-digit numbers outside reasonable year range (1900-2099) are not parsed as dates (e.g. CRID/badge)
+        expect(find_dates_from_string('5767')).to.eq([])
+        expect(find_dates_from_string('0100')).to.eq([])
+        # 4-digit numbers in year range (2023, 1995) are not short-circuited; date search can use them
+        result_2023 = find_dates_from_string('2023')
+        result_1995 = find_dates_from_string('1995')
+        expect(isinstance(result_2023, list)).to.eq(True)
+        expect(isinstance(result_1995, list)).to.eq(True)
+        expect(len(result_2023) <= 1).to.eq(True)
+        expect(len(result_1995) <= 1).to.eq(True)

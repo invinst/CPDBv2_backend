@@ -46,10 +46,10 @@ jobs:
       - run:
           name: Submit coverage
           command: |
-            if [ -z $SKIP_COVERALLS ] || [ $SKIP_COVERALLS != "true" ]; then
+            if [ -n "$COVERALLS_REPO_TOKEN" ] && { [ -z "$SKIP_COVERALLS" ] || [ "$SKIP_COVERALLS" != "true" ]; }; then
               coveralls
             else
-              echo "Skipped due to SKIP_COVERALLS is" $SKIP_COVERALLS
+              echo "Skipped (COVERALLS_REPO_TOKEN not set or SKIP_COVERALLS=$SKIP_COVERALLS)"
             fi
       - store_artifacts:
           path: /usr/src/app/project/cpdb/test_visual_token_media
@@ -96,7 +96,11 @@ jobs:
       - run:
           name: Push image
           command: |
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            if [ -z "$DOCKER_USER" ] || [ -z "$DOCKER_PASS" ]; then
+              echo "Skipping Docker push: set DOCKER_USER and DOCKER_PASS in CircleCI Project Settings → Environment Variables to push images."
+              exit 0
+            fi
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             docker push cpdbdev/backend:$(cat buildnum)
       - run:
           name: Save Docker image layer cache
