@@ -23,6 +23,7 @@ def cache_data():
     build_cached_percentiles()
     build_cached_columns()
 
+
 # TODO: determine how we want to count these
 def _allegation_count_subquery(**kwargs):
     return Subquery(
@@ -34,6 +35,7 @@ def _allegation_count_subquery(**kwargs):
         ).values('count')[:1]
     )
 
+
 def _finding_count_subquery(**kwargs):
     return Subquery(
         OfficerAllegationFinding.objects.filter(
@@ -44,6 +46,7 @@ def _finding_count_subquery(**kwargs):
         ).values('count')[:1]
     )
 
+
 def _award_count_subquery(**kwargs):
     return Subquery(
         Award.objects.filter(
@@ -53,6 +56,7 @@ def _award_count_subquery(**kwargs):
             count=Count('id')
         ).values('count')[:1]
     )
+
 
 def build_cached_columns():
     Officer.objects.update(

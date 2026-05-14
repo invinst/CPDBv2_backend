@@ -31,11 +31,13 @@ class AllegationCategoryMobileSerializer(NoNullSerializer):
     category = serializers.CharField()
     allegation_name = serializers.CharField()
 
+
 class OfficerAllegationFindingMobileSerializer(NoNullSerializer):
     recc_finding = serializers.CharField(source="recc_finding_display")
     final_finding = serializers.CharField(source="final_finding_display")
     category = serializers.CharField()
     subcategory = serializers.CharField()
+
 
 class CoaccusedMobileSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer.id')

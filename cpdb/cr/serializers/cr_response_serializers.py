@@ -6,6 +6,7 @@ import pytz
 from data.models import AttachmentRequest, Investigator
 from shared.serializer import NoNullSerializer, OfficerPercentileSerializer
 
+
 class OfficerAllegationFindingSerializer(NoNullSerializer):
     recc_finding = serializers.CharField(source="recc_finding_display")
     final_finding = serializers.CharField(source="final_finding_display")
@@ -44,9 +45,10 @@ class CoaccusedSerializer(NoNullSerializer):
 
     def get_complaint_count(self, obj):
         return obj.findings.count()
-    
+
     def get_sustained_count(self, obj):
         return obj.findings.filter(recc_finding='SU').count()
+
 
 class ComplainantSerializer(NoNullSerializer):
     gender = serializers.CharField(source='gender_display')

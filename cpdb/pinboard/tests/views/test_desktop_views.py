@@ -35,6 +35,7 @@ from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
 import unittest
 
+
 @unittest.skip("Pinboards are not in use")
 @patch('data.constants.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardDesktopViewSetTestCase(APITestCase):
@@ -697,7 +698,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'recommended_outcome': '11 Day Suspension',
                     'final_outcome': 'Separation',
                     'findings': [{
-                        'recc_finding': 'Sustained', # TODO: look into default
+                        'recc_finding': 'Sustained',  # TODO: look into default
                         'final_finding': 'Sustained',
                         'category': "Use of Force",
                         'subcategory': 'Miscellaneous'
@@ -734,7 +735,7 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
                     'findings': [{
-                        'recc_finding': 'Not Sustained', # TODO: look into default
+                        'recc_finding': 'Not Sustained',  # TODO: look into default
                         'final_finding': 'Sustained',
                         'category': 'Verbal Abuse',
                         'subcategory': 'Miscellaneous'

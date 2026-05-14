@@ -95,7 +95,10 @@ class CRViewSet(viewsets.ViewSet):
             )
             if request_serializer.validated_data['match'] == 'categories':
                 categories = list(filter(None, [
-                    finding.category for obj in allegation.officerallegation_set.prefetch_related('officerallegationfinding_set__allegation_category')
+                    finding.category for obj
+                    in allegation.officerallegation_set.prefetch_related(
+                        'officerallegationfinding_set__allegation_category'
+                    )
                     for finding in obj.findings
                 ]))
                 allegations = allegations.filter(

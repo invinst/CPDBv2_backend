@@ -157,8 +157,8 @@ class CRViewSetTestCase(APITestCase):
                         'recc_finding': 'Sustained',
                         'final_finding': 'Sustained',
                         'category': 'Operation/Personnel Violations',
-                        'subcategory': 'Secondary/Special Employment',               
-                    }]
+                        'subcategory': 'Secondary/Special Employment',
+                    }],
                     'complaint_count': 1,
                     'sustained_count': 1,
                     'percentile_allegation': '4.4000',

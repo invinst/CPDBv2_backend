@@ -2,10 +2,7 @@ from django.test.testcases import TestCase
 
 from robber.expect import expect
 
-from data.factories import (
-    AllegationFactory, OfficerAllegationFactory, OfficerAllegationFindingFactory, AllegationCategoryFactory,
-    AttachmentFileFactory, VictimFactory,
-)
+from data.factories import OfficerAllegationFindingFactory
 
 
 class OfficerAllegationFindingTestCase(TestCase):
@@ -22,4 +19,3 @@ class OfficerAllegationFindingTestCase(TestCase):
 
         officer_allegation = OfficerAllegationFindingFactory(recc_finding='UN')
         expect(officer_allegation.recc_finding_display).to.eq('Unfounded')
-

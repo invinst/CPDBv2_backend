@@ -186,7 +186,8 @@ class Officer(TimeStampsModel, TaggableModel):
         query = query.annotate(
             name=models.Case(
                 models.When(officer_allegation__allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                models.When(officer_allegation__allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
+                models.When(officer_allegation__allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''],
+                            then=models.Value('Unknown')),
                 default='officer_allegation__allegation__complainant__race',
                 output_field=models.CharField()
             ),

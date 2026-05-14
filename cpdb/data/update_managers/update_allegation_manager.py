@@ -1,5 +1,5 @@
 from data.models import Allegation
-from django.db import connection
+# from django.db import connection
 from django.contrib.gis.geos import Point
 import pytz
 from rest_framework import serializers

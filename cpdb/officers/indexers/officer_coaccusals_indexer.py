@@ -2,7 +2,7 @@ import itertools
 
 from django.db import models
 
-from data.models import Officer, OfficerAllegation, OfficerAllegationFinding
+from data.models import Officer, OfficerAllegation
 from data.utils.subqueries import SQCount
 from es_index import register_indexer
 from es_index.utils import timing_validate

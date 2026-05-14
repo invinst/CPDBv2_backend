@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django_bulk_update.manager import BulkUpdateManager
 
-from data.constants import FINDINGS, FINDINGS_DICT
+from data.constants import FINDINGS_DICT
 from .common import TimeStampsModel
 
 
@@ -30,21 +30,21 @@ class OfficerAllegation(TimeStampsModel):
     @property
     def findings(self):
         return self.officerallegationfinding_set.all()
-    
+
     @property
     def sorted_findings(self):
         # TODO: also add a category sort
         # want it to be so it prefers sustained findings, but also more severe categories
         finding_order = {
-            'SU' : 1, 
-            'EX' : 2,
-            'UN' : 3, 
-            'NS' : 4, 
-            'NAF' : 5, 
+            'SU': 1,
+            'EX': 2,
+            'UN': 3,
+            'NS': 4,
+            'NAF': 5,
             "AC": 6
         }
         return sorted(self.findings, key=lambda x: finding_order.get(x.recc_finding, 100))
-    
+
     @property
     def representative_finding(self):
         return self.sorted_findings[0] if self.sorted_findings else None
@@ -52,11 +52,15 @@ class OfficerAllegation(TimeStampsModel):
     @property
     def category(self):
         # TODO: remove, †here should always be an allegation category for every finding
-        return self.representative_finding.allegation_category.category if self.representative_finding  and self.representative_finding.allegation_category else None
+        return (self.representative_finding.allegation_category.category
+                if self.representative_finding and self.representative_finding.allegation_category
+                else None)
 
     @property
     def subcategory(self):
-        return self.representative_finding.allegation_category.allegation_name if self.representative_finding and self.representative_finding.allegation_category else None
+        return (self.representative_finding.allegation_category.allegation_name
+                if self.representative_finding and self.representative_finding.allegation_category
+                else None)
 
     @property
     def complaint_category_aggregation(self):
@@ -85,8 +89,8 @@ class OfficerAllegation(TimeStampsModel):
     def final_finding_display(self):
         if not self.representative_finding:
             return ''
-        
-        try:            
+
+        try:
             return FINDINGS_DICT[self.representative_finding.final_finding]
         except KeyError:
             return 'Unknown'
@@ -95,7 +99,7 @@ class OfficerAllegation(TimeStampsModel):
     def recc_finding_display(self):
         if not self.representative_finding:
             return ''
-        
+
         try:
             return FINDINGS_DICT[self.representative_finding.recc_finding]
         except KeyError:

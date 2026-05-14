@@ -141,7 +141,7 @@ class CRMobileViewSetTestCase(APITestCase):
                     'final_outcome': 'Separation',
                     'allegation_count': 1,
                     'findings': [{
-                        'recc_finding': 'Not Sustained', # TODO: look into default here
+                        'recc_finding': 'Not Sustained',  # TODO: look into default here
                         'final_finding': "Sustained",
                         'category': 'Operation/Personnel Violations',
                         'subcategory': 'Secondary/Special Employment'

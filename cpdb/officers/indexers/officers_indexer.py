@@ -77,8 +77,11 @@ class OfficersIndexer(BaseIndexer):
 
     def get_officer_allegation_dict(self):
         officer_allegation_dict = dict()
-        officer_allegation_queryset = OfficerAllegation.objects.all().select_related('officerallegationfinding__allegation_category').values(
-            'id', 'allegation_id', 'officer_id', 'start_date', 'officerallegationfinding__allegation_category__category', 'officerallegationfinding__final_finding'
+        officer_allegation_queryset = OfficerAllegation.objects.all().select_related(
+            'officerallegationfinding__allegation_category').values(
+            'id', 'allegation_id', 'officer_id', 'start_date',
+            'officerallegationfinding__allegation_category__category',
+            'officerallegationfinding__final_finding'
         )
         for obj in officer_allegation_queryset:
             officer_allegation_dict.setdefault(obj['allegation_id'], []).append(obj)

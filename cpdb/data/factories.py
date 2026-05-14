@@ -10,9 +10,10 @@ from factory.fuzzy import FuzzyInteger
 from faker import Faker
 
 from data.models import (
-    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation, OfficerAllegationFinding,
-    Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile, AttachmentRequest, Victim,
-    PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary, OfficerYearlyPercentile, OfficerAlias
+    Area, Investigator, LineArea, Officer, OfficerBadgeNumber, PoliceUnit, Allegation, OfficerAllegation,
+    OfficerAllegationFinding, Complainant, OfficerHistory, AllegationCategory, Involvement, AttachmentFile,
+    AttachmentRequest, Victim, PoliceWitness, InvestigatorAllegation, RacePopulation, Award, Salary,
+    OfficerYearlyPercentile, OfficerAlias
 )
 from data.constants import ACTIVE_CHOICES
 
@@ -171,9 +172,10 @@ class OfficerAllegationFactory(factory.django.DjangoModelFactory):
         cls._extract_legacy_finding_kwargs(kwargs)
         return super().build(**kwargs)
 
+
 class OfficerAllegationFindingFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = OfficerAllegationFinding 
+        model = OfficerAllegationFinding
 
     officer_allegation = factory.SubFactory(OfficerAllegationFactory)
     allegation_category = factory.SubFactory(AllegationCategoryFactory)
