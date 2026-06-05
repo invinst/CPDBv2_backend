@@ -278,6 +278,7 @@ class OfficerCacheManagerTestCase(TestCase):
         INTERNAL_CIVILIAN_ALLEGATION_MAX='2016-07-01',
         TRR_MIN='2004-01-08',
         TRR_MAX='2016-04-12')
+    @patch(officer_cache_manager, 'MAX_VISUAL_TOKEN_YEAR', 2016)
     def test_build_cached_yearly_percentiles(self):
         officer_1 = OfficerFactory(id=1, appointed_date=date(2013, 1, 1))
         officer_2 = OfficerFactory(id=2, appointed_date=date(2015, 3, 14))

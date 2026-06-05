@@ -93,7 +93,7 @@ class UpdateInvestigatorManager(UpdateManagerBase):
                         );""")
 
         while offset < row_count:
-            cursor.execute(f"select * from temp_investigators limit {batch_size} offset {offset}")
+            cursor.execute(f"select * from temp_investigators order by crid, id limit {batch_size} offset {offset}")
             self.columns = [col[0] for col in cursor.description]
 
             print(f"Processing batch {offset} to {offset + batch_size}")

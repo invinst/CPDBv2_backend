@@ -36,4 +36,6 @@ class UpdateAwardManager(UpdateManagerBase):
                     on o.uid::float::int = t.uid::float::int
                 join data_officer d
                     on d.id = o.officer_id::float::int
+                order by
+                    officer_id
                 limit {self.batch_size} offset {self.offset}"""

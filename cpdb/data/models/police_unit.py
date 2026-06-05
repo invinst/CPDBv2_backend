@@ -99,25 +99,34 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
     @property
     def sustained_count(self):
         return OfficerAllegation.objects.filter(
-            officer__officerhistory__unit=self, final_finding='SU'
+            officer__officerhistory__unit=self, officerallegationfinding__final_finding='SU'
         ).order_by('allegation').distinct('allegation').count()
 
     @property
     def complaint_category_aggregation(self):
-        query_set = OfficerAllegation.objects.filter(officer__officerhistory__unit=self).distinct().annotate(
+        query_set = OfficerAllegation.objects.filter(
+            officer__officerhistory__unit=self
+        ).annotate(
             name=models.Case(
-                models.When(allegation_category__category__isnull=True, then=models.Value('Unknown')),
-                default='allegation_category__category',
-                output_field=models.CharField()
-            )).values('name').annotate(
-            count=models.Count('allegation__crid', distinct=True),
-            sustained_count=models.Sum(
-                models.Case(
-                    models.When(final_finding='SU', then=1),
-                    default=0,
-                    output_field=models.IntegerField()
-                )
+                models.When(
+                    officerallegationfinding__allegation_category__category__isnull=True,
+                    then=models.Value('Unknown'),
+                ),
+                default='officerallegationfinding__allegation_category__category',
+                output_field=models.CharField(),
             )
+        ).values('name').annotate(
+            count=models.Count('allegation__crid', distinct=True),
+            sustained_count=models.Count(
+                models.Case(
+                    models.When(
+                        officerallegationfinding__final_finding='SU',
+                        then='officerallegationfinding__id',
+                    ),
+                    output_field=models.IntegerField(),
+                ),
+                distinct=True,
+            ),
         )
         return list(query_set)
 
@@ -138,7 +147,7 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
 
         sustained_count_query_set = Complainant.objects.filter(
             allegation__officerallegation__officer__officerhistory__unit=self,
-            allegation__officerallegation__final_finding='SU'
+            allegation__officerallegation__officerallegationfinding__final_finding='SU'
         ).distinct().annotate(
             name=models.Case(
                 models.When(race__isnull=True, then=models.Value('Unknown')),
@@ -175,7 +184,7 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
 
         sustained_count_query_set = Complainant.objects.filter(
             allegation__officerallegation__officer__officerhistory__unit=self,
-            allegation__officerallegation__final_finding='SU'
+            allegation__officerallegation__officerallegationfinding__final_finding='SU'
         ).distinct().annotate(
             name=get_num_range_case('age', [0, 20, 30, 40, 50])
         ).values('name').annotate(
@@ -211,7 +220,7 @@ class PoliceUnit(TimeStampsModel, TaggableModel):
 
         sustained_count_query_set = Complainant.objects.filter(
             allegation__officerallegation__officer__officerhistory__unit=self,
-            allegation__officerallegation__final_finding='SU'
+            allegation__officerallegation__officerallegationfinding__final_finding='SU'
         ).distinct().annotate(
             complainant_gender=models.Case(
                 models.When(gender='', then=models.Value('Unknown')),

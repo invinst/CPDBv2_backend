@@ -9,7 +9,7 @@ from data.constants import (
 )
 
 from data.models import (
-    Officer, OfficerAllegation, Award,
+    Officer, OfficerAllegation, OfficerAllegationFinding, Award,
     OfficerBadgeNumber, OfficerHistory, Salary,
     OfficerYearlyPercentile
 )
@@ -24,6 +24,7 @@ def cache_data():
     build_cached_columns()
 
 
+# TODO: determine how we want to count these
 def _allegation_count_subquery(**kwargs):
     return Subquery(
         OfficerAllegation.objects.filter(
@@ -31,6 +32,17 @@ def _allegation_count_subquery(**kwargs):
             **kwargs
         ).values('officer_id').annotate(
             count=Count('allegation_id', distinct=True)
+        ).values('count')[:1]
+    )
+
+
+def _finding_count_subquery(**kwargs):
+    return Subquery(
+        OfficerAllegationFinding.objects.filter(
+            officer_allegation__officer_id=OuterRef('id'),
+            **kwargs
+        ).values('officer_allegation__officer_id').annotate(
+            count=Count('id')
         ).values('count')[:1]
     )
 
@@ -49,8 +61,8 @@ def _award_count_subquery(**kwargs):
 def build_cached_columns():
     Officer.objects.update(
         allegation_count=_allegation_count_subquery(),
-        sustained_count=_allegation_count_subquery(final_finding='SU'),
-        unsustained_count=_allegation_count_subquery(final_finding='NS'),
+        sustained_count=_finding_count_subquery(final_finding='SU'),
+        unsustained_count=_finding_count_subquery(final_finding='NS'),
         discipline_count=_allegation_count_subquery(disciplined=True),
         honorable_mention_count=_award_count_subquery(award_type__contains='Honorable Mention'),
         civilian_compliment_count=_award_count_subquery(award_type='Complimentary Letter'),

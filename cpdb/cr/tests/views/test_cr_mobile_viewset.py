@@ -139,9 +139,13 @@ class CRMobileViewSetTestCase(APITestCase):
                     'full_name': 'Mr Foo',
                     'rank': 'Officer',
                     'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
                     'allegation_count': 1,
-                    'category': 'Operation/Personnel Violations',
+                    'findings': [{
+                        'recc_finding': 'Not Sustained',  # TODO: look into default here
+                        'final_finding': "Sustained",
+                        'category': 'Operation/Personnel Violations',
+                        'subcategory': 'Secondary/Special Employment'
+                    }],
                     'percentile_allegation': '4.4000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000',
@@ -204,6 +208,7 @@ class CRMobileViewSetTestCase(APITestCase):
         })
 
     def test_retrieve_badge(self):
+        # TODO: check how ordering is handled with involvements (if at all)
         area = AreaFactory(name='Lincoln Square')
         officer1 = OfficerFactory(
             id=123,
@@ -357,9 +362,13 @@ class CRMobileViewSetTestCase(APITestCase):
                     'full_name': 'Mr Foo',
                     'rank': 'Officer',
                     'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
                     'allegation_count': 1,
-                    'category': 'Operation/Personnel Violations',
+                    'findings': [{
+                        'recc_finding': 'Not Sustained',
+                        'final_finding': 'Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'subcategory': 'Secondary/Special Employment'
+                    }],
                     'percentile_allegation': '4.4000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000',
@@ -394,15 +403,10 @@ class CRMobileViewSetTestCase(APITestCase):
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'full_name': 'Kevin Osborn',
-                    'badge': 'COPA/IPRA',
-                },
-                {
-                    'involved_type': 'investigator',
-                    'officer_id': 4,
-                    'full_name': 'Edward May',
-                    'badge': 'COPA/IPRA',
-                    'percentile_allegation': '9.9000',
+                    'officer_id': 1,
+                    'full_name': 'Ellis Skol',
+                    'badge': 'CPD',
+                    'percentile_allegation': '6.6000',
                     'percentile_allegation_civilian': '7.7000',
                     'percentile_allegation_internal': '8.8000',
                 },
@@ -417,12 +421,17 @@ class CRMobileViewSetTestCase(APITestCase):
                 },
                 {
                     'involved_type': 'investigator',
-                    'officer_id': 1,
-                    'full_name': 'Ellis Skol',
-                    'badge': 'CPD',
-                    'percentile_allegation': '6.6000',
+                    'officer_id': 4,
+                    'full_name': 'Edward May',
+                    'badge': 'COPA/IPRA',
+                    'percentile_allegation': '9.9000',
                     'percentile_allegation_civilian': '7.7000',
                     'percentile_allegation_internal': '8.8000',
+                },
+                {
+                    'involved_type': 'investigator',
+                    'full_name': 'Kevin Osborn',
+                    'badge': 'COPA/IPRA',
                 },
                 {
                     'involved_type': 'police_witness',

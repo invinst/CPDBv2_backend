@@ -33,5 +33,7 @@ class UpdateActionResponseManager(UpdateManagerBase):
                     resistance_level
                 from {self.table_name} t
                 join trr_trr trr on trr.id = replace(t.trr_id, '-', '')::int
+                order by
+                    trr.id
                 limit {self.batch_size} offset {self.offset}
                 """

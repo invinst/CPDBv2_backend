@@ -158,15 +158,20 @@ class Officer(TimeStampsModel, TaggableModel):
         return groups
 
     @property
+    def _findings_queryset(self):
+        OfficerAllegationFinding = apps.get_app_config('data').get_model('OfficerAllegationFinding')
+        return OfficerAllegationFinding.objects.filter(officer_allegation__officer=self)
+
+    @property
     def complaint_category_aggregation(self):
-        query = self.officerallegation_set.all()
+        query = self._findings_queryset
         query = query.annotate(
             name=models.Case(
                 models.When(
                     allegation_category__category__isnull=True, then=models.Value('Unknown')),
                 default='allegation_category__category',
                 output_field=models.CharField()),
-            year=ExtractYear('start_date'))
+            year=ExtractYear('officer_allegation__start_date'))
         query = query.values('name', 'year').order_by('name', 'year').annotate(
             count=models.Count('name'),
             sustained_count=models.Sum(models.Case(
@@ -177,15 +182,16 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def complainant_race_aggregation(self):
-        query = self.officerallegation_set.all()
+        query = self._findings_queryset
         query = query.annotate(
             name=models.Case(
-                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                models.When(allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''], then=models.Value('Unknown')),
-                default='allegation__complainant__race',
+                models.When(officer_allegation__allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                models.When(officer_allegation__allegation__complainant__race__in=['n/a', 'n/a ', 'nan', ''],
+                            then=models.Value('Unknown')),
+                default='officer_allegation__allegation__complainant__race',
                 output_field=models.CharField()
             ),
-            year=ExtractYear('start_date'),
+            year=ExtractYear('officer_allegation__start_date'),
         )
         query = query.values('name', 'year').order_by('name', 'year').annotate(
             count=models.Count('name'),
@@ -201,10 +207,10 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def complainant_age_aggregation(self):
-        query = self.officerallegation_set.all()
+        query = self._findings_queryset
         query = query.annotate(
-            name=get_num_range_case('allegation__complainant__age', [0, 20, 30, 40, 50]),
-            year=ExtractYear('start_date')
+            name=get_num_range_case('officer_allegation__allegation__complainant__age', [0, 20, 30, 40, 50]),
+            year=ExtractYear('officer_allegation__start_date')
         )
         query = query.values('name', 'year').order_by('name', 'year').annotate(
             count=models.Count('name'),
@@ -220,16 +226,15 @@ class Officer(TimeStampsModel, TaggableModel):
 
     @property
     def complainant_gender_aggregation(self):
-
-        query = self.officerallegation_set.all()
-        query = query.values('allegation__complainant__gender').annotate(
+        query = self._findings_queryset
+        query = query.values('officer_allegation__allegation__complainant__gender').annotate(
             complainant_gender=models.Case(
-                models.When(allegation__complainant__gender='', then=models.Value('Unknown')),
-                models.When(allegation__complainant__isnull=True, then=models.Value('Unknown')),
-                default='allegation__complainant__gender',
+                models.When(officer_allegation__allegation__complainant__gender='', then=models.Value('Unknown')),
+                models.When(officer_allegation__allegation__complainant__isnull=True, then=models.Value('Unknown')),
+                default='officer_allegation__allegation__complainant__gender',
                 output_field=models.CharField()
             ),
-            year=ExtractYear('start_date')
+            year=ExtractYear('officer_allegation__start_date')
         )
         query = query.values('complainant_gender', 'year').order_by('complainant_gender', 'year').annotate(
             count=models.Count('complainant_gender'),

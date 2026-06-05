@@ -32,14 +32,21 @@ class AllegationCategoryMobileSerializer(NoNullSerializer):
     allegation_name = serializers.CharField()
 
 
+class OfficerAllegationFindingMobileSerializer(NoNullSerializer):
+    recc_finding = serializers.CharField(source="recc_finding_display")
+    final_finding = serializers.CharField(source="final_finding_display")
+    category = serializers.CharField()
+    subcategory = serializers.CharField()
+
+
 class CoaccusedMobileSerializer(NoNullSerializer):
     id = serializers.IntegerField(source='officer.id')
     full_name = serializers.CharField(source='officer.full_name')
     rank = serializers.CharField(source='officer.rank')
     allegation_count = serializers.IntegerField(source='officer.allegation_count')
     final_outcome = serializers.CharField()
-    final_finding = serializers.CharField(source='final_finding_display')
-    category = serializers.CharField()
+
+    findings = OfficerAllegationFindingMobileSerializer(many=True)
 
     percentile_allegation = serializers.DecimalField(
         source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
@@ -115,8 +122,8 @@ class CRMobileSerializer(NoNullSerializer):
     attachments = AttachmentFileMobileSerializer(source='filtered_attachment_files', many=True)
 
     def get_coaccused(self, obj):
-        officer_allegations = obj.officer_allegations.select_related(
-            'allegation_category'
+        officer_allegations = obj.officer_allegations.prefetch_related(
+            'officerallegationfinding_set__allegation_category'
         ).prefetch_related('officer')
 
         return CoaccusedMobileSerializer(officer_allegations, many=True).data

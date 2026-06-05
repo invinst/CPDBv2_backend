@@ -71,9 +71,10 @@ class OfficerTimelineBaseQuery(object):
         cr_timeline_queryset = self.officer.officerallegation_set.filter(
             allegation__incident_date__isnull=False,
         ).select_related(
-            'allegation', 'allegation_category'
+            'allegation'
         ).prefetch_related(
             'allegation__victims',
+            'officerallegationfinding_set__allegation_category',
             Prefetch(
                 'allegation__attachment_files',
                 queryset=filter_attachments(AttachmentFile.objects),
