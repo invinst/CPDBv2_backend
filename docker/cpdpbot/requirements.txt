@@ -1,6 +1,6 @@
 gizeh==0.1.10
 moviepy==1.0.0
-requests==2.20.0
+requests==2.31.0
 azure==4.0.0
 tweepy==3.6.0
 azure-storage-queue==1.4.0
