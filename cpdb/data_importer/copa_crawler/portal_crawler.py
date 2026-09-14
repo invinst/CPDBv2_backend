@@ -1,14 +1,38 @@
 import inspect
+import logging
 import re
+import traceback
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
+from django.conf import settings
+from django.core.mail import send_mail
 
 HEADERS = {
     'user-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/51.0.2704.103 Safari/537.36"
 }
+
+CRAWL_ERROR_NOTIFICATION_EMAIL = 'hector@79x.solutions'
+
+logger = logging.getLogger(__name__)
+
+
+def _notify_crawl_error(context):
+    """Email CRAWL_ERROR_NOTIFICATION_EMAIL with the traceback of the exception currently being handled."""
+    stack_trace = traceback.format_exc()
+    logger.exception('COPA crawler error during %s', context)
+    try:
+        send_mail(
+            subject=f'COPA crawler error: {context}',
+            message=f'An error occurred while crawling COPA:\n\n{context}\n\n{stack_trace}',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            recipient_list=[CRAWL_ERROR_NOTIFICATION_EMAIL],
+            fail_silently=True,
+        )
+    except Exception:
+        logger.exception('Failed to send COPA crawler error notification email')
 
 
 class OpenCopaInvestigationCrawler(object):
@@ -64,10 +88,16 @@ class OpenCopaInvestigationCrawler(object):
         links = []
         current_url = self.base_url
 
-        while current_url:
-            soup = self._get_page(current_url)
-            links.extend(self._extract_links_from_soup(soup))
-            current_url = self._get_next_page_url(soup, current_url)
+        try:
+            while current_url:
+                soup = self._get_page(current_url)
+                links.extend(self._extract_links_from_soup(soup))
+                current_url = self._get_next_page_url(soup, current_url)
+        except Exception:
+            _notify_crawl_error(
+                f'OpenCopaInvestigationCrawler.crawl (base_url={self.base_url}, current_url={current_url})'
+            )
+            raise
 
         return links
 
@@ -77,7 +107,11 @@ class BaseComplaintCrawler(object):
 
     def __init__(self, url=''):
         self.url = url
-        self.content = self.get_html_content(self.url)
+        try:
+            self.content = self.get_html_content(self.url)
+        except Exception:
+            _notify_crawl_error(f'{type(self).__name__}.__init__ (url={url})')
+            raise
         self.soup = BeautifulSoup(self.content, 'html.parser')
 
     def get_html_content(self, url):
@@ -88,9 +122,13 @@ class BaseComplaintCrawler(object):
         rules = {name: rule for name, rule in inspect.getmembers(self, predicate=inspect.ismethod) if
                  name.startswith(self.PREFIX)}
 
-        for key, rule in rules.items():
-            key_name = key.replace(self.PREFIX, '')
-            records[key_name] = rule()
+        try:
+            for key, rule in rules.items():
+                key_name = key.replace(self.PREFIX, '')
+                records[key_name] = rule()
+        except Exception:
+            _notify_crawl_error(f'{type(self).__name__}.crawl (url={self.url})')
+            raise
 
         return records
 
@@ -100,7 +138,12 @@ class VimeoSimpleAPI(object):
         self.url = 'http://vimeo.com/api/v2/video/{video_id}.json'.format(video_id=video_id)
 
     def crawl(self):
-        response = requests.get(self.url, headers=HEADERS)
+        try:
+            response = requests.get(self.url, headers=HEADERS)
+        except Exception:
+            _notify_crawl_error(f'VimeoSimpleAPI.crawl (url={self.url})')
+            raise
+
         try:
             content = response.json()[0]
         except ValueError:

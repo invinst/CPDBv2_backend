@@ -187,6 +187,10 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
             self.num_updated_attachments += num_updated
 
     def upload_to_documentcloud(self):
+        if not settings.DOCUMENTCLOUD_USER or not settings.DOCUMENTCLOUD_PASSWORD:
+            self.log_info('Skipping DocumentCloud upload: DOCUMENTCLOUD_USER/DOCUMENTCLOUD_PASSWORD not configured')
+            return
+
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
         attachments = AttachmentFile.objects.for_allegation().filter(
             source_type=self.source_type,

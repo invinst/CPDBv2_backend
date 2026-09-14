@@ -25,6 +25,10 @@ class BaseAttachmentImporter(object):
         self.log_data.append(message)
 
     def generate_s3_log_file(self):
+        if not aws.is_configured:
+            self.log_info('Skipping S3 log upload: AWS credentials/region not configured')
+            return None
+
         filename = datetime.now(pytz.utc).strftime('%Y-%m-%d-%H%M%S.txt')
         log_key = f'{self.crawler_name}/{self.crawler_name.replace("_", "-")}-{filename}'
         aws.s3.put_object(
