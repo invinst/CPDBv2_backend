@@ -392,8 +392,8 @@ class CRViewSetTestCase(APITestCase):
                     'percentile_trr': '3.3000',
                     'disciplined': True,
                     'findings': [{
-                        'recc_finding': 'Not Sustained', 
-                        'final_finding': 'Not Sustained', 
+                        'recc_finding': 'Not Sustained',
+                        'final_finding': 'Not Sustained',
                         'category': 'Operation/Personnel Violations',
                         'subcategory': 'Secondary/Special Employment'
                     }]
