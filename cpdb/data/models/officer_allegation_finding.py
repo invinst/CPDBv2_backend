@@ -46,3 +46,14 @@ class OfficerAllegationFinding(TimeStampsModel):
             return FINDINGS_DICT[self.recc_finding]
         except KeyError:
             return 'Unknown'
+
+    @property
+    def category_ranking(self):
+        try:
+            if self.allegation_category.ranking:
+                return self.allegation_category.ranking
+            else:
+                # default to max (end of list) if not found
+                return float('inf')
+        except AttributeError:
+            return float('inf')

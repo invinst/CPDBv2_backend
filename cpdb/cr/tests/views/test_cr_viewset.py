@@ -239,7 +239,7 @@ class CRViewSetTestCase(APITestCase):
             internal_allegation_percentile=2.2,
             trr_percentile=3.3,
             allegation_count=1,
-            sustained_count=1,
+            sustained_count=0,
         )
         OfficerBadgeNumberFactory(officer=officer1, star='12345', current=True)
         allegation = AllegationFactory(
@@ -252,7 +252,7 @@ class CRViewSetTestCase(APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
+            officer=officer1, allegation=allegation, final_finding='NS', recc_finding='NS', disciplined=True,
             final_outcome='Separation', recc_outcome='10 Day Suspension',
             start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
@@ -287,7 +287,7 @@ class CRViewSetTestCase(APITestCase):
             civilian_allegation_percentile=7.71,
             internal_allegation_percentile=8.81,
             allegation_count=1,
-            sustained_count=0,
+            sustained_count=1,
         )
         investigator_2 = OfficerFactory(
             id=2,
@@ -382,15 +382,21 @@ class CRViewSetTestCase(APITestCase):
                     'birth_year': 1993,
                     'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
-                    'category': 'Operation/Personnel Violations',
+                    # 'final_finding': 'Sustained',
+                    # 'category': 'Operation/Personnel Violations',
                     'complaint_count': 1,
-                    'sustained_count': 1,
+                    'sustained_count': 0,
                     'percentile_allegation': '4.4000',
                     'percentile_allegation_civilian': '1.1000',
                     'percentile_allegation_internal': '2.2000',
                     'percentile_trr': '3.3000',
-                    'disciplined': True
+                    'disciplined': True,
+                    'findings': [{
+                        'recc_finding': 'Not Sustained',
+                        'final_finding': 'Not Sustained',
+                        'category': 'Operation/Personnel Violations',
+                        'subcategory': 'Secondary/Special Employment'
+                    }]
                 }
             ],
             'complainants': [
@@ -421,17 +427,12 @@ class CRViewSetTestCase(APITestCase):
             'involvements': [
                 {
                     'involved_type': 'investigator',
-                    'full_name': 'Kevin Osborn',
-                    'badge': 'COPA/IPRA',
-                },
-                {
-                    'involved_type': 'investigator',
-                    'officer_id': 4,
-                    'full_name': 'Edward May',
-                    'badge': 'COPA/IPRA',
-                    'percentile_allegation': '6.6300',
-                    'percentile_allegation_civilian': '7.7300',
-                    'percentile_allegation_internal': '8.8300',
+                    'officer_id': 1,
+                    'full_name': 'Ellis Skol',
+                    'badge': 'CPD',
+                    'percentile_allegation': '6.6100',
+                    'percentile_allegation_civilian': '7.7100',
+                    'percentile_allegation_internal': '8.8100',
                 },
                 {
                     'involved_type': 'investigator',
@@ -444,12 +445,17 @@ class CRViewSetTestCase(APITestCase):
                 },
                 {
                     'involved_type': 'investigator',
-                    'officer_id': 1,
-                    'full_name': 'Ellis Skol',
-                    'badge': 'CPD',
-                    'percentile_allegation': '6.6100',
-                    'percentile_allegation_civilian': '7.7100',
-                    'percentile_allegation_internal': '8.8100',
+                    'officer_id': 4,
+                    'full_name': 'Edward May',
+                    'badge': 'COPA/IPRA',
+                    'percentile_allegation': '6.6300',
+                    'percentile_allegation_civilian': '7.7300',
+                    'percentile_allegation_internal': '8.8300',
+                },
+                {
+                    'involved_type': 'investigator',
+                    'full_name': 'Kevin Osborn',
+                    'badge': 'COPA/IPRA',
                 },
                 {
                     'involved_type': 'police_witness',

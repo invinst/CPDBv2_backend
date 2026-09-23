@@ -33,8 +33,6 @@ class OfficerAllegation(TimeStampsModel):
 
     @property
     def sorted_findings(self):
-        # TODO: also add a category sort
-        # want it to be so it prefers sustained findings, but also more severe categories
         finding_order = {
             'SU': 1,
             'EX': 2,
@@ -43,7 +41,7 @@ class OfficerAllegation(TimeStampsModel):
             'NAF': 5,
             "AC": 6
         }
-        return sorted(self.findings, key=lambda x: finding_order.get(x.recc_finding, 100))
+        return sorted(self.findings, key=lambda x: (finding_order.get(x.recc_finding, 100), x.category_ranking))
 
     @property
     def representative_finding(self):

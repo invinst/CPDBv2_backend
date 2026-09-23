@@ -28,7 +28,7 @@ class CoaccusedSerializer(NoNullSerializer):
     race = serializers.CharField(source='officer.race')
     gender = serializers.CharField(source='officer.gender_display')
     rank = serializers.CharField(source='officer.rank')
-    findings = OfficerAllegationFindingSerializer(many=True)
+    findings = OfficerAllegationFindingSerializer(source='sorted_findings', many=True)
 
     percentile_allegation = serializers.DecimalField(
         source='officer.complaint_percentile', allow_null=True, read_only=True, max_digits=6, decimal_places=4
