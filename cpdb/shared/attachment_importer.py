@@ -1,11 +1,16 @@
-from django.conf import settings
+import traceback
 from datetime import datetime
+
 import pytz
+from django.conf import settings
+from django.core.mail import send_mail
 
 from data.models import AttachmentFile
 from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
 from document_cloud.models import DocumentCrawler
 from shared.aws import aws
+
+CRAWLER_ERROR_NOTIFICATION_EMAIL = 'hector@79x.solutions'
 
 
 class BaseAttachmentImporter(object):
@@ -81,4 +86,21 @@ class BaseAttachmentImporter(object):
         self.record_crawler_result(DOCUMENT_CRAWLER_SUCCESS, 'Done importing!')
 
     def record_failed_crawler_result(self):
+        self._notify_crawl_error()
         self.record_crawler_result(DOCUMENT_CRAWLER_FAILED, f'ERROR: Error occurred while {self.current_step}!')
+
+    def _notify_crawl_error(self):
+        """Email CRAWLER_ERROR_NOTIFICATION_EMAIL with the traceback of the exception currently being handled."""
+        context = f'{type(self).__name__} ({self.crawler_name}) failed during step: {self.current_step}'
+        stack_trace = traceback.format_exc()
+        self.logger.exception(context)
+        try:
+            send_mail(
+                subject=f'Crawler error: {context}',
+                message=f'{context}\n\n{stack_trace}',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                recipient_list=[CRAWLER_ERROR_NOTIFICATION_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:
+            self.logger.exception('Failed to send crawler error notification email')
