@@ -117,7 +117,6 @@ class OpenCopaInvestigationCrawlerTest(SimpleTestCase):
         ]
         expect(OpenCopaInvestigationCrawler().crawl()).to.be.eq(links)
 
-
     @staticmethod
     def _page_pagenavi_html(case_id, next_href=None):
         next_link = (
