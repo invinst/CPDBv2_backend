@@ -11,14 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='officerallegation',
-            name='final_finding',
-        ),
-        migrations.RemoveField(
-            model_name='officerallegation',
-            name='recc_finding',
-        ),
         migrations.CreateModel(
             name='OfficerAllegationFinding',
             fields=[
@@ -34,5 +26,25 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
+        ),
+        # Copy existing findings into the new table before the source columns are dropped.
+        # allegation_category_id is still present here; it is removed in 0138.
+        migrations.RunSQL(
+            """
+            insert into data_officerallegationfinding
+                (officer_allegation_id, allegation_category_id, recc_finding, final_finding, final_outcome_class,
+                 created_at, updated_at)
+            select id, allegation_category_id, recc_finding, final_finding, final_outcome_class, now(), now()
+            from data_officerallegation;
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.RemoveField(
+            model_name='officerallegation',
+            name='final_finding',
+        ),
+        migrations.RemoveField(
+            model_name='officerallegation',
+            name='recc_finding',
         ),
     ]

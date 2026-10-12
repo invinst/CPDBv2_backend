@@ -32,7 +32,8 @@ class OpenCopaInvestigationCrawler(object):
         return links
 
     def _get_next_page_url(self, soup, current_url):
-        pagination = soup.select_one('.pagination .nav-next a')
+        # Current site uses WP-PageNavi (a.nextpostslink); .nav-next is the legacy markup.
+        pagination = soup.select_one('.pagination a.nextpostslink') or soup.select_one('.pagination .nav-next a')
         if not pagination:
             return None
 
@@ -63,8 +64,10 @@ class OpenCopaInvestigationCrawler(object):
     def crawl(self):
         links = []
         current_url = self.base_url
+        visited_urls = set()
 
-        while current_url:
+        while current_url and current_url not in visited_urls:
+            visited_urls.add(current_url)
             soup = self._get_page(current_url)
             links.extend(self._extract_links_from_soup(soup))
             current_url = self._get_next_page_url(soup, current_url)

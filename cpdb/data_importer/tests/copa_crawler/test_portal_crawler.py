@@ -118,6 +118,65 @@ class OpenCopaInvestigationCrawlerTest(SimpleTestCase):
         expect(OpenCopaInvestigationCrawler().crawl()).to.be.eq(links)
 
 
+    @staticmethod
+    def _page_pagenavi_html(case_id, next_href=None):
+        next_link = (
+            f'<a class="nextpostslink" rel="next" aria-label="Next Page" href="{next_href}">&raquo;</a>'
+            if next_href else ''
+        )
+        return f'''
+            <html>
+              <body>
+                <table class="table table-striped display wrap" id="ipra-case-search-data-table">
+                  <tbody>
+                    <tr><th><a href="https://www.chicagocopa.org/case/{case_id}/">{case_id}</a></th></tr>
+                  </tbody>
+                </table>
+                <div class="pagination">
+                  <div class="wp-pagenavi" role="navigation">
+                    <span class="pages">Page 1 of 2</span>
+                    {next_link}
+                  </div>
+                </div>
+              </body>
+            </html>
+        '''
+
+    @patch('data_importer.copa_crawler.portal_crawler.requests')
+    def test_parse_multiple_pages_wp_pagenavi(self, requests):
+        requests.get.side_effect = [
+            MagicMock(
+                text=self._page_pagenavi_html(
+                    '2026-0000001',
+                    'https://www.chicagocopa.org/case-portal?sort_order=title+desc&#038;sf_paged=2'
+                ),
+                raise_for_status=MagicMock()
+            ),
+            MagicMock(text=self._page_pagenavi_html('2026-0000002'), raise_for_status=MagicMock()),
+        ]
+
+        expect(OpenCopaInvestigationCrawler().crawl()).to.be.eq([
+            'https://www.chicagocopa.org/case/2026-0000001/',
+            'https://www.chicagocopa.org/case/2026-0000002/',
+        ])
+        expect(requests.get.call_args_list[1][0][0]).to.be.eq(
+            'https://www.chicagocopa.org/case-portal?sort_order=title+desc&sf_paged=2'
+        )
+
+    @patch('data_importer.copa_crawler.portal_crawler.requests')
+    def test_parse_stops_when_next_page_was_already_visited(self, requests):
+        base_url = 'https://www.chicagocopa.org/case-portal?sort_order=title+desc'
+        requests.get.return_value = MagicMock(
+            text=self._page_pagenavi_html('2026-0000001', base_url),
+            raise_for_status=MagicMock()
+        )
+
+        expect(OpenCopaInvestigationCrawler(base_url).crawl()).to.be.eq([
+            'https://www.chicagocopa.org/case/2026-0000001/',
+        ])
+        expect(requests.get.call_count).to.be.eq(1)
+
+
 class BaseComplaintCrawlerTest(SimpleTestCase):
     URL = 'http://www.iprachicago.org/case/1042532-2/'
 
