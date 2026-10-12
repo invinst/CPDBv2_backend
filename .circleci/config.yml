@@ -19,7 +19,7 @@ defaults:
     GOOGLE_PROJECT_ID: "twitterbot-180604"
     GOOGLE_COMPUTE_ZONE: "us-central1-a"
     GOOGLE_CLUSTER_NAME: "cpdp-gke"
-version: 2
+version: 2.1
 jobs:
   test:
     docker:
@@ -81,8 +81,6 @@ jobs:
             - v3-{{ checksum "Dockerfile" }}-{{ checksum "requirements/base.txt" }}
             - v3-{{ checksum "Dockerfile" }}
             - v3
-          paths:
-            - /home/circleci/caches/app.tar
       - run:
           name: Load Docker image layer cache
           command: |
@@ -389,7 +387,6 @@ jobs:
       - run: git push --force origin staging
 
 workflows:
-  version: 2
   test:
     jobs:
       - test:
