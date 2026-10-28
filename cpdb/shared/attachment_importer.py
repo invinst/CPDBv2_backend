@@ -55,7 +55,7 @@ class BaseAttachmentImporter(object):
         self.log_info('')
         self.log_info(f'{"="*left_space} {self.current_step} {"="*right_space}')
 
-    def record_crawler_result(self, status, message):
+    def record_crawler_result(self, status, message, stack_trace=None):
         num_documents = AttachmentFile.objects.filter(
             source_type__in=self.all_source_types
         ).count()
@@ -79,18 +79,26 @@ class BaseAttachmentImporter(object):
             num_new_documents=num_new_attachments,
             num_updated_documents=self.num_updated_attachments,
             num_successful_run=num_successful_run,
-            log_key=log_key
+            log_key=log_key,
+            traceback=stack_trace,
         )
 
     def record_success_crawler_result(self):
         self.record_crawler_result(DOCUMENT_CRAWLER_SUCCESS, 'Done importing!')
 
     def record_failed_crawler_result(self):
-        self._notify_crawl_error()
-        self.record_crawler_result(DOCUMENT_CRAWLER_FAILED, f'ERROR: Error occurred while {self.current_step}!')
+        stack_trace = self._notify_crawl_error()
+        self.record_crawler_result(
+            DOCUMENT_CRAWLER_FAILED,
+            f'ERROR: Error occurred while {self.current_step}!',
+            stack_trace=stack_trace,
+        )
 
     def _notify_crawl_error(self):
-        """Email CRAWLER_ERROR_NOTIFICATION_EMAIL with the traceback of the exception currently being handled."""
+        """
+        Email CRAWLER_ERROR_NOTIFICATION_EMAIL with the traceback of the exception currently being
+        handled, and return that traceback so the caller can also persist it on the DocumentCrawler row.
+        """
         context = f'{type(self).__name__} ({self.crawler_name}) failed during step: {self.current_step}'
         stack_trace = traceback.format_exc()
         self.logger.exception(context)
@@ -104,3 +112,4 @@ class BaseAttachmentImporter(object):
             )
         except Exception:
             self.logger.exception('Failed to send crawler error notification email')
+        return stack_trace
