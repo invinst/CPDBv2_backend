@@ -19,7 +19,7 @@ defaults:
     GOOGLE_PROJECT_ID: "twitterbot-180604"
     GOOGLE_COMPUTE_ZONE: "us-central1-a"
     GOOGLE_CLUSTER_NAME: "cpdp-gke"
-version: 2
+version: 2.1
 jobs:
   test:
     docker:
