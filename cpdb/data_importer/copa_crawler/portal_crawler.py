@@ -1,5 +1,6 @@
 import inspect
 import re
+import time
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode, urlunparse
 
 import requests
@@ -10,6 +11,32 @@ HEADERS = {
                   "Chrome/51.0.2704.103 Safari/537.36"
 }
 
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 1
+RETRYABLE_STATUS_CODES = {500, 502, 503, 504}
+
+
+def _get(url, **kwargs):
+    """requests.get with retries + backoff on connection errors, timeouts, and 5xx responses."""
+    kwargs.setdefault('timeout', REQUEST_TIMEOUT)
+    last_exc = None
+    response = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = requests.get(url, **kwargs)
+        except requests.exceptions.RequestException as exc:
+            last_exc = exc
+            response = None
+        else:
+            if response.status_code not in RETRYABLE_STATUS_CODES:
+                return response
+        if attempt < MAX_RETRIES - 1:
+            time.sleep(RETRY_BACKOFF_SECONDS * (attempt + 1))
+    if response is not None:
+        return response
+    raise last_exc
+
 
 class OpenCopaInvestigationCrawler(object):
     URL = 'https://www.chicagocopa.org/data-cases/case-portal/?sort_order=title%20desc'
@@ -18,7 +45,7 @@ class OpenCopaInvestigationCrawler(object):
         self.base_url = url
 
     def _get_page(self, url):
-        response = requests.get(url, headers=HEADERS)
+        response = _get(url, headers=HEADERS)
         response.raise_for_status()
         return BeautifulSoup(response.text, 'html.parser')
 
@@ -84,7 +111,9 @@ class BaseComplaintCrawler(object):
         self.soup = BeautifulSoup(self.content, 'html.parser')
 
     def get_html_content(self, url):
-        return requests.get(url, headers=HEADERS).text
+        response = _get(url, headers=HEADERS)
+        response.raise_for_status()
+        return response.text
 
     def crawl(self):
         records = {}
@@ -103,7 +132,7 @@ class VimeoSimpleAPI(object):
         self.url = 'http://vimeo.com/api/v2/video/{video_id}.json'.format(video_id=video_id)
 
     def crawl(self):
-        response = requests.get(self.url, headers=HEADERS)
+        response = _get(self.url, headers=HEADERS)
         try:
             content = response.json()[0]
         except ValueError:

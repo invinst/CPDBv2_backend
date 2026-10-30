@@ -246,9 +246,18 @@ class CopaPortalAttachmentImporter(CopaBaseAttachmentImporter):
         links = OpenCopaInvestigationCrawler().crawl()
         self.log_info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         raw_incidents = []
+        failed_links = []
 
         for link in tqdm(links):
-            raw_incidents.append(ComplaintCrawler(link).crawl())
+            try:
+                raw_incidents.append(ComplaintCrawler(link).crawl())
+            except Exception as e:
+                failed_links.append(link)
+                self.logger.exception(f'Skipping COPA case page after failing to crawl it: {link}')
+                self.log_info(f'ERROR: Skipping {link} - {type(e).__name__}: {e}')
+
+        if failed_links:
+            self.log_info(f'Skipped {len(failed_links)} case page(s) that failed to crawl: {failed_links}')
 
         self.log_info(f'Parsed {len(raw_incidents)} crawled incidents')
         self.log_info('Done crawling!')
@@ -285,12 +294,22 @@ class CopaSummaryReportsAttachmentImporter(CopaBaseAttachmentImporter):
         self.log_info('Crawling process is about to start...')
         links = OpenCopaSummaryReportsCrawler().crawl()
         raw_incidents = []
+        failed_links = []
 
         for link in tqdm(links):
             self.log_info(f'Crawling {link}')
-            incidents_per_year = OpenCopaYearSummaryReportsCrawler(link).crawl()
+            try:
+                incidents_per_year = OpenCopaYearSummaryReportsCrawler(link).crawl()
+            except Exception as e:
+                failed_links.append(link)
+                self.logger.exception(f'Skipping COPA summary report year page after failing to crawl it: {link}')
+                self.log_info(f'ERROR: Skipping {link} - {type(e).__name__}: {e}')
+                continue
             raw_incidents += incidents_per_year
             self.log_info(f'Parsed {len(incidents_per_year)} crawled incidents')
+
+        if failed_links:
+            self.log_info(f'Skipped {len(failed_links)} year page(s) that failed to crawl: {failed_links}')
 
         self.log_info(f'Total crawled incidents: {len(raw_incidents)}')
         self.log_info('Done crawling!')
