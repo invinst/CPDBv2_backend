@@ -23,7 +23,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: cpdbdev/backend:py3
+      - image: cpdbdev/backend:build-1518
         user: gunicorn
       - image: cpdbdev/postgres:9.6
       - image: elasticsearch:5-alpine
@@ -57,7 +57,7 @@ jobs:
 
   test_lambda:
     docker:
-      - image: cpdbdev/backend:py3
+      - image: cpdbdev/backend:build-1518
         user: gunicorn
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.circleci
