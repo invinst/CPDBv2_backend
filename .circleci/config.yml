@@ -38,6 +38,7 @@ jobs:
     steps:
       - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
       - checkout
+      - run: pip install --user --upgrade pip
       - run: pip install --user -r requirements/test.txt
       - run: flake8 --extend-ignore=E5,W6
       - run: ./cpdb/manage.py makemigrations --dry-run --settings=config.settings.test
@@ -63,6 +64,7 @@ jobs:
     steps:
       - run: echo 'export PATH="/home/gunicorn/.local/bin/:$PATH"' >> $BASH_ENV
       - checkout
+      - run: pip install --user --upgrade pip
       - run: pip install --user -r requirements/test.txt
       - run: python -m lambda.test
 
