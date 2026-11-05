@@ -39,7 +39,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         something
 
         """
-        cloud_document = create_object({'full_text': text_content.encode('utf8')})
+        cloud_document = create_object({'full_text': text_content})
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq("something\nsomething")
 
     def test_get_full_text_raise_HTTPError_exception(self):
@@ -146,7 +146,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 11,
             'access': 'public',
         })
@@ -184,7 +184,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 10,
             'access': 'public',
         })
@@ -210,7 +210,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -231,7 +231,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -254,7 +254,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -278,7 +278,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -302,7 +302,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -329,7 +329,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -360,7 +360,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -388,7 +388,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -535,7 +535,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': ''.encode('utf8'),
+            'full_text': '',
             'pages': 4,
             'access': 'public',
         })
@@ -550,7 +550,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8'),
+            'full_text': 'updated text content',
             'pages': 1,
             'access': 'public',
         })
@@ -565,7 +565,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://summary-reports.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': text_content.encode('utf8'),
+            'full_text': text_content,
             'pages': 3,
             'access': 'public',
         })
@@ -580,7 +580,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': ''.encode('utf8'),
+            'full_text': '',
             'pages': 2,
             'access': 'public',
         })
@@ -595,7 +595,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'public',
         })
@@ -610,7 +610,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc),
             'created_at': datetime(2018, 4, 4, 9, 0, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'pending',
         })
@@ -626,7 +626,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/image-1111130',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'pending',
             'save': Mock(),
@@ -642,7 +642,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'error',
             'delete': Mock(return_value=True)
@@ -659,7 +659,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': '1111126 text content'.encode('utf8'),
+            'full_text': '1111126 text content',
             'pages': 2,
             'access': 'private',
             'save': Mock()
@@ -676,7 +676,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'organization',
             'save': Mock()
@@ -693,7 +693,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8'),
+            'full_text': 'updated text content',
             'pages': 2,
             'access': 'private',
             'save': Mock()
@@ -710,7 +710,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'organization',
             'save': Mock()
@@ -1065,7 +1065,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/document-3-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'document 3 text content'.encode('utf8'),
+            'full_text': 'document 3 text content',
             'pages': 1,
             'access': 'public',
         })
@@ -1080,7 +1080,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/document-4-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'document 4 text content'.encode('utf8'),
+            'full_text': 'document 4 text content',
             'pages': 3,
             'access': 'public',
         })
@@ -1350,7 +1350,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'access': 'private',
-            'full_text': '1111126 text'.encode('utf8'),
+            'full_text': '1111126 text',
             'pages': 2,
             'save': Mock()
         })
@@ -1367,7 +1367,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'updated_at': datetime(2017, 1, 4, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'access': 'organization',
-            'full_text': '1111127 text'.encode('utf8'),
+            'full_text': '1111127 text',
             'pages': 3,
             'save': Mock()
         })

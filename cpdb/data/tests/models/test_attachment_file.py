@@ -3,7 +3,7 @@ from urllib.error import HTTPError
 
 from django.test import override_settings
 from django.test.testcases import TestCase
-from documentcloud import DoesNotExistError
+from documentcloud.exceptions import DoesNotExistError
 from mock import patch, Mock
 from robber import expect
 

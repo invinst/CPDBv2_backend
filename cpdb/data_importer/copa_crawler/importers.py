@@ -200,20 +200,34 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
         )
 
         self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
+        failed_attachments = []
 
         for attachment in tqdm(attachments):
             source_type = AttachmentSourceType.SOURCE_TYPE_MAPPINGS[attachment.source_type]
 
-            cloud_document = client.documents.upload(
-                attachment.original_url,
-                title=format_copa_documentcloud_title(attachment.owner_id, attachment.title),
-                description=source_type,
-                access='public',
-                force_ocr=True
-            )
+            try:
+                cloud_document = client.documents.upload(
+                    attachment.original_url,
+                    title=format_copa_documentcloud_title(attachment.owner_id, attachment.title),
+                    description=source_type,
+                    access='public',
+                    force_ocr=True
+                )
+            except Exception as e:
+                failed_attachments.append(attachment.pk)
+                attachment.upload_fail_attempts += 1
+                attachment.save()
+                self.logger.exception(f'Skipping DocumentCloud upload after failing: {attachment.original_url}')
+                self.log_info(f'ERROR: Skipping upload for attachment {attachment.pk} - {type(e).__name__}: {e}')
+                continue
 
             attachment.pending_documentcloud_id = parse_id(cloud_document.id)
             attachment.save()
+
+        if failed_attachments:
+            self.log_info(
+                f'Skipped {len(failed_attachments)} attachment(s) that failed to upload: {failed_attachments}'
+            )
 
         self.log_info(f'Done uploading!')
 

@@ -41,7 +41,14 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.updated_attachments = []
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
-        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        self._client = None
+
+    @property
+    def client(self):
+        # Constructing DocumentCloud() authenticates immediately, so defer it until actually needed.
+        if self._client is None:
+            self._client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        return self._client
 
     mapping_fields = {
         'url': 'url',
@@ -57,7 +64,7 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     @staticmethod
     def get_full_text(cloud_document):
         try:
-            return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
+            return re.sub(r'(\n *)+', '\n', cloud_document.full_text).strip()
         except (HTTPError, NotImplementedError):
             return ''
 
