@@ -25,6 +25,10 @@ class DocumentcloudUtilsTestCase(TestCase):
         documentcloud_id = 'CRID-123456-CR'
         expect(parse_id(documentcloud_id)).to.be.none()
 
+    def test_parse_bare_numeric_id(self):
+        # Current DocumentCloud API returns Document.id as a plain int (no slug suffix).
+        expect(parse_id(789)).to.eq('789')
+
     def test_parse_existed_crid_and_type_from_title(self):
         document_title = 'CRID-123456 CR'
         expect(parse_crid_and_type_from_title(document_title)).to.eq({'crid': '123456', 'document_type': 'CR'})
