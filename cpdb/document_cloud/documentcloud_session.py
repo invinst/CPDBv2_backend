@@ -23,8 +23,12 @@ class DocumentCloudSession(requests.Session):
         )
         if login_response.status_code != 200:
             self.log_func('[ERROR] Cannot login to document cloud to reprocessing text')
+            try:
+                error_detail = login_response.json()
+            except ValueError:
+                error_detail = login_response.text
             raise requests.exceptions.RequestException(
-                f'Cannot login {login_response.status_code}: {login_response.json()}'
+                f'Cannot login {login_response.status_code}: {error_detail}'
             )
 
     def _request_reprocess_text(self, document):
@@ -45,9 +49,13 @@ class DocumentCloudSession(requests.Session):
             if success:
                 self.log_func(f'[SUCCESS] Reprocessing text {document.url}')
             else:
+                try:
+                    error_detail = response.json()
+                except ValueError:
+                    error_detail = response.text
                 self.log_func(
                     f'[FAIL] Reprocessing text {document.url} failed'
-                    f' with status code {response.status_code}: {response.json()}'
+                    f' with status code {response.status_code}: {error_detail}'
                 )
         return sent, success
 
