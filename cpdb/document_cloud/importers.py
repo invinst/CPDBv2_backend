@@ -67,9 +67,10 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     def get_full_text(cloud_document):
         try:
             return re.sub(r'(\n *)+', '\n', cloud_document.full_text).strip()
-        # The current API raises requests.exceptions.HTTPError (e.g. 404 when text
-        # hasn't been OCR'd/uploaded yet), not the legacy urllib.error.HTTPError.
-        except (HTTPError, requests.exceptions.RequestException, NotImplementedError):
+        # The current API wraps a missing text asset (404) in its own DoesNotExistError,
+        # or can raise a bare requests.exceptions.HTTPError, instead of the legacy
+        # urllib.error.HTTPError.
+        except (HTTPError, requests.exceptions.RequestException, DoesNotExistError, NotImplementedError):
             return ''
 
     @staticmethod
@@ -172,35 +173,40 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
         for cloud_document in tqdm(search_all(self.logger, self.custom_search_syntaxes), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.documentcloud_id:
-                if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
-                    attachment = self.get_attachment(cloud_document)
-                    if attachment:
-                        updated = self.update_attachment(attachment, cloud_document)
-                        if updated:
-                            self.updated_attachments.append(attachment)
+            try:
+                if cloud_document.allegation and cloud_document.documentcloud_id:
+                    if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
+                        attachment = self.get_attachment(cloud_document)
+                        if attachment:
+                            updated = self.update_attachment(attachment, cloud_document)
+                            if updated:
+                                self.updated_attachments.append(attachment)
+                            else:
+                                self.kept_attachments.append(attachment)
                         else:
-                            self.kept_attachments.append(attachment)
-                    else:
-                        self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
-                        new_attachment = AttachmentFile(
-                            external_id=cloud_document.documentcloud_id,
-                            owner_id=cloud_document.allegation.pk,
-                            owner_type_id=allegation_type_id,
-                            source_type=cloud_document.source_type,
-                            title=cloud_document.title,
-                            url=cloud_document.url,
-                            file_type=MEDIA_TYPE_DOCUMENT,
-                            tag=cloud_document.document_type,
-                            additional_info=parse_link(cloud_document.canonical_url),
-                            original_url=cloud_document.url,
-                            preview_image_url=cloud_document.normal_image_url,
-                            external_created_at=cloud_document.created_at,
-                            external_last_updated=cloud_document.updated_at,
-                            text_content=self.get_full_text(cloud_document),
-                            pages=cloud_document.pages
-                        )
-                        self.new_attachments.append(new_attachment)
+                            self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
+                            new_attachment = AttachmentFile(
+                                external_id=cloud_document.documentcloud_id,
+                                owner_id=cloud_document.allegation.pk,
+                                owner_type_id=allegation_type_id,
+                                source_type=cloud_document.source_type,
+                                title=cloud_document.title,
+                                url=cloud_document.url,
+                                file_type=MEDIA_TYPE_DOCUMENT,
+                                tag=cloud_document.document_type,
+                                additional_info=parse_link(cloud_document.canonical_url),
+                                original_url=cloud_document.url,
+                                preview_image_url=cloud_document.normal_image_url,
+                                external_created_at=cloud_document.created_at,
+                                external_last_updated=cloud_document.updated_at,
+                                text_content=self.get_full_text(cloud_document),
+                                pages=cloud_document.pages
+                            )
+                            self.new_attachments.append(new_attachment)
+            except Exception as e:
+                doc_id = getattr(cloud_document, 'documentcloud_id', '?')
+                self.log_info(f'ERROR processing search result {doc_id}: {type(e).__name__}: {e}')
+                continue
 
         self.log_info('Done crawling!')
 

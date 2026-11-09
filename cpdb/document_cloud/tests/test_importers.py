@@ -74,6 +74,17 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         cloud_document = Document()
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
 
+    def test_get_full_text_raise_DoesNotExistError_exception(self):
+        # The current library wraps a missing text asset (404) in its own
+        # DoesNotExistError rather than letting requests.exceptions.HTTPError through.
+        class Document(object):
+            @property
+            def full_text(self):
+                raise DoesNotExistError(response=None)
+
+        cloud_document = Document()
+        expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
+
     @patch('shared.attachment_importer.aws')
     def test_create_crawler_log(self, _):
         EmailTemplateFactory(type=CR_ATTACHMENT_AVAILABLE)
@@ -1916,3 +1927,41 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         ok_attachment.refresh_from_db()
         expect(ok_attachment.pending_documentcloud_id).to.be.none()
         expect(ok_attachment.text_content).to.eq('hello')
+
+    @patch('document_cloud.importers.search_all')
+    def test_search_attachments_one_fails_does_not_block_others(self, search_all_mock):
+        allegation = AllegationFactory(crid='234')
+
+        # Deliberately missing `access`, so make_cloud_document_public() raises
+        # an AttributeError for this one search result.
+        broken_cloud_document = create_object({
+            'documentcloud_id': '999',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
+        })
+
+        ok_cloud_document = create_object({
+            'documentcloud_id': '888',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/888-CRID-234-CR.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/888-CRID-234-CR.html',
+            'document_type': 'CR',
+            'title': 'CRID-234-CR-888',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'full_text': 'hello',
+            'pages': 2,
+            'access': 'public',
+        })
+
+        search_all_mock.return_value = [broken_cloud_document, ok_cloud_document]
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        importer.search_attachments()
+
+        expect(len(importer.new_attachments)).to.eq(1)
+        expect(importer.new_attachments[0].external_id).to.eq('888')
