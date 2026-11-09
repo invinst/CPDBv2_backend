@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from documentcloud import DocumentCloud
+from documentcloud.constants import PER_PAGE_MAX
 
 from data.constants import AttachmentSourceType
 from data.models import AttachmentFile, Allegation
@@ -89,7 +90,7 @@ def search_all(logger=_logger, custom_search_syntaxes=None):
             logger.info(f'Searching Documentcloud for {syntax}')
             all_documents += _remove_duplicated(
                 _remove_invalid_documents(
-                    _add_attributes(client.documents.search(syntax), document_types)
+                    _add_attributes(client.documents.search(syntax, per_page=PER_PAGE_MAX), document_types)
                 )
             )
     return all_documents

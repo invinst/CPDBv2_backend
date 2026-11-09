@@ -12,6 +12,8 @@ from mock import patch, Mock, MagicMock
 from robber import expect
 from freezegun import freeze_time
 
+from documentcloud.exceptions import DoesNotExistError
+
 from data.constants import AttachmentSourceType
 from data.factories import AllegationFactory, AttachmentFileFactory
 from data.models import AttachmentFile
@@ -1775,3 +1777,71 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation_2.refresh_from_db()
         expect(allegation_2.summary).to.eq('allegation summary')
         expect(allegation_2.is_extracted_summary).to.be.false()
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_promotes_matching_attachment(self, document_cloud_mock):
+        allegation = AllegationFactory(crid='123')
+        attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='555',
+            external_id='',
+            external_last_updated=None,
+        )
+        cloud_document = create_object({
+            'id': 555,
+            'title': 'CRID 123 CR Some Title',
+            'url': 'https://www.documentcloud.org/documents/555-crid-123-cr.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/555-crid-123-cr.html',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'created_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'pages': 2,
+            'full_text': 'hello',
+            'access': 'public',
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+        })
+        document_cloud_mock().documents.get.return_value = cloud_document
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        expect(document_cloud_mock().documents.get).to.be.called_with('555')
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.be.none()
+        expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
+        expect(attachment.external_id).to.eq('555')
+        expect(attachment.text_content).to.eq('hello')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_with_missing_document(self, document_cloud_mock):
+        attachment = AttachmentFileFactory(pending_documentcloud_id='999')
+        document_cloud_mock().documents.get.side_effect = DoesNotExistError()
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.eq('999')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_with_unexpected_error(self, document_cloud_mock):
+        attachment = AttachmentFileFactory(pending_documentcloud_id='888')
+        document_cloud_mock().documents.get.side_effect = Exception('boom')
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        importer.resolve_pending_attachments()
+
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.eq('888')
+        expect(importer.log_info.call_args_list[1][0][0]).to.eq('ERROR resolving pending doc 888: Exception: boom')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_skips_attachments_without_pending_id(self, document_cloud_mock):
+        AttachmentFileFactory(pending_documentcloud_id=None)
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        expect(document_cloud_mock().documents.get).not_to.be.called()

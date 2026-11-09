@@ -8,15 +8,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.conf import settings
 from documentcloud import DocumentCloud
+from documentcloud.exceptions import DoesNotExistError
 
 from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 from document_cloud.documentcloud_session import DocumentCloudSession
-from document_cloud.utils import parse_link
+from document_cloud.models import DocumentCloudSearchQuery
+from document_cloud.utils import DEFAULT_DOCUMENT_TYPE, parse_link
 from email_service.service import send_cr_attachment_available_email
-from document_cloud.search import search_all
+from document_cloud.search import _add_attributes, search_all
 from shared.attachment_importer import BaseAttachmentImporter
 
 BATCH_SIZE = 1000
@@ -123,6 +125,37 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         else:
             self.log_info(f'Skip document {cloud_document.canonical_url} (access: {cloud_document.access})')
             return False
+
+    def resolve_pending_attachments(self):
+        # Attachments we uploaded ourselves already have a known pending_documentcloud_id,
+        # so fetch them directly by id instead of relying on them turning up in the
+        # (very large, slow) global title search, which can be rate-limited by DocumentCloud.
+        self.log_info('Resolving pending DocumentCloud uploads directly by id...')
+        document_types = list(
+            DocumentCloudSearchQuery.objects.values_list('types', flat=True).first() or [DEFAULT_DOCUMENT_TYPE]
+        )
+        pending_attachments = AttachmentFile.objects.for_allegation().filter(
+            pending_documentcloud_id__isnull=False
+        ).exclude(pending_documentcloud_id='')
+
+        resolved_count = 0
+        for attachment in pending_attachments:
+            try:
+                cloud_document = self.client.documents.get(attachment.pending_documentcloud_id)
+            except DoesNotExistError:
+                continue
+            except Exception as e:
+                self.log_info(
+                    f'ERROR resolving pending doc {attachment.pending_documentcloud_id}: {type(e).__name__}: {e}'
+                )
+                continue
+
+            _add_attributes([cloud_document], document_types)
+            if self.update_attachment(attachment, cloud_document):
+                attachment.save()
+                resolved_count += 1
+
+        self.log_info(f'Resolved and promoted {resolved_count} pending attachment(s) directly by id')
 
     def search_attachments(self):
         self.log_info('Documentcloud crawling process is about to start...')
@@ -241,6 +274,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
     def search_and_update_attachments(self):
         try:
+            self.set_current_step('RESOLVING PENDING ATTACHMENTS')
+            self.resolve_pending_attachments()
             self.set_current_step('SEARCH ATTACHMENTS')
             self.search_attachments()
             self.set_current_step('UPDATING ATTACHMENTS')
