@@ -1,5 +1,6 @@
 import logging
 import json
+import requests
 import urllib3
 from datetime import datetime, timezone
 from urllib.error import HTTPError
@@ -58,6 +59,17 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             @property
             def full_text(self):
                 raise NotImplementedError('Testing error')
+
+        cloud_document = Document()
+        expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
+
+    def test_get_full_text_raise_requests_HTTPError_exception(self):
+        # The current DocumentCloud API raises requests.exceptions.HTTPError (e.g. a
+        # 404 when the text asset isn't available yet), not the legacy urllib one.
+        class Document(object):
+            @property
+            def full_text(self):
+                raise requests.exceptions.HTTPError('404 Client Error')
 
         cloud_document = Document()
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
@@ -1845,3 +1857,62 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         importer.resolve_pending_attachments()
 
         expect(document_cloud_mock().documents.get).not_to.be.called()
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_one_fails_does_not_block_others(self, document_cloud_mock):
+        allegation = AllegationFactory(crid='123')
+        failing_attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='111',
+            external_id='ext-111',
+            external_last_updated=None,
+        )
+        ok_attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='222',
+            external_id='ext-222',
+            external_last_updated=None,
+        )
+
+        class BrokenDocument(object):
+            # Deliberately missing `pages`, so the mapping_fields loop in
+            # update_attachment() raises an AttributeError for this one document.
+            id = 111
+            title = 'CRID 123 CR Broken Title'
+            url = 'https://www.documentcloud.org/documents/111-crid-123-cr.html'
+            canonical_url = 'https://www.documentcloud.org/documents/111-crid-123-cr.html'
+            normal_image_url = 'http://web.com/image'
+            updated_at = datetime(2020, 1, 1, tzinfo=pytz.utc)
+            created_at = datetime(2020, 1, 1, tzinfo=pytz.utc)
+            full_text = 'broken doc text'
+            access = 'public'
+            description = AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
+
+        ok_cloud_document = create_object({
+            'id': 222,
+            'title': 'CRID 123 CR Ok Title',
+            'url': 'https://www.documentcloud.org/documents/222-crid-123-cr.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/222-crid-123-cr.html',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'created_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'pages': 2,
+            'full_text': 'hello',
+            'access': 'public',
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+        })
+
+        return_values = {'111': BrokenDocument(), '222': ok_cloud_document}
+        document_cloud_mock().documents.get.side_effect = lambda arg: return_values[arg]
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        failing_attachment.refresh_from_db()
+        expect(failing_attachment.pending_documentcloud_id).to.eq('111')
+
+        ok_attachment.refresh_from_db()
+        expect(ok_attachment.pending_documentcloud_id).to.be.none()
+        expect(ok_attachment.text_content).to.eq('hello')

@@ -67,7 +67,9 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     def get_full_text(cloud_document):
         try:
             return re.sub(r'(\n *)+', '\n', cloud_document.full_text).strip()
-        except (HTTPError, NotImplementedError):
+        # The current API raises requests.exceptions.HTTPError (e.g. 404 when text
+        # hasn't been OCR'd/uploaded yet), not the legacy urllib.error.HTTPError.
+        except (HTTPError, requests.exceptions.RequestException, NotImplementedError):
             return ''
 
     @staticmethod
@@ -150,10 +152,16 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
                 )
                 continue
 
-            _add_attributes([cloud_document], document_types)
-            if self.update_attachment(attachment, cloud_document):
-                attachment.save()
-                resolved_count += 1
+            try:
+                _add_attributes([cloud_document], document_types)
+                if self.update_attachment(attachment, cloud_document):
+                    attachment.save()
+                    resolved_count += 1
+            except Exception as e:
+                self.log_info(
+                    f'ERROR promoting pending doc {attachment.pending_documentcloud_id}: {type(e).__name__}: {e}'
+                )
+                continue
 
         self.log_info(f'Resolved and promoted {resolved_count} pending attachment(s) directly by id')
 
