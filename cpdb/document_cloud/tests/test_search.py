@@ -1,11 +1,13 @@
 from django.test import TestCase
-from mock import patch
+from mock import patch, Mock
 from robber import expect
+
+from documentcloud.base import APIResults
 
 from data.constants import AttachmentSourceType
 from data.factories import AttachmentFileFactory, AllegationFactory
 from document_cloud.factories import DocumentCloudSearchQueryFactory
-from document_cloud.search import search_all
+from document_cloud.search import search_all, _iter_search_results
 from shared.tests.utils import create_object
 
 
@@ -264,3 +266,39 @@ class SearchTestCase(TestCase):
             expectation = expectation_dict[document.id]
             for field, value in expectation.items():
                 expect(getattr(document, field, None)).to.eq(value)
+
+
+class IterSearchResultsTestCase(TestCase):
+    def test_iter_search_results_with_plain_iterable(self):
+        # Test mocks for search() typically return a plain list rather than a
+        # real (paginated) APIResults object.
+        documents = list(_iter_search_results(['a', 'b', 'c']))
+        expect(documents).to.eq(['a', 'b', 'c'])
+
+    def test_iter_search_results_walks_pagination_without_recursion(self):
+        # APIResults.__iter__ recurses once per page, which blows Python's
+        # recursion limit (default 1000) on a search this large. Walk well past
+        # that limit here to prove _iter_search_results does it iteratively.
+        class StubDoc(object):
+            def __init__(self, client, data):
+                self.id = data['id']
+
+        num_pages = 2000
+        client = Mock()
+
+        def make_response(page):
+            next_url = f'page-{page + 1}' if page + 1 < num_pages else None
+            return Mock(json=Mock(return_value={
+                'count': num_pages,
+                'next': next_url,
+                'previous': None,
+                'results': [{'id': page}],
+            }))
+
+        client.get.side_effect = lambda url, full_url=True: make_response(int(url.split('-')[1]))
+
+        first_page = APIResults(StubDoc, client, make_response(0))
+        documents = list(_iter_search_results(first_page))
+
+        expect(len(documents)).to.eq(num_pages)
+        expect([document.id for document in documents]).to.eq(list(range(num_pages)))

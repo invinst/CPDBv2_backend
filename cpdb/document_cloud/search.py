@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from documentcloud import DocumentCloud
+from documentcloud.base import APIResults
 from documentcloud.constants import PER_PAGE_MAX
 
 from data.constants import AttachmentSourceType
@@ -80,6 +81,26 @@ def _add_attributes(cloud_documents, document_types):
     return cloud_documents
 
 
+def _iter_search_results(search_results):
+    # APIResults.__iter__ fetches each page by recursing into the next page's
+    # __iter__, which blows Python's recursion limit once a search has more than
+    # ~1000 pages (routine for this search given how much larger DocumentCloud's
+    # index has grown). Walk next_url in a flat loop instead.
+    if not hasattr(search_results, 'next_url'):
+        # Not a real (paginated) APIResults object, e.g. a plain list in tests.
+        yield from search_results
+        return
+
+    results = search_results
+    while results is not None:
+        for document in results.results:
+            yield document
+        if not results.next_url:
+            break
+        response = results.client.get(results.next_url, full_url=True)
+        results = APIResults(results.resource, results.client, response)
+
+
 def search_all(logger=_logger, custom_search_syntaxes=None):
     client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
 
@@ -88,9 +109,13 @@ def search_all(logger=_logger, custom_search_syntaxes=None):
     for document_types, syntax in search_syntaxes:
         if syntax:
             logger.info(f'Searching Documentcloud for {syntax}')
+            # Materialize into a list: downstream helpers (_add_attributes,
+            # _remove_invalid_documents, _remove_duplicated) each iterate this more
+            # than once, which a single-use generator can't support.
+            search_results = list(_iter_search_results(client.documents.search(syntax, per_page=PER_PAGE_MAX)))
             all_documents += _remove_duplicated(
                 _remove_invalid_documents(
-                    _add_attributes(client.documents.search(syntax, per_page=PER_PAGE_MAX), document_types)
+                    _add_attributes(search_results, document_types)
                 )
             )
     return all_documents
