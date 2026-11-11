@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import connection
 
 from data.models import AttachmentFile
 from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
@@ -11,6 +12,17 @@ from document_cloud.models import DocumentCrawler
 from shared.aws import aws
 
 CRAWLER_ERROR_NOTIFICATION_EMAIL = 'hector@79x.solutions'
+
+
+def _heal_stale_connection():
+    # This process is long-running and management commands don't get Django's
+    # per-request connection health checks, so a connection dropped by infra
+    # mid-run (e.g. after an hours-long network-bound step) would otherwise keep
+    # raising "connection already closed" for the rest of the process. Only
+    # close it if it's actually unusable: unconditionally closing would also
+    # tear down the atomic block Django's TestCase relies on for rollback.
+    if connection.connection is not None and not connection.is_usable():
+        connection.close()
 
 
 class BaseAttachmentImporter(object):
@@ -48,6 +60,8 @@ class BaseAttachmentImporter(object):
         return DocumentCrawler.objects.filter(source_type=self.source_type, status='Success').count()
 
     def set_current_step(self, step):
+        _heal_stale_connection()
+
         step_length = len(step)
         left_space = int(round(80 - step_length)/2)
         right_space = 80 - step_length - left_space
@@ -56,6 +70,7 @@ class BaseAttachmentImporter(object):
         self.log_info(f'{"="*left_space} {self.current_step} {"="*right_space}')
 
     def record_crawler_result(self, status, message, stack_trace=None):
+        _heal_stale_connection()
         num_documents = AttachmentFile.objects.filter(
             source_type__in=self.all_source_types
         ).count()
