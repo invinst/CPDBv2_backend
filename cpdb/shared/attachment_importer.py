@@ -15,12 +15,12 @@ CRAWLER_ERROR_NOTIFICATION_EMAIL = 'hector@79x.solutions'
 
 
 def _heal_stale_connection():
-    # This process is long-running and management commands don't get Django's
-    # per-request connection health checks, so a connection dropped by infra
-    # mid-run (e.g. after an hours-long network-bound step) would otherwise keep
-    # raising "connection already closed" for the rest of the process. Only
-    # close it if it's actually unusable: unconditionally closing would also
-    # tear down the atomic block Django's TestCase relies on for rollback.
+    # Long-running management commands don't get Django's per-request connection
+    # health checks, so a connection dropped by infra mid-run (e.g. after an
+    # hours-long network-bound step) would otherwise keep raising
+    # "connection already closed" for the rest of the process. Only close it if
+    # it's actually unusable: unconditionally closing would also tear down the
+    # atomic block Django's TestCase relies on for rollback.
     if connection.connection is not None and not connection.is_usable():
         connection.close()
 
