@@ -29,6 +29,8 @@ class UpdateComplainantManager(UpdateManagerBase):
                 from {self.table_name} t
                 join data_allegation a
                     on a.crid = replace(t.cr_id, '-', '')
+                order by
+                    cr_id
                 limit {self.batch_size} offset {self.offset}"""
 
     def preprocess_batch(self, batch):

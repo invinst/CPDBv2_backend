@@ -8,15 +8,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.conf import settings
 from documentcloud import DocumentCloud
+from documentcloud.exceptions import DoesNotExistError
 
 from tqdm import tqdm
 
 from data.constants import AttachmentSourceType, MEDIA_TYPE_DOCUMENT
 from data.models import AttachmentFile
 from document_cloud.documentcloud_session import DocumentCloudSession
-from document_cloud.utils import parse_link
+from document_cloud.models import DocumentCloudSearchQuery
+from document_cloud.utils import DEFAULT_DOCUMENT_TYPE, parse_link
 from email_service.service import send_cr_attachment_available_email
-from document_cloud.search import search_all
+from document_cloud.search import _add_attributes, search_all
 from shared.attachment_importer import BaseAttachmentImporter
 
 BATCH_SIZE = 1000
@@ -41,7 +43,14 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.updated_attachments = []
         self.force_update = force_update
         self.custom_search_syntaxes = custom_search_syntaxes
-        self.client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        self._client = None
+
+    @property
+    def client(self):
+        # Constructing DocumentCloud() authenticates immediately, so defer it until actually needed.
+        if self._client is None:
+            self._client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
+        return self._client
 
     mapping_fields = {
         'url': 'url',
@@ -57,8 +66,11 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
     @staticmethod
     def get_full_text(cloud_document):
         try:
-            return re.sub(r'(\n *)+', '\n', cloud_document.full_text.decode('utf8')).strip()
-        except (HTTPError, NotImplementedError):
+            return re.sub(r'(\n *)+', '\n', cloud_document.full_text).strip()
+        # The current API wraps a missing text asset (404) in its own DoesNotExistError,
+        # or can raise a bare requests.exceptions.HTTPError, instead of the legacy
+        # urllib.error.HTTPError.
+        except (HTTPError, requests.exceptions.RequestException, DoesNotExistError, NotImplementedError):
             return ''
 
     @staticmethod
@@ -117,6 +129,43 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
             self.log_info(f'Skip document {cloud_document.canonical_url} (access: {cloud_document.access})')
             return False
 
+    def resolve_pending_attachments(self):
+        # Attachments we uploaded ourselves already have a known pending_documentcloud_id,
+        # so fetch them directly by id instead of relying on them turning up in the
+        # (very large, slow) global title search, which can be rate-limited by DocumentCloud.
+        self.log_info('Resolving pending DocumentCloud uploads directly by id...')
+        document_types = list(
+            DocumentCloudSearchQuery.objects.values_list('types', flat=True).first() or [DEFAULT_DOCUMENT_TYPE]
+        )
+        pending_attachments = AttachmentFile.objects.for_allegation().filter(
+            pending_documentcloud_id__isnull=False
+        ).exclude(pending_documentcloud_id='')
+
+        resolved_count = 0
+        for attachment in pending_attachments:
+            try:
+                cloud_document = self.client.documents.get(attachment.pending_documentcloud_id)
+            except DoesNotExistError:
+                continue
+            except Exception as e:
+                self.log_info(
+                    f'ERROR resolving pending doc {attachment.pending_documentcloud_id}: {type(e).__name__}: {e}'
+                )
+                continue
+
+            try:
+                _add_attributes([cloud_document], document_types)
+                if self.update_attachment(attachment, cloud_document):
+                    attachment.save()
+                    resolved_count += 1
+            except Exception as e:
+                self.log_info(
+                    f'ERROR promoting pending doc {attachment.pending_documentcloud_id}: {type(e).__name__}: {e}'
+                )
+                continue
+
+        self.log_info(f'Resolved and promoted {resolved_count} pending attachment(s) directly by id')
+
     def search_attachments(self):
         self.log_info('Documentcloud crawling process is about to start...')
         self.kept_attachments, self.new_attachments, self.updated_attachments = [], [], []
@@ -124,35 +173,40 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
         self.log_info('New documentcloud attachments found:')
         allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
         for cloud_document in tqdm(search_all(self.logger, self.custom_search_syntaxes), desc='Update documents'):
-            if cloud_document.allegation and cloud_document.documentcloud_id:
-                if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
-                    attachment = self.get_attachment(cloud_document)
-                    if attachment:
-                        updated = self.update_attachment(attachment, cloud_document)
-                        if updated:
-                            self.updated_attachments.append(attachment)
+            try:
+                if cloud_document.allegation and cloud_document.documentcloud_id:
+                    if settings.IMPORT_NOT_PUBLIC_CLOUD_DOCUMENTS or self.make_cloud_document_public(cloud_document):
+                        attachment = self.get_attachment(cloud_document)
+                        if attachment:
+                            updated = self.update_attachment(attachment, cloud_document)
+                            if updated:
+                                self.updated_attachments.append(attachment)
+                            else:
+                                self.kept_attachments.append(attachment)
                         else:
-                            self.kept_attachments.append(attachment)
-                    else:
-                        self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
-                        new_attachment = AttachmentFile(
-                            external_id=cloud_document.documentcloud_id,
-                            owner_id=cloud_document.allegation.pk,
-                            owner_type_id=allegation_type_id,
-                            source_type=cloud_document.source_type,
-                            title=cloud_document.title,
-                            url=cloud_document.url,
-                            file_type=MEDIA_TYPE_DOCUMENT,
-                            tag=cloud_document.document_type,
-                            additional_info=parse_link(cloud_document.canonical_url),
-                            original_url=cloud_document.url,
-                            preview_image_url=cloud_document.normal_image_url,
-                            external_created_at=cloud_document.created_at,
-                            external_last_updated=cloud_document.updated_at,
-                            text_content=self.get_full_text(cloud_document),
-                            pages=cloud_document.pages
-                        )
-                        self.new_attachments.append(new_attachment)
+                            self.log_info(f'crid {cloud_document.allegation.crid} {cloud_document.canonical_url}')
+                            new_attachment = AttachmentFile(
+                                external_id=cloud_document.documentcloud_id,
+                                owner_id=cloud_document.allegation.pk,
+                                owner_type_id=allegation_type_id,
+                                source_type=cloud_document.source_type,
+                                title=cloud_document.title,
+                                url=cloud_document.url,
+                                file_type=MEDIA_TYPE_DOCUMENT,
+                                tag=cloud_document.document_type,
+                                additional_info=parse_link(cloud_document.canonical_url),
+                                original_url=cloud_document.url,
+                                preview_image_url=cloud_document.normal_image_url,
+                                external_created_at=cloud_document.created_at,
+                                external_last_updated=cloud_document.updated_at,
+                                text_content=self.get_full_text(cloud_document),
+                                pages=cloud_document.pages
+                            )
+                            self.new_attachments.append(new_attachment)
+            except Exception as e:
+                doc_id = getattr(cloud_document, 'documentcloud_id', '?')
+                self.log_info(f'ERROR processing search result {doc_id}: {type(e).__name__}: {e}')
+                continue
 
         self.log_info('Done crawling!')
 
@@ -234,6 +288,8 @@ class DocumentCloudAttachmentImporter(BaseAttachmentImporter):
 
     def search_and_update_attachments(self):
         try:
+            self.set_current_step('RESOLVING PENDING ATTACHMENTS')
+            self.resolve_pending_attachments()
             self.set_current_step('SEARCH ATTACHMENTS')
             self.search_attachments()
             self.set_current_step('UPDATING ATTACHMENTS')

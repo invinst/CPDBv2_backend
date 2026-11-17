@@ -50,9 +50,9 @@ class Area(TimeStampsModel, TaggableModel):
     def get_most_common_complaint(self):
         OfficerAllegation = apps.get_app_config('data').get_model('OfficerAllegation')
         query = OfficerAllegation.objects.filter(allegation__areas__in=[self])
-        query = query.values('allegation_category__category').annotate(
-            id=F('allegation_category__id'),
-            name=F('allegation_category__category'),
+        query = query.values('officerallegationfinding__allegation_category__category').annotate(
+            id=F('officerallegationfinding__allegation_category__id'),
+            name=F('officerallegationfinding__allegation_category__category'),
             count=Count('allegation', distinct=True)
         )
         query = query.order_by('-count')[:3]

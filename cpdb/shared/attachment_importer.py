@@ -1,11 +1,28 @@
-from django.conf import settings
+import traceback
 from datetime import datetime
+
 import pytz
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db import connection
 
 from data.models import AttachmentFile
 from document_cloud.constants import DOCUMENT_CRAWLER_SUCCESS, DOCUMENT_CRAWLER_FAILED
 from document_cloud.models import DocumentCrawler
 from shared.aws import aws
+
+CRAWLER_ERROR_NOTIFICATION_EMAIL = 'hector@79x.solutions'
+
+
+def _heal_stale_connection():
+    # Long-running management commands don't get Django's per-request connection
+    # health checks, so a connection dropped by infra mid-run (e.g. after an
+    # hours-long network-bound step) would otherwise keep raising
+    # "connection already closed" for the rest of the process. Only close it if
+    # it's actually unusable: unconditionally closing would also tear down the
+    # atomic block Django's TestCase relies on for rollback.
+    if connection.connection is not None and not connection.is_usable():
+        connection.close()
 
 
 class BaseAttachmentImporter(object):
@@ -25,6 +42,10 @@ class BaseAttachmentImporter(object):
         self.log_data.append(message)
 
     def generate_s3_log_file(self):
+        if not aws.is_configured:
+            self.log_info('Skipping S3 log upload: AWS credentials/region not configured')
+            return None
+
         filename = datetime.now(pytz.utc).strftime('%Y-%m-%d-%H%M%S.txt')
         log_key = f'{self.crawler_name}/{self.crawler_name.replace("_", "-")}-{filename}'
         aws.s3.put_object(
@@ -39,6 +60,8 @@ class BaseAttachmentImporter(object):
         return DocumentCrawler.objects.filter(source_type=self.source_type, status='Success').count()
 
     def set_current_step(self, step):
+        _heal_stale_connection()
+
         step_length = len(step)
         left_space = int(round(80 - step_length)/2)
         right_space = 80 - step_length - left_space
@@ -46,7 +69,8 @@ class BaseAttachmentImporter(object):
         self.log_info('')
         self.log_info(f'{"="*left_space} {self.current_step} {"="*right_space}')
 
-    def record_crawler_result(self, status, message):
+    def record_crawler_result(self, status, message, stack_trace=None):
+        _heal_stale_connection()
         num_documents = AttachmentFile.objects.filter(
             source_type__in=self.all_source_types
         ).count()
@@ -70,11 +94,37 @@ class BaseAttachmentImporter(object):
             num_new_documents=num_new_attachments,
             num_updated_documents=self.num_updated_attachments,
             num_successful_run=num_successful_run,
-            log_key=log_key
+            log_key=log_key,
+            traceback=stack_trace,
         )
 
     def record_success_crawler_result(self):
         self.record_crawler_result(DOCUMENT_CRAWLER_SUCCESS, 'Done importing!')
 
     def record_failed_crawler_result(self):
-        self.record_crawler_result(DOCUMENT_CRAWLER_FAILED, f'ERROR: Error occurred while {self.current_step}!')
+        stack_trace = self._notify_crawl_error()
+        self.record_crawler_result(
+            DOCUMENT_CRAWLER_FAILED,
+            f'ERROR: Error occurred while {self.current_step}!',
+            stack_trace=stack_trace,
+        )
+
+    def _notify_crawl_error(self):
+        """
+        Email CRAWLER_ERROR_NOTIFICATION_EMAIL with the traceback of the exception currently being
+        handled, and return that traceback so the caller can also persist it on the DocumentCrawler row.
+        """
+        context = f'{type(self).__name__} ({self.crawler_name}) failed during step: {self.current_step}'
+        stack_trace = traceback.format_exc()
+        self.logger.exception(context)
+        try:
+            send_mail(
+                subject=f'Crawler error: {context}',
+                message=f'{context}\n\n{stack_trace}',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                recipient_list=[CRAWLER_ERROR_NOTIFICATION_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:
+            self.logger.exception('Failed to send crawler error notification email')
+        return stack_trace

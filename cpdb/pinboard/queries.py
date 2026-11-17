@@ -46,7 +46,7 @@ class ComplaintSummaryQuery(BaseSummaryQuery):
         return OfficerAllegation.objects.filter(
             officer_id__in=self.pinboard.all_officer_ids
         ).annotate(
-            category=F('allegation_category__category')
+            category=F('officerallegationfinding__allegation_category__category')
         ).values(
             'category'
         ).annotate(

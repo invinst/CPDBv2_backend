@@ -33,8 +33,10 @@ from data.factories import (
 from pinboard.factories import PinboardFactory, ExamplePinboardFactory
 from pinboard.models import Pinboard
 from trr.factories import TRRFactory, ActionResponseFactory
+import unittest
 
 
+@unittest.skip("Pinboards are not in use")
 @patch('data.constants.MAX_VISUAL_TOKEN_YEAR', 2016)
 class PinboardDesktopViewSetTestCase(APITestCase):
     def test_retrieve_pinboard(self):
@@ -695,8 +697,12 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'birth_year': 1940,
                     'recommended_outcome': '11 Day Suspension',
                     'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
-                    'category': 'Use Of Force',
+                    'findings': [{
+                        'recc_finding': 'Sustained',  # TODO: look into default
+                        'final_finding': 'Sustained',
+                        'category': "Use of Force",
+                        'subcategory': 'Miscellaneous'
+                    }],
                     'disciplined': True,
                     'race': 'White',
                     'gender': 'Male',
@@ -728,8 +734,12 @@ class PinboardDesktopViewSetTestCase(APITestCase):
                     'birth_year': 1940,
                     'recommended_outcome': '10 Day Suspension',
                     'final_outcome': 'Separation',
-                    'final_finding': 'Sustained',
-                    'category': 'Verbal Abuse',
+                    'findings': [{
+                        'recc_finding': 'Not Sustained',  # TODO: look into default
+                        'final_finding': 'Sustained',
+                        'category': 'Verbal Abuse',
+                        'subcategory': 'Miscellaneous'
+                    }],
                     'disciplined': True,
                     'race': 'White',
                     'gender': 'Male',

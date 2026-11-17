@@ -14,6 +14,7 @@ class DocumentCrawler(TimeStampsModel):
     num_updated_documents = models.IntegerField(default=0)
     status = models.CharField(max_length=20, null=True, choices=DOCUMENT_CRAWLER_STATUS_CHOICES)
     log_key = models.CharField(max_length=255, null=True)
+    traceback = models.TextField(null=True, blank=True)
 
     @property
     def log_url(self):

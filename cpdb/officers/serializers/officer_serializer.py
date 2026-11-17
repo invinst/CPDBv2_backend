@@ -87,7 +87,7 @@ class OfficerSerializer(BaseSerializer):
                     year = complaint['start_date'].year
                 else:
                     year = None
-                sustained_count_step = 1 if complaint['final_finding'] == 'SU' else 0
+                sustained_count_step = 1 if complaint['officerallegationfinding__final_finding'] == 'SU' else 0
                 if len(allegation['complainants']) == 0:
                     self._count_for_facet_year(entries_dict, 'Unknown', year, sustained_count_step)
                     continue
@@ -122,7 +122,7 @@ class OfficerSerializer(BaseSerializer):
                 if incident['start_date'] is None or incident['officer_id'] != obj['id']:
                     continue
                 year = incident['start_date'].year
-                sustained_count_step = 1 if incident['final_finding'] == 'SU' else 0
+                sustained_count_step = 1 if incident['officerallegationfinding__final_finding'] == 'SU' else 0
                 if year in items_dict:
                     items_dict[year]['count'] += 1
                     items_dict[year]['sustained_count'] += sustained_count_step
@@ -144,8 +144,8 @@ class OfficerSerializer(BaseSerializer):
                     year = complaint['start_date'].year
                 else:
                     year = None
-                sustained_count_step = 1 if complaint['final_finding'] == 'SU' else 0
-                category = complaint['allegation_category__category']
+                sustained_count_step = 1 if complaint['officerallegationfinding__final_finding'] == 'SU' else 0
+                category = complaint['officerallegationfinding__allegation_category__category']
                 if category is None:
                     category = 'Unknown'
 

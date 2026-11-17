@@ -11,5 +11,6 @@ class AllegationCategory(TimeStampsModel):
     allegation_name = models.CharField(max_length=255, blank=True)
     on_duty = models.BooleanField(default=False)
     citizen_dept = models.CharField(max_length=50, default=CITIZEN_CHOICE, choices=CITIZEN_DEPTS)
+    ranking = models.IntegerField(null=True, blank=True, default=None)
 
     objects = BulkUpdateManager()

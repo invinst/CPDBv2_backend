@@ -42,7 +42,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             ),
             'officerallegation_set',
             'officerallegation_set__officer',
-            'officerallegation_set__allegation_category',
+            'officerallegation_set__officerallegationfinding_set__allegation_category',
             'victims',
         )
 
@@ -72,7 +72,7 @@ class SocialGraphBaseViewSet(viewsets.ViewSet):
             cr_data = cr_data.prefetch_related(
                 'officerallegation_set',
                 'officerallegation_set__officer',
-                'officerallegation_set__allegation_category',
+                'officerallegation_set__officerallegationfinding_set__allegation_category',
                 'victims',
             )
 

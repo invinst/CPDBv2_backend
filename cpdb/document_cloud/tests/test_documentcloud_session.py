@@ -41,6 +41,16 @@ class DocumentCloudSessionTestCase(TestCase):
         expect(lambda: DocumentCloudSession(self.log_func)).to.be.to.throw(RequestException)
         expect(self.log_func).to.be.called_with('[ERROR] Cannot login to document cloud to reprocessing text')
 
+    @patch(
+        'document_cloud.documentcloud_session.DocumentCloudSession.post',
+        return_value=Mock(status_code=502, json=Mock(side_effect=ValueError()), text='<html>Bad Gateway</html>')
+    )
+    def test_login_failure_with_non_json_response(self, _):
+        # The legacy login endpoint can return a non-JSON body (e.g. an HTML error page);
+        # calling .json() on it must not itself crash before the intended RequestException is raised.
+        expect(lambda: DocumentCloudSession(self.log_func)).to.be.to.throw(RequestException)
+        expect(self.log_func).to.be.called_with('[ERROR] Cannot login to document cloud to reprocessing text')
+
     @patch('document_cloud.documentcloud_session.DocumentCloudSession.post', return_value=Mock(status_code=200))
     def test_request_reprocess_text_success(self, post_mock):
         document = AttachmentFile(
@@ -93,6 +103,39 @@ class DocumentCloudSessionTestCase(TestCase):
                 '[FAIL] Reprocessing text'
                 ' https://www.documentcloud.org/documents/not_exist_documentcloud_id-CRID-234-CR.html'
                 ' failed with status code 404: Document does not exist'
+            )
+            expect(requested).to.be.true()
+            expect(success).to.be.false()
+
+    def test_request_reprocess_text_failure_with_non_json_response(self):
+        document = AttachmentFile(
+            external_id='bad_gateway_documentcloud_id',
+            url='https://www.documentcloud.org/documents/bad_gateway_documentcloud_id-CRID-234-CR.html'
+        )
+
+        with patch(
+            'document_cloud.documentcloud_session.DocumentCloudSession.post',
+            return_value=Mock(status_code=200)
+        ):
+            session = DocumentCloudSession(self.log_func)
+
+        with patch(
+            'document_cloud.documentcloud_session.DocumentCloudSession.post',
+            return_value=Mock(status_code=502, json=Mock(side_effect=ValueError()), text='<html>Bad Gateway</html>')
+        ) as post_mock:
+            requested, success = session._request_reprocess_text(document)
+
+            expect(post_mock).to.be.called_with(
+                'https://www.documentcloud.org/documents/bad_gateway_documentcloud_id/reprocess_text',
+                headers={
+                    'x-requested-with': 'XMLHttpRequest',
+                    'accept': 'application/json, text/javascript, */*; q=0.01'
+                }
+            )
+            expect(self.log_func).to.be.called_with(
+                '[FAIL] Reprocessing text'
+                ' https://www.documentcloud.org/documents/bad_gateway_documentcloud_id-CRID-234-CR.html'
+                ' failed with status code 502: <html>Bad Gateway</html>'
             )
             expect(requested).to.be.true()
             expect(success).to.be.false()

@@ -24,6 +24,8 @@ from officers.serializers.response_mobile_serializers import (
     LawsuitNewTimelineMobileSerializer,
 )
 
+from data.constants import TIMELINE_AWARDS
+
 
 class OfficerTimelineBaseQuery(object):
     cr_new_timeline_serializer = None
@@ -69,9 +71,10 @@ class OfficerTimelineBaseQuery(object):
         cr_timeline_queryset = self.officer.officerallegation_set.filter(
             allegation__incident_date__isnull=False,
         ).select_related(
-            'allegation', 'allegation_category'
+            'allegation'
         ).prefetch_related(
             'allegation__victims',
+            'officerallegationfinding_set__allegation_category',
             Prefetch(
                 'allegation__attachment_files',
                 queryset=filter_attachments(AttachmentFile.objects),
@@ -131,7 +134,8 @@ class OfficerTimelineBaseQuery(object):
         award_timeline_queryset = self.officer.award_set.filter(
             Q(start_date__isnull=False),
             ~Q(award_type__contains='Honorable Mention'),
-            ~Q(award_type__in=['Complimentary Letter', 'Department Commendation'])
+            ~Q(award_type__in=['Complimentary Letter', 'Department Commendation']),
+            Q(award_type__in=TIMELINE_AWARDS)
         ).annotate(
             **self.unit_subqueries('start_date')
         ).annotate(

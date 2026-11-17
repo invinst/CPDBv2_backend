@@ -490,6 +490,43 @@ class CopaPortalAttachmentImporterTestCase(TestCase):
         CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
         expect(DocumentCloudMock().documents.upload).not_to.be.called()
 
+    @patch('data_importer.copa_crawler.importers.DocumentCloud')
+    def test_upload_portal_copa_documents_one_fails(self, DocumentCloudMock):
+        logger = logging.getLogger('crawler.crawl_copa_data')
+        DocumentCloudMock().documents.upload.side_effect = [
+            Exception('HTTP Error 403: Forbidden'),
+            PropertyMock(id='5396984-crid-456-cr-tactical-response-report'),
+        ]
+
+        allegation = AllegationFactory(crid='123')
+        AttachmentFileFactory(
+            external_id='123-OCIR-Redacted.pdf',
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Tactical Response Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086285-TRR-Redacted.pdf',
+            upload_fail_attempts=0
+        )
+        other_allegation = AllegationFactory(crid='456')
+        AttachmentFileFactory(
+            external_id='456-OCIR-Redacted.pdf',
+            owner=other_allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            file_type=MEDIA_TYPE_DOCUMENT,
+            title='Another Report',
+            original_url='https://www.chicagocopa.org/wp-content/uploads/2017/10/Log-1086456-TRR-Redacted.pdf',
+            upload_fail_attempts=0
+        )
+
+        # One upload raises, the other succeeds; the failure must not abort the batch.
+        CopaPortalAttachmentImporter(logger).upload_to_documentcloud()
+
+        succeeded = AttachmentFile.objects.filter(pending_documentcloud_id='5396984')
+        failed = AttachmentFile.objects.filter(upload_fail_attempts=1, pending_documentcloud_id__isnull=True)
+        expect(succeeded.count()).to.eq(1)
+        expect(failed.count()).to.eq(1)
+
 
 @override_settings(S3_BUCKET_CRAWLER_LOG='crawler_logs_bucket')
 class CopaSummaryReportsAttachmentImporterTestCase(TestCase):

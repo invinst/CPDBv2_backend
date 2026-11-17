@@ -44,7 +44,7 @@ class OfficerCoaccusalsIndexer(BaseIndexer):
         )
         sustained_count = OfficerAllegation.objects.filter(
             officer=models.OuterRef('id'),
-            final_finding='SU'
+            officerallegationfinding__final_finding='SU'
         )
         queryset = Officer.objects.all()\
             .annotate(complaint_count=SQCount(allegation_count.values('id')))\

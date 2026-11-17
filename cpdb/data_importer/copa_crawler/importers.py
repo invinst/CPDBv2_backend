@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db import IntegrityError
 from tqdm import tqdm
 
 from django.conf import settings
@@ -36,7 +37,16 @@ from shared.attachment_importer import BaseAttachmentImporter
 
 
 def _get_chicagocopa_external_id(copa_url):
-    return copa_url[copa_url.rindex('/') + 1:] if '/' in copa_url else copa_url
+    """
+    Last path segment of the URL (e.g. Vimeo id, filename). Trailing slashes must be stripped
+    or rindex('/') points at the final slash and the segment becomes empty.
+    """
+    if not copa_url:
+        return ''
+    url = str(copa_url).strip().rstrip('/')
+    if '/' not in url:
+        return url
+    return url[url.rindex('/') + 1:]
 
 
 class CopaBaseAttachmentImporter(BaseAttachmentImporter):
@@ -67,22 +77,62 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
         allegation_type_id = ContentType.objects.get(app_label='data', model='allegation').id
         for attachment_dict in attachment_dicts:
             chicagocopa_external_id = _get_chicagocopa_external_id(attachment_dict['original_url'])
-            try:
-                attachment = AttachmentFile.objects.get(
-                    source_type__in=['', self.documentcloud_source_type],
-                    owner_type_id=allegation_type_id,
-                    owner_id=allegation.pk,
-                    original_url__endswith=chicagocopa_external_id
+            if not chicagocopa_external_id:
+                self.log_info(
+                    f'Skipping attachment with unparseable original_url for crid {allegation.crid}: '
+                    f'{attachment_dict.get("original_url")!r}'
                 )
-                created = False
-            except AttachmentFile.DoesNotExist:
-                attachment, created = AttachmentFile.objects.get_or_create(
+                continue
+
+            # Legacy rows: source_type '' or DocumentCloud, matched by URL suffix.
+            # Use filter().first() instead of get() so we never rely on DoesNotExist handling.
+            attachment = AttachmentFile.objects.filter(
+                source_type__in=['', self.documentcloud_source_type],
+                owner_type_id=allegation_type_id,
+                owner_id=allegation.pk,
+                original_url__endswith=chicagocopa_external_id,
+            ).first()
+
+            # Current portal row: same external_id but original_url may have changed on COPA's site.
+            if attachment is None:
+                attachment = AttachmentFile.objects.filter(
                     source_type=self.source_type,
                     external_id=chicagocopa_external_id,
                     owner_type_id=allegation_type_id,
                     owner_id=allegation.pk,
-                    defaults=attachment_dict
-                )
+                ).first()
+
+            created = False
+            if attachment is None:
+                try:
+                    attachment, created = AttachmentFile.objects.get_or_create(
+                        source_type=self.source_type,
+                        external_id=chicagocopa_external_id,
+                        owner_type_id=allegation_type_id,
+                        owner_id=allegation.pk,
+                        defaults=attachment_dict,
+                    )
+                except IntegrityError as exc:
+                    # Unique on (owner, external_id, source_type): row may have been created concurrently.
+                    attachment = AttachmentFile.objects.filter(
+                        source_type=self.source_type,
+                        external_id=chicagocopa_external_id,
+                        owner_type_id=allegation_type_id,
+                        owner_id=allegation.pk,
+                    ).first()
+                    if attachment is not None:
+                        created = False
+                    elif 'data_attachmentfile_pkey' in str(exc) or (
+                        'duplicate key' in str(exc).lower() and 'pkey' in str(exc).lower()
+                    ):
+                        # PostgreSQL sequence out of sync with MAX(id); inserts reuse an existing id.
+                        raise RuntimeError(
+                            'PostgreSQL sequence for data_attachmentfile.id is out of sync '
+                            '(duplicate primary key on insert). Run: '
+                            'python manage.py fix_attachmentfile_pk_sequence'
+                        ) from exc
+                    else:
+                        raise
 
             attachment_dict['preview_image_url'] = None
             if attachment_dict['file_type'] == MEDIA_TYPE_VIDEO and 'vimeo.com' in attachment_dict['original_url']:
@@ -137,6 +187,10 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
             self.num_updated_attachments += num_updated
 
     def upload_to_documentcloud(self):
+        if not settings.DOCUMENTCLOUD_USER or not settings.DOCUMENTCLOUD_PASSWORD:
+            self.log_info('Skipping DocumentCloud upload: DOCUMENTCLOUD_USER/DOCUMENTCLOUD_PASSWORD not configured')
+            return
+
         client = DocumentCloud(settings.DOCUMENTCLOUD_USER, settings.DOCUMENTCLOUD_PASSWORD)
         attachments = AttachmentFile.objects.for_allegation().filter(
             source_type=self.source_type,
@@ -146,20 +200,34 @@ class CopaBaseAttachmentImporter(BaseAttachmentImporter):
         )
 
         self.log_info(f'Uploading {len(attachments)} documents to DocumentCloud')
+        failed_attachments = []
 
         for attachment in tqdm(attachments):
             source_type = AttachmentSourceType.SOURCE_TYPE_MAPPINGS[attachment.source_type]
 
-            cloud_document = client.documents.upload(
-                attachment.original_url,
-                title=format_copa_documentcloud_title(attachment.owner_id, attachment.title),
-                description=source_type,
-                access='public',
-                force_ocr=True
-            )
+            try:
+                cloud_document = client.documents.upload(
+                    attachment.original_url,
+                    title=format_copa_documentcloud_title(attachment.owner_id, attachment.title),
+                    description=source_type,
+                    access='public',
+                    force_ocr=True
+                )
+            except Exception as e:
+                failed_attachments.append(attachment.pk)
+                attachment.upload_fail_attempts += 1
+                attachment.save()
+                self.logger.exception(f'Skipping DocumentCloud upload after failing: {attachment.original_url}')
+                self.log_info(f'ERROR: Skipping upload for attachment {attachment.pk} - {type(e).__name__}: {e}')
+                continue
 
             attachment.pending_documentcloud_id = parse_id(cloud_document.id)
             attachment.save()
+
+        if failed_attachments:
+            self.log_info(
+                f'Skipped {len(failed_attachments)} attachment(s) that failed to upload: {failed_attachments}'
+            )
 
         self.log_info(f'Done uploading!')
 
@@ -192,9 +260,18 @@ class CopaPortalAttachmentImporter(CopaBaseAttachmentImporter):
         links = OpenCopaInvestigationCrawler().crawl()
         self.log_info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         raw_incidents = []
+        failed_links = []
 
         for link in tqdm(links):
-            raw_incidents.append(ComplaintCrawler(link).crawl())
+            try:
+                raw_incidents.append(ComplaintCrawler(link).crawl())
+            except Exception as e:
+                failed_links.append(link)
+                self.logger.exception(f'Skipping COPA case page after failing to crawl it: {link}')
+                self.log_info(f'ERROR: Skipping {link} - {type(e).__name__}: {e}')
+
+        if failed_links:
+            self.log_info(f'Skipped {len(failed_links)} case page(s) that failed to crawl: {failed_links}')
 
         self.log_info(f'Parsed {len(raw_incidents)} crawled incidents')
         self.log_info('Done crawling!')
@@ -231,12 +308,22 @@ class CopaSummaryReportsAttachmentImporter(CopaBaseAttachmentImporter):
         self.log_info('Crawling process is about to start...')
         links = OpenCopaSummaryReportsCrawler().crawl()
         raw_incidents = []
+        failed_links = []
 
         for link in tqdm(links):
             self.log_info(f'Crawling {link}')
-            incidents_per_year = OpenCopaYearSummaryReportsCrawler(link).crawl()
+            try:
+                incidents_per_year = OpenCopaYearSummaryReportsCrawler(link).crawl()
+            except Exception as e:
+                failed_links.append(link)
+                self.logger.exception(f'Skipping COPA summary report year page after failing to crawl it: {link}')
+                self.log_info(f'ERROR: Skipping {link} - {type(e).__name__}: {e}')
+                continue
             raw_incidents += incidents_per_year
             self.log_info(f'Parsed {len(incidents_per_year)} crawled incidents')
+
+        if failed_links:
+            self.log_info(f'Skipped {len(failed_links)} year page(s) that failed to crawl: {failed_links}')
 
         self.log_info(f'Total crawled incidents: {len(raw_incidents)}')
         self.log_info('Done crawling!')

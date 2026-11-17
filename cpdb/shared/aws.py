@@ -1,3 +1,5 @@
+import os
+
 import boto3
 
 
@@ -5,6 +7,14 @@ class AWS(object):
     def __init__(self):
         self._s3 = None
         self._lambda_client = None
+
+    @property
+    def is_configured(self):
+        return bool(
+            os.environ.get('AWS_ACCESS_KEY_ID')
+            and os.environ.get('AWS_SECRET_ACCESS_KEY')
+            and os.environ.get('AWS_DEFAULT_REGION')
+        )
 
     @property
     def s3(self):

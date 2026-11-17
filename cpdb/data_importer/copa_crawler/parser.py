@@ -141,12 +141,26 @@ class NotSupportedDateFormatException(Exception):
 
 
 class DateTimeField(SimpleField):
-    DATE_SUPPORTED_PATTERNS = ['%m-%d-%Y %I:%M %p', '%B %d, %Y']
+    # Order matters: longer / more specific patterns first (e.g. datetime before date-only).
+    DATE_SUPPORTED_PATTERNS = [
+        '%m-%d-%Y %I:%M %p',
+        '%B %d, %Y',
+        '%m-%d-%Y',  # COPA case pages sometimes expose incident date without time (e.g. 03-09-2026)
+    ]
 
     def parse(self, row):
-        value = row.get(self.field_name, '')
-
+        raw = row.get(self.field_name, '')
+        if raw is None:
+            return None
+        value = raw.strip() if isinstance(raw, str) else raw
         if not value:
+            return None
+
+        # COPA Case Portal uses "-" (and similar) for empty date cells in tables.
+        if value in ('-', '—', '--', '\u2013', '\u2014'):
+            return None
+        lowered = value.lower()
+        if lowered in ('n/a', 'na', 'none', 'tbd'):
             return None
 
         for pattern in self.DATE_SUPPORTED_PATTERNS:

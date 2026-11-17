@@ -27,10 +27,16 @@ def parse_link(link):
 
 
 def parse_id(documentcloud_id):
+    # Document.id is a dash-suffixed "id-slug" string on the legacy API, but a bare
+    # numeric id (int) on the current one, since id and slug are now separate fields.
+    documentcloud_id = str(documentcloud_id)
     pattern = re.compile(DOCUMENTCLOUD_ID_PATTERN)
     matched = re.match(pattern, documentcloud_id)
     if matched:
         return matched.group('documentcloud_id')
+    if documentcloud_id.isdigit():
+        return documentcloud_id
+    return None
 
 
 def parse_crid_and_type_from_title(documentcloud_title, document_types=[DEFAULT_DOCUMENT_TYPE]):

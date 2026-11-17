@@ -1,5 +1,6 @@
 import logging
 import json
+import requests
 import urllib3
 from datetime import datetime, timezone
 from urllib.error import HTTPError
@@ -11,6 +12,8 @@ import pytz
 from mock import patch, Mock, MagicMock
 from robber import expect
 from freezegun import freeze_time
+
+from documentcloud.exceptions import DoesNotExistError
 
 from data.constants import AttachmentSourceType
 from data.factories import AllegationFactory, AttachmentFileFactory
@@ -39,7 +42,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         something
 
         """
-        cloud_document = create_object({'full_text': text_content.encode('utf8')})
+        cloud_document = create_object({'full_text': text_content})
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq("something\nsomething")
 
     def test_get_full_text_raise_HTTPError_exception(self):
@@ -56,6 +59,28 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             @property
             def full_text(self):
                 raise NotImplementedError('Testing error')
+
+        cloud_document = Document()
+        expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
+
+    def test_get_full_text_raise_requests_HTTPError_exception(self):
+        # The current DocumentCloud API raises requests.exceptions.HTTPError (e.g. a
+        # 404 when the text asset isn't available yet), not the legacy urllib one.
+        class Document(object):
+            @property
+            def full_text(self):
+                raise requests.exceptions.HTTPError('404 Client Error')
+
+        cloud_document = Document()
+        expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
+
+    def test_get_full_text_raise_DoesNotExistError_exception(self):
+        # The current library wraps a missing text asset (404) in its own
+        # DoesNotExistError rather than letting requests.exceptions.HTTPError through.
+        class Document(object):
+            @property
+            def full_text(self):
+                raise DoesNotExistError(response=None)
 
         cloud_document = Document()
         expect(DocumentCloudAttachmentImporter(self.logger).get_full_text(cloud_document)).to.eq('')
@@ -146,7 +171,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 11,
             'access': 'public',
         })
@@ -184,7 +209,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'document_type': 'CR',
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 10,
             'access': 'public',
         })
@@ -210,7 +235,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -231,7 +256,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -254,7 +279,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -278,7 +303,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -302,7 +327,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         document = create_object({
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -329,7 +354,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -360,7 +385,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -388,7 +413,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'documentcloud_id': '123456',
             'updated_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'source_type': 'PORTAL_COPA_DOCUMENTCLOUD',
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'url': 'https://www.documentcloud.org/documents/1-CRID-123456-CR.html',
             'title': 'new title',
             'normal_image_url': 'http://web.com/new-image',
@@ -535,7 +560,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': ''.encode('utf8'),
+            'full_text': '',
             'pages': 4,
             'access': 'public',
         })
@@ -550,7 +575,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8'),
+            'full_text': 'updated text content',
             'pages': 1,
             'access': 'public',
         })
@@ -565,7 +590,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://summary-reports.com/updated-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': text_content.encode('utf8'),
+            'full_text': text_content,
             'pages': 3,
             'access': 'public',
         })
@@ -580,7 +605,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': ''.encode('utf8'),
+            'full_text': '',
             'pages': 2,
             'access': 'public',
         })
@@ -595,7 +620,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'public',
         })
@@ -610,7 +635,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2018, 4, 4, 12, 0, 1, tzinfo=pytz.utc),
             'created_at': datetime(2018, 4, 4, 9, 0, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'pending',
         })
@@ -626,7 +651,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/image-1111130',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'pending',
             'save': Mock(),
@@ -642,7 +667,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'error',
             'delete': Mock(return_value=True)
@@ -659,7 +684,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': '1111126 text content'.encode('utf8'),
+            'full_text': '1111126 text content',
             'pages': 2,
             'access': 'private',
             'save': Mock()
@@ -676,7 +701,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'organization',
             'save': Mock()
@@ -693,7 +718,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/updated-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'updated text content'.encode('utf8'),
+            'full_text': 'updated text content',
             'pages': 2,
             'access': 'private',
             'save': Mock()
@@ -710,7 +735,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/new-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'text content'.encode('utf8'),
+            'full_text': 'text content',
             'pages': 2,
             'access': 'organization',
             'save': Mock()
@@ -1065,7 +1090,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/document-3-image',
             'updated_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
-            'full_text': 'document 3 text content'.encode('utf8'),
+            'full_text': 'document 3 text content',
             'pages': 1,
             'access': 'public',
         })
@@ -1080,7 +1105,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'normal_image_url': 'http://web.com/document-4-image',
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
-            'full_text': 'document 4 text content'.encode('utf8'),
+            'full_text': 'document 4 text content',
             'pages': 3,
             'access': 'public',
         })
@@ -1350,7 +1375,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
             'access': 'private',
-            'full_text': '1111126 text'.encode('utf8'),
+            'full_text': '1111126 text',
             'pages': 2,
             'save': Mock()
         })
@@ -1367,7 +1392,7 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
             'updated_at': datetime(2017, 1, 4, tzinfo=pytz.utc),
             'created_at': datetime(2017, 1, 3, tzinfo=pytz.utc),
             'access': 'organization',
-            'full_text': '1111127 text'.encode('utf8'),
+            'full_text': '1111127 text',
             'pages': 3,
             'save': Mock()
         })
@@ -1775,3 +1800,168 @@ class DocumentCloudAttachmentImporterTestCase(TestCase):
         allegation_2.refresh_from_db()
         expect(allegation_2.summary).to.eq('allegation summary')
         expect(allegation_2.is_extracted_summary).to.be.false()
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_promotes_matching_attachment(self, document_cloud_mock):
+        allegation = AllegationFactory(crid='123')
+        attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='555',
+            external_id='',
+            external_last_updated=None,
+        )
+        cloud_document = create_object({
+            'id': 555,
+            'title': 'CRID 123 CR Some Title',
+            'url': 'https://www.documentcloud.org/documents/555-crid-123-cr.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/555-crid-123-cr.html',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'created_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'pages': 2,
+            'full_text': 'hello',
+            'access': 'public',
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+        })
+        document_cloud_mock().documents.get.return_value = cloud_document
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        expect(document_cloud_mock().documents.get).to.be.called_with('555')
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.be.none()
+        expect(attachment.source_type).to.eq(AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD)
+        expect(attachment.external_id).to.eq('555')
+        expect(attachment.text_content).to.eq('hello')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_with_missing_document(self, document_cloud_mock):
+        attachment = AttachmentFileFactory(pending_documentcloud_id='999')
+        document_cloud_mock().documents.get.side_effect = DoesNotExistError()
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.eq('999')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_with_unexpected_error(self, document_cloud_mock):
+        attachment = AttachmentFileFactory(pending_documentcloud_id='888')
+        document_cloud_mock().documents.get.side_effect = Exception('boom')
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        importer.resolve_pending_attachments()
+
+        attachment.refresh_from_db()
+        expect(attachment.pending_documentcloud_id).to.eq('888')
+        expect(importer.log_info.call_args_list[1][0][0]).to.eq('ERROR resolving pending doc 888: Exception: boom')
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_skips_attachments_without_pending_id(self, document_cloud_mock):
+        AttachmentFileFactory(pending_documentcloud_id=None)
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        expect(document_cloud_mock().documents.get).not_to.be.called()
+
+    @patch('document_cloud.importers.DocumentCloud')
+    def test_resolve_pending_attachments_one_fails_does_not_block_others(self, document_cloud_mock):
+        allegation = AllegationFactory(crid='123')
+        failing_attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='111',
+            external_id='ext-111',
+            external_last_updated=None,
+        )
+        ok_attachment = AttachmentFileFactory(
+            owner=allegation,
+            source_type=AttachmentSourceType.PORTAL_COPA,
+            pending_documentcloud_id='222',
+            external_id='ext-222',
+            external_last_updated=None,
+        )
+
+        class BrokenDocument(object):
+            # Deliberately missing `pages`, so the mapping_fields loop in
+            # update_attachment() raises an AttributeError for this one document.
+            id = 111
+            title = 'CRID 123 CR Broken Title'
+            url = 'https://www.documentcloud.org/documents/111-crid-123-cr.html'
+            canonical_url = 'https://www.documentcloud.org/documents/111-crid-123-cr.html'
+            normal_image_url = 'http://web.com/image'
+            updated_at = datetime(2020, 1, 1, tzinfo=pytz.utc)
+            created_at = datetime(2020, 1, 1, tzinfo=pytz.utc)
+            full_text = 'broken doc text'
+            access = 'public'
+            description = AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD
+
+        ok_cloud_document = create_object({
+            'id': 222,
+            'title': 'CRID 123 CR Ok Title',
+            'url': 'https://www.documentcloud.org/documents/222-crid-123-cr.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/222-crid-123-cr.html',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'created_at': datetime(2020, 1, 1, tzinfo=pytz.utc),
+            'pages': 2,
+            'full_text': 'hello',
+            'access': 'public',
+            'description': AttachmentSourceType.PORTAL_COPA_DOCUMENTCLOUD,
+        })
+
+        return_values = {'111': BrokenDocument(), '222': ok_cloud_document}
+        document_cloud_mock().documents.get.side_effect = lambda arg: return_values[arg]
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.resolve_pending_attachments()
+
+        failing_attachment.refresh_from_db()
+        expect(failing_attachment.pending_documentcloud_id).to.eq('111')
+
+        ok_attachment.refresh_from_db()
+        expect(ok_attachment.pending_documentcloud_id).to.be.none()
+        expect(ok_attachment.text_content).to.eq('hello')
+
+    @patch('document_cloud.importers.search_all')
+    def test_search_attachments_one_fails_does_not_block_others(self, search_all_mock):
+        allegation = AllegationFactory(crid='234')
+
+        # Deliberately missing `access`, so make_cloud_document_public() raises
+        # an AttributeError for this one search result.
+        broken_cloud_document = create_object({
+            'documentcloud_id': '999',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'canonical_url': 'https://www.documentcloud.org/documents/999-CRID-234-CR.html',
+        })
+
+        ok_cloud_document = create_object({
+            'documentcloud_id': '888',
+            'allegation': allegation,
+            'source_type': AttachmentSourceType.DOCUMENTCLOUD,
+            'url': 'https://www.documentcloud.org/documents/888-CRID-234-CR.html',
+            'canonical_url': 'https://www.documentcloud.org/documents/888-CRID-234-CR.html',
+            'document_type': 'CR',
+            'title': 'CRID-234-CR-888',
+            'normal_image_url': 'http://web.com/image',
+            'updated_at': datetime(2017, 1, 2, tzinfo=pytz.utc),
+            'created_at': datetime(2017, 1, 1, tzinfo=pytz.utc),
+            'full_text': 'hello',
+            'pages': 2,
+            'access': 'public',
+        })
+
+        search_all_mock.return_value = [broken_cloud_document, ok_cloud_document]
+
+        importer = DocumentCloudAttachmentImporter(self.logger)
+        importer.log_info = Mock()
+        importer.search_attachments()
+
+        expect(len(importer.new_attachments)).to.eq(1)
+        expect(importer.new_attachments[0].external_id).to.eq('888')

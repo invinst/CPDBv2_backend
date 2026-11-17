@@ -50,8 +50,8 @@ class Allegation(TimeStampsModel):
     def category_names(self):
         query = self.officer_allegations.annotate(
             name=models.Case(
-                models.When(allegation_category__isnull=True, then=models.Value('Unknown')),
-                default='allegation_category__category',
+                models.When(officerallegationfinding__allegation_category__isnull=True, then=models.Value('Unknown')),
+                default='officerallegationfinding__allegation_category__category',
                 output_field=models.CharField()))
         query = query.values('name').distinct()
         results = sorted([result['name'] for result in query])

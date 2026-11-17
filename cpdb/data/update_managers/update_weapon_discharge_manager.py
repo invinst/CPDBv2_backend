@@ -30,7 +30,7 @@ class UpdateWeaponDischargeManager(UpdateManagerBase):
                     t.firearm_model,
                     t.firearm_barrel_length,
                     t.firearm_caliber,
-                    t.total_number_of_shots::float::int as total_number_of_shots,
+                    safe_cast_to_int(t.total_number_of_shots) as total_number_of_shots,
                     lower(t.firearm_reloaded) in ('yes', 'y', '1.0', '1') as firearm_reloaded,
                     t.handgun_worn_type,
                     t.handgun_drawn_type,
