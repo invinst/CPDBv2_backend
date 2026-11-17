@@ -69,7 +69,12 @@ class Command(BaseCommand):
             'features': [],
         }
         for area in tqdm(areas):
-            polygon = json.loads(area.polygon.geojson)
+            # Build GeoJSON from GEOS coords directly: GEOSGeometry.geojson goes through GDAL,
+            # which under GDAL 3 swaps axis order (lat, lon) for EPSG:4326 on Django 2.2.
+            polygon = json.loads(json.dumps({
+                'type': area.polygon.geom_type,
+                'coordinates': area.polygon.coords,
+            }))
 
             area_json = {
                 'type': 'Feature',

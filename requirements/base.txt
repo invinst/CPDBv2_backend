@@ -29,6 +29,8 @@ Faker==4.0.2
 python-dateutil==2.6.1
 Twisted[tls]==20.3.0
 dateparser==0.7.0
+regex==2021.11.10  # dateparser 0.7.0 breaks with regex>=2022.1.18 ('bad escape \d')
+tzlocal==2.1  # dateparser 0.7.0 needs pytz-style timezones; tzlocal>=3 returns zoneinfo
 tweepy==3.8.0
 zipcodes==1.0.4
 sortedcontainers==2.0.5

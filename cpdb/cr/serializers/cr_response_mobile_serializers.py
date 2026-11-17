@@ -150,7 +150,7 @@ class CRMobileSerializer(NoNullSerializer):
                         officer__officerbadgenumber__isnull=False
                     )
                 )
-            )
+            ).order_by('id')
 
     def get_beat(self, obj):
         return obj.beat.name if obj.beat is not None else None

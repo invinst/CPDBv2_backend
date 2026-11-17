@@ -59,7 +59,7 @@ class CRViewSetTestCase(APITestCase):
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
             officer=officer1, allegation=allegation,
-            final_finding='SU', disciplined=True,
+            final_finding='SU', recc_finding='SU', disciplined=True,
             final_outcome='Separation', recc_outcome='10 Day Suspension',
             start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(

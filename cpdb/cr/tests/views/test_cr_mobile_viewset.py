@@ -51,7 +51,7 @@ class CRMobileViewSetTestCase(APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU',
+            officer=officer1, allegation=allegation, final_finding='SU', recc_finding='NS',
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
@@ -141,7 +141,7 @@ class CRMobileViewSetTestCase(APITestCase):
                     'final_outcome': 'Separation',
                     'allegation_count': 1,
                     'findings': [{
-                        'recc_finding': 'Not Sustained',  # TODO: look into default here
+                        'recc_finding': 'Not Sustained',
                         'final_finding': "Sustained",
                         'category': 'Operation/Personnel Violations',
                         'subcategory': 'Secondary/Special Employment'
@@ -237,7 +237,7 @@ class CRMobileViewSetTestCase(APITestCase):
         ComplainantFactory(allegation=allegation, gender='M', race='Black', age='18')
         VictimFactory(allegation=allegation, gender='M', race='Black', age=53)
         OfficerAllegationFactory(
-            officer=officer1, allegation=allegation, final_finding='SU', disciplined=True,
+            officer=officer1, allegation=allegation, final_finding='SU', recc_finding='NS', disciplined=True,
             final_outcome='Separation', start_date=date(2003, 3, 20), end_date=date(2006, 5, 26),
             allegation_category=AllegationCategoryFactory(
                 category='Operation/Personnel Violations',
