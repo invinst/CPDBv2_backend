@@ -15,14 +15,17 @@ REQUEST_TIMEOUT = 30
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 1
 RETRYABLE_STATUS_CODES = {500, 502, 503, 504}
+# The case-portal listing pages are slow on COPA's side and intermittently 504; give them longer to recover.
+LISTING_MAX_RETRIES = 5
+LISTING_RETRY_BACKOFF_SECONDS = 5
 
 
-def _get(url, **kwargs):
+def _get(url, max_retries=MAX_RETRIES, backoff_seconds=RETRY_BACKOFF_SECONDS, exponential=False, **kwargs):
     """requests.get with retries + backoff on connection errors, timeouts, and 5xx responses."""
     kwargs.setdefault('timeout', REQUEST_TIMEOUT)
     last_exc = None
     response = None
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(max_retries):
         try:
             response = requests.get(url, **kwargs)
         except requests.exceptions.RequestException as exc:
@@ -31,8 +34,8 @@ def _get(url, **kwargs):
         else:
             if response.status_code not in RETRYABLE_STATUS_CODES:
                 return response
-        if attempt < MAX_RETRIES - 1:
-            time.sleep(RETRY_BACKOFF_SECONDS * (attempt + 1))
+        if attempt < max_retries - 1:
+            time.sleep(backoff_seconds * (2 ** attempt if exponential else attempt + 1))
     if response is not None:
         return response
     raise last_exc
@@ -43,9 +46,18 @@ class OpenCopaInvestigationCrawler(object):
 
     def __init__(self, url=URL):
         self.base_url = url
+        # Set when pagination stopped early because a listing page kept failing; links before it are kept.
+        self.failed_page_url = None
+        self.failed_page_error = None
 
     def _get_page(self, url):
-        response = _get(url, headers=HEADERS)
+        response = _get(
+            url,
+            headers=HEADERS,
+            max_retries=LISTING_MAX_RETRIES,
+            backoff_seconds=LISTING_RETRY_BACKOFF_SECONDS,
+            exponential=True,
+        )
         response.raise_for_status()
         return BeautifulSoup(response.text, 'html.parser')
 
@@ -95,7 +107,16 @@ class OpenCopaInvestigationCrawler(object):
 
         while current_url and current_url not in visited_urls:
             visited_urls.add(current_url)
-            soup = self._get_page(current_url)
+            try:
+                soup = self._get_page(current_url)
+            except requests.exceptions.RequestException as exc:
+                # Nothing collected yet: the crawl genuinely failed.
+                if not links:
+                    raise
+                # Otherwise keep what we have; the importer only adds/updates attachments, never deletes.
+                self.failed_page_url = current_url
+                self.failed_page_error = exc
+                break
             links.extend(self._extract_links_from_soup(soup))
             current_url = self._get_next_page_url(soup, current_url)
 

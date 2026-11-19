@@ -257,7 +257,14 @@ class CopaPortalAttachmentImporter(CopaBaseAttachmentImporter):
 
     def crawl_copa(self):
         self.log_info('Crawling process is about to start...')
-        links = OpenCopaInvestigationCrawler().crawl()
+        link_crawler = OpenCopaInvestigationCrawler()
+        links = link_crawler.crawl()
+        if isinstance(link_crawler.failed_page_url, str):
+            self.log_info(
+                f'WARNING: Case portal pagination stopped early at {link_crawler.failed_page_url} '
+                f'({type(link_crawler.failed_page_error).__name__}: {link_crawler.failed_page_error}); '
+                f'continuing with the {len(links)} link(s) collected before it'
+            )
         self.log_info(f'Complaint crawler is starting! {len(links)} is ready to be crawled')
         raw_incidents = []
         failed_links = []

@@ -1,4 +1,5 @@
 import responses
+import requests as real_requests
 
 from django.test.testcases import SimpleTestCase
 
@@ -174,6 +175,46 @@ class OpenCopaInvestigationCrawlerTest(SimpleTestCase):
             'https://www.chicagocopa.org/case/2026-0000001/',
         ])
         expect(requests.get.call_count).to.be.eq(1)
+
+    def _gateway_timeout_response(self):
+        response = MagicMock(status_code=504)
+        response.raise_for_status.side_effect = real_requests.exceptions.HTTPError('504 Server Error: Gateway Timeout')
+        return response
+
+    @patch('data_importer.copa_crawler.portal_crawler.time.sleep')
+    @patch('data_importer.copa_crawler.portal_crawler.requests.get')
+    def test_parse_keeps_collected_links_when_later_page_keeps_failing(self, requests_get, sleep):
+        page_2_url = 'https://www.chicagocopa.org/case-portal?sort_order=title+desc&sf_paged=2'
+        requests_get.side_effect = [
+            MagicMock(status_code=200, text=self._page_pagenavi_html('2026-0000001', page_2_url)),
+        ] + [self._gateway_timeout_response() for _ in range(5)]
+
+        crawler = OpenCopaInvestigationCrawler()
+        expect(crawler.crawl()).to.be.eq(['https://www.chicagocopa.org/case/2026-0000001/'])
+        expect(crawler.failed_page_url).to.be.eq(page_2_url)
+        expect(crawler.failed_page_error).to.be.instanceof(real_requests.exceptions.HTTPError)
+        expect(requests_get.call_count).to.be.eq(6)
+        expect([c[0][0] for c in sleep.call_args_list]).to.be.eq([5, 10, 20, 40])
+
+    @patch('data_importer.copa_crawler.portal_crawler.time.sleep')
+    @patch('data_importer.copa_crawler.portal_crawler.requests.get')
+    def test_parse_recovers_when_listing_page_succeeds_on_retry(self, requests_get, sleep):
+        requests_get.side_effect = [
+            self._gateway_timeout_response(),
+            MagicMock(status_code=200, text=self._page_pagenavi_html('2026-0000001')),
+        ]
+
+        crawler = OpenCopaInvestigationCrawler()
+        expect(crawler.crawl()).to.be.eq(['https://www.chicagocopa.org/case/2026-0000001/'])
+        expect(crawler.failed_page_url).to.be.none()
+        expect(sleep.call_count).to.be.eq(1)
+
+    @patch('data_importer.copa_crawler.portal_crawler.time.sleep')
+    @patch('data_importer.copa_crawler.portal_crawler.requests.get')
+    def test_parse_raises_when_first_page_keeps_failing(self, requests_get, _):
+        requests_get.side_effect = [self._gateway_timeout_response() for _ in range(5)]
+
+        expect(lambda: OpenCopaInvestigationCrawler().crawl()).to.throw(real_requests.exceptions.HTTPError)
 
 
 class BaseComplaintCrawlerTest(SimpleTestCase):
